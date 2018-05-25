@@ -8720,6 +8720,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
@@ -8731,7 +8732,6 @@ namespace http {
 								(dType != pTypeAirQuality) &&
 								(dType != pTypeLux) &&
 								(dType != pTypeUsage) &&
-								(!((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
 								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) &&
 								(dType != pTypeWEIGHT) &&
@@ -9625,10 +9625,7 @@ namespace http {
 							}
 						}
 					}
-					else if (
-						(dType == pTypeRFXMeter)
-						|| ((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))
-					)
+					else if (dType == pTypeRFXMeter)
 					{
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
@@ -9745,13 +9742,8 @@ namespace http {
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
 						}
-						if (
-							((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))
-						) {
-							root["result"][ii]["ShowNotifications"] = false;
-						}
 					}
-					else if (dType == pTypeGeneral && dSubType == sTypeCounterIncremental)
+					else if ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
 					{
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
@@ -9835,6 +9827,88 @@ namespace http {
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 						double meteroffset = AddjValue;
 
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp, "%gm3", meteroffset + (dvalue / GasDivider));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_WATER:
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_COUNTER:
+							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						default:
+							root["result"][ii]["Data"] = "?";
+							root["result"][ii]["Counter"] = "?";
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						}
+					}
+					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))
+					{
+						float EnergyDivider = 1000.0f;
+						float GasDivider = 100.0f;
+						float WaterDivider = 100.0f;
+						std::string ValueQuantity = options["ValueQuantity"];
+						std::string ValueUnits = options["ValueUnits"];
+						int tValue;
+						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+						{
+							EnergyDivider = float(tValue);
+						}
+						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+						{
+							GasDivider = float(tValue);
+						}
+						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+						{
+							WaterDivider = float(tValue);
+						}
+						if (ValueQuantity.empty()) {
+							ValueQuantity.assign("Count");
+						}
+						if (ValueUnits.empty()) {
+							ValueUnits.assign("");
+						}
+
+						std::vector<std::string> splitresults;
+						StringSplit(sValue, ";", splitresults);
+						double dvalue;
+						if (splitresults.size() < 2) {
+							dvalue = static_cast<double>(atof(sValue.c_str()));
+						}
+						else {
+							dvalue = static_cast<double>(atof(splitresults[1].c_str()));
+							if (dvalue < 0.0) {
+								dvalue = static_cast<double>(atof(splitresults[0].c_str()));
+							}
+						}
+						root["result"][ii]["Data"] = root["result"][ii]["Counter"];
+
+						root["result"][ii]["SwitchTypeVal"] = metertype;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "counter";
+						root["result"][ii]["ValueQuantity"] = "";
+						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ShowNotifications"] = false;
+						double meteroffset = AddjValue;
+						
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
@@ -14163,7 +14237,7 @@ namespace http {
 							}
 						}
 					}
-					else if ((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))
+					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))
 					{
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
@@ -15098,7 +15172,7 @@ namespace http {
 								ii++;
 							}
 						}
-						if (!(dType == pTypeManaged) && (dSubType == sTypeManagedCounter)) {
+						if (!(dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)) {
 							//add today (have to calculate it)
 							result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 								idx, szDateEnd);

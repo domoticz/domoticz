@@ -3541,7 +3541,6 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	case pTypeTEMP_HUM_BARO:
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;50;1;1010;1", devname);
 		break;
-	case pTypeManaged:
 	case pTypeRFXMeter:
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 10, 255, 0, "0", devname);
 		break;
@@ -3587,6 +3586,9 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		break;
 		case sTypeCounterIncremental:		//Counter Incremental
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
+			break;
+		case sTypeManagedCounter:		//Counter Incremental
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "-1.0;0.0", devname);
 			break;
 		case sTypeVoltage:		//Voltage
 		{
@@ -4146,18 +4148,17 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					);
 			}
 
-			if ((devType == pTypeManaged) && (subType == sTypeManagedCounter)) {
+			if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter)) {
 				std::vector<std::string> parts, parts2;
 				StringSplit(sValue, ";", parts);
-				if (parts.size()>1) {
-					StringSplit(parts[1].c_str(), " ", parts2);
+				if (parts.size()>2) {
+					StringSplit(parts[2].c_str(), " ", parts2);
 					// second part is date only, or date with hour with space
+					bool day = false;
 					if (parts2.size()>1) {
-						UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, true, 0.0, static_cast<float>(atof(parts[0].c_str())), parts[1].c_str());
+						day = true;
 					}
-					else {
-						UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, false, static_cast<float>(atof(parts[0].c_str())), 0.0, parts[1].c_str());
-					}
+					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, day, static_cast<float>(atof(parts[0].c_str())), static_cast<float>(atof(parts[1].c_str())), parts[2].c_str());
 					return ulID;
 				}
 			}
@@ -5193,7 +5194,7 @@ void CSQLHelper::UpdateUVLog()
 	}
 }
 
-bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool dayCalendar, float value, float usageCounter, const char* date)
+bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool dayCalendar, float counter, float usage, const char* date)
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[200];
@@ -5205,6 +5206,13 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 	}
 
 	uint64_t DeviceRowID;
+	
+	if (counter < 0.0) {
+		counter = 0.0;
+	}
+	if (usage < 0.0) {
+		usage = 0.0;
+	}
 
 	std::vector<std::string> sd = result[0];
 	std::stringstream s_strid;
@@ -5215,13 +5223,13 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 
 	if (dayCalendar)
 	{
-		sprintf(szTmp, "%.0f", value);
+		sprintf(szTmp, "%.0f", counter);
 		long long MeterValue;
 		std::stringstream s_str2;
-		s_str2 << boost::to_string(value);
+		s_str2 << boost::to_string(counter);
 		s_str2 >> MeterValue;
 
-		sprintf(szTmp, "%.0f", usageCounter);
+		sprintf(szTmp, "%.0f", usage);
 		long long MeterUsage;
 		std::stringstream s_str3;
 		s_str3 << boost::to_string(szTmp);
@@ -5264,7 +5272,7 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 			safe_query(
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
-				DeviceRowID, value, usageCounter, date
+				DeviceRowID, usage, counter, date
 			);
 		}
 		else
@@ -5272,74 +5280,9 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 			safe_query(
 				"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Value='%.2f', Counter='%.2f', Date='%q' "
 				"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-				DeviceRowID, value, usageCounter, date,
+				DeviceRowID, usage, counter, date,
 				DeviceRowID, date
 			);
-		}
-
-		float EnergyDivider=1000.0f;
-		float GasDivider=100.0f;
-		float WaterDivider=100.0f;
-		float musage=0;
-		int tValue;
-		if (GetPreferencesVar("MeterDividerEnergy", tValue))
-		{
-			EnergyDivider=float(tValue);
-		}
-		if (GetPreferencesVar("MeterDividerGas", tValue))
-		{
-			GasDivider=float(tValue);
-		}
-		if (GetPreferencesVar("MeterDividerWater", tValue))
-		{
-			WaterDivider=float(tValue);
-		}
-
-		_eMeterType metertype=(_eMeterType)switchtype;
-
-		float tGasDivider=GasDivider;
-
-		if (devType==pTypeP1Power)
-		{
-			metertype=MTYPE_ENERGY;
-		}
-		else if (devType==pTypeP1Gas)
-		{
-			metertype=MTYPE_GAS;
-			tGasDivider=1000.0f;
-		}
-		else if ((devType==pTypeRego6XXValue) && (subType==sTypeRego6XXCounter))
-		{
-			metertype=MTYPE_COUNTER;
-		}
-		//Check for Notification
-		switch (metertype)
-		{
-		case MTYPE_ENERGY:
-		case MTYPE_ENERGY_GENERATED:
-			musage = value / EnergyDivider;
-			if (musage!=0)
-				m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
-			break;
-		case MTYPE_GAS:
-			musage = value / tGasDivider;
-			if (musage!=0)
-				m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYGAS, musage);
-			break;
-		case MTYPE_WATER:
-			musage = value / WaterDivider;
-			if (musage!=0)
-				m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYGAS, musage);
-			break;
-		case MTYPE_COUNTER:
-			musage = value;
-			if (musage!=0)
-				m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
-			break;
-		default:
-			//Unhandled
-			musage = 0;
-			break;
 		}
 	}
 	return true;

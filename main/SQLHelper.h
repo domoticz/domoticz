@@ -443,7 +443,7 @@ private:
 	//Returns DeviceRowID
 	uint64_t UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction);
 
-	bool UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool dayCalendar, float value, float usageCounter, const char* date);
+	bool UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool dayCalendar, float counter, float usage, const char* date);
 
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();

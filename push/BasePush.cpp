@@ -205,8 +205,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeRFXMeter, sTypeRFXMeterCount, "Counter" },
 
-		{ pTypeManaged, sTypeManagedCounter, "Counter" },
-
 		{ pTypeP1Power, sTypeP1Power, "Usage 1,Usage 2,Delivery 1,Delivery 2,Usage current,Delivery current" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas usage" },
 
@@ -250,6 +248,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
 		{ pTypeGeneral, sTypeCustom, "Percentage" },
 		{ pTypeGeneral, sTypeZWaveAlarm, "Status" },
+		{ pTypeGeneral, sTypeManagedCounter, "Counter" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
