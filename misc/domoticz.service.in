@@ -1,0 +1,46 @@
+[Unit]
+Description=domoticz - Home Automation System
+Documentation=https://www.domoticz.com/
+Documentation=https://www.domoticz.com/wiki
+After=time-sync.target network.target multi-user.target
+ConditionPathExists=/etc/domoticz.conf
+
+[Service]
+Type=simple
+TimeoutStopSec=30
+KillMode=mixed
+KillSignal=SIGTERM
+
+User=domoticz
+Group=domoticz
+ExecStart=@SBINDIR@/domoticz -f /etc/domoticz.conf
+Restart=on-failure
+RestartSec=5s
+
+# execve() cannot regain privileges
+NoNewPrivileges=true
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# makes / read-only except /dev /proc /sys
+ProtectSystem=strict
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+
+# hides /home /root /run/user
+ProtectHome=yes
+
+# dedicated volatile /tmp
+PrivateTmp=true
+
+ReadWriteDirectories=/proc/self
+ReadWriteDirectories=@SHAREDSTATEDIR@/domoticz
+
+# Access to devices is required
+PrivateDevices=no
+
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
