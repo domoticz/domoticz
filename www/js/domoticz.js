@@ -80,9 +80,15 @@ function b64EncodeUnicode(str) {
     }))
 }
 function b64DecodeUnicode(str) {
+	try {
     return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
     }).join(''))
+	}
+	catch(e) {
+		// Pff fallback
+		return atob(str);
+	}
 }
 
 function GetBackbuttonHTMLTable(backfunction) {
