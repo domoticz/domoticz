@@ -96,6 +96,7 @@ const char *szHelp =
 "\t-startupdelay seconds (default=0)\n"
 "\t-nowwwpwd (in case you forgot the web server username/password)\n"
 "\t-nocache (do not return appcache, use only when developing the web pages)\n"
+"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
 #if defined WIN32
 "\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
@@ -171,6 +172,7 @@ bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
 bool g_bDontCacheWWW = false;
+signed char g_wwwCompressMode = 0x1; // 0x1 = on, 0x0 = static, 0xFF = off
 bool g_bUseUpdater = true;
 
 int pidFilehandle = 0;
@@ -883,6 +885,21 @@ int main(int argc, char**argv)
 	if (cmdLine.HasSwitch("-nocache"))
 	{
 		g_bDontCacheWWW = true;
+	}
+	if (cmdLine.HasSwitch("-wwwcompress"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwcompress") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a compress mode");
+			return 1;
+		}
+		std::string szmode = cmdLine.GetSafeArgument("-wwwcompress", 0, "on");
+		if (szmode == "off")
+			g_wwwCompressMode = 0xFF;
+		else if (szmode == "static")
+			g_wwwCompressMode = 0x0;
+		// should I verify possible invalid input? doesn't seem to be done with other parameters
+
 	}
 	std::string dbasefile = szUserDataFolder + "domoticz.db";
 #ifdef WIN32

@@ -29,6 +29,7 @@
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
 int m_failcounter=0;
+extern signed char g_wwwCompressMode;
 
 namespace http {
 	namespace server {
@@ -1380,6 +1381,9 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 {
+	if (g_wwwCompressMode <= 0)
+		return false;
+
 	std::string request_path;
 	if (!url_decode(req.uri, request_path))
 		return false;
