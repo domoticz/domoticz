@@ -582,6 +582,27 @@ else(USE_BUILTIN_ZLIB)
 endif(USE_BUILTIN_ZLIB)
 
 #
+# MINIZIP
+#
+option(USE_BUILTIN_MINIZIP "Use builtin minizip library" YES)
+if(USE_BUILTIN_MINIZIP)
+  add_subdirectory(zip)
+  get_directory_property(MINIZIP_LIBRARIES DIRECTORY zip DEFINITION MINIZIP_LIBRARIES)
+  get_directory_property(MINIZIP_INCLUDE_DIRS DIRECTORY zip DEFINITION MINIZIP_INCLUDE_DIRS)
+  include_directories(${MINIZIP_INCLUDE_DIRS})
+else(USE_BUILTIN_MINIZIP)
+  find_package(PkgConfig)
+  pkg_check_modules(MINIZIP minizip)
+  if(MINIZIP_FOUND)
+    MESSAGE(STATUS "MINIZIP libraries found at: ${MINIZIP_LIBRARIES}")
+    MESSAGE(STATUS "MINIZIP includes found at: ${MINIZIP_INCLUDE_DIRS}")
+    include_directories(${MINIZIP_INCLUDE_DIRS})
+  else()
+    MESSAGE(FATAL_ERROR "MINIZIP not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libminizip-dev')")
+  endif(MINIZIP_FOUND)
+endif(USE_BUILTIN_MINIZIP)
+
+#
 # CURL
 #
 FIND_PACKAGE(CURL)
@@ -703,11 +724,11 @@ else()
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
