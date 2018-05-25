@@ -299,6 +299,25 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		closedir(d);
 	}
 
+        //also scan in /dev/serial/by-id
+        d=opendir("/dev/serial/by-id");
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while ((de = readdir(d)))
+		{
+			std::string fname = de->d_name;
+			if (fname.find("usb")!=std::string::npos)
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/serial/by-id/" + fname);
+			}
+		}
+		closedir(d);
+	}
+
+
 #endif
 	return ret;
 }
