@@ -64,7 +64,7 @@ define(['app'], function (app) {
 			if (item.SubType == "Evohome")
 				return EvoDisplayTextMode(item.Status);
 			else if (item.SwitchType === "Selector")
-				return atob(item.LevelNames).split('|')[(item.LevelInt / 10)];
+				return b64DecodeUnicode(item.LevelNames).split('|')[(item.LevelInt / 10)];
 			else
 				return item.Status;//Don't convert for non Evohome switches just in case those status above get used anywhere
 		}
@@ -478,7 +478,7 @@ define(['app'], function (app) {
 											if (typeof selector$ !== 'undefined') {
 												if (item.SelectorStyle === 0) {
 													var xhtm = '';
-													var levelNames = atob(item.LevelNames).split('|');
+													var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 													$.each(levelNames, function (index, levelName) {
 														if ((index === 0) && (item.LevelOffHidden)) {
 															return;
@@ -909,7 +909,7 @@ define(['app'], function (app) {
 											if (typeof selector$ !== 'undefined') {
 												if (item.SelectorStyle === 0) {
 													var xhtm = '';
-													var levelNames = atob(item.LevelNames).split('|');
+													var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 													$.each(levelNames, function (index, levelName) {
 														if ((index === 0) && (item.LevelOffHidden)) {
 															return;
@@ -2295,7 +2295,7 @@ define(['app'], function (app) {
 										if (item.SelectorStyle === 0) {
 											xhtm += '<div style="margin: -30px -4px -5px 24px; text-align: right;">';
 											xhtm += '<div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
-											var levelNames = atob(item.LevelNames).split('|');
+											var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
@@ -2314,7 +2314,7 @@ define(['app'], function (app) {
 										} else if (item.SelectorStyle === 1) {
 											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: right;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
-											var levelNames = atob(item.LevelNames).split('|');
+											var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
@@ -2682,7 +2682,7 @@ define(['app'], function (app) {
 										if (item.SelectorStyle === 0) {
 											xhtm += '<td class="input">';
 											xhtm += '<div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
-											var levelNames = atob(item.LevelNames).split('|');
+											var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
@@ -2701,7 +2701,7 @@ define(['app'], function (app) {
 										} else if (item.SelectorStyle === 1) {
 											xhtm += '<td class="input"><div style="margin-top:0.2em;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
-											var levelNames = atob(item.LevelNames).split('|');
+											var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;

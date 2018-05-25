@@ -17,7 +17,6 @@ void stdreplace(
 	const std::string& replaceWithWhat);
 void stdupper(std::string &inoutstring);
 void stdlower(std::string &inoutstring);
-std::string isostring_to_utf8(const std::string &input);
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
 double CalculateAltitudeFromPressure(double pressure);

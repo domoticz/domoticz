@@ -492,11 +492,11 @@ define(['app'], function (app) {
 
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.device = device;
-                vm.device.StrParam1 = atob(vm.device.StrParam1);
-                vm.device.StrParam2 = atob(vm.device.StrParam2);
+                vm.device.StrParam1 = b64DecodeUnicode(vm.device.StrParam1);
+                vm.device.StrParam2 = b64DecodeUnicode(vm.device.StrParam2);
 
-                var levelNames = device.LevelNames ? atob(device.LevelNames).split('|') : ['Off', 'Level1', 'Level2', 'Level3'];
-                var levelActions = device.LevelActions ? atob(device.LevelActions).split('|') : [];
+                var levelNames = device.LevelNames ? b64DecodeUnicode(device.LevelNames).split('|') : ['Off', 'Level1', 'Level2', 'Level3'];
+                var levelActions = device.LevelActions ? b64DecodeUnicode(device.LevelActions).split('|') : [];
 
                 vm.levels = levelNames.map(function (level, index) {
                     return {
@@ -531,15 +531,14 @@ define(['app'], function (app) {
                 options.push('SelectorStyle:' + vm.device.SelectorStyle);
                 options.push('LevelOffHidden:' + vm.device.LevelOffHidden);
             }
-
             var params = {
                 type: 'setused',
                 name: vm.device.Name,
                 description: vm.device.Description,
-                strparam1: btoa(vm.device.StrParam1),
-                strparam2: btoa(vm.device.StrParam2),
+                strparam1: b64EncodeUnicode(vm.device.StrParam1),
+                strparam2: b64EncodeUnicode(vm.device.StrParam2),
                 protected: vm.device.Protected,
-                options: btoa(options.join(';')),
+                options: b64EncodeUnicode(options.join(';')),
                 addjvalue: vm.device.AddjValue,
                 addjvalue2: vm.device.AddjValue2,
                 customimage: vm.device.CustomImage,

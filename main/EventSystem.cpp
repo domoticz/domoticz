@@ -3976,7 +3976,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		GetSelectorSwitchStatuses(options, statuses);
 		std::stringstream sslevel;
 		sslevel << llevel;
-		lstatus = isostring_to_utf8(statuses[sslevel.str()]);
+		lstatus = statuses[sslevel.str()];
 	}
 	else if ((switchtype == STYPE_Contact) || (switchtype == STYPE_DoorContact))
 	{

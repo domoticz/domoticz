@@ -13089,7 +13089,7 @@ namespace http {
 						}
 						if (!selectorStatuses.empty()) {
 
-							std::string sLevel = isostring_to_utf8(selectorStatuses[sValue]);
+							std::string sLevel = selectorStatuses[sValue];
 							ldata = sLevel;
 							lstatus = "Set Level: " + sLevel;
 							llevel = atoi(sValue.c_str());

@@ -90,25 +90,6 @@ void stdlower(std::string &inoutstring)
 	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::tolower);
 }
 
-std::string isostring_to_utf8(const std::string &input)
-{
-	std::string output;
-	for (size_t ii = 0; ii < input.size(); ii++)
-	{
-		uint8_t ch = input[ii]; /* assume that code points above 0xff are impossible since latin-1 is 8-bit */
-
-		if (ch < 0x80) {
-			output += ch;
-		}
-		else {
-			output += (0xc0 | (ch & 0xc0) >> 6); /* first byte, simplified since our range is only 8-bits */
-			output += (0x80 | (ch & 0x3f));
-		}
-	}
-	return output;
-}
-
-
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
 	bUseDirectPath=false;
