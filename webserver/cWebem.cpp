@@ -28,6 +28,8 @@
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
+#define HTTP_DATE_RFC_1123 "%a, %d %b %Y %H:%M:%S %Z" // Sun, 06 Nov 1994 08:49:37 GMT
+
 int m_failcounter=0;
 
 namespace http {
@@ -2073,7 +2075,11 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
 				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
+
+				if (!mInfo.mtime_support)
+				{
+					reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
+				}
 
 				//check gzip support if yes, send it back in gzip format
 				CompressWebOutput(req, rep);
@@ -2093,8 +2099,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		else if (content_type.find("image/") != std::string::npos)
 		{
 			//Cache images
-			reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
-			reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+			reply::add_header(&rep, "Expires", strftime_t(HTTP_DATE_RFC_1123, mytime(NULL) + 3600*24*365)); // one year (+TZ offset)
 		}
 		else
 		{
