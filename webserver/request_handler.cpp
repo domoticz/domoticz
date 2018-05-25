@@ -339,9 +339,16 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			return;
 		}
 
-		if (not_modified(full_path, req, rep, mInfo))
+		if (request_path.find("styles/") != std::string::npos) 
 		{
-			return;
+			mInfo.mtime_support = false; // ignore caching on theme files
+		}
+		else
+		{
+			if (not_modified(full_path, req, rep, mInfo))
+			{
+				return;
+			}
 		}
 
 		// fill out the reply to be sent to the client.
