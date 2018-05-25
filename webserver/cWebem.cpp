@@ -28,7 +28,10 @@
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
+#define HTTP_DATE_RFC_1123 "%a, %d %b %Y %H:%M:%S %Z" // Sun, 06 Nov 1994 08:49:37 GMT
+
 int m_failcounter=0;
+extern signed char g_wwwCompressMode;
 
 namespace http {
 	namespace server {
@@ -1380,6 +1383,9 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 {
+	if (g_wwwCompressMode <= 0)
+		return false;
+
 	std::string request_path;
 	if (!url_decode(req.uri, request_path))
 		return false;
@@ -1893,6 +1899,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.forcelogin = false;
 	session.rememberme = false;
 
+	rep.status = reply::ok;
 	rep.bIsGZIP = false;
 
 	bool isPage = myWebem->IsPageOverride(req, rep);
@@ -1901,7 +1908,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Respond to CORS Preflight request (for JSON API)
 	if (req.method == "OPTIONS")
 	{
-		rep.status = reply::ok;
 		reply::add_header(&rep, "Content-Length", "0");
 		reply::add_header(&rep, "Content-Type", "text/plain");
 		reply::add_header(&rep, "Access-Control-Max-Age", "3600");
@@ -1991,13 +1997,31 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 
 	modify_info mInfo;
-	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
+	if (myWebem->CheckForPageOverride(session, requestCopy, rep))
+	{
+		if (session.reply_status != reply::ok) // forbidden
+		{
+			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+			return;
+		}
+
+		if (!rep.bIsGZIP) // this is probably always true?
+		{
+			CompressWebOutput(req, rep);
+		}
+	}
+	else
 	{
 		if (session.reply_status != reply::ok)
 		{
 			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
 			return;
 		}
+		if (rep.status != reply::ok) // bad request
+		{
+			return;
+		}
+
 		// do normal handling
 		try
 		{
@@ -2034,7 +2058,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			|| content_type == "application/javascript"
 			)
 		{
-				// check if content is not gzipped, include won´t work with non-text content
+			// check if content is not gzipped, include won't work with non-text content
 			if (!rep.bIsGZIP)
 			{
 				// Find and include any special cWebem strings
@@ -2055,7 +2079,11 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
 				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
+
+				if (!mInfo.mtime_support)
+				{
+					reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
+				}
 
 				//check gzip support if yes, send it back in gzip format
 				CompressWebOutput(req, rep);
@@ -2064,69 +2092,25 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			// tell browser that we are using UTF-8 encoding
 			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
-			else if (content_type.find("image/") != std::string::npos)
-			{
-				if (mInfo.mtime_support && !mInfo.is_modified)
-				{
-					rep = reply::stock_reply(reply::not_modified);
-					//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
-					return;
-				}
-				//Cache images
-				reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
-				reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
-			}
-			else
-			{
-				if (mInfo.mtime_support && !mInfo.is_modified)
-				{
-					rep = reply::stock_reply(reply::not_modified);
-					//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
-					return;
-				}
-			// tell browser that we are using UTF-8 encoding
-			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
-		}
-		if (content_type.find("image/")!=std::string::npos)
+		else if (mInfo.mtime_support && !mInfo.is_modified)
 		{
-			if (mInfo.mtime_support && !mInfo.is_modified)
-			{
-				rep = reply::stock_reply(reply::not_modified);
+			rep = reply::stock_reply(reply::not_modified);
 #ifdef DEBUG_WWW
-				_log.Log(LOG_STATUS, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
+			_log.Log(LOG_STATUS, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
 #endif
-				return;
-			}
+			return;
+		}
+		else if (content_type.find("image/") != std::string::npos)
+		{
 			//Cache images
-			reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
-			reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+			reply::add_header(&rep, "Expires", strftime_t(HTTP_DATE_RFC_1123, mytime(NULL) + 3600*24*365)); // one year (+TZ offset)
 		}
 		else
 		{
-			if (mInfo.mtime_support && !mInfo.is_modified)
-			{
-				rep = reply::stock_reply(reply::not_modified);
-#ifdef DEBUG_WWW
-				_log.Log(LOG_STATUS, "[web:%s] %s not modified (3).", myWebem->GetPort().c_str(), req.uri.c_str());
-#endif
-				return;
-			}
+			// tell browser that we are using UTF-8 encoding
+			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
 	}
-	else
-	{
-		// RK todo: check this well, this else doesn't belong to is_upgrade_request()
-		if (session.reply_status != reply::ok)
-		{
-			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
-			return;
-		}
-
-		if (!rep.bIsGZIP)
-		{
-			CompressWebOutput(req, rep);
-		}
-	} // if (is_upgrade_request())
 
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
