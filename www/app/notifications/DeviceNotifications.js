@@ -298,8 +298,6 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
         }
 
         function selectNotification(value) {
-            console.log(value);
-
             if (value) {
                 vm.notification = Object.assign({}, value);
             } else {
