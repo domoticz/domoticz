@@ -16,7 +16,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
-#include "unzip.h"
+#include "clx_unzip.h"
 #include <boost/lexical_cast.hpp>
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
