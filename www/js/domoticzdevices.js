@@ -1165,7 +1165,8 @@ function Sensor(item) {
         }
 
         this.imagetext = "Show graph";
-        this.NotifyLink = 'ShowNotifications(' + this.index + ",'" + this.name + "','#" + Device.contentTag + "','" + Device.backFunction + "');";
+        this.NotifyLink = "window.location.href = '#/Devices/" + this.index + "/Notifications'";
+
         if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "','" + this.cameraIdx + "')";
         this.showStatus = (Device.showSensorValues == true);
     }
