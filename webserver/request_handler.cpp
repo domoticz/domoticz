@@ -326,6 +326,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			if (is.is_open())
 			{
 				bHaveLoadedgzip = true;
+				mInfo.delay_status = false;
 			}
 		}
 
