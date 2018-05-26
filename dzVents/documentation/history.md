@@ -1,4 +1,6 @@
 [2.4.6]
+- Added Youless device
+- Added more to the documentation section for http requests
 
 [2.4.5]
 - Fixed a bug in date ranges for timer triggers (http://domoticz.com/forum/viewtopic.php?f=59&t=23109).
