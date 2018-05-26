@@ -626,6 +626,8 @@ local testSelectorSwitch = function(name)
 		["timedOut"] = false;
 	})
 
+	dz.logDevice(dev)
+
 	res = res and expectEql('Off',  dev.levelNames[1])
 	res = res and expectEql('Level1', dev.levelNames[2])
 	res = res and expectEql('Level2', dev.levelNames[3])

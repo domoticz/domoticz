@@ -1,3 +1,8 @@
+[2.4.6]
+- Added Youless device
+- Added more to the documentation section for http requests
+- Made sure global_data is the first module to process. This fixes some unexpected issues if you need some globals initialized before the other scripts are loaded.
+
 [2.4.5]
 - Fixed a bug in date ranges for timer triggers (http://domoticz.com/forum/viewtopic.php?f=59&t=23109).
 
@@ -5,7 +10,6 @@
 - Fixed rawTime and rawData so it shows leading zeros when values are below 10.
 - Fixed one wildcard issue. Should now work as expected.
 - Fixed a problem in Domoticz where you couldn't change the state of some door contact-like switches using the API or dzVents. That seems to work now.
-
 
 [2.4.3]
 - Fixed trigger wildcards. Now you can do `*aa*bb*cc` or `a*` which will require the target to start with an `a`
@@ -15,7 +19,6 @@
 - Fixed RGBW device adapter
 - Fixed EvoHome device adapter
 - Changed param ordering opentherm gateway command (https://www.domoticz.com/forum/viewtopic.php?f=59&t=21620&p=170469#p170469)
-
 
 [2.4.1]
 - Fixed week number problems on Windows

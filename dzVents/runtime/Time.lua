@@ -494,7 +494,7 @@ local function Time(sDate, isUTC, _testMS)
 		--now get the ranges
 		for fromSet, toSet in string.gmatch(dates, '([0-9%/]*)-([0-9%/]*)') do
 			local fromDay, toDay, fromMonth, toMonth
-			
+
 			if (isEmpty(fromSet) and not isEmpty(toSet)) then
 				toDay, toMonth = getParts(toSet)
 				if ((self.month < toMonth) or (self.month == toMonth and self.day <= toDay)) then
@@ -813,7 +813,6 @@ local function Time(sDate, isUTC, _testMS)
 		if (string.len(rule == nil and "" or rule) == 0) then
 			return false
 		end
-
 		local res
 		local total = false
 
@@ -849,9 +848,12 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		updateTotal(res)
 
+
 		local _between = self.ruleMatchesBetweenRange(rule) -- range
+
 		if (_between == false) then
 			-- rule had between xxx and yyy is not in that range now
+
 			return false
 		end
 		res = _between
