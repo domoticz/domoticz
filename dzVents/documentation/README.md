@@ -916,7 +916,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **speed**: *Number*.
  - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
-#### Youless meter
+#### Youless meter <sup>2.4.6</sup>
  - **counterDeliveredToday**: *Number*.
  - **counterDeliveredTotal**: *Number*.
  - **powerYield**: *String*.
