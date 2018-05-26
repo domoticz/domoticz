@@ -3584,10 +3584,10 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
 		}
 		break;
-		case sTypeCounterIncremental:		//Counter Incremental
+		case sTypeCounterIncremental:
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
 			break;
-		case sTypeManagedCounter:		//Counter Incremental
+		case sTypeManagedCounter:
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "-1.0;0.0", devname);
 			break;
 		case sTypeVoltage:		//Voltage
@@ -4154,11 +4154,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				if (parts.size()>2) {
 					StringSplit(parts[2].c_str(), " ", parts2);
 					// second part is date only, or date with hour with space
-					bool day = false;
+					bool shortLog = false;
 					if (parts2.size()>1) {
-						day = true;
+						shortLog = true;
 					}
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, day, static_cast<float>(atof(parts[0].c_str())), static_cast<float>(atof(parts[1].c_str())), parts[2].c_str());
+					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, static_cast<float>(atof(parts[0].c_str())), static_cast<float>(atof(parts[1].c_str())), parts[2].c_str());
 					return ulID;
 				}
 			}
@@ -5194,7 +5194,7 @@ void CSQLHelper::UpdateUVLog()
 	}
 }
 
-bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool dayCalendar, float counter, float usage, const char* date)
+bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool shortLog, float counter, float usage, const char* date)
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[200];
@@ -5221,8 +5221,12 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 	std::string devname = sd[1];
 	_eSwitchType switchtype=(_eSwitchType) atoi(sd[2].c_str());
 
-	if (dayCalendar)
+	if (shortLog)
 	{
+		if (!CheckDateTimeSQL(date)) {
+			_log.Log(LOG_ERROR, "UpdateCalendarMeter(): incorrect date time format received, YYYY-MM-DD HH:mm:ss expected!");
+			return false;
+		}
 		sprintf(szTmp, "%.0f", counter);
 		long long MeterValue;
 		std::stringstream s_str2;
@@ -5261,6 +5265,10 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 	}
 	else
 	{
+		if (!CheckDateSQL(date)) {
+			_log.Log(LOG_ERROR, "UpdateCalendarMeter(): incorrect date format received, YYYY-MM-DD expected!");
+			return false;
+		}
 		//insert into calendar table
 		result = safe_query(
 			"SELECT DeviceRowID FROM Meter_Calendar "
@@ -8069,6 +8077,67 @@ bool CSQLHelper::CheckDate(const std::string &sDate, int& d, int& m, int& y)
 		return (norm.tm_mday == d    &&
 			norm.tm_mon == m - 1 &&
 			norm.tm_year == y - 1900);
+	}
+	return false;
+}
+
+bool CSQLHelper::CheckDateSQL(const std::string &sDate)
+{
+	if (sDate.size() != 10) {
+		return false;
+	}
+	
+	std::istringstream is(sDate);
+	int d, m, y;
+	char delimiter1, delimiter2;
+	
+	if (is >> y >> delimiter1 >> m >> delimiter2 >> d) {
+		if (
+			(delimiter1 != '-')
+			|| (delimiter2 != '-')
+		) {
+			return false;
+		}
+		struct tm t = { 0 };
+		t.tm_mday = d;
+		t.tm_mon = m - 1;
+		t.tm_year = y - 1900;
+		t.tm_isdst = -1;
+
+		time_t when = mktime(&t);
+		struct tm norm;
+		localtime_r(&when, &norm);
+
+		return (norm.tm_mday == d    &&
+			norm.tm_mon == m - 1 &&
+			norm.tm_year == y - 1900);
+	}
+	return false;
+}
+
+bool CSQLHelper::CheckDateTimeSQL(const std::string &sDateTime)
+{
+	if (sDateTime.size() != 19) {
+		return false;
+	}
+	
+	struct tm t;
+	time_t when;
+	bool result = ParseSQLdatetime(when, t, sDateTime);
+	
+	if (result) {
+		struct tm norm;
+		localtime_r(&when, &norm);
+		
+		return (
+			norm.tm_mday == t.tm_mday
+			&& norm.tm_mon == t.tm_mon
+			&& norm.tm_year == t.tm_year
+			&& norm.tm_hour == t.tm_hour
+			&& norm.tm_min == t.tm_min
+			&& norm.tm_mday == t.tm_mday
+			&& norm.tm_sec == t.tm_sec
+		);
 	}
 	return false;
 }
