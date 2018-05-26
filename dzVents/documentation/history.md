@@ -1,6 +1,7 @@
 [2.4.6]
 - Added Youless device
 - Added more to the documentation section for http requests
+- Made sure global_data is the first module to process. This fixes some unexpected issues if you need some globals initialized before the other scripts are loaded.
 
 [2.4.5]
 - Fixed a bug in date ranges for timer triggers (http://domoticz.com/forum/viewtopic.php?f=59&t=23109).
