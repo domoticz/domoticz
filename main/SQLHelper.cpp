@@ -4282,7 +4282,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					if (parts2.size()>1) {
 						shortLog = true;
 					}
-					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, static_cast<float>(atof(parts[0].c_str())), static_cast<float>(atof(parts[1].c_str())), parts[2].c_str());
+					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, atoll(parts[0].c_str()), atoll(parts[1].c_str()), parts[2].c_str());
 					return ulID;
 				}
 			}
@@ -5320,26 +5320,25 @@ void CSQLHelper::UpdateUVLog()
 	}
 }
 
-bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool shortLog, float counter, float usage, const char* date)
+bool CSQLHelper::UpdateCalendarMeter(
+	const int HardwareID, 
+	const char* DeviceID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const bool shortLog, 
+	const long long MeterValue,
+	const long long MeterUsage,
+	const char* date)
 {
 	std::vector<std::vector<std::string> > result;
-	char szTmp[200];
-
 	result = safe_query("SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, DeviceID, unit, devType, subType);
-
 	if (result.empty()) {
 		return false;
 	}
 
 	uint64_t DeviceRowID;
 	
-	if (counter < 0.0) {
-		counter = 0.0;
-	}
-	if (usage < 0.0) {
-		usage = 0.0;
-	}
-
 	std::vector<std::string> sd = result[0];
 	std::stringstream s_strid;
 	s_strid << sd[0];
@@ -5353,17 +5352,6 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 			_log.Log(LOG_ERROR, "UpdateCalendarMeter(): incorrect date time format received, YYYY-MM-DD HH:mm:ss expected!");
 			return false;
 		}
-		sprintf(szTmp, "%.0f", counter);
-		long long MeterValue;
-		std::stringstream s_str2;
-		s_str2 << boost::to_string(counter);
-		s_str2 >> MeterValue;
-
-		sprintf(szTmp, "%.0f", usage);
-		long long MeterUsage;
-		std::stringstream s_str3;
-		s_str3 << boost::to_string(szTmp);
-		s_str3 >> MeterUsage;
 
 		//insert or replace record
 		result = safe_query(
@@ -5384,7 +5372,7 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 			safe_query(
 				"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%lld', Usage='%lld', Date='%q' "
 				"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
-				DeviceRowID, MeterValue, MeterUsage, date,
+				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date,
 				DeviceRowID, date
 			);
 		}
@@ -5404,17 +5392,17 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 		if (result.empty())
 		{
 			safe_query(
-				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
-				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
-				DeviceRowID, usage, counter, date
+				"INSERT INTO Meter_Calendar (DeviceRowID, Counter, Value, Date) "
+				"VALUES ('%" PRIu64 "', '%lld', '%lld', '%q')",
+				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date
 			);
 		}
 		else
 		{
 			safe_query(
-				"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Value='%.2f', Counter='%.2f', Date='%q' "
+				"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Counter='%lld', Value='%lld', Date='%q' "
 				"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
-				DeviceRowID, usage, counter, date,
+				DeviceRowID, (MeterValue < 0) ? 0 : MeterValue, (MeterUsage < 0) ? 0 : MeterUsage, date,
 				DeviceRowID, date
 			);
 		}
