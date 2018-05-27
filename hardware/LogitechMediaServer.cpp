@@ -556,7 +556,7 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 			case gswitch_sPause:
 				return SendCommand(itt->ID, "Pause");
 			case gswitch_sSetVolume:
-				sParam = boost::lexical_cast<std::string>(iParam);
+				sParam = std::to_string(iParam);
 				return SendCommand(itt->ID, "SetVolume", sParam);
 			default:
 				return true;
@@ -789,7 +789,7 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 		std::string sLine2 = text;
 		std::string sFont = ""; //"huge";
 		std::string sBrightness = "4";
-		std::string sDuration = boost::lexical_cast<std::string>(duration);
+		std::string sDuration = std::to_string(duration);
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 	}

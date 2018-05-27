@@ -424,7 +424,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   }
 #endif
 
-  reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+  reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
   reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
   reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
   //browser support to prevent XSS

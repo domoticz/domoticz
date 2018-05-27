@@ -1126,7 +1126,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					if (llevel == iLevel)
 					{
 						bSendNotification = true;
-						std::string sLevel = boost::lexical_cast<std::string>(llevel);
+						std::string sLevel = std::to_string(llevel);
 						szExtraData += "Status=Level " + sLevel + "|";
 
 						if (switchtype == STYPE_Selector)

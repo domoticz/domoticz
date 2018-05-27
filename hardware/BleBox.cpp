@@ -321,7 +321,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					}
 
 
-					Json::Value root = SendCommand(IPAddress, "/s/p/" + boost::to_string(percentage));
+					Json::Value root = SendCommand(IPAddress, "/s/p/" + std::to_string(percentage));
 
  					if (root.empty())
   						return false;

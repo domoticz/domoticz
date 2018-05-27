@@ -4383,7 +4383,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					llevel,
 					ulID);
 				if (bUseOnOffAction)
-					slevel = boost::lexical_cast<std::string>(llevel);
+					slevel = std::to_string(llevel);
 			}
 
 			if (bUseOnOffAction)
