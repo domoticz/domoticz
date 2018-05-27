@@ -15151,7 +15151,7 @@ namespace http {
 								ii++;
 							}
 						}
-						if (!(dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)) {
+						if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) {
 							//add today (have to calculate it)
 							result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 								idx, szDateEnd);
@@ -16348,7 +16348,7 @@ namespace http {
 								root["counter"] = szTmp;
 							}
 						}
-						else
+						else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
 						{
 							//Add last counter value
 							if (sValue.find('.') != std::string::npos)
@@ -16680,7 +16680,7 @@ namespace http {
 							ii++;
 						}
 					}
-					else
+					else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
@@ -17412,7 +17412,7 @@ namespace http {
 							}
 						}
 					}
-					else
+					else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
