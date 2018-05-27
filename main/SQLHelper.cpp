@@ -2541,7 +2541,7 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE Floorplans ADD COLUMN [Image] BLOB");
 			}
-			
+
 			//Move image files into database
 			//Get Dynamic Theme Files
 			std::map<std::string, int> _FloorplanFiles;
@@ -2554,19 +2554,19 @@ bool CSQLHelper::OpenDatabase()
 				stdlower(tname);
 
 				if (
-					(tname.find(".jpg")==std::string::npos)
-					&&(tname.find(".jpeg") == std::string::npos)
-					&&(tname.find(".png") == std::string::npos)
-					&&(tname.find(".bmp") == std::string::npos)
-					&&(tname.find(".gif") == std::string::npos)
+					(tname.find(".jpg") == std::string::npos)
+					&& (tname.find(".jpeg") == std::string::npos)
+					&& (tname.find(".png") == std::string::npos)
+					&& (tname.find(".bmp") == std::string::npos)
+					&& (tname.find(".gif") == std::string::npos)
 					)
 					continue; //not an image file
 
-				std::string sname = itt->first.substr(szWWWFolder.size()+1);
+				std::string sname = itt->first.substr(szWWWFolder.size() + 1);
 				//Find the image file in our database
 				std::stringstream szQuery2;
 				std::vector<std::vector<std::string> > result;
-				result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s') COLLATE NOCASE",sname.c_str());
+				result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s') COLLATE NOCASE", sname.c_str());
 				if (result.empty())
 				{
 					//could be our example sketch, or left over images, add it to the database
@@ -2587,7 +2587,7 @@ bool CSQLHelper::OpenDatabase()
 					{
 						std::string cfile;
 						cfile.append((std::istreambuf_iterator<char>(is)),
-						(std::istreambuf_iterator<char>()));
+							(std::istreambuf_iterator<char>()));
 						is.close();
 
 						if (safe_UpdateBlobInTableWithID("Floorplans", "Image", sID, cfile))
@@ -3234,7 +3234,7 @@ void CSQLHelper::Do_Work()
 					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", itt->_ID.c_str(), ret);
 				}
 #endif
-		}
+			}
 			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 			{
 				m_mainworker.m_cameras.EmailCameraSnapshot(itt->_ID, itt->_sValue);
@@ -3403,9 +3403,9 @@ void CSQLHelper::Do_Work()
 			}
 
 			++itt;
-	}
+		}
 		_items2do.clear();
-}
+	}
 }
 
 void CSQLHelper::SetDatabaseName(const std::string &DBName)
@@ -4275,11 +4275,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			if ((devType == pTypeGeneral) && (subType == sTypeManagedCounter)) {
 				std::vector<std::string> parts, parts2;
 				StringSplit(sValue, ";", parts);
-				if (parts.size()>2) {
+				if (parts.size() > 2) {
 					StringSplit(parts[2].c_str(), " ", parts2);
 					// second part is date only, or date with hour with space
 					bool shortLog = false;
-					if (parts2.size()>1) {
+					if (parts2.size() > 1) {
 						shortLog = true;
 					}
 					UpdateCalendarMeter(HardwareID, ID, unit, devType, subType, shortLog, atoll(parts[0].c_str()), atoll(parts[1].c_str()), parts[2].c_str());
@@ -4464,7 +4464,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 					m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1, scriptname, s_scriptparams.str()));
 				}
-		}
+			}
 
 			_eHardwareTypes HWtype = HTYPE_Domoticz; //just a value
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
@@ -4583,12 +4583,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					}
 				}
 			}
-	}//end of check for notifications
+		}//end of check for notifications
 
-	//Check Scene Status
+		//Check Scene Status
 		CheckSceneStatusWithDevice(ulID);
 		break;
-}
+	}
 
 	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue);
 
@@ -4912,7 +4912,7 @@ void CSQLHelper::ScheduleShortlog()
 #endif
 		return;
 	}
-	}
+}
 
 void CSQLHelper::ScheduleDay()
 {
@@ -4944,7 +4944,7 @@ void CSQLHelper::ScheduleDay()
 #endif
 		return;
 	}
-	}
+}
 
 void CSQLHelper::UpdateTemperatureLog()
 {
@@ -5321,12 +5321,12 @@ void CSQLHelper::UpdateUVLog()
 }
 
 bool CSQLHelper::UpdateCalendarMeter(
-	const int HardwareID, 
-	const char* DeviceID, 
-	const unsigned char unit, 
-	const unsigned char devType, 
-	const unsigned char subType, 
-	const bool shortLog, 
+	const int HardwareID,
+	const char* DeviceID,
+	const unsigned char unit,
+	const unsigned char devType,
+	const unsigned char subType,
+	const bool shortLog,
 	const long long MeterValue,
 	const long long MeterUsage,
 	const char* date)
@@ -5338,13 +5338,13 @@ bool CSQLHelper::UpdateCalendarMeter(
 	}
 
 	uint64_t DeviceRowID;
-	
+
 	std::vector<std::string> sd = result[0];
 	std::stringstream s_strid;
 	s_strid << sd[0];
 	s_strid >> DeviceRowID;
 	std::string devname = sd[1];
-	_eSwitchType switchtype=(_eSwitchType) atoi(sd[2].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
 
 	if (shortLog)
 	{
@@ -6159,9 +6159,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		{
 			std::vector<std::string> sd = result[0];
 
-			double total_min = (double)atof(sd[0].c_str());
-			double total_max = (double)atof(sd[1].c_str());
-			double avg_value = (double)atof(sd[2].c_str());
+			long long total_min = atoll(sd[0].c_str());
+			long long total_max = atoll(sd[1].c_str());
+			long long avg_value = atoll(sd[2].c_str());
 
 			if (
 				(devType != pTypeAirQuality) &&
@@ -6180,13 +6180,13 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType != pTypeUsage)
 				)
 			{
-				double total_real = total_max - total_min;
-				double counter = total_max;
+				long long total_real = total_max - total_min;
+				long long counter = total_max;
 
 				//insert into calendar table
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
-					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
+					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%q')",
 					ID,
 					total_real,
 					counter,
@@ -6229,9 +6229,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage/Lux/SoundLevel insert into MultiMeter_Calendar table
 				result = safe_query(
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
-					"VALUES ('%" PRIu64 "', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
+					"VALUES ('%" PRIu64 "', '%lld','%lld','%lld','%lld','%lld','%lld', '%q')",
 					ID,
-					total_min, total_max, avg_value, 0.0f, 0.0f, 0.0f,
+					total_min, total_max, avg_value, 0, 0, 0,
 					szDateStart
 				);
 			}
@@ -6272,9 +6272,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-				"VALUES ('%" PRIu64 "', '%.2f', '%q')",
+				"VALUES ('%" PRIu64 "', '%lld', '%q')",
 				ID,
-				0.0f,
+				0,
 				szDateStart
 			);
 		}
@@ -6344,38 +6344,37 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		{
 			std::vector<std::string> sd = result[0];
 
-			float total_real[6];
-			float counter1 = 0;
-			float counter2 = 0;
-			float counter3 = 0;
-			float counter4 = 0;
+			long long total_real[6];
+			long long counter1 = 0;
+			long long counter2 = 0;
+			long long counter3 = 0;
+			long long counter4 = 0;
 
 			if (devType == pTypeP1Power)
 			{
 				for (int ii = 0; ii < 6; ii++)
 				{
-					float total_min = static_cast<float>(atof(sd[(ii * 2) + 0].c_str()));
-					float total_max = static_cast<float>(atof(sd[(ii * 2) + 1].c_str()));
+					long long total_min = atoll(sd[(ii * 2) + 0].c_str());
+					long long total_max = atoll(sd[(ii * 2) + 1].c_str());
 					total_real[ii] = total_max - total_min;
 				}
-				counter1 = static_cast<float>(atof(sd[1].c_str()));
-				counter2 = static_cast<float>(atof(sd[3].c_str()));
-				counter3 = static_cast<float>(atof(sd[9].c_str()));
-				counter4 = static_cast<float>(atof(sd[11].c_str()));
+				counter1 = atoll(sd[1].c_str());
+				counter2 = atoll(sd[3].c_str());
+				counter3 = atoll(sd[9].c_str());
+				counter4 = atoll(sd[11].c_str());
 			}
 			else
 			{
 				for (int ii = 0; ii < 6; ii++)
 				{
-					float fvalue = static_cast<float>(atof(sd[ii].c_str()));
-					total_real[ii] = fvalue;
+					total_real[ii] = atoll(sd[ii].c_str());
 				}
 			}
 
 			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
-				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
+				"VALUES ('%" PRIu64 "', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%q')",
 				ID,
 				total_real[0],
 				total_real[1],
@@ -6396,22 +6395,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				float musage = (total_real[0] + total_real[2]) / EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
-			/*
-						//Insert the last (max) counter values into the table to get the "today" value correct.
-						sprintf(szTmp,
-							"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
-							"VALUES (%" PRIu64 ", %s, %s, %s, %s, %s, %s, '%s')",
-							ID,
-							sd[0].c_str(),
-							sd[1].c_str(),
-							sd[2].c_str(),
-							sd[3].c_str(),
-							sd[4].c_str(),
-							sd[5].c_str(),
-							szDateEnd
-							);
-							result=query(szTmp);
-			*/
 		}
 	}
 }
@@ -7276,7 +7259,7 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 		_log.Log(LOG_ERROR, "Restore Database: Could not open SQLite3 database: %s", sqlite3_errmsg(dbase_restore));
 		sqlite3_close(dbase_restore);
 		return false;
-	}
+}
 	if (dbase_restore == NULL)
 		return false;
 	//could still be not valid
@@ -7544,7 +7527,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			{
 				_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OnAction.c_str());
 				return false;
-		}
+			}
 
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
@@ -7565,9 +7548,9 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			}
 			else
 				_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
-	}
+		}
 		return true;
-}
+		}
 
 	//Off action
 	if (OffAction.empty())
@@ -7584,7 +7567,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		{
 			_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OffAction.c_str());
 			return false;
-	}
+		}
 
 		std::string scriptname = OffAction.substr(9);
 #if !defined WIN32
@@ -7602,7 +7585,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		{
 			AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
 		}
-}
+	}
 	return true;
 }
 
@@ -8200,16 +8183,16 @@ bool CSQLHelper::CheckDateSQL(const std::string &sDate)
 	if (sDate.size() != 10) {
 		return false;
 	}
-	
+
 	std::istringstream is(sDate);
 	int d, m, y;
 	char delimiter1, delimiter2;
-	
+
 	if (is >> y >> delimiter1 >> m >> delimiter2 >> d) {
 		if (
 			(delimiter1 != '-')
 			|| (delimiter2 != '-')
-		) {
+			) {
 			return false;
 		}
 		struct tm t = { 0 };
@@ -8222,7 +8205,7 @@ bool CSQLHelper::CheckDateSQL(const std::string &sDate)
 		struct tm norm;
 		localtime_r(&when, &norm);
 
-		return (norm.tm_mday == d    &&
+		return (norm.tm_mday == d &&
 			norm.tm_mon == m - 1 &&
 			norm.tm_year == y - 1900);
 	}
@@ -8234,15 +8217,15 @@ bool CSQLHelper::CheckDateTimeSQL(const std::string &sDateTime)
 	if (sDateTime.size() != 19) {
 		return false;
 	}
-	
+
 	struct tm t;
 	time_t when;
 	bool result = ParseSQLdatetime(when, t, sDateTime);
-	
+
 	if (result) {
 		struct tm norm;
 		localtime_r(&when, &norm);
-		
+
 		return (
 			norm.tm_mday == t.tm_mday
 			&& norm.tm_mon == t.tm_mon
@@ -8251,7 +8234,7 @@ bool CSQLHelper::CheckDateTimeSQL(const std::string &sDateTime)
 			&& norm.tm_min == t.tm_min
 			&& norm.tm_mday == t.tm_mday
 			&& norm.tm_sec == t.tm_sec
-		);
+			);
 	}
 	return false;
 }
@@ -8550,7 +8533,7 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::
 
 	m_webservers.ReloadCustomSwitchIcons();
 	return true;
-}
+	}
 
 std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string & options, const bool decode) {
 	std::map<std::string, std::string> optionsMap;
