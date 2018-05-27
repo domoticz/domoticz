@@ -10149,6 +10149,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 
 	char szTmp[100];
 
+	WriteMessageStart();
 	switch (pResponse->FS20.subtype)
 	{
 	case sTypeFS20:
@@ -10393,6 +10394,9 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 
 	sprintf(szTmp, "Signal level  = %d", pResponse->FS20.rssi);
 	WriteMessage(szTmp);
+
+	WriteMessageEnd();
+
 	procResult.DeviceRowIdx = -1;
 }
 
