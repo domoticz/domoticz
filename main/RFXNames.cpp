@@ -756,6 +756,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
 		{ pTypeGeneral, sTypeCustom, "Custom Sensor" },
 		{ pTypeGeneral, sTypeZWaveAlarm, "Alarm" },
+		{ pTypeGeneral, sTypeManagedCounter, "Managed Counter" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

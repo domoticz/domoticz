@@ -943,6 +943,44 @@ void CEventSystem::GetCurrentMeasurementStates()
 						isUtility = true;
 					}
 				}
+				else if (sitem.subType == sTypeManagedCounter)
+				{
+					if (splitresults.size() > 1) {
+						float usage = static_cast<float>(atof(splitresults[1].c_str()));
+                                                
+						if (usage < 0.0) {
+							usage = 0.0;
+						}
+
+						char szTmp[100];
+						sprintf(szTmp, "%.02f", usage);
+
+						float musage = 0;
+						_eMeterType metertype = (_eMeterType)sitem.switchtype;
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							musage = usage / EnergyDivider;
+							sprintf(szTmp, "%.03f kWh", musage);
+							break;
+						case MTYPE_GAS:
+							musage = usage / GasDivider;
+							sprintf(szTmp, "%.02f m3", musage);
+							break;
+						case MTYPE_WATER:
+							musage = usage / WaterDivider;
+							sprintf(szTmp, "%.02f m3", musage);
+							break;
+						case MTYPE_COUNTER:
+							break;
+						default:
+							continue; //not handled
+						}
+						utilityval = static_cast<float>(atof(szTmp));
+						isUtility = true;
+					}
+				}
 			}
 		}
 		break;
