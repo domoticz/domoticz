@@ -2663,135 +2663,191 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 			sprintf(szTmp, "Hardware version  = %d.%d", pResponse->IRESPONSE.msg7, pResponse->IRESPONSE.msg8);
 			WriteMessage(szTmp);
 
-			if (pResponse->IRESPONSE.UNDECODEDenabled)
-				WriteMessage("Undec             on");
-			else
-				WriteMessage("Undec             off");
+			if (pResponse->IRESPONSE.msg1 != trxType868)
+			{
+				if (pResponse->IRESPONSE.UNDECODEDenabled)
+					WriteMessage("Undec             on");
+				else
+					WriteMessage("Undec             off");
 
-			if (pResponse->IRESPONSE.X10enabled)
-				WriteMessage("X10               enabled");
-			else
-				WriteMessage("X10               disabled");
+				if (pResponse->IRESPONSE.X10enabled)
+					WriteMessage("X10               enabled");
+				else
+					WriteMessage("X10               disabled");
 
-			if (pResponse->IRESPONSE.ARCenabled)
-				WriteMessage("ARC               enabled");
-			else
-				WriteMessage("ARC               disabled");
+				if (pResponse->IRESPONSE.ARCenabled)
+					WriteMessage("ARC               enabled");
+				else
+					WriteMessage("ARC               disabled");
 
-			if (pResponse->IRESPONSE.ACenabled)
-				WriteMessage("AC                enabled");
-			else
-				WriteMessage("AC                disabled");
+				if (pResponse->IRESPONSE.ACenabled)
+					WriteMessage("AC                enabled");
+				else
+					WriteMessage("AC                disabled");
 
-			if (pResponse->IRESPONSE.HEEUenabled)
-				WriteMessage("HomeEasy EU       enabled");
-			else
-				WriteMessage("HomeEasy EU       disabled");
+				if (pResponse->IRESPONSE.HEEUenabled)
+					WriteMessage("HomeEasy EU       enabled");
+				else
+					WriteMessage("HomeEasy EU       disabled");
 
-			if (pResponse->IRESPONSE.MEIANTECHenabled)
-				WriteMessage("Meiantech/Atlantic enabled");
-			else
-				WriteMessage("Meiantech/Atlantic disabled");
+				if (pResponse->IRESPONSE.MEIANTECHenabled)
+					WriteMessage("Meiantech/Atlantic enabled");
+				else
+					WriteMessage("Meiantech/Atlantic disabled");
 
-			if (pResponse->IRESPONSE.OREGONenabled)
-				WriteMessage("Oregon Scientific enabled");
-			else
-				WriteMessage("Oregon Scientific disabled");
+				if (pResponse->IRESPONSE.OREGONenabled)
+					WriteMessage("Oregon Scientific enabled");
+				else
+					WriteMessage("Oregon Scientific disabled");
 
-			if (pResponse->IRESPONSE.ATIenabled)
-				WriteMessage("ATI/Cartelectronic enabled");
-			else
-				WriteMessage("ATI/Cartelectronic disabled");
+				if (pResponse->IRESPONSE.ATIenabled)
+					WriteMessage("ATI/Cartelectronic enabled");
+				else
+					WriteMessage("ATI/Cartelectronic disabled");
 
-			if (pResponse->IRESPONSE.VISONICenabled)
-				WriteMessage("Visonic           enabled");
-			else
-				WriteMessage("Visonic           disabled");
+				if (pResponse->IRESPONSE.VISONICenabled)
+					WriteMessage("Visonic           enabled");
+				else
+					WriteMessage("Visonic           disabled");
 
-			if (pResponse->IRESPONSE.MERTIKenabled)
-				WriteMessage("Mertik            enabled");
-			else
-				WriteMessage("Mertik            disabled");
+				if (pResponse->IRESPONSE.MERTIKenabled)
+					WriteMessage("Mertik            enabled");
+				else
+					WriteMessage("Mertik            disabled");
 
-			if (pResponse->IRESPONSE.LWRFenabled)
-				WriteMessage("AD                enabled");
-			else
-				WriteMessage("AD                disabled");
+				if (pResponse->IRESPONSE.LWRFenabled)
+					WriteMessage("AD                enabled");
+				else
+					WriteMessage("AD                disabled");
 
-			if (pResponse->IRESPONSE.HIDEKIenabled)
-				WriteMessage("Hideki            enabled");
-			else
-				WriteMessage("Hideki            disabled");
+				if (pResponse->IRESPONSE.HIDEKIenabled)
+					WriteMessage("Hideki            enabled");
+				else
+					WriteMessage("Hideki            disabled");
 
-			if (pResponse->IRESPONSE.LACROSSEenabled)
-				WriteMessage("La Crosse         enabled");
-			else
-				WriteMessage("La Crosse         disabled");
+				if (pResponse->IRESPONSE.LACROSSEenabled)
+					WriteMessage("La Crosse         enabled");
+				else
+					WriteMessage("La Crosse         disabled");
 
-			if (pResponse->IRESPONSE.FS20enabled)
-				WriteMessage("FS20/Legrand      enabled");
-			else
-				WriteMessage("FS20/Legrand      disabled");
+				if (pResponse->IRESPONSE.LEGRANDenabled)
+					WriteMessage("Legrand           enabled");
+				else
+					WriteMessage("Legrand           disabled");
 
-			if (pResponse->IRESPONSE.PROGUARDenabled)
-				WriteMessage("ProGuard          enabled");
-			else
-				WriteMessage("ProGuard          disabled");
+				if (pResponse->IRESPONSE.PROGUARDenabled)
+					WriteMessage("ProGuard          enabled");
+				else
+					WriteMessage("ProGuard          disabled");
 
-			if (pResponse->IRESPONSE.BLINDST0enabled)
-				WriteMessage("BlindsT0          enabled");
-			else
-				WriteMessage("BlindsT0          disabled");
+				if (pResponse->IRESPONSE.BLINDST0enabled)
+					WriteMessage("BlindsT0          enabled");
+				else
+					WriteMessage("BlindsT0          disabled");
 
-			if (pResponse->IRESPONSE.BLINDST1enabled)
-				WriteMessage("BlindsT1          enabled");
-			else
-				WriteMessage("BlindsT1          disabled");
+				if (pResponse->IRESPONSE.BLINDST1enabled)
+					WriteMessage("BlindsT1          enabled");
+				else
+					WriteMessage("BlindsT1          disabled");
 
-			if (pResponse->IRESPONSE.AEenabled)
-				WriteMessage("AE                enabled");
-			else
-				WriteMessage("AE                disabled");
+				if (pResponse->IRESPONSE.AEenabled)
+					WriteMessage("AE                enabled");
+				else
+					WriteMessage("AE                disabled");
 
-			if (pResponse->IRESPONSE.RUBICSONenabled)
-				WriteMessage("RUBiCSON          enabled");
-			else
-				WriteMessage("RUBiCSON          disabled");
+				if (pResponse->IRESPONSE.RUBICSONenabled)
+					WriteMessage("RUBiCSON          enabled");
+				else
+					WriteMessage("RUBiCSON          disabled");
 
-			if (pResponse->IRESPONSE.FINEOFFSETenabled)
-				WriteMessage("FineOffset        enabled");
-			else
-				WriteMessage("FineOffset        disabled");
+				if (pResponse->IRESPONSE.FINEOFFSETenabled)
+					WriteMessage("FineOffset        enabled");
+				else
+					WriteMessage("FineOffset        disabled");
 
-			if (pResponse->IRESPONSE.LIGHTING4enabled)
-				WriteMessage("Lighting4         enabled");
-			else
-				WriteMessage("Lighting4         disabled");
+				if (pResponse->IRESPONSE.LIGHTING4enabled)
+					WriteMessage("Lighting4         enabled");
+				else
+					WriteMessage("Lighting4         disabled");
 
-			if (pResponse->IRESPONSE.RSLenabled)
-				WriteMessage("Conrad RSL        enabled");
-			else
-				WriteMessage("Conrad RSL        disabled");
+				if (pResponse->IRESPONSE.RSLenabled)
+					WriteMessage("Conrad RSL        enabled");
+				else
+					WriteMessage("Conrad RSL        disabled");
 
-			if (pResponse->IRESPONSE.SXenabled)
-				WriteMessage("ByronSX           enabled");
-			else
-				WriteMessage("ByronSX           disabled");
+				if (pResponse->IRESPONSE.SXenabled)
+					WriteMessage("ByronSX           enabled");
+				else
+					WriteMessage("ByronSX           disabled");
 
-			if (pResponse->IRESPONSE.IMAGINTRONIXenabled)
-				WriteMessage("IMAGINTRONIX      enabled");
-			else
-				WriteMessage("IMAGINTRONIX      disabled");
+				if (pResponse->IRESPONSE.IMAGINTRONIXenabled)
+					WriteMessage("IMAGINTRONIX      enabled");
+				else
+					WriteMessage("IMAGINTRONIX      disabled");
 
-			if (pResponse->IRESPONSE.KEELOQenabled)
-				WriteMessage("KEELOQ            enabled");
-			else
-				WriteMessage("KEELOQ            disabled");
+				if (pResponse->IRESPONSE.KEELOQenabled)
+					WriteMessage("KEELOQ            enabled");
+				else
+					WriteMessage("KEELOQ            disabled");
 
-			if (pResponse->IRESPONSE.HCEnabled)
-				WriteMessage("Home Confort      enabled");
+				if (pResponse->IRESPONSE.HCEnabled)
+					WriteMessage("Home Confort      enabled");
+				else
+					WriteMessage("Home Confort      disabled");
+			}
 			else
-				WriteMessage("Home Confort      disabled");
+			{
+				//868
+				if (pResponse->IRESPONSE868.UNDECODEDenabled)
+					WriteMessage("Undec             on");
+				else
+					WriteMessage("Undec             off");
+
+				if (pResponse->IRESPONSE868.ALECTOenabled)
+					WriteMessage("Alecto            enabled");
+				else
+					WriteMessage("Alecto            disabled");
+
+				if (pResponse->IRESPONSE868.DAVISEUenabled)
+					WriteMessage("Davis EU          enabled");
+				else
+					WriteMessage("Davis EU          disabled");
+
+				if (pResponse->IRESPONSE868.DAVISUSenabled)
+					WriteMessage("Davis US          enabled");
+				else
+					WriteMessage("Davis US          disabled");
+
+				if (pResponse->IRESPONSE868.DAVISAUenabled)
+					WriteMessage("Davis AU          enabled");
+				else
+					WriteMessage("Davis AU          disabled");
+
+				if (pResponse->IRESPONSE868.PROGUARDenabled)
+					WriteMessage("Proguard          enabled");
+				else
+					WriteMessage("Proguard          disabled");
+
+				if (pResponse->IRESPONSE868.FS20enabled)
+					WriteMessage("FS20              enabled");
+				else
+					WriteMessage("FS20              disabled");
+
+				if (pResponse->IRESPONSE868.EDISIOenabled)
+					WriteMessage("Edisio            enabled");
+				else
+					WriteMessage("Edisio            disabled");
+
+				if (pResponse->IRESPONSE868.VISONICenabled)
+					WriteMessage("Visonic           enabled");
+				else
+					WriteMessage("Visonic           disabled");
+
+				if (pResponse->IRESPONSE868.KEELOQenabled)
+					WriteMessage("Keeloq            enabled");
+				else
+					WriteMessage("Keeloq            disabled");
+			}
 		}
 		break;
 		case cmdSAVE:

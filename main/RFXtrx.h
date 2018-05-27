@@ -27,6 +27,14 @@ portions of this file.
 */
 
 /*
+SDK version 9.19
+	IRESPONSE868 added
+	IRESPONSE - msg4 FS20enabled changed to LEGRANDenabled
+
+SDK version 9.18
+	RAW transmit/receive added
+	BlindsT6 intermediate position added
+
 SDK version 9.17
 	868 config bits added (changed)
 	Interface Control Freq commands removed (use freqsel instead)
@@ -696,6 +704,7 @@ SDK version 4.9
 #define blinds_sChangeDirection 0x7
 #define blinds_sLeft 0x8
 #define blinds_sRight 0x9
+#define blinds_s6Im 0x4
 #define blinds_s9ChangeDirection 0x6
 #define blinds_s9ImA 0x7
 #define blinds_s9ImCenter 0x8
@@ -745,9 +754,8 @@ SDK version 4.9
 
 //types for Funkbus
 #define pTypeFunkbus 0x1E
-#define sTypeFunkbusRemote 0x00
-#define sTypeFunkbusMotion 0x01
-#define sTypeFunkbusLight 0x02
+#define sTypeFunkbusRemoteGira 0x00
+#define sTypeFunkbusRemoteInsta 0x01
 #define Funkbus_sChannelMin 0x00
 #define Funkbus_sChannelPlus 0x01
 #define Funkbus_sAllOff 0x02
@@ -1037,6 +1045,13 @@ SDK version 4.9
 #define sTypeFHT8V 0x1
 #define sTypeFHT80 0x2
 
+//RAW transit/receive
+#define pTypeRAW 0x7F
+#define sTypeRAW1 0x0
+#define sTypeRAW2 0x1
+#define sTypeRAW3 0x2
+#define sTypeRAW4 0x3
+
 typedef union tRBUF {
 	struct {
 		BYTE	packetlength;
@@ -1079,7 +1094,7 @@ typedef union tRBUF {
 		BYTE	BLINDST1enabled : 1;
 		BYTE	BLINDST0enabled : 1;
 		BYTE	PROGUARDenabled : 1;
-		BYTE	FS20enabled : 1;
+		BYTE	LEGRANDenabled : 1;
 		BYTE	LACROSSEenabled : 1;
 		BYTE	HIDEKIenabled : 1;
 		BYTE	LWRFenabled : 1;
@@ -1120,7 +1135,7 @@ typedef union tRBUF {
 		BYTE	LWRFenabled : 1;
 		BYTE	HIDEKIenabled : 1;
 		BYTE	LACROSSEenabled : 1;
-		BYTE	FS20enabled : 1;
+		BYTE	LEGRANDenabled : 1;
 		BYTE	PROGUARDenabled : 1;
 		BYTE	BLINDST0enabled : 1;
 		BYTE	BLINDST1enabled : 1;
@@ -1157,6 +1172,109 @@ typedef union tRBUF {
         BYTE	msg15;
         BYTE	msg16;
 	} IRESPONSE;
+
+	struct {	//response on a mode command from the application
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	cmnd;
+		BYTE	msg1;	//receiver/transceiver type
+		BYTE	msg2;	//firmware version
+
+#ifdef IS_BIG_ENDIAN
+		//BYTE	msg3;
+		BYTE	UNDECODEDenabled : 1;
+		BYTE	ALECTOenabled : 1;
+		BYTE	MSG3Reserved5 : 1;
+		BYTE	MSG3Reserved4 : 1;
+		BYTE	DAVISEUenabled : 1;
+		BYTE	DAVISUSenabled : 1;
+		BYTE	DAVISAUenabled : 1;
+		BYTE	MSG3Reserved0 : 1;
+
+		//BYTE	msg4;
+		BYTE	MSG4Reserved7 : 1;
+		BYTE	MSG4Reserved6 : 1;
+		BYTE	PROGUARDenabled : 1;
+		BYTE	FS20enabled : 1;
+		BYTE	MSG4Reserved3 : 1;
+		BYTE	MSG4Reserved2 : 1;
+		BYTE	MSG4Reserved1 : 1;
+		BYTE	EDISIOenabled : 1;
+
+		//BYTE	msg5;
+		BYTE	VISONICenabled : 1;
+		BYTE	MSG5Reserved6 : 1;
+		BYTE	MSG5Reserved5 : 1;
+		BYTE	MSG5Reserved4 : 1;
+		BYTE	MSG5Reserved3 : 1;
+		BYTE	MSG5Reserved2 : 1;
+		BYTE	MSG5Reserved1 : 1;
+		BYTE	MSG5Reserved0 : 1; //note: keep this order
+
+								//BYTE    msg6;
+		BYTE    MSG6Reserved7 : 1;
+		BYTE    MSG6Reserved6 : 1;
+		BYTE    MSG6Reserved5 : 1;
+		BYTE    MSG6Reserved4 : 1;
+		BYTE    MSG6Reserved3 : 1;
+		BYTE    MSG6Reserved2 : 1;
+		BYTE    MSG6Reserved1 : 1;
+		BYTE    KEELOQenabled : 1;
+#else
+		//BYTE	msg3;
+		BYTE	MSG3Reserved0 : 1;
+		BYTE	DAVISAUenabled : 1;
+		BYTE	DAVISUSenabled : 1;
+		BYTE	DAVISEUenabled : 1;
+		BYTE	MSG3Reserved4 : 1;
+		BYTE	MSG3Reserved5 : 1;
+		BYTE	ALECTOenabled : 1;
+		BYTE	UNDECODEDenabled : 1;
+
+		//BYTE	msg4;
+		BYTE	EDISIOenabled : 1;
+		BYTE	MSG4Reserved1 : 1;
+		BYTE	MSG4Reserved2 : 1;
+		BYTE	MSG4Reserved3 : 1;
+		BYTE	FS20enabled : 1;
+		BYTE	PROGUARDenabled : 1;
+		BYTE	MSG4Reserved6 : 1;
+		BYTE	MSG4Reserved7 : 1;
+
+		//BYTE	msg5;
+		BYTE	MSG5Reserved0 : 1; //note: keep this order
+		BYTE	MSG5Reserved1 : 1;
+		BYTE	MSG5Reserved2 : 1;
+		BYTE	MSG5Reserved3 : 1;
+		BYTE	MSG5Reserved4 : 1;
+		BYTE	MSG5Reserved5 : 1;
+		BYTE	MSG5Reserved6 : 1;
+		BYTE	VISONICenabled : 1;
+
+		//BYTE	msg6;
+		BYTE    KEELOQenabled : 1;
+		BYTE    MSG6Reserved1 : 1;
+		BYTE    MSG6Reserved2 : 1;
+		BYTE    MSG6Reserved3 : 1;
+		BYTE    MSG6Reserved4 : 1;
+		BYTE    MSG6Reserved5 : 1;
+		BYTE    MSG6Reserved6 : 1;
+		BYTE    MSG6Reserved7 : 1;
+#endif
+
+		BYTE	msg7;
+		BYTE	msg8;
+		BYTE	msg9;
+		BYTE	msg10;
+		BYTE	msg11;
+		BYTE	msg12;
+		BYTE	msg13;
+		BYTE	msg14;
+		BYTE	msg15;
+		BYTE	msg16;
+	} IRESPONSE868;
 
 	struct {
 		BYTE	packetlength;
@@ -1455,9 +1573,9 @@ typedef union tRBUF {
 #endif
 #ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
-		BYTE	filler : 4;
+		BYTE	battery_level : 4;
 #else
-		BYTE	filler2 : 4;
+		BYTE	battery_level : 4;
 		BYTE	rssi : 4;
 #endif
 	} FUNKBUS;
@@ -2229,7 +2347,7 @@ typedef union tRBUF {
 	struct{
 		BYTE	uint_msb;
 		BYTE	uint_lsb;
-	} pulse[125];
+	} pulse[124];
     } RAW;
 } RBUF;
 
