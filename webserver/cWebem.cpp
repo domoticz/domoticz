@@ -28,7 +28,9 @@
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
-#define HTTP_DATE_RFC_1123 "%a, %d %b %Y %H:%M:%S %Z" // Sun, 06 Nov 1994 08:49:37 GMT
+#ifdef _WIN32
+#define gmtime_r(timep, result) gmtime_s(result, timep)
+#endif
 
 int m_failcounter=0;
 
@@ -1283,15 +1285,24 @@ const char * wkdays[7] = {
 char *make_web_time(const time_t rawtime)
 {
 	static char buffer[256];
-	struct tm *gmt=gmtime(&rawtime);
-	sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT",
-		wkdays[gmt->tm_wday],
-		gmt->tm_mday,
-		months[gmt->tm_mon],
-		gmt->tm_year + 1900,
-		gmt->tm_hour,
-		gmt->tm_min,
-		gmt->tm_sec);
+	struct tm gmt;
+	if (gmtime_r(&rawtime, &gmt) == NULL)
+	{
+		strcpy(buffer, "Thu, 1 Jan 1970 00:00:00 GMT");
+	}
+	else
+	{
+		sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+			wkdays[gmt.tm_wday],
+			gmt.tm_mday,
+			months[gmt.tm_mon],
+			gmt.tm_year + 1900,
+			gmt.tm_hour,
+			gmt.tm_min,
+			gmt.tm_sec);
+
+
+	}
 	return buffer;
 }
 
@@ -2001,7 +2012,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			return;
 		}
 
-		if (!rep.bIsGZIP) // this is probably always true?
+		if (!rep.bIsGZIP)
 		{
 			CompressWebOutput(req, rep);
 		}
@@ -2099,7 +2110,8 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		else if (content_type.find("image/") != std::string::npos)
 		{
 			//Cache images
-			reply::add_header(&rep, "Expires", strftime_t(HTTP_DATE_RFC_1123, mytime(NULL) + 3600*24*365)); // one year (+TZ offset)
+//			reply::add_header(&rep, "Expires", strftime_t(HTTP_DATE_RFC_1123, mytime(NULL) + 3600*24*365)); // one year (+TZ offset)
+reply::add_header(&rep, "Expires", make_web_time(mytime(NULL) + 3600*24*365));
 		}
 		else
 		{
