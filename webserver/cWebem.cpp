@@ -696,7 +696,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
-			reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 			reply::add_header(&rep, "Content-Type", strMimeType + ";charset=UTF-8");
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
@@ -704,7 +704,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		}
 		else
 		{
-			reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 			reply::add_header(&rep, "Content-Type", strMimeType);
 			reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
 		}
@@ -727,7 +727,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	}
 
 	rep.status = reply::ok;
-	reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+	reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 	reply::add_header(&rep, "Content-Type", strMimeType + "; charset=UTF-8");
 	reply::add_header(&rep, "Cache-Control", "no-cache");
 	reply::add_header(&rep, "Pragma", "no-cache");
@@ -1409,7 +1409,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 				rep.content.clear();
 				rep.content.append((char*)gzip.pgzip, gzip.Length);
 				//Set new content length
-				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 				//Add gzip header
 				reply::add_header(&rep, "Content-Encoding", "gzip");
 				return true;
@@ -1984,7 +1984,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				//Send back as data instead of a redirect uri
 				rep.status = reply::ok;
 				rep.content = requestCopy.uri;
-				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
 				reply::add_header(&rep, "Content-Type", "application/json;charset=UTF-8");
 				return;
@@ -2074,7 +2074,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// ( Firefox ignores this, but apparently some browsers truncate display without it.
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
-				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 
 				if (!mInfo.mtime_support)
 				{
