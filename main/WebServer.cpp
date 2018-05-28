@@ -706,6 +706,13 @@ namespace http {
 			}
 		}
 
+		void CWebServer::SetWebCompressionMode(int gzmode)
+		{
+			if (m_pWebEm == NULL)
+				return;
+			m_pWebEm->SetWebCompressionMode((_eWebCompressionMode)gzmode);
+		}
+
 		void CWebServer::SetAuthenticationMethod(int amethod)
 		{
 			if (m_pWebEm == NULL)

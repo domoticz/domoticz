@@ -108,6 +108,13 @@ namespace http {
 		}
 #endif
 
+		void CWebServerHelper::SetWebCompressionMode(int gzmode)
+		{
+			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
+				(*it)->SetWebCompressionMode(gzmode);
+			 }
+		}
+
 		void CWebServerHelper::SetAuthenticationMethod(int amethod)
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {

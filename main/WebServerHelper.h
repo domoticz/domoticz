@@ -27,6 +27,7 @@ namespace http {
 			boost::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
 			void RemoveMaster(DomoticzTCP *master);
 #endif
+			void SetWebCompressionMode(int gzmode);
 			void SetAuthenticationMethod(int amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
