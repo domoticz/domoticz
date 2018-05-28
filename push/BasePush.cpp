@@ -129,6 +129,10 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
+		{ pTypeFS20, sTypeFS20, "Status" },
+		{ pTypeFS20, sTypeFHT8V, "Status" },
+		{ pTypeFS20, sTypeFHT80, "Status" },
+
 		{ pTypeHomeConfort, sTypeHomeConfortTEL010, "Status" },
 
 		{ pTypeCurtain, sTypeHarrison, "Status" },
@@ -163,6 +167,10 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeSecurity2, sTypeSec2Classic, "Status" },
 
 		{ pTypeCamera, sTypeNinja, "Not implemented" },
+
+		{ pTypeFS20, sTypeFS20, "FS20" },
+		{ pTypeFS20, sTypeFHT8V, "FHT8V" },
+		{ pTypeFS20, sTypeFHT80, "FHT80" },
 
 		{ pTypeRemote, sTypeATI, "Status" },
 		{ pTypeRemote, sTypeATIplus, "Status" },
@@ -248,6 +256,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
 		{ pTypeGeneral, sTypeCustom, "Percentage" },
 		{ pTypeGeneral, sTypeZWaveAlarm, "Status" },
+		{ pTypeGeneral, sTypeManagedCounter, "Counter" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

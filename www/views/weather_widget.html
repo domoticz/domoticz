@@ -35,7 +35,7 @@
 
 					<span has-permission="Admin">
 						<a class="btnsmall" ng-click="ctrl.EditDevice()" data-i18n="Edit">Edit</a>
-						<a ng-click="ctrl.ShowNotifications()" ng-class="{'btnsmall-sel':item.Notifications=='true', btnsmall:item.Notifications!='true'}" data-i18n="Notifications">Notifications</a>
+						<a ng-href="#/Devices/{{:: item.idx}}/Notifications" ng-class="::{'btnsmall-sel':item.Notifications=='true', btnsmall:item.Notifications!='true'}" data-i18n="Notifications">Notifications</a>
 
 						<a ng-show="ctrl.displayForecastAdmin()" class="btnsmall" ng-click="ctrl.ShowForecast()" data-i18n="Forecast">Forecast</a>
 					</span>

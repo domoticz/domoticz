@@ -249,7 +249,72 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 	}]);
 
-	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun) {
+	app.factory('utils', function () {
+		return {
+            confirmDecorator: confirmDecorator
+		};
+
+		function confirmDecorator(fn, message) {
+			return function() {
+                bootbox.confirm(message, function(result) {
+                    if (result) {
+                        fn();
+                    }
+                });
+			};
+		}
+    });
+
+	app.factory('Device', function () {
+        return function Device(rawData) {
+        	var device = Object.assign({}, rawData);
+
+            device.isDimmer = function() {
+                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(this.SwitchType);
+            };
+
+            device.isSelector = function() {
+                return this.SubType === "Selector Switch";
+            };
+
+            device.isLED = function() {
+                return (this.SubType.indexOf("RGB") >= 0 || this.SubType.indexOf("WW") >= 0);
+            };
+
+            device.getLevels = function() {
+                return this.LevelNames ? atob(this.LevelNames).split('|') : [];
+            };
+
+            device.getSelectorLevelOptions = function () {
+                return this.getLevels()
+                    .slice(1)
+                    .map(function (levelName, index) {
+                        return {
+                            label: levelName,
+                            value: (index + 1) * 10
+                        }
+                    });
+            };
+
+            device.getDimmerLevelOptions = function (step) {
+                var options = [];
+                var step = step || 5;
+
+                for (var i = step; i <= 100; i+=step) {
+                    options.push({
+                        label: i + '%',
+                        value: i
+                    });
+                }
+
+                return options;
+            };
+
+            return device;
+        };
+    });
+
+	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun, Device) {
 		return {
 			getDeviceInfo: getDeviceInfo,
             updateDeviceInfo: updateDeviceInfo,
@@ -263,7 +328,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
                     dzTimeAndSun.updateData(data);
 
 					return data && data.result && data.result.length === 1
-						? data.result[0]
+						? new Device(data.result[0])
 						: $q.reject(data);
 				});
 		}
@@ -507,6 +572,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/timers.html',
 				controller: 'DeviceTimersController',
 				controllerUrl: 'app/timers/DeviceTimersController.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/Notifications', angularAMD.route({
+				templateUrl: 'views/notifications.html',
+				controller: 'DeviceNotificationsController',
+				controllerUrl: 'app/notifications/DeviceNotifications.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/LightEdit', angularAMD.route({

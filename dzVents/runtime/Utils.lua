@@ -103,7 +103,7 @@ function self.log(msg, level)
 
 
 	if (level == self.LOG_ERROR) then
-		marker = marker .. 'Error (2.4.5): '
+		marker = marker .. 'Error (2.4.6): '
 	elseif (level == self.LOG_DEBUG) then
 		marker = marker .. 'Debug: '
 	elseif (level == self.LOG_INFO or level == self.LOG_MODULE_EXEC_INFO) then

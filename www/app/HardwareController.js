@@ -2029,7 +2029,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent #ADLightwaveRF').prop('checked', ((Mode4 & 0x02) != 0));
 			$('#hardwarecontent #HidekiUPM').prop('checked', ((Mode4 & 0x04) != 0));
 			$('#hardwarecontent #LaCrosse').prop('checked', ((Mode4 & 0x08) != 0));
-			$('#hardwarecontent #FS20').prop('checked', ((Mode4 & 0x10) != 0));
+			$('#hardwarecontent #Legrand').prop('checked', ((Mode4 & 0x10) != 0));
 			$('#hardwarecontent #ProGuard').prop('checked', ((Mode4 & 0x20) != 0));
 			$('#hardwarecontent #BlindT0').prop('checked', ((Mode4 & 0x40) != 0));
 			$('#hardwarecontent #BlindT1T2T3T4').prop('checked', ((Mode4 & 0x80) != 0));
@@ -2058,7 +2058,7 @@ define(['app'], function (app) {
 				$('#hardwarecontent #ADLightwaveRF').prop('checked', false);
 				$('#hardwarecontent #HidekiUPM').prop('checked', true);
 				$('#hardwarecontent #LaCrosse').prop('checked', true);
-				$('#hardwarecontent #FS20').prop('checked', false);
+				$('#hardwarecontent #Legrand').prop('checked', false);
 				$('#hardwarecontent #ProGuard').prop('checked', false);
 				$('#hardwarecontent #BlindT0').prop('checked', false);
 				$('#hardwarecontent #BlindT1T2T3T4').prop('checked', false);
@@ -2096,7 +2096,7 @@ define(['app'], function (app) {
 				e.preventDefault();
 				$('#hardwarecontent #LaCrosse').prop('checked', false);
 				$('#hardwarecontent #Alecto').prop('checked', false);
-				$('#hardwarecontent #FS20').prop('checked', false);
+				$('#hardwarecontent #Legrand').prop('checked', false);
 				$('#hardwarecontent #ProGuard').prop('checked', false);
 				$('#hardwarecontent #VionicPowerCode').prop('checked', false);
 				$('#hardwarecontent #Hideki').prop('checked', false);
@@ -4514,6 +4514,15 @@ define(['app'], function (app) {
 			$.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function (data) {
 				SwitchLayout('Dashboard');
 			});
+		}
+		SetRFXCOMMode868 = function () {
+			HideNotify();
+			ShowNotify($.t('This should (for now) be set via the RFXmngr application!'), 2500, true);
+/*
+			$.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function (data) {
+				SwitchLayout('Dashboard');
+			});
+*/			
 		}
 
 		SetRego6XXType = function () {

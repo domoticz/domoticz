@@ -40,7 +40,7 @@
 #include <ios>
 //#include "config.h"
 //#include "shared_ptr.h"
-#include "../zip/unzip.h"
+#include <unzip.h>
 #include <boost/shared_ptr.hpp>
 
 #ifdef CLX_ENABLE_AUTOLINK

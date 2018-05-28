@@ -263,7 +263,7 @@ reply reply::stock_reply(reply::status_type status)
 	if (!rep.content.empty()) { // response can be empty (eg. HTTP 304)
 		rep.headers.resize(2);
 		rep.headers[0].name = "Content-Length";
-		rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+		rep.headers[0].value = std::to_string(rep.content.size());
 		rep.headers[1].name = "Content-Type";
 		rep.headers[1].value = "text/html";
 	}

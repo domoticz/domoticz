@@ -93,8 +93,8 @@ bool CNotificationGCM::SendMessageImplementation(
 			ii++;
 		}
 
-		sstr << "], \"data\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << boost::lexical_cast<std::string>(Priority) << "\", ";
-		sstr << "\"deviceid\": \"" << boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\" } }";
+		sstr << "], \"data\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
+		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\" } }";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;
@@ -137,8 +137,8 @@ bool CNotificationGCM::SendMessageImplementation(
 			ii++;
 		}
 
-		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << boost::lexical_cast<std::string>(Priority) << "\", ";
-		sstr << "\"deviceid\": \"" << boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
+		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
+		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;

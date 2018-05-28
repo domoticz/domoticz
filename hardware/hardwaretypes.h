@@ -61,6 +61,7 @@
 #define sTypeWaterflow				0x1E
 #define sTypeCustom					0x1F
 #define sTypeZWaveAlarm				0x20
+#define sTypeManagedCounter			0x21
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4

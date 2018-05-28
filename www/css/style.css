@@ -1309,6 +1309,11 @@ table.table-details > tbody > tr > td:first-child {
 	text-align: right;
 }
 
+table.table-details.table-details-lg > tr > td:first-child,
+table.table-details.table-details-lg > tbody > tr > td:first-child {
+	width: 160px;
+}
+
 .messagepop {
 	border: 1px solid #999999;
 	cursor: default;
