@@ -2110,8 +2110,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		else if (content_type.find("image/") != std::string::npos)
 		{
 			//Cache images
-//			reply::add_header(&rep, "Expires", strftime_t(HTTP_DATE_RFC_1123, mytime(NULL) + 3600*24*365)); // one year (+TZ offset)
-reply::add_header(&rep, "Expires", make_web_time(mytime(NULL) + 3600*24*365));
+			reply::add_header(&rep, "Expires", make_web_time(mytime(NULL) + 3600*24*365)); // one year
 		}
 		else
 		{
