@@ -436,6 +436,8 @@ secpanel/media/wrongcode.ogg
 # Languages
 i18n/domoticz-ar.json
 i18n/domoticz-bg.json
+i18n/domoticz-bs.json
+i18n/domoticz-ca.json
 i18n/domoticz-cs.json
 i18n/domoticz-da.json
 i18n/domoticz-de.json
@@ -443,6 +445,7 @@ i18n/domoticz-el.json
 i18n/domoticz-en.json
 i18n/domoticz-es.json
 i18n/domoticz-et.json
+i18n/domoticz-fa.json
 i18n/domoticz-fi.json
 i18n/domoticz-fr.json
 i18n/domoticz-he.json
@@ -460,8 +463,10 @@ i18n/domoticz-ro.json
 i18n/domoticz-ru.json
 i18n/domoticz-sk.json
 i18n/domoticz-sl.json
+i18n/domoticz-sq.json
 i18n/domoticz-sr.json
 i18n/domoticz-sv.json
+i18n/domoticz-th.json
 i18n/domoticz-tr.json
 i18n/domoticz-uk.json
 i18n/domoticz-zh.json

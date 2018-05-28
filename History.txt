@@ -1,5 +1,7 @@
 Version 3.xxx (May xxth 2018)
 - Implemented: Adjustment Value for Counter/Incremental sensors
+- Implemented: Albanian language support (Big thanks to "arbenik")
+- Implemented: Bosnian language support (Big thanks to "Vedran")
 - Implemented: Camera, can now handle HTTPS url's
 - Implemented: Catalan language support (Big thanks to "delfisastre")
 - Implemented: Counter sensors now have a working week chart
