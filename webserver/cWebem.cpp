@@ -33,7 +33,6 @@
 #endif
 
 int m_failcounter=0;
-extern signed char g_wwwCompressMode;
 
 namespace http {
 	namespace server {
@@ -1400,7 +1399,7 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 {
-	if (g_wwwCompressMode <= 0)
+	if (myWebem->m_gzipmode != WWW_USE_GZIP)
 		return false;
 
 	std::string request_path;

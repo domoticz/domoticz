@@ -172,7 +172,7 @@ bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
 bool g_bDontCacheWWW = false;
-signed char g_wwwCompressMode = 0x1; // 0x1 = on, 0x0 = static, 0xFF = off
+int g_wwwCompressMode = 0;
 bool g_bUseUpdater = true;
 
 int pidFilehandle = 0;
@@ -895,10 +895,11 @@ int main(int argc, char**argv)
 		}
 		std::string szmode = cmdLine.GetSafeArgument("-wwwcompress", 0, "on");
 		if (szmode == "off")
-			g_wwwCompressMode = 0xFF;
+			g_wwwCompressMode = (int)http::server::WWW_FORCE_NO_GZIP_SUPPORT;
 		else if (szmode == "static")
-			g_wwwCompressMode = 0x0;
-		// should I verify possible invalid input? doesn't seem to be done with other parameters
+			g_wwwCompressMode = (int)http::server::WWW_USE_STATIC_GZ_FILES;
+		else
+			g_wwwCompressMode = (int)http::server::WWW_USE_GZIP;
 
 	}
 	std::string dbasefile = szUserDataFolder + "domoticz.db";

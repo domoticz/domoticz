@@ -59,8 +59,6 @@ extern "C" const char* strptime(const char* s, const char* f, struct tm* tm)
 }
 #endif
 
-extern signed char g_wwwCompressMode;
-
 namespace http {
 namespace server {
 
@@ -236,7 +234,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
   bool bHaveGZipSupport=false;
 
-  if (g_wwwCompressMode >= 0)
+  if (myWebem->m_gzipmode != WWW_FORCE_NO_GZIP_SUPPORT)
   {
 	//check gzip support (only for js/htm(l) and css files
 	if (
