@@ -121,6 +121,12 @@ void cWebem::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 	m_authmethod=amethod;
 }
 
+void cWebem::SetWebCompressionMode(_eWebCompressionMode gzmode)
+{
+	m_gzipmode = gzmode;
+}
+
+
 /**
 
 Create a link between a string ID and a function to calculate the dynamic content of the string
