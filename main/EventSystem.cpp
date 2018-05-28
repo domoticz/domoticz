@@ -3654,6 +3654,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		case pTypeGeneralSwitch:
 		case pTypeHomeConfort:
 		case pTypeRadiator1:
+		case pTypeFS20:
 			if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 				break;
 			//Add Lighting log

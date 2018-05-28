@@ -1044,6 +1044,34 @@ SDK version 4.9
 #define sTypeFS20 0x0
 #define sTypeFHT8V 0x1
 #define sTypeFHT80 0x2
+#define fs20_sOff 0x0
+#define fs20_sDimlevel_1 0x1
+#define fs20_sDimlevel_2 0x2
+#define fs20_sDimlevel_3 0x3
+#define fs20_sDimlevel_4 0x4
+#define fs20_sDimlevel_5 0x5
+#define fs20_sDimlevel_6 0x6
+#define fs20_sDimlevel_7 0x7
+#define fs20_sDimlevel_8 0x8
+#define fs20_sDimlevel_9 0x9
+#define fs20_sDimlevel_10 0xA
+#define fs20_sDimlevel_11 0xB
+#define fs20_sDimlevel_12 0xC
+#define fs20_sDimlevel_13 0xD
+#define fs20_sDimlevel_14 0xE
+#define fs20_sDimlevel_15 0xF
+#define fs20_sOn_100 0x10
+#define fs20_sOn_last_dim 0x11
+#define fs20_sToggle_On_Off 0x12
+#define fs20_sBright 0x13
+#define fs20_sDim 0x14
+#define fs20_sStart_dim_cycle 0x15
+#define fs20_sProgram_timer 0x16
+#define fs20_sRequest_status 0x17
+#define fs20_sOff_for_time_period 0x18
+#define fs20_sOn_100_for_time_period 0x19
+#define fs20_sOn_last_dim_level_period 0x1A
+#define fs20_sReset 0x1B
 
 //RAW transit/receive
 #define pTypeRAW 0x7F
