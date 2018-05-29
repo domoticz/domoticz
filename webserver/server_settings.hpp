@@ -189,13 +189,9 @@ public:
 			} else if (option.compare("no_tlsv1") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_tlsv1);
 			} else if (option.compare("no_tlsv1_1") == 0) {
-#if (BOOST_VERSION > 105900)
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_1);
-#endif
 			} else if (option.compare("no_tlsv1_2") == 0) {
-#if (BOOST_VERSION > 105900)
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_2);
-#endif
 			} else if (option.compare("no_compression") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_compression);
 			} else {

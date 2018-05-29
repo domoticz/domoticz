@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(domoticz)
 
 ## required min. libBoost version
-SET(DOMO_MIN_LIBBOOST_VERSION 105500)
+SET(DOMO_MIN_LIBBOOST_VERSION 106000)
 ##
 
 MACRO(Gitversion_GET_REVISION dir variable)
@@ -548,7 +548,7 @@ set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-find_package(Boost REQUIRED COMPONENTS thread date_time system)
+find_package(Boost REQUIRED COMPONENTS thread date_time chrono system)
 
 if(USE_STATIC_BOOST)
    message(STATUS "Linking against boost static libraries")
