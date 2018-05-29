@@ -6171,9 +6171,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		{
 			std::vector<std::string> sd = result[0];
 
-			long long total_min = atoll(sd[0].c_str());
-			long long total_max = atoll(sd[1].c_str());
-			long long avg_value = atoll(sd[2].c_str());
+			double total_min = (double)atof(sd[0].c_str());
+			double total_max = (double)atof(sd[1].c_str());
+			double avg_value = (double)atof(sd[2].c_str());
 
 			if (
 				(devType != pTypeAirQuality) &&
@@ -6192,13 +6192,13 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType != pTypeUsage)
 				)
 			{
-				long long total_real = total_max - total_min;
-				long long counter = total_max;
+				double total_real = total_max - total_min;
+				double counter = total_max;
 
 				//insert into calendar table
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
-					"VALUES ('%" PRIu64 "', '%lld', '%lld', '%q')",
+					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
 					ID,
 					total_real,
 					counter,
@@ -6241,9 +6241,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage/Lux/SoundLevel insert into MultiMeter_Calendar table
 				result = safe_query(
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
-					"VALUES ('%" PRIu64 "', '%lld','%lld','%lld','%lld','%lld','%lld', '%q')",
+					"VALUES ('%" PRIu64 "', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
 					ID,
-					total_min, total_max, avg_value, 0, 0, 0,
+					total_min, total_max, avg_value, 0.0f, 0.0f, 0.0f,
 					szDateStart
 				);
 			}
@@ -6284,9 +6284,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-				"VALUES ('%" PRIu64 "', '%lld', '%q')",
+				"VALUES ('%" PRIu64 "', '%.2f', '%q')",
 				ID,
-				0,
+				0.0f,
 				szDateStart
 			);
 		}
@@ -6356,37 +6356,38 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		{
 			std::vector<std::string> sd = result[0];
 
-			long long total_real[6];
-			long long counter1 = 0;
-			long long counter2 = 0;
-			long long counter3 = 0;
-			long long counter4 = 0;
+			float total_real[6];
+			float counter1 = 0;
+			float counter2 = 0;
+			float counter3 = 0;
+			float counter4 = 0;
 
 			if (devType == pTypeP1Power)
 			{
 				for (int ii = 0; ii < 6; ii++)
 				{
-					long long total_min = atoll(sd[(ii * 2) + 0].c_str());
-					long long total_max = atoll(sd[(ii * 2) + 1].c_str());
+					float total_min = static_cast<float>(atof(sd[(ii * 2) + 0].c_str()));
+					float total_max = static_cast<float>(atof(sd[(ii * 2) + 1].c_str()));
 					total_real[ii] = total_max - total_min;
 				}
-				counter1 = atoll(sd[1].c_str());
-				counter2 = atoll(sd[3].c_str());
-				counter3 = atoll(sd[9].c_str());
-				counter4 = atoll(sd[11].c_str());
+				counter1 = static_cast<float>(atof(sd[1].c_str()));
+				counter2 = static_cast<float>(atof(sd[3].c_str()));
+				counter3 = static_cast<float>(atof(sd[9].c_str()));
+				counter4 = static_cast<float>(atof(sd[11].c_str()));
 			}
 			else
 			{
 				for (int ii = 0; ii < 6; ii++)
 				{
-					total_real[ii] = atoll(sd[ii].c_str());
+					float fvalue = static_cast<float>(atof(sd[ii].c_str()));
+					total_real[ii] = fvalue;
 				}
 			}
 
 			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
-				"VALUES ('%" PRIu64 "', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%lld', '%q')",
+				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
 				ID,
 				total_real[0],
 				total_real[1],
@@ -6407,6 +6408,22 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				float musage = (total_real[0] + total_real[2]) / EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
+			/*
+			//Insert the last (max) counter values into the table to get the "today" value correct.
+			sprintf(szTmp,
+			"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
+			"VALUES (%" PRIu64 ", %s, %s, %s, %s, %s, %s, '%s')",
+			ID,
+			sd[0].c_str(),
+			sd[1].c_str(),
+			sd[2].c_str(),
+			sd[3].c_str(),
+			sd[4].c_str(),
+			sd[5].c_str(),
+			szDateEnd
+			);
+			result=query(szTmp);
+			*/
 		}
 	}
 }
