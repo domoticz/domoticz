@@ -435,20 +435,12 @@ bool isInt(const std::string &s)
 
 void sleep_seconds(const long seconds)
 {
-#if (BOOST_VERSION < 105000)
-	boost::this_thread::sleep(boost::posix_time::seconds(seconds));
-#else
 	boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
-#endif
 }
 
 void sleep_milliseconds(const long milliseconds)
 {
-#if (BOOST_VERSION < 105000)
-	boost::this_thread::sleep(boost::posix_time::milliseconds(milliseconds));
-#else
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(milliseconds));
-#endif
 }
 
 int createdir(const char *szDirName, int secattr)

@@ -1,24 +1,51 @@
 Version 3.xxx (May xxth 2018)
-- Implemented: Adjustment Value for Counter/Incremental sensors
-- Implemented: Camera, can now handle HTTPS url's
-- Implemented: Catalan language support (Big thanks to "delfisastre")
-- Implemented: Counter sensors now have a working week chart
-- Implemented: Denkovi Smartden IP In (32) with LAN Interface
-- Implemented: Blockly, now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
-- Implemented: Email, option to disable email
-- Implemented: Persian language support (Big tankgs to "foademadi", "maziar.hafezi" and "reza.hadipour2002")
-- Implemented: Pusher now supports Distance type
-- Implemented: "Send Triggers to IFTTT" from lua using commandArray['TriggerIFTTT']='EventName#Value1#Value2#Value3'
-- Implemented: 'Styles' folder can have its own images folder to overwrite stock images
-- Implemented: ZWave, now displays if a node is a ZWave+ node
-- Changed: MySensors, now treating V_LIGHT_LEVEL as Perecentage (V_LEVEL with type=S_LIGHT_LEVEL = Lux)
-- Changed: OZW, added FGS 213/223 with id 2000/3000 as binary switch
-- Fixed: Blyss (manual adding to system)
-- Fixed: Floorplan door contact type
-- Implemented: dzVents 2.4.3: See dzVents/documentation/history.md
-- Implemented: MySensors, now possible to update S_INFO/V_TEXT directly from JSON udevice command
-- Implemented: Blockly, moved User Variables under devices
 - Implemented: Blockly, now possible to directly add/update Text devices
+- Implemented: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
+- Implemented: Camera: support for HTTPS url's
+- Implemented: Comm5 SM-xxxx sensors support
+- Implemented: Command line option '-noupdates' to stop using the internal update functionality Corrected 'Proxy' settings in the settings page (missing element closing tag)
+- Implemented: Denkovi Smartden IP In (32) with LAN Interface
+- Implemented: Disabling the option to downgrade Domoticz and use a newer database (because of database migrations)
+- Implemented: Door Lock Inverted
+- Implemented: EcoCompteur device
+- Implemented: eHouse BMS / Home Automation System Integration
+- Implemented: Forcing appcache to be refreshed on every new build
+- Implemented: Functionality to allow Python Plugins to integrate with the Domoticz Security Panel
+- Implemented: HardwareMonitor monitor own process memory usage
+- Implemented: Honeywell Lyric thermostat
+- Implemented: I2C: support for MCP23017 (16bit I2C GPIO expander)
+- Implemented: Initial support for FS20
+- Implemented: KMTronic TCP Temperature hardware
+- Implemented: Langiage "Persian" (Big tankgs to "foademadi", "maziar.hafezi" and "reza.hadipour2002")
+- Implemented: Language "Albanian" (Big thanks to "arbenik")
+- Implemented: Language "Bosnian" (Big thanks to "Vedran")
+- Implemented: Language "Catalan" (Big thanks to "delfisastre")
+- Implemented: Logitech Media Server: Added option to remove unused nodes
+- Implemented: MQTT Push message on scene/group switch event
+- Implemented: MySensors: handling of I_INCLUSION_MODE message.
+- Implemented: MySensors: support for SmartSleep option (gateway 2.x)
+- Implemented: Netatmo: rssi support
+- Implemented: New Managed meter type
+- Implemented: OnkyoAVTCP: Add source selection, detection via NRIQSTN
+- Implemented: OpenWeatherMap: cloud sensor
+- Implemented: RFXCom: support for WIND7, RAIN7/RAIN8/RAIN9
+- Implemented: Rtl_433: support for wind sensors, HH and LL humidity values
+- Implemented: Selector Switch: correcting display for all UTF8 characters now
+- Implemented: Styles folder can have its own images folder to overwrite stock images
+- Implemented: Telegram notifications
+- Implemented: Voltage/Current for Armbian Kernal 4.14+
+- Implemented: Webserver: automatically reload SSL certificates and DH params3
+- Implemented: Xiaomi Aqara Cube
+- Implemented: ZWave node ID to log
+- Updated: Dzvents (version 2.4.6, See dzVents/documentation/history.md)
+- Updated: OenZWave driver and configuration files
+- Updated: Translation files
+- Updated: Various internal libraries (C++/WWW)
+- Changed: Floorplans now stored in database
+- Changed: Improved color dimmer support
+- Changed: Internal HUE/RGB/W/WW handling
+- Changed: Philips Hue: internal code
+- Fixed: Various, see github
 
 Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
