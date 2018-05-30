@@ -28,7 +28,7 @@ namespace http {
 			void RemoveMaster(DomoticzTCP *master);
 #endif
 			void SetWebCompressionMode(int gzmode);
-			void SetAuthenticationMethod(int amethod);
+			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
 			void ClearUserPasswords();

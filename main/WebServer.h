@@ -76,7 +76,7 @@ public:
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);
 	void SetWebCompressionMode(int gzmode);
-	void SetAuthenticationMethod(int amethod);
+	void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 	void SetWebTheme(const std::string &themename);
 	void SetWebRoot(const std::string &webRoot);
 	std::vector<_tWebUserPassword> m_users;

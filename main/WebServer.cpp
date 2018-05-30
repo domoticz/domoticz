@@ -713,11 +713,11 @@ namespace http {
 			m_pWebEm->SetWebCompressionMode((_eWebCompressionMode)gzmode);
 		}
 
-		void CWebServer::SetAuthenticationMethod(int amethod)
+		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
 			if (m_pWebEm == NULL)
 				return;
-			m_pWebEm->SetAuthenticationMethod((_eAuthenticationMethod)amethod);
+			m_pWebEm->SetAuthenticationMethod(amethod);
 		}
 
 		void CWebServer::SetWebTheme(const std::string &themename)
