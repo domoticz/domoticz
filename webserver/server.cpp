@@ -180,7 +180,7 @@ void ssl_server::init_connection() {
 	// the following line gets the passphrase for protected private server keys
 	context_.set_password_callback(boost::bind(&ssl_server::get_passphrase, this));
 
-	if (settings_.options.empty()) {
+	if (settings_.ssl_options.empty()) {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL options parameter !", settings_.listening_port.c_str());
 	} else {
 		context_.set_options(settings_.get_ssl_options());

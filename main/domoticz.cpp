@@ -853,7 +853,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify SSL options");
 			return 1;
 		}
-		secure_webserver_settings.options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
+		secure_webserver_settings.ssl_options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
 	}
 	if (cmdLine.HasSwitch("-ssldhparam"))
 	{
