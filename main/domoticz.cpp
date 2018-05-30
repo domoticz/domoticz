@@ -109,13 +109,13 @@ const char *szHelp =
 "\t-debug    allow log trace level 3 \n"
 "\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 "\t-logthreadids (log thread ids; useful for trouble shooting.)\n"
-	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
+"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
-	"\t-daemon (run as background daemon)\n"
-	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
-	"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
+"\t-daemon (run as background daemon)\n"
+"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
+"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
 #endif
-	"";
+"";
 
 #ifndef WIN32
 struct _facilities {
