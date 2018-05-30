@@ -289,7 +289,8 @@ define(['app', 'notifications/constants', 'notifications/factories'], function (
                     ? Object.keys(deviceNotificationsConstants.whenByConditionMap).indexOf(params[1])
                     : 0,
                 tvalue: params[2] || 0,
-                tmsg: encodeURIComponent(notification.CustomMessage),
+                //tmsg: encodeURIComponent(notification.CustomMessage),
+                tmsg: notification.CustomMessage,
                 tsystems: notification.ActiveSystems,
                 tpriority: notification.Priority,
                 tsendalways: notification.SendAlways,
