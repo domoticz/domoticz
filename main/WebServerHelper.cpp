@@ -108,7 +108,7 @@ namespace http {
 		}
 #endif
 
-		void CWebServerHelper::SetAuthenticationMethod(int amethod)
+		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				(*it)->SetAuthenticationMethod(amethod);
