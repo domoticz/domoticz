@@ -172,7 +172,7 @@ bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
 bool g_bDontCacheWWW = false;
-_eWebCompressionMode g_wwwCompressMode;
+_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
 bool g_bUseUpdater = true;
 
 int pidFilehandle = 0;
@@ -898,8 +898,6 @@ int main(int argc, char**argv)
 			g_wwwCompressMode = http::server::WWW_FORCE_NO_GZIP_SUPPORT;
 		else if (szmode == "static")
 			g_wwwCompressMode = http::server::WWW_USE_STATIC_GZ_FILES;
-		else
-			g_wwwCompressMode = http::server::WWW_USE_GZIP;
 
 	}
 	std::string dbasefile = szUserDataFolder + "domoticz.db";
