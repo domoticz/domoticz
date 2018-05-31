@@ -176,6 +176,7 @@ extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
+extern _eWebCompressionMode g_wwwCompressMode;
 
 extern http::server::CWebServerHelper m_webservers;
 
@@ -1255,6 +1256,7 @@ bool MainWorker::StartThread()
 	}
 
 	m_webservers.SetWebRoot(szWebRoot);
+	m_webservers.SetWebCompressionMode(g_wwwCompressMode);
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
