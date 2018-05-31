@@ -120,6 +120,12 @@ void cWebem::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 	m_authmethod=amethod;
 }
 
+void cWebem::SetWebCompressionMode(_eWebCompressionMode gzmode)
+{
+	m_gzipmode = gzmode;
+}
+
+
 /**
 
 Create a link between a string ID and a function to calculate the dynamic content of the string
@@ -1388,6 +1394,9 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 {
+	if (myWebem->m_gzipmode != WWW_USE_GZIP)
+		return false;
+
 	std::string request_path;
 	if (!url_decode(req.uri, request_path))
 		return false;
