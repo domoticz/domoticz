@@ -176,7 +176,7 @@ extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
-extern int g_wwwCompressMode;
+extern _eWebCompressionMode g_wwwCompressMode;
 
 extern http::server::CWebServerHelper m_webservers;
 

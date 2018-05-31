@@ -708,11 +708,11 @@ namespace http {
 			}
 		}
 
-		void CWebServer::SetWebCompressionMode(int gzmode)
+		void CWebServer::SetWebCompressionMode(const _eWebCompressionMode gzmode)
 		{
 			if (m_pWebEm == NULL)
 				return;
-			m_pWebEm->SetWebCompressionMode((_eWebCompressionMode)gzmode);
+			m_pWebEm->SetWebCompressionMode(gzmode);
 		}
 
 		void CWebServer::SetAuthenticationMethod(const _eAuthenticationMethod amethod)

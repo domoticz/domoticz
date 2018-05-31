@@ -108,7 +108,7 @@ namespace http {
 		}
 #endif
 
-		void CWebServerHelper::SetWebCompressionMode(int gzmode)
+		void CWebServerHelper::SetWebCompressionMode(const _eWebCompressionMode gzmode)
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				(*it)->SetWebCompressionMode(gzmode);
