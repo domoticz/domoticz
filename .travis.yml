@@ -12,7 +12,7 @@ cache:
 #  - install /usr/bin/g++ g++ /usr/bin/g++-6 50
 
 sources:
-  - xenial
+  - trusty
 
 # What to install before the build
 before_install:
@@ -36,7 +36,7 @@ matrix:
   include:
   # Linux x86_64
   - os: linux
-    dist: xenial
+    dist: trusty
     sudo: required
     compiler: gcc
     env:
