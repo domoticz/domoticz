@@ -987,3 +987,8 @@ div.item.statusLowBattery td#name{
 .selectorlevels .ui-selectmenu-button.ui-widget {
 	font-size: 1.1em;
 }
+
+#holder .container-fluid {
+        margin-top: 20px;
+        padding-bottom: 20px;
+}
