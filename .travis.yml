@@ -23,7 +23,10 @@ before_install:
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   # lookup boost version
   #- sudo apt-cache search libboost
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade boost; fi  
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    brew update;
+    brew upgrade boost;
+    fi
 
 # Build matrix definition
 # * Two builds
@@ -48,7 +51,7 @@ matrix:
         packages:
           - gcc-6
           - g++-6
-          - libboost-all-dev
+          - libboost1.65.1-all-dev
           - cmake
           - cmake-data
           - libsqlite3-dev
