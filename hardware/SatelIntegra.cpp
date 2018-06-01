@@ -780,7 +780,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 
 	if ((Idx > 1024) || m_isOutputSwitch[Idx - 1])
 	{
-		SendGeneralSwitch(Idx, 1, 255, state ? gswitch_sOn : gswitch_sOff, 0, NULL);
+		SendGeneralSwitch(Idx, 1, 255, state ? gswitch_sOn : gswitch_sOff, 0, "");
 	}
 	else
 	{
@@ -796,7 +796,7 @@ void SatelIntegra::ReportArmState(const int Idx, const bool isArm)
 {
 	m_armLastState[Idx-1] = isArm;
 
-	SendGeneralSwitch(Idx, 2, 255, isArm ? gswitch_sOn : gswitch_sOff, 0, NULL);
+	SendGeneralSwitch(Idx, 2, 255, isArm ? gswitch_sOn : gswitch_sOff, 0, "");
 }
 
 void SatelIntegra::ReportAlarm(const bool isAlarm)

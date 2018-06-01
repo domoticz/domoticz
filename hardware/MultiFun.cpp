@@ -519,7 +519,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					else
 					{
-						//SendGeneralSwitchSensor(i, 255, value, name, 1); // TODO - send level (dimmer)
+						//SendGeneralSwitch(i, 1, 255, state, level, name); // TODO - send level (dimmer)
 					}					
 					break;
 				}
