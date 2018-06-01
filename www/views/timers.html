@@ -140,7 +140,7 @@
                 <label for="randomness"></label>
             </td>
         </tr>
-        <tr ng-hide="::vm.isSetpointTimers">
+        <tr ng-hide="::vm.isSetpointTimers || vm.isCommandSelectionDisabled">
             <td>
                 <label for="combocommand">{{:: 'Command' | translate }}:</label>
             </td>
