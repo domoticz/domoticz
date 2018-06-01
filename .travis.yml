@@ -12,7 +12,7 @@ cache:
 #  - install /usr/bin/g++ g++ /usr/bin/g++-6 50
 
 sources:
-  - trusty
+  - xenial
 
 # What to install before the build
 before_install:
