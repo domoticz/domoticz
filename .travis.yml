@@ -47,11 +47,16 @@ matrix:
         sources:
           - george-edison55-precise-backports  # cmake
           - ubuntu-toolchain-r-test
-          - boost-latest
+        install:
+          - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz
+          - tar xfz boost_1_67_0.tar.gz
+          - cd boost_1_67_0/
+          - ./bootstrap.sh
+          - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono
+          - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono
         packages:
           - gcc-6
           - g++-6
-          - libboost1.65.1-all-dev
           - cmake
           - cmake-data
           - libsqlite3-dev
