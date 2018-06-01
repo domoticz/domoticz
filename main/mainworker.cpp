@@ -10329,7 +10329,9 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	sprintf(szTmp, "%d", 1);//(pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
 	std::string ID = szTmp;
 
-	unsigned char Unit = pResponse->BBQ.id2;
+	//The transmitter and receiver are negotiating a new ID every 15/20 minutes,
+	//for this we need to work with fixed ID's
+	unsigned char Unit = 1;// pResponse->BBQ.id2;
 
 	unsigned char cmnd = 0;
 	unsigned char SignalLevel = pResponse->BBQ.rssi;
@@ -10355,7 +10357,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 		switch (pResponse->BBQ.subtype)
 		{
 		case sTypeBBQ1:
-			WriteMessage("subtype       = Maverick ET-732");
+			WriteMessage("subtype       = Maverick ET-732/733");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->BBQ.packettype, pResponse->BBQ.subtype);
