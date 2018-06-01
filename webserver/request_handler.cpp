@@ -234,19 +234,22 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
   bool bHaveGZipSupport=false;
 
-  //check gzip support (only for js/htm(l) and css files
-  if (
+  if (myWebem->m_gzipmode != WWW_FORCE_NO_GZIP_SUPPORT)
+  {
+	//check gzip support (only for js/htm(l) and css files
+	if (
 	  (request_path.find(".js")!=std::string::npos)
 	  || (request_path.find(".htm") != std::string::npos)
 	  || (request_path.find(".css") != std::string::npos)
 	  )
-  {
-	  const char *encoding_header;
-	  if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
-	  {
-		  //see if we support gzip
-		  bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
-	  }
+	{
+		const char *encoding_header;
+		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
+		{
+			//see if we support gzip
+			bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
+		}
+	}
   }
 
   bool bHaveLoadedgzip=false;
@@ -424,7 +427,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   }
 #endif
 
-  reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+  reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
   reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
   reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
   //browser support to prevent XSS

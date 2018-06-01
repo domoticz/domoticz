@@ -34,7 +34,7 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                     : deviceRegularTimersApi;
 
                 if (vm.isSelector) {
-                    vm.levelOptions = device.LevelNames
+                    vm.levelOptions = b64DecodeUnicode(device.LevelNames)
                         .split('|')
                         .slice(1)
                         .map(function (levelName, index) {

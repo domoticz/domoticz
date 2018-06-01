@@ -1723,7 +1723,7 @@ function Selector(item) {
 
         // Selector attributes
         var selector = this;
-        this.levelNames = item.LevelNames.split('|');
+        this.levelNames = b64DecodeUnicode(item.LevelNames).split('|');
         this.levelInt = item.LevelInt;
         this.levelName = this.levelNames[this.levelInt / 10];
         this.levelOffHidden = item.LevelOffHidden;

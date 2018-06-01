@@ -183,7 +183,7 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
    {
 	   writeData(device, "chargepump", "1");
 	   unsigned int wiper = static_cast<unsigned int>(level * (255.0 / 15.0));
-	   writeData(device, "wiper", boost::to_string(wiper));
+	   writeData(device, "wiper", std::to_string(wiper));
 	   break;
    }
 

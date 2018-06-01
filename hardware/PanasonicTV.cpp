@@ -209,7 +209,7 @@ std::string	CPanasonicNode::CPanasonicStatus::LogMessage()
 	if (m_nStatus == MSTAT_OFF)
 		return sLogText;
 	if (m_VolumeLevel != -1)
-		sLogText = "Volume: " + boost::to_string(m_VolumeLevel) + (m_Muted ? " - Muted" : "");
+		sLogText = "Volume: " + std::to_string(m_VolumeLevel) + (m_Muted ? " - Muted" : "");
 	return sLogText;
 }
 
@@ -509,7 +509,7 @@ std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::strin
 	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
 	head += "SOAPACTION: \"urn:schemas-upnp-org:service:RenderingControl:1#" + action + command + "\"\r\n";
 	head += "Content-Type: text/xml; charset=\"utf-8\"\r\n";
-	head += "Content-Length: " + boost::to_string(size) + "\r\n\r\n";
+	head += "Content-Length: " + std::to_string(size) + "\r\n\r\n";
 
 	return head + body;
 
@@ -535,7 +535,7 @@ std::string CPanasonicNode::buildXMLStringNetCtl(std::string command)
 	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
 	head += "SOAPACTION: \"urn:panasonic-com:service:p00NetworkControl:1#X_SendKey\"\r\n";
 	head += "Content-Type: text/xml; charset=\"utf-8\"\r\n";
-	head += "Content-Length: " + boost::to_string(size) + "\r\n";
+	head += "Content-Length: " + std::to_string(size) + "\r\n";
 	head += "\r\n";
 
 	return head + body;
@@ -724,7 +724,7 @@ void CPanasonicNode::SendCommand(const std::string &command, const int iValue)
 {
 	std::string	sPanasonicCall;
 	if (command == "setvolume")
-		sPanasonicCall = buildXMLStringRendCtl("Set", "Volume", boost::to_string(iValue));
+		sPanasonicCall = buildXMLStringRendCtl("Set", "Volume", std::to_string(iValue));
 	else
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Command: '%s'. Unknown command.", m_Name.c_str(), command.c_str());
 	

@@ -38,7 +38,7 @@ describe('event helpers', function()
 			end
 
 			utils.log('abc', utils.LOG_ERROR)
-			assert.is_same('Error (2.4.5): abc', printed)
+			assert.is_same('Error (2.4.6): abc', printed)
 		end)
 
 		it('shoud log INFO by default', function()

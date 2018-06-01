@@ -2551,7 +2551,7 @@ namespace http {
 						}
 						if (!szValues.empty())
 						{
-							szValues.insert(0, "#" + boost::lexical_cast<std::string>(pChild->groupID) + ". ");
+							szValues.insert(0, "#" + std::to_string(pChild->groupID) + ". ");
 						}
 						if (pChild->lastreceived != 0)
 						{

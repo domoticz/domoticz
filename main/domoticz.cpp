@@ -78,7 +78,7 @@ const char *szHelp =
 "\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
 "\t-sslkey file_path (if different from certificate file)\n"
 "\t-sslpass passphrase (to access to server private key in certificate)\n"
-"\t-sslmethod method (for SSL method)\n"
+"\t-sslmethod method (supported methods: tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server)\n"
 "\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
 "\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
@@ -96,6 +96,7 @@ const char *szHelp =
 "\t-startupdelay seconds (default=0)\n"
 "\t-nowwwpwd (in case you forgot the web server username/password)\n"
 "\t-nocache (do not return appcache, use only when developing the web pages)\n"
+"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
 #if defined WIN32
 "\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
@@ -109,13 +110,13 @@ const char *szHelp =
 "\t-debug    allow log trace level 3 \n"
 "\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 "\t-logthreadids (log thread ids; useful for trouble shooting.)\n"
-	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
+"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
-	"\t-daemon (run as background daemon)\n"
-	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
-	"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
+"\t-daemon (run as background daemon)\n"
+"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
+"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
 #endif
-	"";
+"";
 
 #ifndef WIN32
 struct _facilities {
@@ -171,6 +172,7 @@ bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
 bool g_bDontCacheWWW = false;
+_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
 bool g_bUseUpdater = true;
 
 int pidFilehandle = 0;
@@ -853,7 +855,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify SSL options");
 			return 1;
 		}
-		secure_webserver_settings.options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
+		secure_webserver_settings.ssl_options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
 	}
 	if (cmdLine.HasSwitch("-ssldhparam"))
 	{
@@ -883,6 +885,20 @@ int main(int argc, char**argv)
 	if (cmdLine.HasSwitch("-nocache"))
 	{
 		g_bDontCacheWWW = true;
+	}
+	if (cmdLine.HasSwitch("-wwwcompress"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwcompress") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a compress mode");
+			return 1;
+		}
+		std::string szmode = cmdLine.GetSafeArgument("-wwwcompress", 0, "on");
+		if (szmode == "off")
+			g_wwwCompressMode = http::server::WWW_FORCE_NO_GZIP_SUPPORT;
+		else if (szmode == "static")
+			g_wwwCompressMode = http::server::WWW_USE_STATIC_GZ_FILES;
+
 	}
 	std::string dbasefile = szUserDataFolder + "domoticz.db";
 #ifdef WIN32

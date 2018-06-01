@@ -137,7 +137,7 @@ void Comm5TCP::processSensorData(const std::string& line)
 	for (int i = 0; i < 16; ++i) {
 		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorbitfield & (1 << i))) || initSensorData) {
-			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
+			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + std::to_string(i + 1));
 		}
 	}
 	lastKnownSensorState = sensorbitfield;
@@ -161,7 +161,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 			unsigned int relaybitfield = ::strtol(tokens[1].c_str(), 0, 16);
 			for (int i = 0; i < 16; ++i) {
 				bool on = (relaybitfield & (1 << i)) != 0 ? true : false;
-				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + boost::lexical_cast<std::string>(i + 1));
+				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1));
 			}
 		}
 		else if (startsWith(line, "210") && (!startsWith(line, "210 OK"))) {
@@ -208,9 +208,9 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 			return false;
 
 		if (pSen->LIGHTING2.cmnd == light2_sOff)
-			write("RESET " + boost::lexical_cast<std::string>(Relay) + "\n");
+			write("RESET " + std::to_string(Relay) + "\n");
 		else
-			write("SET " + boost::lexical_cast<std::string>(Relay) + "\n");
+			write("SET " + std::to_string(Relay) + "\n");
 
 		return true;
 	}

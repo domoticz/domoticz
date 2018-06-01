@@ -739,18 +739,18 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	std::vector<std::vector<std::string> > result;
 	
 	// block this device if it is already added for another gateway hardware id
-
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID!=%d) AND (DeviceID=='%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
 	
 	if (result.size() > 0) {
 		return;
 	}
-
+	
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
+	
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-	if (result.size() < 1)
+	if (result.empty())
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
-
+		// New Hardware -> Create the corresponding devices Selector
 		if (customimage == 0) {
 			if (sID == 5) {
 				customimage = 16; //wall socket			

@@ -1696,9 +1696,6 @@
     <ClInclude Include="..\zip\zip.h">
       <Filter>zip\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\unzip.h">
-      <Filter>zip\Main</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\unzip_iterator.h">
       <Filter>zip\Main</Filter>
     </ClInclude>
@@ -2169,6 +2166,12 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Tado.h">
       <Filter>Devices\Tado</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zip\iowin32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zip\minizip_crypt.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2924,6 +2927,15 @@
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeScript.cpp">
       <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\unzip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\iowin32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\ioapi.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

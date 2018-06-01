@@ -857,9 +857,36 @@ describe('Time', function()
 
 						-- time between 18:00 and 06:00
 						local t = Time('2017-01-01 01:04:00')
-
 						assert.is_true(t.ruleMatchesBetweenRange('between sunset and sunrise'))
 
+						t = Time('2017-01-01 17:00:00')
+						assert.is_false(t.ruleMatchesBetweenRange('between sunset and sunrise'))
+					end)
+
+					it('every x minute between sunset and sunrise', function()
+						_G.timeofday = {
+							['SunriseInMinutes'] = 360 , -- 06:00
+							['SunsetInMinutes'] = 1080
+						}
+
+						-- time between 18:00 and 06:00
+						t = Time('2017-01-01 01:01:00')
+						assert.is_false(t.matchesRule('every 2 minutes between sunset and sunrise'))
+
+						t = Time('2017-01-01 01:01:00')
+						assert.is_true(t.matchesRule('every 1 minutes between sunset and sunrise'))
+
+						t = Time('2017-01-01 01:02:00')
+						assert.is_true(t.matchesRule('every 2 minutes between sunset and sunrise'))
+
+						t = Time('2017-01-01 17:00:00')
+						assert.is_false(t.matchesRule('every 2 minutes between sunset and sunrise'))
+
+						t = Time('2017-01-01 17:01:00')
+						assert.is_false(t.matchesRule('every 2 minutes between sunset and sunrise'))
+
+						t = Time('2017-01-01 17:01:00')
+						assert.is_false(t.matchesRule('every 1 minutes between sunset and sunrise'))
 					end)
 
 					it('between sunrise and sunset', function()

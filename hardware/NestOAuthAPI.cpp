@@ -691,7 +691,7 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 	{
 		if (thermostat.Serial.empty())
 		{
-			_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + boost::to_string(iThermostat) + " has not been initialized yet. Try again later.");
+			_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + std::to_string(iThermostat) + " has not been initialized yet. Try again later.");
 			return false;
 		}
 	}
@@ -761,7 +761,7 @@ bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	if (m_structures[iStructure].StructureId.empty())
 	{
-		_log.Log(LOG_NORM, "NestOAuthAPI: Structure "+boost::to_string(iStructure)+" has not been initialized yet. Try again later.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: Structure "+std::to_string(iStructure)+" has not been initialized yet. Try again later.");
 		return false;
 	}
 

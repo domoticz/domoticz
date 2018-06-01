@@ -608,7 +608,9 @@ describe('device', function()
 					"updateWaterflow",
 					"updateWeight",
 					"updateWetness",
-					"updateWind" }, values(dummies))
+					"updateWind",
+					"updateYouless"
+				}, values(dummies))
 			end)
 		end)
 
@@ -1195,6 +1197,33 @@ describe('device', function()
 			device.switchOff()
 			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
 		end)
+
+		it('should detect a youless device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myYouless',
+				['type'] = 'YouLess Meter',
+				['subType'] = 'YouLess counter',
+				['rawData'] = { [1] = 123, [2] = 666},
+				['additionalDataData'] = {
+					['counterToday'] = '1.234 kWh'
+				}
+			})
+
+			assert.is_same(123, device.counterDeliveredTotal)
+			assert.is_same(666, device.powerYield)
+			assert.is_same(1234, device.counterDeliveredToday)
+
+			device.updateYouless(4, 5)
+			assert.is_same({ {
+				['UpdateDevice'] = {
+					['_trigger'] = true,
+					['idx'] = 1,
+					['nValue'] = 0,
+					['sValue'] = '4;5'
+				}
+			} }, commandArray)
+		end)
+
 
 		it('should detect an rgbw device', function()
 

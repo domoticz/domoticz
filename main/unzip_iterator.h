@@ -94,7 +94,7 @@ namespace clx {
 			if (err != UNZ_OK)
 				return NULL;
 
-			file_size = info.uncompressed_size;
+			file_size = (uLong) info.uncompressed_size;
 			unsigned char *buf = (unsigned char*)malloc(file_size + ExtraAllocBytes);
 			if (buf == NULL)
 				return NULL;

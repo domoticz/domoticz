@@ -472,6 +472,21 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 		end
 
+		-- extract global_data module and make sure it is the first in the list
+		-- because then peeps can create some globals available everywhere before the other modules load
+		local globalIx
+		for i, moduleInfo in pairs(modules) do
+			if (moduleInfo.name == GLOBAL_DATA_MODULE) then
+				globalIx = i
+				break
+			end
+		end
+
+		if (globalIx ~= nil and globalIx > 1) then
+			local globalModule = modules[globalIx]
+			table.remove(modules, globalIx)
+			table.insert(modules, 1, globalModule)
+		end
 
 		if (mode == nil) then mode = 'device' end
 

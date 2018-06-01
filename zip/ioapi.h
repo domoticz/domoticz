@@ -45,6 +45,11 @@
 #include <stdlib.h>
 #include "zlib.h"
 
+/* Gentoo broke their zlib.h compatibility: https://bugs.gentoo.org/383179 */
+#ifndef OF
+#define OF(args) args
+#endif
+
 #if defined(USE_FILE32API)
 #define fopen64 fopen
 #define ftello64 ftell

@@ -35,7 +35,7 @@ extern "C" {
 }
 
 extern time_t m_StartTime;
-extern std::string szUserDataFolder;
+extern std::string szUserDataFolder, szStartupFolder;
 extern http::server::CWebServerHelper m_webservers;
 
 static std::string m_printprefix;
@@ -202,12 +202,12 @@ void CEventSystem::LoadEvents()
 	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
 	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
-	dzvents->m_runtimeDir = szUserDataFolder + "dzVents\\runtime\\";
+	dzvents->m_runtimeDir = szStartupFolder + "dzVents\\runtime\\";
 #else
 	m_lua_Dir = szUserDataFolder + "scripts/lua/";
 	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
-	dzvents->m_runtimeDir = szUserDataFolder + "dzVents/runtime/";
+	dzvents->m_runtimeDir = szStartupFolder + "dzVents/runtime/";
 #endif
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
@@ -935,6 +935,44 @@ void CEventSystem::GetCurrentMeasurementStates()
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_real);
+							break;
+						default:
+							continue; //not handled
+						}
+						utilityval = static_cast<float>(atof(szTmp));
+						isUtility = true;
+					}
+				}
+				else if (sitem.subType == sTypeManagedCounter)
+				{
+					if (splitresults.size() > 1) {
+						float usage = static_cast<float>(atof(splitresults[1].c_str()));
+                                                
+						if (usage < 0.0) {
+							usage = 0.0;
+						}
+
+						char szTmp[100];
+						sprintf(szTmp, "%.02f", usage);
+
+						float musage = 0;
+						_eMeterType metertype = (_eMeterType)sitem.switchtype;
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							musage = usage / EnergyDivider;
+							sprintf(szTmp, "%.03f kWh", musage);
+							break;
+						case MTYPE_GAS:
+							musage = usage / GasDivider;
+							sprintf(szTmp, "%.02f m3", musage);
+							break;
+						case MTYPE_WATER:
+							musage = usage / WaterDivider;
+							sprintf(szTmp, "%.02f m3", musage);
+							break;
+						case MTYPE_COUNTER:
 							break;
 						default:
 							continue; //not handled
@@ -3616,6 +3654,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		case pTypeGeneralSwitch:
 		case pTypeHomeConfort:
 		case pTypeRadiator1:
+		case pTypeFS20:
 			if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 				break;
 			//Add Lighting log

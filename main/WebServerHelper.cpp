@@ -108,7 +108,14 @@ namespace http {
 		}
 #endif
 
-		void CWebServerHelper::SetAuthenticationMethod(int amethod)
+		void CWebServerHelper::SetWebCompressionMode(const _eWebCompressionMode gzmode)
+		{
+			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
+				(*it)->SetWebCompressionMode(gzmode);
+			 }
+		}
+
+		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				(*it)->SetAuthenticationMethod(amethod);

@@ -122,9 +122,6 @@ void server_base::handle_stop() {
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
 		server_base(settings, user_request_handler) {
-#ifdef DEBUG_WWW
-	_log.Log(LOG_STATUS, "[web:%s] create server using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
-#endif
 	init(boost::bind(&server::init_connection, this),
 			boost::bind(&server::handle_accept, this, _1));
 }
@@ -154,9 +151,6 @@ ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler
 		settings_(ssl_settings),
 		context_(ssl_settings.get_ssl_method())
 {
-#ifdef DEBUG_WWW
-	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
-#endif
 	init(boost::bind(&ssl_server::init_connection, this),
 			boost::bind(&ssl_server::handle_accept, this, _1));
 }
@@ -166,9 +160,6 @@ ssl_server::ssl_server(const server_settings & settings, request_handler & user_
 		server_base(settings, user_request_handler),
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
 		context_(dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
-#ifdef DEBUG_WWW
-	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
-#endif
 	init(boost::bind(&ssl_server::init_connection, this),
 			boost::bind(&ssl_server::handle_accept, this, _1));
 }
@@ -180,7 +171,7 @@ void ssl_server::init_connection() {
 	// the following line gets the passphrase for protected private server keys
 	context_.set_password_callback(boost::bind(&ssl_server::get_passphrase, this));
 
-	if (settings_.options.empty()) {
+	if (settings_.ssl_options.empty()) {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL options parameter !", settings_.listening_port.c_str());
 	} else {
 		context_.set_options(settings_.get_ssl_options());
@@ -248,9 +239,7 @@ void ssl_server::init_connection() {
 				(std::istreambuf_iterator<char>()));
 		if (content.find("BEGIN DH PARAMETERS") != std::string::npos) {
 			context_.use_tmp_dh_file(settings_.tmp_dh_file_path);
-#ifdef DEBUG_WWW
-			_log.Log(LOG_STATUS, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
-#endif
+			//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,  "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		} else {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters from file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		}

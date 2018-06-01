@@ -444,6 +444,17 @@ private:
 	//Returns DeviceRowID
 	uint64_t UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction);
 
+	bool UpdateCalendarMeter(
+		const int HardwareID, 
+		const char* DeviceID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const bool shortLog, 
+		const long long MeterValue,
+		const long long MeterUsage,
+		const char* date);
+
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();
 
@@ -469,6 +480,8 @@ private:
 	std::string CheckUserVariable(const int vartype, const std::string &varvalue);
 	std::string CheckUserVariableName(const std::string &varname);
 	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
+	bool CheckDateSQL(const std::string &sDate);
+	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
