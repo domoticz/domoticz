@@ -22,7 +22,7 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                 vm.dimmerType = device.DimmerType;
 
                 vm.isDimmer = ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(device.SwitchType);
-                vm.isSelector = device.SubType === "Selector Switch";
+                vm.isSelector = (device.SwitchType === "Selector");
                 vm.isLED = (isLED(device.SubType));
                 vm.isCommandSelectionDisabled = vm.isSelector && device.LevelOffHidden;
                 vm.isSetpointTimers = (device.Type === 'Thermostat' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
