@@ -48,7 +48,7 @@ matrix:
         packages:
           - gcc-6
           - g++-6
-          - libboost1.55-all-dev
+          - libboost1.67-all-dev
           - cmake
           - cmake-data
           - libsqlite3-dev
