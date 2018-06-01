@@ -1623,47 +1623,25 @@ void CEnOceanESP3::ParseRadioDatagram()
 					}
 					else if (szST.find("GasSensor.04")==0)
 					{
-						//(EPP A5-09-04 Gas Sensor with Temp and Humidity)
-                        // DB3 = Humidity in 0.5% steps, 0...200 -> 0...100% RH (0x51 = 40%)
-                        // DB2 = Concentration in 10 ppm steps, 0...255 -> 0...2550 ppm (0x39 = 570 ppm)
-                        // DB1 = Temperature in 0.2C steps, 0...255 -> 0...51 C (0x7B = 24.6 C)
-                        // DB0 = flags (DB0.3: 1=data, 0=teach-in; DB0.2: 1=Hum Sensor available, 0=no Hum; DB0.1: 1=Temp sensor available, 0=No Temp; DB0.0 not used)
-                        // mBuffer[15] is RSSI as -dBm
-                        
-                        // Might be possible to shoehorn temp/hum/co2 into an RFX TEMP_HUM_BARO packet type (pTypeTEMP_HUM_BARO)
+						//(EPP A5-09-04 CO2 Gas Sensor with Temp and Humidity)
+						// DB3 = Humidity in 0.5% steps, 0...200 -> 0...100% RH (0x51 = 40%)
+						// DB2 = CO2 concentration in 10 ppm steps, 0...255 -> 0...2550 ppm (0x39 = 570 ppm)
+						// DB1 = Temperature in 0.2C steps, 0...255 -> 0...51 C (0x7B = 24.6 C)
+						// DB0 = flags (DB0.3: 1=data, 0=teach-in; DB0.2: 1=Hum Sensor available, 0=no Hum; DB0.1: 1=Temp sensor available, 0=No Temp; DB0.0 not used)
+						// mBuffer[15] is RSSI as -dBm (ie value of 100 means "-100 dBm"), but RssiLevel is in the range 0...15 (or reported as 12 if not known)
+						// Battery level is not reported by device, so use fixed value of 9 as per other sensor functions
+						
+						// TODO: Check sensor availability flags and only report humidity and/or temp if available.
+						// TODO: Report actual RSSI (scaled from dBm to 0...15 RSSI ?)
 
 						float temp = GetValueRange(DATA_BYTE1, 51, 0, 255, 0);
 						float hum = GetValueRange(DATA_BYTE3, 100, 0, 200, 0);
-						int co2 = (int)GetValueRange(DATA_BYTE2, 2550, 0, 255, 0);  // _tAirQualityMeter uses int for air quality value
-                        //float co2 = GetValueRange(DATA_BYTE2, 2550, 0, 255, 0);
-                        
-                        RBUF tsen;
-						memset(&tsen,0,sizeof(RBUF));
-						tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-						tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-						tsen.TEMP_HUM.subtype=sTypeTH5;
-						tsen.TEMP_HUM.rssi=12;   // original code uses an arbitrary fixed value for RSSI (it's only 4 bits)? But EnOcean ESP3 devices can report RSSI as -dBm...
-                        tsen.TEMP_HUM.id1=ID_BYTE2;
-						tsen.TEMP_HUM.id2=ID_BYTE1;
-						tsen.TEMP_HUM.battery_level=9;
-						tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
-						int at10=round(std::abs(temp*10.0f));
-						tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-						at10-=(tsen.TEMP_HUM.temperatureh*256);
-						tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-						tsen.TEMP_HUM.humidity=(BYTE)hum;
-						tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, -1);
-                        
-                        // Air Quality Sensor code adapted from CDomoticzHardwareBase::SendAirQualitySensor (in DomoticzHardware.cpp)
-                        _tAirQualityMeter co2sensor;
-                        co2sensor.len = sizeof(_tAirQualityMeter) - 1;
-                        co2sensor.type = pTypeAirQuality;
-                        co2sensor.subtype = sTypeVoltcraft;
-                        co2sensor.airquality = co2;
-                        co2sensor.id1 = ID_BYTE2;
-                        co2sensor.id2 = ID_BYTE1;
-                        sDecodeRXMessage(this, (const unsigned char *)&co2sensor, NULL, -1);
+						int co2 = (int)GetValueRange(DATA_BYTE2, 2550, 0, 255, 0);
+						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
+
+						// Report battery level as 9 and RSSI as 12
+						SendTempHumSensor(NodeID, 9, temp, hum, "GasSensor.04", 12)
+						SendAirQualitySensor((NodeID & 0xFF00) >> 8, NodeID & 0xFF, 9, co2, "GasSensor.04")						
 					}
 				}
 			}
