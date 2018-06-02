@@ -239,7 +239,7 @@ void ssl_server::init_connection() {
 				(std::istreambuf_iterator<char>()));
 		if (content.find("BEGIN DH PARAMETERS") != std::string::npos) {
 			context_.use_tmp_dh_file(settings_.tmp_dh_file_path);
-			//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,  "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
+			//_log.DEBUG(DEBUG_WEBSERVER, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		} else {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters from file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		}

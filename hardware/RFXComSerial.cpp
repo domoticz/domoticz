@@ -924,7 +924,12 @@ namespace http {
 				Response.IRESPONSE.KEELOQenabled = (request::findValue(&req, "Keeloq") == "on") ? 1 : 0;
 				Response.IRESPONSE.HCEnabled = (request::findValue(&req, "HC") == "on") ? 1 : 0;
 
-				m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+				if (pHardware)
+				{
+					CRFXBase *pBase = (CRFXBase *)pHardware;
+					pBase->SetRFXCOMHardwaremodes(Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
+				}
 			}
 			else
 			{

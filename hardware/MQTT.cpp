@@ -298,12 +298,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 					color.b = b;
 					brightnessAdj = hsb[2];
 				}
-				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MQTT: setcolbrightnessvalue: color: '%s', bri: '%s'", color.toString().c_str(), brightness.c_str());
+				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue: color: '%s', bri: '%s'", color.toString().c_str(), brightness.c_str());
 			}
 			else if (!hex.empty())
 			{
 				uint64_t ihex = hexstrtoui64(hex);
-				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MQTT: setcolbrightnessvalue: hex: '%s', ihex: %" PRIx64 ", bri: '%s', iswhite: '%s'", hex.c_str(), ihex, brightness.c_str(), iswhite.c_str());
+				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue: hex: '%s', ihex: %" PRIx64 ", bri: '%s', iswhite: '%s'", hex.c_str(), ihex, brightness.c_str(), iswhite.c_str());
 				uint8_t r = 0;
 				uint8_t g = 0;
 				uint8_t b = 0;
@@ -345,7 +345,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 						break;
 				}
 				if (iswhite == "true") color.mode = ColorModeWhite;
-				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MQTT: setcolbrightnessvalue: trgbww: %02x%02x%02x%02x%02x, color: '%s'", r, g, b, cw, ww, color.toString().c_str());
+				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue: trgbww: %02x%02x%02x%02x%02x, color: '%s'", r, g, b, cw, ww, color.toString().c_str());
 			}
 			else if (!hue.empty())
 			{
@@ -359,7 +359,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 				color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 				if (iswhite == "true") color.mode = ColorModeWhite;
-				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MQTT: setcolbrightnessvalue2: hue: %f, rgb: %02x%02x%02x, color: '%s'", iHue, r, g, b, color.toString().c_str());
+				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue2: hue: %f, rgb: %02x%02x%02x, color: '%s'", iHue, r, g, b, color.toString().c_str());
 			}
 
 			if (color.mode == ColorModeNone)

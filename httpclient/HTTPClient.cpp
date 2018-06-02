@@ -121,34 +121,29 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
 
 void HTTPClient::LogError(const long response_code)
 {
-#ifndef _DEBUG
-	if (_log.isTraceEnabled())
-#endif
+	switch (response_code)
 	{
-		switch (response_code)
-		{
-		case 400:
-			_log.Log(LOG_TRACE, "HTTP 400: Bad Request");
-			break;
-		case 401:
-			_log.Log(LOG_TRACE, "HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
-			break;
-		case 403:
-			_log.Log(LOG_TRACE, "HTTP 403: Forbidden. The request is valid, but the server is refusing action");
-			break;
-		case 404:
-			_log.Log(LOG_TRACE, "HTTP 404: Not Found");
-			break;
-		case 500:
-			_log.Log(LOG_TRACE, "HTTP 500: Internal Server Error");
-			break;
-		case 503:
-			_log.Log(LOG_TRACE, "HTTP 503: Service Unavailable");
-			break;
-		default:
-			_log.Log(LOG_TRACE, "HTTP return code is: %li", response_code);
-			break;
-		}
+	case 400:
+		_log.Debug(DEBUG_NORM, "HTTP 400: Bad Request");
+		break;
+	case 401:
+		_log.Debug(DEBUG_NORM, "HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
+		break;
+	case 403:
+		_log.Debug(DEBUG_NORM, "HTTP 403: Forbidden. The request is valid, but the server is refusing action");
+		break;
+	case 404:
+		_log.Debug(DEBUG_NORM, "HTTP 404: Not Found");
+		break;
+	case 500:
+		_log.Debug(DEBUG_NORM, "HTTP 500: Internal Server Error");
+		break;
+	case 503:
+		_log.Debug(DEBUG_NORM, "HTTP 503: Service Unavailable");
+		break;
+	default:
+		_log.Debug(DEBUG_NORM, "HTTP return code is: %li", response_code);
+		break;
 	}
 }
 

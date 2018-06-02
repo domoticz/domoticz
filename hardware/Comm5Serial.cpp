@@ -69,7 +69,6 @@ bool Comm5Serial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"Comm5 MA-4200: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_baudRate,

@@ -304,9 +304,9 @@ void C1Wire::BuildSensorList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "1-Wire: Searching sensors");
-#endif
+
+	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
+
 	m_sensors.clear();
 	m_system->GetDevices(devices);
 
@@ -341,9 +341,9 @@ void C1Wire::BuildSwitchList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "1-Wire: Searching switches");
-#endif
+
+	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching switches");
+
 	m_switches.clear();
 	m_system->GetDevices(devices);
 

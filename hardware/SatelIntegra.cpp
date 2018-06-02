@@ -764,10 +764,7 @@ bool SatelIntegra::ReadEvents()
 
 void SatelIntegra::ReportZonesViolation(const int Idx, const bool violation)
 {
-	if (m_mainworker.GetVerboseLevel() >= EVBL_ALL)
-	{
-		_log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", Idx, violation ? 3 : 1);
-	}
+	_log.Debug(DEBUG_HARDWARE, "Satel Integra: Report Zone %d = %d", Idx, violation ? 3 : 1);
 
 	m_zonesLastState[Idx - 1] = violation;
 

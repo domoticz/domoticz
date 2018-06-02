@@ -400,7 +400,6 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	UDP_terminate_listener = 0; //terminate udp listener service
 	eHEStatusReceived = 0;      //Ethernet eHouse status received flag (count of status from reset this flag)
 	eHWiFiStatusReceived = 0;   //eHouse WiFi status received flag (count of status from reset this flag)
-	LOG(LOG_STATUS, "[eHouse] Create");
 	VccRef = 0;
 	AdcRefMax = 0;
 	CalcCalibration = 0;
@@ -419,7 +418,8 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	{
 		//For Test of Auto Discovery Clean DeviceStatus & DeviceToPlansMap
 		//Clear altered database
-		LOG(LOG_STATUS, "Clearing Device Databases");
+		//VERY DANGEROUS !
+		_log.Debug(DEBUG_HARDWARE, "Clearing Device Databases");
 		m_sql.safe_query("DELETE FROM \"DeviceToPlansMap\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"DeviceStatus\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"Plans\" WHERE (ID>1)");
@@ -441,18 +441,18 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	}
 	if (eHEnableAutoDiscovery)
 	{
-		LOG(LOG_STATUS, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
 	}
 	if (eHEnableAlarmInputs)
 	{
-		LOG(LOG_STATUS, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
 	}
 	if (eHEnableProDiscovery)
 	{
-		LOG(LOG_STATUS, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
 	}
 
-	LOG(LOG_STATUS, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
+	_log.Debug(DEBUG_HARDWARE, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
 	int len = userCode.length();
 	if (len > 6) len = 6;
 	userCode.copy(PassWord, len);
@@ -466,7 +466,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		//return false;
 	}
 
-	LOG(LOG_STATUS, "eHouse UDP/TCP: Create instance");
+	_log.Debug(DEBUG_HARDWARE, "eHouse UDP/TCP: Create instance");
 	EventsCountInQueue = 0;
 	m_HwdID = ID;
 	HwID = m_HwdID;
@@ -508,7 +508,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 //////////////////////////////////////////////////////////////////////
 eHouseTCP::~eHouseTCP()
 {
-	LOG(LOG_STATUS, "eHouse: Destroy instance");
+	_log.Debug(DEBUG_HARDWARE, "eHouse: Destroy instance");
 }
 /////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StartHardware()
@@ -519,7 +519,7 @@ bool eHouseTCP::StartHardware()
 #endif
 
 #ifdef DEBUG_eHouse
-	LOG(LOG_STATUS, "eHouse: Start Hardware");
+	_log.Debug(DEBUG_HARDWARE, "eHouse: Start Hardware");
 #endif
 
 #ifdef UDP_USE_THREAD
@@ -591,7 +591,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	TCPSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (TCPSocket < 0)       //Check if socket was created
 	{
-		_log.Log(LOG_STATUS, "[TCP Client Status] Could not create socket");
+		_log.Log(LOG_ERROR, "[TCP Client Status] Could not create socket");
 		return -1;                              //!!!! Counldn't Create Socket
 	}
 	server.sin_addr.s_addr = m_addr.sin_addr.s_addr;
@@ -600,7 +600,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
 	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{
-		_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
+		_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
 		return -1;                              //!!!! Counldn't Create Socket
 	}
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Authorizing");
@@ -609,7 +609,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	{
 		if ((status < 0) || (!(iter--)))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
 			closesocket(TCPSocket);
 			return -1;                              //!!!! Counldn't Create Socket
 		}
@@ -630,14 +630,13 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		TerminateUDP();
 		return -1;
 	}
-	//_log.Log(LOG_STATUS, "[TCP Cli Status] Sending ch-re");
 	status = 0;
 	iter = 5;
 	while ((status = send(TCPSocket, (char *)&challange, 13, 0)) != 13)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error sending chalange to: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error sending chalange to: %s", line);
 			closesocket(TCPSocket);
 			return -1;                              //!!!! Counldn't Create Socket
 		}
@@ -661,7 +660,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error query: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error query: %s", line);
 			closesocket(TCPSocket);
 			return -1;
 		}
@@ -763,7 +762,7 @@ void eHouseTCP::DestroySocket()
 	if (m_socket != INVALID_SOCKET)
 	{
 #ifdef DEBUG_eHouse
-		LOG(LOG_STATUS, "eHouse: destroy socket");
+		_log.Debug(DEBUG_HARDWARE, "eHouse: destroy socket");
 #endif
 		try
 		{
@@ -808,7 +807,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				}
 				if (Lev == lv)
 				{
-					LOG(LOG_STATUS, "[EX] Execute pgm %d", i);
+					_log.Debug(DEBUG_HARDWARE, "[EX] Execute pgm %d", i);
 					ev[2] = 2;//exec program/scene
 					ev[3] = (unsigned char)i;
 					AddToLocalEvent(ev, 0);
@@ -825,7 +824,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				}
 				if (Lev == lv)
 				{
-					LOG(LOG_STATUS, "[EX] Execute ADC pgm %d", i);
+					_log.Debug(DEBUG_HARDWARE, "[EX] Execute ADC pgm %d", i);
 					ev[2] = 97;//exec ADC program/scene
 					ev[3] = (unsigned char)i;
 					AddToLocalEvent(ev, 0);
@@ -925,7 +924,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	memset(proev, 0, sizeof(proev));
 	if ((output->ICMND.packettype == pTypeGeneralSwitch) && (output->ICMND.subtype == sSwitchTypeSelector))
 	{
-		//LOG(LOG_STATUS, "SW - Type Selector\r\n");
+		//_log.Debug(DEBUG_HARDWARE, "SW - Type Selector\r\n");
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
 		int32_t ID = xcmd->id;
 		int level = xcmd->level;

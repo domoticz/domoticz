@@ -824,7 +824,7 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 	s << "code=" << sPincode << "&client_id=" << sProductid << "&client_secret=" << sSecret << "&grant_type=authorization_code";
 	std::string sPostData = s.str();
 
-	_log.Log(LOG_TRACE, "NestOAuthAPI: postdata= " + sPostData);
+	_log.Debug(DEBUG_HARDWARE, "NestOAuthAPI: postdata= " + sPostData);
 	_log.Log(LOG_NORM, "NestOAuthAPI: Doing POST request to URL: " + NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL);
 
 	try 

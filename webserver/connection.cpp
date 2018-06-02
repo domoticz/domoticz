@@ -442,7 +442,7 @@ void connection::reset_read_timeout() {
 /// stop connection on read timeout
 void connection::handle_read_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
-		//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,  "%s -> handle read timeout", host_endpoint_address_.c_str());
+		//_log.DEBUG(DEBUG_WEBSERVER, "%s -> handle read timeout", host_endpoint_address_.c_str());
 		connection_manager_.stop(shared_from_this());
 	}
 }

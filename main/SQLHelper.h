@@ -486,7 +486,6 @@ private:
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
-	void LogQueryResult(TSqlQueryResult &result);
 };
 
 extern CSQLHelper m_sql;

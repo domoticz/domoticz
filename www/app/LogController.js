@@ -5,10 +5,12 @@ define(['app'], function (app) {
 		$scope.logitems = [];
 		$scope.logitems_status = [];
 		$scope.logitems_error = [];
-		var LOG_ERROR = 0;
-		var LOG_STATUS = 1;
-		var LOG_NORM = 2;
-		var LOG_TRACE = 3;
+		$scope.logitems_debug = [];
+		var LOG_NORM = 0x0000001;
+		var LOG_STATUS = 0x0000002;
+		var LOG_ERROR = 0x0000004;
+		var LOG_DEBUG = 0x0000008;
+		var LOG_ALL = 0xFFFFFFF;
 
 		$scope.RefreshLog = function () {
 			if (typeof $scope.mytimer != 'undefined') {
@@ -29,7 +31,7 @@ define(['app'], function (app) {
 			var lastscrolltop = $("#logcontent #logdata").scrollTop();
 			var llogtime = $scope.LastLogTime;
 			$http({
-				url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime + "&loglevel=" + LOG_NORM,
+			    url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime + "&loglevel=" + LOG_ALL,
 				async: false,
 				dataType: 'json'
 			}).then(function successCallback(response) {
@@ -62,22 +64,35 @@ define(['app'], function (app) {
 					            mclass: logclass,
 					            text: lmessage
 					        });
-					        if (llogtime != 0) {
-					            if (item.level == LOG_ERROR) {
-					                //Error
-					                $scope.logitems_error = $scope.logitems_error.concat({
-					                    mclass: logclass,
-					                    text: lmessage
-					                });
-					            }
-					            else if (item.level == LOG_STATUS) {
-					                //Status
-					                $scope.logitems_status = $scope.logitems_status.concat({
-					                    mclass: logclass,
-					                    text: lmessage
-					                });
-					            }
-					        }
+					        if ($scope.logitems.length >= 300)
+					            $scope.logitems.splice(0, ($scope.logitems.length - 300));
+					        if (item.level == LOG_ERROR) {
+					            //Error
+					            $scope.logitems_error = $scope.logitems_error.concat({
+					                mclass: logclass,
+					                text: lmessage
+					            });
+					            if ($scope.logitems_error.length >= 300)
+					                $scope.logitems_error.splice(0, ($scope.logitems_error.length - 300));
+                            }
+					        else if (item.level == LOG_STATUS) {
+					            //Status
+					            $scope.logitems_status = $scope.logitems_status.concat({
+					                mclass: logclass,
+					                text: lmessage
+					            });
+					            if ($scope.logitems_status.length >= 300)
+					                $scope.logitems_status.splice(0, ($scope.logitems_status.length - 300));
+                            }
+					        else if (item.level == LOG_DEBUG) {
+					            //Debug
+					            $scope.logitems_debug = $scope.logitems_debug.concat({
+					                mclass: logclass,
+					                text: lmessage
+					            });
+					            if ($scope.logitems_debug.length >= 300)
+					                $scope.logitems_debug.splice(0, ($scope.logitems_debug.length - 300));
+                            }
                         }
 					});
 				}
@@ -89,46 +104,6 @@ define(['app'], function (app) {
 					$scope.RefreshLog();
 				}, 5000);
 			});
-			if (llogtime == 0) {
-				//Error
-				$http({
-					url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime + "&loglevel=" + LOG_ERROR,
-					async: false,
-					dataType: 'json'
-				}).then(function successCallback(response) {
-					var data = response.data;
-					if (typeof data.result != 'undefined') {
-						$.each(data.result, function (i, item) {
-							var message = item.message.replace(/\n/gi, "<br>");
-							var logclass = "";
-							logclass = getLogClass(item.level);
-							$scope.logitems_error = $scope.logitems_error.concat({
-								mclass: logclass,
-								text: message
-							});
-						});
-					}
-				});
-				//Status
-				$http({
-					url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime + "&loglevel=" + LOG_STATUS,
-					async: false,
-					dataType: 'json'
-				}).then(function successCallback(response) {
-					var data = response.data;
-					if (typeof data.result != 'undefined') {
-						$.each(data.result, function (i, item) {
-							var message = item.message.replace(/\n/gi, "<br>");
-							var logclass = "";
-							logclass = getLogClass(item.level);
-							$scope.logitems_status = $scope.logitems_status.concat({
-								mclass: logclass,
-								text: message
-							});
-						});
-					}
-				});
-			}
 		}
 
 		$scope.ClearLog = function () {
@@ -145,6 +120,7 @@ define(['app'], function (app) {
 				$scope.logitems = [];
 				$scope.logitems_error = [];
 				$scope.logitems_status = [];
+				$scope.logitems_debug = [];
 				$scope.mytimer = $interval(function () {
 					$scope.RefreshLog();
 				}, 5000);
@@ -160,6 +136,7 @@ define(['app'], function (app) {
 			$("#logcontent #logdata").height(pheight - 160);
 			$("#logcontent #logdata_status").height(pheight - 160);
 			$("#logcontent #logdata_error").height(pheight - 160);
+			$("#logcontent #logdata_debug").height(pheight - 160);
 		}
 
 		init();

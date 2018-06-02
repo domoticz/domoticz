@@ -1640,7 +1640,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 						// Report battery level as 9 and RSSI as 12
-						SendTempHumSensor(NodeID, 9, temp, hum, "GasSensor.04", 12);
+						SendTempHumSensor(NodeID, 9, temp, round(hum), "GasSensor.04", 12);
 						SendAirQualitySensor((NodeID & 0xFF00) >> 8, NodeID & 0xFF, 9, co2, "GasSensor.04");
 					}
 				}

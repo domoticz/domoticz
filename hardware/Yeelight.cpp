@@ -143,7 +143,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	result = m_sql.safe_query("SELECT nValue, LastLevel, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d)", m_HwdID, szDeviceID, pTypeColorSwitch);
 	int yeelightColorMode = atoi(syeelightColorMode.c_str());
 	if (yeelightColorMode > 0) {
-		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
+		_log.Debug(DEBUG_HARDWARE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
 	}
 	if (result.size() < 1)
 	{
@@ -381,14 +381,14 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	if (sendOnFirst) {
 		strcpy(request, "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n");
 		request_length = strlen(request);
-		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight: sending request '%s'", request);
+		_log.Debug(DEBUG_HARDWARE, "Yeelight: sending request '%s'", request);
 		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 		sleep_milliseconds(50);
 	}
 
 	strcpy(request, message.c_str());
 	request_length = strlen(request);
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight: sending request '%s'", request);
+	_log.Debug(DEBUG_HARDWARE, "Yeelight: sending request '%s'", request);
 	boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 	sleep_milliseconds(50);
 
@@ -396,7 +396,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		strcpy(request, message2.c_str());
 		request_length = strlen(request);
-		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight: sending request '%s'", request);
+		_log.Debug(DEBUG_HARDWARE, "Yeelight: sending request '%s'", request);
 		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 		sleep_milliseconds(50);
 	}

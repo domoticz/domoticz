@@ -1034,7 +1034,7 @@ int cWebem::CountSessions()
 
 void cWebem::CleanSessions()
 {
-	//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] cleaning sessions...", GetPort().c_str());
+	_log.Debug(DEBUG_WEBSERVER, "[web:%s] cleaning sessions...", GetPort().c_str());
 
 	int before = CountSessions();
 	// Clean up timed out sessions from memory
@@ -1333,7 +1333,7 @@ std::string cWebemRequestHandler::generateSessionID()
 
 	std::string sessionId = GenerateMD5Hash(base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size()));
 
-	//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] generate new session id token %s", myWebem->GetPort().c_str(), sessionId.c_str());
+	_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new session id token %s", myWebem->GetPort().c_str(), sessionId.c_str());
 
 	return sessionId;
 }
@@ -1351,7 +1351,7 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 
 	std::string authToken = base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size());
 
-	//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] generate new authentication token %s", myWebem->GetPort().c_str(), authToken.c_str());
+	_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token %s", myWebem->GetPort().c_str(), authToken.c_str());
 
 	session_store_impl_ptr sstore = myWebem->GetSessionStore();
 	if (sstore != NULL)
@@ -1786,7 +1786,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session)
 		return false;
 	}
 
-	//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+	_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 
 	if (session.rights == 2)
 	{
@@ -1829,7 +1829,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session)
 
 		if (!userExists || sessionExpires)
 		{
-			//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
 			removeAuthToken(session.id);
 			return false;
 		}
@@ -1837,7 +1837,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session)
 		WebEmSession* oldSession = myWebem->GetSession(session.id);
 		if (oldSession == NULL)
 		{
-			//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 			myWebem->AddSession(session);
 		}
 	}
@@ -1865,7 +1865,7 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 
 void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
-	//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "WEBH : Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
+	_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
 
 	// Initialize session
 	WebEmSession session;
@@ -1940,7 +1940,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			if ((fpos != std::string::npos) && (upos != std::string::npos))
 			{
 				std::string sSID = scookie.substr(fpos + 4, upos-fpos-4);
-				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Logout : remove session %s", sSID.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());
 				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
 				if (itt != myWebem->m_sessions.end())
 				{
@@ -2069,7 +2069,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				{
 					if (mInfo.mtime_support && !mInfo.is_modified)
 					{
-						//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
+						_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
 						rep = reply::stock_reply(reply::not_modified);
 						return;
 					}
@@ -2096,7 +2096,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		else if (mInfo.mtime_support && !mInfo.is_modified)
 		{
 			rep = reply::stock_reply(reply::not_modified);
-			//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
 			return;
 		}
 		else if (content_type.find("image/") != std::string::npos)
@@ -2174,7 +2174,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 	else if (session.forcelogin == true)
 	{
-		//if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
+		_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
 
 		myWebem->RemoveSession(session.id);
 		removeAuthToken(session.id);

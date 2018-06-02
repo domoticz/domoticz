@@ -2050,8 +2050,8 @@ void GetLightStatus(
 		}
 		break;
 	}
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
-		dType, dSubType, nValue, sValue.c_str(), llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, lstatus.c_str());
+	//_log.Debug(DEBUG_NORM, "RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
+		//dType, dSubType, nValue, sValue.c_str(), llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, lstatus.c_str());
 }
 
 /**

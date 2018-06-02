@@ -1275,7 +1275,7 @@ void CNetatmo::GetThermostatDetails()
 
 	if (!ret)
 	{
-		_log.Log(LOG_STATUS, "Netatmo: Error connecting to Server...");
+		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 		return;
 	}
 #endif

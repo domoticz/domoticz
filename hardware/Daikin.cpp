@@ -148,7 +148,7 @@ void CDaikin::Do_Work()
 
 bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_STATUS, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
@@ -179,7 +179,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		int child_sensor_id = pSwitch->unitcode;
 		bool command = pSwitch->cmnd;
 
-		_log.Log(LOG_STATUS, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
+		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
 
 
 		if (node_id == 1)
@@ -221,7 +221,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
 
-		_log.Log(LOG_STATUS, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
+		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
 
 		char szTmp[10];
 		sprintf(szTmp, "%.1f", pMeter->temp);
@@ -243,7 +243,7 @@ void CDaikin::SetSetpoint(const int idx, const float temp)
 {
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Set Point...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Set Point...");
 
 	std::stringstream szURL;
 
@@ -615,7 +615,7 @@ void CDaikin::SetLedOnOFF(const bool OnOFF)
 {
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Set Led ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Set Led ...");
 	
 	std::stringstream szURL;
 
@@ -652,7 +652,7 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 {
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Set Point...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Group On/Off...");
 
 	std::stringstream szURL;
 
@@ -790,7 +790,7 @@ void CDaikin::SetModeLevel(const int NewLevel)
 
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Mode ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Mode Level...");
 
 	std::stringstream szURL;
 
@@ -849,7 +849,7 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Mode ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Rate ...");
 
 	std::stringstream szURL;
 
@@ -902,10 +902,9 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 }
 void CDaikin::SetF_DirLevel(const int NewLevel)
 {
-
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Mode ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Dir Level ...");
 
 	std::stringstream szURL;
 

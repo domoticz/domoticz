@@ -163,7 +163,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 
 	m_Socket = NULL;
 
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Kodi: (%s) Created.", m_Name.c_str());
+	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
 
 	std::vector<std::vector<std::string> > result2;
 	result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, m_szDevID);
@@ -179,7 +179,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 CKodiNode::~CKodiNode(void)
 {
 	handleDisconnect();
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Kodi: (%s) Destroyed.", m_Name.c_str());
+	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
 }
 
 void CKodiNode::handleMessage(std::string& pMessage)
