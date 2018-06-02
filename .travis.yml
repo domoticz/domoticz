@@ -47,11 +47,9 @@ matrix:
         sources:
           - george-edison55-precise-backports  # cmake
           - ubuntu-toolchain-r-test
-          - boost-latest
         packages:
           - gcc-6
           - g++-6
-          - libboost1.65.1-all-dev
           - cmake
           - cmake-data
           - libsqlite3-dev
@@ -65,6 +63,13 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
     script:
+      - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz
+      - tar xfz boost_1_67_0.tar.gz
+      - cd boost_1_67_0/
+      - ./bootstrap.sh
+      - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+      - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+      - cd ..
       - (cd open-zwave-read-only; wget http://www.domoticz.com/domo.patch; patch -p1 < domo.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
