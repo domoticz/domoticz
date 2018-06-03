@@ -14,6 +14,8 @@
 #include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/md5.h>
+#include <chrono>
+#include <thread>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -435,12 +437,12 @@ bool isInt(const std::string &s)
 
 void sleep_seconds(const long seconds)
 {
-	boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
+	std::this_thread::sleep_for(std::chrono::seconds(seconds));
 }
 
 void sleep_milliseconds(const long milliseconds)
 {
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(milliseconds));
+	std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
 int createdir(const char *szDirName, int secattr)
