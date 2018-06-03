@@ -3942,7 +3942,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 			unsigned char ParentType = (unsigned char)atoi(sd[3].c_str());
 			unsigned char ParentSubType = (unsigned char)atoi(sd[4].c_str());
 			unsigned char ParentUnit = (unsigned char)atoi(sd[5].c_str());
-			m_mainworker.m_eventsystem.ProcessDevice(ParentHardwareID, ParentID, ParentUnit, ParentType, ParentSubType, signallevel, batterylevel, nValue, sValue, ParentName, 0);
+			m_mainworker.m_eventsystem.ProcessDevice(ParentHardwareID, ParentID, ParentUnit, ParentType, ParentSubType, signallevel, batterylevel, nValue, sValue, ParentName);
 
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
@@ -4598,7 +4598,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	_log.Debug(DEBUG_NORM, "SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(), HardwareID, ID, devType, subType, nValue, sValue);
 
 	if (bDeviceUsed)
-		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
+		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname);
 	return ulID;
 }
 

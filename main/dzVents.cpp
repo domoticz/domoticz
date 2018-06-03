@@ -517,7 +517,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if (sitem.ID == itt->DeviceID && itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
+			if (sitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 			{
 				triggerDevice = true;
 				sitem.lastUpdate = itt->lastUpdate;
@@ -717,7 +717,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if (sgitem.ID == itt->DeviceID && itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
+			if (sgitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
 			{
 				triggerScene = true;
 				sgitem.lastUpdate = itt->lastUpdate;
@@ -798,7 +798,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if (uvitem.ID == itt->varId && itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
+			if (uvitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
 			{
 				triggerVar = true;
 				uvitem.lastUpdate = itt->lastUpdate;
