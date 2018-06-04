@@ -1,5 +1,12 @@
 #!/bin/sh
 
+for pid in $(pidof -x makerelease); do
+    if [ $pid != $$ ]; then
+        echo "[$(date)] : Process is already running with PID $pid"
+        exit 1
+    fi
+done
+
 # We use sourceforge to stash our beta/release archives
 # To be able to upload, you need to install sshpass (sudo apt-get install sshpass)
 # and after installation (first time) ssh to sourceforge so the key is accepted
