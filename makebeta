@@ -1,8 +1,9 @@
 #!/bin/sh
 
-for pid in $(pidof -x makebeta); do
+me=`basename "$0"`
+for pid in $(pidof -x $me); do
     if [ $pid != $$ ]; then
-        echo "[$(date)] : Process is already running with PID $pid"
+        echo "[$(date)] : Process $me is already running with PID $pid"
         exit 1
     fi
 done
