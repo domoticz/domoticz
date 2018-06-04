@@ -188,7 +188,7 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 	lua_setglobal(lua_state, "request");
 
 	CEventSystem::_tEventQueue item;
-	item.DeviceID = 0;
+	item.id = 0;
 	m_mainworker.m_eventsystem.ExportDeviceStatesToLua(lua_state, item);
 
 	// Push all url parameters as a map indexed by the parameter name
