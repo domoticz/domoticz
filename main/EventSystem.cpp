@@ -987,7 +987,14 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeRAIN:
 			if (splitresults.size() == 2)
 			{
-				//get lowest value of today
+				rainmm = 0;
+				rainmmlasthour = static_cast<float>(atof(splitresults[0].c_str())) / 100.0f;
+				isRain = true;
+				weatherval = rainmmlasthour;
+				isWeather = true;
+
+				//Calculate the total rainfall of today
+
 				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
@@ -1018,10 +1025,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 						total_real = atof(sd2[1].c_str());
 					}
 					rainmm = float(total_real);
-					rainmmlasthour = static_cast<float>(atof(splitresults[0].c_str())) / 100.0f;
-					isRain = true;
-					weatherval = rainmmlasthour;
-					isWeather = true;
 				}
 			}
 			break;
