@@ -37,8 +37,8 @@ private:
 	void Do_Work();
 	void GetMeterDetails();
 
-	int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, std::string tmpParameter);
-	std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, std::string tmpParameter);
-	float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, std::string tmpParameter);
-	int CDenkoviDevices::DenkoviCheckForIO(std::string tmpstr, std::string tmpIoType);
+	int DenkoviGetIntParameter(std::string tmpstr, std::string tmpParameter);
+	std::string DenkoviGetStrParameter(std::string tmpstr, std::string tmpParameter);
+	float DenkoviGetFloatParameter(std::string tmpstr, std::string tmpParameter);
+	int DenkoviCheckForIO(std::string tmpstr, std::string tmpIoType);
 };
