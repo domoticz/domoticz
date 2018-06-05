@@ -110,7 +110,6 @@ define(['app'], function (app) {
         return {
             timerTypes: getTimerTypes(),
             command: getCommandOptions(),
-            dimmerLevel: getDimmerLevelOptions(),
             month: getMonthOptions(),
             monthday: getMonthdayOptions(),
             weekday: getWeekdayOptions(),
@@ -152,19 +151,6 @@ define(['app'], function (app) {
                 {label: $.t('On'), value: 0},
                 {label: $.t('Off'), value: 1},
             ]
-        }
-
-        function getDimmerLevelOptions() {
-            var options = [];
-
-            for (var i = 1; i <= 100; i++) {
-                options.push({
-                    label: i + '%',
-                    value: i
-                });
-            }
-
-            return options;
         }
 
         function getMonthOptions() {
