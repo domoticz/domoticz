@@ -277,6 +277,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
 		{ HTYPE_Honeywell, "Honeywell Thermostat" },
 		{ HTYPE_Tado, "Tado Thermostat"},
+		{ HTYPE_DenkoviDevices, "Denkovi Modules with LAN (HTTP) Interface"},
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1(Table, hType);
@@ -3550,6 +3551,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_NefitEastLAN:
 	case HTYPE_DenkoviSmartdenLan:
 	case HTYPE_DenkoviSmartdenIPInOut:
+	case HTYPE_DenkoviDevices:
 	case HTYPE_Ec3kMeterTCP:
 	case HTYPE_MultiFun:
 	case HTYPE_ZIBLUETCP:
