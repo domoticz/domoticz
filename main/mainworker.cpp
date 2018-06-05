@@ -111,6 +111,7 @@
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
 #include "../hardware/DenkoviSmartdenIPInOut.h"
+#include "../hardware/DenkoviDevices.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
@@ -892,6 +893,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DenkoviSmartdenIPInOut:
 		//LAN
 		pHardware = new CDenkoviSmartdenIPInOut(ID, Address, Port, Password, Mode1);
+		break;
+	case HTYPE_DenkoviDevices:
+		//LAN
+		pHardware = new CDenkoviDevices(ID, Address, Port, Password, Mode1, Mode2);
 		break;
 	case HTYPE_HEOS:
 		//HEOS by DENON
