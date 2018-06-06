@@ -11879,9 +11879,9 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, c
 	//Check if we have an On-Delay, if yes, add it to the tasker
 	if (((bIsOn) && (iOnDelay != 0)) || ExtraDelay)
 	{
-		if (ExtraDelay != 0)
+		if (iOnDelay + ExtraDelay != 0)
 		{
-			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchcmd.c_str(), ExtraDelay);
+			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchcmd.c_str(), iOnDelay + ExtraDelay);
 		}
 		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(static_cast<float>(iOnDelay + ExtraDelay), idx, switchcmd, level, color, "Switch with Delay"));
 		return true;

@@ -580,11 +580,11 @@ define(['app'], function (app) {
         }
 
         function isOnDelayAvailable() {
-            return [0, 7, 9, 18].includes(vm.device.SwitchTypeVal);
+            return [0, 7, 9, 11, 18].includes(vm.device.SwitchTypeVal);
         }
 
         function isOffDelayAvailable() {
-            return [0, 7, 9, 18, 19, 20].includes(vm.device.SwitchTypeVal);
+            return [0, 7, 9, 11, 18, 19, 20].includes(vm.device.SwitchTypeVal);
         }
 
         function isSwitchIconAvailable() {
