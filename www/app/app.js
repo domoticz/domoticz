@@ -274,7 +274,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
             };
 
             device.isSelector = function() {
-                return this.SubType === "Selector Switch";
+                return this.SwitchType === "Selector";
             };
 
             device.isLED = function() {
@@ -282,8 +282,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
             };
 
             device.getLevels = function() {
-                return this.LevelNames ? atob(this.LevelNames).split('|') : [];
+                return this.LevelNames ? b64DecodeUnicode(this.LevelNames).split('|') : [];
             };
+
+            device.getLevelActions = function() {
+                return this.LevelActions ? b64DecodeUnicode(this.LevelActions).split('|') : [];
+			};
 
             device.getSelectorLevelOptions = function () {
                 return this.getLevels()
