@@ -953,6 +953,9 @@ Device.create = function (item) {
         case "smoke":
             dev = new Smoke(item);
             break;
+        case "speaker":
+            dev = new Dimmer(item);
+            break;
         case "temp":
         case "temperature":
             dev = new Temperature(item);
@@ -1418,7 +1421,11 @@ function Dimmer(item) {
         this.haveDimmer = true;
         this.data = '';
         this.smallStatus = (this.status == "Off") ? 'Off' : item.Level + "%";
-        this.image = (this.status == "Off") ? "images/Dimmer48_Off.png" : "images/Dimmer48_On.png";
+        if (item.CustomImage != 0) {
+            this.image = (this.status == "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+        } else {
+			this.image = (this.status == "Off") ? "images/Dimmer48_Off.png" : "images/Dimmer48_On.png";
+        }
         this.status = TranslateStatus(this.status);
     }
 }
