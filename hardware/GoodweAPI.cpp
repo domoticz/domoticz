@@ -432,6 +432,7 @@ void GoodweAPI::ParseDevice(Json::Value device, const std::string &sStationId, c
 	std::string sErrorMsg = device[DEVICE_ERROR_MSG].asString();
 	std::string sStatus = device[DEVICE_STATUS].asString();
 
+
 	// convert currentPower and totalPower to floats
 
 	float currentPowerW = getPowerWatt(sCurrentPower);
@@ -447,7 +448,13 @@ void GoodweAPI::ParseDevice(Json::Value device, const std::string &sStationId, c
 		ChildID = ChildID + 10;
 	}
 
-	SendKwhMeter(NodeID, ChildID, 255, currentPowerW, totalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
+	// do not send meter values when status is not normal (meter values are 0 when offline)
+	// It is unknown if other cases exist where 0 is returned, so we compare to "Normal"
+
+	if (sStatus.compare("Normal") == 0)
+        {
+		SendKwhMeter(NodeID, ChildID, 255, currentPowerW, totalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
+	}
 	SendTextSensor(NodeID, ChildID + 1 , 255, sStatus, sStationName + " " + sDeviceSerial + " status");
 	SendTextSensor(NodeID, ChildID + 2 , 255, sErrorMsg, sStationName + " " + sDeviceSerial + " error");
 }
