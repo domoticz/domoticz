@@ -2427,6 +2427,9 @@ bool CSQLHelper::OpenDatabase()
 		{
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenIPInOut);
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenLan);
+		}
+		if (dbversion < 130)
+		{
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviDevices);
 		}
 		if (dbversion < 124)
