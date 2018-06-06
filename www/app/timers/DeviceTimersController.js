@@ -1,13 +1,16 @@
 define(['app', 'timers/factories', 'timers/components'], function (app) {
 
-    app.controller('DeviceTimersController', function ($scope, $routeParams, deviceApi, deviceLightApi, deviceRegularTimersApi, deviceSetpointTimersApi, deviceTimerOptions, deviceTimerConfigUtils) {
+    app.controller('DeviceTimersController', function ($scope, $routeParams, deviceApi, deviceLightApi, deviceRegularTimersApi, deviceSetpointTimersApi, deviceTimerOptions, deviceTimerConfigUtils, utils) {
         var vm = this;
         var deviceTimers;
 
+        var deleteConfirmationMessage = $.t('Are you sure to delete this timers?\n\nThis action can not be undone...');
+        var clearConfirmationMessage = $.t('Are you sure to delete ALL timers?\n\nThis action can not be undone!');
+
         vm.addTimer = addTimer;
         vm.updateTimer = updateTimer;
-        vm.deleteTimer = deleteTimer;
-        vm.clearTimers = clearTimers;
+        vm.deleteTimer = utils.confirmDecorator(deleteTimer, deleteConfirmationMessage);
+        vm.clearTimers = utils.confirmDecorator(clearTimers, clearConfirmationMessage);
 
         init();
 
@@ -21,9 +24,9 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                 vm.colorSettingsType = device.SubType;
                 vm.dimmerType = device.DimmerType;
 
-                vm.isDimmer = ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(device.SwitchType);
-                vm.isSelector = (device.SwitchType === "Selector");
-                vm.isLED = (isLED(device.SubType));
+                vm.isDimmer = device.isDimmer();
+                vm.isSelector = device.isSelector();
+                vm.isLED = device.isLED();
                 vm.isCommandSelectionDisabled = vm.isSelector && device.LevelOffHidden;
                 vm.isSetpointTimers = (device.Type === 'Thermostat' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
 
@@ -34,25 +37,17 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                     : deviceRegularTimersApi;
 
                 if (vm.isSelector) {
-                    vm.levelOptions = b64DecodeUnicode(device.LevelNames)
-                        .split('|')
-                        .slice(1)
-                        .map(function (levelName, index) {
-                            return {
-                                label: levelName,
-                                value: (index + 1) * 10
-                            }
-                        });
+                    vm.levelOptions = device.getSelectorLevelOptions();
                 }
 
                 if (vm.isLED) {
-                    $scope.$watch(function() {
+                    $scope.$watch(function () {
                         return vm.timerSettings.color + vm.timerSettings.level;
                     }, setDeviceColor);
                 }
 
                 if (!vm.isLED && vm.isDimmer) {
-                    vm.levelOptions = deviceTimerOptions.dimmerLevel;
+                    vm.levelOptions = device.getDimmerLevelOptions(1);
                 }
 
                 if (vm.levelOptions.length > 0) {
@@ -163,34 +158,22 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
         }
 
         function deleteTimer(timerIdx) {
-            bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function (result) {
-                if (result != true) {
-                    return;
-                }
-
-                deviceTimers.deleteTimer(timerIdx)
-                    .then(refreshTimers)
-                    .catch(function () {
-                        HideNotify();
-                        ShowNotify($.t('Problem deleting timer!'), 2500, true);
-                    });
-            });
+            return deviceTimers.deleteTimer(timerIdx)
+                .then(refreshTimers)
+                .catch(function () {
+                    HideNotify();
+                    ShowNotify($.t('Problem deleting timer!'), 2500, true);
+                });
         }
 
         function clearTimers() {
-            bootbox.confirm($.t("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function (result) {
-                if (result != true) {
-                    return;
-                }
-
-                deviceTimers
-                    .clearTimers(vm.deviceIdx)
-                    .then(refreshTimers)
-                    .catch(function () {
-                        HideNotify();
-                        ShowNotify($.t('Problem clearing timers!'), 2500, true);
-                    })
-            });
+            return deviceTimers
+                .clearTimers(vm.deviceIdx)
+                .then(refreshTimers)
+                .catch(function () {
+                    HideNotify();
+                    ShowNotify($.t('Problem clearing timers!'), 2500, true);
+                });
         }
     });
 });

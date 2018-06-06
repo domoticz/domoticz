@@ -512,6 +512,7 @@
 		<Product type="0202" id="1002" name="FGS222 Double Relay Switch 2x1.5kW" config="fibaro/fgs222.xml" />
 		<Product type="0202" id="3002" name="FGS222 Double Relay Switch 2x1.5kW" config="fibaro/fgs222.xml" />
 		<Product type="0203" id="1000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
+		<Product type="0203" id="2000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0203" id="3000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0600" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml" />
 		<Product type="0200" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml"/>
@@ -628,6 +629,12 @@
 	<Manufacturer id="0014" name="GoControl">
 		<Product type="5442" id="5436" name="GC-TBZ48L Battery Powered Z-Wave Plus Thermostat" config="gocontrol/GC-TBZ48L.xml" />
 	</Manufacturer>
+	<Manufacturer id="026e" name="Graber">
+		<Product type="4252" id="5a31" name="BRZ1 Remote Control" config="graber/brz1.xml"/>
+		<Product type="5253" id="5a31" name="RSZ1 Roller Shade"/>
+		<Product type="5643" id="5a31" name="VCZ1 Virtual Cord Remote Control" config="graber/vcz1.xml"/>
+		<Product type="4353" id="5a31" name="CSZ1 Cellular Shade"/>
+	</Manufacturer>
 	<Manufacturer id="0099" name="GreenWave">
 		<Product type="0001" id="0002" name="One Gateway"/>
 		<Product type="0002" id="0002" name="PowerNode 1 port" config="greenwave/powernode1.xml"/>
@@ -682,6 +689,7 @@
 		<Product type="4447" id="3034" name="HS-WD100+ Wall Dimmer" config="homeseer/hs-wd100plus.xml"/>
 		<Product type="4447" id="3035" name="HS-WS200+ Wall Switch" config="homeseer/hs-ws200plus.xml"/>
 		<Product type="4447" id="3036" name="HS-WD200+ Wall Dimmer" config="homeseer/hs-wd200plus.xml"/>
+		<Product type="201"  id="9"    name="HS-MS100+ Motion Sensor" config="homeseer/hs-ms100plus.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0030" name="HomeSeer Tech">
 	</Manufacturer>
@@ -724,8 +732,12 @@
 		<Product type="0001" id="0001" name="RAone SmartDimmer Wall Dimmer Module"/>
 	</Manufacturer>
 	<Manufacturer id="0312" name="Inovelli">
-		<Product type="1e01" id="1e01" name="NZW30 Smart Switch" config="inovelli/nzw30.xml"/>
-		<Product type="1f01" id="1f01" name="NZW31 Smart Dimmer(non-scene)" config="inovelli/nzw31.xml"/>
+		<Product type="1e00" id="1e00" name="NZW30S On/Off Switch(scene)" config="inovelli/nzw30.xml"/>
+		<Product type="1e01" id="1e01" name="NZW30 On/Off Switch" config="inovelli/nzw30.xml"/>
+		<Product type="1e02" id="1e02" name="NZW30T On/Off Toggle(scene)" config="inovelli/nzw30.xml"/>
+		<Product type="1f00" id="1f00" name="NZW31S Dimmer(scene)" config="inovelli/nzw31.xml"/>
+		<Product type="1f01" id="1f01" name="NZW31 Dimmer" config="inovelli/nzw31.xml"/>
+		<Product type="1f02" id="1f02" name="NZW31T Dimmer(scene)" config="inovelli/nzw31.xml"/>
 		<Product type="b211" id="241c" name="NZW36 Smart Plug-In Module (1 Channel)" config="inovelli/simple_module.xml"/>
 		<Product type="b221" id="251c" name="NZW37 Smart Plug-In Module (2 Channel)" config="inovelli/simple_module.xml"/>
 		<Product type="b212" id="271c" name="NZW39 Smart Plug (Dimmer)" config="inovelli/simple_module.xml"/>
@@ -1116,8 +1128,8 @@
 		<Product type="0001" id="0001" name="STZW402+ Electronic Thermostat" config="stelpro/stzw402.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0271" name="Steinel">
-		<Product type="0002" id="1a72" name="IS140-2" config="steinel/is140-2.xml"/>	
-		<Product type="0001" id="1a74" name="RS LED D2" config="steinel/rs-led-d2.xml"/> 
+		<Product type="0002" id="1a72" name="IS140-2" config="steinel/is140-2.xml"/>
+		<Product type="0001" id="1a74" name="RS LED D2" config="steinel/rs-led-d2.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0166" name="Swiid">
 		<Product type="0100" id="0100" name="SwiidInter" config="swiid/swiidinter.xml"/>
@@ -1245,6 +1257,7 @@
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
 		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer" config="wenzhou/tz67.xml"/>
 		<Product type="0311" id="0305" name="TZ79 Power meter Relay Switch" config="wenzhou/tz79.xml"/>
+		<Product type="0311" id="0304" name="TZ74 Dual Switch" config="wenzhou/tz74.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0149" name="wiDom">
 		<Product type="0012" id="0104" name="UBS104 Universal Relay Switch" config="widom/UBS104.xml"/>

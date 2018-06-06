@@ -495,8 +495,10 @@ define(['app'], function (app) {
                 vm.device.StrParam1 = b64DecodeUnicode(vm.device.StrParam1);
                 vm.device.StrParam2 = b64DecodeUnicode(vm.device.StrParam2);
 
-                var levelNames = device.LevelNames ? b64DecodeUnicode(device.LevelNames).split('|') : ['Off', 'Level1', 'Level2', 'Level3'];
-                var levelActions = device.LevelActions ? b64DecodeUnicode(device.LevelActions).split('|') : [];
+                var defaultLevelNames = ['Off', 'Level1', 'Level2', 'Level3'];
+
+                var levelNames = device.getLevels() || defaultLevelNames;
+                var levelActions = device.getLevelActions();
 
                 vm.levels = levelNames.map(function (level, index) {
                     return {
@@ -580,11 +582,11 @@ define(['app'], function (app) {
         }
 
         function isOnDelayAvailable() {
-            return [0, 7, 9, 18].includes(vm.device.SwitchTypeVal);
+            return [0, 7, 9, 11, 18].includes(vm.device.SwitchTypeVal);
         }
 
         function isOffDelayAvailable() {
-            return [0, 7, 9, 18, 19, 20].includes(vm.device.SwitchTypeVal);
+            return [0, 7, 9, 11, 18, 19, 20].includes(vm.device.SwitchTypeVal);
         }
 
         function isSwitchIconAvailable() {
@@ -596,7 +598,7 @@ define(['app'], function (app) {
         }
 
         function isColorSettingsAvailable() {
-            return isLED(vm.device.SubType);
+            return vm.device.isLED();
         }
 
         function isWhiteSettingsAvailable() {
