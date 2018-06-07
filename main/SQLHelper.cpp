@@ -2423,10 +2423,6 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-		if (dbversion < 130)
-		{
-			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviDevices);
-		}
 		if (dbversion < 123)
 		{
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenIPInOut);
@@ -2611,6 +2607,10 @@ bool CSQLHelper::OpenDatabase()
 				"FROM tmp_Floorplans");
 
 			query("DROP TABLE tmp_Floorplans;");
+		}
+		if (dbversion < 130)
+		{
+			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviDevices);
 		}
 	}
 	else if (bNewInstall)
