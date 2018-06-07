@@ -365,6 +365,8 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 			};
 		}
 	}
+	//Sort by time
+	mlist.sort([](const _tLogLineStruct a, const _tLogLineStruct b) { return a.logtime < b.logtime; });
 	return mlist;
 }
 
