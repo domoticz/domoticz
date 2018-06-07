@@ -3733,7 +3733,16 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
 	{
 		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-		_log.Log(LOG_STATUS, "%s", m_devicestates[atoi(doWhat.c_str())].sValue.c_str());
+		int devIdx = atoi(doWhat.c_str());
+		if (
+			(m_devicestates[devIdx].devType == pTypeHUM)
+			) {
+			//nValue devices
+			_log.Log(LOG_STATUS, "%d", m_devicestates[devIdx].nValue);
+		}
+		else {
+			_log.Log(LOG_STATUS, "%s", m_devicestates[devIdx].sValue.c_str());
+		}
 	}
 	else if (devNameNoQuotes == "WriteToLogSwitch")
 	{
