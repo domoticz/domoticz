@@ -425,6 +425,8 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode1 = pollinterval;
+					if (text.indexOf("Modules with LAN") >= 0)					
+						Mode2 = $("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices option:selected").val();
 				}
 				else if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
@@ -1510,6 +1512,8 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode1 = pollinterval;
+					if (text.indexOf("Modules with LAN") >= 0)
+						Mode2 = $("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices option:selected").val();
 				}
 				else if (text.indexOf("eHouse") >= 0) {
 					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
@@ -5392,7 +5396,9 @@ define(['app'], function (app) {
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetrelaycount").val(data["Mode5"]);
 							}
 							else if (data["Type"].indexOf("Denkovi") >= 0) {
-								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);		
+								if (data["Type"].indexOf("Modules with LAN") >= 0)								
+									$("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices").val(data["Mode2"]);
 							}
 						}
 						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
@@ -5675,6 +5681,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #ehouse").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
+			$("#hardwarecontent #divmodeldenkovidevices").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -5827,6 +5834,8 @@ define(['app'], function (app) {
 				else if (text.indexOf("Denkovi") >= 0) {
 					$("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(10000);
+					if (text.indexOf("Modules with LAN") >= 0)
+						$("#hardwarecontent #divmodeldenkovidevices").show();
 				}
 			}
 			else if (text.indexOf("Domoticz") >= 0) {

@@ -345,6 +345,7 @@ hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DenkoviSmartdenIPInOut.cpp
 hardware/DenkoviSmartdenLan.cpp
+hardware/DenkoviDevices.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp

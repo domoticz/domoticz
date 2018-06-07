@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 129
+#define DB_VERSION 130
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2607,6 +2607,10 @@ bool CSQLHelper::OpenDatabase()
 				"FROM tmp_Floorplans");
 
 			query("DROP TABLE tmp_Floorplans;");
+		}
+		if (dbversion < 130)
+		{
+			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviDevices);
 		}
 	}
 	else if (bNewInstall)
