@@ -485,7 +485,6 @@ void CDenkoviDevices::GetMeterDetails()
 	std::string tmpMeasure;
 	std::string tmpName;
 	std::string name;
-	int pos1;
 	int Idx = -1;
 
 	switch (m_iModel) {
