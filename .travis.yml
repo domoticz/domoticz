@@ -80,7 +80,7 @@ matrix:
     #  - gcc
     env:
           - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+          - MATRIX_EVAL="brew install gcc6 && CC=gcc-6 && CXX=g++-6"
     install:
       - brew install boost|| true
       # - brew install libusb
