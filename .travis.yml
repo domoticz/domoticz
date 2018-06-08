@@ -22,11 +22,8 @@ before_install:
   # OpenZWave
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    rm /usr/local/include/c++;
     brew update;
     brew upgrade boost;
-    brew install gcc@6;
-    brew link --overwrite gcc@6;
     fi
 
 # Build matrix definition
@@ -81,10 +78,8 @@ matrix:
     #  - gcc
     env:
           - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     install:
-      # - brew install libusb
-      # - brew install libusb-compat
+      - brew install boost|| true
       - brew install zlib || true
       - brew install openssl
       - brew link openssl --force
@@ -92,7 +87,7 @@ matrix:
       - brew upgrade python
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
+      - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
 
 # What to do with the build artifacts

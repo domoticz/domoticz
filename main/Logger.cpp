@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdarg.h>
 #include <time.h>
+#include <algorithm>
 #include "localtime_r.h"
 #include "Helper.h"
 #include "mainworker.h"
@@ -333,6 +334,11 @@ bool CLogger::IsLogTimestampsEnabled()
 	return (m_bEnableLogTimestamps && !g_bUseSyslog);
 }
 
+bool compareLogByTime(const CLogger::_tLogLineStruct &a, CLogger::_tLogLineStruct &b)
+{
+	return a.logtime < b.logtime;
+}
+
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, const time_t lastlogtime)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
@@ -366,7 +372,7 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 		}
 	}
 	//Sort by time
-	mlist.sort([](const _tLogLineStruct a, const _tLogLineStruct b) { return a.logtime < b.logtime; });
+	std::sort(mlist.begin(), mlist.end(), compareLogByTime);
 	return mlist;
 }
 
