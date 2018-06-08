@@ -27,8 +27,8 @@ before_install:
     rm /usr/local/include/c++
     brew update;
     brew upgrade boost;
-    brew install gcc@6
-    brew link --overwrite gcc@6
+    brew install gcc@6;
+    brew link --overwrite gcc@6;
     fi
 
 # Build matrix definition
