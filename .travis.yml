@@ -24,8 +24,11 @@ before_install:
   # lookup boost version
   #- sudo apt-cache search libboost
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    rm /usr/local/include/c++
     brew update;
     brew upgrade boost;
+    brew install gcc@6
+    brew link --overwrite gcc@6
     fi
 
 # Build matrix definition
@@ -63,7 +66,7 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
     script:
-      - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz
+      - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz >> /dev/null 2>&1
       - tar xfz boost_1_67_0.tar.gz
       - cd boost_1_67_0/
       - ./bootstrap.sh
@@ -80,7 +83,7 @@ matrix:
     #  - gcc
     env:
           - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="brew install gcc6 && CC=gcc-6 && CXX=g++-6"
+          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     install:
       - brew install boost|| true
       # - brew install libusb
