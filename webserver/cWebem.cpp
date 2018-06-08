@@ -1696,7 +1696,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				std::vector < std::string >::const_iterator itt;
 				for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
 				{
-					if (*itt == cmdparam)
+					if (cmdparam.find(*itt) == 0)
 						return true;
 				}
 				// Force login form
@@ -1748,8 +1748,10 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	std::vector < std::string >::const_iterator itt;
 	for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
 	{
-		if (*itt == cmdparam)
+		if (cmdparam.find(*itt) == 0)
+		{
 			return true;
+		}
 	}
 
 	send_authorization_request(rep);
@@ -1960,13 +1962,8 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	{
 		return;
 	}
-	if ((isPage || isAction) && !CheckAuthentication(session, req, rep))
-	{
-		return;
-	}
-
 	// Check user authentication on each page or action, if it exists.
-	if (bCheckAuthentication && !CheckAuthentication(session, req, rep))
+	if ((isPage || isAction || bCheckAuthentication) && !CheckAuthentication(session, req, rep))
 	{
 		return;
 	}
