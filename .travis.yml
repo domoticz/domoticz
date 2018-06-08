@@ -24,7 +24,7 @@ before_install:
   # lookup boost version
   #- sudo apt-cache search libboost
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    rm /usr/local/include/c++
+    rm /usr/local/include/c++;
     brew update;
     brew upgrade boost;
     brew install gcc@6;
