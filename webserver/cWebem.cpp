@@ -1291,7 +1291,11 @@ char *make_web_time(const time_t rawtime)
 {
 	static char buffer[256];
 	struct tm gmt;
+#ifdef _WIN32
+	if (gmtime_r(&rawtime, &gmt)) //windows returns errno_t, which returns zero when successful
+#else
 	if (gmtime_r(&rawtime, &gmt) == NULL)
+#endif
 	{
 		strcpy(buffer, "Thu, 1 Jan 1970 00:00:00 GMT");
 	}
