@@ -528,7 +528,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
 			}
 		}
-		if (Name == "Xiaomi Smart Plug") {
+		if ((Name == "Xiaomi Smart Plug") || (Name == "Xiaomi Smart Wall Plug")) {
 			if (load_power != "" && power_consumed != "") {
 				int power = atoi(load_power.c_str());
 				int consumed = atoi(power_consumed.c_str()) / 1000;
