@@ -21,12 +21,9 @@ before_install:
   - git fetch --unshallow
   # OpenZWave
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
-  # lookup boost version
-  #- sudo apt-cache search libboost
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     rm /usr/local/include/c++;
     brew update;
-    brew upgrade boost;
     brew install gcc@6;
     brew link --overwrite gcc@6;
     fi
@@ -85,7 +82,6 @@ matrix:
           - TARGET_ARCHITECTURE=x86_64
           - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     install:
-      - brew install boost|| true
       # - brew install libusb
       # - brew install libusb-compat
       - brew install zlib || true
@@ -95,6 +91,13 @@ matrix:
       - brew upgrade python
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
+      - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz >> /dev/null 2>&1
+      - tar xfz boost_1_67_0.tar.gz
+      - cd boost_1_67_0/
+      - ./bootstrap.sh
+      - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+      - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+      - cd ..
       - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
 
