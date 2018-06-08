@@ -95,7 +95,7 @@ matrix:
       - tar xfz boost_1_67_0.tar.gz
       - cd boost_1_67_0/
       - ./bootstrap.sh
-      - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+      - CPPFLAGS="-std=c++11" ./b2 cxxflags="-stdlib=libstdc++" linkflags="-stdlib=libstdc++" stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - cd ..
       - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
