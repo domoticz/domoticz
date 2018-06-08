@@ -78,7 +78,9 @@ matrix:
     osx_image: xcode8.3
     #compiler:
     #  - gcc
-    env: TARGET_ARCHITECTURE=x86_64
+    env:
+          - TARGET_ARCHITECTURE=x86_64
+          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     install:
       - brew install boost|| true
       # - brew install libusb
