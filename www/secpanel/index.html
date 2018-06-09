@@ -1,17 +1,329 @@
 <!DOCTYPE HTML>
-<html lang="en-US">
+<html manifest="../html5.appcache" lang="en-US">
 <head>
+	
 	<meta charset="UTF-8">
-	<meta name="mobile-web-app-capable" content="yes">
 	<title>Domoticz Security Panel</title>
-	<link href="css/style.less" rel="stylesheet/less" />
-	<script src="js/less.js"></script>
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="viewport" content="width=600">
+	<link href="css/style.css" rel="stylesheet" />
 	<script src="js/ion.sound.min.js"></script>
 	<script src="../js/jquery-3.3.1.min.js"></script>
 	<script src="../js/i18next-1.8.0.min.js"></script> 
 	<script src="../js/domoticz.js"></script>
 	<script src="../js/md5.js"></script>
+	
+	<script src="js/ion.sound.min.js"></script>
+	
 	<script type="text/javascript">
+
+		/* global ion, $, MakeDatatableTranslations, SecurityPanel, md5 */
+		
+		var SecurityPanel = function () {
+		    
+			var secPanel = {
+				heartbeatIntervalSecs: 10,
+				secOnDelay: 30,
+				heartbeatTimer: undefined,
+				code: ""/*,
+				zones: []*/
+			};
+		
+			function Show(text) {
+				$('#digitdisplay').val(("* " + $.i18n.t(text) + " *").toUpperCase());
+			}
+			function ShowError(error) {
+				if (error=="NoConnect") {
+					Show("Disconnected");
+				}
+				else if (error=="NoOkData") {
+					Show($.i18n.t("Disconnected"));
+				}
+				else if (error=="NoSettingsData") {
+					Show($.i18n.t("Disconnected"));
+				}
+				else if (error=="NoOkCode") {
+					Show($.i18n.t("WRONG CODE"));
+				}
+				else {
+					Show($.i18n.t("Disconnected"));
+				}
+			}
+		
+			function ResetHeartbeat(nonstandardDelayMs, keepCode) {
+		
+				var delay = secPanel.heartbeatIntervalSecs * 1000;
+				
+				// Make sure any previous calls are ignored
+				clearTimeout(secPanel.heartbeatTimer);
+		
+				// Use nonstandardDelayMs if defined
+				nonstandardDelayMs = parseInt(nonstandardDelayMs, 10);
+				if (!isNaN(nonstandardDelayMs)) {
+					delay = nonstandardDelayMs;
+				}
+				
+				// Clear code, unless instructed not to
+				if (!keepCode) {
+					secPanel.code = "";
+				}
+				
+				// New request
+				secPanel.heartbeatTimer = setTimeout(function () {
+					Heartbeat();
+				}, delay);
+				
+			}
+		
+			function RefreshStatus(callback) {
+		
+				// Upate security status
+				$.ajax({
+					url: "../json.htm?type=command&param=getsecstatus",
+					dataType: 'json',
+					success: function(data) {
+						if (data.status != "OK") {
+							ShowError('NoOkData');
+						}
+						else {
+							
+							// Update status
+							var displaytext="";
+							if (data.secstatus==0) displaytext="Disarmed";
+							else if (data.secstatus==1) displaytext="Armed Home";
+							else if (data.secstatus==2) displaytext="Armed";
+							else displaytext="Unknown Error";
+							
+							Show(displaytext);
+							
+							// Update SecOnDelay
+							var parsedSecOnDelay = parseInt(data.secondelay, 10);
+							if (!isNaN(parsedSecOnDelay)) {
+								secPanel.secOnDelay = parsedSecOnDelay;
+							}
+							
+						}
+						
+						callback();
+					},
+					error: function(data){
+						if (data.status==401) { // 401 : Unauthorized
+							window.location = "../index.html";
+						}
+						
+						callback();
+					}
+				});
+			}
+		
+			function Heartbeat() {
+		
+				RefreshStatus(function () {
+		
+					// RefreshZones();
+		
+					// Iterate!
+					ResetHeartbeat();
+		
+				});
+		
+			}
+			
+			function Countdown(delay) {
+		
+				clearTimeout(secPanel.countdownTimer);
+		
+				// Make the heartbeat wait a while
+				ResetHeartbeat();
+		
+				if (delay > 1) {
+		
+					delay = delay - 1;
+					Beep('set');
+					$('#digitdisplay').val($.i18n.t('Delay') + ': ' + delay);
+		
+					secPanel.countdownTimer = setTimeout(function () { Countdown (delay); }, 1000);
+		
+				} else {
+		
+					Beep('in');
+					ResetHeartbeat(0);
+		
+				}
+			}
+			
+			function Beep(tone) {
+				if (tone=="error") {
+					ion.sound.play("wrongcode");
+				}
+				else if (tone=="set") {
+					ion.sound.play("key");
+				}
+				else if (tone=="in") {
+					ion.sound.play("arm");
+				}
+				else if (tone=="out") {
+					ion.sound.play("disarm");
+				}
+				else {
+					ion.sound.play("key");
+				}
+			}
+			
+			function SetSecStatus (status) {
+		
+				// Bail out if stuff doesn't seem right
+				if (isNaN(status)) {
+					Beep('error');
+					return;
+				}
+				
+				// Temporary storage
+				var seccodeHash = md5(secPanel.code);
+		
+				// Make the heartbeat wait a while (secPanel.code is reset here)
+				ResetHeartbeat();
+		
+				$.ajax({
+					url: "../json.htm?type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + seccodeHash,
+					dataType: 'json',
+					success: function(data) {
+						if (data.status != "OK") {
+							if (data.message=="WRONG CODE") {
+								ShowError('NoOkCode');
+								Beep('error');
+								ResetHeartbeat(3000);
+							}
+							else {
+								ShowError('NoOkData');
+								ResetHeartbeat(3000);
+							}
+						}
+						else {
+							if (status==1 || status==2) {
+								Countdown(secPanel.secOnDelay);
+							}
+							else {
+								ResetHeartbeat(0);
+								Beep('out');
+							}
+						}
+					},
+					error: function(){
+						ShowError('NoConnect');
+						return;
+					}
+				});
+				seccodeHash = undefined;
+			}
+			
+			function AddDigit(digit) {
+		
+				Beep(); 
+				
+				// Make the heartbeat wait a whild
+				// Note: Heartbeat always resets the cleartext code placeholder (secStatus.code)
+				ResetHeartbeat(undefined, true);
+		
+				// Only proceed if new digit is a digit, inside range 0-9
+				var newDigit = parseInt(digit, 10);
+				if ((newDigit >= 0 && newDigit <= 9) || digit == "*" || digit == "#") {
+		
+		            // Update code
+					secPanel.code = "" + secPanel.code + "" + digit;
+					
+					// Update display
+		    		$('#digitdisplay').val(secPanel.code.replace(/./g,"#"));
+		
+				}
+				
+			}
+			
+		 	return {
+		 		AddDigit: AddDigit,
+				SetSecStatus: SetSecStatus,
+				Beep: Beep,
+				ResetHeartbeat: ResetHeartbeat,
+				Start: Heartbeat
+		 	};
+				 	
+		};
+		
+		// Deprecated code, left for future use
+		
+			/*function RefreshZones(callback) {
+		
+				$.ajax({
+					url: "../json.htm?type=command&param=getlightswitches",
+					dataType: 'json',
+					success: function(data) {
+						if (data.status != "OK") {
+							ShowError('NoOkData');
+							return;
+						}
+						else {
+							var idxnumbers=[];
+							if (typeof(data.result) != "undefined") {
+								$.each(data.result, function(i,item) {
+									if (item.Name.toLowerCase().indexOf('alarm zone')==0) idxnumbers[idxnumbers.length]=item.idx;
+								});
+							}
+							secPanel.zones = idxnumbers;
+							callback(idxnumbers);
+						}
+					},
+					error: function(){
+						ShowError('NoConnect');
+						callback();
+					}
+				});
+			}*/
+			// check if provided zone idx number(s) is/are clear
+			/*function CheckZoneClear(zonearray) {
+				var openzone=false;
+				if (typeof(zonearray) != "undefined") {
+					$.each(zonearray, function(i,item) {
+						$.ajax({
+							url: "../json.htm?type=devices&rid="+item,
+							async: false, 
+							dataType: 'json',
+							success: function(data) {
+								if (data.status != "OK") {
+									ShowError('NoOkData');
+									return;
+								}
+								else {
+									if (typeof(data.result) != "undefined") {
+										$.each(data.result, function(j,zone) {
+											if (zone.Status=='On') openzone=true;
+										});
+									}
+									return openzone;
+								}
+							},
+							error: function(){
+								ShowError('NoConnect');
+								return;
+							}
+						});
+					});
+				}
+				return openzone;
+			}*/
+			
+			
+			// SetSecStatus
+			
+				/*if (typeof(zonearray) != "undefined") {
+					if (CheckZoneClear(zonearray)) {
+						Beep('error');
+						$('#digitdisplay').val(('* ZONE OPEN *'));
+						CodeSetTimer=DelayedStatusRefresh(3000);
+						return;
+					}
+				}*/
+
+		// Set up sound
 		ion.sound({
 			sounds: [
 				{name: "arm"},
@@ -19,336 +331,19 @@
 				{name: "key"},
 				{name: "wrongcode"}
 			],
-
 			// main config
 			path: "media/",
 			preload: true,
 			multiplay: true,
 			volume: 0.9
 		});
-	
-		function ShowError(error) {
-			if (error=="NoConnect") {
-				$('#digitdisplay').val("no connect");
-			}
-			else if (error=="NoOkData") {
-				$('#digitdisplay').val("no ok data");
-			}
-			else if (error=="NoSettingsData") {
-				$('#digitdisplay').val("no settings");
-			}
-			else {
-				$('#digitdisplay').val("unkown err");
-			}
-			RefreshTimer=setTimeout('SetRefreshTimer();', 60000);
-		}
-
-		function ShowStatus() {
-			$.ajax({
-				url: "../json.htm?type=command&param=getsecstatus",
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						ShowError('NoOkData');
-						return;
-					}
-					else {
-						var displaytext="";
-						if (data.secstatus==0) displaytext="DISARMED";
-						else if (data.secstatus==1) displaytext="ARM HOME";
-						else if (data.secstatus==2) displaytext="ARM AWAY";
-						else displaytext="UNKNOWN";
-						$('#digitdisplay').val("* "+displaytext+" *");
-					}
-				},
-				error: function(data){
-					if (data.status==401) { // 401 : Unauthorized
-						window.location = "/index.html";
-					}
-					else {
-						ShowError('NoConnect');
-					}
-					return;
-				}
-			});
-			if (1==2) {
-				var elements = document.getElementsByClassName('digit');
-				for(var i=0; i<elements.length; i++) {
-					elements[i].setAttribute('onClick','AddDigit('+(i+1)+');');
-				}
-				document.getElementById('setall').setAttribute('onClick','beep();');
-			}
-			$('#password').val("");
-		}
-
-		function SetRefreshTimer() {
-			if (typeof(RefreshTimer) != "undefined") {
-				RefreshTimer=clearTimeout(RefreshTimer);
-			}
-			$.ajax({
-				url: "../json.htm?type=command&param=getuservariables",
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						ShowError('NoOkData');
-						return;
-					}
-					else {
-						if (typeof(data.result) != "undefined") {
-							$.each(data.result, function(i,item) {
-								if (item.Name=='secpanel-autorefresh') {
-									var timer=item.Value*1000;
-									RefreshTimer=setTimeout('ShowStatus(); SetRefreshTimer();', timer);
-								}
-								else {
-									RefreshTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 60000);
-								}
-							});
-						}
-					}
-				},
-				error: function(){
-					ShowError('NoConnect');
-					return;
-				}
-			});
-		}
 		
-		var CountdownTimer = 0;
-		function countdown() {
-			if (timer > 1) {
-				timer = timer - 1;
-				beep('set');
-				$('#digitdisplay').val('Arm Delay: '+timer);
-			}
-			else {
-				clearInterval(CountdownTimer);
-				beep('in');
-				ShowStatus();
-				SetRefreshTimer();
-			}
-		}
-
-		function ArmDelay() {
-			var secondelay=0;
-			$.ajax({
-				url: "../json.htm?type=settings",
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						ShowError('NoOkData');
-						return;
-					}
-					else {
-						if (typeof(data.SecOnDelay) != "undefined") {
-							secondelay=data.SecOnDelay;
-						}
-					}
-				},
-				error: function(){
-					ShowError('NoConnect');
-					return;
-				}
-			});
-			return secondelay;
-		}
-
-		// custom function for zone clear check, searches idx for switches starting with 'alarm zone'
-		function ZoneIdx() {
-			var idxnumbers=[];
-			$.ajax({
-				url: "../json.htm?type=command&param=getlightswitches",
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						ShowError('NoOkData');
-						return;
-					}
-					else {
-						if (typeof(data.result) != "undefined") {
-							$.each(data.result, function(i,item) {
-								if (item.Name.toLowerCase().indexOf('alarm zone')==0) idxnumbers[idxnumbers.length]=item.idx;
-							});
-						}
-					}
-				},
-				error: function(){
-					ShowError('NoConnect');
-					return;
-				}
-			});
-			return idxnumbers;
-		}
-		var zones=ZoneIdx();
-
-		// check if provided zone idx number(s) is/are clear
-		function CheckZoneClear(zonearray) {
-			var openzone=false;
-			if (typeof(zonearray) != "undefined") {
-				$.each(zonearray, function(i,item) {
-					$.ajax({
-						url: "../json.htm?type=devices&rid="+item,
-						async: false, 
-						dataType: 'json',
-						success: function(data) {
-							if (data.status != "OK") {
-								ShowError('NoOkData');
-								return;
-							}
-							else {
-								if (typeof(data.result) != "undefined") {
-									$.each(data.result, function(j,zone) {
-										if (zone.Status=='On') openzone=true;
-									});
-								}
-								return openzone;
-							}
-						},
-						error: function(){
-							ShowError('NoConnect');
-							return;
-						}
-					});
-				});
-			}
-			return openzone;
-		}
-
-		function SetSecStatus(status, zonearray, seccode, setzone) {
-			clearInterval(CountdownTimer);
-			if (typeof(seccode) == "undefined") seccode=$('#password').val();
-			if (isNaN(seccode)) {
-				beep('error');
-				return;
-			}
-			if (typeof(RefreshTimer) != "undefined") RefreshTimer=clearTimeout(RefreshTimer);
-			if (typeof(CodeSetTimer) != "undefined") CodeSetTimer=clearTimeout(CodeSetTimer);
-
-			// if (status==1 || status==2) {
-			if (1==2) {
-				beep();
-				if (typeof(setzone) == "undefined") {
-					var zonedisplay='* ALL ZONES *';
-				}
-				if (setzone=="all") zonedisplay='* ALL ZONES *';
-				if (setzone==1) zonedisplay='* ZONE 1 *';
-				if (setzone==2) zonedisplay='* ZONE 2 *';
-				if (setzone==3) zonedisplay='* ZONE 3 *';
-				$('#digitdisplay').val($.t(zonedisplay));
-
-				var elements = document.getElementsByClassName('digit');
-				for(var i=0; i<elements.length; i++) {
-					elements[i].setAttribute('onClick','SetSecStatus('+status+', zones, '+seccode+', '+(i+1)+');');
-				}
-				document.getElementById('setall').setAttribute('onClick','SetSecStatus('+status+', zones, '+seccode+', \'all\');');
-
-				CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 10000);
-				return;
-			}
-
-			if (typeof(zonearray) != "undefined") {
-				if (CheckZoneClear(zonearray)) {
-					beep('error');
-					$('#digitdisplay').val($.t('* ZONE OPEN *'));
-					// CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer(); AddDigit('+seccode+');', 2000);
-					CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 3000);
-					return;
-				}
-			}
-			$.ajax({
-				url: "../json.htm?type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + md5(seccode),
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						if (data.message=="WRONG CODE") {
-							$('#digitdisplay').val($.t('* WRONG CODE *'));
-							CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 2000);
-							$('#password').val("");
-							beep('error');
-							// $('#digitdisplay').css('background', 'red');
-						}
-						else {
-							ShowError('NoOkData');
-							return;
-						}
-						return;
-					}
-					else {
-						ShowStatus();
-						if (status==1 || status==2) {
-							timer=ArmDelay();
-							if (timer>0) {
-								CountdownTimer = setInterval("countdown();", 1000);
-								beep('set');
-							}
-							else {
-								beep('in');
-							}
-						}
-						else {
-							SetRefreshTimer();
-							beep('out');
-						}
-					}
-				},
-				error: function(){
-					ShowError('NoConnect');
-					return;
-				}
-			});
-		}
-
-		function AddDigit(digit) {
-			beep(); 
-			if (typeof(CodeSetTimer) != "undefined") {
-				CodeSetTimer=clearTimeout(CodeSetTimer);
-			}
-			if (typeof(RefreshTimer) != "undefined") {
-				RefreshTimer=clearTimeout(RefreshTimer);
-			}
-			if (typeof(CountdownTimer) != "undefined") {
-				CountdownTimer=clearInterval(CountdownTimer)
-				$('#digitdisplay').val("");
-			}
-			CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 10000);
-
-			var orgtext=$('#password').val();
-			if (isNaN(orgtext)) orgtext="";
-
-			var newtext=orgtext+digit;
-			var codeinput="";
-			for(var i=0; i<newtext.length; i++) {
-				codeinput=codeinput+'#';
-			}
-
-			$('#digitdisplay').val(codeinput);
-			$('#password').val(newtext);
-		}
+		// Set up securitypanel
+		var securityPanel = SecurityPanel();
 		
-		function beep(tone) {
-			if (tone=="error") {
-				ion.sound.play("wrongcode");
-			}
-			else if (tone=="set") {
-				ion.sound.play("key");
-			}
-			else if (tone=="in") {
-				ion.sound.play("arm");
-			}
-			else if (tone=="out") {
-				ion.sound.play("disarm");
-			}
-			else {
-				ion.sound.play("key");
-			}
-		}
-		
+		// Setup translation
 		function SetLanguageEx(lng) {
+			
 			$.i18n.init({
 				resGetPath: '/i18n/domoticz-__lng__.json',
 				fallbackLng: false,
@@ -359,28 +354,68 @@
 				keyseparator: 'bbcc',
 				lng: lng
 			});
-			$(".nav").i18n();
-			MakeDatatableTranslations();
-		}
-		$(document).ready(function() {
-			$.ajax({
-				 url: "../json.htm?type=command&param=getlanguage",
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-					if (typeof data.language != 'undefined') {
-						SetLanguageEx(data.language);
-					}
-					else {
-						SetLanguageEx('en');
-					}
-				 },
-				 error: function(){
-				 }
+			
+			$('.translate').each(function(i, elm) {
+				var e = $(elm);
+				e.text($.i18n.t(e.text()));
 			});
-			ShowStatus();
-			SetRefreshTimer();
+			
+		}
+
+		// DOM is ready, go go go!
+		$(document).ready(function() {
+
+			// Determine languange
+			var lang = 'en';
+			if(window.location.hash) {
+				var hash = window.location.hash.substring(1);
+
+				if(hash) {
+					lang = hash;
+				} 
+			}
+			
+			SetLanguageEx(lang);
+			
+		 	// Entrypoint for "main loop"
+		 	securityPanel.Start();
+			 	
+			// Setup events
+			$('li.digit').on('touchstart click', function (e) {
+				e.preventDefault();
+				
+				// Digit
+				var 
+					target = $(e.target),
+					digit = target.data('digit');
+				securityPanel.AddDigit(digit);
+				
+			});
+			
+			$('li.arm').on('touchstart click', function (e) {
+				e.preventDefault();
+				
+				// Digit
+				var 
+					target = $(e.target),
+					secstatus = target.data('secstatus'),
+					secstatusParsed = parseInt(secstatus, 10);
+				if(!isNaN(secstatusParsed)) {
+					securityPanel.SetSecStatus(secstatusParsed);
+				}
+				
+			});
+
+			$('li.cancel').on('touchstart click', function (e) {
+				e.preventDefault();
+				
+				// Update immediately
+				securityPanel.Beep('out');
+				securityPanel.ResetHeartbeat(0);
+			});
+			
 		});
+
 	</script>
 </head>
 <body>
@@ -388,35 +423,33 @@
 		<div class="main-border">
 			<div id="keypad">
 				<div class="keypad-header">
-					<div class="title" onClick="javascript:main.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);"><p>Domoticz Security Panel</p></div>
+					<div class="title fullscreen"><p>Domoticz Security Panel</p></div>
 				</div>
 				<form name="keypadinput">
 					<input type="text" id="digitdisplay" value="" name="digitdisplay" disabled="disabled"/>
-					<input type="hidden" id="password" value="" name="password"/>
 					<ul class="keypad-keys">
-						<li class="digit" onClick="javascript:AddDigit('1');">1</li>
-						<li class="digit" onClick="javascript:AddDigit('2');">2</li>
-						<li class="digit" onClick="javascript:AddDigit('3');">3</li>
-						<li class="disarm" onClick="javascript:SetSecStatus(0);">Disarm</li>
+						<li class="digit" data-digit="1">1</li>
+						<li class="digit" data-digit="2">2</li>
+						<li class="digit" data-digit="3">3</li>
+						<li class="arm disarm translate" data-secstatus="0">Disarm</li>
 					</ul>
 					<ul class="keypad-keys">
-						<li class="digit" onClick="javascript:AddDigit('4');">4</li>
-						<li class="digit" onClick="javascript:AddDigit('5');">5</li>
-						<li class="digit" onClick="javascript:AddDigit('6');">6</li>
-						<li class="arm" onClick="javascript:SetSecStatus(1, zones);">Arm Home</li>
+						<li class="digit" data-digit="4">4</li>
+						<li class="digit" data-digit="5">5</li>
+						<li class="digit" data-digit="6">6</li>
+						<li class="arm translate" data-secstatus="1">Home</li>
 					</ul>
 					<ul class="keypad-keys">
-						<li class="digit" onClick="javascript:AddDigit('7');">7</li>
-						<li class="digit" onClick="javascript:AddDigit('8');">8</li>
-						<li class="digit" onClick="javascript:AddDigit('9');">9</li>
-						<li class="arm" onClick="javascript:SetSecStatus(2, zones);">Arm Away</li>
+						<li class="digit" data-digit="7">7</li>
+						<li class="digit" data-digit="8">8</li>
+						<li class="digit" data-digit="9">9</li>
+						<li class="arm translate" data-secstatus="2">Away</li>
 					</ul>
 					<ul class="keypad-keys">
-						<li style="visibility: hidden;"></li>
-						<li class="digit" onClick="javascript:AddDigit('0');">0</li>
-						<!--<li id="setall" onClick="javascript:beep();">All</li>-->
-						<li style="visibility: hidden;"></li>
-						<li class="btnclear" onClick="javascript:beep(); ShowStatus();">Cancel</li>
+						<li class="digit" data-digit="*">*</li>
+						<li class="digit" data-digit="0">0</li>
+						<li class="digit" data-digit="#">#</li>
+						<li class="arm cancel translate">Cancel</li>
 					</ul>
 				</form>
 			</div>

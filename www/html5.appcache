@@ -12,13 +12,11 @@ css/demo_table_jui.css
 css/jquery.uix.multiselect.css
 css/jquery-ui-timepicker-addon.css
 css/legacy.css
+css/remote.css
 css/style.css
 css/ui-darkness/jquery-ui.min.css
 css/wheelcolorpicker.css
-secpanel/css/font.less
-secpanel/css/reset.less
-secpanel/css/style.less
-css/remote.css
+secpanel/css/style.css
 
 # Fonts
 css/fonts/Oswald-Light.eot
@@ -411,7 +409,7 @@ media/trashlid.png
 media/tree.png
 media/swf/copy_csv_xls.swf
 media/swf/copy_csv_xls_pdf.swf
-secpanel/bg.jpg
+secpanel/img/bg.jpg
 
 # Audio
 media/click.mp3
@@ -585,9 +583,8 @@ js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
-secpanel/js/less.js
-secpanel/js/ion.sound.min.js
 ozwcp/cp.js
+secpanel/js/ion.sound.min.js
 
 #Dynamic theme
 #ThemeFiles
