@@ -13,6 +13,9 @@ public:
 	explicit CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
+#if defined (__linux__)
+	float GetProcessMemUsage();
+#endif
 private:
 	bool StartHardware();
 	bool StopHardware();
@@ -42,9 +45,6 @@ private:
 	long long m_lastloadcpu;
 	int m_totcpu;
 	std::string m_dfcommand;
-#endif
-#if defined (__linux__)
-	float GetProcessMemUsage();
 #endif
 };
 

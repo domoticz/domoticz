@@ -1,25 +1,24 @@
 ﻿<html>
   <head>
     <meta charset="utf-8">
-    <script type="text/javascript" src="js/blockly_compressed.js"></script>
-    <script type="text/javascript" src="js/blocks_compressed.js"></script>
-    <script type="text/javascript" src="js/en_compressed.js"></script>
-    <script type="text/javascript" src="js/jquery-1.12.0.min.js"></script>
+    <script src="js/blockly_compressed.js"></script>
+    <script src="js/blocks_compressed.js"></script>
+    <script src="js/en_compressed.js"></script>
+	<script src="js/jquery-3.3.1.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/bootbox.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
-    <script type="text/javascript" src="js/noty/layouts/top.js"></script>
-    <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
-    <script type="text/javascript" src="js/noty/themes/default.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
-    <script type="text/javascript" src="js/domoticzblocks_messages_en.js"></script>
-    <script type="text/javascript" src="js/domoticzblocks.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+	<script src="js/noty/jquery.noty.js"></script>
+    <script src="js/noty/layouts/top.js"></script>
+    <script src="js/noty/layouts/topRight.js"></script>
+    <script src="js/noty/themes/default.js"></script>
+    <script charset="utf-8" src="js/domoticz.js"></script>
+    <script src="js/domoticzblocks_messages_en.js"></script>
+    <script src="js/domoticzblocks.js"></script>
 	<script src="js/i18next-1.8.0.min.js"></script>
-	<script type="text/javascript" src="js/bootbox.min.js"></script>
-	<script type="text/javascript" src="js/ace/ace.js"></script>
-	<script type="text/javascript" src="js/ace/ext-language_tools.js"></script>
-	<!-- <script type="text/javascript" charset="utf-8" src="acttheme/custom.js"></script> -->
+	<script src="js/bootbox.min.js"></script>
+	<script src="js/ace/ace.js"></script>
+	<script src="js/ace/ext-language_tools.js"></script>
 	<link rel="stylesheet" href="css/bootstrap.css">
     <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui.min.css" />
@@ -163,7 +162,10 @@
 				var fieldA = $(value).find("field")[0];
 				return "barometerdevice["+$(fieldA).text()+"]";
 			}
-			else if (variableType.indexOf("utilityvariables") >= 0) {
+			else if (
+				(variableType.indexOf("utilityvariables") >= 0) ||
+				(variableType.indexOf("textvariables") >= 0)
+				) {
 				var fieldA = $(value).find("field")[0];
 				return "utilitydevice["+$(fieldA).text()+"]";
 			}
@@ -322,7 +324,16 @@
 					var dtext=GetValueText(valueB,variableTypeB);
 					setString += '='+dtext+'';
 					setArray.push(setString);
-
+				}
+				if (blockA.attr("type").indexOf("textvariables") >= 0) {
+					var setString = "commandArray[Text:"+$(fieldA).text()+"]";
+					var valueB = $(this).find("value[name='B']")[0];
+					var fieldB = $(valueB).find("field")[0];
+					var blockB = $(valueB).children("block:first");
+					var variableTypeB = $(valueB).children("block:first").attr("type");
+					var dtext=GetValueText(valueB,variableTypeB);
+					setString += '='+dtext+'';
+					setArray.push(setString);
 				}
 				else {
 					var setString = "commandArray["+$(fieldA).text()+"]";
@@ -382,6 +393,15 @@
 		        else if ((blockBType=="text") && (fieldBName == "TEXT")) {
 					if (blockA.attr("type").indexOf("uservariables") >= 0) {
 						var setString = "commandArray[Variable:"+$(fieldA).text()+"]";
+						var valueB = $(this).find("value[name='B']")[0];
+						var fieldB = $(valueB).find("field")[0];
+						var blockB = $(valueB).children("block:first");
+						setString += '="'+$(fieldB).text()+'"';
+						setString += ' AFTER '+ $(fieldC).text()+'"';
+						setArray.push(setString);
+					}
+					else if (blockA.attr("type").indexOf("textvariables") >= 0) {
+						var setString = "commandArray[Text:"+$(fieldA).text()+"]";
 						var valueB = $(this).find("value[name='B']")[0];
 						var fieldB = $(valueB).find("field")[0];
 						var blockB = $(valueB).children("block:first");
@@ -751,6 +771,10 @@
 				eventName == 'Time' ||
 				eventName == 'TimedCommand' ||
 				eventName == 'Utils' ||
+                eventName == 'Timer' ||
+                eventName == 'Security' ||
+                eventName == 'lodash' ||
+                eventName == 'JSON' ||
 				eventName == 'Variable') {
 				bootbox.alert('You cannot use these names for your scripts: Device, Domoticz, dzVents, EventHelpers, HistoricalStorage, persistence, Time, TimedCommand, Utils or Variable. It interferes with the dzVents subsystem. Please rename your script.');
 				return;
@@ -928,12 +952,12 @@
 	      	success: function(data) {
 		    	if (typeof data != 'undefined') {
 					if (data.status=="OK") {
-						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>Idx</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
+						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>Idx</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>Values</th></tr></thead><tbody>";
 						if (typeof data.result != 'undefined') {
 
 							$.each(data.result, function(i,item){
 								if (item.name != "Unknown") {
-									var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.svalues+'</td></tr>';
+									var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.values+'</td></tr>';
 									devicestates += oneitem;
 								}
 							});
@@ -1042,6 +1066,7 @@
 	   		<block type="logic_setdelayed"></block>
 	   		<block type="logic_setrandom"></block>
 	   		<block type="math_number"></block>
+			<block type="text"></block>
    		</category>
    		<category name="Time">
 	   		<block type="logic_timeofday"></block>
@@ -1062,14 +1087,6 @@
    		<category name="Security">
    			<block type="security_status"></block>
    		</category>
-		<category name="User variables">
-			<block type="uservariablesAF"></block>
-			<block type="uservariablesGL"></block>
-			<block type="uservariablesMR"></block>
-			<block type="uservariablesSZ"></block>
-			<block type="math_number"></block>
-			<block type="text"></block>
-		</category>
 		<category name="Debug/log">
 		   	<block type="writetolog"></block>
 			<block type="text"></block>
@@ -1103,6 +1120,15 @@
 			   	<block type="utilityvariablesMR"></block>
 			   	<block type="utilityvariablesSZ"></block>
 		   	</category>
+			<category name="User variables">
+				<block type="uservariablesAF"></block>
+				<block type="uservariablesGL"></block>
+				<block type="uservariablesMR"></block>
+				<block type="uservariablesSZ"></block>
+			</category>
+			<category name="Text">
+				<block type="textvariables"></block>
+			</category>
 		   	<category name="Scenes/groups">
 			   	<block type="scenevariables"></block>
 			   	<block type="groupvariables"></block>
@@ -1171,6 +1197,8 @@
 						<option value="Scene">Scene</option>
 						<option value="Timer">Timer</option>
 						<option value="UserVariable">User variable</option>
+                        <option value="HTTPRequest">HTTP request</option>
+                        <option value="global_data">global_data</option>
 					</select>
 					<p>
 						<input type="checkbox" id="eventActive" name="eventActive" /><label for="eventActive"><span data-i18n="Event active">Event active</span></label>

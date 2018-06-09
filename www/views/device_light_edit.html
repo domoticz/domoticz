@@ -1,0 +1,446 @@
+<div class="container js-view">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+
+    <div style="display: none">
+        <select id="switch-types-template">
+            <!--#embed switchtypes -->
+        </select>
+    </div>
+
+    <br>
+
+    <form name="deviceInfoForm" ng-submit="vm.updateDevice()">
+        <table class="display table-details" id="paramstable" ng-if="::vm.device">
+            <tr>
+                <td>
+                    <label for="devicename">{{ :: 'Name' | translate}}: </label>
+                </td>
+                <td>
+                    <input type="text"
+                           id="devicename"
+                           style="width: 356px; padding: .2em;"
+                           class="text ui-widget-content ui-corner-all"
+                           required
+                           minlength="2"
+                           maxlength="100"
+                           ng-model="vm.device.Name"
+                    />
+                </td>
+            </tr>
+            <tr ng-if="::!vm.isSecurityDevice()">
+                <td>
+                    <label for="comboswitchtype">{{ :: 'Switch Type' | translate}}: </label>
+                </td>
+                <td>
+                    <select id="comboswitchtype"
+                            style="width:200px"
+                            class="combobox ui-corner-all"
+                            ng-options="item.value as item.label for item in ::vm.switchTypeOptions"
+                            ng-model="vm.device.SwitchTypeVal">
+                    </select>
+                </td>
+            </tr>
+            <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isSwitchIconAvailable()">
+                <td>{{ :: 'Switch Icon' | translate}}:</td>
+                <td>
+                    <device-icon-select ng-model="vm.device.CustomImage"></device-icon-select>
+                </td>
+            </tr>
+            <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isMotionAvailable()">
+                <td>
+                    <label for="motionoffdelay">{{ :: 'Off Delay' | translate}}:</label>
+                </td>
+                <td>
+                    <input type="text"
+                           id="motionoffdelay"
+                           style="width: 40px; padding: .2em;"
+                           class="text ui-widget-content ui-corner-all"
+                           ng-model="vm.device.AddjValue"/>
+                    <span>{{ :: '(Seconds) 0 = Use sensor time' | translate}}</span>
+                </td>
+            </tr>
+            <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isOnDelayAvailable()">
+                <td>
+                    <label for="ondelay">{{ :: 'On Delay' | translate}}:</label>
+                </td>
+                <td>
+                    <input type="text"
+                           id="ondelay"
+                           style="width: 40px; padding: .2em;"
+                           class="text ui-widget-content ui-corner-all"
+                           ng-model="vm.device.AddjValue2"
+                    />
+                    <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
+                </td>
+            </tr>
+            <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isOffDelayAvailable()">
+                <td>
+                    <label for="offdelay">{{ :: 'Off Delay' | translate}}:</label>
+                </td>
+                <td>
+                    <input type="text"
+                           id="offdelay"
+                           style="width: 40px; padding: .2em;"
+                           class="text ui-widget-content ui-corner-all"
+                           ng-model="vm.device.AddjValue"
+                    />
+                    <span>{{ :: '(Seconds) 0 = Disabled' | translate}}</span>
+                </td>
+            </tr>
+            <tr ng-show="vm.isOnActionAvailable()">
+                <td>
+                    <label for="onaction">{{ :: 'On Action' | translate}}:</label>
+                </td>
+                <td>
+                    <input type="text"
+                           id="onaction"
+                           style="width: 356px; padding: .2em;"
+                           class="text ui-widget-content ui-corner-all"
+                           minlength="10"
+                           maxlength="500"
+                           pattern="^(http|https|script):\/\/.+"
+                           ng-model="vm.device.StrParam1"
+                    />
+                    <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
+                </td>
+            </tr>
+            <tr ng-show="vm.isOffActionAvailable()">
+                <td>
+                    <label for="offaction">{{ :: 'Off Action' | translate}}:</label>
+                </td>
+                <td>
+                    <input type="text"
+                           id="offaction"
+                           style="width: 356px; padding: .2em;"
+                           class="text ui-widget-content ui-corner-all"
+                           minlength="10"
+                           maxlength="500"
+                           pattern="^(http|https|script):\/\/.+"
+                           ng-model="vm.device.StrParam2"
+                    />
+                    <span>{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    {{ :: 'Protected' | translate}}:
+                </td>
+                <td>
+                    <input type="checkbox" id="protected" ng-model="vm.device.Protected"/><label for="protected"></label>
+                </td>
+            </tr>
+            <tr ng-if="vm.isColorSettingsAvailable()">
+                <td>
+                    <label>{{ :: 'Color' | translate}}:</label>
+                </td>
+                <td>
+                    <rgbw-picker device="vm.device"></rgbw-picker>
+                </td>
+            </tr>
+            <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                    <label>{{ :: 'Selector Style' | translate}}:</label>
+                </td>
+                <td>
+                    <input type="radio" id="selectorstyle0" name="selectorstyle" ng-model="vm.device.SelectorStyle"
+                           ng-value="{{:: 0 }}">
+                    <label for="selectorstyle0">{{ :: 'Button set' | translate}}</label>
+                    <input type="radio" id="selectorstyle1" name="selectorstyle" ng-model="vm.device.SelectorStyle"
+                           ng-value="{{:: 1 }}">
+                    <label for="selectorstyle1">{{ :: 'Select menu' | translate}}</label>
+                </td>
+            </tr>
+            <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                {{ :: 'Hide Off level' | translate}}:
+                </td>
+                <td>
+                    <input type="checkbox"
+                           id="selectorHiddenOff"
+                           name="selectorHiddenOff"
+                           ng-model="vm.device.LevelOffHidden"><label for="selectorHiddenOff"></label>
+                </td>
+            </tr>
+            <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                    <label>{{ :: 'Selector Levels' | translate}}:</label>
+                </td>
+                <td>
+                    <device-level-names-table ng-model="vm.levels"></device-level-names-table>
+                </td>
+            </tr>
+            <tr ng-if="vm.isLevelsAvailable()">
+                <td>
+                    <label>{{ :: 'Selector actions' | translate}}:</label>
+                </td>
+                <td>
+                    <device-level-actions-table ng-model="vm.levels"></device-level-actions-table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="devicedescription">{{ :: 'Description' | translate}}: </label>
+                </td>
+                <td>
+                <textarea
+                        id="devicedescription"
+                        name="devicedescription"
+                        rows="4" style="width: 356px; padding: .2em;"
+                        class="text ui-widget-content ui-corner-all"
+                        ng-model="vm.device.Description">
+                </textarea>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <button type="submit" class="btnstyle3" ng-disabled="deviceInfoForm.$invalid">
+                        {{ :: 'Save' | translate}}
+                    </button>
+                    <button type="button" class="btnstyle3" ng-click="vm.removeDevice()">
+                        {{ :: 'Delete' | translate}}
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <br>
+
+    <device-subdevices-editor device-idx=":: vm.deviceIdx"></device-subdevices-editor>
+
+    <br>
+</div>
+
+<script type="text/ng-template" id="views/device/levelNamesTable.html">
+    <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+        <tr valign="middle">
+            <th width="40" align="center"></th>
+            <th align="left"></th>
+            <th width="60" align="center"></th>
+            <th width="60" align="center"></th>
+        </tr>
+        </thead>
+    </table>
+
+    {{ :: 'Level name' | translate}}:
+    <input type="text" ng-model="vm.newLevelName">
+
+    <button type="button"
+            class="btnstyle3"
+            ng-click="vm.addLevel()"
+            ng-disabled="!vm.isAddLevelAvailable()">
+        {{ :: 'Add' | translate}}
+    </button>
+</script>
+
+<script type="text/ng-template" id="views/device/levelActionsTable.html">
+    <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+        <tr valign="middle">
+            <th width="40" align="center"></th>
+            <th align="left"></th>
+            <th width="60" align="center"></th>
+        </tr>
+        </thead>
+    </table>
+</script>
+
+<script type="text/ng-template" id="views/device/levelRenameModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Rename Level Name</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" name="modalForm">
+            <div class="control-group">
+                <label class="control-label" for="selectorlevelname">{{:: 'Name' | translate }}:</label>
+                <div class="controls">
+                    <input type="text"
+                           id="selectorlevelname"
+                           class="form-control"
+                           required
+                           minlength="1"
+                           ng-model="name"
+                    />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" type="button" ng-click="$close(name)" ng-disabled="modalForm.$invalid">{{::
+            'Rename' | translate }}
+        </button>
+        <button class="btn btn-default" type="button" ng-click="$dismiss()">{{:: 'Cancel' | translate }}</button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="views/device/editSelectorActionModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">{{:: 'Edit selector action' | translate }}</h3>
+    </div>
+    <div class="modal-body">
+		<table class="display" id="paramstable2" border="0" cellpadding="0" cellspacing="20">
+			<tr valign="top">
+				<td align="right" style="width:120px">
+					<span class="help-block" for="selectoraction">{{:: 'Action' | translate }}: </label>
+				</td>
+				<td>
+					<input type="text"
+					   id="selectoraction"
+					   class="form-control"
+					   size="50"
+					   maxlength="500"
+					   pattern="^(http|https|script):\/\/.+"
+					   ng-model="action"
+					/>
+					<br>
+					<span class="help-block">{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
+				</td>
+			</tr>
+		</table>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" type="button" ng-click="$close(action)" ng-disabled="modalForm.$invalid">{{::
+            'Save' | translate }}
+        </button>
+        <button class="btn btn-default" type="button" ng-click="$dismiss()">{{:: 'Cancel' | translate }}</button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="views/device/editSubDevices.html">
+    <h2>{{ :: 'Sub/Slave Devices' | translate}}:</h2>
+    <br>
+
+    <table class="display" id="subdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+    </table>
+
+    <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <button type="button"
+                        class="btnstyle3"
+                        ng-disabled="!vm.selectedSubDeviceIdx"
+                        ng-click="vm.deleteSubDevice()">
+                    {{ :: 'Delete' | translate}}
+                </button>
+            </td>
+            <td align="right">
+                <button type="button"
+                        class="btnstyle3"
+                        ng-click="vm.clearSubDevices()">
+                    {{ :: 'Clear' | translate}}
+                </button>
+            </td>
+        </tr>
+    </table>
+    <br>
+
+    <table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:120px">
+                <label for="combosubdevice">{{ :: 'Sub/Slave Device' | translate}}: </label>
+            </td>
+            <td>
+                <select id="combosubdevice"
+                        style="width:250px"
+                        class="combobox ui-corner-all"
+                        ng-model="vm.subDeviceIdx"
+                        ng-options="item.idx as item.Name for item in ::vm.lightsAndSwitches">
+                </select>
+                <button type="button"
+                        class="btnstyle3"
+                        ng-disabled="!vm.subDeviceIdx"
+                        ng-click="vm.addSubDevice()">
+                    {{ :: 'Add' | translate}}
+                </button>
+            </td>
+        </tr>
+    </table>
+</script>
+
+<script type="text/ng-template" id="views/rgbwPicker.html">
+    <table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="left" style="width:200px">
+                <table class="display" border="0" cellpadding="0" cellspacing="0">
+                    <tr id="ColorMode">
+                        <td style="padding-left:0px">
+                            <a> <img src="images/RGB48.png" class="lcursor pickermodergb unselected"
+                                     height="48" width="48"> </a>
+                            <a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/White48.png" class="lcursor pickermodewhite unselected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/Customw48_Sel.png"
+                                    class="lcursor pickermodecustomw selected" height="48" width="48"></a>
+                            <a><img src="images/Customww48.png"
+                                    class="lcursor pickermodecustomww unselected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/Customww48_Sel.png"
+                                    class="lcursor pickermodecustomww selected" height="48" width="48"></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left" style="width:200px;padding-left:0px">
+                            <input type="text"
+                                   id="popup_picker"
+                                   data-wheelcolorpicker=""
+                                   data-wcp-layout="block"
+                                   data-wcp-sliders="wvkl"/>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td align="left" style="vertical-align: top;">
+                <div class="btn-group">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOn()">
+                        {{:: 'On' | translate }}
+                    </button>
+                    <!-- TODO: Domoticz back-end should report if the light implements fulllight -->
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.fullLight()">
+                        {{:: 'Full Light' | translate }}
+                    </button>
+                    <!-- TODO: Domoticz back-end should report if the light implements nightlight -->
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.nightLight()">
+                        {{:: 'Night Light' | translate }}
+                    </button>
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOff()">
+                        {{:: 'Off' | translate }}
+                    </button>
+                </div>
+                <br><br>
+                <div class="btn-group" ng-show="$ctrl.isRelativeDimmer()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.brightnessUp()">
+                        {{:: 'Brightness Up' | translate }}
+                    </button>
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.brightnessDown()">
+                        {{:: 'Brightness Down' | translate }}
+                    </button>
+                </div>
+                <br><br>
+                <div class="btn-group" ng-show="$ctrl.isRelativeColorTemperature()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.colorWarmer()">
+                        {{:: 'Warmer White' | translate }}
+                    </button>
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.colorColder()">
+                        {{:: 'Colder White' | translate }}
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </table>
+</script>

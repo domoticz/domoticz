@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "RFXBase.h"
+#include "../main/mainworker.h"
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 
@@ -150,4 +152,65 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return false;//unknown Type
 	}
 	return false;
+}
+
+void CRFXBase::SendCommand(const unsigned char Cmd)
+{
+	tRBUF cmd;
+	cmd.ICMND.packetlength = 13;
+	cmd.ICMND.packettype = 0;
+	cmd.ICMND.subtype = 0;
+	cmd.ICMND.seqnbr = m_SeqNr++;
+	cmd.ICMND.cmnd = Cmd;
+	cmd.ICMND.freqsel = 0;
+	cmd.ICMND.xmitpwr = 0;
+	cmd.ICMND.msg3 = 0;
+	cmd.ICMND.msg4 = 0;
+	cmd.ICMND.msg5 = 0;
+	cmd.ICMND.msg6 = 0;
+	cmd.ICMND.msg7 = 0;
+	cmd.ICMND.msg8 = 0;
+	cmd.ICMND.msg9 = 0;
+	WriteToHardware((const char*)&cmd, sizeof(cmd.ICMND));
+}
+
+bool CRFXBase::SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6)
+{
+	tRBUF Response;
+	Response.ICMND.packetlength = sizeof(Response.ICMND) - 1;
+	Response.ICMND.packettype = pTypeInterfaceControl;
+	Response.ICMND.subtype = sTypeInterfaceCommand;
+	Response.ICMND.seqnbr = m_SeqNr++;
+	Response.ICMND.cmnd = cmdSETMODE;
+	Response.ICMND.freqsel = Mode1;
+	Response.ICMND.xmitpwr = Mode2;
+	Response.ICMND.msg3 = Mode3;
+	Response.ICMND.msg4 = Mode4;
+	Response.ICMND.msg5 = Mode5;
+	Response.ICMND.msg6 = Mode6;
+	if (!WriteToHardware((const char*)&Response, sizeof(Response.ICMND)))
+		return false;
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&Response, NULL, -1);
+	//Save it also
+	SendCommand(cmdSAVE);
+
+	m_rxbufferpos = 0;
+
+	return true;
+}
+
+void CRFXBase::SendResetCommand()
+{
+	m_bEnableReceive = false;
+	m_rxbufferpos = 0;
+	//Send Reset
+	SendCommand(cmdRESET);
+	//wait at least 500ms
+	sleep_milliseconds(500);
+	m_rxbufferpos = 0;
+	m_bEnableReceive = true;
+
+	SendCommand(cmdStartRec);
+	sleep_milliseconds(50);
+	SendCommand(cmdSTATUS);
 }

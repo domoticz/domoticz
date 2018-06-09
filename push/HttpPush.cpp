@@ -35,7 +35,7 @@ void CHttpPush::Stop()
 
 void CHttpPush::UpdateActive()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("HttpActive", fActive);
 	m_bLinkActive = (fActive == 1);
 }
@@ -64,7 +64,7 @@ void CHttpPush::DoHttpPush()
 	m_sql.GetPreferencesVar("HttpAuthBasicLogin", httpAuthBasicLogin);
 	m_sql.GetPreferencesVar("HttpAuthBasicPassword", httpAuthBasicPassword);
 
-	int httpDebugActiveInt;
+	int httpDebugActiveInt = 0;
 	bool httpDebugActive = false;
 	m_sql.GetPreferencesVar("HttpDebug", httpDebugActiveInt);
 	if (httpDebugActiveInt == 1) {
@@ -248,7 +248,7 @@ void CHttpPush::DoHttpPush()
 
 				// debug
 				if (httpDebugActive) {
-					_log.Log(LOG_NORM, "HttpLink: response ", sResult.c_str());
+					_log.Log(LOG_NORM, "HttpLink: response %s", sResult.c_str());
 				}
 			}
 		}

@@ -15,9 +15,12 @@ public:
 	CRFXBase();
     ~CRFXBase();
 	std::string m_Version;
+	bool SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
+	void SendResetCommand();
 private:
 	bool onInternalMessage(const unsigned char *pBuffer, const size_t Len);
 	static bool CheckValidRFXData(const uint8_t *pData);
+	void SendCommand(const unsigned char Cmd);
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	bool m_bReceiverStarted;

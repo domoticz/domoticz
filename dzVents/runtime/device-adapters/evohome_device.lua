@@ -1,3 +1,5 @@
+local TimedCommand = require('TimedCommand')
+
 return {
 
 	baseType = 'device',
@@ -5,28 +7,32 @@ return {
 	name = 'Evohome device adapter',
 
 	matches = function (device, adapterManager)
-		local res = (device.hardwareTypeValue == 39 and device.deviceSubType == 'Zone')
+		local res = (
+			device.hardwareTypeValue == 39 or
+			device.hardwareTypeValue == 40 or
+			device.hardwareTypeValue == 106 or
+			device.hardwareTypeValue == 75
+		)
+
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'updateSetPoint')
 		end
+
 		return res
 
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device['SetPoint'] = device.rawData[1] or 0
+		device.setPoint = tonumber(device.rawData[1] or 0)
 
 		function device.updateSetPoint(setPoint, mode, untilDate)
-			local url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=setused&idx=' .. device.id .. '&setpoint=' .. setPoint .. '&mode=' .. tostring(mode) .. '&used=true'
-
-			if (untilDate) then
-				url = url .. '&until=' .. tostring(untilDate)
-			end
-
-			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
-			domoticz.openURL(url)
+			return TimedCommand(domoticz,
+				'SetSetPoint:' ..
+				tostring(device.id),
+			   tostring(setPoint) ..
+			   '#' .. tostring(mode) ..
+			   '#' .. tostring(untilDate) , 'setpoint')
 		end
 
 	end

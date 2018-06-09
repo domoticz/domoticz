@@ -202,7 +202,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 #ifdef EHOUSE_TCP_CLIENT_THREAD
 	if (SocketIndex >= MAX_CLIENT_SOCKETS)
 	{
-		_log.Log(LOG_STATUS, "[eHouse TCP Client] Too many sockets");
+		_log.Log(LOG_ERROR, "[eHouse TCP Client] Too many sockets");
 		return;
 	}
 #endif    
@@ -235,17 +235,17 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 
 	if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
 		sizeof(timeout)) < 0)   //Set socket Read operation Timeout
-		LOG(LOG_STATUS, "[TCP Cli] Set Read Timeout failed");
+		LOG(LOG_ERROR, "[TCP Cli] Set Read Timeout failed");
 
 	if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
 		sizeof(timeout)) < 0)   //Set Socket Write operation Timeout
-		LOG(LOG_STATUS, "[TCP Cli] Set Write Timeout failed");
+		LOG(LOG_ERROR, "[TCP Cli] Set Write Timeout failed");
 	//TCP_NODELAYACK
 	char kkk = 1;
 	status = 1L;
 	if (setsockopt(ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data immediately
 	{
-		//_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
+		//_log.Log(LOG_ERROR, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
 	}
 	server.sin_addr.s_addr = SrvAddrU | (SrvAddrM << 8) | (ClientCon->AddrH << 16) | (ClientCon->AddrL << 24);
 	server.sin_family = AF_INET;                    //tcp v4
@@ -282,7 +282,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 		memcpy(&challange[14], (char *)&ClientCon->Events, ClientCon->EventSize * EVENT_SIZE);        //Add Event Code
 	}
 	else eHTerminate(SocketIndex)    //Wrong data size of received data
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Sending ch-re", SocketIndex);
+		if (DEBUG_TCPCLIENT) _log.Debug(DEBUG_HARDWARE, "[TCP Cli %d] Sending ch-re", SocketIndex);
 
 	//Send Challange + response + Events    - Only Xor password
 	status = 0;
@@ -332,10 +332,10 @@ if (!(iter--)) eHTerminate(SocketIndex)                   //To many retries so C
 #endif
 	//We are trying close connection as fast as possible
 	if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)   //Set socket Read operation Timeout
-		LOG(LOG_STATUS, "[TCP Cli] Set Read Timeout failed");
+		LOG(LOG_ERROR, "[TCP Cli] Set Read Timeout failed");
 
 	if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)   //Set Socket Write operation Timeout
-		LOG(LOG_STATUS, "[TCP Cli] Set Write Timeout failed");
+		LOG(LOG_ERROR, "[TCP Cli] Set Write Timeout failed");
 	//TCP_NODELAYACK
 	kkk = 1;
 	status = 1L;

@@ -12,7 +12,7 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
 m_IP(IPAddress),
 m_User(User),
 m_Pwd(Pwd),
@@ -67,7 +67,7 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
 
 	sPostData << sPostdata;
-	
+
 	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
 
@@ -212,7 +212,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				if (itt->nStatus != nStatus)
 				{
 					m_notifications.CheckAndHandleNotification(itt->ID, sDevName, NotificationType(nStatus), sStatus.c_str());
-					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, itt->ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(nStatus), sStatus.c_str(), sDevName, 0);
+					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, itt->ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(nStatus), sStatus.c_str(), sDevName);
 				}
 
 				itt->nStatus = nStatus;
@@ -249,7 +249,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					nStatus = MSTAT_OFF;
 				else {
 					std::string sMode = root["mode"].asString();
-					if (sMode == "play") 
+					if (sMode == "play")
 						if ((nOldStatus == MSTAT_OFF) || (nOldStatus == MSTAT_DISCONNECTED))
 							nStatus = MSTAT_ON;
 						else
@@ -323,6 +323,9 @@ void CLogitechMediaServer::Do_Work()
 
 	ReloadNodes();
 	ReloadPlaylists();
+
+	//Mark devices as 'Unused'
+	m_sql.safe_query("UPDATE WOLNodes SET Timeout=-1 WHERE (HardwareID==%d)", m_HwdID);
 
 	while (!m_stoprequested)
 	{
@@ -416,7 +419,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 						(model == "squeezelite")			//Max2Play SqueezePlug
 						)
 					{
-						InsertUpdatePlayer(name, ip, macaddress);
+						UpsertPlayer(name, ip, macaddress);
 					}
 					else {
 						if (!m_bShowedStartupMessage)
@@ -436,17 +439,20 @@ void CLogitechMediaServer::GetPlayerInfo()
 	}
 }
 
-void CLogitechMediaServer::InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress)
+void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress)
 {
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists...
-	//1) Check on MacAddress (default); Update Name in case it has been changed
+	//1) Check on MacAddress (default)
 	result = m_sql.safe_query("SELECT Name FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, MacAddress.c_str());
 	if (result.size() > 0) {
-		if (result[0][0].c_str() != Name) {
-			m_sql.safe_query("UPDATE WOLNodes SET Name='%q' WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), m_HwdID, MacAddress.c_str());
+		if (result[0][0].c_str() != Name) { //Update Name in case it has been changed
+			m_sql.safe_query("UPDATE WOLNodes SET Name='%q', Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), m_HwdID, MacAddress.c_str());
 			_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' renamed to '%s'", result[0][0].c_str(), Name.c_str());
+		}
+		else { //Mark device as 'Active'
+			m_sql.safe_query("UPDATE WOLNodes SET Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, MacAddress.c_str());
 		}
 		return;
 	}
@@ -489,10 +495,7 @@ void CLogitechMediaServer::InsertUpdatePlayer(const std::string &Name, const std
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also add a light (push) device
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d, '%q', 1, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
-		m_HwdID, szID, int(pTypeLighting2), int(sTypeAC), int(STYPE_Media), Name.c_str());
+	m_sql.InsertDevice(m_HwdID, szID, 1, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", Name, 12, 255, 1);
 
 	ReloadNodes();
 }
@@ -553,7 +556,7 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 			case gswitch_sPause:
 				return SendCommand(itt->ID, "Pause");
 			case gswitch_sSetVolume:
-				sParam = boost::lexical_cast<std::string>(iParam);
+				sParam = std::to_string(iParam);
 				return SendCommand(itt->ID, "SetVolume", sParam);
 			default:
 				return true;
@@ -571,7 +574,7 @@ void CLogitechMediaServer::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
-		_log.Log(LOG_STATUS, "Logitech Media Server: %i player-switch(es) found.", result.size());
+		_log.Log(LOG_STATUS, "Logitech Media Server: %d player-switch(es) found.", (int)result.size());
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
@@ -786,7 +789,7 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 		std::string sLine2 = text;
 		std::string sFont = ""; //"huge";
 		std::string sBrightness = "4";
-		std::string sDuration = boost::lexical_cast<std::string>(duration);
+		std::string sDuration = std::to_string(duration);
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 	}
@@ -847,6 +850,27 @@ namespace http {
 			pHardware->Restart();
 		}
 
+		void CWebServer::Cmd_LMSDeleteUnusedDevices(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			std::string hwid = request::findValue(&req, "idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
+				return;
+			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
+
+			m_sql.safe_query("DELETE FROM WOLNodes WHERE ((HardwareID==%d) AND (Timeout==-1))", iHardwareID);
+		}
+
 		void CWebServer::Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
@@ -868,7 +892,7 @@ namespace http {
 			root["title"] = "LMSGetNodes";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
+			result = m_sql.safe_query("SELECT ID,Name,MacAddress,(CASE Timeout WHEN -1 THEN 'Unused' ELSE 'Active' END) as Status FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -880,6 +904,7 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Mac"] = sd[2];
+					root["result"][ii]["Status"] = sd[3];
 					ii++;
 				}
 			}
@@ -899,7 +924,7 @@ namespace http {
 			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			root["status"] = "OK";
-			root["title"] = "Cmd_LMSGetPlaylists";
+			root["title"] = "LMSGetPlaylists";
 
 			std::vector<CLogitechMediaServer::LMSPlaylistNode> m_nodes = pHardware->GetPlaylists();
 			std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;

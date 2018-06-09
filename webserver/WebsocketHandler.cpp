@@ -137,7 +137,7 @@ namespace http {
 			//When a browser was still open and polling/connecting to the websocket, and the application was started this caused a crash
 			try
 			{
-				std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
+				std::string query = "type=devices&rid=" + std::to_string(DeviceRowIdx);
 				Json::Value request;
 				Json::StyledWriter writer;
 				request["event"] = "request";

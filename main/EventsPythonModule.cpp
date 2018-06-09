@@ -51,7 +51,7 @@
             else
             {
                 std::string	message = msg;
-                _log.Log((_eLogLevel)LOG_NORM, message.c_str());
+                _log.Log((_eLogLevel)LOG_NORM, message);
             }
 
             Py_INCREF(Py_None);
@@ -347,11 +347,16 @@
 
                    // uservariablesMutexLock2.unlock();
                    
+                   // Add __main__ module
+                   PyObject *pModule = Plugins::PyImport_AddModule("__main__");
+                   Py_INCREF(pModule);
+
+                   // Override sys.stderr
+                   Plugins::PyRun_SimpleStringFlags("import sys\nclass StdErrRedirect:\n    def __init__(self):\n        self.buffer = ''\n    def write(self, msg):\n        self.buffer += msg\nstdErrRedirect = StdErrRedirect()\nsys.stderr = stdErrRedirect\n", NULL);
 
                    if(PyString.length() > 0) {
                        // Python-string from WebEditor
                        Plugins::PyRun_SimpleStringFlags(PyString.c_str(), NULL);
-                       
                    } else {
                        // Script-file
                        FILE* PythonScriptFile = fopen(filename.c_str(), "r");
@@ -360,6 +365,39 @@
                        if (PythonScriptFile!=NULL)
                            fclose(PythonScriptFile);
                    }
+
+                   // Get message from stderr redirect
+                   PyObject *stdErrRedirect = NULL, *logBuffer = NULL, *logBytes = NULL;
+                   std::string logString;
+                   if ((stdErrRedirect = Plugins::PyObject_GetAttrString(pModule, "stdErrRedirect")) == NULL) goto free_module;
+                   if ((logBuffer = Plugins::PyObject_GetAttrString(stdErrRedirect, "buffer")) == NULL) goto free_stderrredirect;
+                   if ((logBytes = PyUnicode_AsUTF8String(logBuffer)) == NULL) goto free_logbuffer;
+                   logString.append(PyBytes_AsString(logBytes));
+
+                   // Check if there were some errors written to stderr
+                   if (logString.length() > 0) {
+                       // Print error source
+                       _log.Log(LOG_ERROR, "EventSystem: Failed to execute python event script \"%s\"", filename.c_str());
+
+                       // Loop over all lines of the error message
+                       std::size_t lineBreakPos;
+                       while ((lineBreakPos = logString.find('\n')) != std::string::npos) {
+                           // Print line
+                           _log.Log(LOG_ERROR, "EventSystem: %s", logString.substr(0, lineBreakPos).c_str());
+
+                           // Remove line from buffer
+                           logString = logString.substr(lineBreakPos + 1);
+                       }
+                   }
+
+                   // Cleanup
+                   Py_DECREF(logBytes);
+free_logbuffer:
+                   Py_DECREF(logBuffer);
+free_stderrredirect:
+                   Py_DECREF(stdErrRedirect);
+free_module:
+                   Py_DECREF(pModule);
                 } else {
                     _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
                 }

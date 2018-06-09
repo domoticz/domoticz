@@ -43,10 +43,10 @@
 #define Daikin_POLL_INTERVAL 300
 
 #ifdef _DEBUG
-//	#define DEBUG_DaikinR
-//    #define DEBUG_DaikinR_File "C:\\TEMP\\Daikin_R_control_info.txt"
-	#define DEBUG_DaikinW
-	#define DEBUG_DaikinW_File "C:\\TEMP\\Daikin_W_control_info.txt"
+	//#define DEBUG_DaikinR
+	//#define DEBUG_DaikinR_File "C:\\TEMP\\Daikin_R_control_info.txt"
+	//#define DEBUG_DaikinW
+	//#define DEBUG_DaikinW_File "C:\\TEMP\\Daikin_W_control_info.txt"
 #endif
 
 #ifdef DEBUG_DaikinW
@@ -148,7 +148,7 @@ void CDaikin::Do_Work()
 
 bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_STATUS, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
@@ -179,7 +179,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		int child_sensor_id = pSwitch->unitcode;
 		bool command = pSwitch->cmnd;
 
-		_log.Log(LOG_STATUS, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
+		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
 
 
 		if (node_id == 1)
@@ -204,7 +204,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 			SetF_DirLevel(pSwitch->level);
 		}
 	}
-	else if (packettype == pTypeLimitlessLights)
+	else if (packettype == pTypeColorSwitch)
 	{
 		//RGW/RGBW command
 	}
@@ -221,7 +221,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
 
-		_log.Log(LOG_STATUS, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
+		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
 
 		char szTmp[10];
 		sprintf(szTmp, "%.1f", pMeter->temp);
@@ -243,7 +243,7 @@ void CDaikin::SetSetpoint(const int idx, const float temp)
 {
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Set Point...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Set Point...");
 
 	std::stringstream szURL;
 
@@ -615,7 +615,7 @@ void CDaikin::SetLedOnOFF(const bool OnOFF)
 {
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Set Led ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Set Led ...");
 	
 	std::stringstream szURL;
 
@@ -652,7 +652,7 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 {
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Set Point...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Group On/Off...");
 
 	std::stringstream szURL;
 
@@ -739,18 +739,18 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	std::vector<std::vector<std::string> > result;
 	
 	// block this device if it is already added for another gateway hardware id
-
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID!=%d) AND (DeviceID=='%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
 	
 	if (result.size() > 0) {
 		return;
 	}
-
+	
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
+	
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-	if (result.size() < 1)
+	if (result.empty())
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
-
+		// New Hardware -> Create the corresponding devices Selector
 		if (customimage == 0) {
 			if (sID == 5) {
 				customimage = 16; //wall socket			
@@ -790,7 +790,7 @@ void CDaikin::SetModeLevel(const int NewLevel)
 
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Mode ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Mode Level...");
 
 	std::stringstream szURL;
 
@@ -806,16 +806,18 @@ void CDaikin::SetModeLevel(const int NewLevel)
 
 	szURL << "pow=" << m_pow;
 
-	if (NewLevel == 0)
-		szURL << "&mode=0";
-	else if (NewLevel == 10)
-		szURL << "&mode=2";
-	else if (NewLevel == 20)
-		szURL << "&mode=3";
-	else if (NewLevel == 30)
-		szURL << "&mode=4";
-	else if (NewLevel == 40)
-		szURL << "&mode=6";
+        if (NewLevel == 0)
+                szURL << "&mode=0";
+        else if (NewLevel == 10)
+                szURL << "&mode=1"; /* 10-AUTO  1 */
+        else if (NewLevel == 20)
+                szURL << "&mode=2"; /* 20-DEHUM 2 */
+        else if (NewLevel == 30)
+                szURL << "&mode=3"; /* 30-COLD  3 */
+        else if (NewLevel == 40)
+                szURL << "&mode=4"; /* 40-HOT   4 */
+        else if (NewLevel == 50)
+                szURL << "&mode=6"; /* 50-FAN   6 */
 
 	szURL << "&stemp=" << m_stemp;
 
@@ -847,7 +849,7 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Mode ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Rate ...");
 
 	std::stringstream szURL;
 
@@ -900,10 +902,9 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 }
 void CDaikin::SetF_DirLevel(const int NewLevel)
 {
-
 	std::string sResult;
 
-	_log.Log(LOG_STATUS, "Daikin: Mode ...");
+	_log.Debug(DEBUG_HARDWARE, "Daikin: Dir Level ...");
 
 	std::stringstream szURL;
 

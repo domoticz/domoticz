@@ -15,13 +15,6 @@
 #	include "../hardware/plugins/PluginManager.h"
 #endif
 
-enum eVerboseLevel
-{
-	EVBL_None = 0,
-	EVBL_ALL = 1,
-	EVBL_DEBUG = 2
-};
-
 class MainWorker
 {
 public:
@@ -47,8 +40,6 @@ public:
 	void HeartbeatRemove(const std::string &component);
 	void HeartbeatCheck();
 
-	void SetVerboseLevel(eVerboseLevel Level);
-	eVerboseLevel GetVerboseLevel();
 	void SetWebserverSettings(const http::server::server_settings & settings);
 	std::string GetWebserverAddress();
 	std::string GetWebserverPort();
@@ -59,9 +50,9 @@ public:
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 
-	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay);
-	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay);
-	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
+	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay);
+	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const _tColor color, const bool ooc, const int ExtraDelay);
+	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, _tColor color, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const uint64_t idx, std::string switchcmd);
@@ -78,8 +69,6 @@ public:
 	bool SetZWaveThermostatFanMode(const std::string &idx, const int fMode);
 	bool SetZWaveThermostatModeInt(const std::vector<std::string> &sd, const int tMode);
 	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, const int fMode);
-
-	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
 
 	bool SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
@@ -112,9 +101,10 @@ public:
 	void SetInternalSecStatus();
 	bool GetSensorData(const uint64_t idx, int &nValue, std::string &sValue);
 
-	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
+	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, int nValue, std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
+	boost::signals2::signal<void(const uint64_t SceneIdx, const std::string &SceneName)> sOnSwitchScene;
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
@@ -176,7 +166,6 @@ private:
 	unsigned char m_hardwareStartCounter;
 
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
-	eVerboseLevel m_verboselevel;
 	http::server::server_settings m_webserver_settings;
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
@@ -191,8 +180,6 @@ private:
 	void Do_Work();
 	void Heartbeat();
 	void ParseRFXLogFile();
-	void SendResetCommand(CDomoticzHardwareBase *pHardware);
-	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	bool WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
 
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
@@ -291,7 +278,7 @@ private:
 	void decode_Chime(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Power(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-	void decode_LimitlessLights(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

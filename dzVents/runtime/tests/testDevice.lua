@@ -2,7 +2,7 @@ _G._ = require 'lodash'
 
 local scriptPath = ''
 
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;'
 
 local testData = require('tstData')
 
@@ -161,7 +161,6 @@ describe('device', function()
 		TimedCommand = require('TimedCommand')
 
 		Device = require('Device')
-
 	end)
 
 	teardown(function()
@@ -182,7 +181,6 @@ describe('device', function()
 	after_each(function()
 		device = nil
 		commandArray = {}
-
 	end)
 
 	describe('Adapters', function()
@@ -221,6 +219,30 @@ describe('device', function()
 			assert.is_not_nil(device.setState)
 			assert.is_same('bla', device.state)
 
+			assert.is_false(device.isHTTPResponse)
+			assert.is_false(device.isVariable)
+			assert.is_false(device.isTimer)
+			assert.is_false(device.isScene)
+			assert.is_true(device.isDevice)
+			assert.is_false(device.isGroup)
+			assert.is_false(device.isSecurity)
+		end)
+
+		it('should have a cancelQueuedCommands method', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				changed = true,
+				type = 'sometype',
+				subType = 'sub',
+				hardwareType = 'hwtype',
+				hardwareTypeValue = 'hvalue',
+				state = 'bla'
+			})
+
+			device.cancelQueuedCommands()
+			assert.is_same({
+				{ ['Cancel'] = { idx = 1, type = 'device' } },
+			 }, commandArray)
 		end)
 
 		it('should deal with percentages', function()
@@ -276,8 +298,12 @@ describe('device', function()
 			assert.is_same(1, device.lux)
 
 			device.updateLux(333)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|333 TRIGGER" } }, commandArray)
-
+			assert.is_same({ { ["UpdateDevice"] = {
+				idx = 1,
+				_trigger = true,
+				nValue = 0,
+				sValue = '333',
+			} } }, commandArray)
 		end)
 
 		it('should detect a zone heating device', function()
@@ -289,7 +315,6 @@ describe('device', function()
 			local device = getDevice_(domoticz, 'myDevice', nil, true, 'Heating', 'Zone', rawData)
 			assert.is_same(12.5, device.setPoint)
 			assert.is_same('Cozy', device.heatingMode)
-
 		end)
 
 		it('should detect a kwh device', function()
@@ -308,7 +333,12 @@ describe('device', function()
 			assert.is_same(654.44, device['usage'])
 
 			device.updateElectricity(220, 1000)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|220;1000 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {
+				idx= 1,
+				nValue = 0,
+				sValue = '220;1000',
+				_trigger = true
+			} } }, commandArray)
 		end)
 
 		it('should detect an electric usage device', function()
@@ -322,7 +352,7 @@ describe('device', function()
 
 			assert.is_same(12345, device.WhActual)
 			device.updateEnergy(1000)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|1000 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1000", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a visibility device', function()
@@ -338,7 +368,7 @@ describe('device', function()
 
 			assert.is_same(33, device.visibility)
 			device.updateVisibility(22)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|22 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="22", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a p1 smart meter device', function()
@@ -376,9 +406,7 @@ describe('device', function()
 			assert.is_same(12345, device.WhActual)
 
 			device.updateP1(1, 2, 3, 4, 5, 6)
-			assert.is_same({ { ["UpdateDevice"] = '1|0|1;2;3;4;5;6 TRIGGER' } }, commandArray)
-
-
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1;2;3;4;5;6", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a thermostat setpoint device', function()
@@ -391,17 +419,10 @@ describe('device', function()
 				['rawData'] = { [1] = 12.5 }
 			})
 
-			assert.is_same(12.5, device.SetPoint)
-
-			local res;
-
-			domoticz.openURL = function(url)
-				res = url;
-			end
+			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14)
-
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=setsetpoint&idx=1&setpoint=14', res)
+			assert.is_same({ { ['SetSetPoint:1'] = '14'} }, commandArray)
 
 		end)
 
@@ -416,8 +437,7 @@ describe('device', function()
 
 			assert.is_same('dzVents rocks', device.text)
 			device.updateText('foo')
-			assert.is_same({ { ["UpdateDevice"] = "1|0|foo TRIGGER" } }, commandArray)
-
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="foo", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a rain device', function()
@@ -428,7 +448,7 @@ describe('device', function()
 			})
 
 			device.updateRain(10, 20)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|10;20 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;20", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a 2-phase ampere device', function()
@@ -444,7 +464,7 @@ describe('device', function()
 
 			assert.is_same(123, device.current)
 			device.updateCurrent(10)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|10 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a 3-phase ampere device', function()
@@ -464,7 +484,7 @@ describe('device', function()
 			assert.is_same(456, device.current2)
 			assert.is_same(789, device.current3)
 			device.updateCurrent(10, 20, 30)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|10;20;30 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;20;30", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect an air quality device', function()
@@ -480,7 +500,7 @@ describe('device', function()
 			assert.is_same(12, device.co2)
 
 			device.updateAirQuality(44)
-			assert.is_same({ { ["UpdateDevice"] = "1|44|0 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=44, sValue="0", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a security device', function()
@@ -505,7 +525,6 @@ describe('device', function()
 			device.armHome().afterSec(4)
 
 			assert.is_same({ { ['myDevice'] = 'Arm Home AFTER 4 SECONDS' } }, commandArray)
-
 		end)
 
 		describe('dummy methods', function()
@@ -530,8 +549,10 @@ describe('device', function()
 					"armAway",
 					"armHome",
 					"close",
+					'decreaseBrightness',
 					"dimTo",
 					"disarm",
+					'increaseBrightness',
 					"kodiExecuteAddOn",
 					"kodiPause",
 					"kodiPlay",
@@ -540,7 +561,18 @@ describe('device', function()
 					"kodiSetVolume",
 					"kodiStop",
 					"kodiSwitchOff",
+					'onkyoEISCPCommand',
 					"open",
+					"pause",
+					"play",
+					"playFavorites",
+					"setDiscoMode",
+					"setKelvin",
+					'setNightMode',
+					'setRGB',
+					"setVolume",
+					"setWhiteMode",
+					"startPlaylist",
 					"stop",
 					"switchOff",
 					"switchOn",
@@ -576,9 +608,10 @@ describe('device', function()
 					"updateWaterflow",
 					"updateWeight",
 					"updateWetness",
-					"updateWind" }, values(dummies))
+					"updateWind",
+					"updateYouless"
+				}, values(dummies))
 			end)
-
 		end)
 
 		it('should detect an evohome device', function()
@@ -591,16 +624,11 @@ describe('device', function()
 				['rawData'] = { [1] = 12.5 }
 			})
 
-			local res;
-			domoticz.openURL = function(url)
-				res = url;
-			end
-
-			assert.is_same(12.5, device.SetPoint)
+			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
 
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&idx=1&setpoint=14&mode=Permanent&used=true&until=2016-04-29T06:32:58Z', res)
+			assert.is_same({ { ['SetSetPoint:1'] = '14#Permanent#2016-04-29T06:32:58Z'} }, commandArray)
 		end)
 
 		it('should detect an opentherm gateway device', function()
@@ -619,11 +647,11 @@ describe('device', function()
 				res = url;
 			end
 
-			assert.is_same(12.5, device.SetPoint)
+			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14)
 
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?param=udevice&type=command&idx=1&nvalue=0&svalue=14', res)
 		end)
 
 		it('should detect a Z-Wave Thermostat mode device', function()
@@ -643,13 +671,13 @@ describe('device', function()
 
 
 			device.updateMode('Heat')
-			assert.is_same({ { ["UpdateDevice"] = "1|1|1 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] ={idx=1, nValue=1, sValue="1", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Off')
-			assert.is_same({ { ["UpdateDevice"] = "1|0|0 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="0", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Heat Econ')
-			assert.is_same({ { ["UpdateDevice"] = "1|2|2 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=2, sValue="2", _trigger=true} } }, commandArray)
 
 		end)
 
@@ -671,8 +699,7 @@ describe('device', function()
 			assert.is.same(32, device.chill)
 
 			device.updateWind(1, 2, 3, 4, 5, 6)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|1;2;30;40;5;6 TRIGGER" } }, commandArray)
-
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1;2;30;40;5;6", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a uv device', function()
@@ -687,7 +714,7 @@ describe('device', function()
 			assert.is.same(123.55, device.uv)
 
 			device.updateUV(33.5)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|33.5;0 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="33.5;0", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a barometer device', function()
@@ -697,7 +724,7 @@ describe('device', function()
 			})
 
 			device.updateBarometer(1024, 'thunderstorm')
-			assert.is_same({ { ["UpdateDevice"] = "1|0|1024;4 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1024;4", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a temperature device', function()
@@ -707,7 +734,7 @@ describe('device', function()
 			})
 
 			device.updateTemperature(23)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|23 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="23", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a humidity device', function()
@@ -720,7 +747,7 @@ describe('device', function()
 			})
 
 			device.updateHumidity(66, 'wet')
-			assert.is_same({ { ["UpdateDevice"] = "1|66|wet TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=66, sValue="wet", _trigger=true} } }, commandArray)
 			assert.is_same(3, device.humidityStatusValue)
 		end)
 
@@ -734,7 +761,7 @@ describe('device', function()
 			})
 
 			device.updateTempHum(10, 12, 'wet')
-			assert.is_same({ { ["UpdateDevice"] = "1|0|10;12;wet TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;wet", _trigger=true} } }, commandArray)
 			assert.is_same(2, device.humidityStatusValue)
 		end)
 
@@ -748,7 +775,7 @@ describe('device', function()
 			})
 
 			device.updateTempHumBaro(10, 12, 'wet', 1000, 'rain')
-			assert.is_same({ { ["UpdateDevice"] = '1|0|10;12;wet;1000;4 TRIGGER' } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;wet;1000;4", _trigger=true} } }, commandArray)
 			assert.is_same(1, device.humidityStatusValue)
 		end)
 
@@ -759,9 +786,8 @@ describe('device', function()
 			})
 
 			device.updateTempBaro(10, 1000, 'thunderstorm')
-			assert.is_same({ { ["UpdateDevice"] = '1|0|10;1000;4 TRIGGER' } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;1000;4", _trigger=true} } }, commandArray)
 		end)
-
 
 		it('should detect a counter device', function()
 			local device = getDevice(domoticz, {
@@ -776,8 +802,7 @@ describe('device', function()
 			assert.is_same(6.7894, device.counter)
 
 			device.updateCounter(555)
-			assert.is_same({ { ["UpdateDevice"] = '1|0|555 TRIGGER' } }, commandArray)
-
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect an incremental counter device', function()
@@ -793,7 +818,7 @@ describe('device', function()
 			assert.is_same(6.7894, device.counter)
 
 			device.updateCounter(555)
-			assert.is_same({ { ["UpdateDevice"] = '1|0|555 TRIGGER' } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a pressure device', function()
@@ -803,7 +828,7 @@ describe('device', function()
 			})
 
 			device.updatePressure(567)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|567 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="567", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a gas device', function()
@@ -820,7 +845,7 @@ describe('device', function()
 			assert.is_same(123.445, device.counter)
 
 			device.updateGas(567)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|567 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="567", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a percentage device', function()
@@ -832,7 +857,7 @@ describe('device', function()
 
 			assert.is_same( 99.98, device.percentage )
 			device.updatePercentage(12.55)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|12.55 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12.55", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a voltage device', function()
@@ -843,7 +868,7 @@ describe('device', function()
 			})
 
 			device.updateVoltage(123.55)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|123.55 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="123.55", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect an alert device', function()
@@ -857,7 +882,7 @@ describe('device', function()
 			assert.is_same(4, device.color)
 			assert.is_same('some text', device.text)
 			device.updateAlertSensor(0, 'Oh dear!')
-			assert.is_same({ { ["UpdateDevice"] = "1|0|Oh dear! TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="Oh dear!", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a distance device', function()
@@ -870,7 +895,7 @@ describe('device', function()
 			assert.is_same(44.33, device.distance)
 
 			device.updateDistance(3.14)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|3.14 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="3.14", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a custom sensor device', function()
@@ -880,7 +905,7 @@ describe('device', function()
 			})
 
 			device.updateCustomSensor(12)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|12 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a solar radiation device', function()
@@ -890,7 +915,7 @@ describe('device', function()
 			})
 
 			device.updateRadiation(12)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|12 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a leaf wetness device', function()
@@ -902,7 +927,7 @@ describe('device', function()
 
 			assert.is_same(4, device.wetness)
 			device.updateWetness(12)
-			assert.is_same({ { ["UpdateDevice"] = "1|12|0 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=12, _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a scale weight device', function()
@@ -914,7 +939,7 @@ describe('device', function()
 
 			assert.is_same(44, device.weight)
 			device.updateWeight(12)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|12 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a sound level device', function()
@@ -926,7 +951,7 @@ describe('device', function()
 
 			assert.is_same(120, device.level)
 			device.updateSoundLevel(33)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|33 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="33", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a waterflow device', function()
@@ -938,9 +963,8 @@ describe('device', function()
 
 			assert.is_same(44, device.flow)
 			device.updateWaterflow(33)
-			assert.is_same({ { ["UpdateDevice"] = "1|0|33 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="33", _trigger=true} } }, commandArray)
 		end)
-
 
 		it('should detect a soil moisture device', function()
 			local device = getDevice(domoticz, {
@@ -951,9 +975,50 @@ describe('device', function()
 
 			assert.is_same(34, device.moisture)
 			device.updateSoilMoisture(12)
-			assert.is_same({ { ["UpdateDevice"] = "1|12|0 TRIGGER" } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=12, sValue="0", _trigger=true} } }, commandArray)
 		end)
 
+		it('should detect a Logitech Media Server device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['hardwareType'] = 'Logitech Media Server',
+				['additionalDataData'] = { ['levelVal'] = 34 }
+			})
+
+			device.switchOff()
+			device.stop()
+			device.play()
+			device.pause()
+			device.setVolume(10)
+			device.startPlaylist('myList')
+			device.playFavorites('30')
+			assert.is_same(34, device.playlistID)
+			assert.is_same({
+				{ ["myDevice"] = "Off" },
+				{ ["myDevice"] = "Stop" },
+				{ ["myDevice"] = "Play" },
+				{ ["myDevice"] = "Pause" },
+				{ ["myDevice"] = "Set Volume 10" },
+				{ ["myDevice"] = "Play Playlist myList TRIGGER" },
+				{ ["myDevice"] = "Play Favorites 30 TRIGGER" },
+			}, commandArray)
+		end)
+
+		it('should detect a onky device', function()
+			local commandArray = {}
+
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['hardwareType'] = 'Onkyo AV Receiver (LAN)',
+			})
+
+			device.onkyoEISCPCommand('mycommand')
+			assert.is_same({'http://127.0.0.1:8080/json.htm?param=onkyoeiscpcommand&type=command&idx=1&action=mycommand'}, commandArray)
+		end)
 
 		describe('Switch', function()
 
@@ -1042,15 +1107,73 @@ describe('device', function()
 
 		end)
 
-		it('should detect a scene', function()
-			local scene = getDevice(domoticz, {
-				['baseType'] = 'scene',
-				['name'] = 'myScene',
-			})
+		describe('Scenes/Groups', function()
 
-			scene.switchOn()
-			assert.is_same({ { ['Scene:myScene'] = 'On' } }, commandArray)
+			it('should detect a scene', function()
+				local scene = getDevice(domoticz, {
+					['baseType'] = 'scene',
+					['name'] = 'myScene',
+				})
 
+				assert.is_same('Description 1', scene.description)
+
+				scene.switchOn()
+				assert.is_same({ { ['Scene:myScene'] = 'On' } }, commandArray)
+
+				commandArray = {}
+
+				scene.switchOff()
+				assert.is_same({ { ['Scene:myScene'] = 'Off' } }, commandArray)
+
+				commandArray = {}
+
+				scene.cancelQueuedCommands()
+
+				assert.is_same({
+					{ ['Cancel'] = { idx = 1, type = 'scene' } }
+				}, commandArray)
+
+				assert.is_false(scene.isHTTPResponse)
+				assert.is_false(scene.isVariable)
+				assert.is_false(scene.isTimer)
+				assert.is_true(scene.isScene)
+				assert.is_false(scene.isDevice)
+				assert.is_false(scene.isGroup)
+				assert.is_false(scene.isSecurity)
+			end)
+
+			-- subdevices are tested in testDomoticz
+
+			it('should detect a group', function()
+				local group = getDevice(domoticz, {
+					['baseType'] = 'group',
+					['name'] = 'myGroup',
+					['state'] = 'On'
+				})
+
+				assert.is_false(group.isHTTPResponse)
+				assert.is_false(group.isVariable)
+				assert.is_false(group.isTimer)
+				assert.is_false(group.isScene)
+				assert.is_false(group.isDevice)
+				assert.is_true(group.isGroup)
+				assert.is_false(group.isSecurity)
+
+				assert.is_same('Description 1', group.description)
+
+				group.switchOn()
+				assert.is_same({ { ['Group:myGroup'] = 'On' } }, commandArray)
+
+				commandArray = {}
+
+				group.switchOff()
+				assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
+
+				commandArray = {}
+				group.toggleGroup()
+				assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
+
+			end)
 		end)
 
 		it('should detect a huelight', function()
@@ -1075,12 +1198,109 @@ describe('device', function()
 			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
 		end)
 
-		it('should detect a group', function()
-			local group = getDevice(domoticz, {
-				['baseType'] = 'group',
-				['name'] = 'myGroup',
-				['state'] = 'On'
+		it('should detect a youless device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myYouless',
+				['type'] = 'YouLess Meter',
+				['subType'] = 'YouLess counter',
+				['rawData'] = { [1] = 123, [2] = 666},
+				['additionalDataData'] = {
+					['counterToday'] = '1.234 kWh'
+				}
 			})
+
+			assert.is_same(123, device.counterDeliveredTotal)
+			assert.is_same(666, device.powerYield)
+			assert.is_same(1234, device.counterDeliveredToday)
+
+			device.updateYouless(4, 5)
+			assert.is_same({ {
+				['UpdateDevice'] = {
+					['_trigger'] = true,
+					['idx'] = 1,
+					['nValue'] = 0,
+					['sValue'] = '4;5'
+				}
+			} }, commandArray)
+		end)
+
+
+		it('should detect an rgbw device', function()
+
+			local commandArray = {}
+			local utils = require('Utils')
+
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+
+			domoticz.utils = {
+				rgbToHSB = function(r, g, b)
+					return utils.rgbToHSB(r, g, b)
+				end
+			}
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myRGBW',
+				['state'] = 'Set Kelvin Level',
+				['subType'] = 'RGBWW',
+				['type'] = 'Color Switch'
+			})
+
+			assert.is_true(device.active)
+
+			device.setKelvin(5500)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setkelvinlevel&type=command&idx=1&kelvin=5500' }, commandArray)
+
+			commandArray = {}
+			device.setWhiteMode()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=whitelight&type=command&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.increaseBrightness()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessup&type=command&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.decreaseBrightness()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessdown&type=command&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.setNightMode()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=nightlight&type=command&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.setRGB(255, 0, 0)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setcolbrightnessvalue&type=command&idx=1&hue=0&brightness=100&iswhite=false' }, commandArray)
+
+			commandArray = {}
+			device.setDiscoMode(8)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=discomodenum8&type=command&idx=1' }, commandArray)
+
+
+			device = getDevice(domoticz, {
+				['name'] = 'myRGBW',
+				['state'] = 'Set To White',
+				['type'] = 'Color Switch'
+			})
+
+			assert.is_true(device.active)
+
+			device = getDevice(domoticz, {
+				['name'] = 'myRGBW',
+				['state'] = 'NightMode',
+				['subType'] = 'RGBWW',
+				['type'] = 'Color Switch'
+			})
+
+			assert.is_true(device.active)
+
+			device = getDevice(domoticz, {
+				['name'] = 'myRGBW',
+				['state'] = 'Off',
+				['subType'] = 'RGBWW',
+				['type'] = 'Color Switch'
+			})
+
 		end)
 
 		describe('Kodi', function()
@@ -1222,7 +1442,6 @@ describe('device', function()
 				assert.is_true(device.active)
 			end
 		end)
-
 	end)
 
 	it('should set the state', function()
@@ -1233,16 +1452,14 @@ describe('device', function()
 
 	describe('Updating', function()
 		it('should send generic update commands', function()
-			device.update(1,2,3,4,5)
-			assert.is_same({{["UpdateDevice"]="1|1|2|3|4|5 TRIGGER"}}, commandArray)
+			device.update(1,2,true)
+			assert.is_same({{["UpdateDevice"]={idx=1, nValue=1, sValue="2", protected=true, _trigger=true}}}, commandArray)
 		end)
 
 		it('should send generic update commands', function()
-			device.update(1, 2, 3, 4, 5).silent()
-			assert.is_same({ { ["UpdateDevice"] = "1|1|2|3|4|5" } }, commandArray)
+			device.update(1, 2, true).silent()
+			assert.is_same({{["UpdateDevice"]={idx=1, nValue=1, sValue="2", protected=true}}}, commandArray)
 		end)
-
-
 	end)
 
 

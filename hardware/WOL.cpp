@@ -181,10 +181,7 @@ void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
 
 	//Also add a light (push) device
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d,'%q',%d,%d,%d,%d,1, 12,255,'%q',1,' ')",
-		m_HwdID, szID, int(1), pTypeLighting2, sTypeAC, int(STYPE_PushOn), Name.c_str());
+	m_sql.InsertDevice(m_HwdID, szID, 1, pTypeLighting2, sTypeAC, STYPE_PushOn, 1, " ", Name, 12, 255, 1);
 }
 
 bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string &MACAddress)

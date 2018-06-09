@@ -163,7 +163,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 
 	m_Socket = NULL;
 
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Kodi: (%s) Created.", m_Name.c_str());
+	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
 
 	std::vector<std::vector<std::string> > result2;
 	result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, m_szDevID);
@@ -179,7 +179,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 CKodiNode::~CKodiNode(void)
 {
 	handleDisconnect();
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Kodi: (%s) Destroyed.", m_Name.c_str());
+	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
 }
 
 void CKodiNode::handleMessage(std::string& pMessage)
@@ -468,7 +468,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						handleWrite(ssMessage.str());
 						break;
 					case 2002: // attempt to add playlist response
-					case 2003: 
+					case 2003:
 						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"playlistid\":" << m_PlaylistType << ",\"position\":" << m_PlaylistPosition << "}},\"id\":2004}";
 						handleWrite(ssMessage.str());
 						break;
@@ -503,7 +503,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 											}
 										}
 									}
-								else 
+								else
 									_log.Log(LOG_NORM, "Kodi: (%s) No Favourites returned.", m_Name.c_str());
 							}
 						}
@@ -560,7 +560,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str(), 0);
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str());
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
@@ -653,7 +653,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		//ready for next read
 		if (!m_stoprequested && m_Socket)
 			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-										boost::bind(&CKodiNode::handleRead, 
+										boost::bind(&CKodiNode::handleRead,
 										shared_from_this(),
 										boost::asio::placeholders::error,
 										boost::asio::placeholders::bytes_transferred));
@@ -681,7 +681,7 @@ void CKodiNode::handleWrite(std::string pMessage)
 			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
 			m_sLastMessage = pMessage;
 		}
-		else 
+		else
     {
       _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
     }
@@ -793,7 +793,7 @@ void CKodiNode::SendCommand(const std::string &command)
 		std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"" + sKodiCall + "\",\"params\":{";
 		if (sKodiParam.length()) sMessage += "\"action\":\"" + sKodiParam + "\"";
 		sMessage += "},\"id\":1006}";
-		
+
 		if (m_Socket != NULL)
 		{
 			handleWrite(sMessage);
@@ -988,7 +988,7 @@ void CKodi::Do_Work()
 	UnloadNodes();
 
 	_log.Log(LOG_STATUS, "Kodi: Worker stopped...");
-} 
+}
 
 void CKodi::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 {
@@ -1061,7 +1061,7 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 	}
 
-	_log.Log(LOG_ERROR, "Kodi: (%d) Shutdown. Device not found.", DevID);
+	_log.Log(LOG_ERROR, "Kodi: (%ld) Shutdown. Device not found.", DevID);
 	return false;
 }
 
@@ -1085,10 +1085,7 @@ void CKodi::AddNode(const std::string &Name, const std::string &IPAddress, const
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also add a light (push) device
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d, '%q', 1, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
-		m_HwdID, szID, int(pTypeLighting2), int(sTypeAC), int(STYPE_Media), Name.c_str());
+	m_sql.InsertDevice(m_HwdID, szID, 1, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", Name, 12, 255, 1);
 
 	ReloadNodes();
 }

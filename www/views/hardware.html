@@ -735,8 +735,14 @@
                 <th width="70" align="center" data-i18n="ID">ID</th>
                 <th align="left" data-i18n="Name">Name</th>
                 <th width="120" align="left" data-i18n="Mac Address">Mac Address</th>
+                <th width="60" align="left" data-i18n="Status">Status</th>
             </tr>
         </thead>
+    </table>
+    <table class="display" id="lmsnodesettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td><a class="btn-danger sub-tabs-apply" onclick="DeleteUnusedLMSDevices();" data-i18n="Delete Unused Devices">Delete Unused Devices</a></td>
+        </tr>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
 </div>
@@ -793,7 +799,7 @@
 		<tr>
 			<td></td>
 			<td><input type="checkbox" id="RSL" name="RSL">&nbsp;<label for="rfu4">Conrad RSL</label></td>
-			<td><input type="checkbox" id="FS20" name="FS20">&nbsp;<label for="FS20">FS20/Legrand CAD</label></td>
+			<td><input type="checkbox" id="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand CAD</label></td>
 			<td><input type="checkbox" id="Meiantech" name="Meiantech">&nbsp;<label for="Meiantech">Meiantech</label></td>
 		</tr>
 		<tr>
@@ -846,7 +852,7 @@
 		<tr>
 			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse (not IT+)</label></td>
 			<td><input type="checkbox" id="Alecto" name="Alecto">&nbsp;<label for="Alecto">Alecto</label></td>
-			<td><input type="checkbox" id="FS20" name="FS20">&nbsp;<label for="FS20">FS20/Legrand CAD</label></td>
+			<td><input type="checkbox" id="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand CAD</label></td>
 			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
 			<td><input type="checkbox" id="VionicPowerCode" name="VionicPowerCode">&nbsp;<label for="VionicPowerCode">VionicPowerCode</label></td>
 		</tr>
@@ -1028,7 +1034,7 @@
 			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
 				<option value="1">RGBW</option>
 				<option value="2">RGB</option>
-				<option value="3">White</option>
+				<option value="8">White with adjustable color temperature</option>
 				<option value="4">RGBWW</option>
 			</select>
 			<br><br>
@@ -1330,6 +1336,24 @@
                                         </td>
                                 </tr>
                         </table>
+                </div>				
+               <div id="divmodeldenkovidevices">
+                        <table class="display" id="hardwareparamsmodeldenkovidevices" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+                                        <td align="right" style="width:110px"><label id="lblmodeldenkovidevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                                        <td>
+                                                <select id="combomodeldenkovidevices" style="width:210px" class="combobox ui-corner-all">
+                                                <option value="0">DAEnet IP4</option>
+                                                <option value="1">SmartDEN IP 16 Relays</option>
+                                                <option value="2">SmartDEN IP 32 In</option>
+                                                <option value="3">SmartDEN IP Maxi</option>
+                                                <option value="4">SmartDEN IP Watchdog</option>
+                                                <option value="5">SmartDEN Logger</option>
+                                                <option value="6">SmartDEN Notifier</option>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
                 </div>
 		<div id="divremote">
 			<br>
@@ -1499,6 +1523,36 @@
 				</tr>
 			</table>
 		</div>
+        <div id="divnestoauthapi">
+			<table class="display" id="hardwareparamsnestoauthapi" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td></td>
+                    <td><br>
+                        <ul>
+                            <li>If you enter an API key all the other fields are optional.</li>
+                            <li>If you enter a Product Id, Secret and PIN but leave the API Key blank Domoticz will attempt to grab an API key from Nest using that information.</li>
+                            <li>To obtain an API Key you will need to register with Nest. See the Domoticz Wiki (<a href="http://www.domoticz.com/wiki/NestDeveloperApiKey">NestDeveloperApiKey</a>) for more information.</li>
+                        </ul>
+                    </td>
+                </tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
+					<td><input type="text" id="apikey" style="width: 550px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client Id">Client Id</span>:</label></td>
+                    <td><input type="text" id="productid" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client Secret">Client Secret</span>:</label></td>
+                    <td><input type="text" id="productsecret" style="width: 220px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="OAuth PIN">OAuth PIN</span>:</label></td>
+                    <td><input type="text" id="productpin" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+			</table>
+		</div>
 		<div id="divenecotoon">
 			<br>
 			<table class="display" id="hardwareparamsenecotoon" border="0" cellpadding="0" cellspacing="20">
@@ -1541,6 +1595,14 @@
                     <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
                 </tr>
 				<tr>
+                    <td align="right" style="width:110px"><label for="addgroups"><span data-i18n="Add Groups">Add Groups</span>:</label></td>
+                    <td><input type="checkbox" id="addgroups"/>&nbsp;<label for="addgroups">&nbsp;</label></td>
+                </tr>
+				<tr>
+                    <td align="right" style="width:110px"><label for="addscenes"><span data-i18n="Add Scenes">Add Scenes</span>:</label></td>
+                    <td><input type="checkbox" id="addscenes"/>&nbsp;<label for="addscenes">&nbsp;</label></td>
+                </tr>
+				<tr>
 					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
 					<td>
 						<input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
@@ -1554,7 +1616,24 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divwinddelen">
+		<div id="divhoneywell">
+			<br>
+			<table class="display" id="hardwareparamshoneywell" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Access token">Access token</span>:</label></td>
+					<td><input type="text" id="hwAccessToken" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh token">Refresh token</span>:</label></td>
+					<td><input type="text" id="hwRefreshToken" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"></td>
+					<td>You need to provide both the access and refresh token. We <a href="http://www.netwalk.be/lyric" target="_blank">provide</a> an easy to use interface to get them.</td>
+				</tr>
+			</table>
+		</div>
+    <div id="divwinddelen">
 			<br>
 			<table class="display" id="hardwareparamswinddelen" border="0" cellpadding="0" cellspacing="20">
 				<tr>
@@ -1742,6 +1821,7 @@
 					<option value="0xF31F" data-i18n="Custom Sensor">Custom Sensor</option>
 					<option value="0xF31B" data-i18n="Distance">Distance</option>
 					<option value="0xF31D" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
+					<option value="0xF321" data-i18n="Managed counter">Managed counter</option>
 					<option value="0xFB02" data-i18n="Gas">Gas</option>
 					<option value="0x5101" data-i18n="Humidity">Humidity</option>
 					<option value="0xF304" data-i18n="Leaf Wetness">Leaf Wetness</option>
@@ -1752,6 +1832,9 @@
 					<option value="0x5503" data-i18n="Rain">Rain</option>
 					<option value="0xF102" data-i18n="RGB Switch">RGB Switch</option>
 					<option value="0xF101" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="0xF104" data-i18n="RGBWW Switch">RGBWW Switch</option>
+					<option value="0xF106" data-i18n="RGBWZ Switch">RGBWZ Switch</option>
+					<option value="0xF107" data-i18n="RGBWWZ Switch">RGBWWZ Switch</option>
 					<option value="0x5D01" data-i18n="Scale">Scale (Weight)</option>
 					<option value="0xF43E" data-i18n="Selector Switch">Selector Switch</option>
 					<option value="0xF303" data-i18n="Soil Moisture">Soil Moisture</option>

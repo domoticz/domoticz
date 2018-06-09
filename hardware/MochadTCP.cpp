@@ -11,30 +11,30 @@
 
 #define RETRY_DELAY 30
 
-typedef enum { 
+enum _eMochadMatchType {
 	ID=0, 
 	STD, 
 	LINE17, 
 	LINE18, 
 	EXCLMARK 
-} MatchType;
+};
 
-typedef enum {
+enum _eMochadType {
 	MOCHAD_STATUS=0,
 	MOCHAD_UNIT,
 	MOCHAD_ACTION,
 	MOCHAD_RFSEC
-} MochadType;
+};
 
-typedef struct _tMatch {
-	MatchType matchtype;
-	MochadType type;
+typedef struct {
+	_eMochadMatchType matchtype;
+	_eMochadType type;
 	const char* key;
 	int start;
 	int width;
-} Match;
+} MochadMatch;
 
-static Match matchlist[] = {
+static MochadMatch matchlist[] = {
 	{STD,	MOCHAD_STATUS,	"House ",	6, 255},
 	{STD,	MOCHAD_UNIT,	"Tx PL HouseUnit: ",	17, 9},
 	{STD,	MOCHAD_UNIT,	"Rx PL HouseUnit: ",	17, 9},
@@ -123,7 +123,7 @@ bool MochadTCP::StopHardware()
 
 void MochadTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 	m_bDoRestart = false;
 
@@ -195,7 +195,7 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -224,7 +224,7 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 //			case light1_sBright:
 //			case light1_sAllOn:
 //			case light1_sAllOff:
-		_log.Log(LOG_STATUS, "Mochad: Unknown command %d:%d:%d:%d", pdata[1],pdata[2],pdata[6]);
+		_log.Log(LOG_STATUS, "Mochad: Unknown command %d:%d:%d", pdata[1],pdata[2],pdata[6]);
 		return false;
 	}
 //	_log.Log(LOG_STATUS, "Mochad: send '%s'", s_buffer);
@@ -239,13 +239,13 @@ void MochadTCP::MatchLine()
 	uint8_t i;
 	int j,k;
 	uint8_t found=0;
-	Match t;
+	MochadMatch t;
 	char value[20]="";
 	std::string vString;
 
 
 
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(i=0;(i<sizeof(matchlist)/sizeof(MochadMatch))&(!found);i++)
 	{
 		t = matchlist[i];
 		switch(t.matchtype)

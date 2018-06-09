@@ -141,7 +141,7 @@ void CValueLengthPart::GetPdu(void **data, size_t *length)
 int CValueLengthPart::GetNextPart(void **data, size_t *length)
 {
 	if (_len < SIZE_SIZE_T) {
-		_log.Log(LOG_ERROR, "GetNextPart: _len too small (%d).\n", _len);
+		_log.Log(LOG_ERROR, "GetNextPart: _len too small (%d).\n", (int)_len);
 		return 0;
 	}
 	size_t len = 0;
@@ -154,7 +154,7 @@ int CValueLengthPart::GetNextPart(void **data, size_t *length)
 	if (_len < SIZE_SIZE_T + len) {
 		// TODO: This isnt right
 		// something went wrong
-		_log.Log(LOG_ERROR, "GetNextPart: _len too small (_len: %ld, len: %ld).", _len, len);
+		_log.Log(LOG_ERROR, "GetNextPart: _len too small (_len: %d, len: %d).", (int)_len, (int)len);
 		return 0;
 	}
 	(*data) = malloc(len);
@@ -363,7 +363,7 @@ int ProxyPdu::ReadPdu(const char *buffer, size_t buflen)
 					datacounter = 0;
 					pdudata = (unsigned char *)malloc(_length);
 					if (pdudata == NULL) {
-						_log.Log(LOG_ERROR, "ReadPdu: Could not alloc, length=%ld.", _length);
+						_log.Log(LOG_ERROR, "ReadPdu: Could not alloc, length=%d.", (int)_length);
 					}
 					state = STATE_PDUDATA;
 				}

@@ -36,6 +36,11 @@ CDomoticzHardwareBase::~CDomoticzHardwareBase()
 {
 }
 
+bool CDomoticzHardwareBase::CustomCommand(const uint64_t idx, const std::string &sCommand)
+{
+	return false;
+}
+
 bool CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;
@@ -648,20 +653,22 @@ void CDomoticzHardwareBase::SendBlindSensor(const int NodeID, const int ChildID,
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.BLINDS1, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const double Level, const bool bIsRGBW, const std::string &defaultname)
+void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const int Level, const bool bIsRGBW, const std::string &defaultname)
 {
 	int level = int(Level);
-	int subType = (bIsRGBW == true) ? sTypeLimitlessRGBW : sTypeLimitlessRGB;
-	//Send as LimitlessLight
-	_tLimitlessLights lcmd;
+	int subType = (bIsRGBW == true) ? sTypeColor_RGB_W : sTypeColor_RGB;
+	if (defaultname == "LIVCOL")
+		subType = sTypeColor_LivCol;
+	//Send as ColorSwitch
+	_tColorSwitch lcmd;
 	lcmd.id = NodeID;
 	lcmd.subtype = subType;
 	if (level == 0)
-		lcmd.command = Limitless_LedOff;
+		lcmd.command = Color_LedOff;
 	else
-		lcmd.command = Limitless_LedOn;
+		lcmd.command = Color_LedOn;
 	lcmd.dunit = ChildID;
-	lcmd.value = level;
+	lcmd.value = (uint32_t)level;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd, defaultname.c_str(), BatteryLevel);
 }
 
@@ -863,13 +870,15 @@ void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryL
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendGeneralSwitchSensor(const int NodeID, const int BatteryLevel, const int switchState, const char* defaultname, const int unitCode)
+void CDomoticzHardwareBase::SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const int SwitchState, const int Level, const std::string &defaultname, const int RssiLevel)
 {
 	_tGeneralSwitch gSwitch;
 	gSwitch.id = NodeID;
-	gSwitch.unitcode = unitCode;
-	gSwitch.cmnd = switchState;
-	sDecodeRXMessage(this, (const unsigned char *)&gSwitch, defaultname, BatteryLevel);
+	gSwitch.unitcode = ChildID;
+	gSwitch.cmnd = SwitchState;
+	gSwitch.level = Level;
+	gSwitch.rssi = RssiLevel;
+	sDecodeRXMessage(this, (const unsigned char *)&gSwitch, defaultname.c_str(), BatteryLevel);
 }
 
 void CDomoticzHardwareBase::SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname)

@@ -4,6 +4,7 @@
 // by Fantom (szczukot@poczta.onet.pl)
 
 #include "DomoticzHardware.h"
+#include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include "../json/json.h"
 
@@ -45,9 +46,9 @@ private:
 	std::map<const std::string, const int> m_devices;
 	boost::mutex m_mutex;
 	
-	float m_LimitlessRGBWcHueState;
-	bool m_LimitlessRGBWisWhiteState;
-	int m_LimitlessRGBWbrightnessState;
+	_tColor m_RGBWColorState;
+	bool m_RGBWisWhiteState;
+	int m_RGBWbrightnessState;
 
 	bool StartHardware();
 	bool StopHardware();

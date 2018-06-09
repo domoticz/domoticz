@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ColorSwitch.h"
+
 #define sTypeDomoticzSecurity 0x83
 #define sTypeSmartwaresSwitchRadiator 0x84
 
@@ -26,12 +28,6 @@
 #define bmpbaroforecast_thunderstorm	0x04
 #define bmpbaroforecast_unknown			0x05
 #define bmpbaroforecast_rain			0x06 //when forecast was cloudy and pressure is below 1010 we have 50%+ change of rain
-
-#define pTypeLimitlessLights	0xF1
-#define sTypeLimitlessRGBW		0x01
-#define sTypeLimitlessRGB		0x02
-#define sTypeLimitlessWhite		0x03
-#define sTypeLimitlessRGBWW		0x04
 
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01
@@ -65,6 +61,7 @@
 #define sTypeWaterflow				0x1E
 #define sTypeCustom					0x1F
 #define sTypeZWaveAlarm				0x20
+#define sTypeManagedCounter			0x21
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4
@@ -493,64 +490,6 @@ typedef struct _tP1Gas {
 		gasusage = 0;
 	}
 } P1Gas;
-
-typedef struct _tLimitlessLights {
-	uint8_t len;
-	uint8_t type;
-	uint8_t subtype;
-	uint32_t id;
-	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4, 5=IboxLed
-	uint8_t command;
-	uint8_t value;
-	_tLimitlessLights()
-	{
-		id = 1;
-		dunit = 1;
-		len=sizeof(_tLimitlessLights)-1;
-		type=pTypeLimitlessLights;
-		subtype=sTypeLimitlessRGBW;
-		command=0;
-		value=0;
-	}
-} _tLimitlessLights;
-
-#define Limitless_LedOff 0
-#define Limitless_LedOn 1
-#define Limitless_LedNight 2
-#define Limitless_LedFull 3
-#define Limitless_BrightnessUp 4
-#define Limitless_BrightnessDown 5
-#define Limitless_ColorTempUp 6
-#define Limitless_ColorTempDown 7
-#define Limitless_RGBDiscoNext 8
-#define Limitless_RGBDiscoPrevious 9
-#define Limitless_SetRGBColour 10
-#define Limitless_DiscoSpeedSlower 11
-#define Limitless_DiscoSpeedFaster 12
-#define Limitless_DiscoMode 13
-#define Limitless_SetColorToWhite 14
-#define Limitless_SetBrightnessLevel 15
-#define Limitless_SetBrightUp 16
-#define Limitless_SetBrightDown 17
-#define Limitless_WarmWhiteIncrease 18
-#define Limitless_CoolWhiteIncrease 19
-#define Limitless_NightMode 20
-#define Limitless_FullBrightness 21
-#define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
-#define Limitless_SetHEXColour 23
-#define Limitless_DiscoMode_1 24
-#define Limitless_DiscoMode_2 25
-#define Limitless_DiscoMode_3 26
-#define Limitless_DiscoMode_4 27
-#define Limitless_DiscoMode_5 28
-#define Limitless_DiscoMode_6 29
-#define Limitless_DiscoMode_7 30
-#define Limitless_DiscoMode_8 31
-#define Limitless_DiscoMode_9 32
-#define Limitless_SetKelvinLevel 33
-#define Limitless_DiscoSpeedMinimal 34
-#define Limitless_DiscoSpeedMaximal 35
-
 
 typedef union tREVOBUF {
 	struct _tEVOHOME1 {

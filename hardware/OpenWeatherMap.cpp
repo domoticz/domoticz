@@ -319,6 +319,16 @@ void COpenWeatherMap::GetMeterDetails()
 		}
 	}
 
+	//clouds
+	if (!root["clouds"].empty())
+	{
+		if (!root["clouds"]["all"].empty())
+		{
+			float clouds = root["clouds"]["all"].asFloat();
+			SendPercentageSensor(1, 0, 255, clouds, "Clouds %");
+		}
+	}
+
 	//Forecast URL
 	if (!root["id"].empty())
 	{

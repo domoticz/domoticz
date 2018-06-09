@@ -196,7 +196,7 @@ bool OnkyoAVTCP::StopHardware()
 
 void OnkyoAVTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"OnkyoAVTCP: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"OnkyoAVTCP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 
@@ -260,7 +260,7 @@ void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "OnkyoAVTCP: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "OnkyoAVTCP: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -676,6 +676,10 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 	m_pPartialPkt = new_partial;
 }
 
+bool OnkyoAVTCP::CustomCommand(const uint64_t idx, const std::string &sCommand)
+{
+	return SendPacket(sCommand.c_str());
+}
 
 //Webserver helpers
 namespace http {

@@ -44,12 +44,14 @@ public:
 	void GetAppCache(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
+	void GetFloorplanImage(WebEmSession & session, const request& req, reply & rep);
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
 	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
 	void PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void RFXComUpgradeFirmware(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -73,7 +75,8 @@ public:
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);
-	void SetAuthenticationMethod(int amethod);
+	void SetWebCompressionMode(const _eWebCompressionMode gzmode);
+	void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 	void SetWebTheme(const std::string &themename);
 	void SetWebRoot(const std::string &webRoot);
 	std::vector<_tWebUserPassword> m_users;
@@ -145,6 +148,7 @@ private:
 	void Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSGetPlaylists(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_LMSDeleteUnusedDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SaveFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetFibaroLinks(WebEmSession & session, const request& req, Json::Value &root);

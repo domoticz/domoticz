@@ -75,7 +75,7 @@ void CHEOS::ParseLine()
 
 										if (root["payload"][key].isMember("name") && root["payload"][key].isMember("pid"))
 										{
-											std::string pid = boost::to_string(root["payload"][key]["pid"].asInt());
+											std::string pid = std::to_string(root["payload"][key]["pid"].asInt());
 											AddNode(root["payload"][key]["name"].asCString(), pid);
 										}
 										else
@@ -617,7 +617,7 @@ bool CHEOS::StopHardware()
 
 void CHEOS::OnConnect()
 {
-	_log.Log(LOG_STATUS, "HEOS by DENON: Connected to: %s:%ld", m_IP.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS, "HEOS by DENON: Connected to: %s:%d", m_IP.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
@@ -650,7 +650,7 @@ void CHEOS::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "HEOS by DENON: Can not connect to: %s:%ld", m_IP.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "HEOS by DENON: Can not connect to: %s:%d", m_IP.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -761,11 +761,8 @@ void CHEOS::AddNode(const std::string &Name, const std::string &PlayerID)
 		return;
 	}
 
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d, '%q', 1, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
-		m_HwdID, PlayerID.c_str(), int(pTypeLighting2), int(sTypeAC), int(STYPE_Media), Name.c_str());		
-	
+	m_sql.InsertDevice(m_HwdID, PlayerID.c_str(), 1, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", Name, 12, 255, 1);
+
 	ReloadNodes();
 }
 
@@ -844,7 +841,7 @@ void CHEOS::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,DeviceID, Name, nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
-		_log.Log(LOG_STATUS, "DENON for HEOS: %i players found.", result.size());
+		_log.Log(LOG_STATUS, "DENON for HEOS: %d players found.", (int)result.size());
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{

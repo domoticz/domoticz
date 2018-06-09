@@ -21,6 +21,7 @@ private:
 	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
+	bool CustomCommand(uint64_t idx, const std::string &sCommand);
 	unsigned char *m_pPartialPkt;
 	int m_PPktLen;
 	void ReceiveMessage(const char *pData, int Len);

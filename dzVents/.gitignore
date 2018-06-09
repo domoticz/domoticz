@@ -9,3 +9,5 @@ generated_scripts/*.lua
 /runtime/tests/data/__data_script_group1.lua
 /runtime/tests/data/__data_script_scene1.lua
 /runtime/tests/domoticzData.lua
+/runtime/integration-tests/node_modules/
+/runtime/integration-tests/package-lock.json

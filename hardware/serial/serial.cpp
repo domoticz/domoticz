@@ -2,9 +2,10 @@
 #include "stdafx.h"
 #include <algorithm>
 
-#if !defined(_WIN32) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#ifdef __sun
 # include <alloca.h>
 #endif
+#include <stdlib.h>
 
 #if defined (__MINGW32__)
 # define alloca __builtin_alloca

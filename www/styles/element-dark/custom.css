@@ -77,7 +77,7 @@ copyright {
 }
 
 .bannercontent {
-	padding-top: 80px !important;
+	padding-top: 60px !important;
 }
 
 .navbar .nav li a {
@@ -252,10 +252,3 @@ width: 99.5% !important;
    margin-top: 10px !important;
    margin-left: 95px !important;
 }
-
-#rgbw_popup .dimslider {
-   width: calc(100% - 108px) !important;
-   margin-left: 6px !important;
-   margin-top: 10px !important;       
-}
-

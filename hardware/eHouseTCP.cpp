@@ -103,7 +103,7 @@ void eHouseTCP::InitStructs(void)
 	to = MAX_AURA_DEVS;
 	for (i = 0; i < to; i++)
 	{
-		(AuraDev[MAX_AURA_DEVS]) = NULL;	// Aura status thermostat
+		(AuraDev[i]) = NULL;	// Aura status thermostat
 		(AuraDevPrv[i]) = NULL;			// previous for detecting changes
 		(AuraN[i]) = NULL;
 	}
@@ -238,7 +238,7 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 {
 	char IDX[20];
 	char state[5] = "";
-	int i;
+	uint64_t i;
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);  //index calculated adrh,adrl,signalcode,i/o nr
 	if ((type == pTypeLighting2)) // || (type==pTypeTEMP))
 		sprintf(IDX, "%X%02X%02X%02X", devh, devl, code, nr);    //exception bug in Domoticz??
@@ -265,16 +265,11 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 
 	if (result.size() < 1)
 	{
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name,     Used, SwitchType ) "
-			"VALUES ('%d',      '%q',       '%d','%d',  '%d',   '%d',       '%d',           '%d',   '%q', '%q',     1, %d)",
-			m_HwdID, IDX, devl, type, subtype, signal, battery, nValue, sValue, devname.c_str(), swtype);
+		i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-			m_HwdID, IDX, devl);
 		//add Plan for each controllers
-		if (result.size() > 0)
+		if (i > 0)
 		{
-			i = atoi(result[0][0].c_str());
 			result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)", i);
 			if (result.size() < 1)
 			{
@@ -405,7 +400,6 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	UDP_terminate_listener = 0; //terminate udp listener service
 	eHEStatusReceived = 0;      //Ethernet eHouse status received flag (count of status from reset this flag)
 	eHWiFiStatusReceived = 0;   //eHouse WiFi status received flag (count of status from reset this flag)
-	LOG(LOG_STATUS, "[eHouse] Create");
 	VccRef = 0;
 	AdcRefMax = 0;
 	CalcCalibration = 0;
@@ -424,7 +418,8 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	{
 		//For Test of Auto Discovery Clean DeviceStatus & DeviceToPlansMap
 		//Clear altered database
-		LOG(LOG_STATUS, "Clearing Device Databases");
+		//VERY DANGEROUS !
+		_log.Debug(DEBUG_HARDWARE, "Clearing Device Databases");
 		m_sql.safe_query("DELETE FROM \"DeviceToPlansMap\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"DeviceStatus\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"Plans\" WHERE (ID>1)");
@@ -446,18 +441,18 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	}
 	if (eHEnableAutoDiscovery)
 	{
-		LOG(LOG_STATUS, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
 	}
 	if (eHEnableAlarmInputs)
 	{
-		LOG(LOG_STATUS, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
 	}
 	if (eHEnableProDiscovery)
 	{
-		LOG(LOG_STATUS, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
 	}
 
-	LOG(LOG_STATUS, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
+	_log.Debug(DEBUG_HARDWARE, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
 	int len = userCode.length();
 	if (len > 6) len = 6;
 	userCode.copy(PassWord, len);
@@ -471,7 +466,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		//return false;
 	}
 
-	LOG(LOG_STATUS, "eHouse UDP/TCP: Create instance");
+	_log.Debug(DEBUG_HARDWARE, "eHouse UDP/TCP: Create instance");
 	EventsCountInQueue = 0;
 	m_HwdID = ID;
 	HwID = m_HwdID;
@@ -513,7 +508,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 //////////////////////////////////////////////////////////////////////
 eHouseTCP::~eHouseTCP()
 {
-	LOG(LOG_STATUS, "eHouse: Destroy instance");
+	_log.Debug(DEBUG_HARDWARE, "eHouse: Destroy instance");
 }
 /////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StartHardware()
@@ -524,7 +519,7 @@ bool eHouseTCP::StartHardware()
 #endif
 
 #ifdef DEBUG_eHouse
-	LOG(LOG_STATUS, "eHouse: Start Hardware");
+	_log.Debug(DEBUG_HARDWARE, "eHouse: Start Hardware");
 #endif
 
 #ifdef UDP_USE_THREAD
@@ -596,7 +591,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	TCPSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (TCPSocket < 0)       //Check if socket was created
 	{
-		_log.Log(LOG_STATUS, "[TCP Client Status] Could not create socket");
+		_log.Log(LOG_ERROR, "[TCP Client Status] Could not create socket");
 		return -1;                              //!!!! Counldn't Create Socket
 	}
 	server.sin_addr.s_addr = m_addr.sin_addr.s_addr;
@@ -605,7 +600,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
 	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{
-		_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
+		_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
 		return -1;                              //!!!! Counldn't Create Socket
 	}
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Authorizing");
@@ -614,7 +609,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	{
 		if ((status < 0) || (!(iter--)))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
 			closesocket(TCPSocket);
 			return -1;                              //!!!! Counldn't Create Socket
 		}
@@ -635,14 +630,13 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		TerminateUDP();
 		return -1;
 	}
-	//_log.Log(LOG_STATUS, "[TCP Cli Status] Sending ch-re");
 	status = 0;
 	iter = 5;
 	while ((status = send(TCPSocket, (char *)&challange, 13, 0)) != 13)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error sending chalange to: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error sending chalange to: %s", line);
 			closesocket(TCPSocket);
 			return -1;                              //!!!! Counldn't Create Socket
 		}
@@ -666,7 +660,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error query: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error query: %s", line);
 			closesocket(TCPSocket);
 			return -1;
 		}
@@ -768,7 +762,7 @@ void eHouseTCP::DestroySocket()
 	if (m_socket != INVALID_SOCKET)
 	{
 #ifdef DEBUG_eHouse
-		LOG(LOG_STATUS, "eHouse: destroy socket");
+		_log.Debug(DEBUG_HARDWARE, "eHouse: destroy socket");
 #endif
 		try
 		{
@@ -813,7 +807,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				}
 				if (Lev == lv)
 				{
-					LOG(LOG_STATUS, "[EX] Execute pgm %d", i);
+					_log.Debug(DEBUG_HARDWARE, "[EX] Execute pgm %d", i);
 					ev[2] = 2;//exec program/scene
 					ev[3] = (unsigned char)i;
 					AddToLocalEvent(ev, 0);
@@ -830,7 +824,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				}
 				if (Lev == lv)
 				{
-					LOG(LOG_STATUS, "[EX] Execute ADC pgm %d", i);
+					_log.Debug(DEBUG_HARDWARE, "[EX] Execute ADC pgm %d", i);
 					ev[2] = 97;//exec ADC program/scene
 					ev[3] = (unsigned char)i;
 					AddToLocalEvent(ev, 0);
@@ -930,7 +924,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	memset(proev, 0, sizeof(proev));
 	if ((output->ICMND.packettype == pTypeGeneralSwitch) && (output->ICMND.subtype == sSwitchTypeSelector))
 	{
-		//LOG(LOG_STATUS, "SW - Type Selector\r\n");
+		//_log.Debug(DEBUG_HARDWARE, "SW - Type Selector\r\n");
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
 		int32_t ID = xcmd->id;
 		int level = xcmd->level;
@@ -991,33 +985,35 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 
 
-	if ((output->ICMND.packettype == pTypeLimitlessLights) && (output->LIGHTING2.subtype == sTypeLimitlessRGBW))
+	if ((output->ICMND.packettype == pTypeColorSwitch) && (output->LIGHTING2.subtype == sTypeColor_RGB_W))
 	{
-		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch *>(pdata);
 		id = pLed->id;
 		cmd = pLed->command;
-		int red, green, blue;
-		if (cmd == Limitless_SetRGBColour)
+		if (cmd == Color_SetColor)
 		{
-			float cHue = (360.0f / 255.0f) * float(pLed->value);//hue given was in range of 0-255
-			hue2rgb(cHue, red, green, blue);
-			AddrH = id >> 24;              //address high
-			AddrL = (id >> 16) & 0xff;     //address low
-			gettype(AddrH, AddrL);
-			eHCMD = (id >> 8) & 0xff;     //ehouse visual code
-			nr = id & 0xff;              // i/o  nr
-			//Compose eHouse Event
-			ev[0] = AddrH;
-			ev[1] = AddrL;
-			ev[2] = 4;					//SET DIMMER
-			ev[3] = nr;					//starting channel
-			red = (red * 255) / 100;
-			green = (green * 255) / 100;
-			blue = (blue * 255) / 100;
-			ev[4] = (unsigned char)red;
-			ev[5] = (unsigned char)green;
-			ev[6] = (unsigned char)blue;
-			AddToLocalEvent(ev, 0);
+			if (pLed->color.mode == ColorModeRGB)
+			{
+				AddrH = id >> 24;              //address high
+				AddrL = (id >> 16) & 0xff;     //address low
+				gettype(AddrH, AddrL);
+				eHCMD = (id >> 8) & 0xff;     //ehouse visual code
+				nr = id & 0xff;              // i/o  nr
+				//Compose eHouse Event
+				ev[0] = AddrH;
+				ev[1] = AddrL;
+				ev[2] = 4;					//SET DIMMER
+				ev[3] = nr;					//starting channel
+				ev[4] = pLed->color.r * pLed->value / 100;
+				ev[5] = pLed->color.g * pLed->value / 100;
+				ev[6] = pLed->color.b * pLed->value / 100;
+				AddToLocalEvent(ev, 0);
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "eHouse TCP: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				return false;
+			}
 		}
 		return true;
 	}

@@ -70,7 +70,8 @@ static void dumpstack(void) {
 #endif
 
 const char *szHelp =
-"Usage: Domoticz -www port -verbose x\n"
+"Usage: Domoticz -www port\n"
+
 "\t-www port (for example -www 8080, or -www 0 to disable http)\n"
 "\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
 #ifdef WWW_ENABLE_SSL
@@ -78,7 +79,7 @@ const char *szHelp =
 "\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
 "\t-sslkey file_path (if different from certificate file)\n"
 "\t-sslpass passphrase (to access to server private key in certificate)\n"
-"\t-sslmethod method (for SSL method)\n"
+"\t-sslmethod method (supported methods: tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server)\n"
 "\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
 "\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
@@ -92,29 +93,30 @@ const char *szHelp =
 "\t-userdata file_path (for example /opt/domoticz)\n"
 #endif
 "\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
-"\t-verbose x (where x=0 is none, x=1 is all important, x=2 is debug)\n"
 "\t-startupdelay seconds (default=0)\n"
 "\t-nowwwpwd (in case you forgot the web server username/password)\n"
 "\t-nocache (do not return appcache, use only when developing the web pages)\n"
+"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
 #if defined WIN32
 "\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
+"\t-noupdates do not use the internal update functionality\n"
 #if defined WIN32
 "\t-log file_path (for example D:\\domoticz.log)\n"
 #else
 "\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
-"\t-loglevel (0=All, 1=Status+Error, 2=Error , 3= Trace )\n"
-"\t-debug    allow log trace level 3 \n"
+"\t-loglevel (combination of: normal,status,error,debug)\n"
+"\t-debuglevel (combination of: normal,hardware,received,webserver,eventsystem,python,thread_id)\n"
 "\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
-"\t-logthreadids (log thread ids; useful for trouble shooting.)\n"
-	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
+"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
-	"\t-daemon (run as background daemon)\n"
-	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
-	"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
+"\t-daemon (run as background daemon)\n"
+"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
+"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
+"\t-f config_file (for example /etc/domoticz.conf)\n"
 #endif
-	"";
+"";
 
 #ifndef WIN32
 struct _facilities {
@@ -141,6 +143,7 @@ std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
+std::string dbasefile;
 
 bool bHasInternalTemperature=false;
 std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
@@ -155,6 +158,7 @@ std::string szInternalCurrentCommand = "";
 std::string szAppVersion="???";
 std::string szAppHash="???";
 std::string szAppDate="???";
+std::string szPyVersion="None";
 int ActYear;
 time_t m_StartTime=time(NULL);
 
@@ -164,15 +168,25 @@ http::server::CWebServerHelper m_webservers;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
 
-std::string logfile = "";
+std::string logfile;
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
 bool g_bDontCacheWWW = false;
-int pidFilehandle = 0;
+_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
+bool g_bUseUpdater = true;
+http::server::server_settings webserver_settings;
+#ifdef WWW_ENABLE_SSL
+http::server::ssl_server_settings secure_webserver_settings;
+#endif
+bool bStartWebBrowser = true;
 
 #define DAEMON_NAME "domoticz"
 #define PID_FILE "/var/run/domoticz.pid" 
+
+std::string daemonname = DAEMON_NAME;
+std::string pidfile = PID_FILE;
+int pidFilehandle = 0;
 
 int fatal_handling = 0;
 
@@ -182,10 +196,8 @@ void signal_handler(int sig_num)
 	{
 #ifndef WIN32
 	case SIGHUP:
-		if (logfile!="")
-		{
+		if (!logfile.empty())
 			_log.SetOutputFile(logfile.c_str());
-		}
 		break;
 #endif
 	case SIGINT:
@@ -302,10 +314,8 @@ void daemonize(const char *rundir, const char *pidfile)
 
 	umask(027); /* Set file permissions 750 */
 
-	if (logfile!="")
-	{
+	if (!logfile.empty())
 		_log.SetOutputFile(logfile.c_str());
-	}
 
 	/* Get a new process group */
 	sid = setsid();
@@ -360,15 +370,22 @@ void daemonize(const char *rundir, const char *pidfile)
 		pathName[pathNameSize] = '\0';
 		return pathNameSize;
 	}
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
 	#include <sys/sysctl.h>
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 	{
 		int mib[4];
+#ifdef __FreeBSD__
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_PROC;
 		mib[2] = KERN_PROC_PATHNAME;
 		mib[3] = -1;
+#else // __NetBSD__
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_PROC_ARGS;
+		mib[2] = getpid();
+		mib[3] = KERN_PROC_PATHNAME;
+#endif
 		size_t cb = pathNameCapacity-1;
 		sysctl(mib, 4, pathName, &cb, NULL, 0);
 		return cb;
@@ -499,6 +516,230 @@ void GetAppVersion()
 	szAppDate = szTmp;
 }
 
+#if !defined WIN32
+void CheckForOnboardSensors()
+{
+	//Check if we are running on a RaspberryPi
+	std::string sLine = "";
+	std::ifstream infile;
+
+#if defined(__FreeBSD__)
+	infile.open("/compat/linux/proc/cpuinfo");
+#else
+	infile.open("/proc/cpuinfo");
+#endif
+	if (infile.is_open())
+	{
+		while (!infile.eof())
+		{
+			getline(infile, sLine);
+			if (
+				(sLine.find("BCM2708") != std::string::npos) ||
+				(sLine.find("BCM2709") != std::string::npos)
+				)
+			{
+				//Core temperature of BCM2835 SoC
+				_log.Log(LOG_STATUS, "System: Raspberry Pi");
+				szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
+				bHasInternalTemperature = true;
+				break;
+			}
+		}
+		infile.close();
+	}
+	if (!bHasInternalTemperature)
+	{
+		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
+		{
+			_log.Log(LOG_STATUS, "System: Cubieboard/Cubietruck");
+			szInternalTemperatureCommand = "cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
+		}
+		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
+		{
+			//_log.Log(LOG_STATUS,"System: ODroid");
+			szInternalTemperatureCommand = "cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
+		}
+	}
+	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
+	{
+		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalVoltage = true;
+	}
+	if (file_exist("/sys/class/power_supply/ac/current_now"))
+	{
+		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalCurrent = true;
+	}
+	//New Armbian Kernal 4.14+
+	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
+	{
+		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalVoltage = true;
+	}
+	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
+	{
+		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalCurrent = true;
+	}
+
+#if defined (__OpenBSD__)
+	szInternalTemperatureCommand = "sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
+	bHasInternalTemperature = true;
+	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
+	bHasInternalVoltage = true;
+	//bHasInternalCurrent = true;
+
+#endif
+}
+#endif
+
+bool GetConfigBool(std::string szValue)
+{
+	stdlower(szValue);
+	return (szValue == "yes");
+}
+
+bool ParseConfigFile(const std::string &szConfigFile)
+{
+	std::string tmpString;
+	std::ifstream infile;
+	std::string sLine;
+	infile.open(szConfigFile.c_str());
+	if (!infile.is_open())
+	{
+		_log.Log(LOG_ERROR, "Could not open Configuration file '%s'",szConfigFile.c_str());
+		return false;
+	}
+	while (!infile.eof())
+	{
+		getline(infile, sLine);
+		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
+		sLine = stdstring_trim(sLine);
+		if (sLine.empty())
+			continue;
+		if (sLine.find('#') == 0)
+			continue; //Skip lines starting with # (Comments)
+
+		size_t pos = sLine.find('=');
+		if (pos == std::string::npos)
+			continue; //invalid config line, should always contain xx=yy
+		std::string szFlag = sLine.substr(0, pos);
+		sLine = sLine.substr(pos + 1);
+
+		szFlag = stdstring_trim(szFlag);
+		sLine = stdstring_trim(sLine);
+
+		if (szFlag == "http_port") {
+			webserver_settings.listening_port = sLine;
+		}
+#ifdef WWW_ENABLE_SSL
+		else if (szFlag == "ssl_port") {
+			secure_webserver_settings.listening_port = sLine;
+		}
+		else if (szFlag == "ssl_cert") {
+			secure_webserver_settings.cert_file_path = sLine;
+		}
+		else if (szFlag == "ssl_key") {
+			secure_webserver_settings.private_key_file_path = sLine;
+		}
+		else if (szFlag == "ssl_dhparam") {
+			secure_webserver_settings.tmp_dh_file_path = sLine;
+		}
+		else if (szFlag == "ssl_pass") {
+			secure_webserver_settings.private_key_pass_phrase = sLine;
+		}
+		else if (szFlag == "ssl_method") {
+			secure_webserver_settings.ssl_method = sLine;
+		}
+		else if (szFlag == "ssl_options") {
+			secure_webserver_settings.ssl_options = sLine;
+		}
+#endif
+		else if (szFlag == "http_root") {
+			szWWWFolder = sLine;
+		}
+		else if (szFlag == "web_root") {
+			szWebRoot = sLine;
+		}
+		else if (szFlag == "www_compress_mode") {
+			if (sLine == "on")
+				g_wwwCompressMode = http::server::WWW_USE_GZIP;
+			else if (sLine == "off")
+				g_wwwCompressMode = http::server::WWW_FORCE_NO_GZIP_SUPPORT;
+			else if (sLine == "static")
+				g_wwwCompressMode = http::server::WWW_USE_STATIC_GZ_FILES;
+			else {
+				_log.Log(LOG_ERROR, "Invalid www_compress_mode value in Configuration file '%s'", szConfigFile.c_str());
+				return false;
+			}
+		}
+		else if (szFlag == "cache") {
+			g_bDontCacheWWW = !GetConfigBool(sLine);
+		}
+		else if (szFlag == "reset_password") {
+			m_mainworker.m_bIgnoreUsernamePassword = GetConfigBool(sLine);
+		}
+		else if (szFlag == "log_file") {
+			logfile = sLine;
+		}
+		else if (szFlag == "loglevel") {
+			_log.SetLogFlags(sLine);
+		}
+		else if (szFlag == "debuglevel") {
+			_log.SetDebugFlags(sLine);
+		}
+		else if (szFlag == "notimestamps") {
+			_log.EnableLogTimestamps(!GetConfigBool(sLine));
+		}
+#ifndef WIN32
+		else if (szFlag == "syslog") {
+			g_bUseSyslog = true;
+			logfacname = sLine;
+		}
+#endif
+		else if (szFlag == "dbase_file") {
+			dbasefile = sLine;
+		}
+		else if (szFlag == "startup_delay") {
+			int DelaySeconds = atoi(sLine.c_str());
+			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
+			sleep_seconds(DelaySeconds);
+		}
+		else if (szFlag == "updates") {
+			g_bUseUpdater = GetConfigBool(sLine);
+		}
+		else if (szFlag == "php_cgi_path") {
+			webserver_settings.php_cgi_path = sLine;
+#ifdef WWW_ENABLE_SSL
+			secure_webserver_settings.php_cgi_path = sLine;
+#endif
+		}
+		else if (szFlag == "app_path") {
+			szStartupFolder = sLine;
+		}
+		else if (szFlag == "userdata_path") {
+			szUserDataFolder = sLine;
+		}
+		else if (szFlag == "daemon_name") {
+			daemonname = sLine;
+		}
+		else if (szFlag == "daemon") {
+			g_bRunAsDaemon = GetConfigBool(sLine);
+		}
+		else if (szFlag == "pidfile") {
+			pidfile = sLine;
+		}
+		else if (szFlag == "launch_browser") {
+			bStartWebBrowser = GetConfigBool(sLine);
+		}
+	}
+	infile.close();
+
+	return true;
+}
+
 #if defined WIN32
 int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nShowCmd)
 #else
@@ -513,14 +754,9 @@ int main(int argc, char**argv)
 		return 1; 
 	}
 #endif //_DEBUG
-	bool bStartWebBrowser = true;
 	RedirectIOToConsole();
 #endif //WIN32
 
-	szStartupFolder = "";
-	szWWWFolder = "";
-	szWebRoot = "";
-	
 	CCmdLine cmdLine;
 
 	// parse argc,argv 
@@ -531,57 +767,54 @@ int main(int argc, char**argv)
 	//ignore pipe errors
 	signal(SIGPIPE, SIG_IGN);
 #endif
-
-	if (cmdLine.HasSwitch("-log"))
-	{
-		if (cmdLine.GetArgumentCount("-log") != 1)
+	bool bUseConfigFile = cmdLine.HasSwitch("-f");
+	if (bUseConfigFile) {
+		if (cmdLine.GetArgumentCount("-f") != 1)
 		{
-			_log.Log(LOG_ERROR, "Please specify an output log file");
+			_log.Log(LOG_ERROR, "Please specify the configuration file.");
 			return 1;
 		}
-	}
-	if (cmdLine.HasSwitch("-loglevel"))
-	{
-		if (cmdLine.GetArgumentCount("-loglevel") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify logfile output level (0=All, 1=Status+Error, 2=Error)");
+		std::string szConfigFile = cmdLine.GetSafeArgument("-f", 0, "");
+		if (!ParseConfigFile(szConfigFile))
 			return 1;
-		}
 	}
-	if (cmdLine.HasSwitch("-verbose"))
-	{
-		if (cmdLine.GetArgumentCount("-verbose") != 1)
+	else {
+		if (cmdLine.HasSwitch("-loglevel"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a verbose level");
-			return 1;
+			std::string szLevel = cmdLine.GetSafeArgument("-loglevel", 0, "");
+			_log.SetLogFlags(szLevel);
 		}
-	}
-	if (cmdLine.HasSwitch("-debug"))
-		_log.SetLogDebug(true);
-	else
-		_log.SetLogDebug(false);
-	if (cmdLine.HasSwitch("-notimestamps"))
-	{
-		_log.EnableLogTimestamps(false);
-	}
-	if (cmdLine.HasSwitch("-logthreadids"))
-	{
-		_log.EnableLogThreadIDs(true);
-	}
-	
-	if (cmdLine.HasSwitch("-approot"))
-	{
-		if (cmdLine.GetArgumentCount("-approot") != 1)
+		if (cmdLine.HasSwitch("-debuglevel"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a APP root path");
-			return 1;
+			std::string szLevel = cmdLine.GetSafeArgument("-debuglevel", 0, "");
+			_log.SetDebugFlags(szLevel);
 		}
-		std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
-		if (szroot.size() != 0)
-			szStartupFolder = szroot;
+		if (cmdLine.HasSwitch("-notimestamps"))
+		{
+			_log.EnableLogTimestamps(false);
+		}
+		if (cmdLine.HasSwitch("-log"))
+		{
+			if (cmdLine.GetArgumentCount("-log") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify an output log file");
+				return 1;
+			}
+		}
+		if (cmdLine.HasSwitch("-approot"))
+		{
+			if (cmdLine.GetArgumentCount("-approot") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a APP root path");
+				return 1;
+			}
+			std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
+			if (szroot.size() != 0)
+				szStartupFolder = szroot;
+		}
 	}
 
-	if (szStartupFolder == "")
+	if (szStartupFolder.empty())
 	{
 #if !defined WIN32
 		char szStartupPath[255];
@@ -615,318 +848,271 @@ int main(int argc, char**argv)
 	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
 
 #if !defined WIN32
-	//Check if we are running on a RaspberryPi
-	std::string sLine = "";
-	std::ifstream infile;
-
-#if defined(__FreeBSD__)
-	infile.open("/compat/linux/proc/cpuinfo");
-#else
-	infile.open("/proc/cpuinfo");
+	CheckForOnboardSensors();
 #endif
-	if (infile.is_open())
-	{
-		while (!infile.eof())
+	if (!szStartupFolder.empty())
+		_log.Log(LOG_STATUS, "Startup Path: %s", szStartupFolder.c_str());
+
+	if (szWWWFolder.empty())
+		szWWWFolder = szStartupFolder + "www";
+	if (szUserDataFolder.empty())
+		szUserDataFolder = szStartupFolder;
+
+	if (!bUseConfigFile) {
+		if ((cmdLine.HasSwitch("-h")) || (cmdLine.HasSwitch("--help")) || (cmdLine.HasSwitch("/?")))
 		{
-			getline(infile, sLine);
-			if (
-				(sLine.find("BCM2708")!=std::string::npos)||
-				(sLine.find("BCM2709")!=std::string::npos)
-				)
+			_log.Log(LOG_NORM, "%s", szHelp);
+			return 0;
+		}
+		if (cmdLine.HasSwitch("-userdata"))
+		{
+			if (cmdLine.GetArgumentCount("-userdata") != 1)
 			{
-				//Core temperature of BCM2835 SoC
-				_log.Log(LOG_STATUS,"System: Raspberry Pi");
-				szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp";
-				bHasInternalTemperature=true;
-				break;
+				_log.Log(LOG_ERROR, "Please specify a path for user data to be stored");
+				return 1;
 			}
+			std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
+			if (szroot.size() != 0)
+				szUserDataFolder = szroot;
 		}
-		infile.close();
-	}
-	if (!bHasInternalTemperature)
-	{
-		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
+		if (cmdLine.HasSwitch("-startupdelay"))
 		{
-			_log.Log(LOG_STATUS,"System: Cubieboard/Cubietruck");
-			szInternalTemperatureCommand="cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
+			if (cmdLine.GetArgumentCount("-startupdelay") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a startupdelay");
+				return 1;
+			}
+			int DelaySeconds = atoi(cmdLine.GetSafeArgument("-startupdelay", 0, "").c_str());
+			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
+			sleep_seconds(DelaySeconds);
 		}
-		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
+		if (cmdLine.HasSwitch("-wwwbind"))
 		{
-			//_log.Log(LOG_STATUS,"System: ODroid");
-			szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
-			bHasInternalTemperature = true;
+			if (cmdLine.GetArgumentCount("-wwwbind") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify an address");
+				return 1;
+			}
+			webserver_settings.listening_address = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
 		}
-	}
-	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-	//New Armbian Kernal 4.14+
-	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-
-#if defined (__OpenBSD__)
-
-	szInternalTemperatureCommand="sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
-	bHasInternalTemperature = true;
-	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
-	bHasInternalVoltage = true;
-	//bHasInternalCurrent = true;
-
-#endif
-	_log.Log(LOG_STATUS,"Startup Path: %s", szStartupFolder.c_str());
-#endif
-
-	szWWWFolder = szStartupFolder + "www";
-
-	if ((cmdLine.HasSwitch("-h")) || (cmdLine.HasSwitch("--help")) || (cmdLine.HasSwitch("/?")))
-	{
-		_log.Log(LOG_NORM, szHelp);
-		return 0;
-	}
-
-	szUserDataFolder=szStartupFolder;
-	if (cmdLine.HasSwitch("-userdata"))
-	{
-		if (cmdLine.GetArgumentCount("-userdata") != 1)
+		if (cmdLine.HasSwitch("-www"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a path for user data to be stored");
-			return 1;
+			if (cmdLine.GetArgumentCount("-www") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a port");
+				return 1;
+			}
+			std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
+			int iPort = (int)atoi(wwwport.c_str());
+			if ((iPort < 0) || (iPort > 32767))
+			{
+				_log.Log(LOG_ERROR, "Please specify a valid www port");
+				return 1;
+			}
+			webserver_settings.listening_port = wwwport;
 		}
-		std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
-		if (szroot.size() != 0)
-			szUserDataFolder = szroot;
-	}
-
-	if (cmdLine.HasSwitch("-startupdelay"))
-	{
-		if (cmdLine.GetArgumentCount("-startupdelay") != 1)
+		if (cmdLine.HasSwitch("-php_cgi_path"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a startupdelay");
-			return 1;
+			if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
+				return 1;
+			}
+			webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
 		}
-		int DelaySeconds = atoi(cmdLine.GetSafeArgument("-startupdelay", 0, "").c_str());
-		_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
-		sleep_seconds(DelaySeconds);
-	}
-
-	http::server::server_settings webserver_settings;
-	if (cmdLine.HasSwitch("-wwwbind"))
-	{
-		if (cmdLine.GetArgumentCount("-wwwbind") != 1)
+		if (cmdLine.HasSwitch("-wwwroot"))
 		{
-			_log.Log(LOG_ERROR, "Please specify an address");
-			return 1;
+			if (cmdLine.GetArgumentCount("-wwwroot") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a WWW root path");
+				return 1;
+			}
+			std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
+			if (szroot.size() != 0)
+				szWWWFolder = szroot;
 		}
-		webserver_settings.listening_address = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
-	}
-
-	if (cmdLine.HasSwitch("-www"))
-	{
-		if (cmdLine.GetArgumentCount("-www") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a port");
-			return 1;
-		}
-		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
-		int iPort = (int)atoi(wwwport.c_str());
-		if ((iPort < 0) || (iPort > 32767))
-		{
-			_log.Log(LOG_ERROR, "Please specify a valid www port");
-			return 1;
-		}
-		webserver_settings.listening_port = wwwport;
-	}
-
-	if (cmdLine.HasSwitch("-php_cgi_path"))
-	{
-		if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
-			return 1;
-		}
-		webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
-	}
-	if (cmdLine.HasSwitch("-wwwroot"))
-	{
-		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a WWW root path");
-			return 1;
-		}
-		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-		if (szroot.size() != 0)
-			szWWWFolder = szroot;
 	}
 	webserver_settings.www_root = szWWWFolder;
 	m_mainworker.SetWebserverSettings(webserver_settings);
 #ifdef WWW_ENABLE_SSL
-	http::server::ssl_server_settings secure_webserver_settings;
-	if (cmdLine.HasSwitch("-sslwww"))
-	{
-		if (cmdLine.GetArgumentCount("-sslwww") != 1)
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-sslwww"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a port");
-			return 1;
+			if (cmdLine.GetArgumentCount("-sslwww") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a port");
+				return 1;
+			}
+			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
+			int iPort = (int)atoi(wwwport.c_str());
+			if ((iPort < 0) || (iPort > 32767))
+			{
+				_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
+				return 1;
+			}
+			secure_webserver_settings.listening_port = wwwport;
 		}
-		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
-		int iPort = (int)atoi(wwwport.c_str());
-		if ((iPort < 0) || (iPort > 32767))
+		if (!webserver_settings.listening_address.empty()) {
+			// Secure listening address has to be equal
+			secure_webserver_settings.listening_address = webserver_settings.listening_address;
+		}
+		if (cmdLine.HasSwitch("-sslcert"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
-			return 1;
+			if (cmdLine.GetArgumentCount("-sslcert") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a file path for your server certificate file");
+				return 1;
+			}
+			secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
+			secure_webserver_settings.private_key_file_path = secure_webserver_settings.cert_file_path;
 		}
-		secure_webserver_settings.listening_port = wwwport;
-	}
-	if (!webserver_settings.listening_address.empty()) {
-		// Secure listening address has to be equal
-		secure_webserver_settings.listening_address = webserver_settings.listening_address;
-	}
-	if (cmdLine.HasSwitch("-sslcert"))
-	{
-		if (cmdLine.GetArgumentCount("-sslcert") != 1)
+		if (cmdLine.HasSwitch("-sslkey"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a file path for your server certificate file");
-			return 1;
+			if (cmdLine.GetArgumentCount("-sslkey") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a file path for your server SSL key file");
+				return 1;
+			}
+			secure_webserver_settings.private_key_file_path = cmdLine.GetSafeArgument("-sslkey", 0, "");
 		}
-		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
-		secure_webserver_settings.private_key_file_path = secure_webserver_settings.cert_file_path;
-	}
-	if (cmdLine.HasSwitch("-sslkey"))
-	{
-		if (cmdLine.GetArgumentCount("-sslkey") != 1)
+		if (cmdLine.HasSwitch("-sslpass"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a file path for your server SSL key file");
-			return 1;
+			if (cmdLine.GetArgumentCount("-sslpass") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a passphrase to access to your server private key in certificate file");
+				return 1;
+			}
+			secure_webserver_settings.private_key_pass_phrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
 		}
-		secure_webserver_settings.private_key_file_path = cmdLine.GetSafeArgument("-sslkey", 0, "");
-	}
-	if (cmdLine.HasSwitch("-sslpass"))
-	{
-		if (cmdLine.GetArgumentCount("-sslpass") != 1)
+		if (cmdLine.HasSwitch("-sslmethod"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a passphrase to access to your server private key in certificate file");
-			return 1;
+			if (cmdLine.GetArgumentCount("-sslmethod") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a SSL method");
+				return 1;
+			}
+			secure_webserver_settings.ssl_method = cmdLine.GetSafeArgument("-sslmethod", 0, "");
 		}
-		secure_webserver_settings.private_key_pass_phrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
-	}
-	if (cmdLine.HasSwitch("-sslmethod"))
-	{
-		if (cmdLine.GetArgumentCount("-sslmethod") != 1)
+		if (cmdLine.HasSwitch("-ssloptions"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a SSL method");
-			return 1;
+			if (cmdLine.GetArgumentCount("-ssloptions") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify SSL options");
+				return 1;
+			}
+			secure_webserver_settings.ssl_options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
 		}
-		secure_webserver_settings.ssl_method = cmdLine.GetSafeArgument("-sslmethod", 0, "");
-	}
-	if (cmdLine.HasSwitch("-ssloptions"))
-	{
-		if (cmdLine.GetArgumentCount("-ssloptions") != 1)
+		if (cmdLine.HasSwitch("-ssldhparam"))
 		{
-			_log.Log(LOG_ERROR, "Please specify SSL options");
-			return 1;
+			if (cmdLine.GetArgumentCount("-ssldhparam") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a file path for the SSL DH parameters file");
+				return 1;
+			}
+			secure_webserver_settings.tmp_dh_file_path = cmdLine.GetSafeArgument("-ssldhparam", 0, "");
 		}
-		secure_webserver_settings.options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
-	}
-	if (cmdLine.HasSwitch("-ssldhparam"))
-	{
-		if (cmdLine.GetArgumentCount("-ssldhparam") != 1)
+		if (cmdLine.HasSwitch("-php_cgi_path"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a file path for the SSL DH parameters file");
-			return 1;
+			if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
+				return 1;
+			}
+			secure_webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
 		}
-		secure_webserver_settings.tmp_dh_file_path = cmdLine.GetSafeArgument("-ssldhparam", 0, "");
-	}
-	if (cmdLine.HasSwitch("-php_cgi_path"))
-	{
-		if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
-			return 1;
-		}
-		secure_webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
 	}
 	secure_webserver_settings.www_root = szWWWFolder;
 	m_mainworker.SetSecureWebserverSettings(secure_webserver_settings);
 #endif
-	if (cmdLine.HasSwitch("-nowwwpwd"))
-	{
-		m_mainworker.m_bIgnoreUsernamePassword = true;
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-nowwwpwd"))
+		{
+			m_mainworker.m_bIgnoreUsernamePassword = true;
+		}
+		if (cmdLine.HasSwitch("-nocache"))
+		{
+			g_bDontCacheWWW = true;
+		}
+		if (cmdLine.HasSwitch("-wwwcompress"))
+		{
+			if (cmdLine.GetArgumentCount("-wwwcompress") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a compress mode");
+				return 1;
+			}
+			std::string szmode = cmdLine.GetSafeArgument("-wwwcompress", 0, "on");
+			if (szmode == "off")
+				g_wwwCompressMode = http::server::WWW_FORCE_NO_GZIP_SUPPORT;
+			else if (szmode == "static")
+				g_wwwCompressMode = http::server::WWW_USE_STATIC_GZ_FILES;
+		}
 	}
-	if (cmdLine.HasSwitch("-nocache"))
-	{
-		g_bDontCacheWWW = true;
-	}
-	std::string dbasefile = szUserDataFolder + "domoticz.db";
+	if (dbasefile.empty()) {
+		dbasefile = szUserDataFolder + "domoticz.db";
 #ifdef WIN32
 #ifndef _DEBUG
-	if (!IsUserAnAdmin())
-	{
-		char szPath[MAX_PATH];
-		HRESULT hr = SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath);
-		if (SUCCEEDED(hr))
+		if (!IsUserAnAdmin())
 		{
-			std::string sPath = szPath;
-			sPath += "\\Domoticz";
-
-			DWORD dwAttr = GetFileAttributes(sPath.c_str());
-			BOOL bDirExists = (dwAttr != 0xffffffff && (dwAttr & FILE_ATTRIBUTE_DIRECTORY));
-			if (!bDirExists)
+			char szPath[MAX_PATH];
+			HRESULT hr = SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath);
+			if (SUCCEEDED(hr))
 			{
-				BOOL bRet = CreateDirectory(sPath.c_str(), NULL);
-				if (bRet == FALSE) {
-					MessageBox(0, "Error creating Domoticz directory in program data folder (%ProgramData%)!!", "Error:", MB_OK);
-				}
-			}
-			sPath += "\\domoticz.db";
-			dbasefile = sPath;
-		}
-	}
-#endif
-#endif
+				std::string sPath = szPath;
+				sPath += "\\Domoticz";
 
-	if (cmdLine.HasSwitch("-dbase"))
-	{
-		if (cmdLine.GetArgumentCount("-dbase") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a Database Name");
-			return 1;
+				DWORD dwAttr = GetFileAttributes(sPath.c_str());
+				BOOL bDirExists = (dwAttr != 0xffffffff && (dwAttr & FILE_ATTRIBUTE_DIRECTORY));
+				if (!bDirExists)
+				{
+					BOOL bRet = CreateDirectory(sPath.c_str(), NULL);
+					if (bRet == FALSE) {
+						MessageBox(0, "Error creating Domoticz directory in program data folder (%ProgramData%)!!", "Error:", MB_OK);
+					}
+				}
+				sPath += "\\domoticz.db";
+				dbasefile = sPath;
+			}
 		}
-		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
+#endif
+#endif
+	}
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-dbase"))
+		{
+			if (cmdLine.GetArgumentCount("-dbase") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a Database Name");
+				return 1;
+			}
+			dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
+		}
 	}
 	m_sql.SetDatabaseName(dbasefile);
 
-	if (cmdLine.HasSwitch("-webroot"))
-	{
-		if (cmdLine.GetArgumentCount("-webroot") != 1)
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-webroot"))
 		{
-			_log.Log(LOG_ERROR, "Please specify a web root path");
-			return 1;
+			if (cmdLine.GetArgumentCount("-webroot") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a web root path");
+				return 1;
+			}
+			std::string szroot = cmdLine.GetSafeArgument("-webroot", 0, "");
+			if (szroot.size() != 0)
+				szWebRoot = szroot;
 		}
-		std::string szroot = cmdLine.GetSafeArgument("-webroot", 0, "");
-		if (szroot.size() != 0)
-			szWebRoot = szroot;
+		if (cmdLine.HasSwitch("-noupdates"))
+		{
+			g_bUseUpdater = false;
+		}
 	}
 
 #if defined WIN32
-	if (cmdLine.HasSwitch("-nobrowser"))
-	{
-		bStartWebBrowser = false;
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-nobrowser"))
+		{
+			bStartWebBrowser = false;
+		}
 	}
 	//Init WinSock
 	WSADATA data;
@@ -946,31 +1132,31 @@ int main(int argc, char**argv)
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
+
 #ifndef WIN32
-	if (cmdLine.HasSwitch("-daemon"))
-	{
-		g_bRunAsDaemon = true;
-	}
-
-	std::string daemonname = DAEMON_NAME;
-	if (cmdLine.HasSwitch("-daemonname"))
-	{
-		daemonname = cmdLine.GetSafeArgument("-daemonname", 0, DAEMON_NAME);
-	}
-
-	std::string pidfile = PID_FILE;
-	if (cmdLine.HasSwitch("-pidfile"))
-	{
-		pidfile = cmdLine.GetSafeArgument("-pidfile", 0, PID_FILE);
-	}
-
-	if (cmdLine.HasSwitch("-syslog"))
-	{
-		g_bUseSyslog = true;
-		logfacname = cmdLine.GetSafeArgument("-syslog", 0, "");
-		if ( logfacname.length() == 0 ) 
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-daemon"))
 		{
-			logfacname = "user";
+			g_bRunAsDaemon = true;
+		}
+		if (cmdLine.HasSwitch("-daemonname"))
+		{
+			daemonname = cmdLine.GetSafeArgument("-daemonname", 0, DAEMON_NAME);
+		}
+
+		if (cmdLine.HasSwitch("-pidfile"))
+		{
+			pidfile = cmdLine.GetSafeArgument("-pidfile", 0, PID_FILE);
+		}
+
+		if (cmdLine.HasSwitch("-syslog"))
+		{
+			g_bUseSyslog = true;
+			logfacname = cmdLine.GetSafeArgument("-syslog", 0, "");
+			if (logfacname.length() == 0)
+			{
+				logfacname = "user";
+			}
 		}
 	}
 
@@ -1022,27 +1208,14 @@ int main(int argc, char**argv)
 	}
 	m_StartTime = time(NULL);
 
-  //set log level / log output file name verbose level if set on command line
-  //the value as been taken from database in call of GetLogPreference m_mainworker.Start()
-	if (cmdLine.HasSwitch("-log"))
-	{
-		logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-log"))
+		{
+			logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
+		}
+	}
+	if (!logfile.empty())
 		_log.SetOutputFile(logfile.c_str());
-	}
-	if (cmdLine.HasSwitch("-loglevel"))
-	{
-		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
-		if     (Level==0) _log.SetVerboseLevel(VBL_ALL);
-		else if(Level==1) _log.SetVerboseLevel(VBL_STATUS_ERROR);
-		else if(Level==2) _log.SetVerboseLevel(VBL_ERROR);
-		else if ((Level == 3) && (_log.GetLogDebug())) _log.SetVerboseLevel(VBL_TRACE);
-	}
-	if (cmdLine.HasSwitch("-verbose"))
-	{
-		int Level = atoi(cmdLine.GetSafeArgument("-verbose", 0, "").c_str());
-		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
-	}
-
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32

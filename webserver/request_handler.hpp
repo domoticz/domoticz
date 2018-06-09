@@ -15,9 +15,9 @@
 #include <vector>
 #include <boost/noncopyable.hpp>
 #ifndef WEBSERVER_DONT_USE_ZIP
-	#include "zip/unzip.h"
+	#include <unzip.h>
 	#define USEWIN32IOAPI
-	#include "zip/iowin32.h"
+	#include <iowin32.h>
 #endif
 
 namespace http {

@@ -84,6 +84,7 @@ namespace http {
 			{ 16,  0xF3, 0x04 }, //Leaf Wetness
 			{ 246, 0xF6, 0x01 }, //Lux
 			{ 250, 0xFA, 0x01 }, //P1 Smart Meter (Electric)
+			{ 1005,0xF3, 0x21 }, //Managed Counter
 			{ 2,   0xF3, 0x06 }, //Percentage
 			{ 1,   0xF3, 0x09 }, //Pressure (Bar)
 			{ 85,  0x55, 0x03 }, //Rain
@@ -110,6 +111,7 @@ namespace http {
 			{ 1001,0x56, 0x04 } //Wind+Temp+Chill
 		};
 
+		//TODO: Is this function called from anywhere, or can it be removed?
 		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{ // deprecated (for dzVents). Use RType_CreateDevice
 			if (session.rights != 2)

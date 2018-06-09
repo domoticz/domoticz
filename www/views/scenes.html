@@ -145,178 +145,42 @@
 				<td align="right" style="width:80px"><label for="offdelaytime"><span data-i18n="Off Delay"></span>:</label></td>
 				<td><input type="text" id="offdelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds"></span>)</td>
 			</tr>
-			<tr id="LedColor">
-				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+			<tr id="ScenesLedColor">
+				<td align="right">
+					<label>
+						<span data-i18n="Color">Color</span>:
+					</label>
+				</td>
 				<td>
-					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
-					<tr>
-						<td align="left" style="width:200px">
-							<div id="picker" width="100px" height="100px"></div>
-						</td>
-						<td align="left" style="vertical-align: top;">
-							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
-							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
-							<div class="radio">
-								<label>
-									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
-										RGB
-								</label>
-								<label>
-									<input type="radio" name="optionsType" id="optionsWhite" value="true">
-										White
-								</label>
-							</div>
-						</td>
-					</tr>
+					<table class="display colorpicker" border="0" cellpadding="0" cellspacing="0">
+						<tr id="ColorMode">
+							<td style="padding-left:0px">
+								<a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48" width="48"></a>
+								<a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48" width="48"></a>
+								<a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48" width="48"></a>
+								<a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48" width="48"></a>
+								<a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48" width="48"></a>
+								<a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48" width="48"></a>
+								<a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48" width="48"></a>
+								<a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected" height="48" width="48"></a>
+								<a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected" height="48" width="48"></a>
+								<a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected" height="48" width="48"></a>
+							</td>
+						</tr>
+						<!--<tr id="LedColor2">
+							<td>-->
+								<!--<table class="display" id="ledtable2" border="0" cellpadding="0" cellspacing="0">-->
+								<tr>
+									<td align="left" style="width:200px;padding-left:0px">
+										<input type="text" id="popup_picker"  data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl"/>
+									</td>
+								</tr>
+								<!--</table>-->
+							<!--</td>
+						</tr>-->
 					</table>
 				</td>
 			</tr>
 		</table>
 		<br>
-</div>
-<div id="edittimers" style="display:none;">
-    <table class="display" id="timertable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th width="40" align="center" data-i18n="Active">Active</th>
-                <th width="150" align="center" data-i18n="Type">Type</th>
-                <th width="80" align="center" data-i18n="Date">Date</th>
-                <th width="60" align="center" data-i18n="Time">Time</th>
-                <th width="60" align="center" data-i18n="Randomness">Randomness</th>
-                <th width="80" align="center" data-i18n="Command">Command</th>
-                <th align="left" data-i18n="Days">Days</th>
-            </tr>
-        </thead>
-    </table>
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					<a class="btnstyle3-dis" id="timerupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3-dis" id="timerdelete" data-i18n="Delete">Delete</a>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" onclick="ClearTimers();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table class="display" id="timerparamstable" border="0" cellpadding="0" cellspacing="20">
-			<tr>
-				<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-				<td><input type="checkbox" id="enabled" checked><label for="enabled"/></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
-				<td><select id="combotype" style="width:180px" class="combobox ui-corner-all">
-						<!--#embed timertypes -->
-						</select>
-				</td>
-			</tr>
-			<tr id="rdate">
-				<td align="right" style="width:80px"><label for="sdate"><span data-i18n="Date"></span>:</label></td>
-				<td><input type="text" id="sdate" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="combotimehour"><span data-i18n="Time"></span>:</label></td>
-				<td><select id="combotimehour" style="width:50px" class="combobox ui-corner-all"></select>
-						:
-						<select id="combotimemin" style="width:50px" class="combobox ui-corner-all"></select>
-						<span data-i18n="(hour/minute)"></span>
-				</td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><span data-i18n="Randomness"></span>:</td>
-				<td><input type="checkbox" id="randomness"><label for="randomness"/></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="combocommand"><span data-i18n="Command"></span>:</label></td>
-				<td>
-					<select id="combocommand" style="width:90px" class="combobox ui-corner-all">
-					<option value="0" data-i18n="On">On</option>
-					<option value="1" data-i18n="Off">Off</option>
-					</select>
-				</td>
-			</tr>
-			<tr id="LevelDiv">
-				<td align="right" style="width:80px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
-				<td>
-					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
-					</select>
-				</td>
-			</tr>
-			<tr id="rnorm"><td></td></tr>
-			<tr id="rnorm">
-				<td align="right" style="width:80px"><label for="when"><span data-i18n="When"></span>:</label></td>
-				<td>
-					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;<label for="when_1"><span data-i18n="Everyday"></label></span><br><br>
-					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;<label for="when_2"><span data-i18n="Weekdays"></span></label><br><br>
-					<input type="radio" name="when" id="when_3" value="Weekends">&nbsp;<label for="when_3"><span data-i18n="Weekends"></span></label><br><br>
-					<input type="radio" name="when" id="when_4" value="SelectedDays">&nbsp;<label for="when_4"><span data-i18n="Selected Days"></span></label><br><br>
-				</td>
-			</tr>
-			<tr id="rnorm"><td></td></tr>
-			<tr id="rnorm">
-				<td align="right" style="width:80px"><label for="name"><span data-i18n="Days"></span>:</label></td>
-				<td>
-					<input type="checkbox" id="ChkMon" checked/>&nbsp;<label for="ChkMon"><span data-i18n="Monday"></span></label><br/>
-					<input type="checkbox" id="ChkTue" checked/>&nbsp;<label for="ChkTue"><span data-i18n="Tuesday"></span></label><br />
-					<input type="checkbox" id="ChkWed" checked/>&nbsp;<label for="ChkWed"><span data-i18n="Wednesday"></span></label><br />
-					<input type="checkbox" id="ChkThu" checked/>&nbsp;<label for="ChkThu"><span data-i18n="Thursday"></span></label><br />
-					<input type="checkbox" id="ChkFri" checked/>&nbsp;<label for="ChkFri"><span data-i18n="Friday"></span></label><br />
-					<input type="checkbox" id="ChkSat" checked/>&nbsp;<label for="ChkSat"><span data-i18n="Saturday"></span></label><br />
-					<input type="checkbox" id="ChkSun" checked/>&nbsp;<label for="ChkSun"><span data-i18n="Sunday"></span></label>
-				</td>
-			</tr>
-			<tr id="rdays"><td></td></tr>
-			<tr id="rdays">
-				<td align="right" style="width:80px"><label for="days"><span data-i18n="Day"></span>:</label></td>
-				<td>
-					<select id="days" style="width:50px" class="combobox ui-corner-all"></select>
-				</td>
-			</tr>
-			<tr id="roccurence"><td></td></tr>
-			<tr id="roccurence">
-				<td align="right" style="width:80px"><label for="occurence"><span data-i18n="Day"></span>:</label></td>
-				<td>
-					<select id="occurence" style="width:90px" class="combobox ui-corner-all">
-					<option value="1" data-i18n="First">First</option>
-					<option value="2" data-i18n="2nd">2nd</option>
-					<option value="3" data-i18n="3rd">3rd</option>
-					<option value="4" data-i18n="4th">4th</option>
-					<option value="5" data-i18n="Last">Last</option>
-					</select>
-					<select id="weekdays" style="width:100px" class="combobox ui-corner-all">
-					<option value="0" data-i18n="Monday">Monday</option>
-					<option value="1" data-i18n="Tuesday">Tuesday</option>
-					<option value="2" data-i18n="Wednesday">Wednesday</option>
-					<option value="3" data-i18n="Thursday">Thursday</option>
-					<option value="4" data-i18n="Friday">Friday</option>
-					<option value="5" data-i18n="Saturday">Saturday</option>
-					<option value="6" data-i18n="Sunday">Sunday</option>
-					</select>
-				</td>
-			</tr>
-			<tr id="rmonths"><td></td></tr>
-			<tr id="rmonths">
-				<td align="right" style="width:80px"><label for="months"><span data-i18n="Month"></span>:</label></td>
-				<td>
-					<select id="months" style="width:90px" class="combobox ui-corner-all">
-					<option value="1" data-i18n="January">January</option>
-					<option value="2" data-i18n="February">February</option>
-					<option value="3" data-i18n="March">March</option>
-					<option value="4" data-i18n="April">April</option>
-					<option value="5" data-i18n="May">May</option>
-					<option value="6" data-i18n="June">June</option>
-					<option value="7" data-i18n="July">July</option>
-					<option value="8" data-i18n="August">August</option>
-					<option value="9" data-i18n="September">September</option>
-					<option value="10" data-i18n="October">October</option>
-					<option value="11" data-i18n="November">November</option>
-					<option value="12" data-i18n="December">December</option>
-					</select>
-				</td>
-			</tr>
-		</table>
-		<br>
-    <a class="btnstyle3" onclick="AddTimer();" data-i18n="Add">Add</a>
 </div>

@@ -10,7 +10,8 @@ define(['app'], function (app) {
 
 			$http({
 				url: "json.htm?type=command&param=logincheck&username=" + musername + "&password=" + mpassword + "&rememberme=" + bRememberMe
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (data.status != "OK") {
 					HideNotify();
 					$scope.failcounter += 1;
@@ -40,7 +41,7 @@ define(['app'], function (app) {
 					//$window.location = '/#Dashboard';
 					//$window.location.reload();
 				}
-			}).error(function (data) {
+			}, function errorCallback(response) {
 				HideNotify();
 				$scope.failcounter += 1;
 				if ($scope.failcounter > 3) {

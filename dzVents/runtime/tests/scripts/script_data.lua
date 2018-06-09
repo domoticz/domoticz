@@ -9,7 +9,8 @@ return {
 		c = { initial = {x = 1, y = 2} },
 		d = { history = true, maxItems = 15},
 		e = { history = true, maxHours = 1, getValue = function(item) return item.data.num end },
-		g = { initial = 666 } -- this one is local (there's also a global with this name)
+		g = { initial = 666 }, -- this one is local (there's also a global with this name)
+		'h'
 	},
 	execute = function(domoticz, device)
 		domoticz.data.a = 'this is set from script'
