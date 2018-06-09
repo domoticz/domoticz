@@ -312,15 +312,6 @@
     <Filter Include="www\secpanel\css">
       <UniqueIdentifier>{4be708f3-9e5c-437d-9ef1-93e70ad18339}</UniqueIdentifier>
     </Filter>
-    <Filter Include="www\secpanel\font">
-      <UniqueIdentifier>{bdb9d0d7-143b-41b2-a7e2-666e32ca0aab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\secpanel\js">
-      <UniqueIdentifier>{4f97743b-f037-4ec5-bf38-96d2904d7a95}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\secpanel\media">
-      <UniqueIdentifier>{71830b06-5a87-4cf3-b7a6-ab7f84d1d53b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="www\styles">
       <UniqueIdentifier>{88cfc333-a48a-4933-9205-bbd7cbac9cfe}</UniqueIdentifier>
     </Filter>
@@ -1166,63 +1157,6 @@
     <None Include="..\www\secpanel\index.html">
       <Filter>www\secpanel</Filter>
     </None>
-    <None Include="..\www\secpanel\css\font.less">
-      <Filter>www\secpanel\css</Filter>
-    </None>
-    <None Include="..\www\secpanel\css\reset.less">
-      <Filter>www\secpanel\css</Filter>
-    </None>
-    <None Include="..\www\secpanel\css\style.less">
-      <Filter>www\secpanel\css</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Audiowide.eot">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Audiowide.svg">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Audiowide.woff">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Digital.eot">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Digital.svg">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Digital.woff">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\js\ion.sound.min.js.gz">
-      <Filter>www\secpanel\js</Filter>
-    </None>
-    <None Include="..\www\secpanel\js\less.js.gz">
-      <Filter>www\secpanel\js</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\arm.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\arm.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\disarm.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\disarm.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\key.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\key.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\wrongcode.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\wrongcode.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
     <None Include="..\www\styles\default\custom.css">
       <Filter>www\styles\default</Filter>
     </None>
@@ -1390,6 +1324,9 @@
     </None>
     <None Include="..\www\js\domoticzdevices.js">
       <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\secpanel\css\style.css">
+      <Filter>www\secpanel\css</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2098,9 +2035,6 @@
     <ClInclude Include="..\main\IFTTT.h">
       <Filter>IFTTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\tinyxpath\xpath_processor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
       <Filter>Devices\Denkovi</Filter>
     </ClInclude>
@@ -2112,9 +2046,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\EnphaseAPI.h">
       <Filter>Devices\Enphase</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketHandler.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\push\WebsocketPush.h">
       <Filter>Pushers\Websocket</Filter>
@@ -2167,11 +2098,20 @@
     <ClInclude Include="..\hardware\Tado.h">
       <Filter>Devices\Tado</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviDevices.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketHandler.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\xpath_processor.h">
+      <Filter>XML</Filter>
+    </ClInclude>
     <ClInclude Include="..\zip\iowin32.h">
-      <Filter>Header Files</Filter>
+      <Filter>zip\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\zip\minizip_crypt.h">
-      <Filter>Header Files</Filter>
+      <Filter>zip\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2877,9 +2817,6 @@
     <ClCompile Include="..\hardware\EnphaseAPI.cpp">
       <Filter>Devices\Enphase</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\push\WebsocketPush.cpp">
       <Filter>Pushers\Websocket</Filter>
     </ClCompile>
@@ -2928,14 +2865,20 @@
     <ClCompile Include="..\hardware\EvohomeScript.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
-    <ClCompile Include="..\zip\unzip.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\hardware\DenkoviDevices.cpp">
+      <Filter>Devices\Denkovi</Filter>
     </ClCompile>
-    <ClCompile Include="..\zip\iowin32.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
     <ClCompile Include="..\zip\ioapi.c">
-      <Filter>Source Files</Filter>
+      <Filter>zip\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\iowin32.c">
+      <Filter>zip\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\unzip.c">
+      <Filter>zip\Base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -4030,9 +3973,6 @@
     <Image Include="..\www\media\trashlid.png">
       <Filter>www\media</Filter>
     </Image>
-    <Image Include="..\www\secpanel\bg.jpg">
-      <Filter>www\secpanel</Filter>
-    </Image>
     <Image Include="..\www\styles\elemental\images\imgbg.jpg">
       <Filter>www\styles\elemental\images</Filter>
     </Image>
@@ -4062,12 +4002,6 @@
     <Font Include="..\www\css\fonts\Satisfy.ttf">
       <Filter>www\css\fonts</Filter>
     </Font>
-    <Font Include="..\www\secpanel\font\Audiowide.ttf">
-      <Filter>www\secpanel\font</Filter>
-    </Font>
-    <Font Include="..\www\secpanel\font\Digital.ttf">
-      <Filter>www\secpanel\font</Filter>
-    </Font>
     <Font Include="..\www\styles\elemental\fonts\DroidSans.ttf">
       <Filter>www\styles\elemental\fonts</Filter>
     </Font>
@@ -4093,18 +4027,6 @@
     </Media>
     <Media Include="..\www\media\delete.wav">
       <Filter>www\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\arm.mp3">
-      <Filter>www\secpanel\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\disarm.mp3">
-      <Filter>www\secpanel\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\key.mp3">
-      <Filter>www\secpanel\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\wrongcode.mp3">
-      <Filter>www\secpanel\media</Filter>
     </Media>
   </ItemGroup>
 </Project>
