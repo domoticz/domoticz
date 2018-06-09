@@ -3401,6 +3401,10 @@ void CSQLHelper::Do_Work()
 			{
 				m_mainworker.m_eventsystem.UpdateDevice(itt->_idx, itt->_nValue, itt->_sValue, itt->_HardwareID, (itt->_switchtype ? true : false));
 			}
+			else if (itt->_ItemType == TITEM_CUSTOM_COMMAND)
+			{
+				m_mainworker.m_eventsystem.CustomCommand(itt->_idx, itt->_command);
+			}
 
 			++itt;
 		}

@@ -676,6 +676,10 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 	m_pPartialPkt = new_partial;
 }
 
+bool OnkyoAVTCP::CustomCommand(const uint64_t idx, const std::string &sCommand)
+{
+	return SendPacket(sCommand.c_str());
+}
 
 //Webserver helpers
 namespace http {

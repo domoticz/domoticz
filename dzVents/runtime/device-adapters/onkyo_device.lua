@@ -17,9 +17,7 @@ return {
     process = function (device, data, domoticz, utils, adapterManager)
 
         function device.onkyoEISCPCommand(cmd)
-            local url = domoticz.settings['Domoticz url'] ..
-                    '/json.htm?param=onkyoeiscpcommand&type=command&idx=' .. device.id .. '&action=' .. tostring (cmd)
-            return domoticz.openURL(url)
+            return TimedCommand(domoticz, 'CustomCommand:' .. device.id, tostring(cmd), 'device')
         end
     end
 }
