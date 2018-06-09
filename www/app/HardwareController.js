@@ -1935,7 +1935,8 @@ define(['app'], function (app) {
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(username) +
-					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
