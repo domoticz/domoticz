@@ -336,26 +336,8 @@
     <None Include="..\www\ozwcp\cp.html" />
     <None Include="..\www\ozwcp\cp.js" />
     <None Include="..\www\ozwcp\ozwcp.html" />
-    <None Include="..\www\secpanel\css\font.less" />
-    <None Include="..\www\secpanel\css\reset.less" />
-    <None Include="..\www\secpanel\css\style.less" />
-    <None Include="..\www\secpanel\font\Audiowide.eot" />
-    <None Include="..\www\secpanel\font\Audiowide.svg" />
-    <None Include="..\www\secpanel\font\Audiowide.woff" />
-    <None Include="..\www\secpanel\font\Digital.eot" />
-    <None Include="..\www\secpanel\font\Digital.svg" />
-    <None Include="..\www\secpanel\font\Digital.woff" />
+    <None Include="..\www\secpanel\css\style.css" />
     <None Include="..\www\secpanel\index.html" />
-    <None Include="..\www\secpanel\js\ion.sound.min.js.gz" />
-    <None Include="..\www\secpanel\js\less.js.gz" />
-    <None Include="..\www\secpanel\media\arm.aac" />
-    <None Include="..\www\secpanel\media\arm.ogg" />
-    <None Include="..\www\secpanel\media\disarm.aac" />
-    <None Include="..\www\secpanel\media\disarm.ogg" />
-    <None Include="..\www\secpanel\media\key.aac" />
-    <None Include="..\www\secpanel\media\key.ogg" />
-    <None Include="..\www\secpanel\media\wrongcode.aac" />
-    <None Include="..\www\secpanel\media\wrongcode.ogg" />
     <None Include="..\www\styles\default\base.css" />
     <None Include="..\www\styles\default\custom.css" />
     <None Include="..\www\styles\default\custom.js" />
@@ -1410,7 +1392,6 @@
     <Image Include="..\www\media\trashbody.png" />
     <Image Include="..\www\media\trashlid.png" />
     <Image Include="..\www\media\tree.png" />
-    <Image Include="..\www\secpanel\bg.jpg" />
     <Image Include="..\www\styles\element-dark\images\imgbg.jpg" />
     <Image Include="..\www\styles\element-light\images\imgbg.jpg" />
     <Image Include="..\www\styles\elemental\images\imgbg.jpg" />
@@ -1424,8 +1405,6 @@
     <Font Include="..\www\css\fonts\Oswald-Light.ttf" />
     <Font Include="..\www\css\fonts\Oswald-Regular.ttf" />
     <Font Include="..\www\css\fonts\Satisfy.ttf" />
-    <Font Include="..\www\secpanel\font\Audiowide.ttf" />
-    <Font Include="..\www\secpanel\font\Digital.ttf" />
     <Font Include="..\www\styles\element-dark\fonts\DroidSans.ttf" />
     <Font Include="..\www\styles\element-dark\fonts\OpenSans.ttf" />
     <Font Include="..\www\styles\element-light\fonts\DroidSans.ttf" />
@@ -1436,10 +1415,6 @@
   <ItemGroup>
     <Media Include="..\www\media\click.wav" />
     <Media Include="..\www\media\delete.wav" />
-    <Media Include="..\www\secpanel\media\arm.mp3" />
-    <Media Include="..\www\secpanel\media\disarm.mp3" />
-    <Media Include="..\www\secpanel\media\key.mp3" />
-    <Media Include="..\www\secpanel\media\wrongcode.mp3" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
