@@ -549,7 +549,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
 		{ pTypeHUM, sTypeHUM2, "LaCrosse WS2300" },
 
-		{ pTypeTEMP_HUM, sTypeTH1, "THGN122/123, THGN132, THGR122/228/238/268" },
+		{ pTypeTEMP_HUM, sTypeTH1, "THGN122/123/132, THGR122/228/238/268" },
 		{ pTypeTEMP_HUM, sTypeTH2, "THGR810, THGN800" },
 		{ pTypeTEMP_HUM, sTypeTH3, "RTGR328" },
 		{ pTypeTEMP_HUM, sTypeTH4, "THGR328" },
@@ -626,7 +626,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeTRC02_2, "TRC02_2 (RGB)" },
 		{ pTypeLighting5, sTypeAoke, "Aoke" },
 		{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
-		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
+		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo" },
 		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
@@ -641,7 +641,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeCurtain, sTypeHarrison, "Harrison" },
 
-		{ pTypeBlinds, sTypeBlindsT0, "RollerTrol, Hasta new" },
+		{ pTypeBlinds, sTypeBlindsT0, "RollerTrol/Hasta" },
 		{ pTypeBlinds, sTypeBlindsT1, "Hasta old" },
 		{ pTypeBlinds, sTypeBlindsT2, "A-OK RF01" },
 		{ pTypeBlinds, sTypeBlindsT3, "A-OK AC114" },
@@ -649,7 +649,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
 		{ pTypeBlinds, sTypeBlindsT6, "DC106" },
 		{ pTypeBlinds, sTypeBlindsT7, "Forest" },
-		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
+		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain" },
 		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
 		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
 		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
@@ -660,10 +660,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
 		{ pTypeSecurity1, sTypeSecX10R, "X10 security remote" },
 		{ pTypeSecurity1, sTypeKD101, "KD101 smoke detector" },
-		{ pTypeSecurity1, sTypePowercodeSensor, "Visonic PowerCode sensor - primary contact" },
-		{ pTypeSecurity1, sTypePowercodeMotion, "Visonic PowerCode motion" },
+		{ pTypeSecurity1, sTypePowercodeSensor, "Visonic sensor - primary contact" },
+		{ pTypeSecurity1, sTypePowercodeMotion, "Visonic motion" },
 		{ pTypeSecurity1, sTypeCodesecure, "Visonic CodeSecure" },
-		{ pTypeSecurity1, sTypePowercodeAux, "Visonic PowerCode sensor - auxiliary contact" },
+		{ pTypeSecurity1, sTypePowercodeAux, "Visonic sensor - auxiliary contact" },
 		{ pTypeSecurity1, sTypeMeiantech, "Meiantech/Atlantic/Aidebao" },
 		{ pTypeSecurity1, sTypeSA30, "Alecto SA30 smoke detector" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Security Panel" },
@@ -679,7 +679,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRemote, sTypeATIrw2, "ATI Remote Wonder II" },
 
 		{ pTypeThermostat1, sTypeDigimax, "Digimax" },
-		{ pTypeThermostat1, sTypeDigimaxShort, "Digimax with short format" },
+		{ pTypeThermostat1, sTypeDigimaxShort, "Digimax short" },
 
 		{ pTypeThermostat2, sTypeHE105, "HE105" },
 		{ pTypeThermostat2, sTypeRTS10, "RTS10" },

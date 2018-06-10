@@ -10,7 +10,7 @@ SET (LIB lauxlib.c lbaselib.c lbitlib.c lcorolib.c ldblib.c liolib.c
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD")
 	SET(OperatingSystem "Linux")
 	add_definitions(-DLUA_USE_LINUX)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD")
 
 ADD_LIBRARY(lua STATIC ${LIB} ${CORE})
 #ADD_EXECUTABLE(luaexec lua.c)
