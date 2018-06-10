@@ -10167,6 +10167,8 @@ namespace http {
 					}
 					else if (dType == pTypeP1Gas)
 					{
+						root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
+
 						float GasDivider = 1000.0f;
 						//get lowest value of today
 						time_t now = mytime(NULL);
@@ -10176,6 +10178,7 @@ namespace http {
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 						std::vector<std::vector<std::string> > result2;
+
 						strcpy(szTmp, "0");
 						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
 							sd[0].c_str(), szDate);
@@ -10183,19 +10186,12 @@ namespace http {
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							unsigned long long total_min_gas, total_real_gas;
-							unsigned long long gasactual;
+							uint64_t total_min_gas = std::stoull(sd2[0]);
+							uint64_t total_real_gas = std::stoull(sValue);
+							uint64_t gasactual = total_real_gas - total_min_gas;
 
-							std::stringstream s_str1(sd2[0]);
-							s_str1 >> total_min_gas;
-							std::stringstream s_str2(sValue);
-							s_str2 >> gasactual;
 
-							double musage = 0;
-
-							root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
-
-							musage = double(gasactual) / GasDivider;
+							double musage = double(gasactual) / GasDivider;
 							sprintf(szTmp, "%.03f", musage);
 							root["result"][ii]["Counter"] = szTmp;
 							total_real_gas = gasactual - total_min_gas;
@@ -10208,7 +10204,6 @@ namespace http {
 						}
 						else
 						{
-							root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
 							sprintf(szTmp, "%.03f", 0.0f);
 							root["result"][ii]["Counter"] = szTmp;
 							sprintf(szTmp, "%.03f m3", 0.0f);
