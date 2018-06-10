@@ -313,7 +313,10 @@ define(['app'], function (app) {
 										bigtext = item.Counter;
 										status = "";
 									}
-									if (item.SubType == "Counter Incremental") {
+									if (
+										(item.SubType == "RFXMeter counter") ||
+										(item.SubType == "Counter Incremental")
+									) {
 										status = item.Counter;
 									} else {
 										status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;

@@ -1554,7 +1554,10 @@ define(['app'], function (app) {
 											) {
 												status = "";
 												bigtext = item.CounterToday;
-												if (item.SubType == "Counter Incremental") {
+												if (
+													(item.SubType == "RFXMeter counter") ||
+													(item.SubType == "Counter Incremental")
+												) {
 													status = item.Counter;
 												}
 											}
@@ -3717,10 +3720,13 @@ define(['app'], function (app) {
 												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 											}
 										}
-										if (item.SubType == "Counter Incremental") {
+										if (
+											(item.SubType == "RFXMeter counter") ||
+											(item.SubType == "Counter Incremental")
+										) {
 											statushtml = item.Counter;
 										}
-										else if ((item.SubType != "Gas") && (item.SubType != "RFXMeter counter")) { // this is weird..
+										else if (item.SubType != "Gas") { // this is weird..
 											statushtml = '' + $.t("Usage") + ': ' + item.CounterToday;
 										}
 										else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) { // added this to fill the status value. If it's the same as the bigtext, then it won't be shown again.
