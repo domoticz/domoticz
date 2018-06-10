@@ -11460,7 +11460,7 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "Devices";
-			root["app_version"] = "szAppVersion";
+			root["app_version"] = szAppVersion;
 			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bDisabledDisabled, bFetchFavorites, LastUpdate, session.username, hwidx);
 		}
 
