@@ -556,10 +556,10 @@ define(['app'], function (app) {
 							return ShowWindLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
 						}
 						else if (typeof item.Visibility != 'undefined') {
-							return ShowGeneralGraph('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name), item.SwitchTypeVal, 'Visibility');
+							return $location.path('/Devices/' + item.idx + '/GraphLog');
 						}
 						else if (typeof item.Radiation != 'undefined') {
-							return ShowGeneralGraph('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name), item.SwitchTypeVal, 'Radiation');
+                            return $location.path('/Devices/' + item.idx + '/GraphLog');
 						}
 					};
 

@@ -602,6 +602,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controllerUrl: 'app/log/TextLog.js',
 				controllerAs: 'vm'
 			})).
+			when('/Devices/:id/GraphLog', angularAMD.route({
+				templateUrl: 'views/log/device_graph_log.html',
+				controller: 'DeviceGraphLogController',
+				controllerUrl: 'app/log/GraphLog.js',
+				controllerAs: 'vm'
+			})).
 			when('/Devices/:id/TemperatureLog', angularAMD.route({
 				templateUrl: 'views/log/device_temperature_log.html',
 				controller: 'DeviceTemperatureLogController',
