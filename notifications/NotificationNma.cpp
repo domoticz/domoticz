@@ -3,6 +3,12 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
 
+/*
+Notify my Android is shut down
+With great sadness, and after 8 years of operation, NMA will shutdown on May 24th.
+Due to unacceptably high risks introduced by the GDPR European regulation, and the majority of our users been Europeans, we can't justify operations anymore.
+*/
+
 CNotificationNma::CNotificationNma() : CNotificationBase(std::string("nma"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
 	SetupConfig(std::string("NMAEnabled"), &m_IsEnabled);

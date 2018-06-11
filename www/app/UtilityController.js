@@ -302,10 +302,25 @@ define(['app'], function (app) {
 								}
 
 								if (typeof item.Counter != 'undefined') {
-									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
+									if (
+										(item.SubType == "Gas") ||
+										(item.SubType == "RFXMeter counter") ||
+										(item.SubType == "Counter Incremental")
+									) {
 										bigtext = item.CounterToday;
 									}
-									status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+									else if (item.SubType == "Managed Counter") {
+										bigtext = item.Counter;
+										status = "";
+									}
+									if (
+										(item.SubType == "RFXMeter counter") ||
+										(item.SubType == "Counter Incremental")
+									) {
+										status = item.Counter;
+									} else {
+										status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+									}
 								}
 								else if (item.Type == "Current") {
 									status = "";
@@ -540,6 +555,9 @@ define(['app'], function (app) {
 							else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
 								xhtm += item.CounterToday;
 							}
+							else if (item.SubType == "Managed Counter") {
+								xhtm += item.Counter;
+							}
 							else if (item.Type == "Air Quality") {
 								xhtm += item.Data;
 							}
@@ -583,7 +601,7 @@ define(['app'], function (app) {
 							xhtm += '\t      <td id="img"><img src="images/';
 							var status = "";
 							if (typeof item.Counter != 'undefined') {
-								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental")) {
+								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 									if (item.SwitchTypeVal == 1) {
 										xhtm += 'Gas48.png" height="48" width="48"></td>\n';
 									}
@@ -608,10 +626,14 @@ define(['app'], function (app) {
 										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
 									}
 								}
-								if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+								if (
+									(item.SubType == "Gas") ||
+									(item.SubType == "RFXMeter counter") ||
+									(item.SubType == "Counter Incremental")
+								) {
 									status = item.Counter;
 								}
-								else {
+								else if (item.SubType != "Managed Counter") {
 									status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
 								}
 							}
@@ -918,10 +940,12 @@ define(['app'], function (app) {
 							}
 							if (item.ShowNotifications == true) {
 								if (permissions.hasPermission("Admin")) {
+                                    var notificationLink = '#/Devices/'+item.idx+'/Notifications';
+
 									if (item.Notifications == "true")
-										xhtm += '<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+										xhtm += '<a class="btnsmall-sel" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';
 									else
-										xhtm += '<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+										xhtm += '<a class="btnsmall" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';
 								}
 							}
 							xhtm +=
@@ -1241,7 +1265,7 @@ define(['app'], function (app) {
 						'&switchtype=' + meterType +
 						'&addjvalue=' + meteroffset +
 						'&used=true' +
-						'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
+						'&options=' + b64EncodeUnicode(devOptionsParam.join('')),
 						async: false,
 						dataType: 'json',
 						success: function (data) {

@@ -1,11 +1,14 @@
 define(['app', 'timers/factories', 'timers/components', 'scenes/factories'], function (app) {
-    app.controller('SceneTimersController', function ($routeParams, sceneApi, sceneTimersApi, deviceTimerOptions, deviceTimerConfigUtils) {
+    app.controller('SceneTimersController', function ($routeParams, sceneApi, sceneTimersApi, deviceTimerOptions, deviceTimerConfigUtils, utils) {
         var vm = this;
+
+        var deleteConfirmationMessage = $.t('Are you sure to delete this timers?\n\nThis action can not be undone...');
+        var clearConfirmationMessage = $.t('Are you sure to delete ALL timers?\n\nThis action can not be undone!');
 
         vm.addTimer = addTimer;
         vm.updateTimer = updateTimer;
-        vm.deleteTimer = deleteTimer;
-        vm.clearTimers = clearTimers;
+        vm.deleteTimer = utils.confirmDecorator(deleteTimer, deleteConfirmationMessage);
+        vm.clearTimers = utils.confirmDecorator(clearTimers, clearConfirmationMessage);
 
         init();
 
@@ -112,35 +115,23 @@ define(['app', 'timers/factories', 'timers/components', 'scenes/factories'], fun
         }
 
         function deleteTimer(timerIdx) {
-            bootbox.confirm($.t('Are you sure to delete this timers?\n\nThis action can not be undone...'), function (result) {
-                if (result != true) {
-                    return;
-                }
-
-                sceneTimersApi
-                    .deleteTimer(timerIdx)
-                    .then(refreshTimers)
-                    .catch(function () {
-                        HideNotify();
-                        ShowNotify($.t('Problem deleting timer!'), 2500, true);
-                    });
-            });
+            return sceneTimersApi
+                .deleteTimer(timerIdx)
+                .then(refreshTimers)
+                .catch(function () {
+                    HideNotify();
+                    ShowNotify($.t('Problem deleting timer!'), 2500, true);
+                });
         }
 
         function clearTimers() {
-            bootbox.confirm($.t('Are you sure to delete ALL timers?\n\nThis action can not be undone!'), function (result) {
-                if (result != true) {
-                    return;
-                }
-
-                sceneTimersApi
-                    .clearTimers(vm.sceneIdx)
-                    .then(refreshTimers)
-                    .catch(function () {
-                        HideNotify();
-                        ShowNotify($.t('Problem clearing timers!'), 2500, true);
-                    })
-            });
+            return sceneTimersApi
+                .clearTimers(vm.sceneIdx)
+                .then(refreshTimers)
+                .catch(function () {
+                    HideNotify();
+                    ShowNotify($.t('Problem clearing timers!'), 2500, true);
+                })
         }
     });
 });

@@ -2,6 +2,8 @@
 
 #include "DomoticzHardware.h"
 #include "../main/concurrent_queue.h"
+#include <map>
+#include <vector>
 
 class MySensorsBase : public CDomoticzHardwareBase
 {
@@ -159,7 +161,12 @@ public:
 		I_PONG = 25,	//!< In return to ping, sent back to sender, payload incremental hop counter
 		I_REGISTRATION_REQUEST = 26,	//!< Register request to GW
 		I_REGISTRATION_RESPONSE = 27,	//!< Register response from GW
-		I_DEBUG = 28	//!< Debug message
+		I_DEBUG = 28,	//!< Debug message
+		I_SIGNAL_REPORT_REQUEST = 29,	//!< Device signal strength request
+		I_SIGNAL_REPORT_REVERSE = 30,	//!< Internal
+		I_SIGNAL_REPORT_RESPONSE = 31,	//!< Device signal strength response (RSSI)
+		I_PRE_SLEEP_NOTIFICATION = 32,	//!< Message sent before node is going to sleep
+		I_POST_SLEEP_NOTIFICATION = 33	//!< Message sent after node woke up (if enabled)
 	};
 
 	struct _tMySensorValue
@@ -400,6 +407,27 @@ public:
 		}
 	} MySensorNode;
 
+	struct _tMySensorSmartSleepQueueItem
+	{
+		int _NodeID;
+		int _ChildID;
+		_eMessageType _messageType;
+		_eSetType _SubType;
+		std::string _Payload;
+		bool _bUseAck;
+		int _AckTimeout;
+		_tMySensorSmartSleepQueueItem(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
+		{
+			_NodeID = NodeID;
+			_ChildID = ChildID;
+			_messageType = messageType;
+			_SubType = SubType;
+			_Payload = Payload;
+			_bUseAck = bUseAck;
+			_AckTimeout = AckTimeout;
+		}
+	};
+
 	MySensorsBase(void);
 	~MySensorsBase(void);
 	std::string m_szSerialPort;
@@ -416,18 +444,19 @@ public:
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
-	void ParseLine();
+	void ParseLine(const std::string &sLine);
 
 	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name);
 	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
 	void SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload);
 	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout);
+	bool SendNodeSetCommandImpl(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout);
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 
 	void UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
-	
+
 	void UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit);
 	void UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID);
 	void UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID);
@@ -471,7 +500,10 @@ private:
 	int m_AckChildID;
 	_eSetType m_AckSetType;
 
-	unsigned char m_buffer[1028];
-	int m_bufferpos;
+	std::string m_LineReceived;
+
+	std::map<int, bool> m_node_sleep_states;
+	std::map<int, std::vector<_tMySensorSmartSleepQueueItem> > m_node_sleep_queue;
+	boost::mutex m_node_sleep_mutex;
 };
 

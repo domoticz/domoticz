@@ -19,6 +19,12 @@ namespace http {
 			AUTH_LOGIN=0,
 			AUTH_BASIC,
 		};
+		enum _eWebCompressionMode
+		{
+			WWW_USE_GZIP=0,
+			WWW_USE_STATIC_GZ_FILES,
+			WWW_FORCE_NO_GZIP_SUPPORT
+		};
 		typedef struct _tWebUserPassword
 		{
 			unsigned long ID;
@@ -221,6 +227,9 @@ namespace http {
 			server_settings m_settings;
 			// actual theme selected
 			std::string m_actTheme;
+
+			void SetWebCompressionMode(const _eWebCompressionMode gzmode);
+			_eWebCompressionMode m_gzipmode;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;

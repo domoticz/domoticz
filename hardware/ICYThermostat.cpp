@@ -293,7 +293,7 @@ void CICYThermostat::SetSetpoint(const int idx, const float temp)
 			_log.Log(LOG_ERROR,"ICYThermostat: Error setting SetPoint temperature!");
 		}
 		else {
-			_log.Log(LOG_STATUS,"ICYThermostat: Setting Room SetPoint to: %.1f",temp);
+			_log.Debug(DEBUG_HARDWARE, "ICYThermostat: Setting Room SetPoint to: %.1f", temp);
 		}
 	}
 }

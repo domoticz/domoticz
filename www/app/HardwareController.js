@@ -425,6 +425,8 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode1 = pollinterval;
+					if (text.indexOf("Modules with LAN") >= 0)					
+						Mode2 = $("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices option:selected").val();
 				}
 				else if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
@@ -1510,6 +1512,8 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode1 = pollinterval;
+					if (text.indexOf("Modules with LAN") >= 0)
+						Mode2 = $("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices option:selected").val();
 				}
 				else if (text.indexOf("eHouse") >= 0) {
 					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
@@ -2029,7 +2033,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent #ADLightwaveRF').prop('checked', ((Mode4 & 0x02) != 0));
 			$('#hardwarecontent #HidekiUPM').prop('checked', ((Mode4 & 0x04) != 0));
 			$('#hardwarecontent #LaCrosse').prop('checked', ((Mode4 & 0x08) != 0));
-			$('#hardwarecontent #FS20').prop('checked', ((Mode4 & 0x10) != 0));
+			$('#hardwarecontent #Legrand').prop('checked', ((Mode4 & 0x10) != 0));
 			$('#hardwarecontent #ProGuard').prop('checked', ((Mode4 & 0x20) != 0));
 			$('#hardwarecontent #BlindT0').prop('checked', ((Mode4 & 0x40) != 0));
 			$('#hardwarecontent #BlindT1T2T3T4').prop('checked', ((Mode4 & 0x80) != 0));
@@ -2058,7 +2062,7 @@ define(['app'], function (app) {
 				$('#hardwarecontent #ADLightwaveRF').prop('checked', false);
 				$('#hardwarecontent #HidekiUPM').prop('checked', true);
 				$('#hardwarecontent #LaCrosse').prop('checked', true);
-				$('#hardwarecontent #FS20').prop('checked', false);
+				$('#hardwarecontent #Legrand').prop('checked', false);
 				$('#hardwarecontent #ProGuard').prop('checked', false);
 				$('#hardwarecontent #BlindT0').prop('checked', false);
 				$('#hardwarecontent #BlindT1T2T3T4').prop('checked', false);
@@ -2096,7 +2100,7 @@ define(['app'], function (app) {
 				e.preventDefault();
 				$('#hardwarecontent #LaCrosse').prop('checked', false);
 				$('#hardwarecontent #Alecto').prop('checked', false);
-				$('#hardwarecontent #FS20').prop('checked', false);
+				$('#hardwarecontent #Legrand').prop('checked', false);
 				$('#hardwarecontent #ProGuard').prop('checked', false);
 				$('#hardwarecontent #VionicPowerCode').prop('checked', false);
 				$('#hardwarecontent #Hideki').prop('checked', false);
@@ -4515,6 +4519,15 @@ define(['app'], function (app) {
 				SwitchLayout('Dashboard');
 			});
 		}
+		SetRFXCOMMode868 = function () {
+			HideNotify();
+			ShowNotify($.t('This should (for now) be set via the RFXmngr application!'), 2500, true);
+/*
+			$.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function (data) {
+				SwitchLayout('Dashboard');
+			});
+*/			
+		}
 
 		SetRego6XXType = function () {
 			$.post("setrego6xxtype.webem", $("#hardwarecontent #regotype").serialize(), function (data) {
@@ -5383,7 +5396,9 @@ define(['app'], function (app) {
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetrelaycount").val(data["Mode5"]);
 							}
 							else if (data["Type"].indexOf("Denkovi") >= 0) {
-								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);		
+								if (data["Type"].indexOf("Modules with LAN") >= 0)								
+									$("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices").val(data["Mode2"]);
 							}
 						}
 						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
@@ -5666,6 +5681,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #ehouse").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
+			$("#hardwarecontent #divmodeldenkovidevices").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -5818,6 +5834,8 @@ define(['app'], function (app) {
 				else if (text.indexOf("Denkovi") >= 0) {
 					$("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(10000);
+					if (text.indexOf("Modules with LAN") >= 0)
+						$("#hardwarecontent #divmodeldenkovidevices").show();
 				}
 			}
 			else if (text.indexOf("Domoticz") >= 0) {

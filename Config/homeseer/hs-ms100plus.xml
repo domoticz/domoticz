@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    HomeSeer Motion Sensor HS-MS100+
+    https://products.z-wavealliance.org/products/2729
+    -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="12" genre="config" label="Motion Sensor Sensitivity" min="0" max="8" size="1" value="8">
+            <Help>Motion Sensor Sensitivity. 0 - Sensor is OFF, 8 - Max sensitivity.</Help>
+            <Item label="OFF" value="0"/>
+            <Item label="1" value="1"/>
+            <Item label="2" value="2"/>
+            <Item label="3" value="3"/>
+            <Item label="4" value="4"/>
+            <Item label="5" value="5"/>
+            <Item label="6" value="6"/>
+            <Item label="7" value="7"/>
+            <Item label="8" value="8"/>
+        </Value>
+        <Value type="list" index="14" genre="config" label="Basic Set Command" min="0" max="1" size="1" value="0">
+            <Help>Enable / disable the basic set command send to group 2</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" index="15" genre="config" label="Value for Basic Set Command" units="" min="0" max="1" size="1" value="0">
+            <Help>
+                Define BASIC SET VALUE to nodes associated with group 2 when motion alarm is triggered and is canceled.
+            </Help>
+            <Item label="255 alarm is triggered, 0 alarm is canceled" value="0"/>
+            <Item label="0 alarm is triggered, 255 alarm is canceled" value="1"/>
+        </Value>
+        <Value type="list" index="17" genre="config" label="Shock Sensor" min="0" max="1" size="1" value="0">
+            <Help>when the value is Disable, the product will not sends a vibration alarm after moving or shaking; 
+                when the value is Enable, the product will sends a vibration alarm after moving or shaking</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="short" index="18" genre="config" label="Motion Timeout Interval" units="seconds" min="0" max="65525" value="600">
+            <Help>Motion Timeout Interval, seconds</Help>
+        </Value>
+        <Value type="list" index="32" genre="config" label="Low battery threshold" units="%" min="0" max="50" size="1" value="20">
+            <Help>Low battery reporting threshold, %</Help>
+            <Item label="0" value="0"/>
+            <Item label="10" value="10"/>
+            <Item label="20" value="20"/>
+            <Item label="30" value="30"/>
+            <Item label="40" value="40"/>
+            <Item label="50" value="50"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Basic Set"/>
+        </Associations>
+    </CommandClass>
+</Product>

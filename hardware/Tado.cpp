@@ -38,11 +38,6 @@ CTado::CTado(const int ID, const std::string &username, const std::string &passw
 	m_TadoUsername = username;
 	m_TadoPassword = password;
 
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: Started Tado plugin with ID=%d, username=%s", m_HwdID, m_TadoUsername.c_str());
-	}
-
 	Init();
 }
 
@@ -105,10 +100,7 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 	int ZoneIdx = (node_id % 1000) / 100;
 	int ServiceIdx = (node_id % 1000) % 100;
 	
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: Node %d = home %s zone %s device %d", node_id, m_TadoHomes[HomeIdx].Name.c_str(), m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name.c_str(), ServiceIdx);
-	}
+	_log.Debug(DEBUG_HARDWARE, "Tado: Node %d = home %s zone %s device %d", node_id, m_TadoHomes[HomeIdx].Name.c_str(), m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name.c_str(), ServiceIdx);
 
 	// ServiceIdx 1 = Away (Read only)
 	// ServiceIdx 2 = Setpoint => should be handled in SetSetPoint
@@ -148,10 +140,7 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 		return false;
 	}
 
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: Node %d = home %s zone %s device %d", idx, m_TadoHomes[HomeIdx].Name.c_str(), m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name.c_str(), ServiceIdx);
-	}
+	_log.Debug(DEBUG_HARDWARE, "Tado: Node %d = home %s zone %s device %d", idx, m_TadoHomes[HomeIdx].Name.c_str(), m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name.c_str(), ServiceIdx);
 
 	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
 	std::string _sResponse;
@@ -186,10 +175,7 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 		return false;
 	}
 
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: Response: %s", _sResponse.c_str());
-	}
+	_log.Debug(DEBUG_HARDWARE, "Tado: Response: %s", _sResponse.c_str());
 
 	// Trigger a zone refresh
 	GetZoneState(HomeIdx, ZoneIdx, m_TadoHomes[HomeIdx], m_TadoHomes[HomeIdx].Zones[ZoneIdx]);
@@ -447,10 +433,7 @@ void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::str
 // Removes any active overlay from a specific zone.
 bool CTado::CancelOverlay(const int Idx)
 {
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: CancelSetpointOverlay() called with idx=%d", Idx);
-	}
+	_log.Debug(DEBUG_HARDWARE, "Tado: CancelSetpointOverlay() called with idx=%d", Idx);
 
 	int HomeIdx = Idx / 1000;
 	int ZoneIdx = (Idx % 1000) / 100;
@@ -489,10 +472,6 @@ bool CTado::CancelOverlay(const int Idx)
 
 void CTado::Do_Work()
 {
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: Do_Work() called.");
-	}
 	_log.Log(LOG_STATUS, "Tado: Worker started. Will poll every %d seconds.", TADO_POLL_INTERVAL);
 	int iSecCounter = TADO_POLL_INTERVAL - 5;
 	int iTokenCycleCount = 0;
@@ -631,12 +610,8 @@ bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJ
 
 	// Get the javascript response and split its lines
 	StringSplit(sJavascriptData, "\n", _sJavascriptDataLines);
-	if (_log.isTraceEnabled())
-	{
-		//std::stringstream _ss;
-		//_ss << _sJavascriptDataLines.size();
-		_log.Log(LOG_TRACE, "Tado: MatchValueFromJSKey: Got %lu lines from javascript data.", _sJavascriptDataLines.size());
-	}
+
+	_log.Debug(DEBUG_HARDWARE, "Tado: MatchValueFromJSKey: Got %lu lines from javascript data.", _sJavascriptDataLines.size());
 
 	if (_sJavascriptDataLines.size() <= 0)
 	{
@@ -648,10 +623,8 @@ bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJ
 	for (int i = 0; i < (int)_sJavascriptDataLines.size(); i++)
 	{
 		std::string _sLine = _sJavascriptDataLines[i];
-		if (_log.isTraceEnabled())
-		{ 
-			_log.Log(LOG_TRACE, "Tado: MatchValueFromJSKey: Processing line: '%s'", _sLine.c_str());
-		}
+		
+		_log.Debug(DEBUG_HARDWARE, "Tado: MatchValueFromJSKey: Processing line: '%s'", _sLine.c_str());
 
 		std::string _sLineKey = "";
 		std::string _sLineValue = "";
@@ -686,10 +659,7 @@ bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJ
 				// Now that we've got both a key and a value put it in the map
 				_mEnvironmentKeys[_sLineKey] = _sLineValue;
 
-				if (_log.isTraceEnabled())
-				{
-					_log.Log(LOG_TRACE, "Tado: MatchValueFromJSKey: Line: '%s':'%s'", _sLineKey.c_str(), _sLineValue.c_str());
-				}
+				_log.Debug(DEBUG_HARDWARE, "Tado: MatchValueFromJSKey: Line: '%s':'%s'", _sLineKey.c_str(), _sLineValue.c_str());
 			}
 		}
 	}
@@ -714,10 +684,7 @@ bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJ
 // Grabs the web app environment file
 bool CTado::GetTadoApiEnvironment(std::string sUrl)
 {
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: GetTadoApiEnvironment called with sUrl=%s", sUrl.c_str());
-	}
+	_log.Debug(DEBUG_HARDWARE, "Tado: GetTadoApiEnvironment called with sUrl=%s", sUrl.c_str());
 
 	// This is a bit of a special case. Since we pretend to be the web
 	// application (my.tado.com) we have to play by its rules. It works
@@ -764,10 +731,6 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 // Sets up the environment and grabs an auth token.
 bool CTado::Login()
 {
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: Login() called.");
-	}
 	_log.Log(LOG_NORM, "Tado: Attempting login.");
 
 	if (m_bDoGetEnvironment) {
@@ -792,10 +755,7 @@ bool CTado::Login()
 // Gets all the homes in the account.
 bool CTado::GetHomes() {
 
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: GetHomes() called.");
-	}
+	_log.Debug(DEBUG_HARDWARE, "Tado: GetHomes() called.");
 
 	std::stringstream _sstr;
 	_sstr << m_TadoEnvironment["tgaRestApiV2Endpoint"] << "/me";
@@ -819,10 +779,8 @@ bool CTado::GetHomes() {
 	m_TadoHomes.clear();
 
 	Json::Value _jsAllHomes = _jsRoot["homes"];
-	if (_log.isTraceEnabled())
-	{
-		_log.Log(LOG_TRACE, "Tado: Found %d homes.", _jsAllHomes.size());
-	}
+
+	_log.Debug(DEBUG_HARDWARE, "Tado: Found %d homes.", _jsAllHomes.size());
 
 	for (int i = 0; i < (int)_jsAllHomes.size(); i++) {
 		// Store the tado home information in a map.

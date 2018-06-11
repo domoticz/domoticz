@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1514
+# ref #BuildHash //forces a cache refresh on every new build
 
 CACHE:
 # CSS
@@ -12,13 +12,11 @@ css/demo_table_jui.css
 css/jquery.uix.multiselect.css
 css/jquery-ui-timepicker-addon.css
 css/legacy.css
+css/remote.css
 css/style.css
 css/ui-darkness/jquery-ui.min.css
 css/wheelcolorpicker.css
-secpanel/css/font.less
-secpanel/css/reset.less
-secpanel/css/style.less
-css/remote.css
+secpanel/css/style.css
 
 # Fonts
 css/fonts/Oswald-Light.eot
@@ -411,7 +409,7 @@ media/trashlid.png
 media/tree.png
 media/swf/copy_csv_xls.swf
 media/swf/copy_csv_xls_pdf.swf
-secpanel/bg.jpg
+secpanel/img/bg.jpg
 
 # Audio
 media/click.mp3
@@ -436,6 +434,8 @@ secpanel/media/wrongcode.ogg
 # Languages
 i18n/domoticz-ar.json
 i18n/domoticz-bg.json
+i18n/domoticz-bs.json
+i18n/domoticz-ca.json
 i18n/domoticz-cs.json
 i18n/domoticz-da.json
 i18n/domoticz-de.json
@@ -443,6 +443,7 @@ i18n/domoticz-el.json
 i18n/domoticz-en.json
 i18n/domoticz-es.json
 i18n/domoticz-et.json
+i18n/domoticz-fa.json
 i18n/domoticz-fi.json
 i18n/domoticz-fr.json
 i18n/domoticz-he.json
@@ -460,8 +461,10 @@ i18n/domoticz-ro.json
 i18n/domoticz-ru.json
 i18n/domoticz-sk.json
 i18n/domoticz-sl.json
+i18n/domoticz-sq.json
 i18n/domoticz-sr.json
 i18n/domoticz-sv.json
+i18n/domoticz-th.json
 i18n/domoticz-tr.json
 i18n/domoticz-uk.json
 i18n/domoticz-zh.json
@@ -473,6 +476,9 @@ app/log/SceneLog.js
 app/log/TemperatureLog.js
 app/log/TemperatureReport.js
 app/log/TextLog.js
+app/notifications/constants.js
+app/notifications/DeviceNotifications.js
+app/notifications/factories.js
 app/scenes/factories.js
 app/timers/components.js
 app/timers/DeviceTimersController.js
@@ -577,9 +583,8 @@ js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
-secpanel/js/less.js
-secpanel/js/ion.sound.min.js
 ozwcp/cp.js
+secpanel/js/ion.sound.min.js
 
 #Dynamic theme
 #ThemeFiles
@@ -614,6 +619,7 @@ views/history.html
 views/lights.html
 views/log.html
 views/notification.html
+views/notifications.html
 views/offline.html
 views/restoredatabase.html
 views/roomplan.html

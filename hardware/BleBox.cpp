@@ -25,7 +25,6 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 BleBox::BleBox(const int id, const int pollIntervalsec) :
 	m_stoprequested(false)
 {
-	_log.Log(LOG_STATUS, "BleBox: Create instance");
 	m_HwdID = id;
 	m_RGBWisWhiteState = true;
 	m_RGBWbrightnessState = 255;
@@ -34,7 +33,6 @@ BleBox::BleBox(const int id, const int pollIntervalsec) :
 
 BleBox::~BleBox()
 {
-	_log.Log(LOG_STATUS, "BleBox: Destroy instance");
 }
 
 bool BleBox::StartHardware()
@@ -321,7 +319,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					}
 
 
-					Json::Value root = SendCommand(IPAddress, "/s/p/" + boost::to_string(percentage));
+					Json::Value root = SendCommand(IPAddress, "/s/p/" + std::to_string(percentage));
 
  					if (root.empty())
   						return false;

@@ -75,7 +75,7 @@ void CHEOS::ParseLine()
 
 										if (root["payload"][key].isMember("name") && root["payload"][key].isMember("pid"))
 										{
-											std::string pid = boost::to_string(root["payload"][key]["pid"].asInt());
+											std::string pid = std::to_string(root["payload"][key]["pid"].asInt());
 											AddNode(root["payload"][key]["name"].asCString(), pid);
 										}
 										else

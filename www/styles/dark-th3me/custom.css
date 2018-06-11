@@ -66,7 +66,7 @@ li {
   border: none;
 }
 .bannercontent {
-  padding-top: 60px;
+  padding-top: 40px;
   padding-bottom: 12px;
 }
 /*OLD
@@ -902,6 +902,10 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   margin-bottom: 20px;
   margin-left: 50px;
   margin-right: 20px;
+}
+.jQWCP-wWheel.jQWCP-wHueWheel,
+.jQWCP-wWheel.jQWCP-wHueWheel > .jQWCP-wWheelOverlay {
+  border-radius: 50% !important;
 }
 /*apply settings button in settings page*/
 .btn-danger.sub-tabs-apply {

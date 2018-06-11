@@ -577,12 +577,6 @@ define(['app'], function (app) {
 						}
 					};
 
-					ctrl.ShowNotifications = function () {
-						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
-						$('#weathertophtm').hide();
-						return ShowNotifications(item.idx, escape(item.Name), '#weathercontent', 'ShowWeathers');
-					};
-
 					ctrl.ShowForecast = function () {
 						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 						$('#weathertophtm').hide();

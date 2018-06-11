@@ -555,6 +555,7 @@ namespace Plugins {
 
 	void CPluginTransportUDP::handleRead(const boost::system::error_code& ec, std::size_t bytes_transferred)
 	{
+		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!ec)
 		{
 			std::string sAddress = m_remote_endpoint.address().to_string();
@@ -588,11 +589,17 @@ namespace Plugins {
 			Py_DECREF(pConnection);
 
 			// Set up listener again
-			handleListen();
+			if (m_bConnected)
+				handleListen();
+			else
+			{
+				// should only happen if async_receive_from doesn't call handleRead with 'abort' condition
+				pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection, false));
+				m_bDisconnectQueued = true;
+			}
 		}
 		else
 		{
-			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((ec == boost::asio::error::operation_aborted) || (ec == boost::asio::error::eof)))
 				_log.Log(LOG_NORM, "(%s) Queued asyncronous UDP read aborted (%s:%s).", pPlugin->Name.c_str(), m_IP.c_str(), m_Port.c_str());

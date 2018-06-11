@@ -116,7 +116,7 @@ public:
 	void StopEventSystem();
 
 	void LoadEvents();
-	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
+	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
 	void RemoveSingleState(const uint64_t ulDevID, const _eReason reason);
 	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname, const _eReason reason);
 	void WWWUpdateSecurityState(int securityStatus);
@@ -131,6 +131,7 @@ public:
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 	void UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger = false);
+	bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
 
@@ -160,12 +161,11 @@ private:
 	struct _tEventQueue
 	{
 		_eReason reason;
-		uint64_t DeviceID;
+		uint64_t id;
 		std::string devname;
 		int nValue;
 		std::string sValue;
 		std::string nValueWording;
-		uint64_t varId;
 		std::string lastUpdate;
 		uint8_t lastLevel;
 		std::vector<std::string> vData;

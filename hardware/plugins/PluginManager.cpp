@@ -395,7 +395,7 @@ namespace Plugins {
 			if (pHardware != NULL)
 			{
 				std::vector<std::string> sd = result[0];
-				_log.Log(LOG_TRACE, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+				_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
 				Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
 				pPlugin->DeviceModified(atoi(Unit.c_str()));
 			}

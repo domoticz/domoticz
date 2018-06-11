@@ -1621,6 +1621,28 @@ void CEnOceanESP3::ParseRadioDatagram()
 							//Error code
 						}
 					}
+					else if (szST.find("GasSensor.04")==0)
+					{
+						//(EPP A5-09-04 CO2 Gas Sensor with Temp and Humidity)
+						// DB3 = Humidity in 0.5% steps, 0...200 -> 0...100% RH (0x51 = 40%)
+						// DB2 = CO2 concentration in 10 ppm steps, 0...255 -> 0...2550 ppm (0x39 = 570 ppm)
+						// DB1 = Temperature in 0.2C steps, 0...255 -> 0...51 C (0x7B = 24.6 C)
+						// DB0 = flags (DB0.3: 1=data, 0=teach-in; DB0.2: 1=Hum Sensor available, 0=no Hum; DB0.1: 1=Temp sensor available, 0=No Temp; DB0.0 not used)
+						// mBuffer[15] is RSSI as -dBm (ie value of 100 means "-100 dBm"), but RssiLevel is in the range 0...15 (or reported as 12 if not known)
+						// Battery level is not reported by device, so use fixed value of 9 as per other sensor functions
+						
+						// TODO: Check sensor availability flags and only report humidity and/or temp if available.
+						// TODO: Report actual RSSI (scaled from dBm to 0...15 RSSI ?)
+
+						float temp = GetValueRange(DATA_BYTE1, 51, 0, 255, 0);
+						float hum = GetValueRange(DATA_BYTE3, 100, 0, 200, 0);
+						int co2 = (int)GetValueRange(DATA_BYTE2, 2550, 0, 255, 0);
+						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
+
+						// Report battery level as 9 and RSSI as 12
+						SendTempHumSensor(NodeID, 9, temp, round(hum), "GasSensor.04", 12);
+						SendAirQualitySensor((NodeID & 0xFF00) >> 8, NodeID & 0xFF, 9, co2, "GasSensor.04");
+					}
 				}
 			}
 			break;

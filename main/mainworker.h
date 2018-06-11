@@ -15,13 +15,6 @@
 #	include "../hardware/plugins/PluginManager.h"
 #endif
 
-enum eVerboseLevel
-{
-	EVBL_None = 0,
-	EVBL_ALL = 1,
-	EVBL_DEBUG = 2
-};
-
 class MainWorker
 {
 public:
@@ -47,8 +40,6 @@ public:
 	void HeartbeatRemove(const std::string &component);
 	void HeartbeatCheck();
 
-	void SetVerboseLevel(eVerboseLevel Level);
-	eVerboseLevel GetVerboseLevel();
 	void SetWebserverSettings(const http::server::server_settings & settings);
 	std::string GetWebserverAddress();
 	std::string GetWebserverPort();
@@ -78,8 +69,6 @@ public:
 	bool SetZWaveThermostatFanMode(const std::string &idx, const int fMode);
 	bool SetZWaveThermostatModeInt(const std::vector<std::string> &sd, const int tMode);
 	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, const int fMode);
-
-	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
 
 	bool SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
@@ -112,7 +101,7 @@ public:
 	void SetInternalSecStatus();
 	bool GetSensorData(const uint64_t idx, int &nValue, std::string &sValue);
 
-	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
+	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, int nValue, std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
 	boost::signals2::signal<void(const uint64_t SceneIdx, const std::string &SceneName)> sOnSwitchScene;
@@ -177,7 +166,6 @@ private:
 	unsigned char m_hardwareStartCounter;
 
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
-	eVerboseLevel m_verboselevel;
 	http::server::server_settings m_webserver_settings;
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
@@ -192,8 +180,6 @@ private:
 	void Do_Work();
 	void Heartbeat();
 	void ParseRFXLogFile();
-	void SendResetCommand(CDomoticzHardwareBase *pHardware);
-	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	bool WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
 
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);

@@ -892,7 +892,7 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 			if (iRemainingLength > std::distance(it, m_sRetainedData.end()))
 			{
 				// Full packet has not arrived, wait for more data
-				_log.Log(LOG_TRACE, "(%s) Not enough data received (got %ld, expected %ld).", __func__, (long)std::distance(it, m_sRetainedData.end()), iRemainingLength);
+				_log.Debug(DEBUG_NORM, "(%s) Not enough data received (got %ld, expected %ld).", __func__, (long)std::distance(it, m_sRetainedData.end()), iRemainingLength);
 				return;
 			}
 
@@ -1310,7 +1310,9 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 				PyObject*	pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
 				// Support both string and bytes
 				//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
-				if (pPayload) _log.Log(LOG_TRACE, "(%s) MQTT Publish: payload %p (%s)", __func__, pPayload, pPayload->ob_type->tp_name);
+				if (pPayload) {
+					_log.Debug(DEBUG_NORM, "(%s) MQTT Publish: payload %p (%s)", __func__, pPayload, pPayload->ob_type->tp_name);
+				}
 				if (pPayload && pPayload->ob_type->tp_name == std::string("bytearray"))
 				{
 					sPayload = std::string(PyByteArray_AsString(pPayload), PyByteArray_Size(pPayload));

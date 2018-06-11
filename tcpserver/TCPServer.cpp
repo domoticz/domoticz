@@ -105,10 +105,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	}
 	else
 	{
-		if (_log.isTraceEnabled())
-		{
-			_log.Log(LOG_TRACE, "Incoming Domoticz connection from: %s", s.c_str());
-		}
+		_log.Debug(DEBUG_NORM, "Incoming Domoticz connection from: %s", s.c_str());
 	}
 
 	connections_.insert(new_connection_);

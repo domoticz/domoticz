@@ -49,7 +49,8 @@ enum _eTaskItemType
 	TITEM_SEND_NOTIFICATION,
 	TITEM_SET_SETPOINT,
 	TITEM_SEND_IFTTT_TRIGGER,
-	TITEM_UPDATEDEVICE
+	TITEM_UPDATEDEVICE,
+	TITEM_CUSTOM_COMMAND,
 };
 
 struct _tTaskItem
@@ -261,6 +262,18 @@ struct _tTaskItem
 		tItem._sValue = varvalue;
 		tItem._command = mode;
 		tItem._sUntil = until;
+
+		if (DelayTime)
+			getclock(&tItem._DelayTimeBegin);
+		return tItem;
+	}
+	static _tTaskItem CustomCommand(const float DelayTime, const uint64_t idx, const std::string &cmdstr)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_CUSTOM_COMMAND;
+		tItem._DelayTime = DelayTime;
+		tItem._idx = idx;
+		tItem._command = cmdstr;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -367,6 +380,7 @@ public:
 	std::vector<std::vector<std::string> > safe_query(const char *fmt, ...);
 	std::vector<std::vector<std::string> > safe_queryBlob(const char *fmt, ...);
 	void safe_exec_no_return(const char *fmt, ...);
+	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 	std::string DeleteUserVariable(const std::string &idx);
 	std::string SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
@@ -443,6 +457,17 @@ private:
 	//Returns DeviceRowID
 	uint64_t UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction);
 
+	bool UpdateCalendarMeter(
+		const int HardwareID, 
+		const char* DeviceID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const bool shortLog, 
+		const long long MeterValue,
+		const long long MeterUsage,
+		const char* date);
+
 	void CheckAndUpdateDeviceOrder();
 	void CheckAndUpdateSceneDeviceOrder();
 
@@ -468,11 +493,12 @@ private:
 	std::string CheckUserVariable(const int vartype, const std::string &varvalue);
 	std::string CheckUserVariableName(const std::string &varname);
 	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
+	bool CheckDateSQL(const std::string &sDate);
+	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
-	void LogQueryResult(TSqlQueryResult &result);
 };
 
 extern CSQLHelper m_sql;

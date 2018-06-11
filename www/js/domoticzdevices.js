@@ -886,9 +886,9 @@ Device.create = function (item) {
         case "current":
             dev = new Current(item);
             break;
-                case "custom":
-                        dev = new Custom(item);
-                        break;
+        case "custom":
+            dev = new Custom(item);
+            break;
         case "dimmer":
             dev = new Dimmer(item);
             break;
@@ -952,6 +952,9 @@ Device.create = function (item) {
             break;
         case "smoke":
             dev = new Smoke(item);
+            break;
+        case "speaker":
+            dev = new Dimmer(item);
             break;
         case "temp":
         case "temperature":
@@ -1165,7 +1168,8 @@ function Sensor(item) {
         }
 
         this.imagetext = "Show graph";
-        this.NotifyLink = 'ShowNotifications(' + this.index + ",'" + this.name + "','#" + Device.contentTag + "','" + Device.backFunction + "');";
+        this.NotifyLink = "window.location.href = '#/Devices/" + this.index + "/Notifications'";
+
         if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "','" + this.cameraIdx + "')";
         this.showStatus = (Device.showSensorValues == true);
     }
@@ -1417,7 +1421,11 @@ function Dimmer(item) {
         this.haveDimmer = true;
         this.data = '';
         this.smallStatus = (this.status == "Off") ? 'Off' : item.Level + "%";
-        this.image = (this.status == "Off") ? "images/Dimmer48_Off.png" : "images/Dimmer48_On.png";
+        if (item.CustomImage != 0) {
+            this.image = (this.status == "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+        } else {
+			this.image = (this.status == "Off") ? "images/Dimmer48_Off.png" : "images/Dimmer48_On.png";
+        }
         this.status = TranslateStatus(this.status);
     }
 }
@@ -1427,10 +1435,11 @@ function Door(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         if (item.CustomImage == 0) {
-            this.image = (this.status == "Locked") ? "images/" + item.TypeImg + "48.png" : this.image = "images/" + item.TypeImg + "48open.png";
+            this.image = ((this.status == "Locked")||(this.status == "Closed")) ? "images/" + item.TypeImg + "48.png" : this.image = "images/" + item.TypeImg + "48open.png";
         }
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Unlocked") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
         this.data = '';
+        this.NotifyLink = this.onClick = "";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
     }
 }
 Door.inheritsFrom(BinarySwitch);
@@ -1442,7 +1451,8 @@ function DoorContact(item) {
             this.image = (this.status == "Closed") ? "images/door48.png" : this.image = "images/door48open.png";
         }
         this.imagetext = "";
-        this.NotifyLink = this.LogLink = this.onClick = "";
+        this.NotifyLink = this.onClick = "";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
         this.data = '';
     }
 }
@@ -1720,7 +1730,7 @@ function Selector(item) {
 
         // Selector attributes
         var selector = this;
-        this.levelNames = item.LevelNames.split('|');
+        this.levelNames = b64DecodeUnicode(item.LevelNames).split('|');
         this.levelInt = item.LevelInt;
         this.levelName = this.levelNames[this.levelInt / 10];
         this.levelOffHidden = item.LevelOffHidden;

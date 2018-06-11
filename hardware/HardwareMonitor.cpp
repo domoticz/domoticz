@@ -166,7 +166,7 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
+					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
 				}
 			}
 
@@ -179,7 +179,7 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching CPU data!...");
+					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching CPU data!...");
 				}
 			}
 
@@ -191,7 +191,7 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching memory data!...");
+					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching memory data!...");
 				}
 			}
 
@@ -203,7 +203,7 @@ void CHardwareMonitor::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching disk data!...");
+					_log.Log(LOG_ERROR, "Hardware Monitor: Error occurred while Fetching disk data!...");
 				}
 			}
 #endif

@@ -41,6 +41,7 @@ local deviceAdapters = {
 	'uv_device',
 	'visibility_device',
 	'voltage_device',
+	'youless_device',
 	'waterflow_device',
 	'wind_device',
 	'zone_heating_device',

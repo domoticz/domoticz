@@ -235,7 +235,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		}
 	}
 	if (!message.empty()) {
-		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "XiaomiGateway: message: '%s'", message.c_str());
+		_log.Debug(DEBUG_HARDWARE, "XiaomiGateway: message: '%s'", message.c_str());
 		result = SendMessageToGateway(message);
 		if (result == false) {
 			//send the message again
@@ -476,6 +476,10 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise", false));
 				}
+				else if (Name == "Aqara Cube") {
+					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall/rotate
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|rotate", false));
+				}
 				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
 					//for Aqara wireless switch, 2 buttons support
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both_Click", false));
@@ -524,7 +528,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
 			}
 		}
-		if (Name == "Xiaomi Smart Plug") {
+		if ((Name == "Xiaomi Smart Plug") || (Name == "Xiaomi Smart Wall Plug")) {
 			if (load_power != "" && power_consumed != "") {
 				int power = atoi(load_power.c_str());
 				int consumed = atoi(power_consumed.c_str()) / 1000;
@@ -875,6 +879,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (model == "cube") {
 						name = "Xiaomi Cube";
+						type = STYPE_Selector;
+					}
+					else if (model == "sensor_cube.aqgl01") {
+						name = "Aqara Cube";
 						type = STYPE_Selector;
 					}
 					else if (model == "86sw2") {

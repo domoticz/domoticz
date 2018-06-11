@@ -77,7 +77,6 @@ bool Arilux::StopHardware()
 void Arilux::Do_Work()
 {
 	_log.Log(LOG_STATUS, "Arilux Worker started...");
-
 	
 	int sec_counter = Arilux_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
@@ -98,7 +97,7 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	StringSplit(Location, ".", ipaddress);
 	if (ipaddress.size() != 4)
 	{
-		_log.Log(LOG_STATUS, "Arilux: Invalid location received! (No IP Address)");
+		_log.Log(LOG_ERROR, "Arilux: Invalid location received! (No IP Address)");
 		return;
 	}
 	uint32_t sID = (uint32_t)(atoi(ipaddress[0].c_str()) << 24) | (uint32_t)(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
@@ -176,7 +175,6 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 	
 	try
 	{
-		//_log.Log(LOG_STATUS, "Arilux: Try connecting device.");
 		boost::asio::connect(sendSocket, iterator);
 	}
 	catch (const std::exception &e)
@@ -203,7 +201,7 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 
 bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_STATUS, "Arilux: WriteToHardware...............................");
+	_log.Debug(DEBUG_HARDWARE, "Arilux: WriteToHardware...............................");
 	_tColorSwitch *pLed = (_tColorSwitch*)pdata;
 	uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
@@ -279,7 +277,7 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 			m_color.b = pLed->color.b;
 		}
 		else {
-			_log.Log(LOG_STATUS, "Arilux: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+			_log.Log(LOG_ERROR, "Arilux: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 		}
 		// No break, fall through to send combined color + brightness command
 	case Color_SetBrightnessLevel: {

@@ -448,12 +448,12 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastDevices))
 						{
-							SendGeneralSwitchSensor(2, 255, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitch(2, (*it).first, 255, true, 0, (*it).second.c_str());
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastDevices))
 							{
-								SendGeneralSwitchSensor(2, 255, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitch(2, (*it).first, 255, false, 0, (*it).second.c_str());
 							}
 					}
 					m_LastDevices = value;
@@ -519,7 +519,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					else
 					{
-						//SendGeneralSwitchSensor(i, 255, value, name, 1); // TODO - send level (dimmer)
+						//SendGeneralSwitch(i, 1, 255, state, level, name); // TODO - send level (dimmer)
 					}					
 					break;
 				}
@@ -531,12 +531,12 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
 						{
-							SendGeneralSwitchSensor(0x21, 255, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitch(0x21, (*it).first, 255, true, 0, (*it).second.c_str());
 						}
 						else
 							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
 							{
-								SendGeneralSwitchSensor(0x21, 255, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitch(0x21, (*it).first, 255, false, 0, (*it).second.c_str());
 							}
 					}
 					m_LastQuickAccess = value;

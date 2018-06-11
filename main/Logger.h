@@ -4,22 +4,28 @@
 #include <list>
 #include <string>
 #include <fstream>
+#include <map>
 
 enum _eLogLevel
 {
-	LOG_ERROR = 0,
-	LOG_STATUS = 1,
-	LOG_NORM = 2,
-	LOG_TRACE = 3
+	LOG_NORM = 0x0000001,
+	LOG_STATUS = 0x0000002,
+	LOG_ERROR = 0x0000004,
+	LOG_DEBUG_INT = 0x0000008, //do not use directly, use _log.Debug(...) instead
+	//
+	LOG_ALL = 0xFFFFFFF //Used by web interface to retrieve all log types
 };
-
-enum _eLogFileVerboseLevel
+enum _eDebugLevel
 {
-	VBL_ERROR = 0,
-	VBL_STATUS_ERROR = 1,
-	VBL_ALL = 2,
-	VBL_TRACE,
-
+	DEBUG_NORM = 0x0000001,
+	DEBUG_HARDWARE = 0x0000002,
+	DEBUG_RECEIVED = 0x0000004,
+	DEBUG_WEBSERVER = 0x0000008,
+	DEBUG_EVENTSYSTEM = 0x0000010,
+	DEBUG_PYTHON = 0x0000020,
+	DEBUG_THREADIDS = 0x0000030,
+	//
+	DEBUG_ALL = 0xFFFFFFF
 };
 
 class CLogger
@@ -36,15 +42,29 @@ public:
 	CLogger(void);
 	~CLogger(void);
 
+	bool SetLogFlags(const std::string &sFlags);
+	void SetLogFlags(const uint32_t iFlags) {
+		m_log_flags = iFlags;
+	}
+	bool IsLogLevelEnabled(const _eLogLevel level) {
+		return (m_log_flags & level);
+	}
+	bool SetDebugFlags(const std::string &sFlags);
+	void SetDebugFlags(const uint32_t iFlags) {
+		m_debug_flags = iFlags;
+	}
+	bool IsDebugLevelEnabled(const _eDebugLevel level) {
+		if (!(m_log_flags & LOG_DEBUG_INT))
+			return false;
+		return (m_debug_flags & level);
+	}
+
 	void SetOutputFile(const char *OutputFile);
-	void SetVerboseLevel(_eLogFileVerboseLevel vLevel);
 
 	void Log(const _eLogLevel level, const std::string& sLogline);
-	void Log(const _eLogLevel level, const char* logline, ...)
-#ifdef __GNUC__
-		__attribute__ ((format (printf, 3, 4)))
-#endif
-		;
+	void Log(const _eLogLevel level, const char* logline, ...);
+	void Debug(const _eDebugLevel level, const std::string& sLogline);
+	void Debug(const _eDebugLevel level, const char* logline, ...);
 
 	void LogSequenceStart();
 	void LogSequenceAdd(const char* logline);
@@ -54,30 +74,20 @@ public:
 	void EnableLogTimestamps(const bool bEnableTimestamps);
 	bool IsLogTimestampsEnabled();
 
-	void EnableLogThreadIDs(const bool bEnableThreadIDs);
-	bool IsLogThreadIDsEnabled();
-
-	void SetFilterString(std::string &Filter);
-	bool isTraceEnabled();
-	bool TestFilter(const char *cbuffer);
-	void setLogVerboseLevel(int LogLevel);
-	void SetLogPreference(std::string LogFilter, std::string LogFileName, std::string LogLevel);
-	void GetLogPreference();
-	void SetLogDebug(bool debug);
-	bool GetLogDebug();
 	void ForwardErrorsToNotificationSystem(const bool bDoForward);
 
-	std::list<_tLogLineStruct> GetLog(const _eLogLevel lType);
+	std::list<_tLogLineStruct> GetLog(const _eLogLevel level, const time_t lastlogtime = 0);
 	void ClearLog();
 
 	std::list<_tLogLineStruct> GetNotificationLogs();
 	bool NotificationLogsEnabled();
 private:
+	uint32_t m_log_flags;
+	uint32_t m_debug_flags;
+
 	boost::mutex m_mutex;
 	std::ofstream m_outputfile;
-	std::deque<_tLogLineStruct> m_lastlog;
-	std::deque<_tLogLineStruct> m_last_status_log;
-	std::deque<_tLogLineStruct> m_last_error_log;
+	std::map<_eLogLevel, std::deque<_tLogLineStruct> > m_lastlog;
 	std::deque<_tLogLineStruct> m_notification_log;
 	bool m_bInSequenceMode;
 	bool m_bEnableLogTimestamps;
@@ -85,10 +95,5 @@ private:
 	bool m_bEnableErrorsToNotificationSystem;
 	time_t m_LastLogNotificationsSend;
 	std::stringstream m_sequencestring;
-	std::string FilterString;
-	std::vector<std::string> FilterStringList;	//contain the list of filtered words
-	std::vector<std::string> KeepStringList;	//contain the list of  words to be kept
-	_eLogFileVerboseLevel m_verbose_level;
-	bool m_debug;
 };
 extern CLogger _log;

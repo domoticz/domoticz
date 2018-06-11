@@ -7,8 +7,9 @@
 #include "dzVents.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include "../webserver/Base64.h"
 
-extern std::string szUserDataFolder, szWebRoot;
+extern std::string szUserDataFolder, szWebRoot, szStartupFolder;
 extern http::server::CWebServerHelper m_webservers;
 static std::string m_printprefix;
 
@@ -16,7 +17,7 @@ CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void)
 {
-	m_version = "2.4.5";
+	m_version = "2.4.6";
 	m_printprefix = "dzVents";
 }
 
@@ -414,7 +415,7 @@ int CdzVents::l_domoticz_print(lua_State* lua_state)
 
 void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus)
 {
-	std::stringstream lua_DirT;
+	std::stringstream lua_DirT, runtime_DirT;
 
 	lua_DirT << szUserDataFolder <<
 #ifdef WIN32
@@ -423,12 +424,22 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	"scripts/dzVents/";
 #endif
 
+	runtime_DirT << szStartupFolder <<
+#ifdef WIN32
+	"dzVents\\runtime\\";
+#else
+	"dzVents/runtime/";
+#endif
+
 	lua_createtable(lua_state, 0, 0);
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, m_mainworker.m_eventsystem.m_szSecStatus[secStatus].c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "script_path");
 	lua_pushstring(lua_state, lua_DirT.str().c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "runtime_path");
+	lua_pushstring(lua_state, runtime_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "isTimeEvent");
 	lua_pushboolean(lua_state, reasonTime);
@@ -506,7 +517,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if (sitem.ID == itt->DeviceID && itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
+			if (sitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 			{
 				triggerDevice = true;
 				sitem.lastUpdate = itt->lastUpdate;
@@ -646,7 +657,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			for (itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
 			{
 				lua_pushstring(lua_state, m_mainworker.m_eventsystem.JsonMap[itt->first].szNew);
-				lua_pushstring(lua_state, itt->second.c_str());
+				if (strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelNames") == 0 ||
+					strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelActions") == 0)
+					lua_pushstring(lua_state, base64_decode(itt->second).c_str());
+				else
+					lua_pushstring(lua_state, itt->second.c_str());
 				lua_rawset(lua_state, -3);
 			}
 		}
@@ -702,7 +717,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if (sgitem.ID == itt->DeviceID && itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
+			if (sgitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
 			{
 				triggerScene = true;
 				sgitem.lastUpdate = itt->lastUpdate;
@@ -783,7 +798,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if (uvitem.ID == itt->varId && itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
+			if (uvitem.ID == itt->id && itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
 			{
 				triggerVar = true;
 				uvitem.lastUpdate = itt->lastUpdate;

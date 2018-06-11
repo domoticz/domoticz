@@ -764,10 +764,7 @@ bool SatelIntegra::ReadEvents()
 
 void SatelIntegra::ReportZonesViolation(const int Idx, const bool violation)
 {
-	if (m_mainworker.GetVerboseLevel() >= EVBL_ALL)
-	{
-		_log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", Idx, violation ? 3 : 1);
-	}
+	_log.Debug(DEBUG_HARDWARE, "Satel Integra: Report Zone %d = %d", Idx, violation ? 3 : 1);
 
 	m_zonesLastState[Idx - 1] = violation;
 
@@ -780,7 +777,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 
 	if ((Idx > 1024) || m_isOutputSwitch[Idx - 1])
 	{
-		SendGeneralSwitchSensor(Idx, 255, state ? gswitch_sOn : gswitch_sOff, NULL, 1);
+		SendGeneralSwitch(Idx, 1, 255, state ? gswitch_sOn : gswitch_sOff, 0, "");
 	}
 	else
 	{
@@ -796,7 +793,7 @@ void SatelIntegra::ReportArmState(const int Idx, const bool isArm)
 {
 	m_armLastState[Idx-1] = isArm;
 
-	SendGeneralSwitchSensor(Idx, 255, isArm ? gswitch_sOn : gswitch_sOff, NULL, 2);
+	SendGeneralSwitch(Idx, 2, 255, isArm ? gswitch_sOn : gswitch_sOff, 0, "");
 }
 
 void SatelIntegra::ReportAlarm(const bool isAlarm)

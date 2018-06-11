@@ -203,7 +203,7 @@ void KMTronicSerial::GetRelayStates()
 					int iRelay = (iBoard * 8) + ii + 1;
 					sstr << "Board" << int(iBoard + 1) << " - " << int(ii + 1);
 					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
-					_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+					_log.Debug(DEBUG_HARDWARE, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 					if (iRelay > m_TotRelais)
 						m_TotRelais = iRelay;
 				}
@@ -239,7 +239,7 @@ void KMTronicSerial::GetRelayStates()
 			int iRelay = (ii + 1);
 			sstr << "Relay " << iRelay;
 			SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
-			_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+			_log.Debug(DEBUG_HARDWARE, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 			if (iRelay > m_TotRelais)
 				m_TotRelais = iRelay;
 		}
