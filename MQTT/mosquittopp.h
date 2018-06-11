@@ -17,7 +17,7 @@ Contributors:
 #ifndef MOSQUITTOPP_H
 #define MOSQUITTOPP_H
 
-#ifdef _WIN32
+#if defined _WIN32 && !defined LIBMOSQUITTO_STATIC
 #	ifdef mosquittopp_EXPORTS
 #		define mosqpp_EXPORT  __declspec(dllexport)
 #	else

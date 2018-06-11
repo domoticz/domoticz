@@ -1792,9 +1792,6 @@
     <ClInclude Include="..\MQTT\dummypthread.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\lib_load.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\logging_mosq.h">
       <Filter>MQTT</Filter>
     </ClInclude>
@@ -1825,9 +1822,6 @@
     <ClInclude Include="..\MQTT\net_mosq.h">
       <Filter>MQTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\MQTT\persist.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
     <ClInclude Include="..\MQTT\read_handle.h">
       <Filter>MQTT</Filter>
     </ClInclude>
@@ -1841,9 +1835,6 @@
       <Filter>MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\MQTT\tls_mosq.h">
-      <Filter>MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MQTT\uthash.h">
       <Filter>MQTT</Filter>
     </ClInclude>
     <ClInclude Include="..\MQTT\util_mosq.h">
@@ -2171,6 +2162,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\zip\minizip_crypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\packet_mosq.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2538,22 +2532,10 @@
     <ClCompile Include="..\MQTT\mosquitto.c">
       <Filter>MQTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\MQTT\mosquittopp.cpp">
-      <Filter>MQTT</Filter>
-    </ClCompile>
     <ClCompile Include="..\MQTT\net_mosq.c">
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\read_handle.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle_client.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\read_handle_shared.c">
-      <Filter>MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MQTT\send_client_mosq.c">
       <Filter>MQTT</Filter>
     </ClCompile>
     <ClCompile Include="..\MQTT\send_mosq.c">
@@ -2935,6 +2917,72 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\zip\ioapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\actions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\callbacks.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\connect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_connack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_ping.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubackcomp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_publish.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubrec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_pubrel.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_suback.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\handle_unsuback.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\helpers.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\loop.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\options.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\packet_mosq.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_connect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_disconnect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_publish.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_subscribe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_unsubscribe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\send_mosq.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\utf8_mosq.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
