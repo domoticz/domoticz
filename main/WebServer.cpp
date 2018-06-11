@@ -10187,14 +10187,12 @@ namespace http {
 							std::vector<std::string> sd2 = result2[0];
 
 							uint64_t total_min_gas = std::stoull(sd2[0]);
-							uint64_t total_real_gas = std::stoull(sValue);
-							uint64_t gasactual = total_real_gas - total_min_gas;
-
+							uint64_t gasactual = std::stoull(sValue);
+							uint64_t total_real_gas = gasactual - total_min_gas;
 
 							double musage = double(gasactual) / GasDivider;
 							sprintf(szTmp, "%.03f", musage);
 							root["result"][ii]["Counter"] = szTmp;
-							total_real_gas = gasactual - total_min_gas;
 							musage = double(total_real_gas) / GasDivider;
 							sprintf(szTmp, "%.03f m3", musage);
 							root["result"][ii]["CounterToday"] = szTmp;
