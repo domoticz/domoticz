@@ -1,3 +1,4 @@
+#ifndef CONFIG_H
 /* ============================================================
  * Control compile time options.
  * ============================================================
@@ -8,11 +9,13 @@
 
 /* ============================================================
  * Compatibility defines
- *
- * Generally for Windows native support.
  * ============================================================ */
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#  define snprintf sprintf_s
+#  define EPROTO ECONNABORTED
+#endif
+
 #ifdef WIN32
-//#define snprintf sprintf_s //not needed for VS2015
 #  ifndef strcasecmp
 #    define strcasecmp strcmpi
 #  endif
@@ -21,11 +24,14 @@
 #endif
 
 
-#define uthash_malloc(sz) _mosquitto_malloc(sz)
-#define uthash_free(ptr,sz) _mosquitto_free(ptr)
+#define uthash_malloc(sz) mosquitto__malloc(sz)
+#define uthash_free(ptr,sz) mosquitto__free(ptr)
 
-#define WITH_THREADING
+#ifdef __APPLE__
+#  define __DARWIN_C_SOURCE
+#else
+#  define _DEFAULT_SOURCE 1
+#  define _POSIX_C_SOURCE 200809L
+#endif
 
-#ifndef EPROTO
-#  define EPROTO ECONNABORTED
 #endif
