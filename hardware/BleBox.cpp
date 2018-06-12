@@ -37,6 +37,8 @@ BleBox::~BleBox()
 
 bool BleBox::StartHardware()
 {
+	m_stoprequested = false;
+
 	LoadNodes();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
 	m_bIsStarted = true;
@@ -646,7 +648,7 @@ void BleBox::SetSettings(const int pollIntervalSec)
 {
 	m_PollInterval = 30;
 
-	if (pollIntervalSec > 1)
+	if (pollIntervalSec > 0)
 		m_PollInterval = pollIntervalSec;
 }
 
