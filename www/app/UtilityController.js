@@ -302,13 +302,24 @@ define(['app'], function (app) {
 								}
 
 								if (typeof item.Counter != 'undefined') {
-									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
+									if (
+										(item.SubType == "Gas") ||
+										(item.SubType == "RFXMeter counter") ||
+										(item.SubType == "Counter Incremental")
+									) {
 										bigtext = item.CounterToday;
 									}
-									status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
-									if (item.SubType == "Managed Counter") {
+									else if (item.SubType == "Managed Counter") {
 										bigtext = item.Counter;
 										status = "";
+									}
+									if (
+										(item.SubType == "RFXMeter counter") ||
+										(item.SubType == "Counter Incremental")
+									) {
+										status = item.Counter;
+									} else {
+										status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
 									}
 								}
 								else if (item.Type == "Current") {
@@ -615,7 +626,11 @@ define(['app'], function (app) {
 										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
 									}
 								}
-								if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+								if (
+									(item.SubType == "Gas") ||
+									(item.SubType == "RFXMeter counter") ||
+									(item.SubType == "Counter Incremental")
+								) {
 									status = item.Counter;
 								}
 								else if (item.SubType != "Managed Counter") {
@@ -1250,7 +1265,7 @@ define(['app'], function (app) {
 						'&switchtype=' + meterType +
 						'&addjvalue=' + meteroffset +
 						'&used=true' +
-						'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
+						'&options=' + b64EncodeUnicode(devOptionsParam.join('')),
 						async: false,
 						dataType: 'json',
 						success: function (data) {

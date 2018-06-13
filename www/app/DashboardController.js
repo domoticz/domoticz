@@ -1445,7 +1445,7 @@ define(['app'], function (app) {
 											}
 											else {
 												if (typeof item.CounterDeliv == 'undefined') {
-													status = item.CounterToday;
+													status = 'T: ' + item.CounterToday;
 												} else {
 													if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
 														status += 'U: T: ' + item.CounterToday;
@@ -1547,9 +1547,19 @@ define(['app'], function (app) {
 										var img = "";
 
 										if (typeof item.Counter != 'undefined') {
-											if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+											if (
+												(item.SubType == "Gas") ||
+												(item.SubType == "RFXMeter counter") ||
+												(item.SubType == "Counter Incremental")
+											) {
 												status = "";
 												bigtext = item.CounterToday;
+												if (
+													(item.SubType == "RFXMeter counter") ||
+													(item.SubType == "Counter Incremental")
+												) {
+													status = item.Counter;
+												}
 											}
 											else {
 												status = '' + $.t("Usage") + ': ' + item.CounterToday;
@@ -3641,7 +3651,11 @@ define(['app'], function (app) {
 											bigtexthtml += item.Usage;
 										}
 									}
-									else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+									else if (
+										(item.SubType == "Gas") ||
+										(item.SubType == "RFXMeter counter") ||
+										(item.SubType == "Counter Incremental")
+									) {
 										bigtexthtml += item.CounterToday;
 									}
 									else if (
@@ -3661,9 +3675,6 @@ define(['app'], function (app) {
 										(item.SubType == "Sound Level") ||
 										(item.SubType == "Waterflow") ||
 										(item.Type == "Current") ||
-										(item.SubType == "Gas") ||
-										(item.SubType == "RFXMeter counter") ||
-										(item.SubType == "Counter Incremental") ||
 										(item.SubType == "Custom Sensor")
 									) {
 										bigtexthtml += item.Data;
@@ -3709,7 +3720,13 @@ define(['app'], function (app) {
 												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 											}
 										}
-										if ((item.SubType != "Gas") && (item.SubType != "RFXMeter counter")) { // this is weird..
+										if (
+											(item.SubType == "RFXMeter counter") ||
+											(item.SubType == "Counter Incremental")
+										) {
+											statushtml = item.Counter;
+										}
+										else if (item.SubType != "Gas") { // this is weird..
 											statushtml = '' + $.t("Usage") + ': ' + item.CounterToday;
 										}
 										else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) { // added this to fill the status value. If it's the same as the bigtext, then it won't be shown again.
