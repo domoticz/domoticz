@@ -40,7 +40,7 @@ set (domoticz_VERSION_MAJOR 3)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
-option(USE_OPENSSL_STATIC "Link OpenSSL static" NO)
+option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
 IF(USE_OPENSSL_STATIC)
 	set(OPENSSL_USE_STATIC_LIBS TRUE)
 ENDIF(USE_OPENSSL_STATIC)
