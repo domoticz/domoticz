@@ -6,12 +6,6 @@
 
 class GoodweAPI : public CDomoticzHardwareBase
 {
-	enum _eGoodweLocation {
-		GOODWE_LOCATION_GLOBAL= 0,	// Global server
-		GOODWE_LOCATION_OCEANIA = 1,	// Australian server
-		GOODWE_LOCATION_EUROPE = 2	// European server
-	};
-
 public:
 	GoodweAPI(const int ID, const std::string &userName, const int ServerLocation);
 	~GoodweAPI(void);

@@ -51,6 +51,11 @@
 #define DEVICE_TOTAL_KWH "etotal"
 #define DEVICE_ERROR_MSG "errormsg"
 
+enum _eGoodweLocation {
+	GOODWE_LOCATION_GLOBAL= 0,      // Global server
+	GOODWE_LOCATION_OCEANIA = 1,    // Australian server
+	GOODWE_LOCATION_EUROPE = 2      // European server
+};
 
 #ifdef _DEBUG
 	//#define DEBUG_GoodweAPIW 1
