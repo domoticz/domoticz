@@ -78,7 +78,7 @@ void CScheduler::ReloadSchedules()
 		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -184,7 +184,7 @@ void CScheduler::ReloadSchedules()
 		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -277,7 +277,7 @@ void CScheduler::ReloadSchedules()
 		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -366,7 +366,6 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 
 	{	//needed private scope for the lock
 		boost::lock_guard<boost::mutex> l(m_mutex);
-		int hour, min, sec;
 
 		time_t temptime;
 		time_t atime = mytime(NULL);
@@ -379,9 +378,9 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		for(unsigned int a = 0; a < sizeof(allSchedules)/sizeof(allSchedules[0]); a = a + 1)
 		{
 			//std::cout << allSchedules[a].c_str() << ' ';
-			hour = atoi(allSchedules[a].substr(0, 2).c_str());
-			min = atoi(allSchedules[a].substr(3, 2).c_str());
-			sec = atoi(allSchedules[a].substr(6, 2).c_str());
+			int hour = atoi(allSchedules[a].substr(0, 2).c_str());
+			int min = atoi(allSchedules[a].substr(3, 2).c_str());
+			int sec = atoi(allSchedules[a].substr(6, 2).c_str());
 
 			constructTime(temptime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
 			if ((*allTimes[a] != temptime) && (temptime != 0))
@@ -874,7 +873,7 @@ void CScheduler::CheckSchedules()
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 							itt->RowID);
-						if (result.size() > 0)
+						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
 
@@ -963,7 +962,7 @@ void CScheduler::DeleteExpiredTimers()
 		szDate,
 		szTime
 		);
-	if (result.size() > 0) {
+	if (!result.empty()) {
 		m_sql.safe_query("DELETE FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 			TTYPE_FIXEDDATETIME,
 			szDate,
@@ -980,7 +979,7 @@ void CScheduler::DeleteExpiredTimers()
 		szDate,
 		szTime
 		);
-	if (result.size() > 0) {
+	if (!result.empty()) {
 		m_sql.safe_query("DELETE FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 			TTYPE_FIXEDDATETIME,
 			szDate,
@@ -1150,7 +1149,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Color, Days, UseRandomness, MDay, Month, Occurence FROM Timers WHERE (DeviceRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
@@ -1527,7 +1526,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence FROM SetpointTimers WHERE (DeviceRowID=%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
@@ -1851,7 +1850,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

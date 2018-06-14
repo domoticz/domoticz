@@ -97,6 +97,8 @@ void CNetatmo::Init()
 	m_bFirstTimeWeatherData = true;
 	m_bForceSetpointUpdate = false;
 	m_NetatmoType = NETYPE_WEATHER_STATION;
+
+	m_bForceLogin = false;
 }
 
 bool CNetatmo::StartHardware()
@@ -1117,7 +1119,6 @@ void CNetatmo::GetMeterDetails()
 
 	std::string httpUrl = MakeRequestURL(m_NetatmoType);
 
-	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
 #ifdef DEBUG_NetatmoWeatherStationR
@@ -1125,6 +1126,7 @@ void CNetatmo::GetMeterDetails()
 	sResult = ReadFile("E:\\netatmo_getstationdata.json");
 	bool ret = true;
 #else
+	std::vector<std::string> ExtraHeaders;
 	bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
 	if (!ret)
 	{

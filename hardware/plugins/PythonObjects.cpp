@@ -171,7 +171,7 @@ namespace Plugins {
 					{
 						// load associated custom images to make them available to python
 						std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT max(ID), Base, Name, Description FROM CustomImages");
-						if (result.size() > 0)
+						if (!result.empty())
 						{
 							PyType_Ready(&CImageType);
 							// Add image objects into the image dictionary with ID as the key
@@ -352,7 +352,7 @@ namespace Plugins {
 		return (PyObject *)self;
 	}
 
-	static void maptypename(std::string	sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
+	static void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
 	{
 		Type = pTypeGeneral;
 
@@ -623,7 +623,7 @@ namespace Plugins {
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 				{

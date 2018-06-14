@@ -48,10 +48,5 @@ private:
 
 	void SetUserMode(bool bSetUserModeClock);
 	void SetHotWaterMode(bool bTurnOn);
-
-	//XMPP stuff
-	bool ConnectToXMPP(const std::string &IPAddress, const int PortNumber);
-	void Logout();
-	bool m_bDoLogin;
 };
 

@@ -400,7 +400,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x00:
 				{
 					dictionary::iterator it = alarmsType.begin();
-					for (; it != alarmsType.end(); it++)
+					for (; it != alarmsType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastAlarms))
 						{
@@ -422,7 +422,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x01: 
 				{
 					dictionary::iterator it = warningsType.begin();
-					for (; it != warningsType.end(); it++)
+					for (; it != warningsType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastWarnings))
 						{
@@ -444,7 +444,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x02:
 				{
 					dictionary::iterator it = devicesType.begin();
-					for (; it != devicesType.end(); it++)
+					for (; it != devicesType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastDevices))
 						{
@@ -465,7 +465,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x03:
 				{ 
 					dictionary::iterator it = statesType.begin();
-					for (; it != statesType.end(); it++)
+					for (; it != statesType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastState))
 						{
@@ -527,7 +527,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x21:
 				{
 					dictionary::iterator it = quickAccessType.begin();
-					for (; it != quickAccessType.end(); it++)
+					for (; it != quickAccessType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
 						{

@@ -260,7 +260,7 @@ bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* 
 			m_HwdID, szIdx, deviceUnit, pTypeGeneralSwitch, subType);
 	}
 
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		return true;
 	}

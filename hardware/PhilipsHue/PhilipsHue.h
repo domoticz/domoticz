@@ -82,7 +82,7 @@ private:
 	void InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bIsOn, const string &Name, uint8_t BatteryLevel);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 = 0, const int svalue3 = 0);
 	static void LightStateFromJSON(Json::Value lightstate, _tHueLightState &tlight, _eHueLightType &LType);
-	static void RgbFromXY(double x, double y, double bri, std::string modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
+	static void RgbFromXY(double x, double y, double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
 	static bool StatesSimilar(_tHueLightState &s1, _tHueLightState &s2);
 };
 

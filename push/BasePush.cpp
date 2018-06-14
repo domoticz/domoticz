@@ -439,7 +439,7 @@ std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxI
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %" PRIu64 ")", DeviceRowIdxIn);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		int dType = atoi(result[0][0].c_str());
 		int dSubType = atoi(result[0][1].c_str());
@@ -465,7 +465,7 @@ std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const
 	std::vector<std::vector<std::string> > result;
 
 	result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %" PRIu64 ")", DeviceRowIdxIn);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		int dType = atoi(result[0][0].c_str());
 		int dSubType = atoi(result[0][1].c_str());
@@ -892,7 +892,7 @@ namespace http {
 			root["title"] = "GetDevicesListOnOff";
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

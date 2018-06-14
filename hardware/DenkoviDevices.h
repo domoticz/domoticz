@@ -37,8 +37,8 @@ private:
 	void Do_Work();
 	void GetMeterDetails();
 
-	int DenkoviGetIntParameter(std::string tmpstr, std::string tmpParameter);
-	std::string DenkoviGetStrParameter(std::string tmpstr, std::string tmpParameter);
-	float DenkoviGetFloatParameter(std::string tmpstr, std::string tmpParameter);
-	int DenkoviCheckForIO(std::string tmpstr, std::string tmpIoType);
+	int DenkoviGetIntParameter(std::string tmpstr, const std::string &tmpParameter);
+	std::string DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter);
+	float DenkoviGetFloatParameter(std::string tmpstr, const std::string &tmpParameter);
+	int DenkoviCheckForIO(std::string tmpstr, const std::string &tmpIoType);
 };
