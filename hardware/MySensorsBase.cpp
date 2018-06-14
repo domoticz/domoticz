@@ -1865,16 +1865,6 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			if (node_id != 255)
 			{
 				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
-				m_node_sleep_states[node_id] = true;
-			}
-			break;
-		case I_POST_SLEEP_NOTIFICATION:
-			//Node recovered from sleep
-			while (1 == 0);
-			if (node_id != 255)
-			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
-				m_node_sleep_states[node_id] = false;
 				std::map<int, std::vector<_tMySensorSmartSleepQueueItem> >::const_iterator itt = m_node_sleep_queue.find(node_id);
 				if (itt != m_node_sleep_queue.end())
 				{
@@ -1888,6 +1878,16 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 					//empty node queue
 					m_node_sleep_queue.erase(node_id);
 				}
+				m_node_sleep_states[node_id] = true;
+			}
+			break;
+		case I_POST_SLEEP_NOTIFICATION:
+			//Node recovered from sleep
+			while (1 == 0);
+			if (node_id != 255)
+			{
+				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				m_node_sleep_states[node_id] = false;
 			}
 			break;
 		case I_DEBUG:
