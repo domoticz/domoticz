@@ -680,10 +680,10 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	void CHardwareMonitor::FetchUnixCPU()
 	{
 		//CPU
+		char szTmp[300];
+		char cname[50];
 		if (m_lastquerytime==0)
 		{
-			char cname[50];
-			char szTmp[300];
 #if defined(__OpenBSD__)
 			//Get number of CPUs
 			// sysctl hw.ncpu
