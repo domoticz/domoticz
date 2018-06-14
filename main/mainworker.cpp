@@ -1051,7 +1051,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Ec3kMeterTCP(ID, Address, Port);
 		break;
 	case HTYPE_GoodweAPI:
-		pHardware = new GoodweAPI(ID, Username);
+		pHardware = new GoodweAPI(ID, Username, Mode1);
 		break;
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
