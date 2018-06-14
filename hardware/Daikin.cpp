@@ -929,13 +929,13 @@ void CDaikin::SetF_DirLevel(const int NewLevel)
 	szURL << "&f_rate=" << m_f_rate;
 
 	if (NewLevel == 10)
-		szURL << "&f_dir=0";
+		szURL << "&f_dir=0"; // All wings motion
 	else if (NewLevel == 20)
-		szURL << "&f_dir=1";
-	else if (NewLevel == 20)
-		szURL << "&f_dir=2";
-	else if (NewLevel == 20)
-		szURL << "&f_dir=3";
+		szURL << "&f_dir=1"; // Vertical wings motion
+	else if (NewLevel == 30)
+		szURL << "&f_dir=2"; // Horizontal wings motion
+	else if (NewLevel == 40)
+		szURL << "&f_dir=3"; // vertical + horizontal wings motion
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
