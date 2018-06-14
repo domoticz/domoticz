@@ -30,7 +30,6 @@ CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std:
 	// get the data from the extradata field
 	std::vector<std::string> strextra;
 	StringSplit(extradata, "|", strextra);
-	std::string script;
 	if (strextra.size() == 3)
 	{
 		m_ProductId = base64_decode(strextra[0]);
@@ -472,7 +471,7 @@ void CNestOAuthAPI::GetMeterDetails()
 		for (Json::Value::iterator itDevice = deviceRoot["smoke_co_alarms"].begin(); itDevice != deviceRoot["smoke_co_alarms"].end(); ++itDevice)
 		{
 			Json::Value device = *itDevice;
-			std::string devstring = itDevice.key().asString();
+			//std::string devstring = itDevice.key().asString();
 			std::string devWhereName = device["where_name"].asString();
 
 			if (devWhereName.empty())
@@ -695,7 +694,7 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 			return false;
 		}
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to get thermostat serial (for now). Try again later.");
 		return false;
@@ -724,7 +723,7 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 	return true;
 }
 
-bool CNestOAuthAPI::PushToNestApi(const std::string sMethod, const std::string sUrl, const Json::Value jPostData, std::string &sResult)
+bool CNestOAuthAPI::PushToNestApi(const std::string &sMethod, const std::string &sUrl, const Json::Value &jPostData, std::string &sResult)
 {
 	if (m_OAuthApiAccessToken.empty()) 
 	{

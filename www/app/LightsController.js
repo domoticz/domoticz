@@ -746,7 +746,7 @@ define(['app'], function (app) {
 												else {
 													xhtm += 'btn-default"';
 												}
-												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.Protected + ');">' + levelName + '</button>';
 											});
 											selector$.html(xhtm);
 										} else if (item.SelectorStyle === 1) {
@@ -1321,7 +1321,7 @@ define(['app'], function (app) {
 										else {
 											xhtm += 'btn-default"';
 										}
-										xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
+										xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.Protected + ');">' + levelName + '</button>';
 									});
 									xhtm += '</div>';
 								} else if (item.SelectorStyle === 1) {

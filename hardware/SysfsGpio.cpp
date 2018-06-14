@@ -170,6 +170,7 @@ CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices, const int D
 	m_sysfs_hwdid = ID;
 	m_auto_configure_devices = AutoConfigureDevices;
 	m_debounce_msec = Debounce;
+	m_maxfd = 0;
 }
 
 CSysfsGpio::~CSysfsGpio(void)
@@ -275,7 +276,7 @@ void CSysfsGpio::Do_Work()
 				vector<vector<string> > result;
 				result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
 
-				if (result.size() > 0)
+				if (!result.empty())
 				{
 					_log.Log(LOG_STATUS, "Sysfs GPIO: Update master devices");
 					UpdateDomoticzInputs(true);
@@ -575,7 +576,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 			}
 			else
 			{
-				if (result.size() > 0) /* found */
+				if (!result.empty()) /* found */
 				{
 					vector<string> sd = result[0];
 
@@ -622,7 +623,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 			}
 			else
 			{
-				if (result.size() > 0) /* found */
+				if (!result.empty()) /* found */
 				{
 					vector<string> sd = result[0];
 

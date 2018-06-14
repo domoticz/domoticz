@@ -277,7 +277,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
 			unsigned long nid = 1; //could be the first device ever
 
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nid = atol(result[0][0].c_str());
 			}
@@ -289,7 +289,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);
 
 			int nDevCount = 0;
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nDevCount = atol(result[0][0].c_str());
 			}

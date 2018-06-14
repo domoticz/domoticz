@@ -47,7 +47,7 @@ static std::vector<std::string> GAMUT_B_BULBS_LIST(GAMUT_B_BULBS_LIST_v, GAMUT_B
 static std::vector<std::string> GAMUT_C_BULBS_LIST(GAMUT_C_BULBS_LIST_v, GAMUT_C_BULBS_LIST_v + sizeof(GAMUT_C_BULBS_LIST_v) / sizeof(GAMUT_C_BULBS_LIST_v[0]));
 static std::vector<std::string> MULTI_SOURCE_LUMINAIRES(MULTI_SOURCE_LUMINAIRES_v, MULTI_SOURCE_LUMINAIRES_v + sizeof(MULTI_SOURCE_LUMINAIRES_v) / sizeof(MULTI_SOURCE_LUMINAIRES_v[0]));;
 
-static const point* get_light_gamut(const std::string modelid)
+static const point* get_light_gamut(const std::string &modelid)
 {
 	if (std::find(GAMUT_A_BULBS_LIST.begin(), GAMUT_A_BULBS_LIST.end(), modelid) != GAMUT_A_BULBS_LIST.end())
 		return colorPointsGamut_A;
@@ -67,7 +67,7 @@ static double cross_product(point p1, point p2)
 	return p1.x * p2.y - p1.y * p2.x;
 }
 
-static bool check_point_in_lamps_reach(point p, std::string modelid)
+static bool check_point_in_lamps_reach(point p, const std::string &modelid)
 {
 	const point* gamut = get_light_gamut(modelid);
 	point Red = gamut[0];
@@ -110,7 +110,7 @@ static double get_distance_between_two_points(point p1, point p2)
 	return sqrt(dx * dx + dy * dy);
 }
 
-static point get_closest_point_to_point(point xy_point, std::string modelid)
+static point get_closest_point_to_point(point xy_point, const std::string &modelid)
 {
 	const point* gamut = get_light_gamut(modelid);
 	point Red = gamut[0];
@@ -147,7 +147,7 @@ static point get_closest_point_to_point(point xy_point, std::string modelid)
 	return point(cx, cy);
 }
 
-void CPhilipsHue::RgbFromXY(double x, double y, double bri, std::string modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
+void CPhilipsHue::RgbFromXY(double x, double y, double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
 {
 	/* Returns (r, g, b) for given x, y values.
 	   Implementation of the instructions found on the Philips Hue iOS SDK docs: http://goo.gl/kWKXKl

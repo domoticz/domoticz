@@ -66,7 +66,7 @@ namespace Plugins {
 		std::string	m_Callback;
 		virtual void ProcessLocked() = 0;
 	public:
-		CCallbackBase(CPlugin* pPlugin, std::string Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
+		CCallbackBase(CPlugin* pPlugin, const std::string &Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
 		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
 		void Process()
 		{
@@ -131,7 +131,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	{
 	public:
 		onConnectCallback(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) { m_Name = __func__; };
-		onConnectCallback(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
+		onConnectCallback(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string &Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
 		int						m_Status;
 		std::string				m_Text;
 	protected:
@@ -202,7 +202,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onCommandCallback : public CCallbackBase
 	{
 	public:
-		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, std::string color) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const std::string &color) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Name = __func__;
 			m_Unit = Unit;

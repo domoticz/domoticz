@@ -257,7 +257,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 
 	std::vector<std::vector<std::string> > result, result2;
 	result = m_sql.safe_query("SELECT ID, Name, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=%d) ORDER BY ID ASC", m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -277,7 +277,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 			mNode.lastreceived = 0;
 			//Load the Childs
 			result2 = m_sql.safe_query("SELECT ChildID, [Type], [Name], UseAck, AckTimeout FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) ORDER BY ChildID ASC", m_HwdID, ID);
-			if (result2.size() > 0)
+			if (!result2.empty())
 			{
 				int gID = 1;
 				std::vector<std::vector<std::string> >::const_iterator itt2;
@@ -1476,7 +1476,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	else if (packettype == pTypeColorSwitch)
 	{
 		//RGW/RGBW command
-		_tColorSwitch *pLed = (_tColorSwitch *)pdata;
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 		//unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
 		//unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
@@ -1865,16 +1865,6 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			if (node_id != 255)
 			{
 				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
-				m_node_sleep_states[node_id] = true;
-			}
-			break;
-		case I_POST_SLEEP_NOTIFICATION:
-			//Node recovered from sleep
-			while (1 == 0);
-			if (node_id != 255)
-			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
-				m_node_sleep_states[node_id] = false;
 				std::map<int, std::vector<_tMySensorSmartSleepQueueItem> >::const_iterator itt = m_node_sleep_queue.find(node_id);
 				if (itt != m_node_sleep_queue.end())
 				{
@@ -1888,6 +1878,16 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 					//empty node queue
 					m_node_sleep_queue.erase(node_id);
 				}
+				m_node_sleep_states[node_id] = true;
+			}
+			break;
+		case I_POST_SLEEP_NOTIFICATION:
+			//Node recovered from sleep
+			while (1 == 0);
+			if (node_id != 255)
+			{
+				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				m_node_sleep_states[node_id] = false;
 			}
 			break;
 		case I_DEBUG:
@@ -2441,7 +2441,7 @@ namespace http {
 			char szTmp[100];
 
 			result = m_sql.safe_query("SELECT ID,Name,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC", iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

@@ -174,7 +174,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if (packettype == pTypeColorSwitch)
 	{
-		_tColorSwitch *pLed = (_tColorSwitch*)pSen;
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pSen);
 		nodeID = static_cast<int>(pLed->id);
 
 		if (pLed->command == Color_LedOff)
@@ -478,8 +478,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sprintf(szSValue, "%d;%d", tstate.sat, tstate.hue);
 		unsigned char unitcode = 1;
 		int cmd = (tstate.on ? Color_LedOn : Color_LedOff);
-		int nvalue = 0;
-		bool tIsOn = !(tstate.on);
 		_tColor color = NoColor;
 
 		unsigned sType;
@@ -509,8 +507,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		{
 			//Already in the system
 			//Update state
-			nvalue = atoi(result[0][0].c_str());
-			tIsOn = (nvalue != 0);
+			int nvalue = atoi(result[0][0].c_str());
+			bool tIsOn = (nvalue != 0);
 			unsigned sTypeOld = atoi(result[0][3].c_str());
 			std::string sID = result[0][4];
 			if (sTypeOld != sType)
@@ -618,7 +616,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		unsigned char unitcode = 1;
 		int cmd = (tstate.on ? light2_sOn : light2_sOff);
 		int level = 0;
-		int nvalue = 0;
 		bool tIsOn = !(tstate.on);
 
 		if (LType == HLTYPE_NORMAL)
@@ -648,7 +645,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		{
 			//Already in the system
 			//Update state
-			nvalue = atoi(result[0][0].c_str());
+			int nvalue = atoi(result[0][0].c_str());
 			tIsOn = (nvalue != 0);
 		}
 
@@ -827,7 +824,6 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			_tHueLightState tlight;
 			bool bDoSend = true;
 			_eHueLightType LType;
-			std::string modelid = light["modelid"].asString();
 			LightStateFromJSON(light["state"], tlight, LType);
 
 			if (m_lights.find(lID) != m_lights.end())
@@ -842,6 +838,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			{
 				//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
 				m_lights[lID] = tlight;
+				std::string modelid = light["modelid"].asString();
 				InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 			}
 		}

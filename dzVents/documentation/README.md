@@ -217,14 +217,14 @@ Since you can define multiple on-triggers in your script, it is not always clear
  - **isScene**:  <sup>2.4.0</sup>. returns `true` if the item is a Scene object.
  - **isGroup**:  <sup>2.4.0</sup>. returns `true` if the item is a Group object.
  - **isTimer**: <sup>2.4.0</sup>.  returns `true` if the item is a Timer object.
- - **isSecurty**: <sup>2.4.0</sup>.  returns `true` if the item is a Security object.
+ - **isSecurity**: <sup>2.4.0</sup>.  returns `true` if the item is a Security object.
  - **isHTTPResponse**: <sup>2.4.0</sup>.  returns `true` if the item is an HTTPResponse object.
  - **trigger**: <sup>2.4.0</sup>.  *string*. the timer rule, the security state or the http response callback string that actually triggered your script. E.g. if you have multiple timer rules can inspect `trigger` which exact timer rule was fired.
 
 #### 3. (domoticz, item, **triggerInfo**)
 **Note**: as of version 2.4.0, `triggerInfo` has become more or less obsolete and is left in here for backward compatibility. All information is now available on the `item` parameter (second parameter of the execute function, see point 2 above).
 
-`trifferInfo` holds information about what triggered the script. The object has two attributes:
+`triggerInfo` holds information about what triggered the script. The object has two attributes:
 
  1. **type**:  the type of the the event that triggered the execute function, either:
       - domoticz.EVENT_TYPE_TIMER,

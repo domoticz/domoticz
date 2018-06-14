@@ -149,6 +149,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	m_stoprequested = false;
 	m_Busy = false;
 	m_Stoppable = false;
+	m_PlaylistPosition = 0;
 
 	m_Ios = pIos;
 	m_HwdID = pHwdID;
@@ -550,7 +551,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.OnOffRequired(m_PreviousStatus))
 	{
 		result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, m_szDevID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			m_sql.HandleOnOffAction(m_CurrentStatus.IsOn(), result[0][0], result[0][1]);
 		}
@@ -1141,7 +1142,7 @@ void CKodi::ReloadNodes()
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -1260,7 +1261,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

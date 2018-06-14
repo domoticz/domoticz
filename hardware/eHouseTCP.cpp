@@ -591,6 +591,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	TCPSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (TCPSocket < 0)       //Check if socket was created
 	{
+		closesocket(TCPSocket);
 		_log.Log(LOG_ERROR, "[TCP Client Status] Could not create socket");
 		return -1;                              //!!!! Counldn't Create Socket
 	}
@@ -600,6 +601,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
 	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{
+		closesocket(TCPSocket);
 		_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
 		return -1;                              //!!!! Counldn't Create Socket
 	}
@@ -627,6 +629,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	else
 	{
+		closesocket(TCPSocket);
 		TerminateUDP();
 		return -1;
 	}
@@ -1051,7 +1054,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT nValue, sValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 						m_HwdID, IDX, AddrL);
-					if (result.size() > 0)
+					if (!result.empty())
 					{
 						int nvalue = atoi(result[0][0].c_str());
 						int svalue = atoi(result[0][1].c_str());
