@@ -732,7 +732,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	if (level > 0) {
 		xcmd.level = level;
 	}
-	
+
 	//check if this switch is already in the database
 	std::vector<std::vector<std::string> > result;
 	
