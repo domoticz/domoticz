@@ -29,7 +29,7 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 	bool SetManualEcoMode(const unsigned char node_id, const bool bIsOn);
-	bool PushToNestApi(const std::string sMethod, const std::string sUrl, const Json::Value jPostData, std::string & sResult);
+	bool PushToNestApi(const std::string &sMethod, const std::string &sUrl, const Json::Value &jPostData, std::string & sResult);
 	void SetProgramState(const int newState);
 private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);

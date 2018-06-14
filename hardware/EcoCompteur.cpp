@@ -26,9 +26,9 @@ using namespace std;
 using namespace boost;
 using namespace Json;
 
-CEcoCompteur::CEcoCompteur(const int ID, const string& url, const unsigned short port)
+CEcoCompteur::CEcoCompteur(const int ID, const string& url, const unsigned short port):
+	m_url(url)
 {
-	m_url = url;
 	m_port = port;
 	m_HwdID = ID;
 	m_refresh = 10;	// Refresh time in sec
@@ -114,7 +114,7 @@ void CEcoCompteur::GetScript()
 	// Parsing inst.json
 	Value root;
 	Reader jReader;
-	bool ret = jReader.parse(sInst, root);
+	jReader.parse(sInst, root);
 
 	// Parsing log2.csv
 	if (sLog2.length() == 0)

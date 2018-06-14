@@ -1797,7 +1797,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
         return false;
 
 
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		return true;
 	}

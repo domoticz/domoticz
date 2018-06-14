@@ -89,7 +89,7 @@ class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
 		_eNotificationTypes	NotificationType();
 		std::string		StatusText() { return Media_Player_States(m_nStatus); };
 		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
-		void			Status(std::string pStatus) { m_sStatus = pStatus; };
+		void			Status(const std::string &pStatus) { m_sStatus = pStatus; };
 		void			LastOK(time_t pLastOK) { m_tLastOK = pLastOK; };
 		std::string		LastOK() { std::string sRetVal;  tm ltime; localtime_r(&m_tLastOK, &ltime); char szLastUpdate[40]; sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec); sRetVal = szLastUpdate; return sRetVal; };
 		void			Clear();
@@ -99,7 +99,7 @@ class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
 		bool			UpdateRequired(CPanasonicStatus&);
 		bool			OnOffRequired(CPanasonicStatus&);
 		bool			IsOn() { return (m_nStatus != MSTAT_OFF); };
-		void			Volume(int pVolume) { m_VolumeLevel = pVolume;};
+		void			Volume(int pVolume) { m_VolumeLevel = pVolume; };
 		void			Muted(bool pMuted) { m_Muted = pMuted; };
 	private:
 		_eMediaStatus	m_nStatus;
@@ -136,9 +136,9 @@ private:
 	bool			handleConnect(boost::asio::ip::tcp::socket&, boost::asio::ip::tcp::endpoint, boost::system::error_code&);
 	std::string		handleWriteAndRead(std::string);
 	int				handleMessage(std::string);
-	std::string		buildXMLStringRendCtl(std::string, std::string);
-	std::string		buildXMLStringRendCtl(std::string, std::string, std::string);
-	std::string		buildXMLStringNetCtl(std::string);
+	std::string		buildXMLStringRendCtl(const std::string &, const std::string &);
+	std::string		buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
+	std::string		buildXMLStringNetCtl(const std::string &);
 
 	int				m_HwdID;
 	char			m_szDevID[40];
@@ -307,7 +307,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	if (m_CurrentStatus.OnOffRequired(m_PreviousStatus) || forceupdate)
 	{
 		result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, m_szDevID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			m_sql.HandleOnOffAction(m_CurrentStatus.IsOn(), result[0][0], result[0][1]);
 		}
@@ -466,7 +466,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 		iPosBegin = pMessage.find(begin, iPosBegin);
 		if (iPosBegin == std::string::npos)
 			break;
-		iPosEnd = pMessage.find(end, iPosBegin+1);
+		iPosEnd = pMessage.find(end, iPosBegin + 1);
 		if (iPosEnd != std::string::npos)
 		{
 			std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
@@ -482,12 +482,12 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	return -1;
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command)
 {
 	return buildXMLStringRendCtl(action, command, "");
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command, std::string value)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command, const std::string &value)
 {
 	std::string head, body;
 	int size;
@@ -515,7 +515,7 @@ std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::strin
 
 }
 
-std::string CPanasonicNode::buildXMLStringNetCtl(std::string command)
+std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 {
 	std::string head, body;
 	int size;
@@ -900,12 +900,12 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 			case gswitch_sSetVolume:
 				(*itt)->SendCommand("setvolume", iParam);
 				return true;
-			//case gswitch_sPlayPlaylist:
-			//	(*itt)->SendCommand("playlist", iParam);
-			//	return true;
-			//case gswitch_sExecute:
-			//	(*itt)->SendCommand("execute", iParam);
-			//	return true;
+				//case gswitch_sPlayPlaylist:
+				//	(*itt)->SendCommand("playlist", iParam);
+				//	return true;
+				//case gswitch_sExecute:
+				//	(*itt)->SendCommand("execute", iParam);
+				//	return true;
 			default:
 				return true;
 			}
@@ -922,12 +922,12 @@ void CPanasonic::AddNode(const std::string &Name, const std::string &IPAddress, 
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()>0)
+	if (!result.empty())
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()<1)
+	if (result.size() < 1)
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -947,7 +947,7 @@ bool CPanasonic::UpdateNode(const int ID, const std::string &Name, const std::st
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, ID);
-	if (result.size()<1)
+	if (result.size() < 1)
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)", Name.c_str(), IPAddress.c_str(), Port, m_HwdID, ID);
@@ -992,7 +992,7 @@ void CPanasonic::ReloadNodes()
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -1098,7 +1098,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

@@ -179,8 +179,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	}
 	else if (packettype == pTypeColorSwitch) {
 		//Gateway RGB Controller
-		_tColorSwitch *xcmd = (_tColorSwitch*)pdata;
-
+		const _tColorSwitch *xcmd = reinterpret_cast<const _tColorSwitch*>(pdata);
 
 		if (xcmd->command == Color_LedOn) {
 			m_GatewayBrightnessInt = 100;
@@ -430,7 +429,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 
 	// block this device if it is already added for another gateway hardware id
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID!=%d) AND (DeviceID=='%q') AND (Type==%d) AND (Unit == '%d')", m_HwdID, ID.c_str(), xcmd.type, xcmd.unitcode);
-	if (result.size() > 0) {
+	if (!result.empty()) {
 		return;
 	}
 
@@ -459,7 +458,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 
 		if (switchtype == STYPE_Selector) {
 			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Unit == '%d')", m_HwdID, ID.c_str(), xcmd.type, xcmd.unitcode);
-			if (result.size() > 0) {
+			if (!result.empty()) {
 				std::string Idx = result[0][0];
 				if (Name == "Xiaomi Wireless Switch") {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click|Long Click Release", false));
@@ -581,7 +580,7 @@ bool XiaomiGateway::StartHardware()
 	std::vector<std::vector<std::string> > result;
 	//result = m_sql.safe_query("SELECT Password, Address, ID FROM Hardware WHERE Type=%d AND ID=%d", HTYPE_XiaomiGateway, m_HwdID);
 	result = m_sql.safe_query("SELECT Password, Address, ID, Enabled FROM Hardware WHERE Type=%d AND Enabled=1", HTYPE_XiaomiGateway);
-	if (result.size() > 0) {
+	if (!result.empty()) {
 
 		int lowestId = 9999;
 		int Id = 0;
@@ -615,13 +614,13 @@ bool XiaomiGateway::StartHardware()
 		//check for presence of Xiaomi user variable to enable message output 
 		m_OutputMessage = false;
 		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiMessage')");
-		if (result.size() > 0) {
+		if (!result.empty()) {
 			m_OutputMessage = true;
 		}
 		//check for presence of Xiaomi user variable to enable additional voltage devices
 		m_IncludeVoltage = false;
 		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiVoltage')");
-		if (result.size() > 0) {
+		if (!result.empty()) {
 			m_IncludeVoltage = true;
 		}
 		_log.Log(LOG_STATUS, "XiaomiGateway: Delaying worker startup...");

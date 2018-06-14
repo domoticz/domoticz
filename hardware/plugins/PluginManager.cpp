@@ -230,7 +230,7 @@ namespace Plugins {
 		{
 			_log.Log(LOG_STATUS, "PluginSystem: '%s' Registration ignored, Plugins are not enabled.", Name.c_str());
 		}
-		return (CDomoticzHardwareBase*)pPlugin;
+		return reinterpret_cast<CDomoticzHardwareBase*>(pPlugin);
 	}
 
 	void CPluginSystem::DeregisterPlugin(const int HwdID)
@@ -260,9 +260,9 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
 			{
 				bool bIos_required = false;
-				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
 				{
-					CPlugin*	pPlugin = (CPlugin*)itt->second;
+					CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
 					if (pPlugin && pPlugin->IoThreadRequired())
 					{
 						bIos_required = true;
@@ -368,11 +368,11 @@ namespace Plugins {
 	void CPluginSystem::LoadSettings()
 	{
 		//	Add command to message queue for every plugin
-		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
 		{
 			if (itt->second)
 			{
-				CPlugin*	pPlugin = (CPlugin*)itt->second;
+				CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
 				pPlugin->MessagePlugin(new SettingsDirective(pPlugin));
 			}
 			else
@@ -386,7 +386,7 @@ namespace Plugins {
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT HardwareID,Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
 			std::string sHwdID = sd[0];
@@ -394,7 +394,7 @@ namespace Plugins {
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
 			if (pHardware != NULL)
 			{
-				std::vector<std::string> sd = result[0];
+				//std::vector<std::string> sd = result[0];
 				_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
 				Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
 				pPlugin->DeviceModified(atoi(Unit.c_str()));
@@ -411,7 +411,7 @@ namespace http {
 			int		iPluginCnt = root.size();
 			Plugins::CPluginSystem Plugins;
 			std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-			for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+			for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
 			{
 				TiXmlDocument	XmlDoc;
 				XmlDoc.Parse(it_type->second.c_str());
@@ -516,7 +516,7 @@ namespace http {
 			{
 				std::string	sKey = "key=\"" + pPlugin->m_PluginKey + "\"";
 				std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
 				{
 					if (it_type->second.find(sKey) != std::string::npos)
 					{

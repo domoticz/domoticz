@@ -192,7 +192,7 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 			return false;
 		}
 	}
-	else if (Unit == 5) {
+	else {
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeColorSwitch, sTypeColor_RGB_CW_WW);
 		if (result.empty())
 		{
@@ -506,7 +506,7 @@ void CLimitLess::Send_V4V5_RGBW_On(const uint8_t dunit, const long delay)
 
 bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_tColorSwitch *pLed=(_tColorSwitch*)pdata;
+	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 	unsigned char *pCMD=NULL;
 
 	if (m_BridgeType == LBTYPE_V6)

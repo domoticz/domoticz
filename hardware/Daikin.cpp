@@ -741,7 +741,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	// block this device if it is already added for another gateway hardware id
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID!=%d) AND (DeviceID=='%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
 	
-	if (result.size() > 0) {
+	if (!result.empty()) {
 		return;
 	}
 	
@@ -766,7 +766,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 
 			// SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03"
 
-			if (result.size() > 0) {
+			if (!result.empty()) {
 				std::string Idx = result[0][0];
 				if (defaultname == "Mode") {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));

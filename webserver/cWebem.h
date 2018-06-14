@@ -206,7 +206,7 @@ namespace http {
 
 			//IPs that are allowed to pass proxy headers
 			std::vector < std::string > myRemoteProxyIPs;
-			void AddRemoteProxyIPs(const std::string ipaddr);
+			void AddRemoteProxyIPs(const std::string &ipaddr);
 			void ClearRemoteProxyIPs();
 
 			// Session store manager

@@ -600,7 +600,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		return;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", m_HwdID, DeviceRowIdx);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::string> sd = result[0];
 		std::string did = sd[0];
@@ -705,7 +705,7 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 
 	unsigned char nValue = atoi(sd[4].c_str());
 	unsigned char scenetype = atoi(sd[5].c_str());
-	int iProtected = atoi(sd[7].c_str());
+	//int iProtected = atoi(sd[7].c_str());
 
 	//std::string onaction = base64_encode((const unsigned char*)sd[8].c_str(), sd[8].size());
 	//std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());

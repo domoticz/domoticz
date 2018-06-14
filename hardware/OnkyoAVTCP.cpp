@@ -284,7 +284,7 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string message = "";
 
 	if (packettype == pTypeGeneralSwitch) {
-		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
+		const _tGeneralSwitch *xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int ID = xcmd->id;
 		int level = xcmd->level;
 		char buf[9];
@@ -479,8 +479,6 @@ void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)
 std::string OnkyoAVTCP::BuildSelectorOptions(const std::string & names, const std::string & ids)
 {
 	std::map<std::string, std::string> optionsMap;
-
-	std::vector<std::string>::iterator n_itt, id_itt;
 	optionsMap.insert(std::pair<std::string, std::string>("LevelOffHidden", "true"));
 	optionsMap.insert(std::pair<std::string, std::string>("SelectorStyle", "1"));
 	optionsMap.insert(std::pair<std::string, std::string>("LevelNames", names));

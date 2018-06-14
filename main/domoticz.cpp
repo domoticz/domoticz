@@ -603,7 +603,6 @@ bool GetConfigBool(std::string szValue)
 
 bool ParseConfigFile(const std::string &szConfigFile)
 {
-	std::string tmpString;
 	std::ifstream infile;
 	std::string sLine;
 	infile.open(szConfigFile.c_str());

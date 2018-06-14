@@ -32,11 +32,12 @@ CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::st
 CLogger::CLogger(void)
 {
 	m_bInSequenceMode = false;
+	m_bEnableLogThreadIDs = false;
 	m_bEnableLogTimestamps = true;
 	m_bEnableErrorsToNotificationSystem = false;
 	m_LastLogNotificationsSend = 0;
-	SetLogFlags(LOG_NORM | LOG_STATUS | LOG_ERROR);
-	SetDebugFlags(DEBUG_NORM);
+	m_log_flags = LOG_NORM | LOG_STATUS | LOG_ERROR;
+	m_debug_flags = DEBUG_NORM;
 }
 
 CLogger::~CLogger(void)

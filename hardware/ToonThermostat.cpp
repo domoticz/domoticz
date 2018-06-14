@@ -164,7 +164,7 @@ void CToonThermostat::Init()
 	{
 		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
 		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = *result.begin();
 			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());

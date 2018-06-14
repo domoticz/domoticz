@@ -12,7 +12,6 @@ class SolarEdgeAPI : public CDomoticzHardwareBase
 		std::string manufacturer;
 		std::string model;
 		std::string SN;
-		uint16_t connectedOptimizers;
 	};
 public:
 	SolarEdgeAPI(const int ID, const std::string &APIKey);

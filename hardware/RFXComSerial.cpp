@@ -927,7 +927,7 @@ namespace http {
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 				if (pHardware)
 				{
-					CRFXBase *pBase = (CRFXBase *)pHardware;
+					CRFXBase *pBase = reinterpret_cast<CRFXBase *>(pHardware);
 					pBase->SetRFXCOMHardwaremodes(Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 				}
 			}

@@ -128,8 +128,6 @@ m_reconnect(false)
 	m_bOutputLog = false;
 	m_bDoRestart = false;
 	m_bIsStarted = false;
-	m_username = username;
-	m_password = password;
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_poll_inputs = pollInputs;

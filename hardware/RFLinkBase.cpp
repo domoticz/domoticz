@@ -355,7 +355,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		return true;
 	}
 	else {		// RFLink Milight/Living Colours extension
-		_tColorSwitch *pLed = (_tColorSwitch*)pdata;
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
       /*
 		_log.Log(LOG_ERROR, "RFLink: ledtype: %d", pLed->type);			// type colorswitch
 		_log.Log(LOG_ERROR, "RFLink: subtype: %d", pLed->subtype);		// rgbw/rgb/white?

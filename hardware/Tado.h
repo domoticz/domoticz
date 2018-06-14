@@ -60,16 +60,16 @@ class CTado : public CDomoticzHardwareBase
 		bool Login();
 		bool GetHomes();
 		bool GetZones(_tTadoHome & TadoHome);
-		bool SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, const std::string sPostData, std::string & sResponse, const std::vector<std::string> & vExtraHeaders, Json::Value & jsDecodedResponse, const bool bDecodeJsonResponse = true, const bool bIgnoreEmptyResponse = false, const bool bSendAuthHeaders = true);
+		bool SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl, const std::string &sPostData, std::string & sResponse, const std::vector<std::string> & vExtraHeaders, Json::Value & jsDecodedResponse, const bool bDecodeJsonResponse = true, const bool bIgnoreEmptyResponse = false, const bool bSendAuthHeaders = true);
 		bool GetAuthToken(std::string & authtoken, std::string & refreshtoken, const bool refreshUsingToken);
-		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone & zone);
+		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome &home, _tTadoZone & zone);
 		bool GetHomeState(const int HomeIndex, _tTadoHome & home);
 		void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 		void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string & defaultname);
-		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const std::string termination);
+		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const std::string &termination = "TADO_MODE");
 		bool CancelOverlay(const int Idx);
-		bool MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string & sValue);
-		std::vector<std::string> StringSplitEx(const std::string & inputString, const std::string delimiter, const int maxelements = 0);
+		bool MatchValueFromJSKey(const std::string &sKeyName, const std::string &sJavascriptData, std::string & sValue);
+		std::vector<std::string> StringSplitEx(const std::string &inputString, const std::string &delimiter, const int maxelements = 0);
 
 		std::string m_TadoUsername;
 		std::string m_TadoPassword;

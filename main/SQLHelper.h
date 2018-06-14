@@ -75,11 +75,6 @@ struct _tTaskItem
 	std::string _relatedEvent;
 	timeval _DelayTimeBegin;
 
-	_tTaskItem()
-	{
-
-	}
-
 	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger)
 	{
 		_tTaskItem tItem;

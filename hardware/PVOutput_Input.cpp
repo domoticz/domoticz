@@ -58,12 +58,10 @@ bool CPVOutputInput::StopHardware()
 void CPVOutputInput::Do_Work()
 {
 	int LastMinute=-1;
-	int sec_counter = 0;
 	_log.Log(LOG_STATUS,"PVOutput (Input): Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		sec_counter++;
 
 		time_t atime=mytime(NULL);
 		m_LastHeartbeat = atime;

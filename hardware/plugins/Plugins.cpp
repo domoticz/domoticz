@@ -1008,7 +1008,7 @@ Error:
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				for (itt = result.begin(); itt != result.end(); ++itt)
@@ -1051,7 +1051,7 @@ Error:
 
 			// load associated devices to make them available to python
 			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				PyType_Ready(&CDeviceType);
 				// Add device objects into the device dictionary with Unit as the key
@@ -1085,7 +1085,7 @@ Error:
 
 			// load associated custom images to make them available to python
 			result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				PyType_Ready(&CImageType);
 				// Add image objects into the image dictionary with ID as the key
@@ -1569,7 +1569,7 @@ Error:
 		// load associated settings to make them available to python
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			PyType_Ready(&CDeviceType);
 			// Add settings strings into the settings dictionary with Unit as the key

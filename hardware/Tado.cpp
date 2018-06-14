@@ -32,11 +32,11 @@ CTado::~CTado(void)
 {
 }
 
-CTado::CTado(const int ID, const std::string &username, const std::string &password)
+CTado::CTado(const int ID, const std::string &username, const std::string &password):
+m_TadoUsername(username),
+m_TadoPassword(password)
 {
 	m_HwdID = ID;
-	m_TadoUsername = username;
-	m_TadoPassword = password;
 
 	Init();
 }
@@ -125,7 +125,7 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 
 // Changing the setpoint or heating mode is an overlay on the schedule. 
 // An overlay can end automatically (TADO_MODE, TIMER) or manually (MANUAL).
-bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEnabled, const std::string terminationType = "TADO_MODE")
+bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEnabled, const std::string &terminationType)
 {
 	_log.Log(LOG_NORM, "Tado: CreateOverlay() called with idx=%d, temp=%f, termination type=%s", idx, temp, terminationType.c_str());
 
@@ -168,7 +168,7 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	{
 		SendToTadoApi(Put, _sUrl, _jsPostData.toStyledString(), _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: Failed to set setpoint via Api: %s", what.c_str());
@@ -229,7 +229,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		{
 			SendToTadoApi(Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false);
 		}
-		catch (std::exception e)
+		catch (std::exception& e)
 		{
 			std::string what = e.what();
 			throw std::runtime_error(("Failed to get token from Api: %s", what.c_str()));
@@ -246,7 +246,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 
 		return true;
 	}
-	catch (std::exception e) {
+	catch (std::exception& e) {
 		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: GetAuthToken: %s", what.c_str());
 		return false;
@@ -254,7 +254,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 }
 
 // Gets the status information of a zone. 
-bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone &zone)
+bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome &home, _tTadoZone &zone)
 {
 	try
 	{
@@ -266,7 +266,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		{
 			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 		}
-		catch (std::exception e)
+		catch (std::exception& e)
 		{
 			std::string what = e.what();
 			throw std::runtime_error(("Failed to get information on zone '%s': %s", zone.Name.c_str(), what.c_str()));
@@ -328,7 +328,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 
 		return true;
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: GetZoneState: %s", what.c_str());
@@ -348,7 +348,7 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 		{
 			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 		}
-		catch (std::exception e)
+		catch (std::exception& e)
 		{
 			std::string what = e.what();
 			throw std::runtime_error(("Failed to get state information on home '%s': %s", home.Name.c_str(), what.c_str()));
@@ -360,7 +360,7 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 
 		return true;
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: GetZoneState: %s", what.c_str());
@@ -456,7 +456,7 @@ bool CTado::CancelOverlay(const int Idx)
 		SendToTadoApi(Delete, _sUrl, "", _sResponse, *(new std::vector<std::string>()), *(new Json::Value), false, true, true);
 
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: error cancelling the setpoint overlay: %s", what.c_str());
@@ -572,7 +572,7 @@ void CTado::Do_Work()
 
 // Splits a string inputString by delimiter. If specified returns up to maxelements elements.
 // This is an extension of the ::StringSplit function in the helper class.
-std::vector<std::string> CTado::StringSplitEx(const std::string &inputString, const std::string delimiter, const int maxelements)
+std::vector<std::string> CTado::StringSplitEx(const std::string &inputString, const std::string &delimiter, const int maxelements)
 {
 	// Split using the Helper class' StringSplitEx function.
 	std::vector<std::string> array;
@@ -599,9 +599,9 @@ std::vector<std::string> CTado::StringSplitEx(const std::string &inputString, co
 
 
 // Runs through the Tado web interface environment file and attempts to regex match the specified key.
-bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string &sValue)
+bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &sJavascriptData, std::string &sValue)
 {
-	// Rewritten to no longer use regex matching. Regex matching is the prefferred, more robust way
+	// Rewritten to no longer use regex matching. Regex matching is the preferred, more robust way
 	// but for various reasons we're not supposed to leverage it. Not using boost library either for
 	// the same reasons, so various std::string features are unavailable and have to be implemented manually.
 	
@@ -768,7 +768,7 @@ bool CTado::GetHomes() {
 	{
 		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: failed to get homes: %s", what.c_str());
@@ -815,7 +815,7 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 	{
 		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for Home %s: %s", tTadoHome.Id.c_str(), what.c_str());
@@ -843,7 +843,7 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 }
 
 // Sends a request to the Tado API. 
-bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, const std::string sPostData, 
+bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl, const std::string &sPostData, 
 				std::string &sResponse, const std::vector<std::string> & vExtraHeaders, Json::Value &jsDecodedResponse, 
 				const bool bDecodeJsonResponse, const bool bIgnoreEmptyResponse, const bool bSendAuthHeaders)
 {
@@ -921,7 +921,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 
 		return true;
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::string what = e.what();
 		throw std::runtime_error(("Error sending information to Tado API: %s", what.c_str()));
