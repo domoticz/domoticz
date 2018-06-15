@@ -1141,6 +1141,7 @@
 	</Manufacturer>
 	<Manufacturer id="0176" name="Telldus">
 		<Product type="0003" id="0001" name="TZWP-100 Plug-in Switch" config="telldus/tzwp100.xml"/>
+		<Product type="0003" id="0003" name="TZWP-102 Plug-in Switch" config="telldus/tzwp102.xml"/>
 		<Product type="0005" id="0001" name="TZDW-100 Magnet Switch" config="telldus/tzdw100.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0048" name="Telsey">
