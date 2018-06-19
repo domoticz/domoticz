@@ -27,10 +27,15 @@ History:
  19 November 2016:
  - Removed: Need to login remotely with username/password
  11 April 2018:
- - Refactored: address several issues with working with firmware 4.14.123
+ - Refactored: address several issues with working with firmware 4.14.123 (gordonb3)
+ 19 June 2018:
+ - Complete overhaul: Abandon original methods from harmonyhubcontrol (gordonb3)
+    =>	use a centralized (polled) socket reader function rather than wait for a direct
+	response to a socket write operation.
+
 */
 
-#define _DEBUG
+//#define _DEBUG
 
 
 #include "stdafx.h"
@@ -200,7 +205,6 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 			_log.Log(LOG_ERROR, "Harmony Hub: Connect failed: cannot send the switch command");
 			return false;
 		}
-//		sleep_milliseconds(500); // Hub doesn't seem to like it if we instantly issue the switch command after connecting
 	}
 
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -267,6 +271,9 @@ void CHarmonyHub::Do_Work()
 					// we are not yet authenticated -> send pair request
 					SendPairRequest(m_connection);
 					m_bShowConnectError = false;
+#ifdef _DEBUG
+					std::cerr << "disable show connect error\n";
+#endif
 				}
 				else
 				{
@@ -338,6 +345,7 @@ void CHarmonyHub::Do_Work()
 				{
 					m_bLoginNow = false;
 					m_bWantAnswer = false;
+					m_bNeedEcho = false;
 					if (fcounter < 5)
 						fcounter++;
 					lcounter = 0;
@@ -371,13 +379,16 @@ void CHarmonyHub::Do_Work()
 		// check socket ready and if it is then read Harmony data
 		CheckForHarmonyData();
 
-		if (m_bReceivedMessage && (pcounter < (HARMONY_PING_INTERVAL_SECONDS - HARMONY_SEND_ACK_SECONDS)))
+		if (m_bReceivedMessage)
 		{
-			// fast forward our ping counter
-			pcounter = HARMONY_PING_INTERVAL_SECONDS - HARMONY_SEND_ACK_SECONDS;
+			if (pcounter < (HARMONY_PING_INTERVAL_SECONDS - HARMONY_SEND_ACK_SECONDS))
+			{
+				// fast forward our ping counter
+				pcounter = HARMONY_PING_INTERVAL_SECONDS - HARMONY_SEND_ACK_SECONDS;
 #ifdef _DEBUG
-			std::cerr << "fast forward ping counter to " << pcounter << " seconds\n";
+				std::cerr << "fast forward ping counter to " << pcounter << " seconds\n";
 #endif
+			}
 			m_bReceivedMessage = false;
 		}
 
@@ -720,7 +731,9 @@ bool CHarmonyHub::CheckForHarmonyData()
 	else if (m_szHarmonyData.compare("<iq/>") == 0)
 	{
 		// Hub just acknowledges receiving our query
-		std::cout << "received ACK\n";
+#ifdef _DEBUG
+		std::cerr << "received ACK\n";
+#endif
 	}
 
 	else if (m_szHarmonyData.compare(0, 3, "<iq") == 0)
@@ -940,7 +953,9 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 	else if (szQueryResponse->find("engine?config") != std::string::npos)
 	{
 
-		std::cout << "reading engine config\n";
+#ifdef _DEBUG
+		std::cerr << "reading engine config\n";
+#endif
 		pos = szQueryResponse->find("![CDATA[{");
 		if (pos == std::string::npos)
 		{
