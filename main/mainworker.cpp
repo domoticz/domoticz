@@ -2665,10 +2665,10 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				else
 					WriteMessage("Legrand           disabled");
 
-				if (pResponse->IRESPONSE.PROGUARDenabled)
-					WriteMessage("ProGuard          enabled");
+				if (pResponse->IRESPONSE.MSG4Reserved5)
+					WriteMessage("MSG4Reserved5     enabled");
 				else
-					WriteMessage("ProGuard          disabled");
+					WriteMessage("MSG4Reserved5     disabled");
 
 				if (pResponse->IRESPONSE.BLINDST0enabled)
 					WriteMessage("BlindsT0          enabled");
@@ -4645,6 +4645,7 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 		case sTypeEnergenie5:
 		case sTypeGDR2:
 		case sTypeHQ:
+		case sTypeOase:
 			//decoding of these types is only implemented for use by simulate and verbose
 			//these types are not received by the RFXtrx433
 			switch (pResponse->LIGHTING1.subtype)
@@ -4675,6 +4676,9 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			case sTypeHQ:
 				WriteMessage("subtype       = HQ COCO-20");
+				break;
+			case sTypeOase:
+				WriteMessage("subtype       = Oase Inscenio");
 				break;
 			}
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
@@ -5712,6 +5716,21 @@ void MainWorker::decode_Fan(const int HwdID, const _eHardwareTypes HwdType, cons
 		case sTypeLucciAir:
 			WriteMessage("subtype       = Lucci Air");
 			break;
+		case sTypeSeavTXS4:
+			WriteMessage("subtype       = SEAV TXS4");
+			break;
+		case sTypeWestinghouse:
+			WriteMessage("subtype       = Westinghouse");
+			break;
+		case sTypeLucciAirDC:
+			WriteMessage("subtype       = Lucci Air DC");
+			break;
+		case sTypeCasafan:
+			WriteMessage("subtype       = Casafan");
+			break;
+		case sTypeFT1211R:
+			WriteMessage("subtype       = FT1211R");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
 			WriteMessage(szTmp);
@@ -6251,6 +6270,9 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeBlindsT13:
 			WriteMessage("subtype       = Screenline");
+			break;
+		case sTypeBlindsT14:
+			WriteMessage("subtype       = Hualite");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
@@ -11446,7 +11468,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		lcmd.BLINDS1.id2 = ID2;
 		lcmd.BLINDS1.id3 = ID3;
 		lcmd.BLINDS1.id4 = 0;
-		if ((dSubType == sTypeBlindsT0) || (dSubType == sTypeBlindsT1) || (dSubType == sTypeBlindsT3) || (dSubType == sTypeBlindsT8) || (dSubType == sTypeBlindsT12) || (dSubType == sTypeBlindsT13))
+		if (
+			(dSubType == sTypeBlindsT0) || 
+			(dSubType == sTypeBlindsT1) || 
+			(dSubType == sTypeBlindsT3) || 
+			(dSubType == sTypeBlindsT8) || 
+			(dSubType == sTypeBlindsT12) || 
+			(dSubType == sTypeBlindsT13) ||
+			(dSubType == sTypeBlindsT14)
+			)
 		{
 			lcmd.BLINDS1.unitcode = Unit;
 		}

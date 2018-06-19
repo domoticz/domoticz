@@ -607,6 +607,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting1, sTypeEnergenie5, "Energenie 5-gang" },
 		{ pTypeLighting1, sTypeGDR2, "COCO GDR2" },
 		{ pTypeLighting1, sTypeHQ, "HQ COCO-20" },
+		{ pTypeLighting1, sTypeOase, "Oase Inscenio" },
 
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
@@ -655,6 +656,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
 		{ pTypeBlinds, sTypeBlindsT12, "Confexx" },
 		{ pTypeBlinds, sTypeBlindsT13, "Screenline" },
+		{ pTypeBlinds, sTypeBlindsT14, "Hualite" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -771,6 +773,11 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeFan, sTypeSiemensSF01 , "Siemens SF01" },
 		{ pTypeFan, sTypeItho , "Itho CVE RFT" },
 		{ pTypeFan, sTypeLucciAir, "Lucci Air" },
+		{ pTypeFan, sTypeSeavTXS4, "SEAV TXS4" },
+		{ pTypeFan, sTypeWestinghouse, "Westinghouse" },
+		{ pTypeFan, sTypeLucciAirDC, "Lucci Air DC" },
+		{ pTypeFan, sTypeCasafan, "Casafan" },
+		{ pTypeFan, sTypeFT1211R, "FT1211R" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -1071,6 +1078,7 @@ void GetLightStatus(
 		case sTypeEnergenie5:
 		case sTypeGDR2:
 		case sTypeHQ:
+		case sTypeOase:
 			bHaveGroupCmd = true;
 			switch (nValue)
 			{
