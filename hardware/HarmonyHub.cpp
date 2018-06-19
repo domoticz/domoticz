@@ -30,6 +30,9 @@ History:
  - Refactored: address several issues with working with firmware 4.14.123
 */
 
+#define _DEBUG
+
+
 #include "stdafx.h"
 #include "HarmonyHub.h"
 #include "../main/Helper.h"
@@ -43,7 +46,6 @@ History:
 #include "csocket.h"
 #include "../json/json.h"
 
-#include <iostream>
 
 #define CONNECTION_ID				"446f6d6f-7469-637a-2d48-61726d6f6e79" // `Domoticz-Harmony` in ASCII
 #define GET_CONFIG_COMMAND			"get_config"
@@ -64,13 +66,9 @@ History:
 #define SOCKET_BUFFER_SIZE  1500
 
 
-// socket timeout values
-#define TIMEOUT_WAIT_FOR_ANSWER 2.0f
-#define TIMEOUT_WAIT_FOR_NEXT_FRAME 0.4f
-
-
-#define _DEBUG
-
+#ifdef _DEBUG
+	#include <iostream>
+#endif
 
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port):
 m_szHarmonyAddress(IPAddress)
@@ -83,7 +81,7 @@ m_szHarmonyAddress(IPAddress)
 
 CHarmonyHub::~CHarmonyHub(void)
 {
-	Logout();
+	StopHardware();
 }
 
 
@@ -94,23 +92,42 @@ void CHarmonyHub::Init()
 	m_bNeedMoreData = false;
 	m_bWantAnswer = false;
 	m_bNeedEcho = false;
-	m_bReceivedMessage = true;
-
-// GB3:
+	m_bReceivedMessage = false;
 	m_stoprequested = false;
-	m_szCurActivityID = "";
 	m_bIsChangingActivity = false;
-	m_hubSwVersion = "";
 	m_bShowConnectError = true;
+	m_szCurActivityID = "";
+	m_szHubSwVersion = "";
+	m_szAuthorizationToken = "";
+	m_mapActivities.clear();
 }
 
 
 void CHarmonyHub::Logout()
 {
-	boost::lock_guard<boost::mutex> lock(m_mutex);
-	ResetCommunicationSocket();
-	m_szAuthorizationToken = "";
-	m_mapActivities.clear();
+	if (m_connectionstatus != DISCONNECTED)
+	{
+#ifdef _DEBUG
+		std::cerr << "logout requested: close stream\n";
+#endif
+		CloseStream(m_connection);
+		int i = 50;
+		while ((i > 0) && (m_connectionstatus != DISCONNECTED))
+		{
+			sleep_milliseconds(40);
+			CheckForHarmonyData();
+			i--;
+		}
+		if (m_connectionstatus != DISCONNECTED)
+		{
+			// something went wrong
+#ifdef _DEBUG
+			std::cerr << "stream did not sucessfully close: killing TCP socket\n";
+#endif
+			ResetCommunicationSocket();
+		}
+	}
+	Init();
 }
 
 
@@ -134,10 +151,9 @@ bool CHarmonyHub::StopHardware()
 		m_thread->join();
 	}
 	m_bIsStarted = false;
-	if (m_connectionstatus != DISCONNECTED)
-		Logout();
 	m_bIsChangingActivity = false;
-	m_hubSwVersion = "";
+	m_szHubSwVersion = "";
+	Logout();
 	return true;
 }
 
@@ -148,7 +164,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 
 	if (this->m_bIsChangingActivity)
 	{
-		_log.Log(LOG_ERROR,"Harmony Hub: Command cannot be sent. Hub is changing activity");
+		_log.Log(LOG_ERROR, "Harmony Hub: Command cannot be sent. Hub is changing activity");
 		return false;
 	}
 
@@ -268,11 +284,12 @@ void CHarmonyHub::Do_Work()
 
 			if (!tcounter) // slot this to full seconds only to prevent racing
 			{
-std::cerr << (pcounter % 10);
-				// Hub requires us to actively keep our connection alive
+				// Hub requires us to actively keep our connection alive by periodically pinging it
 				if ((pcounter % HARMONY_PING_INTERVAL_SECONDS) == 0)
 				{
-std::cerr << "send ping\n";
+#ifdef _DEBUG
+					std::cerr << "send ping\n";
+#endif
 					if (m_bNeedEcho || SendPing() < 0)
 					{
 						// Hub dropped our connection
@@ -285,7 +302,9 @@ std::cerr << "send ping\n";
 				else if (m_bNeedEcho && ((pcounter % HARMONY_PING_RETRY_SECONDS) == 0))
 				{
 					// timeout
-std::cerr << "retry ping\n";
+#ifdef _DEBUG
+					std::cerr << "retry ping\n";
+#endif
 					if (SendPing() < 0)
 					{
 						// Hub dropped our connection
@@ -341,7 +360,7 @@ std::cerr << "retry ping\n";
 				if ((pcounter % HARMONY_RETRY_LOGIN_SECONDS) > 1)
 				{
 					// timeout
-					std::cerr << "ERROR : setup command socket timed out";
+					_log.Log(LOG_ERROR, "Harmony Hub: setup command socket timed out");
 					ResetCommunicationSocket();
 				}
 			}
@@ -354,6 +373,9 @@ std::cerr << "retry ping\n";
 		{
 			// fast forward our ping counter
 			pcounter = HARMONY_PING_INTERVAL_SECONDS - HARMONY_SEND_ACK_SECONDS;
+#ifdef _DEBUG
+			std::cerr << "fast forward ping counter to " << pcounter << " seconds\n";
+#endif
 			m_bReceivedMessage = false;
 		}
 
@@ -362,13 +384,11 @@ std::cerr << "retry ping\n";
 			// use a 40ms poll interval
 			sleep_milliseconds(40);
 			tcounter++;
-std::cerr << ".";
 			if ((tcounter % 25) == 0)
 			{
 				tcounter = 0;
 				pcounter++;
 				hcounter--;
-std::cerr << "\n";
 			}
 		}
 		else
@@ -385,61 +405,11 @@ std::cerr << "\n";
 			hcounter = HEARTBEAT_SECONDS;
 			m_LastHeartbeat=mytime(NULL);
 		}
-
-
-
-/*
-		sleep_milliseconds(500);
-
-
-		mcounter++;
-		if (mcounter % 2)
-			continue;
-
-		pcounter++;
-
-		if (mcounter % (HEARTBEAT_SECONDS * 2) == 0)
-		{
-			mcounter = 0;
-			m_LastHeartbeat=mytime(NULL);
-		}
-
-
-		if (pcounter % HARMONY_PING_INTERVAL_SECONDS == 0)
-		{
-			// Ping hub to see if it is still alive
-			if (!SendPing())
-			{
-				_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
-				ResetCommunicationSocket();
-				pcounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
-			}
-			continue;
-		}
-
-		bool bIsDataReadable = true;
-		m_connection->canRead(&bIsDataReadable, 0); // we're not expecting data at this point, so don't wait
-		if (bIsDataReadable)
-		{
-			// Harmony Hub requires us to send a 'ping' within 20 seconds after receiving volunteered status reports
-			pcounter = HARMONY_PING_INTERVAL_SECONDS - HARMONY_SEND_ACK_SECONDS;
-
-			boost::lock_guard<boost::mutex> lock(m_mutex);
-			std::string strData;
-//			ReceiveMessage(m_connection, strData, -1, TIMEOUT_WAIT_FOR_NEXT_FRAME, false);
-
-			if (!strData.empty())
-				CheckIfChanging(strData);
-			else
-			{
-				ResetCommunicationSocket(); // we exceeded our ACK time frame and Harmony Hub will no longer accept our commands or send valid data
-				pcounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
-
-			}
-		}
-*/
-
 	}
+
+	// be nice
+	Logout();
+
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
 }
 
@@ -558,7 +528,6 @@ void CHarmonyHub::ResetCommunicationSocket()
 	m_connection = NULL;
 	m_connectionstatus = DISCONNECTED;
 
-
 	m_bIsChangingActivity = false;
 	m_bWantAnswer = false;
 	m_szCurActivityID = "";
@@ -576,7 +545,7 @@ int CHarmonyHub::WriteToSocket(std::string *szReq)
 
 std::string CHarmonyHub::ReadFromSocket(csocket *connection)
 {
-	return ReadFromSocket(connection, TIMEOUT_WAIT_FOR_ANSWER);
+	return ReadFromSocket(connection, 0);
 }
 std::string CHarmonyHub::ReadFromSocket(csocket *connection, float waitTime)
 {
@@ -718,38 +687,6 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &
 
 /************************************************************************
 *									*
-* Helper function to check the return errorcode on our query		*
-*									*
-************************************************************************/
-bool CHarmonyHub::IsIqError(const std::string &szQueryResponse)
-{
-	size_t iqstart = 0;
-	bool ret = true;
-	while (1)
-	{
-		iqstart = szQueryResponse.find("<iq ", iqstart);
-		if (iqstart == std::string::npos)
-			break;
-		ret = false;
-		size_t iqend = szQueryResponse.find("</iq>", iqstart);
-		if (iqend == std::string::npos)
-			return true;
-		std::string iqmsg = szQueryResponse.substr(iqstart, iqend);
-		iqstart = iqend;
-		if (iqmsg.find("errorcode='200'") != std::string::npos) // status OK
-			continue;
-		if (iqmsg.find("errorcode='100'") != std::string::npos) // status continue - Hub has more data
-			continue;
-		return true;
-	}
-	return ret;
-}
-
-
-
-
-/************************************************************************
-*									*
 * Communication handler							*
 *   - reconstructs network frames into a single communication block	*
 *     to be handled by the parser					*
@@ -860,7 +797,9 @@ void CHarmonyHub::ProcessHarmonyConnect(std::string *szHarmonyData)
 	{
 		// stream initiated successfully
 		m_connectionstatus = INITIALIZED;
-std::cerr << "connectionstatus = initialized\n";
+#ifdef _DEBUG
+		std::cerr << "connectionstatus = initialized\n";
+#endif
 		if (m_szAuthorizationToken.empty())
 			sendStatus = SendAuth(m_connection, "guest", "gatorade");
 		else
@@ -870,7 +809,9 @@ std::cerr << "connectionstatus = initialized\n";
 	else if ((m_connectionstatus = INITIALIZED) && (*szHarmonyData == "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>"))
 	{
 		// authentication succesful - restart our stream to bind
-std::cerr << "connectionstatus = authenticated\n";
+#ifdef _DEBUG
+		std::cerr << "connectionstatus = authenticated\n";
+#endif
 		m_connectionstatus = AUTHENTICATED;
 		sendStatus = StartStream(m_connection);
 	}
@@ -879,13 +820,15 @@ std::cerr << "connectionstatus = authenticated\n";
 	{
 		// stream bind completed
 		m_connectionstatus = BOUND;
-std::cerr << "connectionstatus = bound\n";
+#ifdef _DEBUG
+		std::cerr << "connectionstatus = bound\n";
+#endif
 	}
 
 	if (sendStatus < 0)
 	{
 		// error while sending commands to hub
-		std::cerr << "Harmony Hub: Cannot setup command socket to Harmony Hub\n";
+		_log.Log(LOG_ERROR, "Harmony Hub: Cannot setup command socket to Harmony Hub");
 		ResetCommunicationSocket();
 	}
 }
@@ -899,24 +842,48 @@ std::cerr << "connectionstatus = bound\n";
 ************************************************************************/
 void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 {
-	if (IsIqError(*szQueryResponse))
-	{
-		std::cerr << "iq message status = error\n";
-		return;
-	}
-
-	std::cerr << "iq message status = OK\n";
-
 	size_t pos = 0;
 	m_bWantAnswer = false;
 
+	pos = szQueryResponse->find("errorcode=");
+	if (pos != std::string::npos)
+	{
+		std::string szErrorcode = szQueryResponse->substr(pos + 11, 3);
+#ifdef _DEBUG
+		if (szErrorcode == "100")
+		{
+			// This errorcode has been seen with `mime='harmony.engine?startActivity'`
+			// We're currently not interested in those - see related comment section below
+
+			std::cerr << "iq message status = continue\n";
+			return;
+		}
+#endif
+		if (szErrorcode != "200")
+		{
+#ifdef _DEBUG
+			std::cerr << "iq message status = error\n";
+#endif
+			return;
+		}
+	}
+
+#ifdef _DEBUG
+	std::cerr << "iq message status = OK\n";
+#endif
+
+
+	// mime='vnd.logitech.connect/vnd.logitech.ping'
 	if (szQueryResponse->find("vnd.logitech.ping") != std::string::npos)
 	{
 		// got ping return
+#ifdef _DEBUG
 		std::cerr << "got ping return\n";
+#endif
 		m_bNeedEcho = false;
 	}
 
+	// mime='vnd.logitech.harmony/vnd.logitech.harmony.engine?getCurrentActivity'
 	else if (szQueryResponse->find("engine?getCurrentActivity") != std::string::npos)
 	{
 		pos = szQueryResponse->find("<![CDATA[result=");
@@ -926,8 +893,9 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			pos = szJsonString.find("]]>");
 			if (pos != std::string::npos)
 			{
-std::cerr << "current activity ID = " << atoi(szJsonString.substr(0, pos).c_str()) << "\n";
-
+#ifdef _DEBUG
+				std::cerr << "current activity ID = " << atoi(szJsonString.substr(0, pos).c_str()) << "\n";
+#endif
 				if (m_szCurActivityID.empty()) // initialize all switches
 				{
 					m_szCurActivityID = szJsonString.substr(0, pos);
@@ -947,18 +915,36 @@ std::cerr << "current activity ID = " << atoi(szJsonString.substr(0, pos).c_str(
 		}
 	}
 
+#ifdef _DEBUG
+	// mime='vnd.logitech.harmony/vnd.logitech.harmony.engine?startactivity'
 	else if (szQueryResponse->find("engine?startactivity") != std::string::npos)
 	{
 		// doesn't appear to hold any sensible data - also always returns errorcode='200' even if activity is incorrect.
 	}
 
+	// mime='harmony.engine?startActivity'
+	else if (szQueryResponse->find("engine?startActivity") != std::string::npos)
+	{
+		// This chain of query type messages follow after startactivity, apparently to inform that commands are being
+		// executed towards specific deviceId's, but not showing what these commands are.
+
+		// Since the mime is different from what we sent to Harmony Hub this appears to be a query directed to us, but
+		// it is unknown whether we should acknowledge and/or return some response. The Hub doesn't seem to mind that
+		// we don't though.
+	}
+#endif
+
+	// mime='vnd.logitech.harmony/vnd.logitech.harmony.engine?config'
 	else if (szQueryResponse->find("engine?config") != std::string::npos)
 	{
+
 		std::cout << "reading engine config\n";
 		pos = szQueryResponse->find("![CDATA[{");
 		if (pos == std::string::npos)
 		{
+#ifdef _DEBUG
 			std::cerr << "error: response does not contain a CDATA section\n";
+#endif
 			return;
 		}
 
@@ -969,13 +955,13 @@ std::cerr << "current activity ID = " << atoi(szJsonString.substr(0, pos).c_str(
 		bool ret = jReader.parse(szJsonString.c_str(), j_result);
 		if ((!ret) || (!j_result.isObject()))
 		{
-			std::cerr << "Harmony Hub: Invalid data received! (Update Activities)\n";
+			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
 			return;
 		}
 		
 		if (j_result["activity"].empty())
 		{
-			std::cerr << "Harmony Hub: Invalid data received! (Update Activities)\n";
+			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
 			return;
 		}
 
@@ -991,10 +977,11 @@ std::cerr << "current activity ID = " << atoi(szJsonString.substr(0, pos).c_str(
 		}
 		catch (...)
 		{
-			std::cerr << "Harmony Hub: Invalid data received! (Update Activities, JSon activity)\n";
+			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities, JSon activity)");
 		}
 
-std::cerr << "parsed json data\n";
+#ifdef _DEBUG
+		std::cerr << "parsed json data\n";
 		std::string resultString = "{";
 
 		std::map<std::string, std::string>::iterator it = m_mapActivities.begin();
@@ -1011,21 +998,27 @@ std::cerr << "parsed json data\n";
 		resultString.append("}");
 
 		std::cerr << resultString << "\n";
+#endif
 	}
 
+	// mime='vnd.logitech.connect/vnd.logitech.pair'
 	else if (szQueryResponse->find("vnd.logitech.pair") != std::string::npos)
 	{
 		pos = szQueryResponse->find("identity=");
 		if (pos == std::string::npos)
 		{
+#ifdef _DEBUG
 			std::cerr << "GetAuthorizationToken : Logitech Harmony response does not contain a session authorization token\n";
+#endif
 			return;
 		}
 		m_szAuthorizationToken = szQueryResponse->substr(pos + 9);
 		pos = m_szAuthorizationToken.find(":");
 		if (pos == std::string::npos)
 		{
+#ifdef _DEBUG
 			std::cerr << "GetAuthorizationToken : Logitech Harmony response does not contain a valid session authorization token\n";
+#endif
 			m_szAuthorizationToken = "";
 			return;
 		}
@@ -1050,7 +1043,9 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 	if (szMessageBlock->compare(pos, 7, "content") != 0)
 	{
 		// bad message format
+#ifdef _DEBUG
 		std::cerr << "error: unrecognized message format (no content-length)\n";
+#endif
 		return;
 	}
 	pos += 16;
@@ -1060,16 +1055,22 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 	if (szMessageBlock->compare(msgStart, 8, "<message") != 0)
 	{
 		// message block incorrectly positioned
+#ifdef _DEBUG
 		std::cerr << "warning: message block incorrectly positioned\n";
+#endif
 		msgStart = szMessageBlock->find("<message", pos);
 		if ((msgStart == std::string::npos) || ((msgStart - pos) > 8))
 		{
 			// unable to find the actual message block
+#ifdef _DEBUG
 			std::cerr << "error: unrecognized message format\n";
+#endif
 			return;
 		}
 	}
 	std::string szMessage = szMessageBlock->substr(msgStart, msglen);
+
+	// <event xmlns="connect.logitech.com" type="connect.stateDigest?notify">
 	if (szMessage.find("stateDigest?notify", pos) != std::string::npos)
 	{
 		// Event state notification
@@ -1091,17 +1092,21 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			}
 		}
 
-		if (m_hubSwVersion.empty())
+#ifndef _DEBUG
+		if (m_szHubSwVersion.empty())
+#endif
 		{
 			jpos = szMessage.find("hubSwVersion");
 			if (jpos != std::string::npos)
 			{
-				m_hubSwVersion = szMessage.substr(jpos+15, 16); // limit string length for end delimiter search
-				jpos = m_hubSwVersion.find("\"");
+				m_szHubSwVersion = szMessage.substr(jpos+15, 16); // limit string length for end delimiter search
+				jpos = m_szHubSwVersion.find("\"");
 				if (jpos != std::string::npos)
 				{
-					m_hubSwVersion = m_hubSwVersion.substr(0, jpos);
-					_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_hubSwVersion.c_str());
+					m_szHubSwVersion = m_szHubSwVersion.substr(0, jpos);
+#ifndef _DEBUG
+					_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_szHubSwVersion.c_str());
+#endif
 				}
 			}
 		}
@@ -1118,14 +1123,14 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 		if ((jpos == std::string::npos) || activityId.empty())
 			activityId = "-1";
 
-		std::cerr << "Event state notification: activityId = " << activityId << ", activityStatus = " << cActivityStatus << 
-			     ", hubSwVersion = " << m_hubSwVersion << "\n";
+		_log.Log(LOG_STATUS, "Harmony Hub: Event state notification: activityId = %s, activityStatus = %c, hubSwVersion = %s", activityId.c_str(), cActivityStatus, m_szHubSwVersion.c_str());
 #endif
 	}
 
+	// <event xmlns="connect.logitech.com" type="harmony.engine?startActivityFinished">
 	else if (szMessage.find("engine?startActivityFinished", pos) != std::string::npos)
 	{
-std::cerr << "start activity finished\n";
+		// start activity finished
 		size_t jpos = szMessage.find("activityId");
 		std::string szActivityId;
 		if (jpos != std::string::npos)
@@ -1168,7 +1173,9 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 	{
 		if (szHarmonyData->compare(pos, 5, "<iq/>") == 0)
 		{
+#ifdef _DEBUG
 			std::cout << "received ACK\n";
+#endif
 			pos += 5;
 		}
 
@@ -1178,7 +1185,9 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 			pos = szHarmonyData->find("</iq>", iqStart);
 			pos += 5;
 			std::string szQueryResponse = szHarmonyData->substr(iqStart, pos - iqStart);
-std::cerr << szQueryResponse << "\n";
+#ifdef _DEBUG
+			std::cerr << szQueryResponse << "\n";
+#endif
 			ProcessQueryResponse(&szQueryResponse);
 		}
 
@@ -1188,6 +1197,9 @@ std::cerr << szQueryResponse << "\n";
 			pos = szHarmonyData->find("</message>", msgStart);
 			pos += 10;
 			std::string szMessage = szHarmonyData->substr(msgStart, pos - msgStart);
+#ifdef _DEBUG
+			std::cerr << szMessage << "\n";
+#endif
 			ProcessHarmonyMessage(&szMessage);
 			m_bReceivedMessage = true; // need this to fast forward our ping interval counter
 		}
@@ -1195,7 +1207,9 @@ std::cerr << szQueryResponse << "\n";
 		else if (szHarmonyData->compare(pos, 8, "</stream") == 0)
 		{
 			// Hub is closing the connection
-			std::cout << "Hub closed connection\n";
+#ifdef _DEBUG
+			std::cerr << "Hub closed connection\n";
+#endif
 			ResetCommunicationSocket();
 			pos = szHarmonyData->length(); // this is always the last transmission
 		}

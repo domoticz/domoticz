@@ -90,21 +90,19 @@ public:
 	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port);
 	~CHarmonyHub(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+
 private:
-	void Init();
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
 
-
-//	bool CheckIfChanging(const std::string& strData);
-
-
-	// checked
+	// Init and cleanup
+	void Init();
 	void Logout();
+
+	// Helper functions for changing switch status in Domoticz
 	void CheckSetActivity(const std::string &activityID, const bool on);
 	void UpdateSwitch(const unsigned char idx, const char * szIdx, const bool bOn, const std::string &defaultname);
-
 
 	// Raw socket functions
 	bool ConnectToHarmony(const std::string &szHarmonyIPAddress, const int HarmonyPortNumber, csocket* connection);
@@ -132,19 +130,16 @@ private:
 	void ProcessHarmonyMessage(std::string *szMessageBlock);
 	void ProcessQueryResponse(std::string *szQueryResponse);
 
-	// Helper functions for XMPP reading
-	bool IsIqError(const std::string &szQueryResponse);
+	// Helper function for XMPP reading
 	bool IsTransmissionComplete(std::string *szHarmonyData);
 
 
-
-
-// vars
 
 	// hardware parameters
 	std::string m_szHarmonyAddress;
 	unsigned short m_usHarmonyPort;
 
+	// vars
 	volatile bool m_stoprequested;
 
 	boost::shared_ptr<boost::thread> m_thread;
@@ -153,29 +148,17 @@ private:
 	csocket * m_connection;
 	_eConnectionStatus m_connectionstatus;
 
-
-	// imported
 	bool m_bNeedMoreData;
 	bool m_bWantAnswer;
 	bool m_bNeedEcho;
 	bool m_bReceivedMessage;
 	bool m_bLoginNow;
+	bool m_bIsChangingActivity;
+	bool m_bShowConnectError;
 
+	std::string m_szHubSwVersion;
 	std::string m_szHarmonyData;
 	std::string m_szAuthorizationToken;
 	std::string m_szCurActivityID;
 	std::map<std::string, std::string> m_mapActivities;
-
-	std::string m_hubSwVersion;
-
-
-
-	// old
-//	std::string m_harmonyAddress;
-//	unsigned short m_usIPPort;
-
-	bool m_bDoLogin;
-	bool m_bIsChangingActivity;
-	std::string m_szResultString;
-	bool m_bShowConnectError;
 };
