@@ -266,6 +266,7 @@ void CHarmonyHub::Do_Work()
 				{
 					// we are not yet authenticated -> send pair request
 					SendPairRequest(m_connection);
+					m_bShowConnectError = false;
 				}
 				else
 				{
@@ -277,6 +278,7 @@ void CHarmonyHub::Do_Work()
 					else if (m_szCurActivityID.empty())
 					{
 						fcounter = 0;
+						_log.Log(LOG_STATUS, "Harmony Hub: Connected to Hub.");
 						SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND);
 					}
 				}
@@ -343,10 +345,10 @@ void CHarmonyHub::Do_Work()
 					m_szCurActivityID = "";
 					if (!SetupCommunicationSocket())
 					{
-						if (m_connectionstatus == DISCONNECTED)
+						if ((m_connectionstatus == DISCONNECTED) && (hcounter > 3))
 						{
-							// adjust for connect timeout
-							pcounter += 3;
+							// adjust heartbeat counter for connect timeout
+							hcounter -= 3;
 						}
 					}
 				}
