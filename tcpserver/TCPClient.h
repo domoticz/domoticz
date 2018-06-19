@@ -69,7 +69,7 @@ public:
 	bool CompareToken(const std::string &token);
 private:
 	boost::shared_ptr<http::server::CProxyClient> m_pProxyClient;
-	std::string _token;
+	std::string m_token;
 };
 #endif
 

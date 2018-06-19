@@ -26,12 +26,21 @@
 //
 //Class Meteostick
 //
-Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned int baud_rate)
+Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned int baud_rate):
+	m_szSerialPort(devname)
 {
 	m_HwdID=ID;
-	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequestedpoller = false;
+	m_state = MSTATE_INIT;
+	m_bufferpos = 0;
+	for (int ii = 0; ii < MAX_IDS; ii++)
+	{
+		m_LastOutsideTemp[ii] = 12345;
+		m_LastOutsideHum[ii] = 0;
+		m_ActRainCounter[ii] = -1;
+		m_LastRainValue[ii] = -1;
+	}
 }
 
 Meteostick::~Meteostick()
@@ -101,15 +110,12 @@ bool Meteostick::OpenSerialDevice()
 	m_bIsStarted = true;
 	m_bufferpos = 0;
 
-	int ii;
-
-	for (ii = 0; ii < MAX_IDS; ii++)
+	for (int ii = 0; ii < MAX_IDS; ii++)
 	{
 		m_LastOutsideTemp[ii]	= 12345;
 		m_LastOutsideHum[ii]	= 0;
 		m_ActRainCounter[ii]	= -1;
 		m_LastRainValue[ii]		= -1;
-
 	}
 	setReadCallback(boost::bind(&Meteostick::readCallback, this, _1, _2));
 	sOnConnected(this);
@@ -119,7 +125,6 @@ bool Meteostick::OpenSerialDevice()
 
 void Meteostick::Do_PollWork()
 {
-	bool bFirstTime = true;
 	int sec_counter = 0;
 	while (!m_stoprequestedpoller)
 	{
@@ -140,8 +145,7 @@ void Meteostick::Do_PollWork()
 			if (m_retrycntr >= RETRY_DELAY)
 			{
 				m_retrycntr = 0;
-				if (OpenSerialDevice())
-					bFirstTime = true;
+				OpenSerialDevice();
 			}
 		}
 	}
@@ -275,7 +279,6 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	int finalID = (Idx * 10) + Channel;
 	SendMoistureSensor(finalID,255, Moisture, defaultname);
 }

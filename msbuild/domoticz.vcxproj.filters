@@ -1666,9 +1666,6 @@
     <ClInclude Include="..\notifications\NotificationEmail.h">
       <Filter>Notifications</Filter>
     </ClInclude>
-    <ClInclude Include="..\notifications\NotificationNma.h">
-      <Filter>Notifications</Filter>
-    </ClInclude>
     <ClInclude Include="..\notifications\NotificationProwl.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -2407,9 +2404,6 @@
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationEmail.cpp">
-      <Filter>Notifications</Filter>
-    </ClCompile>
-    <ClCompile Include="..\notifications\NotificationNma.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationProwl.cpp">

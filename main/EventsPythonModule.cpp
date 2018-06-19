@@ -73,8 +73,8 @@
             }
             else
             {
-                std::string	dev = device;
-                std::string act = action;
+                //std::string	dev = device;
+                //std::string act = action;
                 // _log.Log((_eLogLevel)LOG_NORM, "Python EventSystem - Command: Target: %s Command: %s", dev.c_str(), act.c_str());
                 m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test");
             }
@@ -108,7 +108,7 @@
         
         int PythonEventsInitalized = 0;
 
-        bool PythonEventsInitialize(std::string szUserDataFolder) {
+        bool PythonEventsInitialize(const std::string &szUserDataFolder) {
             
             if (!Plugins::Py_LoadLibrary())
             {
@@ -187,7 +187,7 @@
 
         // main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
         
-        PyObject* mapToPythonDict(std::map<std::string, float> floatMap) {
+        PyObject* mapToPythonDict(const std::map<std::string, float> &floatMap) {
             
             return Py_None;
         }

@@ -79,11 +79,15 @@ CHardwareMonitor::CHardwareMonitor(const int ID)
 	m_HwdID = ID;
 	m_stoprequested=false;
 	m_bOutputLog = false;
+	m_lastquerytime = 0;
+#if defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	m_totcpu = 0;
+	m_lastloadcpu = 0;
+#endif
 #ifdef WIN32
 	m_pLocator = NULL;
 	m_pServicesOHM = NULL;
 	m_pServicesSystem = NULL;
-	m_lastquerytime = 0;
 	//	CoInitializeEx(0, COINIT_MULTITHREADED);
 //	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
@@ -466,7 +470,6 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	if ((m_pServicesOHM == NULL) || (m_pServicesSystem == NULL))
 		return;
 	HRESULT hr;
-	int dindex = 0;
 	std::string query = "SELECT * FROM ";
 	query.append(qTable);
 	query.append(" WHERE SensorType = '");
@@ -476,6 +479,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	hr = m_pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
 	if (!FAILED(hr))
 	{
+		int dindex = 0;
+
 		// Get the data from the query
 		IWbemClassObject *pclsObj = NULL;
 		while (pEnumerator)
@@ -674,8 +679,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 
 	void CHardwareMonitor::FetchUnixCPU()
 	{
-		char szTmp[300];
 		//CPU
+		char szTmp[300];
 		char cname[50];
 		if (m_lastquerytime==0)
 		{

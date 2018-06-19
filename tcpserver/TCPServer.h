@@ -147,7 +147,6 @@ private:
 	bool StopHardware() { return false; };
 
 	void Do_Work();
-	bool b_ViaProxy;
 };
 
 } // namespace server

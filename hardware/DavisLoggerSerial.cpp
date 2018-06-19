@@ -232,7 +232,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	fread(&szBuffer,1,100,fIn);
 	fclose(fIn);
 	pData=szBuffer+1;
-	bool bIsRevA(szBuffer[4]=='P');
+	//bool bIsRevA(szBuffer[4]=='P');
 #endif
 
 	RBUF tsen;
@@ -257,8 +257,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 	bool bWindSpeedValid=false;
 	float WindSpeed=0;
-	bool bWindSpeedAVR10Valid=false;
-	float WindSpeedAVR10=0;
+	//bool bWindSpeedAVR10Valid=false;
+	//float WindSpeedAVR10=0;
 
 	bool bUVValid=false;
 	float UV=0;
@@ -436,8 +436,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	//Wind Speed AVR 10 minutes
 	if (pData[15]!=0xFF)
 	{
-		bWindSpeedAVR10Valid=true;
-		WindSpeedAVR10=(pData[15])*(4.0f/9.0f);
+		//bWindSpeedAVR10Valid=true;
+		//WindSpeedAVR10=(pData[15])*(4.0f/9.0f);
 	}
 	//Wind Direction
 	if ((pData[16]!=0xFF)&&(pData[17]!=0x7F))
@@ -507,14 +507,14 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	//Rain Rate
 	if ((pData[41]!=0xFF)&&(pData[42]!=0xFF))
 	{
-		float rainRate=((unsigned int)((pData[42] << 8) | pData[41])) / 100.0f; //inches
-		rainRate*=25.4f; //mm
+		//float rainRate=((unsigned int)((pData[42] << 8) | pData[41])) / 100.0f; //inches
+		//rainRate*=25.4f; //mm
 	}
 	//Rain Day
 	if ((pData[50]!=0xFF)&&(pData[51]!=0xFF))
 	{
-		float rainDay=((unsigned int)((pData[51] << 8) | pData[50])) / 100.0f; //inches
-		rainDay*=25.4f; //mm
+		//float rainDay=((unsigned int)((pData[51] << 8) | pData[50])) / 100.0f; //inches
+		//rainDay*=25.4f; //mm
 	}
 	//Rain Year
 	if ((pData[54]!=0xFF)&&(pData[55]!=0xFF))

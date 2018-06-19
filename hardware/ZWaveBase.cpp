@@ -229,7 +229,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT ID, SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
-		if (result.size() > 0) //Already in the system, but make sure SubType is correct
+		if (!result.empty()) //Already in the system, but make sure SubType is correct
 		{
 			unsigned sTypeOld = atoi(result[0][1].c_str());
 			std::string sID = result[0][0];
@@ -278,7 +278,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
-		if (result.size() > 0)
+		if (!result.empty())
 			return; //Already in the system
 
 		//Send as pTypeGeneralSwitch/sSwitchGeneralSwitch
@@ -1068,7 +1068,6 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				int ivalue = pLed->value;
 				if (ivalue > 99)
 					ivalue = 99; //99 is fully on
-				svalue = ivalue;
 				if (pLed->color.mode == ColorModeWhite)
 				{
 					instanceID = 3;//red

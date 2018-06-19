@@ -202,7 +202,7 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	_log.Debug(DEBUG_HARDWARE, "Arilux: WriteToHardware...............................");
-	_tColorSwitch *pLed = (_tColorSwitch*)pdata;
+	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 	uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
 

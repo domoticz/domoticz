@@ -37,6 +37,7 @@ Version 3.xxx (May xxth 2018)
 - Implemented: Webserver: automatically reload SSL certificates and DH params3
 - Implemented: Xiaomi Aqara Cube
 - Implemented: ZWave node ID to log
+- Removed: NMA Notification system (the service has stopped)
 - Updated: Dzvents (version 2.4.6, See dzVents/documentation/history.md)
 - Updated: OenZWave driver and configuration files
 - Updated: Translation files

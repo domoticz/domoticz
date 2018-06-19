@@ -50,16 +50,7 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	}
 }
 
-uint64_t strtoui64(std::string str)
-{
-	uint64_t ul;
-	std::stringstream ss;
-	ss << str;
-	ss >> ul;
-	return ul;
-}
-
-uint64_t hexstrtoui64(std::string str)
+uint64_t hexstrtoui64(const std::string &str)
 {
 	uint64_t ul;
 	std::stringstream ss;
@@ -612,7 +603,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 #endif
 	}
 	else
-		localtime_r(&(*ltime), &timeinfo);
+		localtime_r(ltime, &timeinfo);
 
 	if (format > TF_Time)
 	{
@@ -819,7 +810,7 @@ int MStoBeaufort(const float ms)
 	return 12;
 }
 
-bool dirent_is_directory(std::string dir, struct dirent *ent)
+bool dirent_is_directory(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_DIR)
 		return true;
@@ -836,7 +827,7 @@ bool dirent_is_directory(std::string dir, struct dirent *ent)
 	return false;
 }
 
-bool dirent_is_file(std::string dir, struct dirent *ent)
+bool dirent_is_file(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_REG)
 		return true;
@@ -1065,9 +1056,9 @@ int GenerateRandomNumber(const int range)
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
 {
 	DIR* dir;
-	struct dirent *ent;
 	if ((dir = opendir(DirPath.c_str())) != NULL)
 	{
+		struct dirent *ent;
 		while ((ent = readdir(dir)) != NULL)
 		{
 			if (dirent_is_directory(DirPath, ent))

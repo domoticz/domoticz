@@ -19,9 +19,13 @@
 
 //#define DEBUG_GoodweAPI 1
 
-#define GOODWE_BY_USER_URL "http://www.goodwe-power.com/Mobile/GetMyPowerStationByUser?userName="
-#define GOODWE_BY_STATION_URL "http://www.goodwe-power.com/Mobile/GetMyPowerStationById?stationId="
-#define GOODWE_DEVICE_LIST_URL "http://www.goodwe-power.com/Mobile/GetMyDeviceListById?stationId="
+#define GOODWE_HOST_GLOBAL "https://hk.goodwe-power.com/"
+#define GOODWE_HOST_EU "https://eu.goodwe-power.com/"
+#define GOODWE_HOST_AU "https://au.goodwe-power.com/"
+
+#define GOODWE_BY_USER_PATH "Mobile/GetMyPowerStationByUser?userName="
+#define GOODWE_BY_STATION_PATH "Mobile/GetMyPowerStationById?stationId="
+#define GOODWE_DEVICE_LIST_PATH "Mobile/GetMyDeviceListById?stationId="
 
 // parameter names for GetMyPowerStationByUser
 
@@ -47,6 +51,11 @@
 #define DEVICE_TOTAL_KWH "etotal"
 #define DEVICE_ERROR_MSG "errormsg"
 
+enum _eGoodweLocation {
+	GOODWE_LOCATION_GLOBAL= 0,      // Global server
+	GOODWE_LOCATION_OCEANIA = 1,    // Australian server
+	GOODWE_LOCATION_EUROPE = 2      // European server
+};
 
 #ifdef _DEBUG
 	//#define DEBUG_GoodweAPIW 1
@@ -65,10 +74,22 @@ void SaveString2Disk(const std::string &str, const std::string &filename)
 }
 #endif
 
-GoodweAPI::GoodweAPI(const int ID, const std::string &userName):
+GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int ServerLocation):
 	m_UserName(userName)
 {
 	m_HwdID=ID;
+	switch ((_eGoodweLocation)ServerLocation) {
+		case GOODWE_LOCATION_EUROPE: 
+			m_Host = GOODWE_HOST_EU;
+			break;
+		case GOODWE_LOCATION_OCEANIA:
+			m_Host = GOODWE_HOST_AU;
+			break;
+		default:
+			m_Host = GOODWE_HOST_GLOBAL;
+			break;
+	}
+	
 	m_stoprequested=false;
 	Init();
 }
@@ -105,7 +126,7 @@ bool GoodweAPI::StopHardware()
 
 void GoodweAPI::Do_Work()
 {
-	_log.Log(LOG_STATUS, "GoodweAPI Worker started...");
+	_log.Log(LOG_STATUS, "GoodweAPI Worker started, using server URL %s...", m_Host.c_str());
 	int sec_counter = 295;
 	while (!m_stoprequested)
 	{
@@ -152,11 +173,15 @@ int GoodweAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	return 0;
 }
 
+bool GoodweAPI::GoodweServerClient(const std::string &sPath, std::string &sResult)
+{
+	return HTTPClient::GET(m_Host + sPath, sResult);
+}
 
 uint32_t GoodweAPI::hash(const std::string &str)
 {
 	/* 
-	 * We need a way to generate the NoddeId from the stationID 
+	 * We need a way to generate the NodeId from the stationID 
 	 * and the ChildID from device serial.
 	 * This hash is definitely not perfect as we reduce the 128 bit
          * stationID to an int (normally 32 bits).
@@ -236,9 +261,9 @@ void GoodweAPI::GetMeterDetails()
 	if (ActHourMin - 120 > sunSet)
 		return;
 
-	std::string sURL = GOODWE_BY_USER_URL + m_UserName;
+	std::string sPATH = GOODWE_BY_USER_PATH + m_UserName;
 
-	bool bret = HTTPClient::GET(sURL, sResult);
+	bool bret = GoodweServerClient(sPATH, sResult);
 	if (!bret)
 	{
 		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http user data!");
@@ -290,10 +315,10 @@ void GoodweAPI::ParseStation(const std::string &sStationId, const std::string &s
 	// fetch power station details
 
 	std::string sResult;
-	std::string sURL = GOODWE_BY_STATION_URL + sStationId;
+	std::string sPATH = GOODWE_BY_STATION_PATH + sStationId;
 	bool bret;
 
-	bret = HTTPClient::GET(sURL, sResult);
+	bret = GoodweServerClient(sPATH, sResult);
 
 	if (!bret)
 	{
@@ -359,11 +384,11 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 {
 	// fetch interverter list
 
-	std::string sURL = GOODWE_DEVICE_LIST_URL + sStationId;
+	std::string sPATH = GOODWE_DEVICE_LIST_PATH + sStationId;
 	bool bret;
 	std::string sResult;
 
-	bret = HTTPClient::GET(sURL, sResult);
+	bret = GoodweServerClient(sPATH, sResult);
 	if (!bret)
 	{
 		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http data for device list !");
@@ -432,6 +457,7 @@ void GoodweAPI::ParseDevice(Json::Value device, const std::string &sStationId, c
 	std::string sErrorMsg = device[DEVICE_ERROR_MSG].asString();
 	std::string sStatus = device[DEVICE_STATUS].asString();
 
+
 	// convert currentPower and totalPower to floats
 
 	float currentPowerW = getPowerWatt(sCurrentPower);
@@ -447,7 +473,13 @@ void GoodweAPI::ParseDevice(Json::Value device, const std::string &sStationId, c
 		ChildID = ChildID + 10;
 	}
 
-	SendKwhMeter(NodeID, ChildID, 255, currentPowerW, totalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
+	// do not send meter values when status is not normal (meter values are 0 when offline)
+	// It is unknown if other cases exist where 0 is returned, so we compare to "Normal"
+
+	if (sStatus.compare("Normal") == 0)
+        {
+		SendKwhMeter(NodeID, ChildID, 255, currentPowerW, totalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
+	}
 	SendTextSensor(NodeID, ChildID + 1 , 255, sStatus, sStationName + " " + sDeviceSerial + " status");
 	SendTextSensor(NodeID, ChildID + 2 , 255, sErrorMsg, sStationName + " " + sDeviceSerial + " error");
 }

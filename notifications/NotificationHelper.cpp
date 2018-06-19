@@ -9,7 +9,6 @@
 #include "../hardware/hardwaretypes.h"
 #include "NotificationHelper.h"
 #include "NotificationProwl.h"
-#include "NotificationNma.h"
 #include "NotificationPushbullet.h"
 #include "NotificationPushover.h"
 #include "NotificationPushsafer.h"
@@ -43,7 +42,6 @@ CNotificationHelper::CNotificationHelper()
 	/* more notifiers can be added here */
 
 	AddNotifier(new CNotificationProwl());
-	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushbullet());
 	AddNotifier(new CNotificationTelegram());
 	AddNotifier(new CNotificationPushover());
@@ -201,7 +199,7 @@ std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage,
 	return ret;
 }
 
-bool CNotificationHelper::ApplyRule(std::string rule, bool equal, bool less)
+bool CNotificationHelper::ApplyRule(const std::string &rule, const bool equal, const bool less)
 {
 	if (((rule == ">") || (rule == ">=")) && (!less) && (!equal))
 		return true;
@@ -1202,7 +1200,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	{
 		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 			Idx, szDateEnd);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
 
@@ -1446,7 +1444,7 @@ bool CNotificationHelper::AddNotification(
 	//First check for duplicate, because we do not want this
 	result = m_sql.safe_query("SELECT ROWID FROM Notifications WHERE (DeviceRowID=='%q') AND (Params=='%q')",
 		DevIdx.c_str(), Param.c_str());
-	if (result.size() > 0)
+	if (!result.empty())
 		return false;//already there!
 
 	int iSendAlways = (SendAlways == true) ? 1 : 0;

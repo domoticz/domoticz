@@ -728,11 +728,9 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	_eSwitchType switchtype;
 	switchtype = STYPE_Selector;
 
-	if (switchtype == STYPE_Selector) {
-		xcmd.subtype = sSwitchTypeSelector;
-		if (level > 0) {
-			xcmd.level = level;
-		}
+	xcmd.subtype = sSwitchTypeSelector;
+	if (level > 0) {
+		xcmd.level = level;
 	}
 
 	//check if this switch is already in the database
@@ -741,7 +739,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 	// block this device if it is already added for another gateway hardware id
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID!=%d) AND (DeviceID=='%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
 	
-	if (result.size() > 0) {
+	if (!result.empty()) {
 		return;
 	}
 	
@@ -761,27 +759,22 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 		}
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '0000000%d') AND (Unit == '%d')", defaultname.c_str(), (switchtype), customimage, m_HwdID, sID, xcmd.unitcode);
 
-		if (switchtype == STYPE_Selector) {
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-
-			// SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03"
-
-			if (result.size() > 0) {
-				std::string Idx = result[0][0];
-				if (defaultname == "Mode") {
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));
-				}
-				else if (defaultname == "Ventillation") {
-					//for the Gateway Audio
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|Silence|Lev 1|Lev 2|Lev 3|Lev 4|Lev 5;LevelOffHidden:true;LevelActions:00|10|20|30|40|50|60|70", false));
-				}
-				else if (defaultname == "Winds") {
-					//for the Gateway Audio
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
-				}
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
+		// SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03"
+		if (!result.empty()) {
+			std::string Idx = result[0][0];
+			if (defaultname == "Mode") {
+				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));
+			}
+			else if (defaultname == "Ventillation") {
+				//for the Fans
+				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|Silence|Lev 1|Lev 2|Lev 3|Lev 4|Lev 5;LevelOffHidden:true;LevelActions:00|10|20|30|40|50|60|70", false));
+			}
+			else if (defaultname == "Winds") {
+				//for the Wings
+				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
 			}
 		}
-	
 	}
 }
 
@@ -929,13 +922,13 @@ void CDaikin::SetF_DirLevel(const int NewLevel)
 	szURL << "&f_rate=" << m_f_rate;
 
 	if (NewLevel == 10)
-		szURL << "&f_dir=0";
+		szURL << "&f_dir=0"; // All wings motion
 	else if (NewLevel == 20)
-		szURL << "&f_dir=1";
-	else if (NewLevel == 20)
-		szURL << "&f_dir=2";
-	else if (NewLevel == 20)
-		szURL << "&f_dir=3";
+		szURL << "&f_dir=1"; // Vertical wings motion
+	else if (NewLevel == 30)
+		szURL << "&f_dir=2"; // Horizontal wings motion
+	else if (NewLevel == 40)
+		szURL << "&f_dir=3"; // vertical + horizontal wings motion
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{

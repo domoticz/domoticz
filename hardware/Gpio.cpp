@@ -323,7 +323,7 @@ void CGpio::UpdateStartup()
 	//  No need for delayed startup and force update when no masters are able to connect.
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		for (int i = 0; i < DELAYED_STARTUP_SEC; ++i)
 		{
@@ -373,7 +373,7 @@ bool CGpio::CreateDomoticzDevices()
 			createNewDevice = true;
 		else
 		{
-			if (result.size() > 0) // input found
+			if (!result.empty()) // input found
 			{
 				std::vector<std::string> sd = result[0];
 				bool bIsInput = (atoi(sd[2].c_str()) == 0);
@@ -482,7 +482,7 @@ bool CGpio::InitPins()
 		{
 			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID, gpio_pin);
-			if (result.size() > 0)
+			if (!result.empty())
 				db_state = atoi(result[0][0].c_str());
 
 			snprintf(label, sizeof(label), "GPIO pin %d", gpio_pin);

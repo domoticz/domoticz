@@ -78,14 +78,6 @@ define(['app'], function (app) {
 					}
 					extraparams = "ProwlAPI=" + ProwlAPI;
 					break;
-				case "nma":
-					var NMAAPI = encodeURIComponent($("#nmatable #NMAAPI").val());
-					if (NMAAPI == "") {
-						ShowNotify($.t('Please enter the API key!...'), 3500, true);
-						return;
-					}
-					extraparams = "NMAAPI=" + NMAAPI;
-					break;
 				case "pushbullet":
 					var PushbulletAPI = encodeURIComponent($("#pushbullettable #PushbulletAPI").val());
 					if (PushbulletAPI == "") {
@@ -284,12 +276,6 @@ define(['app'], function (app) {
 					}
 					if (typeof data.ProwlAPI != 'undefined') {
 						$("#prowltable #ProwlAPI").val(data.ProwlAPI);
-					}
-					if (typeof data.NMAEnabled != 'undefined') {
-						$("#nmatable #NMAEnabled").prop('checked', data.NMAEnabled == 1);
-					}
-					if (typeof data.NMAAPI != 'undefined') {
-						$("#nmatable #NMAAPI").val(data.NMAAPI);
 					}
 					if (typeof data.PushbulletEnabled != 'undefined') {
 						$("#pushbullettable #PushbulletEnabled").prop('checked', data.PushbulletEnabled == 1);

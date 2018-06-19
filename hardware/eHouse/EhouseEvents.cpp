@@ -175,14 +175,13 @@ signed int eHouseTCP::hex2bin(const unsigned char *st, int offset)
 ////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::AddTextEvents(unsigned char *ev, int size)
 {
-	unsigned char ck = 0, i = 0;
+	unsigned char i = 0;
 	unsigned char offset = 0;
-	int tmp;
 	unsigned char evnt[EVENT_SIZE + 1];
 	if (size < 20) return;						//ignore if tho short
 	while (offset < size - 1)
 	{
-		tmp = hex2bin(ev, offset);			// decode Text Hex Coded Event
+		int tmp = hex2bin(ev, offset);			// decode Text Hex Coded Event
 		if (tmp >= 0)						// valid hex char
 			evnt[i] = (unsigned char)tmp;	// construct binary
 		else
@@ -212,13 +211,11 @@ signed int eHouseTCP::AddToLocalEvent(unsigned char *Even, unsigned char offset)
 { //start
 	signed int i;
 	//signed int k;
-	unsigned char m;
 	unsigned char Event[EVENT_SIZE + 1];
 	memcpy(Event, (unsigned char *)&Even[offset], EVENT_SIZE); //copy event from selected offset
 	if (Event[2] == 0)  return 0;
 	if (Event[2] == 0xff)  return 0;
 	i = GetIndexOfEvent(Event);
-	m = 0;
 	_log.Log(LOG_STATUS, "[Add Event]: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", Event[0], Event[1], Event[2], Event[3], Event[4], Event[5], Event[6], Event[7], Event[8], Event[9]);
 
 	if (i >= 0)       //event already exists in EventQueue

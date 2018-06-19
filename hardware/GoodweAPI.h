@@ -7,11 +7,12 @@
 class GoodweAPI : public CDomoticzHardwareBase
 {
 public:
-	GoodweAPI(const int ID, const std::string &userName);
+	GoodweAPI(const int ID, const std::string &userName, const int ServerLocation);
 	~GoodweAPI(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	std::string m_UserName;
+	std::string m_Host;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
@@ -20,6 +21,7 @@ private:
 	bool StopHardware();
 	uint32_t hash(const std::string &str);
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
+	bool GoodweServerClient(const std::string &sPATH, std::string &sResult);
 	float getPowerWatt(const std::string &str);
 	float getEnergyWh(const std::string &str);
 	void Do_Work();
@@ -27,6 +29,5 @@ private:
 	void ParseStation(const std::string &sStationId, const std::string &sStationName);
 	void ParseDeviceList(const std::string &sStationId, const std::string &sStationName);
 	void ParseDevice(Json::Value device, const std::string &sStationId, const std::string &sStationName);
-
 };
 
