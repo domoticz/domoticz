@@ -1447,7 +1447,6 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 67)
 		{
 			//Enable all notification systems
-			UpdatePreferencesVar("NMAEnabled", 1);
 			UpdatePreferencesVar("ProwlEnabled", 1);
 			UpdatePreferencesVar("PushALotEnabled", 1);
 			UpdatePreferencesVar("PushoverEnabled", 1);
@@ -2629,12 +2628,6 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
 	}
-	if (GetPreferencesVar("NMAEnabled", nValue))
-	{
-		if (nValue != 0)
-			_log.Log(LOG_ERROR, "NMA: NMA will shutdown on May 24th duo GDPR European regulations, use an alternative notification system!");
-	}
-
 	if ((!GetPreferencesVar("MeterDividerEnergy", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("MeterDividerEnergy", 1000);
