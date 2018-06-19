@@ -1141,6 +1141,7 @@
 	</Manufacturer>
 	<Manufacturer id="0176" name="Telldus">
 		<Product type="0003" id="0001" name="TZWP-100 Plug-in Switch" config="telldus/tzwp100.xml"/>
+		<Product type="0003" id="0003" name="TZWP-102 Plug-in Switch" config="telldus/tzwp102.xml"/>
 		<Product type="0005" id="0001" name="TZDW-100 Magnet Switch" config="telldus/tzdw100.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0048" name="Telsey">
@@ -1150,6 +1151,7 @@
 	</Manufacturer>
 	<Manufacturer id="019b" name="ThermoFloor AS">
 		<Product type="0001" id="0001" name="Heatit Thermostat TF 021" config="thermofloor/heatit021.xml"/>
+		<Product type="0003" id="0202" name="Heatit Thermostat Z-TRM2" config="thermofloor/heatitztrm2.xml"/>
 	</Manufacturer>
 	<Manufacturer id="008b" name="Trane">
 		<Product type="5452" id="5431" name="Model TZEMT400AB32MAA" config="trane/TZEMT400AB32MAA.xml"/>
