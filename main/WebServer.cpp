@@ -4597,9 +4597,20 @@ namespace http {
 					}
 					else if (lighttype == 305)
 					{
-						//Lucci Air
+						//Lucci Air/DC
 						dtype = pTypeFan;
 						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 306)
+					{
+						//Lucci Air DC
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDC;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;
@@ -5194,6 +5205,17 @@ namespace http {
 						//Lucci Air
 						dtype = pTypeFan;
 						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 306)
+					{
+						//Lucci Air DC
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDC;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;

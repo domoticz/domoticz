@@ -2056,6 +2056,31 @@ void GetLightStatus(
 			}
 		}
 		break;
+		case sTypeLucciAirDC:
+		{
+			switch (nValue)
+			{
+			case fan_LucciDCPower:
+				lstatus = "pow";
+				break;
+			case fan_LucciDCPlus:
+				lstatus = "plus";
+				break;
+			case fan_LucciDCMin:
+				lstatus = "min";
+				break;
+			case fan_LucciDCLight:
+				lstatus = "light";
+				break;
+			case fan_LucciDCReverse:
+				lstatus = "rev";
+				break;
+			case fan_LucciDCNaturalflow:
+				lstatus = "nat";
+				break;
+			}
+		}
+		break;
 		}
 		break;
 	}
@@ -3435,6 +3460,22 @@ bool GetLightCommand(
 			{
 				cmd = fan_LucciLight;
 			}
+		}
+		break;
+		case sTypeLucciAirDC:
+		{
+			if (switchcmd == "pow")
+				cmd = fan_LucciDCPower;
+			else if (switchcmd == "plus")
+				cmd = fan_LucciDCPlus;
+			else if (switchcmd == "min")
+				cmd = fan_LucciDCMin;
+			else if (switchcmd == "light")
+				cmd = fan_LucciDCLight;
+			else if (switchcmd == "rev")
+				cmd = fan_LucciDCReverse;
+			else if (switchcmd == "nat")
+				cmd = fan_LucciDCNaturalflow;
 		}
 		break;
 		}
