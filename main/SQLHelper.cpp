@@ -5197,11 +5197,11 @@ void CSQLHelper::UpdateWindLog()
 			int speed = atoi(splitresults[2].c_str());
 			int gust = atoi(splitresults[3].c_str());
 
-			std::map<unsigned short, _tWindCalculationStruct>::iterator itt = m_mainworker.m_wind_calculator.find(DeviceID);
-			if (itt != m_mainworker.m_wind_calculator.end())
+			std::map<unsigned short, _tWindCalculationStruct>::iterator ittWC = m_mainworker.m_wind_calculator.find(DeviceID);
+			if (ittWC != m_mainworker.m_wind_calculator.end())
 			{
 				int speed_max, gust_max, speed_min, gust_min;
-				itt->second.GetMMSpeedGust(speed_min, speed_max, gust_min, gust_max);
+				ittWC->second.GetMMSpeedGust(speed_min, speed_max, gust_min, gust_max);
 				if (speed_max != -1)
 					speed = speed_max;
 				if (gust_max != -1)
