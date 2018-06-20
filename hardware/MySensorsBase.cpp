@@ -259,10 +259,9 @@ void MySensorsBase::LoadDevicesFromDatabase()
 	result = m_sql.safe_query("SELECT ID, Name, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=%d) ORDER BY ID ASC", m_HwdID);
 	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : result)
 		{
-			std::vector<std::string> sd = *itt;
+			std::vector<std::string> sd = itt;
 
 			int ID = atoi(sd[0].c_str());
 			std::string Name = sd[1];
@@ -280,18 +279,16 @@ void MySensorsBase::LoadDevicesFromDatabase()
 			if (!result2.empty())
 			{
 				int gID = 1;
-				std::vector<std::vector<std::string> >::const_iterator itt2;
-				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+				for (const auto & itt2 : result2)
 				{
-					std::vector<std::string> sd2 = *itt2;
+					std::vector<std::string> sd2 = itt2;
 					_tMySensorChild mSensor;
 					mSensor.nodeID = ID;
 					mSensor.childID = atoi(sd2[0].c_str());
 					mSensor.presType = (_ePresentationType)atoi(sd2[1].c_str());
-					std::vector<_tMySensorChild>::iterator itt3;
-					for (itt3 = mNode.m_childs.begin(); itt3 != mNode.m_childs.end(); ++itt3)
+					for (const auto & itt3 : mNode.m_childs)
 					{
-						if ((itt3->presType == mSensor.presType) && (itt3->groupID == gID))
+						if ((itt3.presType == mSensor.presType) && (itt3.groupID == gID))
 							gID++;
 					}
 					mSensor.groupID = gID;
@@ -325,10 +322,9 @@ int MySensorsBase::FindNextNodeID()
 {
 	unsigned char _UsedValues[256];
 	memset(_UsedValues, 0, sizeof(_UsedValues));
-	std::map<int, _tMySensorNode>::const_iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	for (const auto & itt : m_nodes)
 	{
-		int ID = itt->first;
+		int ID = itt.first;
 		if (ID < 255)
 		{
 			_UsedValues[ID] = 1;
@@ -412,11 +408,10 @@ MySensorsBase::_tMySensorChild* MySensorsBase::FindSensorWithPresentationType(co
 	if (ittNode == m_nodes.end())
 		return NULL;
 	_tMySensorNode *pNode = &ittNode->second;
-	std::vector<_tMySensorChild>::iterator itt;
-	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
+	for (auto & itt : pNode->m_childs)
 	{
-		if (itt->presType == presType)
-			return &*itt;
+		if (itt.presType == presType)
+			return &itt;
 	}
 	return NULL;
 }
@@ -429,19 +424,17 @@ MySensorsBase::_tMySensorChild* MySensorsBase::FindChildWithValueType(const int 
 	if (ittNode == m_nodes.end())
 		return NULL;
 	_tMySensorNode *pNode = &ittNode->second;
-	std::vector<_tMySensorChild>::iterator itt;
-	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
+	for (auto & itt : pNode->m_childs)
 	{
-		if ((itt->groupID == groupID) || (groupID == 0))
+		if ((itt.groupID == groupID) || (groupID == 0))
 		{
-			std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
-			for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+			for (const auto & itt2 : itt.values)
 			{
-				if (itt2->first == valType)
+				if (itt2.first == valType)
 				{
-					if (!itt2->second.bValidValue)
+					if (!itt2.second.bValidValue)
 						return NULL;
-					return &*itt;
+					return &itt;
 				}
 			}
 		}
@@ -455,21 +448,19 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	if (ittNode == m_nodes.end())
 		return; //Not found
 	_tMySensorNode *pNode = &ittNode->second;
-	std::vector<_tMySensorChild>::iterator itt;
-	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
+	for (auto & itt : pNode->m_childs)
 	{
-		itt->hasBattery = true;
-		itt->batValue = Level;
+		itt.hasBattery = true;
+		itt.batValue = Level;
 
 		//Uncomment the below to for a sensor update
 /*
-		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
-		for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+		for (const auto & itt2 : itt->values)
 		{
-			if (itt2->second.bValidValue)
+			if (itt2.second.bValidValue)
 			{
-				_eSetType vType = itt2->first;
-				SendSensor2Domoticz(pNode, &(*itt), vType);
+				_eSetType vType = itt2.first;
+				SendSensor2Domoticz(pNode, &itt, vType);
 			}
 		}
 */
@@ -486,17 +477,14 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 	int intValue;
 	mytime(&m_LastHeartbeatReceive);
 	_tMySensorNode *pNode = &ittNode->second;
-	std::vector<_tMySensorChild>::iterator itt;
 
-
-	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
+	for (auto & itt : pNode->m_childs)
 	{
-		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
-		for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+		for (const auto & itt2 : itt.values)
 		{
-			if (itt2->second.bValidValue)
+			if (itt2.second.bValidValue)
 			{
-				_eSetType vType = itt2->first;
+				_eSetType vType = itt2.first;
 				switch (vType)
 				{
 				case V_TRIPPED:
@@ -504,23 +492,23 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 				case V_LOCK_STATUS:
 				case V_STATUS:
 				case V_PERCENTAGE:
-					UpdateSwitchLastUpdate(nodeID, itt->childID);
+					UpdateSwitchLastUpdate(nodeID, itt.childID);
 					break;
 				case V_SCENE_ON:
 				case V_SCENE_OFF:
-					if (itt->GetValue(vType, intValue))
-						UpdateSwitchLastUpdate(nodeID, itt->childID + intValue);
+					if (itt.GetValue(vType, intValue))
+						UpdateSwitchLastUpdate(nodeID, itt.childID + intValue);
 					break;
 				case V_UP:
 				case V_DOWN:
 				case V_STOP:
-					if (itt->GetValue(vType, intValue))
-						UpdateBlindSensorLastUpdate(nodeID, itt->childID);
+					if (itt.GetValue(vType, intValue))
+						UpdateBlindSensorLastUpdate(nodeID, itt.childID);
 					break;
 				case V_RGB:
 				case V_RGBW:
-					if (itt->GetValue(vType, intValue))
-						UpdateRGBWSwitchLastUpdate(nodeID, itt->childID);
+					if (itt.GetValue(vType, intValue))
+						UpdateRGBWSwitchLastUpdate(nodeID, itt.childID);
 					break;
 				}
 			}
@@ -1869,10 +1857,9 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 				if (itt != m_node_sleep_queue.end())
 				{
 					//Send queues messages
-					std::vector<_tMySensorSmartSleepQueueItem>::const_iterator ittItem;
-					for (ittItem = itt->second.begin(); ittItem != itt->second.end(); ++ittItem)
+					for (const auto & ittItem : itt->second)
 					{
-						SendNodeSetCommandImpl(ittItem->_NodeID, ittItem->_ChildID, ittItem->_messageType, ittItem->_SubType, ittItem->_Payload, ittItem->_bUseAck, ittItem->_AckTimeout);
+						SendNodeSetCommandImpl(ittItem._NodeID, ittItem._ChildID, ittItem._messageType, ittItem._SubType, ittItem._Payload, ittItem._bUseAck, ittItem._AckTimeout);
 						//sleep_milliseconds(100); ??need to sleep
 					}
 					//empty node queue
@@ -2443,11 +2430,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID,Name,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC", iHardwareID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					int NodeID = atoi(sd[0].c_str());
 
@@ -2517,13 +2503,12 @@ namespace http {
 			root["title"] = "MySensorsGetChilds";
 			int NodeID = atoi(nodeid.c_str());
 			MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
-			std::vector<std::vector<std::string> >::const_iterator itt2;
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck, AckTimeout FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID == %d) ORDER BY ChildID ASC", iHardwareID, NodeID);
 			int ii = 0;
-			for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
+			for (const auto & itt2 : result)
 			{
-				std::vector<std::string> sd2 = *itt2;
+				std::vector<std::string> sd2 = itt2;
 				int ChildID = atoi(sd2[0].c_str());
 				root["result"][ii]["child_id"] = ChildID;
 				root["result"][ii]["type"] = MySensorsBase::GetMySensorsPresentationTypeStr((MySensorsBase::_ePresentationType)atoi(sd2[1].c_str()));

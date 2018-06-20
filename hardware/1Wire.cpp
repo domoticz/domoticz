@@ -310,10 +310,9 @@ void C1Wire::BuildSensorList() {
 	m_sensors.clear();
 	m_system->GetDevices(devices);
 
-	std::vector<_t1WireDevice>::const_iterator device;
-	for (device=devices.begin(); device!=devices.end(); ++device)
+	for (const auto & device : devices)
 	{
-		switch((*device).family)
+		switch(device.family)
 		{
 		case high_precision_digital_thermometer:
 		case Thermachron:
@@ -325,9 +324,8 @@ void C1Wire::BuildSensorList() {
 		case _4k_ram_with_counter:
 		case quad_ad_converter:
 		case smart_battery_monitor:
-			m_sensors.insert(*device);
+			m_sensors.insert(device);
 			break;
-
 		default:
 			break;
 		}
@@ -347,10 +345,9 @@ void C1Wire::BuildSwitchList() {
 	m_switches.clear();
 	m_system->GetDevices(devices);
 
-	std::vector<_t1WireDevice>::const_iterator device;
-	for (device=devices.begin(); device!=devices.end(); ++device)
+	for (const auto & device : devices)
 	{
-		switch((*device).family)
+		switch(device.family)
 		{
 		case Addresable_Switch:
 		case microlan_coupler:
@@ -360,9 +357,8 @@ void C1Wire::BuildSwitchList() {
 		case dual_channel_addressable_switch:
 		case _4k_EEPROM_with_PIO:
 		case digital_potentiometer:
-			m_switches.insert(*device);
+			m_switches.insert(device);
 			break;
-
 		default:
 			break;
 		}
@@ -378,10 +374,9 @@ void C1Wire::PollSwitches()
 		return;
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
-	std::set<_t1WireDevice>::const_iterator itt;
-	for (itt=m_switches.begin(); itt!=m_switches.end() && !m_stoprequested; ++itt)
+	for (const auto & itt : m_switches)
 	{
-		const _t1WireDevice& device=*itt;
+		const _t1WireDevice& device=itt;
 
 		// Manage families specificities
 		switch(device.family)

@@ -914,10 +914,9 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 				if (m_szCurActivityID.empty()) // initialize all switches
 				{
 					m_szCurActivityID = szJsonString.substr(0, pos);
-					std::map<std::string, std::string>::const_iterator itt;
-					for (itt = m_mapActivities.begin(); itt != m_mapActivities.end(); ++itt)
+					for (const auto & itt : m_mapActivities)
 					{
-						UpdateSwitch(0, itt->first.c_str(), (m_szCurActivityID == itt->first), itt->second);
+						UpdateSwitch(0, itt.first.c_str(), (m_szCurActivityID == itt.first), itt.second);
 					}
 				}
 				else

@@ -101,7 +101,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (!ports.empty())
 	{
 		bFoundPort = true;
-		for (auto itt : ports)
+		for (const auto & itt : ports)
 		{
 			sprintf(szPortName, "COM%d", itt);
 			ret.push_back(szPortName);
@@ -124,7 +124,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 			//Check if we did not already have it
 			bool bFound = false;
-			for (auto itt : ret)
+			for (const auto & itt : ret)
 			{
 				if (itt == szPortName)
 				{
@@ -171,7 +171,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		EnumSerialPortsWindows(serialports);
 		if (!serialports.empty())
 		{
-			for (auto itt : serialports)
+			for (const auto & itt : serialports)
 			{
 				ret.push_back(itt.szPortName); // add port
 			}

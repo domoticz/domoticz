@@ -54,7 +54,7 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	for (auto itt : flags)
+	for (const auto & itt : flags)
 	{
 		std::string wflag = itt;
 		stdstring_trim(wflag);
@@ -91,7 +91,7 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	for (auto itt : flags)
+	for (const auto & itt : flags)
 	{
 		std::string wflag = itt;
 		stdstring_trim(wflag);
@@ -348,7 +348,7 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 		if (m_lastlog.find(level) == m_lastlog.end())
 			return mlist;
 
-		for (auto itt : m_lastlog[level])
+		for (const auto & itt : m_lastlog[level])
 		{
 			if (itt.logtime > lastlogtime) {
 				mlist.push_back(itt);
@@ -357,9 +357,9 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 	}
 	else
 	{
-		for (auto itt : m_lastlog)
+		for (const auto & itt : m_lastlog)
 		{
-			for (auto itt2 : itt.second)
+			for (const auto & itt2 : itt.second)
 			{
 				if (itt2.logtime > lastlogtime) {
 					mlist.push_back(itt2);
@@ -382,7 +382,7 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
-	for (auto itt : m_notification_log)
+	for (const auto & itt : m_notification_log)
 		mlist.push_back(itt);
 	m_notification_log.clear();
 	if (!mlist.empty())

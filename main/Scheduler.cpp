@@ -50,7 +50,7 @@ std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<tScheduleItem> ret;
-	for (auto itt : m_scheduleitems)
+	for (const auto & itt : m_scheduleitems)
 		ret.push_back(itt);
 	return ret;
 }
@@ -76,7 +76,7 @@ void CScheduler::ReloadSchedules()
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 
@@ -181,7 +181,7 @@ void CScheduler::ReloadSchedules()
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 
@@ -273,7 +273,7 @@ void CScheduler::ReloadSchedules()
 		m_sql.m_ActiveTimerPlan);
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 
@@ -1049,7 +1049,7 @@ namespace http {
 			if (tot_result.size() > 0)
 			{
 				int ii = 0;
-				for (auto itt : tot_result)
+				for (const auto & itt : tot_result)
 				{
 					std::vector<std::string> sd = itt;
 
@@ -1143,7 +1143,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (auto itt : result)
+				for (const auto & itt : result)
 				{
 					std::vector<std::string> sd = itt;
 
@@ -1519,7 +1519,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (auto itt : result)
+				for (const auto & itt : result)
 				{
 					std::vector<std::string> sd = itt;
 
@@ -1842,7 +1842,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (auto itt : result)
+				for (const auto & itt : result)
 				{
 					std::vector<std::string> sd = itt;
 

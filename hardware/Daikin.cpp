@@ -363,10 +363,9 @@ void CDaikin::GetBasicInfo()
 		_log.Log(LOG_ERROR, "Daikin: Invalid data received");
 		return;
 	}
-	std::vector<std::string>::const_iterator itt;
-	for (itt = results.begin(); itt != results.end(); ++itt)
+	for (const auto & itt : results)
 	{
-		std::string sVar = *itt;
+		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)
@@ -435,10 +434,9 @@ void CDaikin::GetControlInfo()
 		_log.Log(LOG_ERROR, "Daikin: Invalid data received");
 		return;
 	}
-	std::vector<std::string>::const_iterator itt;
-	for (itt = results.begin(); itt != results.end(); ++itt)
+	for (const auto & itt : results)
 	{
-		std::string sVar = *itt;
+		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)
@@ -578,10 +576,9 @@ void CDaikin::GetSensorInfo()
 	}
 	float htemp = -1;
 	int hhum = -1;
-	std::vector<std::string>::const_iterator itt;
-	for (itt = results.begin(); itt != results.end(); ++itt)
+	for (const auto & itt : results)
 	{
-		std::string sVar = *itt;
+		std::string sVar = itt;
 		std::vector<std::string> results2;
 		StringSplit(sVar, "=", results2);
 		if (results2.size() != 2)

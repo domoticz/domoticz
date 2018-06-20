@@ -37,7 +37,7 @@ void CCameraHandler::ReloadCameras()
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "Camera: settings (re)loaded");
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 
@@ -56,7 +56,7 @@ void CCameraHandler::ReloadCameras()
 		}
 	}
 
-	for (auto ittCam : _AddedCameras)
+	for (const auto & ittCam : _AddedCameras)
 	{
 		//Get Active Devices/Scenes
 		ReloadCameraActiveDevices(ittCam);
@@ -73,7 +73,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 	result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 			cameraActiveDevice aDevice;
@@ -99,9 +99,9 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
-	for (auto itt : m_cameradevices)
+	for (const auto & itt : m_cameradevices)
 	{
-		for (auto itt2 : itt.mActiveDevices)
+		for (const auto & itt2 : itt.mActiveDevices)
 		{
 			if (
 				(itt2.DevSceneType == DevSceneType) &&
@@ -345,7 +345,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
 	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
-	for (auto camIt : splitresults)
+	for (const auto & camIt : splitresults)
 	{
 		std::vector<unsigned char> camimage;
 
@@ -399,7 +399,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (auto itt : result)
+				for (const auto & itt : result)
 				{
 					std::vector<std::string> sd = itt;
 

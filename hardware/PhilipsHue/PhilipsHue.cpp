@@ -282,7 +282,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	bool setCt = false;
 	bool setMode = false;
 	_eHueColorMode mode;
-	_tHueLightState *state = 0;
+	_tHueLightState *pState = NULL;
 
 	if (LCmd=="On")
 	{
@@ -334,27 +334,29 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	if (nodeID < 1000)
 	{
 		//Light
-		if (m_lights.find(nodeID) != m_lights.end())
+		auto & ittLight = m_lights.find(nodeID);
+		if (ittLight != m_lights.end())
 		{
-			state = &m_lights[nodeID];
+			pState = &ittLight->second;
 		}
 	}
 	else if (nodeID < 2000)
 	{
 		//Group
-		if (m_groups.find(nodeID-1000) != m_groups.end())
+		auto & ittGroup = m_groups.find(nodeID - 1000);
+		if (ittGroup != m_groups.end())
 		{
-			state = &m_groups[nodeID-1000].gstate;
+			pState = &ittGroup->second.gstate;
 		}
 	}
-	if (state)
+	if (pState)
 	{
-		if (setOn) state->on = On;
-		if (setLevel) state->level = int((100.0f / 254.0f)*float(svalue));
-		if (setHueSat) state->hue = svalue2;
-		if (setHueSat) state->sat = svalue3;
-		if (setCt) state->ct = int((float(svalue2)-153.0)/(500.0-153.0));
-		if (setMode) state->mode = mode;
+		if (setOn) pState->on = On;
+		if (setLevel) pState->level = int((100.0f / 254.0f)*float(svalue));
+		if (setHueSat) pState->hue = svalue2;
+		if (setHueSat) pState->sat = svalue3;
+		if (setCt) pState->ct = int((float(svalue2)-153.0)/(500.0-153.0));
+		if (setMode) pState->mode = mode;
 	}
 
 	stringstream sstr2;
@@ -814,7 +816,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 	if (root["lights"].empty())
 		return false;
 
-	for (Json::Value::const_iterator iLight = root["lights"].begin(); iLight != root["lights"].end(); ++iLight)
+	for (auto iLight = root["lights"].begin(); iLight != root["lights"].end(); ++iLight)
 	{
 		Json::Value light = *iLight;
 		if (light.isObject())
@@ -853,7 +855,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	if (root["groups"].empty())
 		return false;
 
-	for (Json::Value::const_iterator iGroup = root["groups"].begin(); iGroup != root["groups"].end(); ++iGroup)
+	for (auto iGroup = root["groups"].begin(); iGroup != root["groups"].end(); ++iGroup)
 	{
 		Json::Value group = *iGroup;
 		if (group.isObject())
@@ -970,7 +972,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 	if (root["scenes"].empty())
 		return false;
 
-	for (Json::Value::const_iterator iScene = root["scenes"].begin(); iScene != root["scenes"].end(); ++iScene)
+	for (auto iScene = root["scenes"].begin(); iScene != root["scenes"].end(); ++iScene)
 	{
 		Json::Value scene = *iScene;
 		if (scene.isObject())
@@ -1044,7 +1046,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 	if (root["sensors"].empty())
 		return false;
 
-	for (Json::Value::const_iterator iSensor = root["sensors"].begin(); iSensor != root["sensors"].end(); ++iSensor)
+	for (auto iSensor = root["sensors"].begin(); iSensor != root["sensors"].end(); ++iSensor)
 	{
 		Json::Value sensor = *iSensor;
 		if (sensor.isObject())

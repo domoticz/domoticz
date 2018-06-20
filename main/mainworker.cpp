@@ -260,7 +260,7 @@ void MainWorker::AddAllDomoticzHardware()
 		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 
@@ -336,7 +336,7 @@ void MainWorker::GetAvailableWebThemes()
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
 	{
-		for (auto itt : m_webthemes)
+		for (const auto & itt : m_webthemes)
 		{
 			if (itt == sValue)
 			{
@@ -404,7 +404,7 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	int ii = 0;
-	for (auto itt : m_hardwaredevices)
+	for (const auto & itt : m_hardwaredevices)
 	{
 		if (itt->m_HwdID == HwdId)
 			return ii;
@@ -417,7 +417,7 @@ int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	int ii = 0;
-	for (auto itt : m_hardwaredevices)
+	for (const auto & itt : m_hardwaredevices)
 	{
 		if (itt->HwdType == HWType)
 			return ii;
@@ -546,7 +546,7 @@ bool MainWorker::GetSunSettings()
 		StringSplit(m_LastSunriseSet, ";", strarray);
 		m_SunRiseSetMins.clear();
 
-		for(auto it : strarray)
+		for(const auto & it : strarray)
 		{
 			StringSplit(it, ":", hourMinItem);
 			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
@@ -1593,7 +1593,7 @@ void MainWorker::Do_Work()
 		}
 		if (m_devicestorestart.size() > 0)
 		{
-			for (auto itt : m_devicestorestart)
+			for (const auto & itt : m_devicestorestart)
 			{
 				int hwid = itt;
 				std::stringstream sstr;
@@ -12400,7 +12400,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 	result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (Activators!='')");
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 
@@ -12408,7 +12408,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 
 			std::vector<std::string> arrayActivators;
 			StringSplit(sd[0], ";", arrayActivators);
-			for (auto ittAct : arrayActivators)
+			for (const auto & ittAct : arrayActivators)
 			{
 				std::string sCodeCmd = ittAct;
 
@@ -12495,7 +12495,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 			);
 			if (!result.empty())
 			{
-				for (auto ittCam : result)
+				for (const auto & ittCam : result)
 				{
 					std::vector<std::string> sd = ittCam;
 					std::string camidx = sd[0];
@@ -12526,7 +12526,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 	if (result.size() < 1)
 		return true; //no devices in the scene
 
-	for (auto itt : result)
+	for (const auto & itt : result)
 	{
 		std::vector<std::string> sd = itt;
 
@@ -12641,13 +12641,13 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 	result = m_sql.safe_query("SELECT ID, Activators, SceneType FROM Scenes WHERE (Activators!='')");
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 
 			std::vector<std::string> arrayActivators;
 			StringSplit(sd[1], ";", arrayActivators);
-			for (auto ittAct : arrayActivators)
+			for (const auto & ittAct : arrayActivators)
 			{
 				std::string sCodeCmd = ittAct;
 
@@ -12706,7 +12706,7 @@ void MainWorker::LoadSharedUsers()
 	result = m_sql.safe_query("SELECT ID, Username, Password FROM USERS WHERE ((RemoteSharing==1) AND (Active==1))");
 	if (!result.empty())
 	{
-		for (auto itt : result)
+		for (const auto & itt : result)
 		{
 			std::vector<std::string> sd = itt;
 			tcp::server::_tRemoteShareUser suser;
@@ -12717,7 +12717,7 @@ void MainWorker::LoadSharedUsers()
 			result2 = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')", sd[0].c_str());
 			if (!result2.empty())
 			{
-				for (auto itt2 : result2)
+				for (const auto & itt2 : result2)
 				{
 					std::vector<std::string> sd2 = itt2;
 					uint64_t ID;
@@ -12853,12 +12853,12 @@ void MainWorker::HeartbeatCheck()
 	time_t now;
 	mytime(&now);
 
-	for (auto iterator : m_componentheartbeats)
+	for (const auto & itt : m_componentheartbeats)
 	{
-		double dif = difftime(now, iterator.second);
+		double dif = difftime(now, itt.second);
 		if (dif > 60)
 		{
-			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", iterator.first.c_str());
+			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", itt.first.c_str());
 		}
 	}
 
