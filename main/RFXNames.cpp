@@ -1000,10 +1000,9 @@ const char *ZWave_Thermostat_Fan_Modes[] =
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode)
 {
 	int ii = 0;
-	std::vector<std::string>::const_iterator itt;
-	for (itt = Modes.begin(); itt != Modes.end(); ++itt)
+	for (auto itt : Modes)
 	{
-		if (*itt == sMode)
+		if (itt == sMode)
 			return ii;
 		ii++;
 	}
@@ -2098,13 +2097,15 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
-		std::vector<std::string>::iterator itt;
 		int i = 0;
 		std::stringstream ss;
-		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
-			ss.clear(); ss.str(""); ss << i;
+		for (auto itt : strarray)
+		{
+			ss.clear();
+			ss.str("");
+			ss << i;
 			std::string level(ss.str());
-			std::string levelName = *itt;
+			std::string levelName = itt;
 			//_log.Log(LOG_STATUS, "DEBUG : Get selector status '%s' for level %s", levelName.c_str(), level.c_str());
 			statuses.insert(std::pair<std::string, std::string>(level.c_str(), levelName.c_str()));
 			i += 10;
@@ -2123,10 +2124,11 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
-		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
-			if (*itt == levelName) {
+		for (auto itt : strarray)
+		{
+			if (itt == levelName)
+			{
 				level = i;
 				break;
 			}
@@ -2146,11 +2148,12 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
-		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
-			if (i == level) {
-				return *itt;
+		for (auto itt : strarray)
+		{
+			if (i == level)
+			{
+				return itt;
 			}
 			i += 10;
 		}
