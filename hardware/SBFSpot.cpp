@@ -470,7 +470,7 @@ void CSBFSpot::GetMeterDetails()
 	if (ActHourMin - 120 > sunSet)
 		return;
 
-	char szLogFile[256];
+	char szLogFile[400];
 	char szDateStr[50];
 	strcpy(szDateStr, strftime_t("%Y%m%d", atime));
 	sprintf(szLogFile, "%s%s-Spot-%s.csv", strftime_t(m_SBFDataPath.c_str(), atime), m_SBFPlantName.c_str(), szDateStr);
