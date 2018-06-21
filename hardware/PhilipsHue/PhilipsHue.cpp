@@ -334,7 +334,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	if (nodeID < 1000)
 	{
 		//Light
-		auto & ittLight = m_lights.find(nodeID);
+		auto && ittLight = m_lights.find(nodeID);
 		if (ittLight != m_lights.end())
 		{
 			pState = &ittLight->second;
@@ -343,7 +343,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	else if (nodeID < 2000)
 	{
 		//Group
-		auto & ittGroup = m_groups.find(nodeID - 1000);
+		auto && ittGroup = m_groups.find(nodeID - 1000);
 		if (ittGroup != m_groups.end())
 		{
 			pState = &ittGroup->second.gstate;
