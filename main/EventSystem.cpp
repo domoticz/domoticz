@@ -3422,7 +3422,12 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			sound = aParam[3];
 		}
 		if (aParam.size() > 4) {
-			extraData = "|Device=" + aParam[4];
+			if (aParam[4].find("midx_") != std::string::npos) {
+				extraData = aParam[4];
+			}
+			else {
+				extraData = "|Device=" + aParam[4];
+			}
 		}
 		if (aParam.size() > 5) {
 			subsystem = aParam[5];
