@@ -467,7 +467,7 @@ string CPhilipsHue::RegisterUser(const string &IPAddress, const unsigned short P
 	return retStr;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string modelid, const bool AddMissingDevice)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string &modelid, const bool AddMissingDevice)
 {
 	if (LType == HLTYPE_RGB_W || LType == HLTYPE_CW_WW || LType == HLTYPE_RGB_CW_WW)
 	{
@@ -738,7 +738,7 @@ bool CPhilipsHue::GetStates()
 	return true;
 }
 
-void CPhilipsHue::LightStateFromJSON(Json::Value lightstate, _tHueLightState &tlight, _eHueLightType &LType)
+void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightState &tlight, _eHueLightType &LType)
 {
 	if (lightstate.isObject())
 	{
@@ -823,25 +823,21 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 		{
 			string szLID = iLight.key().asString();
 			int lID = atoi(szLID.c_str());
+
 			_tHueLightState tlight;
-			bool bDoSend = true;
 			_eHueLightType LType;
 			LightStateFromJSON(light["state"], tlight, LType);
 
-			if (m_lights.find(lID) != m_lights.end())
+			auto && myLight = m_lights.find(lID);
+			if (myLight != m_lights.end())
 			{
-				_tHueLightState alight = m_lights[lID];
-				if (StatesSimilar(alight, tlight))
+				if (!StatesSimilar(myLight->second, tlight))
 				{
-					bDoSend = false;
+					//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
+					myLight->second = tlight;
+					std::string modelid = light["modelid"].asString();
+					InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 				}
-			}
-			if (bDoSend)
-			{
-				//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
-				m_lights[lID] = tlight;
-				std::string modelid = light["modelid"].asString();
-				InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 			}
 		}
 	}
@@ -862,24 +858,20 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		{
 			string szGID = iGroup.key().asString();
 			int gID = atoi(szGID.c_str());
+
 			_tHueLightState tstate;
 			_eHueLightType LType;
 			LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key
 
-			bool bDoSend = true;
-			if (m_groups.find(gID) != m_groups.end())
+			auto && myGroup = m_groups.find(gID);
+			if (myGroup != m_groups.end())
 			{
-				_tHueGroup agroup = m_groups[gID];
-				if (StatesSimilar(agroup.gstate, tstate))
+				if (!StatesSimilar(myGroup->second.gstate, tstate))
 				{
-					bDoSend = false;
+					myGroup->second.gstate = tstate;
+					string Name = "Group " + group["name"].asString();
+					InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 				}
-			}
-			if (bDoSend)
-			{
-				m_groups[gID].gstate = tstate;
-				string Name = "Group " + group["name"].asString();
-				InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 			}
 		}
 	}
@@ -948,21 +940,16 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		//LType = HLTYPE_RGB_W;
 	}
 
-	bool bDoSend = true;
 	int gID = 0;
-	if (m_groups.find(gID) != m_groups.end())
+	auto && myGroup = m_groups.find(gID);
+	if (myGroup != m_groups.end())
 	{
-		_tHueGroup agroup = m_groups[gID];
-		if (StatesSimilar(agroup.gstate, tstate))
+		if (!StatesSimilar(myGroup->second.gstate, tstate))
 		{
-			bDoSend = false;
+			myGroup->second.gstate = tstate;
+			string Name = "Group All Lights";
+			InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 		}
-	}
-	if (bDoSend)
-	{
-		m_groups[gID].gstate = tstate;
-		string Name = "Group All Lights";
-		InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 	}
 	return true;
 }
@@ -1133,7 +1120,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 	return true;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool status, const string &Name, uint8_t BatteryLevel)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool status, const string &Name, const uint8_t BatteryLevel)
 {
 	int sID = NodeID;
 	char ID[40];
