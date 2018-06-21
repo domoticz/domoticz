@@ -16,13 +16,13 @@ sources:
 
 # What to install before the build
 before_install:
-  - eval "${MATRIX_EVAL}"
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     brew update;
     brew upgrade boost;
     fi
+  - eval "${MATRIX_EVAL}"
 
 # Build matrix definition
 # * Two builds
@@ -36,6 +36,7 @@ matrix:
     #compiler:
     #  - gcc
     env:
+      - TARGET_ARCHITECTURE=x86_64
       - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
     install:
       - brew install boost|| true
