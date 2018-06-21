@@ -40,11 +40,9 @@ set (domoticz_VERSION_MAJOR 3)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
-add_definitions(-D__STRICT_ANSI__)
-
-set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_CXX_STANDARD 11)
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CXX_EXTENSIONS NO)
+# set(CXX_EXTENSIONS NO)
 
 option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
 IF(USE_OPENSSL_STATIC)
