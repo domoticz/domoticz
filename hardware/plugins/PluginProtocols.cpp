@@ -21,8 +21,6 @@
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-
 namespace Plugins {
 
 	CPluginProtocol * CPluginProtocol::Create(std::string sProtocol, std::string sUsername, std::string sPassword)
@@ -650,7 +648,7 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 		if (!pLength && pData && PyUnicode_Check(pData))
 		{
 			Py_ssize_t iLength = PyUnicode_GetLength(pData);
-			sHttp += "Content-Length: " + SSTR(iLength) + "\r\n";
+			sHttp += "Content-Length: " + std::to_string(iLength) + "\r\n";
 		}
 
 		sHttp += "\r\n";

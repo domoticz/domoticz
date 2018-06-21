@@ -18,7 +18,6 @@
 #include "ipv4_header.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 #define round(a) ( int ) ( a + .5 )
 
 namespace Plugins {
@@ -188,7 +187,7 @@ namespace Plugins {
 		{
 			boost::asio::ip::tcp::endpoint remote_ep = pSocket->remote_endpoint();
 			std::string sAddress = remote_ep.address().to_string();
-			std::string sPort = SSTR(remote_ep.port());
+			std::string sPort = std::to_string(remote_ep.port());
 
 			PyType_Ready(&CConnectionType);
 			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
@@ -559,7 +558,7 @@ namespace Plugins {
 		if (!ec)
 		{
 			std::string sAddress = m_remote_endpoint.address().to_string();
-			std::string sPort = SSTR(m_remote_endpoint.port());
+			std::string sPort = std::to_string(m_remote_endpoint.port());
 
 			PyType_Ready(&CConnectionType);
 			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
