@@ -52,7 +52,7 @@ matrix:
           - cmake-data
           - libsqlite3-dev
           - curl
-          - libcurl4-openssl-dev
+          - libcurl4-gnutls-dev
           - libusb-dev
           - zlib1g-dev
           - libssl-dev
