@@ -19,8 +19,6 @@ before_install:
   - eval "${MATRIX_EVAL}"
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
-  # OpenZWave
-  - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     brew update;
     brew upgrade boost;
@@ -32,52 +30,13 @@ before_install:
 #   2. Apple OSX
 matrix:
   include:
-  # Linux x86_64
-  - os: linux
-    dist: trusty
-    sudo: required
-    compiler: gcc
-    env:
-          - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-    addons:
-      apt:
-        sources:
-          - george-edison55-precise-backports  # cmake
-          - ubuntu-toolchain-r-test
-        packages:
-          - gcc-6
-          - g++-6
-          - cmake
-          - cmake-data
-          - libsqlite3-dev
-          - curl
-          - libcurl4-gnutls-dev
-          - libusb-dev
-          - zlib1g-dev
-          - libssl-dev
-          - libudev-dev
-          - git
-          - libdigest-sha-perl
-          - python3-dev
-    script:
-      - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz >> /dev/null 2>&1
-      - tar xfz boost_1_67_0.tar.gz
-      - cd boost_1_67_0/
-      - ./bootstrap.sh
-      - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
-      - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
-      - cd ..
-      - (cd open-zwave-read-only; wget http://www.domoticz.com/domo.patch; patch -p1 < domo.patch; make)
-      - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
-      - make
   # Apple OSX
   - os: osx
-    osx_image: xcode8.3
+    osx_image: xcode8
     #compiler:
     #  - gcc
     env:
-          - TARGET_ARCHITECTURE=x86_64
+      - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
     install:
       - brew install boost|| true
       - brew install zlib || true
