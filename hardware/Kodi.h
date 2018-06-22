@@ -10,8 +10,6 @@
 #include <boost/array.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-
 class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
 {
 	class CKodiStatus
@@ -24,7 +22,7 @@ class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
 		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
 		void			Status(const std::string &pStatus) { m_sStatus = pStatus; };
 		void			PlayerID(int pPlayerID) { m_iPlayerID = pPlayerID; };
-		std::string		PlayerID() { if (m_iPlayerID >= 0) return SSTR(m_iPlayerID); else return ""; };
+		std::string		PlayerID() { if (m_iPlayerID >= 0) return std::to_string(m_iPlayerID); else return ""; };
 		void			Type(const char*	pType) { m_sType = pType; };
 		std::string		Type() { return m_sType; };
 		void			Title(const char*	pTitle) { m_sTitle = pTitle; };
@@ -35,8 +33,8 @@ class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
 		void			Season(int pSeason) { m_iSeason = pSeason; };
 		void			Episode(int pEpisode) { m_iEpisode = pEpisode; };
 		void			Label(const char*	pLabel) { m_sLabel = pLabel; };
-		void			Percent(float	fPercent) { m_sPercent = ""; if (fPercent > 1.0) m_sPercent = SSTR((int)round(fPercent)) + "%"; };
-		void			Year(int pYear) { m_sYear = SSTR(pYear); if (m_sYear.length() > 2) m_sYear = "(" + m_sYear + ")"; else m_sYear = ""; };
+		void			Percent(float	fPercent) { m_sPercent = ""; if (fPercent > 1.0) m_sPercent = std::to_string((int)round(fPercent)) + "%"; };
+		void			Year(int pYear) { m_sYear = std::to_string(pYear); if (m_sYear.length() > 2) m_sYear = "(" + m_sYear + ")"; else m_sYear = ""; };
 		void			Live(bool	pLive) { m_sLive = "";  if (pLive) m_sLive = "(Live)"; };
 		void			LastOK(time_t pLastOK) { m_tLastOK = pLastOK; };
 		std::string		LastOK() { std::string sRetVal;  tm ltime; localtime_r(&m_tLastOK, &ltime); char szLastUpdate[40]; sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec); sRetVal = szLastUpdate; return sRetVal; };

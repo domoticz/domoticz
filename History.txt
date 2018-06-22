@@ -21,6 +21,7 @@ Version 3.xxx (May xxth 2018)
 - Implemented: Language "Bosnian" (Big thanks to "Vedran")
 - Implemented: Language "Catalan" (Big thanks to "delfisastre")
 - Implemented: Logitech Media Server: Added option to remove unused nodes
+- Implemented: RFXtrx Lucci Fan DC implemented
 - Implemented: MQTT Push message on scene/group switch event
 - Implemented: MySensors: handling of I_INCLUSION_MODE message.
 - Implemented: MySensors: support for SmartSleep option (gateway 2.x)

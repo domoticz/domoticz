@@ -224,7 +224,6 @@ bool RFXComSerial::UpgradeFirmware()
 	m_FirmwareUploadPercentage = 0;
 	m_bStartFirmwareUpload = false;
 	std::map<unsigned long, std::string> firmwareBuffer;
-	std::map<unsigned long, std::string>::const_iterator itt;
 	int icntr = 0;
 	if (!Read_Firmware_File(m_szFirmwareFile.c_str(), firmwareBuffer))
 	{
@@ -307,14 +306,14 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "RFXCOM: Bootloader, Start programming...";
 	_log.Log(LOG_STATUS, m_szUploadMessage);
-	for (itt = firmwareBuffer.begin(); itt != firmwareBuffer.end(); ++itt)
+	for (auto itt : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
 		{
 			m_LastHeartbeat = mytime(NULL);
 		}
-		unsigned long Address = itt->first;
+		unsigned long Address = itt.first;
 		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
@@ -336,8 +335,8 @@ bool RFXComSerial::UpgradeFirmware()
 			bcmd[2] = Address & 0xFF;
 			bcmd[3] = (Address & 0xFF00) >> 8;
 			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
-			memcpy(bcmd + 5, itt->second.c_str(), itt->second.size());
-			bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 20);
+			memcpy(bcmd + 5, itt.second.c_str(), itt.second.size());
+			bool ret = Write_TX_PKT(bcmd, 5 + itt.second.size(), 20);
 			if (!ret)
 			{
 				m_szUploadMessage = "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!";
@@ -911,7 +910,7 @@ namespace http {
 				Response.IRESPONSE.HIDEKIenabled = (request::findValue(&req, "HidekiUPM") == "on") ? 1 : 0;
 				Response.IRESPONSE.LACROSSEenabled = (request::findValue(&req, "LaCrosse") == "on") ? 1 : 0;
 				Response.IRESPONSE.LEGRANDenabled = (request::findValue(&req, "Legrand") == "on") ? 1 : 0;
-				Response.IRESPONSE.PROGUARDenabled = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
+				Response.IRESPONSE.MSG4Reserved5 = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
 				Response.IRESPONSE.BLINDST0enabled = (request::findValue(&req, "BlindT0") == "on") ? 1 : 0;
 				Response.IRESPONSE.BLINDST1enabled = (request::findValue(&req, "BlindT1T2T3T4") == "on") ? 1 : 0;
 				Response.IRESPONSE.AEenabled = (request::findValue(&req, "AEBlyss") == "on") ? 1 : 0;

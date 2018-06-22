@@ -798,14 +798,13 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		std::vector<std::string> _rlines=ExecuteCommandAndReturn(m_dfcommand, returncode);
 		if (!_rlines.empty())
 		{
-			std::vector<std::string>::const_iterator ittDF;
-			for (ittDF = _rlines.begin(); ittDF != _rlines.end(); ++ittDF)
+			for (const auto & ittDF : _rlines)
 			{
 				char dname[200];
 				char suse[30];
 				char smountpoint[300];
 				long numblock, usedblocks, availblocks;
-				int ret = sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+				int ret = sscanf(ittDF.c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 				if (ret == 6)
 				{
 					std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
@@ -833,14 +832,13 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				}
 			}
 			int dindex = 0;
-			std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
-			for (ittDisks = _disks.begin(); ittDisks != _disks.end(); ++ittDisks)
+			for (const auto & ittDisks : _disks)
 			{
-				_tDUsageStruct dusage = (*ittDisks).second;
+				_tDUsageStruct dusage = ittDisks.second;
 				if (dusage.TotalBlocks > 0)
 				{
 					double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
-					//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
+					//std::cout << "Disk: " << ittDisks.first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
 					char szTmp[300];
 					sprintf(szTmp, "%.2f", UsagedPercentage);
 					std::string hddname = "HDD " + dusage.MountPoint;

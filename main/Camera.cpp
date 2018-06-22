@@ -32,15 +32,14 @@ void CCameraHandler::ReloadCameras()
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	m_cameradevices.clear();
 	std::vector<std::vector<std::string> > result;
-	std::vector<std::vector<std::string> >::const_iterator itt;
 
 	result = m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "Camera: settings (re)loaded");
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : result)
 		{
-			std::vector<std::string> sd = *itt;
+			std::vector<std::string> sd = itt;
 
 			cameraDevice citem;
 			std::stringstream s_str(sd[0]);
@@ -57,11 +56,10 @@ void CCameraHandler::ReloadCameras()
 		}
 	}
 
-	std::vector<std::string>::const_iterator ittCam;
-	for (ittCam = _AddedCameras.begin(); ittCam != _AddedCameras.end(); ++ittCam)
+	for (const auto & ittCam : _AddedCameras)
 	{
 		//Get Active Devices/Scenes
-		ReloadCameraActiveDevices(*ittCam);
+		ReloadCameraActiveDevices(ittCam);
 	}
 }
 
@@ -72,13 +70,12 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 		return;
 	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
-	std::vector<std::vector<std::string> >::const_iterator itt;
 	result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
 	if (!result.empty())
 	{
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : result)
 		{
-			std::vector<std::string> sd = *itt;
+			std::vector<std::string> sd = itt;
 			cameraActiveDevice aDevice;
 			std::stringstream s_str(sd[0]);
 			s_str >> aDevice.ID;
@@ -102,18 +99,15 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
-	std::vector<cameraDevice>::iterator itt;
-	for (itt = m_cameradevices.begin(); itt != m_cameradevices.end(); ++itt)
+	for (const auto & itt : m_cameradevices)
 	{
-		cameraDevice *pCamera = &(*itt);
-		std::vector<cameraActiveDevice>::iterator itt2;
-		for (itt2 = pCamera->mActiveDevices.begin(); itt2 != pCamera->mActiveDevices.end(); ++itt2)
+		for (const auto & itt2 : itt.mActiveDevices)
 		{
 			if (
-				(itt2->DevSceneType == DevSceneType) &&
-				(itt2->DevSceneRowID == DevSceneID)
+				(itt2.DevSceneType == DevSceneType) &&
+				(itt2.DevSceneRowID == DevSceneID)
 				)
-				return itt->ID;
+				return itt.ID;
 		}
 	}
 	return 0;
@@ -160,11 +154,10 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const std::string &CamID
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 {
-	std::vector<cameraDevice>::iterator itt;
-	for (itt = m_cameradevices.begin(); itt != m_cameradevices.end(); ++itt)
+	for (auto & itt : m_cameradevices)
 	{
-		if (itt->ID == CamID)
-			return &(*itt);
+		if (itt.ID == CamID)
+			return &itt;
 	}
 	return NULL;
 }
@@ -352,11 +345,11 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
 	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
-	for (std::vector<std::string>::iterator camIt = splitresults.begin(); camIt != splitresults.end(); ++camIt) {
-
+	for (const auto & camIt : splitresults)
+	{
 		std::vector<unsigned char> camimage;
 
-		if (!TakeSnapshot(*camIt, camimage))
+		if (!TakeSnapshot(camIt, camimage))
 			return false;
 
 		std::vector<char> filedata;
@@ -372,7 +365,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 			imgstring +
 			"\">\r\n";
 		if (EmailAsAttachment != 0)
-			sclient.AddAttachment(imgstring, "snapshot" + *camIt + ".jpg");
+			sclient.AddAttachment(imgstring, "snapshot" + camIt + ".jpg");
 	}
 	if (EmailAsAttachment == 0)
 		sclient.SetHTMLBody(htmlMsg);
@@ -405,11 +398,10 @@ namespace http {
 			}
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];

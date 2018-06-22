@@ -335,12 +335,12 @@ void CEvohomeRadio::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 
 void CEvohomeRadio::CheckRelayHeatDemand()
 {
-	for(tmap_relay_check_it it = m_RelayCheck.begin(); it != m_RelayCheck.end(); ++it)
+	for(const auto & it : m_RelayCheck)
 	{
-		if((boost::get_system_time()-it->second.m_stLastCheck)>boost::posix_time::seconds(1202)) //avg seems around 1202-1203 but not clear how reference point derived
+		if((boost::get_system_time()-it.second.m_stLastCheck)>boost::posix_time::seconds(1202)) //avg seems around 1202-1203 but not clear how reference point derived
 		{
-			Log(true,LOG_STATUS,"evohome: Relay: Refreshing heat demand devno=%d demand=%d",it->first,it->second.m_nDemand);
-			UpdateRelayHeatDemand(it->first,it->second.m_nDemand);
+			Log(true,LOG_STATUS,"evohome: Relay: Refreshing heat demand devno=%d demand=%d",it.first,it.second.m_nDemand);
+			UpdateRelayHeatDemand(it.first,it.second.m_nDemand);
 		}
 	}
 }

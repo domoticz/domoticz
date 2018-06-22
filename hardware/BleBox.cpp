@@ -85,21 +85,20 @@ void BleBox::GetDevicesState()
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	std::map<const std::string, const int>::const_iterator itt;
-	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+	for (const auto & itt : m_devices)
 	{
 		std::stringstream sstr;
-		sstr << "/api/" << DevicesType[itt->second].api_state << "/state";
+		sstr << "/api/" << DevicesType[itt.second].api_state << "/state";
 		std::string command = sstr.str();
 
-		Json::Value root = SendCommand(itt->first, command, 2);
+		Json::Value root = SendCommand(itt.first, command, 2);
 		if (root.empty())
 			continue;
 
-		int IP = IPToUInt(itt->first);
+		int IP = IPToUInt(itt.first);
 		if (IP != 0)
 		{
-			switch (itt->second)
+			switch (itt.second)
 			{
 				case 0:
 				{
@@ -108,7 +107,7 @@ void BleBox::GetDevicesState()
 
 					const bool state = root["state"].asBool();
 
-					SendSwitch(IP, 0, 255, state, 0, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, state, 0, DevicesType[itt.second].name);
 					break;
 				}
 				case 1:
@@ -128,7 +127,7 @@ void BleBox::GetDevicesState()
 					if ((state == 2 && pos == 100) || (state == 3))
 						opened = false;
 
-					SendSwitch(IP, 0, 255, opened, pos, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, opened, pos, DevicesType[itt.second].name);
 					break;
 				}
 				case 2:
@@ -141,7 +140,7 @@ void BleBox::GetDevicesState()
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 					int level = (int)(hexNumber / (255.0 / 100.0));
 
-					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
 					break;
 				}
 				case 3:
@@ -153,7 +152,7 @@ void BleBox::GetDevicesState()
 					unsigned int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
-					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[itt->second].name);
+					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[itt.second].name);
 					break;
 				}
 				case 4:
@@ -163,7 +162,7 @@ void BleBox::GetDevicesState()
 
 					const float level = root["currentPos"].asFloat();
 
-					SendPercentageSensor(IP, 1, 255, level, DevicesType[itt->second].name);
+					SendPercentageSensor(IP, 1, 255, level, DevicesType[itt.second].name);
 					break;
 				}
 				case 5:
@@ -174,7 +173,7 @@ void BleBox::GetDevicesState()
 					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
 					int level = (int)(currentPos / (255.0 / 100.0));
 
-					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
 					break;
 				}
 				case 6:
@@ -191,8 +190,8 @@ void BleBox::GetDevicesState()
 							break;
 						int relayNumber = relay["relay"].asInt(); // 0 or 1
 						bool currentState = relay["state"].asBool(); // 0 or 1
-						//std::string name = DevicesType[itt->second].name + " " + relay["state"].asString();
-						SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt->second].name);
+						//std::string name = DevicesType[itt.second].name + " " + relay["state"].asString();
+						SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt.second].name);
 					}
 
 					break;
@@ -741,11 +740,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID,Name,DeviceID FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					BYTE id1, id2, id3, id4;
 					char ip[20];
@@ -1119,10 +1117,9 @@ bool BleBox::LoadNodes()
 	result = m_sql.safe_query("SELECT ID,DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : result)
 		{
-			const std::vector<std::string> &sd = *itt;
+			const std::vector<std::string> &sd = itt;
 			std::string addressIP = GetDeviceIP(sd[1]);
 
 			std::string deviceApiName = IdentifyDevice(addressIP);
@@ -1152,10 +1149,9 @@ void BleBox::ReloadNodes()
 
 void BleBox::UpdateFirmware()
 {
-	std::map<const std::string, const int>::const_iterator itt;
-	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+	for (const auto & itt : m_devices)
 	{
-		Json::Value root = SendCommand(itt->first, "/api/ota/update", 2);
+		Json::Value root = SendCommand(itt.first, "/api/ota/update", 2);
 	}
 }
 

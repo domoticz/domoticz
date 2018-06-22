@@ -6,7 +6,7 @@
 #include <fstream>
 #include <map>
 
-enum _eLogLevel
+enum _eLogLevel : uint32_t
 {
 	LOG_NORM = 0x0000001,
 	LOG_STATUS = 0x0000002,
@@ -15,7 +15,7 @@ enum _eLogLevel
 	//
 	LOG_ALL = 0xFFFFFFF //Used by web interface to retrieve all log types
 };
-enum _eDebugLevel
+enum _eDebugLevel : uint32_t
 {
 	DEBUG_NORM = 0x0000001,
 	DEBUG_HARDWARE = 0x0000002,

@@ -78,7 +78,7 @@ void C1WireByKernel::ThreadFunction()
 
 void C1WireByKernel::ReadStates()
 {
-	for (DeviceCollection::const_iterator it = m_Devices.begin(); it != m_Devices.end(); ++it)
+	for (auto & it : m_Devices)
 	{
 		// Next read one device state
 		try
@@ -86,7 +86,8 @@ void C1WireByKernel::ReadStates()
 			// Priority to changes asked by Domoticz
 			ThreadProcessPendingChanges();
 
-			DeviceState* device = (*it).second;
+			DeviceState* device = it.second;
+
 			switch (device->GetDevice().family)
 			{
 			case high_precision_digital_thermometer:
@@ -229,16 +230,16 @@ void C1WireByKernel::ThreadBuildDevicesList()
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
 {
    Locker l(m_Mutex);
-   for (DeviceCollection::const_iterator it=m_Devices.begin();it!=m_Devices.end();++it)
-      devices.push_back(((*it).second)->GetDevice());
+   for (const auto & it : m_Devices)
+      devices.push_back((it.second)->GetDevice());
 }
 
 const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const std::string& deviceId) const
 {
-   for (std::list<DeviceState>::const_reverse_iterator it=m_PendingChanges.rbegin();it!=m_PendingChanges.rend();++it)
+   for (auto & it : m_PendingChanges)
    {
-      if ((*it).GetDevice().devid==deviceId)
-         return &(*it);
+      if (it.GetDevice().devid==deviceId)
+         return &it;
    }
    return NULL;
 }
