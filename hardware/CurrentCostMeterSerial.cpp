@@ -76,6 +76,7 @@ bool CurrentCostMeterSerial::StopHardware()
 	{
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
+		// TODO: Add proper synchronized shutdown of read thread instead of fixed timeout
 		sleep_milliseconds(10);
 		m_thread.reset();
 	}

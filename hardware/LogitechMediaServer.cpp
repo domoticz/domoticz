@@ -134,7 +134,7 @@ bool CLogitechMediaServer::StopHardware()
 
 			//Make sure all our background workers are stopped
 			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter < 15))
+			while ((m_iThreadsRunning > 0) && (iRetryCounter < 120))
 			{
 				sleep_milliseconds(500);
 				iRetryCounter++;
@@ -144,6 +144,11 @@ bool CLogitechMediaServer::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
+	}
+	if (m_iThreadsRunning > 0)
+	{
+		_log.Log(LOG_ERROR, "Logitech Media Server: Failed to stop workers, m_iThreadsRunning: %u", m_iThreadsRunning);
+		abort();
 	}
 	m_bIsStarted = false;
 	return true;
