@@ -36,7 +36,6 @@ class CEvohomeDataType
 	friend class CEvohomeScript;
 	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
-
 public:
 	//uint24_t may occasionally be defined but is not portable etc.
 	struct uint24_t {

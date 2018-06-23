@@ -16,8 +16,7 @@ class CTellstick : public CDomoticzHardwareBase
 public:
     explicit CTellstick(const int ID, int repeats, int repeatInterval);
     void SetSettings(int repeats, int repeatInterval);
-    bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
     struct Command
     {
@@ -50,7 +49,7 @@ private:
     void SendCommand(int devID, const _tGeneralSwitch &cmd);
     
     void ThreadSendCommands();
-
+private:
     int m_deviceEventId;
     int m_rawDeviceEventId;
     int m_sensorEventId;

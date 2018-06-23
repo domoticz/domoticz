@@ -32,11 +32,10 @@ public:
 	CSysfsGpio(const int ID, const int ManualDevices, const int Debounce);
 	~CSysfsGpio();
 
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static std::vector<int> GetGpioIds();
 	static std::vector<std::string> GetGpioNames();
 	static void RequestDbUpdate(int pin);
-
 private:
 	bool StartHardware();
 	bool StopHardware();
@@ -58,6 +57,7 @@ private:
 	int GetReadResult(int bytecount, char* value_str);
 	int GpioGetState(int index);
 	void GpioSaveState(int index, int value);
+
 	static std::vector<gpio_info> m_saved_state;
 	static int m_sysfs_hwdid;
 	static int m_sysfs_req_update;

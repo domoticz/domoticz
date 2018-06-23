@@ -17,22 +17,90 @@ class eHouseTCP : public  CDomoticzHardwareBase
 public:
 	eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const int AutoDiscovery, const int EnableAlarms, const int EnablePro, const int opta, const int optb);
 	~eHouseTCP();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+private:
 	int ConnectTCP(unsigned int ip);
 	void AddTextEvents(unsigned char *ev, int size);						//Add hex coded string with eHouse events/codes
 	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);  //Add binary coded event from buffer
+	struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
+	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
+	void CalculateAdcWiFi(char index);
+	char eH1(unsigned char addrh, unsigned char addrl);
+	void InitStructs(void);
+
+	union ERMFullStatT             *(eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);  		//full ERM status decoded
+	union ERMFullStatT             *(eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1]);  	//full ERM status decoded previous for detecting changes
+
+	union ERMFullStatT             *(eHRMs[EHOUSE1_RM_MAX + 1]);  				//full RM status decoded
+	union ERMFullStatT             *(eHRMPrev[EHOUSE1_RM_MAX + 1]);  			//full RM status decoded previous for detecting changes
+
+	struct EventQueueT				*(EvQ[EVENT_QUEUE_MAX]);		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
+	struct AURAT                    *(AuraDev[MAX_AURA_DEVS]);		// Aura status thermostat
+	struct AURAT                    *(AuraDevPrv[MAX_AURA_DEVS]);   // previous for detecting changes
+	struct AuraNamesT               *(AuraN[MAX_AURA_DEVS]);
+
+	bool StartHardware();
+	bool StopHardware();
+	void Do_Work();
+
+	bool CheckAddress();
+	// Closes socket
+	void DestroySocket();
+
+	std::string ISO2UTF8(const std::string &name);
+	//dynamically allocate memories for controllers structures
+	void eCMaloc(int eHEIndex, int devaddrh, int devaddrl);
+	void eHPROaloc(int eHEIndex, int devaddrh, int devaddrl);
+	void eAURAaloc(int eHEIndex, int devaddrh, int devaddrl);
+	void eHEaloc(int eHEIndex, int devaddrh, int devaddrl);
+	void eHaloc(int eHEIndex, int devaddrh, int devaddrl);
+	void eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl);
+	unsigned char IsCM(unsigned char addrh, unsigned char addrl);
+	//signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
+	void UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
+	void UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
+	void UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
+	void UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL);
+	void UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
+	void UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
+	void TerminateUDP(void);
+	void IntToHex(unsigned char *buf, const unsigned char *inbuf, int received);
+	float getAdcVolt2(int index);
+	void CalculateAdc2(char index);
+	void CalculateAdcEH1(char index);
+	void deb(char *prefix, unsigned char *dta, int size);
+	void GetStr(unsigned char *GetNamesDta);
+	void GetUDPNamesRS485(unsigned char *data, int nbytes);
+	int gettype(int adrh, int adrl);
+	void GetUDPNamesLAN(unsigned char *data, int nbytes);
+	void GetUDPNamesCM(unsigned char *data, int nbytes);
+	void GetUDPNamesPRO(unsigned char *data, int nbytes);
+	void GetUDPNamesWiFi(unsigned char *data, int nbytes);
+	int UpdateSQLState(int devh, int devl, int devtype, int type, int subtype, int swtype, int code, int nr, char signal, int nValue, const char  *sValue, const char * Name, const char * SignalName, bool on_off, int battery);
+	void UpdateSQLStatus(int devh, int devl, int devtype, int code, int nr, char signal, int nValue, const char  *sValue, int battery);
+	int UpdateSQLPlan(int devh, int devl, int devtype, const char * Name);
+	void UpdatePGM(int adrh, int adrl, int devtype, const char *names, int idx);
+	signed int IndexOfEthDev(unsigned char AddrH, unsigned char AddrL);
+	//	signed int GetIndexOfWiFiDev(unsigned char AddrH, unsigned char AddrL);
+	void EhouseInitTcpClient(void);
+	char SendTCPEvent(const unsigned char *Events, unsigned char EventCount, unsigned char AddrH, unsigned char AddrL, const unsigned char *EventsToRun);
+	void performTCPClientThreads();
+	int  getrealERMpgm(int32_t ID, int level);
+	int  getrealRMpgm(int32_t ID, int level);
+	void ExecEvent(unsigned int i);
+	signed int GetIndexOfEvent(unsigned char *TempEvent);
+	void ExecQueuedEvents(void);
+	signed int hex2bin(const unsigned char *st, int offset);
+	char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
+	void EhouseSubmitData(int SocketIndex);
+	void eHType(int devtype, char *dta);
+private:
 	unsigned char eHEnableAutoDiscovery;									//enable eHouse Controllers Auto Discovery
 	unsigned char eHEnableProDiscovery;										//enable eHouse PRO Discovery
 	unsigned char eHEnableAlarmInputs;			//Future - Alarm inputs
 	char NoDetectTCPPack;
 	unsigned int  eHOptA;						//Admin options
 	unsigned int  eHOptB;						//Admin options
-
-private:
-	struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
-	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
-	void CalculateAdcWiFi(char index);
-	char eH1(unsigned char addrh, unsigned char addrl);
 
 	//Variables stored dynamically added during status reception (should be added sequentially)
 	union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
@@ -42,19 +110,6 @@ private:
 	struct eHouseProNamesT          *eHouseProN;
 	union eHouseProStatusUT			*eHouseProStatus;
 	union eHouseProStatusUT         *eHouseProStatusPrv;
-	void InitStructs(void);
-
-	union ERMFullStatT             *(eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);  		//full ERM status decoded
-	union ERMFullStatT             *(eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1]);  	//full ERM status decoded previous for detecting changes
-
-	union ERMFullStatT             *(eHRMs[EHOUSE1_RM_MAX + 1]);  				//full RM status decoded
-	union ERMFullStatT             *(eHRMPrev[EHOUSE1_RM_MAX + 1]);  			//full RM status decoded previous for detecting changes
-
-
-	struct EventQueueT				*(EvQ[EVENT_QUEUE_MAX]);		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
-	struct AURAT                    *(AuraDev[MAX_AURA_DEVS]);		// Aura status thermostat
-	struct AURAT                    *(AuraDevPrv[MAX_AURA_DEVS]);   // previous for detecting changes
-	struct AuraNamesT               *(AuraN[MAX_AURA_DEVS]);
 
 #ifndef REMOVEUNUSED
 	CANStatus 				eHCAN[EHOUSE_RF_MAX];
@@ -69,9 +124,6 @@ private:
 
 	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX + 1]);			//full wifi status 
 	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX + 1]);		//full wifi status previous for detecting changes
-
-
-
 
 #ifndef REMOVEUNUSED
 	WIFIFullStat            eHCANPrev[EHOUSE_CAN_MAX];
@@ -129,58 +181,6 @@ private:
 
 	boost::mutex m_mutex;
 	bool m_alarmLast;
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
-
-	bool CheckAddress();
-	// Closes socket
-	void DestroySocket();
-
-	std::string ISO2UTF8(const std::string &name);
-	//dynamically allocate memories for controllers structures
-	void eCMaloc(int eHEIndex, int devaddrh, int devaddrl);
-	void eHPROaloc(int eHEIndex, int devaddrh, int devaddrl);
-	void eAURAaloc(int eHEIndex, int devaddrh, int devaddrl);
-	void eHEaloc(int eHEIndex, int devaddrh, int devaddrl);
-	void eHaloc(int eHEIndex, int devaddrh, int devaddrl);
-	void eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl);
-	unsigned char IsCM(unsigned char addrh, unsigned char addrl);
-	//signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
-	void UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	void UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	void UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	void UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL);
-	void UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	void UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	void TerminateUDP(void);
-	void IntToHex(unsigned char *buf, const unsigned char *inbuf, int received);
-	float getAdcVolt2(int index);
-	void CalculateAdc2(char index);
-	void CalculateAdcEH1(char index);
-	void deb(char *prefix, unsigned char *dta, int size);
-	void GetStr(unsigned char *GetNamesDta);
-	void GetUDPNamesRS485(unsigned char *data, int nbytes);
-	int gettype(int adrh, int adrl);
-	void GetUDPNamesLAN(unsigned char *data, int nbytes);
-	void GetUDPNamesCM(unsigned char *data, int nbytes);
-	void GetUDPNamesPRO(unsigned char *data, int nbytes);
-	void GetUDPNamesWiFi(unsigned char *data, int nbytes);
-	int UpdateSQLState(int devh, int devl, int devtype, int type, int subtype, int swtype, int code, int nr, char signal, int nValue, const char  *sValue, const char * Name, const char * SignalName, bool on_off, int battery);
-	void UpdateSQLStatus(int devh, int devl, int devtype, int code, int nr, char signal, int nValue, const char  *sValue, int battery);
-	int UpdateSQLPlan(int devh, int devl, int devtype, const char * Name);
-	void UpdatePGM(int adrh, int adrl, int devtype, const char *names, int idx);
-	signed int IndexOfEthDev(unsigned char AddrH, unsigned char AddrL);
-	//	signed int GetIndexOfWiFiDev(unsigned char AddrH, unsigned char AddrL);
-	void EhouseInitTcpClient(void);
-	char SendTCPEvent(const unsigned char *Events, unsigned char EventCount, unsigned char AddrH, unsigned char AddrL, const unsigned char *EventsToRun);
-	void performTCPClientThreads();
-	int  getrealERMpgm(int32_t ID, int level);
-	int  getrealRMpgm(int32_t ID, int level);
-	void ExecEvent(unsigned int i);
-	signed int GetIndexOfEvent(unsigned char *TempEvent);
-	void ExecQueuedEvents(void);
-	signed int hex2bin(const unsigned char *st, int offset);
 	char ViaTCP;					//Statuses via TCP/IP connection
 	int PlanID;
 	int HwID;						//Domoticz Hardware ID
@@ -228,9 +228,6 @@ private:
 		//        unsigned char Stat;                   //Status of client
 	} TcpClientCon;
 	TcpClientCon    TC[MAX_CLIENT_SOCKETS];    //TCP Client Instances in case of multi-threading
-	char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
-	void EhouseSubmitData(int SocketIndex);
-	void eHType(int devtype, char *dta);
 	/*typedef struct tModel {
 		unsigned int type;          //controller type / interface
 		unsigned int  id;           //id for controller type detection

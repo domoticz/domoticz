@@ -32,16 +32,12 @@ Source: http://wiringpi.com
 
 class CGpio : public CDomoticzHardwareBase
 {
-
 public:
 	explicit CGpio(const int ID, const int debounce, const int period, const int pollinterval);
 	~CGpio();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-	static std::vector<CGpioPin> GetPinList();
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static CGpioPin* GetPPinById(int id);
-	uint32_t m_period;
-	uint32_t m_debounce;
-	uint32_t m_pollinterval;
+	static std::vector<CGpioPin> GetPinList();
 private:
 	int GPIORead(int pin, const char* param);
 	int GPIOReadFd(int fd);
@@ -59,7 +55,10 @@ private:
 	void UpdateStartup();
 	void UpdateSwitch(const int gpioId, const bool value);
 	void GetSchedPriority(int *scheduler, int *priority);
-
+private:
+	uint32_t m_period;
+	uint32_t m_debounce;
+	uint32_t m_pollinterval;
 	boost::mutex m_pins_mutex;
 	boost::shared_ptr<boost::thread> m_thread, m_thread_poller, m_thread_updatestartup;
 	static std::vector<CGpioPin> pins;

@@ -313,6 +313,27 @@ public:
 		}
 	};
 
+	struct _tMySensorSmartSleepQueueItem
+	{
+		int _NodeID;
+		int _ChildID;
+		_eMessageType _messageType;
+		_eSetType _SubType;
+		std::string _Payload;
+		bool _bUseAck;
+		int _AckTimeout;
+		_tMySensorSmartSleepQueueItem(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
+		{
+			_NodeID = NodeID;
+			_ChildID = ChildID;
+			_messageType = messageType;
+			_SubType = SubType;
+			_Payload = Payload;
+			_bUseAck = bUseAck;
+			_AckTimeout = AckTimeout;
+		}
+	};
+
 	struct _tMySensorNode
 	{
 		int nodeID;
@@ -398,31 +419,9 @@ public:
 		}
 	} MySensorNode;
 
-	struct _tMySensorSmartSleepQueueItem
-	{
-		int _NodeID;
-		int _ChildID;
-		_eMessageType _messageType;
-		_eSetType _SubType;
-		std::string _Payload;
-		bool _bUseAck;
-		int _AckTimeout;
-		_tMySensorSmartSleepQueueItem(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
-		{
-			_NodeID = NodeID;
-			_ChildID = ChildID;
-			_messageType = messageType;
-			_SubType = SubType;
-			_Payload = Payload;
-			_bUseAck = bUseAck;
-			_AckTimeout = AckTimeout;
-		}
-	};
-
 	MySensorsBase(void);
 	~MySensorsBase(void);
-	std::string m_szSerialPort;
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	_tMySensorNode* FindNode(const int nodeID);
 	void UpdateNode(const int nodeID, const std::string &name);
 	void RemoveNode(const int nodeID);
@@ -469,30 +468,26 @@ private:
 	int FindNextNodeID();
 	_tMySensorChild* FindSensorWithPresentationType(const int nodeID, const _ePresentationType presType);
 	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType, const int groupID);
-	void InsertSensor(_tMySensorChild device);
 	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
 	void UpdateNodeHeartbeat(const int nodeID);
 
 	void UpdateVar(const int NodeID, const int ChildID, const int VarID, const std::string &svalue);
 	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);
 
-	std::map<int, _tMySensorNode> m_nodes;
-
-	concurrent_queue<std::string > m_sendQueue;
-	boost::shared_ptr<boost::thread> m_send_thread;
 	bool StartSendQueue();
 	void StopSendQueue();
 	void Do_Send_Work();
-
+private:
+	std::string m_szSerialPort;
+	std::map<int, _tMySensorNode> m_nodes;
+	concurrent_queue<std::string > m_sendQueue;
+	boost::shared_ptr<boost::thread> m_send_thread;
 	std::string m_GatewayVersion;
-
 	bool m_bAckReceived;
 	int m_AckNodeID;
 	int m_AckChildID;
 	_eSetType m_AckSetType;
-
 	std::string m_LineReceived;
-
 	std::map<int, bool> m_node_sleep_states;
 	std::map<int, std::vector<_tMySensorSmartSleepQueueItem> > m_node_sleep_queue;
 	boost::mutex m_node_sleep_mutex;

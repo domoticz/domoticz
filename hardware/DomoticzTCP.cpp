@@ -18,12 +18,12 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	info = NULL;
+	m_bIsStarted = false;
+	m_retrycntr = RETRY_DELAY;
 #ifndef NOCLOUD
 	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	b_ProxyConnected = false;
 #endif
-	m_bIsStarted = false;
-	m_retrycntr = RETRY_DELAY;
 }
 
 DomoticzTCP::~DomoticzTCP(void)

@@ -17,7 +17,7 @@ public:
 	CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms);
 	explicit CPanasonic(const int ID);
 	~CPanasonic(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);
 	void RemoveNode(const int ID);
@@ -34,9 +34,8 @@ private:
 
 	void ReloadNodes();
 	void UnloadNodes();
-
+private:
 	static	std::vector<boost::shared_ptr<CPanasonicNode> > m_pNodes;
-
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	boost::shared_ptr<boost::thread> m_thread;

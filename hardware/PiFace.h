@@ -126,23 +126,18 @@ class CPiFace : public CDomoticzHardwareBase
 public:
     explicit CPiFace(const int ID);
     ~CPiFace();
-    bool WriteToHardware(const char *pdata, const unsigned char length);
-    void CallBackSendEvent(const unsigned char *pEventPacket, const unsigned int PacketLength);
-    void CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinID, bool Interrupt_Enable);
-    
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+   
 private:
     bool StartHardware();
     bool StopHardware();
     
     void Do_Work();
     void Do_Work_Queue();
-    boost::shared_ptr<boost::thread> m_thread;
-    boost::shared_ptr<boost::thread> m_queue_thread;
-    
-    volatile bool m_stoprequested;
-    int m_InputSample_waitcntr;
-    int m_CounterEdgeSample_waitcntr;
-    
+
+	void CallBackSendEvent(const unsigned char *pEventPacket, const unsigned int PacketLength);
+	void CallBackSetPinInterruptMode(unsigned char devId, unsigned char pinID, bool Interrupt_Enable);
+
     int Init_SPI_Device(int Init);
     void Init_Hardware(unsigned char devId);
     int Read_Write_SPI_Byte(unsigned char *data, int len);
@@ -153,9 +148,28 @@ private:
     void Sample_and_Process_Input_Interrupts(unsigned char devId);
     void GetAndSetInitialDeviceState(int devId);
     
-    
     int Detect_PiFace_Hardware(void);
-    
+
+	std::string & preprocess(std::string &s);
+	std::string & trim(std::string &s);
+	std::string & ltrim(std::string &s);
+	std::string & rtrim(std::string &s);
+	int LocateValueInParameterArray(std::string Parametername, const std::string *ParameterArray, int Items);
+	int GetParameterString(std::string TargetString, const char * SearchStr, int StartPos, std::string &Parameter);
+	int LoadConfig(void);
+	void LoadDefaultConfig(void);
+	void AutoCreate_piface_config(void);
+
+	void GetLastKnownValues(void);
+	void GetLastKnownValues(int BoardNr, int PinNr, CIOPort port);
+private:
+	boost::shared_ptr<boost::thread> m_thread;
+	boost::shared_ptr<boost::thread> m_queue_thread;
+
+	volatile bool m_stoprequested;
+	int m_InputSample_waitcntr;
+	int m_CounterEdgeSample_waitcntr;
+
     int m_fd;
     
     CIOPort m_Inputs[4];
@@ -168,20 +182,7 @@ private:
     static const std::string ParameterBooleanValueNames[CONFIG_NR_OF_PARAMETER_BOOL_TYPES];
     static const std::string ParameterPinTypeValueNames[CONFIG_NR_OF_PARAMETER_PIN_TYPES];
     static const std::string ParameterCountTypeValueNames[CONFIG_NR_OF_PARAMETER_COUNT_TYPES];
-    
-    std::string & preprocess(std::string &s);
-    std::string & trim(std::string &s);
-    std::string & ltrim(std::string &s);
-    std::string & rtrim(std::string &s);
-    int LocateValueInParameterArray(std::string Parametername,const std::string *ParameterArray,int Items);
-    int GetParameterString(std::string TargetString,const char * SearchStr, int StartPos,  std::string &Parameter);
-    int LoadConfig(void);
-    void LoadDefaultConfig(void);
-    void AutoCreate_piface_config(void);
-    
-    void GetLastKnownValues(void);
-    void GetLastKnownValues(int BoardNr, int PinNr, CIOPort port);
-    
+   
     boost::mutex m_queue_mutex;
     std::vector<std::string> m_send_queue;
 };

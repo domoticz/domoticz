@@ -12,9 +12,13 @@ class CHttpPoller : public CDomoticzHardwareBase
 public:
 	CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& extradata, const unsigned short refresh);
 	~CHttpPoller(void);
-
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+private:
+	void Init();
+	bool StartHardware();
+	bool StopHardware();
+	void Do_Work();
+	void GetScript();
 private:
 	std::string m_username;
 	std::string m_password;
@@ -28,11 +32,5 @@ private:
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
-
-	void Init();
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
-	void GetScript();
 };
 

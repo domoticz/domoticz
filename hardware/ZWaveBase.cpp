@@ -171,7 +171,7 @@ bool ZWaveBase::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
 		m_HwdID, homeID, nodeID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::string ProductDescription = result[0][0];
 	return (

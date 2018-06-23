@@ -14,10 +14,16 @@ class CToonThermostat : public CDomoticzHardwareBase
 public:
 	CToonThermostat(const int ID, const std::string &Username, const std::string &Password, const int &Agreement);
 	~CToonThermostat(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);
 private:
+	void Init();
+	bool StartHardware();
+	bool StopHardware();
+	void Do_Work();
+	void GetMeterDetails();
+
 	bool ParseThermostatData(const Json::Value &root);
 	bool ParseDeviceStatusData(const Json::Value &root);
 	bool ParsePowerUsage(const Json::Value &root);
@@ -38,7 +44,7 @@ private:
 	bool Login();
 	void Logout();
 	std::string GetRandom();
-
+private:
 	std::string m_UserName;
 	std::string m_Password;
 	int m_Agreement;
@@ -70,11 +76,5 @@ private:
 
 	std::map<int, double> m_LastElectricCounter;
 	std::map<int, double> m_OffsetElectricUsage;
-
-	void Init();
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
-	void GetMeterDetails();
 };
 
