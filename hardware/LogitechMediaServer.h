@@ -4,7 +4,11 @@
 
 #include <string>
 #include <vector>
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 class CLogitechMediaServer : public CDomoticzHardwareBase
 {

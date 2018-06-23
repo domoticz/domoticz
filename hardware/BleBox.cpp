@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "BleBox.h"
 #include "hardwaretypes.h"
+#include "../json/json.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/localtime_r.h"

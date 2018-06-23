@@ -2,6 +2,7 @@
 #include "LogitechMediaServer.h"
 #include <boost/lexical_cast.hpp>
 #include "../hardware/hardwaretypes.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"

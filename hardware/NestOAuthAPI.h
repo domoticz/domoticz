@@ -4,7 +4,11 @@
 #include <iostream>
 #include "hardwaretypes.h"
 #include <map>
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 class CNestOAuthAPI : public CDomoticzHardwareBase
 {
