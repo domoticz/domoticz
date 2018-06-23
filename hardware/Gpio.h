@@ -37,6 +37,7 @@ public:
 	~CGpio();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static CGpioPin* GetPPinById(int id);
+	static std::vector<CGpioPin> GetPinList();
 private:
 	int GPIORead(int pin, const char* param);
 	int GPIOReadFd(int fd);
@@ -54,7 +55,6 @@ private:
 	void UpdateStartup();
 	void UpdateSwitch(const int gpioId, const bool value);
 	void GetSchedPriority(int *scheduler, int *priority);
-	static std::vector<CGpioPin> GetPinList();
 private:
 	uint32_t m_period;
 	uint32_t m_debounce;
