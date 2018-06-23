@@ -71,7 +71,7 @@ static void dumpstack(void) {
 
 const char *szHelp =
 "Usage: Domoticz -www port\n"
-
+"\t-version display version number\n"
 "\t-www port (for example -www 8080, or -www 0 to disable http)\n"
 "\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
 #ifdef WWW_ENABLE_SSL
@@ -739,6 +739,12 @@ bool ParseConfigFile(const std::string &szConfigFile)
 	return true;
 }
 
+void DisplayAppVersion()
+{
+	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-%d GizMoCuz", szAppVersion.c_str(), ActYear);
+	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
+}
+
 #if defined WIN32
 int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nShowCmd)
 #else
@@ -843,8 +849,7 @@ int main(int argc, char**argv)
 #endif
 	}
 	GetAppVersion();
-	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-%d GizMoCuz", szAppVersion.c_str(), ActYear);
-	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
+	DisplayAppVersion();
 
 #if !defined WIN32
 	CheckForOnboardSensors();
@@ -861,6 +866,11 @@ int main(int argc, char**argv)
 		if ((cmdLine.HasSwitch("-h")) || (cmdLine.HasSwitch("--help")) || (cmdLine.HasSwitch("/?")))
 		{
 			_log.Log(LOG_NORM, "%s", szHelp);
+			return 0;
+		}
+		if ((cmdLine.HasSwitch("-version")) || (cmdLine.HasSwitch("--version")))
+		{
+			DisplayAppVersion();
 			return 0;
 		}
 		if (cmdLine.HasSwitch("-userdata"))
