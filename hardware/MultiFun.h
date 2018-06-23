@@ -14,8 +14,8 @@ public:
 	virtual ~MultiFun();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	bool ConnectToDevice();

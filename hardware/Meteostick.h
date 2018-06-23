@@ -19,8 +19,8 @@ public:
 	~Meteostick();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 

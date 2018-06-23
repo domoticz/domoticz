@@ -15,8 +15,8 @@ public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool WriteInt(const std::string &sendString);
 protected:
 	std::string m_szIPAddress;

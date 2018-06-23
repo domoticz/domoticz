@@ -19,8 +19,8 @@ public:
 	void SetProgramState(const int newState);
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 

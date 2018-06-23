@@ -24,8 +24,8 @@ public:
     ~P1MeterSerial();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void readCallback(const char *data, size_t len);
 private:

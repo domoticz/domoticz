@@ -34,8 +34,8 @@ public:
 	~RAVEn(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void readCallback(const char *indata, size_t inlen);
 private:
     const std::string device_;

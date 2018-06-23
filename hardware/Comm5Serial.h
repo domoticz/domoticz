@@ -25,8 +25,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool Connect();
 	void requestDigitalInputResponseHandler(const std::string& frame);
 	void requestDigitalOutputResponseHandler(const std::string& frame);

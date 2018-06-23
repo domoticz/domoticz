@@ -11,8 +11,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn);
 	void Init();

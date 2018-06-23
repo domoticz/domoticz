@@ -20,8 +20,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 	bool GetP1Details();

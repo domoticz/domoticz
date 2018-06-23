@@ -18,8 +18,8 @@ public:
 	void SetSetpoint(const int idx, const float temp);
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);

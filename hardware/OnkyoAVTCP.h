@@ -15,8 +15,8 @@ public:
 private:
 	bool isConnected() { return mIsConnected; };
 	bool SendPacket(const char *pCmd, const char *pArg);
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool CustomCommand(uint64_t idx, const std::string &sCommand);
 	void ReceiveMessage(const char *pData, int Len);
 	void ReceiveSwitchMsg(const char *pData, int Len, bool muting, int ID);

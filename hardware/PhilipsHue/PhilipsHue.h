@@ -57,8 +57,8 @@ public:
 	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	bool GetStates();
 	bool GetLights(const Json::Value &root);

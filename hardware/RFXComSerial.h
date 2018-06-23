@@ -17,8 +17,8 @@ public:
 	float GetUploadPercentage(); //returns -1 when failed
 	std::string GetUploadMessage();
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool OpenSerialDevice(const bool bIsFirmwareUpgrade=false);
 	void Do_Work();
 

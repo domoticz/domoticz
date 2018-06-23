@@ -39,8 +39,8 @@ private:
 	struct AURAT                    *(AuraDevPrv[MAX_AURA_DEVS]);   // previous for detecting changes
 	struct AuraNamesT               *(AuraN[MAX_AURA_DEVS]);
 
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	bool CheckAddress();

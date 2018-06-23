@@ -60,7 +60,7 @@ private:
 
 	void CheckRelayHeatDemand();
 	void SendRelayKeepAlive();
-	bool StartHardware();
+	bool StartHardware() override;
 
 	int ProcessBuf(char * buf, int size);
 	void ProcessMsg(const char * rawmsg);

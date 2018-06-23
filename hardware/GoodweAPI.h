@@ -16,8 +16,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	uint32_t hash(const std::string &str);
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 	bool GoodweServerClient(const std::string &sPATH, std::string &sResult);

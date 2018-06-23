@@ -12,8 +12,8 @@ public:
 	std::string GetForecastURL();
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 	std::string GetLocationKey();

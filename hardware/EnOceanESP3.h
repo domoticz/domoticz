@@ -23,8 +23,8 @@ public:
 	unsigned long m_id_base;
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool OpenSerialDevice();
 	void Do_Work();
 	bool ParseData();

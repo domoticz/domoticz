@@ -17,8 +17,8 @@ public:
 		const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue,
 		const std::string &yeelightSat, const std::string &yeelightRGB, const std::string &yeelightCT, const std::string &yeelightColorMode);
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 private:
 	bool m_bDoRestart;

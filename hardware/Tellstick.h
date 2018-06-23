@@ -44,8 +44,8 @@ private:
                     int timestamp, int callbackId, void *context);
     bool AddSwitchIfNotExits(const int id, const char* devname, bool isDimmer);
     void Init();
-    bool StartHardware();
-    bool StopHardware();
+    bool StartHardware() override;
+    bool StopHardware() override;
     void SendCommand(int devID, const _tGeneralSwitch &cmd);
     
     void ThreadSendCommands();

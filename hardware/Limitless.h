@@ -24,8 +24,8 @@ private:
 	void Send_V4V5_RGBW_On(const uint8_t dunit, const long delay);
 	bool IsDataAvailable(const SOCKET sock);
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 private:
 	_eLimitlessBridgeType m_BridgeType;

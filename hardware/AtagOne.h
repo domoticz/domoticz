@@ -20,8 +20,8 @@ private:
 	std::string GetRequestVerificationToken(const std::string &url);
 	void Init();
 	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 private:

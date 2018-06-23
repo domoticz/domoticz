@@ -27,8 +27,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Do_Work();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, bool silent = false);
 	bool FindDevice(int deviceID, int deviceUnit, int subType, int* used);
 	bool writeRead(const char* command, unsigned int commandSize, bool silent);

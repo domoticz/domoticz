@@ -32,8 +32,8 @@ private:
 	void SendCommand(const std::string&);
 	bool isConnected() { return mIsConnected; };
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool WriteInt(const std::string &sendStr);
 	void Do_Work();
 	void OnConnect();

@@ -37,8 +37,8 @@ public:
 	static std::vector<std::string> GetGpioNames();
 	static void RequestDbUpdate(int pin);
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void FindGpioExports();
 	void Do_Work();
 	void EdgeDetectThread();

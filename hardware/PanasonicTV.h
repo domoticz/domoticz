@@ -28,8 +28,8 @@ public:
 private:
 	void Do_Work();
 
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 
 	void ReloadNodes();
 	void UnloadNodes();

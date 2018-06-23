@@ -129,8 +129,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
    
 private:
-    bool StartHardware();
-    bool StopHardware();
+    bool StartHardware() override;
+    bool StopHardware() override;
     
     void Do_Work();
     void Do_Work_Queue();

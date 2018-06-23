@@ -66,8 +66,8 @@ public:
 private:
 	// base functions
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	// evohome web commands

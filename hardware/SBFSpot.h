@@ -14,8 +14,8 @@ private:
 	void SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname);
 	bool GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal);
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
