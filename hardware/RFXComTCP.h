@@ -12,8 +12,8 @@ public:
 	~RFXComTCP(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void OnConnect();
 	void OnDisconnect();
 	void OnData(const unsigned char *pData, size_t length);

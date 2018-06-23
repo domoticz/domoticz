@@ -17,8 +17,8 @@ public:
 	float GetProcessMemUsage();
 #endif
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	double m_lastquerytime;
 	void Do_Work();
 	volatile bool m_stoprequested;

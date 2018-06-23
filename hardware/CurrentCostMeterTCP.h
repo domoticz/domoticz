@@ -12,8 +12,8 @@ public:
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length);
 
 protected:	
-	virtual bool StartHardware();
-	virtual bool StopHardware();
+	virtual bool StartHardware() override;
+	virtual bool StopHardware() override;
 
 private:
 	void write(const char *data, size_t size);

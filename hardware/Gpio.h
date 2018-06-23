@@ -46,8 +46,8 @@ private:
 	int waitForInterrupt(int fd, const int mS);
 	int SetSchedPriority(const int s, const int pri, const int x);
 	bool InitPins();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	//bool CreateDomoticzDevices();
 	void InterruptHandler();
 	void Poller();

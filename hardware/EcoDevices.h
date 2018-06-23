@@ -49,8 +49,8 @@ private:
 	bool Login();
 	void Logout();
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &teleinfo);
 	void GetMeterDetails();

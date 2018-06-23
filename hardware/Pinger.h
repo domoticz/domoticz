@@ -27,8 +27,8 @@ public:
 	void Restart();
 private:
 	void Do_Work();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void DoPingHosts();
 	void Do_Ping_Worker(const PingNode &Node);
 	void UpdateNodeStatus(const PingNode &Node, const bool bPingOK);

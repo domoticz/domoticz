@@ -13,8 +13,8 @@ public:
 private:
 	void write(const char *data, size_t size);
 	bool isConnected() { return m_socket != INVALID_SOCKET; };
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void disconnect();
 	void Do_Work();
 	bool ConnectInternal();

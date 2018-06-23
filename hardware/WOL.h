@@ -14,8 +14,8 @@ public:
 	void RemoveAllNodes();
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool SendWOLPacket(const unsigned char *pPacket);
 private:
 	std::string m_broadcast_address;

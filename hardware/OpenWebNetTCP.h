@@ -47,8 +47,8 @@ public:
 	bool SetSetpoint(const int idx, const float temp);
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool isStatusSocketConnected();
 	void Do_Work();
 	void MonitorFrames();

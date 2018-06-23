@@ -20,8 +20,8 @@ class CTado : public CDomoticzHardwareBase
 		void SetSetpoint(const int idx, const float temp);
 	private:
 		void Init();
-		bool StartHardware();
-		bool StopHardware();
+		bool StartHardware() override;
+		bool StopHardware() override;
 		void Do_Work();
 
 		boost::shared_ptr<boost::thread> m_thread;

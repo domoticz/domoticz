@@ -10,8 +10,8 @@ public:
     ~S0MeterSerial();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
     void readCallback(const char *data, size_t len);
 };
 

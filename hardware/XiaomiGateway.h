@@ -16,8 +16,8 @@ public:
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	bool SendMessageToGateway(const std::string &controlmessage);

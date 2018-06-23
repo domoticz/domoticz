@@ -13,8 +13,8 @@ public:
 	void SetSetpoint(const int idx, const float temp);
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	bool GetStatusDetails();

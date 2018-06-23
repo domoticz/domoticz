@@ -48,9 +48,9 @@ namespace Plugins {
 
 		boost::shared_ptr<boost::thread> m_thread;
 
-		bool StartHardware();
+		bool StartHardware() override;
 		void Do_Work();
-		bool StopHardware();
+		bool StopHardware() override;
 		void ClearMessageQueue();
 
 		void LogPythonException();

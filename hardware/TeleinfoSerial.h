@@ -37,8 +37,8 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		~CTeleinfoSerial();
 		bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	private:
-		bool StartHardware();
-		bool StopHardware();
+		bool StartHardware() override;
+		bool StopHardware() override;
 		void Init();
 		void MatchLine();
 		void ParseData(const char *pData, int Len);

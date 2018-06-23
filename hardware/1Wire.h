@@ -15,8 +15,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void DetectSystem();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void SensorThread();
 	void SwitchThread();
 	void BuildSensorList();

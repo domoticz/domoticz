@@ -9,8 +9,8 @@ public:
 	OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
     ~OTGWSerial();
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool OpenSerialDevice();
 
 	void StartPollerThread();
@@ -20,10 +20,6 @@ private:
 	int m_retrycntr;
 	boost::shared_ptr<boost::thread> m_pollerthread;
 	volatile bool m_stoprequestedpoller;
-
-    /**
-     * Read callback, stores data in the buffer
-     */
     void readCallback(const char *data, size_t len);
 };
 

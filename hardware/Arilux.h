@@ -14,8 +14,8 @@ public:
 	void InsertUpdateSwitch(const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &ariluxBright, const std::string &ariluxHue);
 private:
 	bool SendTCPCommand(char ip[50],std::vector<unsigned char> &command);
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 private:
 	_tColor m_color;

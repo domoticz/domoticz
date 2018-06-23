@@ -16,8 +16,8 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	bool isConnected() { return mIsConnected; };
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void Init();
 	void SetupDevices();

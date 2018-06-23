@@ -31,8 +31,8 @@ public:
 	std::string GetUptime(const std::string &IPAddress);
 	void SearchNodes(const std::string &ipmask);
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	std::string IdentifyDevice(const std::string &IPAddress);

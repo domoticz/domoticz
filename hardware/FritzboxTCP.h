@@ -13,8 +13,8 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	bool isConnected() { return mIsConnected; };
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 	void WriteInt(const std::string &sendStr);
 	void Do_Work();

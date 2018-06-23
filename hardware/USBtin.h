@@ -48,8 +48,8 @@ private:
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
 	boost::shared_ptr<boost::thread> m_thread;
 	
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool OpenSerialDevice();
 	void Do_Work();
 	// Read callback, stores data in the buffer

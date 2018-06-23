@@ -24,8 +24,8 @@ private:
 	bool Login();
 	void Logout();
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetHeaterDetails();
 	std::string GetHTTPData(std::string sURL);

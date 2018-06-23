@@ -47,8 +47,8 @@ private:
 	std::map<int, float> m_OldRainCounter;
 
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	std::string MakeRequestURL(const _eNetatmoType NetatmoType);
 	void GetMeterDetails();

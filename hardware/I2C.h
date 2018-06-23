@@ -25,8 +25,8 @@ public:
 	~I2C();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void HTU21D_ReadSensorDetails();
 	void bmp_Read_BMP_SensorDetails();
 	void bmp_Read_BME_SensorDetails();
