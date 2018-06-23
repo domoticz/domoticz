@@ -7077,9 +7077,6 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 	result = safe_query("SELECT Type,SubType FROM DeviceStatus WHERE (ID==%q)", ID);
 	if (result.size() < 1)
 		return;
-	//std::vector<std::string> sd=result[0];
-	//unsigned char dType=atoi(sd[0].c_str());
-	//unsigned char dSubType=atoi(sd[1].c_str());
 
 	if (Date.find(':') != std::string::npos)
 	{
@@ -7089,10 +7086,11 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 		struct tm tLastUpdate;
 		localtime_r(&now, &tLastUpdate);
 
-		//GB3:	ToDo: Database should know the difference between Summer and Winter time,
-		//	or we'll be deleting both entries if the DataPoint is inside a DST jump
-
+		time_t cEndTime;
+		ParseSQLdatetime(cEndTime, tLastUpdate, Date, tLastUpdate.tm_isdst);
+		tLastUpdate.tm_min += 2;
 		sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
+
 		//Short log
 		safe_query("DELETE FROM Rain WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
 		safe_query("DELETE FROM Wind WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
