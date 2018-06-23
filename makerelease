@@ -86,7 +86,7 @@ fi
 
 #################################
 echo "Uploading to Cloud...";
-sshpass -p ${UPLOAD_PASSWORD} scp -o User=${UPLOAD_USER} ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} 146.185.159.228:/home/uploads@domoticz.com/beta
+sshpass -p ${UPLOAD_PASSWORD} scp -o User=${UPLOAD_USER} ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} 146.185.159.228:/home/uploads@domoticz.com/release
 if [ $? -ne 0 ]
 then
         echo "Error uploading to Cloud!...";
