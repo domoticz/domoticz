@@ -16,10 +16,15 @@ class CNest : public CDomoticzHardwareBase
 public:
 	CNest(const int ID, const std::string &Username, const std::string &Password);
 	~CNest(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);
 private:
+	void Init();
+	bool StartHardware();
+	bool StopHardware();
+	void Do_Work();
+	void GetMeterDetails();
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
 	void UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std::string &defaultname);
@@ -27,7 +32,7 @@ private:
 	bool SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMode);
 	bool Login();
 	void Logout();
-
+private:
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_TransportURL;
@@ -39,11 +44,5 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<int, _tNestThemostat> m_thermostats;
 	bool m_bDoLogin;
-
-	void Init();
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
-	void GetMeterDetails();
 };
 

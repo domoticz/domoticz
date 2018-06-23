@@ -484,7 +484,7 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	_log.Log(LOG_STATUS, "Logitech Media Server: New Player '%s' added", Name.c_str());
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress='%q')", m_HwdID, MacAddress.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -923,14 +923,14 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "LMSGetPlaylists";
 
-			std::vector<CLogitechMediaServer::LMSPlaylistNode> m_nodes = pHardware->GetPlaylists();
-			std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;
+			std::vector<CLogitechMediaServer::LMSPlaylistNode> _nodes = pHardware->GetPlaylists();
 
 			int ii = 0;
-			for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt) {
-				root["result"][ii]["id"] = itt->ID;
-				root["result"][ii]["refid"] = itt->refID;
-				root["result"][ii]["Name"] = itt->Name;
+			for (const auto & itt : _nodes)
+			{
+				root["result"][ii]["id"] = itt.ID;
+				root["result"][ii]["refid"] = itt.refID;
+				root["result"][ii]["Name"] = itt.Name;
 				ii++;
 			}
 		}

@@ -136,7 +136,7 @@ bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 
 	//Find our Node
 	result = m_sql.safe_query("SELECT MacAddress FROM WOLNodes WHERE (ID==%d)", nodeID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false; //Not Found
 
 	unsigned char tosend[102];
@@ -173,7 +173,7 @@ void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), MACAddress.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -192,7 +192,7 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string &
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q' WHERE (HardwareID==%d) AND (ID==%d)",

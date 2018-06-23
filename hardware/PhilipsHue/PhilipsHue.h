@@ -53,22 +53,9 @@ class CPhilipsHue : public CDomoticzHardwareBase
 public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int poll, const int Options);
 	~CPhilipsHue(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:
-	int m_poll_interval;
-	bool m_add_groups;
-	bool m_add_scenes;
-	std::string m_IPAddress;
-	unsigned short m_Port;
-	std::string m_UserName;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
-	std::map<int, _tHueLightState> m_lights;
-	std::map<int, _tHueGroup> m_groups;
-	std::map<std::string, _tHueScene> m_scenes;
-	std::map<int, CPHSensor> m_sensors;
-
 	void Init();
 	bool StartHardware();
 	bool StopHardware();
@@ -84,5 +71,18 @@ private:
 	static void LightStateFromJSON(const Json::Value &lightstate, _tHueLightState &tlight, _eHueLightType &LType);
 	static void RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
 	static bool StatesSimilar(const _tHueLightState &s1, const _tHueLightState &s2);
+private:
+	int m_poll_interval;
+	bool m_add_groups;
+	bool m_add_scenes;
+	std::string m_IPAddress;
+	unsigned short m_Port;
+	std::string m_UserName;
+	volatile bool m_stoprequested;
+	boost::shared_ptr<boost::thread> m_thread;
+	std::map<int, _tHueLightState> m_lights;
+	std::map<int, _tHueGroup> m_groups;
+	std::map<std::string, _tHueScene> m_scenes;
+	std::map<int, CPHSensor> m_sensors;
 };
 

@@ -1088,7 +1088,7 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int Su
 	std::vector<std::vector<std::string> > result;
 	// LLEMARINEL : #1312  Changed pTypeLighting2 to pTypeGeneralSwitch
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
-	if (result.size() < 1)
+	if (result.empty())
 		return; //not found!
 	time_t now = time(0);
 	struct tm ltime;
@@ -1106,7 +1106,7 @@ void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int Chil
 	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 	time_t now = time(0);
 	struct tm ltime;
@@ -1127,7 +1127,7 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 	time_t now = time(0);
 	struct tm ltime;
@@ -1200,7 +1200,7 @@ bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &bli
 	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	blind_value = atoi(result[0][0].c_str());
 	return true;
@@ -1222,7 +1222,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 	}
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, SubUnit);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	int nvalue = atoi(result[0][1].c_str());
 	if ((sub_type == V_STATUS) || (sub_type == V_TRIPPED))
@@ -1666,7 +1666,7 @@ bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID,
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [Value] FROM MySensorsVars WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d) AND (VarID=%d)", m_HwdID, NodeID, ChildID, VarID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	sValue = sd[0];
@@ -1677,7 +1677,7 @@ void MySensorsBase::UpdateChildDBInfo(const int NodeID, const int ChildID, const
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ROWID FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d)", m_HwdID, NodeID, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Insert
 		bool bUseAck = (ChildID == 255) ? false : true;
@@ -1697,7 +1697,7 @@ bool MySensorsBase::GetChildDBInfo(const int NodeID, const int ChildID, _ePresen
 	UseAck = false;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [Type], [Name], [UseAck] FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d)", m_HwdID, NodeID, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	pType = (_ePresentationType)atoi(result[0][0].c_str());
 	Name = result[0][1];

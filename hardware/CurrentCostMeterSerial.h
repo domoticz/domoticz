@@ -16,7 +16,6 @@ public:
     virtual ~CurrentCostMeterSerial();
 
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length);
-
 protected:
 	virtual bool StartHardware();
 	virtual bool StopHardware();

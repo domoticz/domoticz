@@ -12,11 +12,20 @@ class MultiFun : public CDomoticzHardwareBase
 public:
 	MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort);
 	virtual ~MultiFun();
-
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
+	bool StartHardware();
+	bool StopHardware();
+	void Do_Work();
 
+	bool ConnectToDevice();
+	void DestroySocket();
+
+	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, bool write);
+
+	void GetTemperatures();
+	void GetRegisters(bool FirstTime);
+private:
 	const unsigned short m_IPPort;
 	const std::string m_IPAddress;
 	volatile bool m_stoprequested;
@@ -32,16 +41,4 @@ private:
 	int m_LastQuickAccess;
 	bool m_isSensorExists[2]; 
 	bool m_isWeatherWork[2];
-
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
-
-	bool ConnectToDevice();
-	void DestroySocket();
-
-	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, bool write);
-
-	void GetTemperatures();
-	void GetRegisters(bool FirstTime);
 };

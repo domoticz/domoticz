@@ -1144,7 +1144,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType,
 	//check if this switch is already in the database
 	vector<vector<string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID, pTypeGeneralSwitch);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel);

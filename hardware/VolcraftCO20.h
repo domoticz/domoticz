@@ -11,15 +11,15 @@ public:
 	explicit CVolcraftCO20(const int ID);
 	~CVolcraftCO20(void);
 
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
-
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
 	void GetSensorDetails();
+private:
+	volatile bool m_stoprequested;
+	boost::shared_ptr<boost::thread> m_thread;
 };
 
 #endif //WITH_LIBUSB

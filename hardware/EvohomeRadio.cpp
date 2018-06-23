@@ -36,6 +36,33 @@ extern std::string szUserDataFolder;
 
 #include <ctime>
 
+enum evoCommands
+{
+	cmdSysInfo = 0x10e0,
+	cmdZoneTemp = 0x30C9,
+	cmdZoneName = 0x0004,
+	cmdZoneHeatDemand = 0x3150,//Heat demand sent by an individual zone
+	cmdZoneInfo = 0x000A,
+	cmdZoneWindow = 0x12B0,//Open window/ventilation zone function
+	cmdSetPoint = 0x2309,
+	cmdSetpointOverride = 0x2349,
+	cmdDHWState = 0x1F41,
+	cmdDHWTemp = 0x1260,
+	cmdControllerMode = 0x2E04,
+	cmdControllerHeatDemand = 0x0008,//Heat demand sent by the controller for CH / DHW / Boiler  (F9/FA/FC)
+	cmdActuatorState = 0x3EF0,
+	cmdActuatorCheck = 0x3B00,
+	cmdBinding = 0x1FC9,
+	cmdExternalSensor = 0x0002,
+	cmdDeviceInfo = 0x0418,
+	cmdBatteryInfo = 0x1060,
+	//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
+	//0x1F09 //Unknown fixed message FF070D
+	//0x0005
+	//0x0006
+	//0x0404
+};
+
 const char  CEvohomeRadio::m_szNameErr[18]={0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F};
 const int CEvohomeRadio::m_evoToDczControllerMode[8]={0,5,1,2,3,-1,-1,4};//are the hidden modes actually valid?
 const int  CEvohomeRadio::m_evoToDczOverrideMode[5]={zmAuto,-1,zmPerm,-1,zmTmp};//are the hidden modes actually valid?

@@ -75,7 +75,6 @@ public:
 
 class CHarmonyHub : public CDomoticzHardwareBase
 {
-public:
 	enum _eConnectionStatus
 	{
 		DISCONNECTED=0,
@@ -84,13 +83,10 @@ public:
 		AUTHENTICATED,
 		BOUND
 	};
-
-
 public:
 	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port);
 	~CHarmonyHub(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool StartHardware();
 	bool StopHardware();
@@ -132,9 +128,7 @@ private:
 
 	// Helper function for XMPP reading
 	bool IsTransmissionComplete(std::string *szHarmonyData);
-
-
-
+private:
 	// hardware parameters
 	std::string m_szHarmonyAddress;
 	unsigned short m_usHarmonyPort;

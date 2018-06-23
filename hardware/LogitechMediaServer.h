@@ -27,11 +27,10 @@ public:
 		int				refID;
 		std::string		Name;
 	};
-
 	CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
 	explicit CLogitechMediaServer(const int ID);
 	~CLogitechMediaServer(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);
 	void RemoveNode(const int ID);
@@ -39,8 +38,8 @@ public:
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
 	void Restart();
 	bool SendCommand(const int ID, const std::string &command, const std::string &param = "");
-	void SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration);
 	std::vector<LMSPlaylistNode> GetPlaylists();
+	void SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration);
 	int GetPlaylistRefID(const std::string &name);
 private:
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
@@ -56,7 +55,7 @@ private:
 	void ReloadNodes();
 	void ReloadPlaylists();
 	std::string GetPlaylistByRefID(const int ID);
-
+private:
 	std::vector<LogitechMediaServerNode> m_nodes;
 	std::vector<LMSPlaylistNode> m_playlists;
 

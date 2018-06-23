@@ -12,7 +12,7 @@ class RFXComSerial: public CRFXBase, AsyncSerial
 public:
 	RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate);
     ~RFXComSerial();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	bool UploadFirmware(const std::string &szFilename);
 	float GetUploadPercentage(); //returns -1 when failed
 	std::string GetUploadMessage();
@@ -37,14 +37,9 @@ private:
 	float m_FirmwareUploadPercentage;
 	bool m_bInBootloaderMode;
 	bool m_bHaveRX;
-
 	unsigned char m_rx_input_buffer[512];
 	int m_rx_tot_bytes;
 	int m_retrycntr;
-
-    /**
-     * Read callback, stores data in the buffer
-     */
     void readCallback(const char *data, size_t len);
 };
 

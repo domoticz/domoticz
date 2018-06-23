@@ -874,7 +874,7 @@ namespace http {
 
 			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, [Type] FROM Hardware WHERE (ID='%q')",
 				idx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			unsigned char Mode1 = atoi(result[0][0].c_str());

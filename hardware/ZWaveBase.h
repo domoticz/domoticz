@@ -134,7 +134,7 @@ public:
 	virtual bool GetUpdates()=0;
 	bool StartHardware();
 	bool StopHardware();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 public:
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;

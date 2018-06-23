@@ -3339,7 +3339,7 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT HomeID,NodeID FROM ZWaveNodes WHERE (HardwareID = %d)",
 		hwID);
-	if (result.size() < 1) {
+	if (result.empty()) {
 		return false;
 	}
 	int rowCnt = 0;
@@ -3761,7 +3761,7 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 		m_HwdID, homeID, nodeID);
 	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Not Found, Add it to the database
 		if (nodeID != m_controllerNodeId)
@@ -3818,7 +3818,7 @@ void COpenZWave::EnableDisableNodePolling(const int nodeID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==%d) AND (NodeID==%d)",
 		m_HwdID, nodeID);
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 	int PollTime = atoi(result[0][0].c_str());
 
