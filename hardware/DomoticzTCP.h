@@ -32,8 +32,8 @@ private:
 	void disconnectTCP();
 	bool StartHardwareTCP();
 	bool StopHardwareTCP();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void writeTCP(const char *data, size_t size);
 	void Do_Work();
 	bool ConnectInternal();

@@ -243,7 +243,7 @@ public:
 		verify_file_path = server_settings::get_valid_value(verify_file_path, ssl_settings.verify_file_path);
 	}
 
-	virtual std::string to_string() const {
+	virtual std::string to_string() const  override {
 		return std::string("ssl_server_settings[") + server_settings::to_string() +
 				", ssl_method='" + ssl_method + "'" +
 				", certificate_chain_file_path='" + certificate_chain_file_path + "'" +

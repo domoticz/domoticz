@@ -97,10 +97,10 @@ public:
 		const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
-	const WebEmStoredSession GetSession(const std::string & sessionId);
-	void StoreSession(const WebEmStoredSession & session);
-	void RemoveSession(const std::string & sessionId);
-	void CleanSessions();
+	const WebEmStoredSession GetSession(const std::string & sessionId) override;
+	void StoreSession(const WebEmStoredSession & session) override;
+	void RemoveSession(const std::string & sessionId) override;
+	void CleanSessions() override;
 	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
 	std::string PluginHardwareDesc(int HwdID);
 

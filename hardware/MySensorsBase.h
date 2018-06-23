@@ -322,13 +322,13 @@ public:
 		std::string _Payload;
 		bool _bUseAck;
 		int _AckTimeout;
-		_tMySensorSmartSleepQueueItem(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
+		_tMySensorSmartSleepQueueItem(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout):
+			_Payload(Payload)
 		{
 			_NodeID = NodeID;
 			_ChildID = ChildID;
 			_messageType = messageType;
 			_SubType = SubType;
-			_Payload = Payload;
 			_bUseAck = bUseAck;
 			_AckTimeout = AckTimeout;
 		}
