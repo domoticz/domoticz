@@ -1,4 +1,4 @@
-Version 4.9682 (June 23th 2018)
+Version 4.9700 (June 23th 2018)
 - Implemented: Blockly, now possible to directly add/update Text devices
 - Implemented: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Camera: support for HTTPS url's
