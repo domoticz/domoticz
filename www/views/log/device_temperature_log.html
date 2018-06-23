@@ -1,0 +1,43 @@
+<div class="container">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td align="left">
+                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle" ng-href="#/Devices/{{ ::vm.deviceIdx }}/TemperatureReport">{{ ::'Report' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+
+    <center>
+        <h2>{{ ::vm.deviceName }}</h2>
+    </center>
+
+    <h2>{{ ::'Day' | translate }}</h2>
+    <temperature-log-chart 
+        device-idx="::vm.deviceIdx"
+        device-type="::vm.deviceType"
+        degree-type="::vm.degreeType"
+        range="day">
+    </temperature-log-chart>
+    <br>
+
+    <h2>{{ ::'Month' | translate }}</h2>
+    <temperature-log-chart 
+        device-idx="::vm.deviceIdx"
+        device-type="::vm.deviceType"
+        degree-type="::vm.degreeType"
+        range="month">
+    </temperature-log-chart>
+    <br>
+
+    <h2>{{ ::'Year' | translate }}</h2>
+    <temperature-log-chart 
+        device-idx="::vm.deviceIdx"
+        device-type="::vm.deviceType"
+        degree-type="::vm.degreeType"
+        range="year">
+    </temperature-log-chart>
+</div>

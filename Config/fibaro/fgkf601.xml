@@ -81,7 +81,7 @@
 		<Value type="list" genre="config" instance="1" index="10" label="Single button associations - operating mode" value="0" size="1">
 			<Help>This parameter allows to choose operating mode for single button associations.</Help>
 			<Item label="Single press switches state to opposite" value="0" />
-			<Item label="Single press switches state to opposite, double press sets to maximum leve" value="1" />
+			<Item label="Single press switches state to opposite, double press sets to maximum level" value="1" />
 			<Item label="Single press turns on, double press turns off" value="2" />
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="11" label="Value sent to Square association group" min="1" max="255" value="255">

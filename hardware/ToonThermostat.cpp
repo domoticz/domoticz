@@ -164,7 +164,7 @@ void CToonThermostat::Init()
 	{
 		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
 		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = *result.begin();
 			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());
@@ -397,12 +397,11 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
-	if (root["success"] == true)
+	if (root["success"].asBool() == true)
 	{
 		m_bDoLogin = false;
 		return true;
 	}
-
 	return false;
 }
 
@@ -441,7 +440,7 @@ bool CToonThermostat::GetUUIDIdx(const std::string &UUID, int &idx)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [ROWID] FROM ToonDevices WHERE (HardwareID=%d) AND (UUID='%q')",
 		m_HwdID, UUID.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	idx = atoi(sd[0].c_str());
@@ -453,7 +452,7 @@ bool CToonThermostat::GetUUIDFromIdx(const int idx, std::string &UUID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [UUID] FROM ToonDevices WHERE (HardwareID=%d) AND (ROWID=%d)",
 		m_HwdID, idx);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	UUID = sd[0];
@@ -502,7 +501,8 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 */
 	m_retry_counter = 0;
 	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
-	return (root["success"] == true);
+
+	return (root["success"].asBool() == true);
 }
 
 bool CToonThermostat::SwitchAll(const int SwitchState)
@@ -539,7 +539,7 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 	}
 	m_retry_counter = 0;
 	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
-	return (root["success"] == true);
+	return (root["success"].asBool() == true);
 }
 
 bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char length)
@@ -937,7 +937,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			m_bDoLogin = true;
 			return;
 		}
-		if (root["success"] == false)
+		if (root["success"].asBool() == false)
 		{
 			_log.Log(LOG_ERROR, "ToonThermostat: setPoint request not successful, restarting..!");
 			m_bDoLogin = true;
@@ -995,7 +995,7 @@ void CToonThermostat::SetProgramState(const int newState)
 		m_bDoLogin = true;
 		return;
 	}
-	if (root["success"] == false)
+	if (root["success"].asBool() == false)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");
 		m_bDoLogin = true;

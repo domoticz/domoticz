@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
+#include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
-typedef enum {
+enum _eP1MatchType {
 	ID=0,
 	EXCLMARK,
 	STD,
@@ -15,7 +16,7 @@ typedef enum {
 	GAS,
 	LINE17,
 	LINE18
-} MatchType;
+};
 
 #define P1SMID		"/"		// Smart Meter ID. Used to detect start of telegram.
 #define P1VER		"1-3:0.2.8"	// P1 version
@@ -36,7 +37,7 @@ typedef enum {
 #define P1MBTYPE	"0-n:24.1.0"	// M-Bus device type
 #define P1EOT		"!"		// End of telegram.
 
-typedef enum {
+enum _eP1Type {
 	P1TYPE_SMID=0,
 	P1TYPE_END,
 	P1TYPE_VERSION,
@@ -53,18 +54,18 @@ typedef enum {
 	P1TYPE_GASUSAGEDSMR4,
 	P1TYPE_GASTIMESTAMP,
 	P1TYPE_GASUSAGE
-} P1Type;
+};
 
-typedef struct _tMatch {
-	MatchType matchtype;
-	P1Type type;
+typedef struct {
+	_eP1MatchType matchtype;
+	_eP1Type type;
 	const char* key;
 	const char* topic;
 	int start;
 	int width;
-} Match;
+} P1Match;
 
-Match matchlist[] = {
+P1Match matchlist[] = {
 	{ID,		P1TYPE_SMID,			P1SMID,		"",			 0,  0},
 	{EXCLMARK,	P1TYPE_END,			P1EOT,		"",			 0,  0},
 	{STD,		P1TYPE_VERSION,			P1VER,		"version",		10,  2},
@@ -85,7 +86,6 @@ Match matchlist[] = {
 
 P1MeterBase::P1MeterBase(void)
 {
-	Init();
 }
 
 
@@ -133,6 +133,19 @@ void P1MeterBase::Init()
 	m_gastimestamp="";
 	m_gasclockskew=0;
 	m_gasoktime=0;
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1GasMeterChannel')");
+	if (!result.empty())
+	{
+		std::string s_gasmbuschannel = result[0][0];
+		if ((s_gasmbuschannel.length()==1) && (s_gasmbuschannel[0]>0x30) && (s_gasmbuschannel[0]<0x35)) // value must be a single digit number between 1 and 4
+		{
+			m_gasmbuschannel=(char)s_gasmbuschannel[0];
+			m_gasprefix[2]=m_gasmbuschannel;
+			_log.Log(LOG_STATUS,"P1 Smart Meter: Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
+		}
+	}
 }
 
 bool P1MeterBase::MatchLine()
@@ -141,11 +154,11 @@ bool P1MeterBase::MatchLine()
 		return true; //null value (startup)
 	uint8_t i;
 	uint8_t found=0;
-	Match *t;
+	P1Match *t;
 	char value[20]="";
 	std::string vString;
 
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(i=0;(i<sizeof(matchlist)/sizeof(P1Match))&(!found);i++)
 	{
 		t = &matchlist[i];
 		switch(t->matchtype)
@@ -227,7 +240,7 @@ bool P1MeterBase::MatchLine()
 					else if (atime>=m_gasoktime){
 						struct tm ltime;
 						localtime_r(&atime, &ltime);
-						char myts[16];
+						char myts[80];
 						sprintf(myts,"%02d%02d%02d%02d%02d%02dW",ltime.tm_year%100,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 						if (ltime.tm_isdst)
 						myts[12]='S';

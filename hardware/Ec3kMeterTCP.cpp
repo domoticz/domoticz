@@ -101,7 +101,7 @@ bool Ec3kMeterTCP::StopHardware()
 
 void Ec3kMeterTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"Ec3kMeter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"Ec3kMeter: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 
@@ -164,7 +164,7 @@ void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "Ec3kMeter: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "Ec3kMeter: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -261,9 +261,9 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 		int ws = data[WS].asInt();
 		float w_current = data[W_CURRENT].asFloat();
 		float w_max = data[W_MAX].asFloat();
-		int s_time_on = data[TIME_ON].asInt();
-		int s_time_total = data[TIME_TOTAL].asInt();
-		int reset_count = data[RESET_COUNT].asInt();
+		//int s_time_on = data[TIME_ON].asInt();
+		//int s_time_total = data[TIME_TOTAL].asInt();
+		//int reset_count = data[RESET_COUNT].asInt();
 
 		// create suitable default names and send data
 

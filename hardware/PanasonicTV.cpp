@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "PanasonicTV.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -79,6 +80,97 @@ Possible Commands:
 
 */
 
+class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
+{
+	class CPanasonicStatus
+	{
+	public:
+		CPanasonicStatus() { Clear(); };
+		_eMediaStatus	Status() { return m_nStatus; };
+		_eNotificationTypes	NotificationType();
+		std::string		StatusText() { return Media_Player_States(m_nStatus); };
+		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
+		void			Status(const std::string &pStatus) { m_sStatus = pStatus; };
+		void			LastOK(time_t pLastOK) { m_tLastOK = pLastOK; };
+		std::string		LastOK() { std::string sRetVal;  tm ltime; localtime_r(&m_tLastOK, &ltime); char szLastUpdate[40]; sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec); sRetVal = szLastUpdate; return sRetVal; };
+		void			Clear();
+		std::string		LogMessage();
+		std::string		StatusMessage();
+		bool			LogRequired(CPanasonicStatus&);
+		bool			UpdateRequired(CPanasonicStatus&);
+		bool			OnOffRequired(CPanasonicStatus&);
+		bool			IsOn() { return (m_nStatus != MSTAT_OFF); };
+		void			Volume(int pVolume) { m_VolumeLevel = pVolume; };
+		void			Muted(bool pMuted) { m_Muted = pMuted; };
+	private:
+		_eMediaStatus	m_nStatus;
+		std::string		m_sStatus;
+		time_t			m_tLastOK;
+		bool			m_Muted;
+		int				m_VolumeLevel;
+	};
+
+public:
+	CPanasonicNode(const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
+	~CPanasonicNode(void);
+	void			Do_Work();
+	void			SendCommand(const std::string &command);
+	void			SendCommand(const std::string &command, const int iValue);
+	void			SetExecuteCommand(const std::string &command);
+	bool			SendShutdown();
+	void			StopThread();
+	bool			StartThread();
+	bool			IsBusy() { return m_Busy; };
+	bool			IsOn() { return (m_CurrentStatus.Status() == MSTAT_ON); };
+
+	int				m_ID;
+	int				m_DevID;
+	std::string		m_Name;
+
+	bool			m_stoprequested;
+	boost::shared_ptr<boost::thread> m_thread;
+protected:
+	bool			m_Busy;
+	bool			m_Stoppable;
+
+private:
+	bool			handleConnect(boost::asio::ip::tcp::socket&, boost::asio::ip::tcp::endpoint, boost::system::error_code&);
+	std::string		handleWriteAndRead(std::string);
+	int				handleMessage(std::string);
+	std::string		buildXMLStringRendCtl(const std::string &, const std::string &);
+	std::string		buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
+	std::string		buildXMLStringNetCtl(const std::string &);
+
+	int				m_HwdID;
+	char			m_szDevID[40];
+	std::string		m_IP;
+	std::string		m_Port;
+	bool			m_PowerOnSupported;
+
+	CPanasonicStatus		m_PreviousStatus;
+	CPanasonicStatus		m_CurrentStatus;
+	//void			UpdateStatus();
+	void			UpdateStatus(bool force = false);
+
+	std::string		m_ExecuteCommand;
+
+	std::string		m_RetainedData;
+
+	int				m_iTimeoutCnt;
+	int				m_iPollIntSec;
+	int				m_iMissedPongs;
+	std::string		m_sLastMessage;
+	inline bool isInteger(const std::string & s)
+	{
+		if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+		char * p;
+		strtol(s.c_str(), &p, 10);
+
+		return (*p == 0);
+	}
+};
+
 
 void CPanasonicNode::CPanasonicStatus::Clear()
 {
@@ -118,7 +210,7 @@ std::string	CPanasonicNode::CPanasonicStatus::LogMessage()
 	if (m_nStatus == MSTAT_OFF)
 		return sLogText;
 	if (m_VolumeLevel != -1)
-		sLogText = "Volume: " + boost::to_string(m_VolumeLevel) + (m_Muted ? " - Muted" : "");
+		sLogText = "Volume: " + std::to_string(m_VolumeLevel) + (m_Muted ? " - Muted" : "");
 	return sLogText;
 }
 
@@ -195,7 +287,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	m_CurrentStatus.LastOK(mytime(NULL));
 
 	// 1:	Update the DeviceStatus
-	
+
 	if (m_CurrentStatus.UpdateRequired(m_PreviousStatus) || forceupdate)
 	{
 		result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
@@ -216,18 +308,18 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	if (m_CurrentStatus.OnOffRequired(m_PreviousStatus) || forceupdate)
 	{
 		result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, m_szDevID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			m_sql.HandleOnOffAction(m_CurrentStatus.IsOn(), result[0][0], result[0][1]);
 		}
 	}
 
 	// 4:	Trigger Notifications & events on status change
-	
+
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status() || forceupdate)
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str(), 0);
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str());
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
@@ -293,7 +385,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	while (error && iter != end)
 	{
 		socket.close();
-		if (handleConnect(socket, *iter, error)) 
+		if (handleConnect(socket, *iter, error))
 		{
 			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected.", m_Name.c_str());
 			break;
@@ -311,7 +403,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	boost::array<char, 512> _Buffer;
 	size_t request_length = std::strlen(pMessageToSend.c_str());
 	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping write.", m_Name.c_str());
-	
+
 	try
 	{
 		boost::asio::write(socket, boost::asio::buffer(pMessageToSend.c_str(), request_length));
@@ -333,7 +425,6 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 
 int CPanasonicNode::handleMessage(std::string pMessage)
 {
-	bool bFound = false;
 	int iPosBegin = 0;
 	int iPosEnd = 0;
 	std::string begin(">");
@@ -368,42 +459,36 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	}
 
 	// Reset for next Search
-	bFound = false;
 	iPosBegin = 0;
 	iPosEnd = 0;
 
-	while (!bFound)
+	while (1)
 	{
 		iPosBegin = pMessage.find(begin, iPosBegin);
-		if (iPosBegin != std::string::npos)
-		{
-			iPosEnd = pMessage.find(end, iPosBegin+1);
-			if (iPosEnd != std::string::npos)
-			{
-				std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
-				if (is_number(sFound))
-				{
-					return atoi(sFound.c_str());
-				}
-			}
-		}
 		if (iPosBegin == std::string::npos)
 			break;
-		else
-			iPosBegin++;
+		iPosEnd = pMessage.find(end, iPosBegin + 1);
+		if (iPosEnd != std::string::npos)
+		{
+			std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
+			if (is_number(sFound))
+			{
+				return atoi(sFound.c_str());
+			}
+		}
+		iPosBegin++;
 	}
 
 	// If we got here we didn't find a return string
 	return -1;
-	
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command)
 {
 	return buildXMLStringRendCtl(action, command, "");
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command, std::string value)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command, const std::string &value)
 {
 	std::string head, body;
 	int size;
@@ -418,20 +503,20 @@ std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::strin
 	body += "</u:" + action + command + ">\r\n";
 	body += "</s:Body>\r\n";
 	body += "</s:Envelope>\r\n";
-	
+
 	size = body.length();
 
 	head = "POST /dmr/control_0 HTTP/1.1\r\n";
 	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
 	head += "SOAPACTION: \"urn:schemas-upnp-org:service:RenderingControl:1#" + action + command + "\"\r\n";
 	head += "Content-Type: text/xml; charset=\"utf-8\"\r\n";
-	head += "Content-Length: " + boost::to_string(size) + "\r\n\r\n";
+	head += "Content-Length: " + std::to_string(size) + "\r\n\r\n";
 
 	return head + body;
 
 }
 
-std::string CPanasonicNode::buildXMLStringNetCtl(std::string command)
+std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 {
 	std::string head, body;
 	int size;
@@ -451,7 +536,7 @@ std::string CPanasonicNode::buildXMLStringNetCtl(std::string command)
 	head += "Host: " + m_IP + ":" + m_Port + "\r\n";
 	head += "SOAPACTION: \"urn:panasonic-com:service:p00NetworkControl:1#X_SendKey\"\r\n";
 	head += "Content-Type: text/xml; charset=\"utf-8\"\r\n";
-	head += "Content-Length: " + boost::to_string(size) + "\r\n";
+	head += "Content-Length: " + std::to_string(size) + "\r\n";
 	head += "\r\n";
 
 	return head + body;
@@ -517,7 +602,7 @@ void CPanasonicNode::Do_Work()
 void CPanasonicNode::SendCommand(const std::string &command)
 {
 	std::string	sPanasonicCall = "";
-	
+
 	if (m_CurrentStatus.Status() == MSTAT_OFF && !m_PowerOnSupported)
 	{
 		// no point trying to send a command if we know the device is off
@@ -633,17 +718,17 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		//else
 		//	_log.Log(LOG_NORM, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	}
-	
+
 }
 
 void CPanasonicNode::SendCommand(const std::string &command, const int iValue)
 {
 	std::string	sPanasonicCall;
 	if (command == "setvolume")
-		sPanasonicCall = buildXMLStringRendCtl("Set", "Volume", boost::to_string(iValue));
+		sPanasonicCall = buildXMLStringRendCtl("Set", "Volume", std::to_string(iValue));
 	else
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Command: '%s'. Unknown command.", m_Name.c_str(), command.c_str());
-	
+
 	if (sPanasonicCall.length())
 	{
 		if (handleWriteAndRead(sPanasonicCall) != "ERROR")
@@ -816,19 +901,19 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 			case gswitch_sSetVolume:
 				(*itt)->SendCommand("setvolume", iParam);
 				return true;
-			//case gswitch_sPlayPlaylist:
-			//	(*itt)->SendCommand("playlist", iParam);
-			//	return true;
-			//case gswitch_sExecute:
-			//	(*itt)->SendCommand("execute", iParam);
-			//	return true;
+				//case gswitch_sPlayPlaylist:
+				//	(*itt)->SendCommand("playlist", iParam);
+				//	return true;
+				//case gswitch_sExecute:
+				//	(*itt)->SendCommand("execute", iParam);
+				//	return true;
 			default:
 				return true;
 			}
 		}
 	}
 
-	_log.Log(LOG_ERROR, "Panasonic Plugin: (%d) Shutdown. Device not found.", DevID);
+	_log.Log(LOG_ERROR, "Panasonic Plugin: (%ld) Shutdown. Device not found.", DevID);
 	return false;
 }
 
@@ -838,12 +923,12 @@ void CPanasonic::AddNode(const std::string &Name, const std::string &IPAddress, 
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()>0)
+	if (!result.empty())
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()<1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -852,10 +937,7 @@ void CPanasonic::AddNode(const std::string &Name, const std::string &IPAddress, 
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also add a light (push) device
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d, '%q', 1, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
-		m_HwdID, szID, int(pTypeLighting2), int(sTypeAC), int(STYPE_Media), Name.c_str());
+	m_sql.InsertDevice(m_HwdID, szID, 1, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", Name, 12, 255, 1);
 
 	ReloadNodes();
 }
@@ -866,7 +948,7 @@ bool CPanasonic::UpdateNode(const int ID, const std::string &Name, const std::st
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, ID);
-	if (result.size()<1)
+	if (result.empty())
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)", Name.c_str(), IPAddress.c_str(), Port, m_HwdID, ID);
@@ -911,7 +993,7 @@ void CPanasonic::ReloadNodes()
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -1017,7 +1099,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
@@ -1034,7 +1116,7 @@ namespace http {
 			}
 		}
 
-		
+
 		void CWebServer::Cmd_PanasonicSetMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)

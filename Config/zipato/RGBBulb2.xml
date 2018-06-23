@@ -20,5 +20,8 @@
       <Group index="1" max_associations="5" label="Report"  />
     </Associations>
   </CommandClass>
+  
+  <CommandClass id="51" colorchannels="31" > 
+  </CommandClass>
 </Product>
 

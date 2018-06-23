@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!--
+  Dome Siren DMS01
+  https://docs.domeha.com/#siren
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" index="1" label="Primary Notification Volume Level" units="level" value="3" min="1" max="3" size="1">
+      <Help>This parameter sets the volume of the Siren (primary) sound. There are three possible volume levels available.</Help>
+      <Item label="Low" value="1"/>
+      <Item label="Medium" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+
+    <Value type="list" genre="config" index="2" label="Primary Notification Length" value="2" min="1" max="255" size="1">
+      <Help>This parameter defines the length of the Alarm/primary notification.</Help>
+      <Item label="30 Seconds" value="1"/>
+      <Item label="1 Minute" value="2"/>
+      <Item label="2 Minutes" value="3"/>
+      <Item label="Until battery depleted" value="255"/>
+    </Value>
+    <Value type="byte" genre="config" index="3" label="Secondary Notification Length" value="1" min="0" max="255" size="1">
+      <Help>This parameter defines the number of times the Chime/Secondary Notification will play.</Help>
+    </Value>
+    <Value type="list" genre="config" index="4" label="Secondary Notification Volume" value="1" min="3" max="3" size="1">
+      <Help>This parameter sets the volume of the Chime (secondary) sound. There are three possible volume levels available.</Help>
+      <Item label="Low" value="1"/>
+      <Item label="Medium" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+    <Value type="list" genre="config" index="5" label="Primary Notification Sound" value="10" min="1" max="10" size="1">
+      <Help>
+        The Siren offers ten different sounds to use as the Siren (primary) notification.
+        This parameter sets the Siren (primary) notification sound.
+      </Help>
+      <Item label="Doorbell" value="1"/>
+      <Item label="Fur Elise" value="2"/>
+      <Item label="Doorbell Extended" value="3"/>
+      <Item label="Alert" value="4"/>
+      <Item label="William Tell" value="5"/>
+      <Item label="Rondo Alla Turca" value="6"/>
+      <Item label="Police Siren" value="7"/>
+      <Item label="Evacuation" value="8"/>
+      <Item label="Beep Beep" value="9"/>
+      <Item label="Beep" value="10"/>
+    </Value>
+    <Value type="list" genre="config" index="6" label="Secondary Notification Sound" value="9" min="1" max="10" size="1">
+      <Help>
+        If Parameter 7 is set to 02, the Siren will play a secondary chime sound instead of the main alarm.
+        The Siren offers ten different sounds to use as the Chime (secondary) notification.
+        This parameter sets the Chime (secondary) notification sound.
+      </Help>
+      <Item label="Doorbell" value="1"/>
+      <Item label="Fur Elise" value="2"/>
+      <Item label="Doorbell Extended" value="3"/>
+      <Item label="Alert" value="4"/>
+      <Item label="William Tell" value="5"/>
+      <Item label="Rondo Alla Turca" value="6"/>
+      <Item label="Police Siren" value="7"/>
+      <Item label="Evacuation" value="8"/>
+      <Item label="Beep Beep" value="9"/>
+      <Item label="Beep" value="10"/>
+    </Value>
+    <Value type="list" genre="config" index="7" label="Toggle Secondary Chime" value="1" min="1" max="2" size="1">
+      <Help>This Parameter toggles between the Primary and Secondary notification sound to be played when the Siren receives a BINARY_SWITCH_SET(FF) command.</Help>
+    <Item label="Primary Notification Will Play" value="1"/>
+    <Item label="Secondary Notification Will Play" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="8" label="Primary Notification Strobe" value="1" min="0" max="1" size="1">
+      <Help>This Parameter enables or disables the Flashing LED Ring (strobe) accompanying the Primary Notification.</Help>
+    <Item label="LED Ring Will Not Flash" value="0"/>
+    <Item label="LED Ring Will Flash" value="1"/>
+    </Value>
+    <Value type="list" genre="config" index="9" label="Secondary Notification Strobe" value="0" min="0" max="1" size="1">
+      <Help>This Parameter enables or disables the Flashing LED Ring (strobe) accompanying the Secondary Notification.</Help>
+    <Item label="LED Ring Will Not Flash" value="0"/>
+    <Item label="LED Ring Will Flash" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="2" max_associations="5" label="Control Commands" />
+      <Group index="3" max_associations="5" label="Send Notification Report" />
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "MySensorsBase.h"
 
@@ -10,14 +9,14 @@ class MySensorsTCP : public MySensorsBase, ASyncTCP
 public:
 	MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~MySensorsTCP(void);
-	bool isConnected(){ return mIsConnected; };
+	bool isConnected() { return mIsConnected; };
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	int m_retrycntr;
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

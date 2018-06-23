@@ -220,7 +220,6 @@ void CSterbox::GetMeterDetails()
 	size_t ii;
 	size_t jj;
 	int pos1;
-	int Idx = 0;
 
 	if (m_Username.empty())
 	{
@@ -360,7 +359,7 @@ void CSterbox::GetMeterDetails()
 					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
 
 				}
-				//Idx = atoi(tmpstr.substr(0, pos1).c_str());
+				//int Idx = atoi(tmpstr.substr(0, pos1).c_str());
 				//tmpstr = tmpstr.substr(pos1 + 1);
 				//pos1 = tmpstr.find("<");
 				//if (pos1 != std::string::npos)

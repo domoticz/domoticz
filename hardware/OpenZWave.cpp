@@ -373,7 +373,7 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo(const unsigned int homeID, const i
 {
 	for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
 	{
-		if ((it->m_homeId == homeID) && (it->m_nodeId == nodeID))
+		if ((it->homeId == homeID) && (it->nodeId == nodeID))
 		{
 			return &(*it);
 		}
@@ -528,10 +528,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		}
 		// Add the new node to our list
 		NodeInfo nodeInfo;
-		nodeInfo.m_homeId = _homeID;
-		nodeInfo.m_nodeId = _nodeID;
-		nodeInfo.m_polled = false;
+		nodeInfo.homeId = _homeID;
+		nodeInfo.nodeId = _nodeID;
+		nodeInfo.polled = false;
 		nodeInfo.HaveUserCodes = false;
+		nodeInfo.IsPlus = m_pManager->IsNodeZWavePlus(_homeID, _nodeID);
 		nodeInfo.Application_version = 0;
 		nodeInfo.szType = m_pManager->GetNodeType(_homeID, _nodeID);
 		nodeInfo.iVersion = m_pManager->GetNodeVersion(_homeID, _nodeID);
@@ -554,7 +555,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		else
 			nodeInfo.eState = NTSATE_UNKNOWN;
 
-		nodeInfo.m_LastSeen = m_updateTime;
+		nodeInfo.LastSeen = m_updateTime;
 		m_nodes.push_back(nodeInfo);
 		m_LastIncludedNode = _nodeID;
 		m_LastIncludedNodeType = nodeInfo.szType;
@@ -572,7 +573,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		// Remove the node from our list
 		for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
 		{
-			if ((it->m_homeId == _homeID) && (it->m_nodeId == _nodeID))
+			if ((it->homeId == _homeID) && (it->nodeId == _nodeID))
 			{
 				m_nodes.erase(it);
 				DeleteNode(_homeID, _nodeID);
@@ -611,7 +612,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 
 			nodeInfo->Instances[instance][commandClass].Values.push_back(vID);
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 			if (commandClass == COMMAND_CLASS_USER_CODE)
 			{
@@ -627,7 +628,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 
 			// Add the new value to our list
 			UpdateNodeScene(vID, static_cast<int>(_notification->GetSceneId()));
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
 		break;
@@ -643,7 +644,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				{
 					nodeInfo->Instances[instance][commandClass].Values.erase(it);
 					nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-					nodeInfo->m_LastSeen = m_updateTime;
+					nodeInfo->LastSeen = m_updateTime;
 					break;
 				}
 			}
@@ -659,7 +660,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->LastSeen = m_updateTime;
 			UpdateValue(vID);
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
@@ -750,7 +751,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		// One of the node's association groups has changed
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_NodeEvent:
@@ -763,21 +764,21 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->eState = NSTATE_AWAKE;
 			UpdateNodeEvent(vID, static_cast<int>(_notification->GetEvent()));
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_PollingDisabled:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			nodeInfo->m_polled = false;
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->polled = false;
+			nodeInfo->LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_PollingEnabled:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			nodeInfo->m_polled = true;
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->polled = true;
+			nodeInfo->LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_DriverFailed:
@@ -808,7 +809,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if ((_nodeID == 0) || (_nodeID == 255))
 			return;
 		m_bNeedSave = true;
-		NodeQueried(_nodeID);
+		NodeQueried(_homeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_NodeNaming:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
@@ -824,7 +825,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				AddNode(_homeID, _nodeID, nodeInfo);
 				m_bHaveLastIncludedNodeInfo = !product_name.empty();
 			}
-			nodeInfo->m_LastSeen = m_updateTime;
+			nodeInfo->LastSeen = m_updateTime;
 			m_bNeedSave = true;
 		}
 		break;
@@ -1195,6 +1196,14 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		}
 	}
 	if (!pDevice)
+	{
+		//Try to find Binary type
+		if ((value == 0) || (value == 255))
+		{
+			pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
+		}
+	}
+	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
 	{
@@ -1208,8 +1217,10 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		if (pDevice->Manufacturer_id == 0x010f)
 		{
 			if (
-				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
-				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403))
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) || //223
+				((pDevice->Product_id == 0x3000) && (pDevice->Product_type == 0x0203)) || //223
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403)) || //213
+				((pDevice->Product_id == 0x2000) && (pDevice->Product_type == 0x0403))    //213
 				)
 			{
 				//Special case for the Fibaro FGS213/223
@@ -1351,6 +1362,10 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 		_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
+	// TODO: remove this print once Ziapto Bulb 2 workaround has been verified
+	// Gizmocuz: This has been in for quite some while, is it verified ?
+	//_log.Debug(DEBUG_NORM, "OpenZWave::SwitchColor Manufacturer_id: '%s', Product_type: '%s', Product_id: '%s', Application_version: %u",
+	  //       pNode->Manufacturer_id.c_str(), pNode->Product_type.c_str(), pNode->Product_id.c_str(), pNode->Application_version);
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, "Color", vID) == true)
@@ -1366,6 +1381,39 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 					{
 						//Old Zipato RGB bulp firmware does not support cold white
 						OutColorStr = OutColorStr.substr(0, 9);
+					}
+				}
+			}
+			if ((pNode->Product_type == "0002") && (pNode->Product_id == "0003"))
+			{
+				if (pNode->Application_version < 106)
+				{
+					if (OutColorStr.size() == 11)
+					{
+						//Zipato Bulb2 does not support cold white and warm white at the same time
+						std::stringstream sstr;
+						std::string RGB = OutColorStr.substr(0, 7);
+						unsigned wWhite = strtoul(OutColorStr.substr(7, 2).c_str(), NULL, 16);
+						unsigned cWhite = strtoul(OutColorStr.substr(9, 2).c_str(), NULL, 16);
+						if (wWhite > cWhite)
+						{
+							wWhite = wWhite + cWhite;
+							cWhite = 0;
+						}
+						else
+						{
+							cWhite = wWhite + cWhite;
+							wWhite = 0;
+						}
+						sstr << RGB
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
+
+						OutColorStr = sstr.str();
+						// TODO: remove this print once Zipato Bulb 2 workaround has been verified
+						// Gizmocuz: This has been in for quite some while, is it verified ?
+						//_log.Debug(DEBUG_NORM, "OpenZWave::SwitchColor Workaround for Zipato Bulb 2 ColorStr: '%s', OutColorStr: '%s'",
+						  //       ColorStr.c_str(), OutColorStr.c_str());
 					}
 				}
 			}
@@ -3291,7 +3339,7 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT HomeID,NodeID FROM ZWaveNodes WHERE (HardwareID = %d)",
 		hwID);
-	if (result.size() < 1) {
+	if (result.empty()) {
 		return false;
 	}
 	int rowCnt = 0;
@@ -3542,7 +3590,7 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
 		m_HwdID, homeID, nodeID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::string ProductDescription = result[0][0];
 		bSingleIndexPoll = (
@@ -3713,7 +3761,7 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 		m_HwdID, homeID, nodeID);
 	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Not Found, Add it to the database
 		if (nodeID != m_controllerNodeId)
@@ -3760,7 +3808,7 @@ void COpenZWave::SetNodeName(const unsigned int homeID, const int nodeID, const 
 	m_pManager->SetNodeName(homeID, nodeID, NodeName);
 }
 
-void COpenZWave::EnableDisableNodePolling(int NodeID)
+void COpenZWave::EnableDisableNodePolling(const int nodeID)
 {
 	int intervalseconds = 60;
 	m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
@@ -3769,15 +3817,15 @@ void COpenZWave::EnableDisableNodePolling(int NodeID)
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==%d) AND (NodeID==%d)",
-		m_HwdID, NodeID);
-	if (result.size() < 1)
+		m_HwdID, nodeID);
+	if (result.empty())
 		return;
 	int PollTime = atoi(result[0][0].c_str());
 
 	if (PollTime > 0)
-		EnableNodePoll(m_controllerID, NodeID, PollTime);
+		EnableNodePoll(m_controllerID, nodeID, PollTime);
 	else
-		DisableNodePoll(m_controllerID, NodeID);
+		DisableNodePoll(m_controllerID, nodeID);
 }
 
 void COpenZWave::SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)
@@ -3913,10 +3961,14 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 	return retstr;
 }
 
-void COpenZWave::NodeQueried(int NodeID)
+void COpenZWave::NodeQueried(const unsigned int homeID, const int nodeID)
 {
+	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	if (pNode == NULL)
+		return;
 	//All nodes have been queried, enable/disable node polling
-	EnableDisableNodePolling(NodeID);
+	pNode->IsPlus = m_pManager->IsNodeZWavePlus(homeID, nodeID);
+	EnableDisableNodePolling(nodeID);
 }
 
 bool COpenZWave::RequestNodeConfig(const unsigned int homeID, const int nodeID)
@@ -4464,7 +4516,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,HomeID,NodeID,Name,ProductDescription,PollTime FROM ZWaveNodes WHERE (HardwareID==%d)",
 				iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
@@ -4493,9 +4545,11 @@ namespace http {
 						root["result"][ii]["Product_name"] = pNode->Product_name;
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
+						root["result"][ii]["IsPlus"] = pNode->IsPlus;
+						
 						char szDate[80];
 						struct tm loctime;
-						localtime_r(&pNode->m_LastSeen, &loctime);
+						localtime_r(&pNode->LastSeen, &loctime);
 						strftime(szDate, 80, "%Y-%m-%d %X", &loctime);
 
 						root["result"][ii]["LastUpdate"] = szDate;
@@ -4538,7 +4592,7 @@ namespace http {
 				idx.c_str()
 			);
 			result = m_sql.safe_query("SELECT HardwareID, HomeID, NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
@@ -4566,7 +4620,7 @@ namespace http {
 				return;
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID=='%q')", idx.c_str());
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
@@ -4918,7 +4972,7 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID,HomeID,NodeID,Name FROM ZWaveNodes WHERE (HardwareID==%d)",
 					iHardwareID);
 
-				if (result.size() > 0)
+				if (!result.empty())
 				{
 					int MaxNoOfGroups = 0;
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5004,7 +5058,7 @@ namespace http {
 				return;
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID=='%q')", idx.c_str());
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
@@ -5028,7 +5082,7 @@ namespace http {
 				return;
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
@@ -5474,7 +5528,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID=='%q')", idx.c_str());
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
@@ -5499,7 +5553,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);

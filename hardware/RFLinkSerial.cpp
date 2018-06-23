@@ -4,13 +4,11 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 
-#define RFLINK_RETRY_DELAY 30
-
 CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :
 m_szSerialPort(devname)
 {
-	m_HwdID=ID;
-	m_stoprequested=false;
+	m_HwdID = ID;
+	m_stoprequested = false;
 	m_retrycntr = RFLINK_RETRY_DELAY * 5;
 }
 
@@ -21,7 +19,7 @@ CRFLinkSerial::~CRFLinkSerial()
 
 bool CRFLinkSerial::StartHardware()
 {
-	m_retrycntr=RFLINK_RETRY_DELAY*5; //will force reconnect first thing
+	m_retrycntr = RFLINK_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CRFLinkSerial::Do_Work, this)));

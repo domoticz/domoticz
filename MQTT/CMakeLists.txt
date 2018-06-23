@@ -10,6 +10,11 @@ SET(LIBRARY_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the libraries for MQTT"
 )
 
+option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
+IF(USE_OPENSSL_STATIC)
+	set(OPENSSL_USE_STATIC_LIBS TRUE)
+ENDIF(USE_OPENSSL_STATIC)
+
 find_package(OpenSSL)
 if(NOT OPENSSL_INCLUDE_DIR)
   message(STATUS "Failed to find openssl include files (ssl.h), no TLS support")

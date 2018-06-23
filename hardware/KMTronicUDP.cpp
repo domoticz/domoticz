@@ -177,7 +177,7 @@ void KMTronicUDP::GetMeterDetails()
 		return;
 	}
 
-//	_log.Log(LOG_STATUS, "KMTronic: response %s",buf);
+//	_log.Debug(DEBUG_HARDWARE, "KMTronic: response %s",buf);
 
 	m_TotRelais=n;
 	int jj;

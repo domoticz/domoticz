@@ -1,7 +1,6 @@
 #pragma once
 
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 
@@ -10,36 +9,34 @@ class OnkyoAVTCP : public CDomoticzHardwareBase, ASyncTCP
 public:
 	OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~OnkyoAVTCP(void);
-	bool isConnected(){ return mIsConnected; };
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
-public:
-	// signals
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
-private:
-	int m_retrycntr;
-	bool StartHardware();
-	bool StopHardware();
-	unsigned char *m_pPartialPkt;
-	int m_PPktLen;
 	bool SendPacket(const char *pdata);
+private:
+	bool isConnected() { return mIsConnected; };
+	bool SendPacket(const char *pCmd, const char *pArg);
+	bool StartHardware() override;
+	bool StopHardware() override;
+	bool CustomCommand(uint64_t idx, const std::string &sCommand);
 	void ReceiveMessage(const char *pData, int Len);
 	void ReceiveSwitchMsg(const char *pData, int Len, bool muting, int ID);
-	
- protected:
-	std::string m_szIPAddress;
-	unsigned short m_usIPPort;
-	bool m_bDoRestart;
-
+	bool ReceiveXML(const char *pData, int Len);
+	void EnsureSwitchDevice(int Unit, const char *options = NULL);
+	std::string BuildSelectorOptions(const std::string & names, const std::string & ids);
 	void Do_Work();
 	void OnConnect();
 	void OnDisconnect();
 	void OnData(const unsigned char *pData, size_t length);
 	void OnError(const std::exception e);
 	void OnError(const boost::system::error_code& error);
-
 	void ParseData(const unsigned char *pData, int Len);
+private:
+	int m_retrycntr;
+	unsigned char *m_pPartialPkt;
+	int m_PPktLen;
+	std::string m_szIPAddress;
+	unsigned short m_usIPPort;
+	bool m_bDoRestart;
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 };
-

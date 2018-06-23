@@ -23,7 +23,6 @@ m_refresh(refresh)
 	// extract the data
 	std::vector<std::string> strextra;
 	StringSplit(extradata, "|", strextra);
-	std::string script;
 	if (strextra.size() == 3 || strextra.size() == 4 || strextra.size() == 5)
 	{
 		m_script = base64_decode(strextra[0]);
@@ -139,14 +138,14 @@ void CHttpPoller::GetScript()
 		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 		{
 			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err.c_str());
+			_log.Log(LOG_ERROR, err);
 			return;
 		}
 	}
 	if (m_method == 1) {
 		if (!HTTPClient::POST(sURL, m_postdata, ExtraHeaders, sResult)) {
 			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err.c_str());
+			_log.Log(LOG_ERROR, err);
 			return;
 		}
 	}

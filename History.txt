@@ -1,4 +1,55 @@
-Version 3.8153 (July 30h 2017)
+Version 4.9682 (June 23th 2018)
+- Implemented: Blockly, now possible to directly add/update Text devices
+- Implemented: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
+- Implemented: Camera: support for HTTPS url's
+- Implemented: Comm5 SM-xxxx sensors support
+- Implemented: Command line option '-noupdates' to stop using the internal update functionality Corrected 'Proxy' settings in the settings page (missing element closing tag)
+- Implemented: Denkovi Smartden IP In (32) with LAN Interface
+- Implemented: Disabling the option to downgrade Domoticz and use a newer database (because of database migrations)
+- Implemented: Door Lock Inverted
+- Implemented: EcoCompteur device
+- Implemented: eHouse BMS / Home Automation System Integration
+- Implemented: Forcing appcache to be refreshed on every new build
+- Implemented: Functionality to allow Python Plugins to integrate with the Domoticz Security Panel
+- Implemented: HardwareMonitor monitor own process memory usage
+- Implemented: Honeywell Lyric thermostat
+- Implemented: I2C: support for MCP23017 (16bit I2C GPIO expander)
+- Implemented: Initial support for FS20
+- Implemented: KMTronic TCP Temperature hardware
+- Implemented: Langiage "Persian" (Big tankgs to "foademadi", "maziar.hafezi" and "reza.hadipour2002")
+- Implemented: Language "Albanian" (Big thanks to "arbenik")
+- Implemented: Language "Bosnian" (Big thanks to "Vedran")
+- Implemented: Language "Catalan" (Big thanks to "delfisastre")
+- Implemented: Logitech Media Server: Added option to remove unused nodes
+- Implemented: RFXtrx Lucci Fan DC implemented
+- Implemented: MQTT Push message on scene/group switch event
+- Implemented: MySensors: handling of I_INCLUSION_MODE message.
+- Implemented: MySensors: support for SmartSleep option (gateway 2.x)
+- Implemented: Netatmo: rssi support
+- Implemented: New Managed meter type
+- Implemented: OnkyoAVTCP: Add source selection, detection via NRIQSTN
+- Implemented: OpenWeatherMap: cloud sensor
+- Implemented: RFXCom: support for WIND7, RAIN7/RAIN8/RAIN9
+- Implemented: Rtl_433: support for wind sensors, HH and LL humidity values
+- Implemented: Selector Switch: correcting display for all UTF8 characters now
+- Implemented: Styles folder can have its own images folder to overwrite stock images
+- Implemented: Telegram notifications
+- Implemented: Voltage/Current for Armbian Kernal 4.14+
+- Implemented: Webserver: automatically reload SSL certificates and DH params3
+- Implemented: Xiaomi Aqara Cube
+- Implemented: ZWave node ID to log
+- Removed: NMA Notification system (the service has stopped)
+- Updated: Dzvents (version 2.4.6, See dzVents/documentation/history.md)
+- Updated: OenZWave driver and configuration files
+- Updated: Translation files
+- Updated: Various internal libraries (C++/WWW)
+- Changed: Floorplans now stored in database
+- Changed: Improved color dimmer support
+- Changed: Internal HUE/RGB/W/WW handling
+- Changed: Philips Hue: internal code
+- Fixed: Various, see github
+
+Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
 - Fixed: Devices could become invisible when a scene/group was added to the 'hidden devices' room plan with the same idx
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
@@ -52,6 +103,7 @@ Version 3.8153 (July 30h 2017)
 - Implemented: Teleinfo : Added a switch indicating the current cost slot
 - Implemented: Timer Plan editor
 - Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave
+- Integrated dzVents 2.0.0: See dzVents/documentation/history.md
 
 Version 3.5878 (November 10th 2016)
 - Fixes and various improvements
@@ -495,7 +547,7 @@ Version 2.2283 (February 21th 2015)
 - Implemented: OpenZWave, COMMAND_CLASS_COLOR_CONTROL (for o.a. Zipato RGBW) (needs to be accepted by openzwave yet)
 - Implemented: OpenZWave, Controller Node, option for Nightly Network Heal (disabled by default)
 - Implemented: OpenZWave, polling all multi_sensor values now (if polling enabled)
-- Implemented: OpenZWave, support for COMMAND_CLASS_THERMOSTAT_MODE and COMMAND_CLASS_THERMOSTAT_FAN_MODE 
+- Implemented: OpenZWave, support for COMMAND_CLASS_THERMOSTAT_MODE and COMMAND_CLASS_THERMOSTAT_FAN_MODE
 - Implemented: OpenZWave, when doing an Inclusion, "allow new hardware" is enabled for 5 minutes if disabled
 - Implemented: Option for Dummy device to create Ampere Sensor
 - Implemented: Option for Dummy device to create Switch Sensor
@@ -756,7 +808,7 @@ Version 1.1680 (April 21th 2014)
 - Changed: Raspberry Pi temperature reporting intern. (Should save an extra return in the log output)
 - Changed: Temperatures are now valid till 380 degrees
 - Changed: Translation Language Loading
-- Changed: ZWave, Power sensors that does not transmit usage, now used as power instead of usage 
+- Changed: ZWave, Power sensors that does not transmit usage, now used as power instead of usage
 - Fixed: custom_light_icons json request (now reporting status OK)
 - Fixed: Daylight Saving values for 29-march-2014
 - Fixed: Fibaro Wall Plug (fgwpe) config
@@ -1136,7 +1188,7 @@ Version 1.607 (May 11th 2013)
 - Fixed: Push On delayed Off was deleted from queue, and was being send
 - Fixed: PushOn button Off delay time now handles values above 255
 - Fixed: RFXtrx USB mode option in hardware settings, will now return to dashboard
-- Fixed: Scene 'Learn' code option can now be used with already known switches 
+- Fixed: Scene 'Learn' code option can now be used with already known switches
 - Fixed: Scenes with a Push On type switch will now only send the On command to this switch
 - Fixed: Switch Lights Off (Dimmer) now does not update slider position
 - Fixed: TE923 (Weather stations) hardware can now be shared
@@ -1202,7 +1254,7 @@ Version 1.412 (April 1th 2013)
 - Implemented: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
 - Implemented: SQLite faster journal/update mode on non-windows systems
 - Implemented: Started working on support for the CM180i
-- Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus) 
+- Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
 - Implemented: Temperature (large) icons now represents global temperature index
 - Implemented: Temperature/Weather sensors now display their main value in large font
 - Implemented: Unix update script
@@ -1244,7 +1296,7 @@ Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
 - Implemented: P1 smart meter will update once a minute, or when usage difference is greater than 40 Watt
 - Implemented: P1 Smart meter, Gas value now send when changed, or every 5 minutes
-- Implemented: Serial port auto reconnect option 
+- Implemented: Serial port auto reconnect option
 - Implemented: Smoke Detector Off image
 - Implemented: temp_hum Rubicson/IW008T/TX95
 - Changed: Manual Add light switch types are now complete

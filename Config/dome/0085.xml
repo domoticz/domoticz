@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!--
+  Dome Z-Wave Plus Leak Sensor
+  https://products.z-wavealliance.org/products/1954
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" genre="config" index="1" label="Total Alarm Duration" value="120" units="Minutes" min="0" max="255" size="1">
+      <Help>
+        This parameter sets the total amount of time the Leak Sensor will beep and light its LED in the event of a leak.
+        0 Leak Sensor beeps until water is removed.
+        1 to 255 in Minutes.
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" index="2" label="Mute Time" value="1" units="Minutes" min="1" max="255" size="1">
+      <Help>
+        This parameter defines the amount of time the Leak Sensor remains quiet between each Reminder Alarm.
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" index="3" label="Initial Alarm" value="60" units="Seconds" min="10" max="255" size="1">
+      <Help>
+        This parameter sets the amount of time the Leak Sensor beeps before it is muted.
+      </Help>
+    </Value>
+    <Value type="byte" genre="config" index="4" label="Reminder Alarm" value="5" units="Seconds" min="5" max="255" size="1">
+      <Help>
+        This parameter sets the length of each beep after the Initial Alarm.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="5" label="Audible Alarm" min="0" max="1" size="1" value="1">
+      <Help>
+        This parameter enables or disables the audible alarm (beeping) functionality of the Leak Sensor.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="list" genre="config" index="6" label="Water Detection" min="0" max="1" size="1" value="1">
+      <Help>
+        This parameter enables or disables the Leak Sensor.
+        If disabled, the device will not respond in any way to detected leaks.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" index="7" label="Basic Set Level" value="255" min="0" max="255" size="1">
+      <Help>
+        This parameter defines the value sent by the BASIC_SET command to Association Group 2.
+        0 Turn Off Device.
+        1 to 99 Set Device to Value.
+        255 Turn On Device.
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="2" max_associations="5" label="Basic Set" />
+      <Group index="3" max_associations="5" label="Notification Report" />
+      <Group index="4" max_associations="5" label="Sensor Binary Report"/>
+    </Associations>
+  </CommandClass>
+</Product>

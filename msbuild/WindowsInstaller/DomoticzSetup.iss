@@ -52,6 +52,7 @@ Source: "..\Release\domoticz.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\www\*"; DestDir: "{app}\www"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\Config\*"; DestDir: "{app}\Config"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "..\..\dzVents\*"; DestDir: "{app}\dzVents"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\Debug\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: "{app}"; Flags: ignoreversion
@@ -83,6 +84,11 @@ Name: "{app}\log"; Permissions: everyone-full
 
 [PostCompile]
 Name: "S:\Domoticz\msbuild\WindowsInstaller\makedist.bat"; Flags: cmdprompt redirectoutput
+
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\scripts\dzVents\documentation"
+Type: filesandordirs; Name: "{app}\scripts\dzVents\runtime"
+
 
 [Code]
 var

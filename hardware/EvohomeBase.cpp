@@ -44,17 +44,17 @@ const char CEvohomeBase::m_szZoneMode[7][20]={"Auto","PermanentOverride","Tempor
 
 const char* CEvohomeBase::GetControllerModeName(uint8_t nControllerMode)
 {
-	return m_szControllerMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion otherwise windef.h macros will conflict here
+	return m_szControllerMode[std::min(nControllerMode,(uint8_t)6)];
 }
 
 const char* CEvohomeBase::GetWebAPIModeName(uint8_t nControllerMode)
 {
-	return m_szWebAPIMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
+	return m_szWebAPIMode[std::min(nControllerMode,(uint8_t)6)];
 }
 
 const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
 {
-	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
+	return m_szZoneMode[std::min(nZoneMode, (uint8_t)6)];
 }
 
 
@@ -88,7 +88,7 @@ bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 bool CEvohomeBase::SetMaxZoneCount(uint8_t nZoneCount)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
-	int nMaxZones=(std::max)(m_nZoneCount,nZoneCount); //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
+	int nMaxZones=std::max(m_nZoneCount,nZoneCount);
 	bool bRet=(m_nZoneCount!=nMaxZones);
 	m_nZoneCount=nMaxZones;
 	return bRet;
@@ -126,7 +126,7 @@ void CEvohomeBase::InitControllerName()
 }
 
 
-void CEvohomeBase::SetControllerName(std::string szName)
+void CEvohomeBase::SetControllerName(const std::string &szName)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
 	m_szControllerName=szName;
@@ -155,7 +155,7 @@ void CEvohomeBase::InitZoneNames()
 }
 
 
-void CEvohomeBase::SetZoneName(uint8_t nZone, std::string szName)
+void CEvohomeBase::SetZoneName(const uint8_t nZone, const std::string &szName)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
 	if(nZone>=m_ZoneNames.size()) //should be pre-sized to max zones
@@ -241,7 +241,7 @@ void CEvohomeBase::Log(bool bDebug, int nLogLevel, const char* format, ... )
         va_end(argList);
 
 	if(!bDebug || m_bDebug)
-		_log.Log(static_cast<_eLogLevel>(nLogLevel),cbuffer);
+		_log.Log(static_cast<_eLogLevel>(nLogLevel), "%s", cbuffer);
 	if(m_bDebug && m_pEvoLog)
 	{
 		LogDate();
@@ -277,7 +277,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
 			unsigned long nid = 1; //could be the first device ever
 
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nid = atol(result[0][0].c_str());
 			}
@@ -289,7 +289,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);
 
 			int nDevCount = 0;
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nDevCount = atol(result[0][0].c_str());
 			}

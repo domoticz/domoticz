@@ -34,11 +34,21 @@ bool CNotificationGCM::SendMessageImplementation(
 	//Get All Devices
 	std::vector<std::vector<std::string> > result;
 
+	std::string sMidx;
+	std::vector<std::string> vDevices;
+	if (ExtraData.find("midx_") != std::string::npos) {
+		sMidx = ExtraData.substr(5);
+		boost::split(vDevices, sMidx, boost::is_any_of(";"));
+	}
+
 	std::string szQuery("SELECT SenderID, DeviceType FROM MobileDevices");
-	if ((ExtraData.empty()) || (ExtraData.find("midx_") == std::string::npos))
+	if (!vDevices.empty()) {
+		szQuery += " WHERE (ID IN (" + boost::algorithm::join(vDevices, ",") + "))";
+	}
+	else {
 		szQuery += " WHERE (Active == 1)";
-	else
-		szQuery += " WHERE (ID == " + ExtraData.substr(5) + ")";
+	}
+
 	result = m_sql.safe_query(szQuery.c_str());
 	if (result.empty())
 		return true;
@@ -80,8 +90,8 @@ bool CNotificationGCM::SendMessageImplementation(
 			ii++;
 		}
 
-		sstr << "], \"data\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << boost::lexical_cast<std::string>(Priority) << "\", ";
-		sstr << "\"deviceid\": \"" << boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\" } }";
+		sstr << "], \"data\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
+		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\" } }";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;
@@ -124,8 +134,8 @@ bool CNotificationGCM::SendMessageImplementation(
 			ii++;
 		}
 
-		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << boost::lexical_cast<std::string>(Priority) << "\", ";
-		sstr << "\"deviceid\": \"" << boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
+		sstr << "], \"notification\" : { \"subject\": \"" << Subject << "\", \"body\": \"" << Text << "\", \"extradata\": \"" << ExtraData << "\", \"priority\": \"" << std::to_string(Priority) << "\", ";
+		sstr << "\"deviceid\": \"" << std::to_string(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
 		std::string szPostdata = sstr.str();
 
 		std::vector<std::string> ExtraHeaders;

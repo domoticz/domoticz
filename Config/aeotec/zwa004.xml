@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ZWA004 NanoMote One
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="32" genre="config" label="Low battery level" units="%" min="10" max="50" value="20">
+			<Help>
+				Set the low battery value.
+				Range: 10% - 50%.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="41" label="Central scene notification" min="0" max="1" value="1" size="1">
+			<Help>Enable send central scene notification</Help>
+			<Item label="Disable" value="0"/>
+			<Item label="Enable" value="1"/>
+		</Value>
+		<Value type="byte" index="42" genre="config" label="Duration of the command switch multilevel" units="" min="0" max="255" value="255">
+			<Help>
+				Setting the duration value of the command switch multilevel.
+				Available settings: 0-255.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="43" label="Battery low buzzer alarm" min="0" max="1" value="0" size="1">
+			<Help>Enable/disable the buzzer alarm when battery is running low</Help>
+			<Item label="Disable" value="0"/>
+			<Item label="Enable" value="1"/>
+		</Value>    
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="1" label="Lifeline" />
+			<Group index="2" max_associations="5" label="On/Off control"/>
+			<Group index="3" max_associations="5" label="Dimmer control"/>
+		</Associations>
+	</CommandClass>
+</Product>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "ZiBlueBase.h"
 
@@ -16,8 +16,8 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	int m_retrycntr;
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool WriteInt(const std::string &sendString);
 	bool WriteInt(const uint8_t *pData, const size_t length);
 protected:

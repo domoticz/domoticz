@@ -11,8 +11,8 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../main/SQLHelper.h"
 
+#include <set>
 #include <cmath>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -25,7 +25,9 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 	m_system(NULL),
 	m_sensorThreadPeriod(sensorThreadPeriod),
 	m_switchThreadPeriod(switchThreadPeriod),
-	m_path(path)
+	m_path(path),
+	m_bSensorFirstTime(true),
+	m_bSwitchFirstTime(true)
 {
 	m_HwdID = ID;
 
@@ -302,16 +304,15 @@ void C1Wire::BuildSensorList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "1-Wire: Searching sensors");
-#endif
+
+	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
+
 	m_sensors.clear();
 	m_system->GetDevices(devices);
 
-	std::vector<_t1WireDevice>::const_iterator device;
-	for (device=devices.begin(); device!=devices.end(); ++device)
+	for (const auto & device : devices)
 	{
-		switch((*device).family)
+		switch(device.family)
 		{
 		case high_precision_digital_thermometer:
 		case Thermachron:
@@ -323,9 +324,8 @@ void C1Wire::BuildSensorList() {
 		case _4k_ram_with_counter:
 		case quad_ad_converter:
 		case smart_battery_monitor:
-			m_sensors.insert(*device);
+			m_sensors.insert(device);
 			break;
-
 		default:
 			break;
 		}
@@ -339,16 +339,15 @@ void C1Wire::BuildSwitchList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "1-Wire: Searching switches");
-#endif
+
+	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching switches");
+
 	m_switches.clear();
 	m_system->GetDevices(devices);
 
-	std::vector<_t1WireDevice>::const_iterator device;
-	for (device=devices.begin(); device!=devices.end(); ++device)
+	for (const auto & device : devices)
 	{
-		switch((*device).family)
+		switch(device.family)
 		{
 		case Addresable_Switch:
 		case microlan_coupler:
@@ -358,9 +357,8 @@ void C1Wire::BuildSwitchList() {
 		case dual_channel_addressable_switch:
 		case _4k_EEPROM_with_PIO:
 		case digital_potentiometer:
-			m_switches.insert(*device);
+			m_switches.insert(device);
 			break;
-
 		default:
 			break;
 		}
@@ -376,10 +374,9 @@ void C1Wire::PollSwitches()
 		return;
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
-	std::set<_t1WireDevice>::const_iterator itt;
-	for (itt=m_switches.begin(); itt!=m_switches.end() && !m_stoprequested; ++itt)
+	for (const auto & itt : m_switches)
 	{
-		const _t1WireDevice& device=*itt;
+		const _t1WireDevice& device=itt;
 
 		// Manage families specificities
 		switch(device.family)
@@ -514,7 +511,7 @@ void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const un
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
-	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1]+unit, 255, (const float)counter, "Counter");
+	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1]+unit, 255, (const float)counter/1000.0f, "Counter");
 }
 
 void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const int voltage)

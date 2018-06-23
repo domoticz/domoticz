@@ -4,6 +4,21 @@
 #
 """
 <plugin key="BasePlug" name="Basic Python Plugin Example" author="gizmocuz" version="1.0.0" wikilink="http://www.domoticz.com/wiki/plugins/plugin.html" externallink="https://www.google.com/">
+    <description>
+        <h2>Plugin Title</h2><br/>
+        Overview...
+        <h3>Features</h3>
+        <ul style="list-style-type:square">
+            <li>Feature one...</li>
+            <li>Feature two...</li>
+        </ul>
+        <h3>Devices</h3>
+        <ul style="list-style-type:square">
+            <li>Device Type - What it does...</li>
+        </ul>
+        <h3>Configuration</h3>
+        Configuration options...
+    </description>
     <params>
     </params>
 </plugin>
@@ -25,7 +40,7 @@ class BasePlugin:
     def onConnect(self, Connection, Status, Description):
         Domoticz.Log("onConnect called")
 
-    def onMessage(self, Connection, Data, Status, Extra):
+    def onMessage(self, Connection, Data):
         Domoticz.Log("onMessage called")
 
     def onCommand(self, Unit, Command, Level, Hue):
@@ -55,9 +70,9 @@ def onConnect(Connection, Status, Description):
     global _plugin
     _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Connection, Data, Status, Extra):
+def onMessage(Connection, Data):
     global _plugin
-    _plugin.onMessage(Connection, Data, Status, Extra)
+    _plugin.onMessage(Connection, Data)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin

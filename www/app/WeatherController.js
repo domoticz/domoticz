@@ -172,7 +172,6 @@ define(['app'], function (app) {
 		};
 		$scope.DropWidget = function (idx) {
 			var myid = idx;
-			$.devIdx.split(' ');
 			$.ajax({
 				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
 				async: false,
@@ -444,13 +443,12 @@ define(['app'], function (app) {
 			}
 		});
 	}])
-		.directive('dzweatherwidget', function () {
+		.directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
 				templateUrl: 'views/weather_widget.html',
-				scope: {},
-				bindToController: {
+				scope: {
 					item: '=',
 					tempsign: '=',
 					windsign: '=',
@@ -462,22 +460,11 @@ define(['app'], function (app) {
 				controllerAs: 'ctrl',
 				controller: function ($scope, $element, $attrs, permissions) {
 					var ctrl = this;
-					var item = ctrl.item;
+					var item = $scope.item;
 
-					ctrl.nbackcolor = function () {
-						var nbackcolor = "#D4E1EE";
-						if (item.HaveTimeout == true) {
-							nbackcolor = "#DF2D3A";
-						}
-						else {
-							var BatteryLevel = parseInt(item.BatteryLevel);
-							if (BatteryLevel != 255) {
-								if (BatteryLevel <= 10) {
-									nbackcolor = "#DDDF2D";
-								}
-							}
-						}
-						return { 'background-color': nbackcolor };
+					ctrl.nbackstyle = function () {
+						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+						return backgroundClass;
 					};
 
 					ctrl.displayBarometer = function () {
@@ -530,7 +517,7 @@ define(['app'], function (app) {
 					};
 
 					ctrl.Forecast = function () {
-						return $.t(ctrl.item.ForecastStr);
+						return $.t(item.ForecastStr);
 					};
 
 					ctrl.image = function () {
@@ -550,7 +537,7 @@ define(['app'], function (app) {
 					};
 
 					ctrl.MakeFavorite = function (n) {
-						return MakeFavorite(ctrl.item.idx, n);
+						return MakeFavorite(item.idx, n);
 					};
 
 					ctrl.ShowLog = function () {
@@ -590,12 +577,6 @@ define(['app'], function (app) {
 						}
 					};
 
-					ctrl.ShowNotifications = function () {
-						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
-						$('#weathertophtm').hide();
-						return ShowNotifications(item.idx, escape(item.Name), '#weathercontent', 'ShowWeathers');
-					};
-
 					ctrl.ShowForecast = function () {
 						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 						$('#weathertophtm').hide();
@@ -604,19 +585,19 @@ define(['app'], function (app) {
 
 					$element.i18n();
 
-					if (ctrl.ordering == true) {
+					if ($scope.ordering == true) {
 						if (permissions.hasPermission("Admin")) {
 							if (window.myglobals.ismobileint == false) {
 								$element.draggable({
 									drag: function () {
-										ctrl.dragwidget({ idx: ctrl.item.idx });
+										$scope.dragwidget({ idx: item.idx });
 										$element.css("z-index", 2);
 									},
 									revert: true
 								});
 								$element.droppable({
 									drop: function () {
-										ctrl.dropwidget({ idx: ctrl.item.idx });
+										$scope.dropwidget({ idx: item.idx });
 									}
 								});
 							}
@@ -625,5 +606,5 @@ define(['app'], function (app) {
 
 				}
 			};
-		});
+		}]);
 });

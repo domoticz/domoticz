@@ -6,7 +6,8 @@
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../tinyxpath/tinyxml.h"
+
+#include <tinyxml.h>
 
 //Rainforest RAVEn USB ZigBee Smart Meter Adapter
 //https://rainforestautomation.com/rfa-z106-raven/
@@ -28,7 +29,7 @@ bool RAVEn::StartHardware()
     try
     {
         _log.Log(LOG_STATUS, "RAVEn: Using serial port: %s", device_.c_str());
-        open(device_.c_str(), 115200);
+        open(device_, 115200);
     }
     catch (boost::exception & e)
     {
@@ -74,7 +75,7 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     }
     if(data == (indata+inlen))
     {
-        _log.Log(LOG_ERROR, "RAVEn::readCallback only got NULLs (%d of them)", inlen);
+        _log.Log(LOG_ERROR, "RAVEn::readCallback only got NULLs (%d of them)", (int)inlen);
         return;
     }
     size_t len = (indata+inlen) - data;

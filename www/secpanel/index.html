@@ -1,14 +1,17 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="en-US">
 <head>
-	<meta charset="UTF-8">
-	<meta name="mobile-web-app-capable" content="yes">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<title>Domoticz Security Panel</title>
-	<link href="css/style.less" rel="stylesheet/less" />
-	<script src="js/less.js"></script>
+	<link rel="stylesheet" href="css/style.css">
 	<script src="js/ion.sound.min.js"></script>
-	<script src="../js/jquery-1.12.0.min.js"></script>
-	<script src="../js/i18next-1.8.0.min.js"></script> 
+	<script src="../js/jquery-3.3.1.min.js"></script>
+	<script src="../js/i18next-1.8.0.min.js"></script>
 	<script src="../js/domoticz.js"></script>
 	<script src="../js/md5.js"></script>
 	<script type="text/javascript">
@@ -26,16 +29,13 @@
 			multiplay: true,
 			volume: 0.9
 		});
-	
+
 		function ShowError(error) {
 			if (error=="NoConnect") {
 				$('#digitdisplay').val("no connect");
 			}
 			else if (error=="NoOkData") {
 				$('#digitdisplay').val("no ok data");
-			}
-			else if (error=="NoSettingsData") {
-				$('#digitdisplay').val("no settings");
 			}
 			else {
 				$('#digitdisplay').val("unkown err");
@@ -46,7 +46,7 @@
 		function ShowStatus() {
 			$.ajax({
 				url: "../json.htm?type=command&param=getsecstatus",
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -88,7 +88,7 @@
 			}
 			$.ajax({
 				url: "../json.htm?type=command&param=getuservariables",
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -115,7 +115,7 @@
 				}
 			});
 		}
-		
+
 		var CountdownTimer = 0;
 		function countdown() {
 			if (timer > 1) {
@@ -135,7 +135,7 @@
 			var secondelay=0;
 			$.ajax({
 				url: "../json.htm?type=settings",
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -156,71 +156,9 @@
 			return secondelay;
 		}
 
-		// custom function for zone clear check, searches idx for switches starting with 'alarm zone'
-		function ZoneIdx() {
-			var idxnumbers=[];
-			$.ajax({
-				url: "../json.htm?type=command&param=getlightswitches",
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						ShowError('NoOkData');
-						return;
-					}
-					else {
-						if (typeof(data.result) != "undefined") {
-							$.each(data.result, function(i,item) {
-								if (item.Name.toLowerCase().indexOf('alarm zone')==0) idxnumbers[idxnumbers.length]=item.idx;
-							});
-						}
-					}
-				},
-				error: function(){
-					ShowError('NoConnect');
-					return;
-				}
-			});
-			return idxnumbers;
-		}
-		var zones=ZoneIdx();
-
-		// check if provided zone idx number(s) is/are clear
-		function CheckZoneClear(zonearray) {
-			var openzone=false;
-			if (typeof(zonearray) != "undefined") {
-				$.each(zonearray, function(i,item) {
-					$.ajax({
-						url: "../json.htm?type=devices&rid="+item,
-						async: false, 
-						dataType: 'json',
-						success: function(data) {
-							if (data.status != "OK") {
-								ShowError('NoOkData');
-								return;
-							}
-							else {
-								if (typeof(data.result) != "undefined") {
-									$.each(data.result, function(j,zone) {
-										if (zone.Status=='On') openzone=true;
-									});
-								}
-								return openzone;
-							}
-						},
-						error: function(){
-							ShowError('NoConnect');
-							return;
-						}
-					});
-				});
-			}
-			return openzone;
-		}
-
-		function SetSecStatus(status, zonearray, seccode, setzone) {
+		function SetSecStatus(status) {
 			clearInterval(CountdownTimer);
-			if (typeof(seccode) == "undefined") seccode=$('#password').val();
+			var seccode=$('#password').val();
 			if (isNaN(seccode)) {
 				beep('error');
 				return;
@@ -228,40 +166,9 @@
 			if (typeof(RefreshTimer) != "undefined") RefreshTimer=clearTimeout(RefreshTimer);
 			if (typeof(CodeSetTimer) != "undefined") CodeSetTimer=clearTimeout(CodeSetTimer);
 
-			// if (status==1 || status==2) {
-			if (1==2) {
-				beep();
-				if (typeof(setzone) == "undefined") {
-					var zonedisplay='* ALL ZONES *';
-				}
-				if (setzone=="all") zonedisplay='* ALL ZONES *';
-				if (setzone==1) zonedisplay='* ZONE 1 *';
-				if (setzone==2) zonedisplay='* ZONE 2 *';
-				if (setzone==3) zonedisplay='* ZONE 3 *';
-				$('#digitdisplay').val($.t(zonedisplay));
-
-				var elements = document.getElementsByClassName('digit');
-				for(var i=0; i<elements.length; i++) {
-					elements[i].setAttribute('onClick','SetSecStatus('+status+', zones, '+seccode+', '+(i+1)+');');
-				}
-				document.getElementById('setall').setAttribute('onClick','SetSecStatus('+status+', zones, '+seccode+', \'all\');');
-
-				CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 10000);
-				return;
-			}
-
-			if (typeof(zonearray) != "undefined") {
-				if (CheckZoneClear(zonearray)) {
-					beep('error');
-					$('#digitdisplay').val($.t('* ZONE OPEN *'));
-					// CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer(); AddDigit('+seccode+');', 2000);
-					CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 3000);
-					return;
-				}
-			}
 			$.ajax({
 				url: "../json.htm?type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + md5(seccode),
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -270,7 +177,6 @@
 							CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 2000);
 							$('#password').val("");
 							beep('error');
-							// $('#digitdisplay').css('background', 'red');
 						}
 						else {
 							ShowError('NoOkData');
@@ -304,7 +210,7 @@
 		}
 
 		function AddDigit(digit) {
-			beep(); 
+			beep();
 			if (typeof(CodeSetTimer) != "undefined") {
 				CodeSetTimer=clearTimeout(CodeSetTimer);
 			}
@@ -329,7 +235,7 @@
 			$('#digitdisplay').val(codeinput);
 			$('#password').val(newtext);
 		}
-		
+
 		function beep(tone) {
 			if (tone=="error") {
 				ion.sound.play("wrongcode");
@@ -347,7 +253,7 @@
 				ion.sound.play("key");
 			}
 		}
-		
+
 		function SetLanguageEx(lng) {
 			$.i18n.init({
 				resGetPath: '/i18n/domoticz-__lng__.json',
@@ -365,7 +271,7 @@
 		$(document).ready(function() {
 			$.ajax({
 				 url: "../json.htm?type=command&param=getlanguage",
-				 async: false, 
+				 async: false,
 				 dataType: 'json',
 				 success: function(data) {
 					if (typeof data.language != 'undefined') {
@@ -391,8 +297,8 @@
 					<div class="title" onClick="javascript:main.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);"><p>Domoticz Security Panel</p></div>
 				</div>
 				<form name="keypadinput">
-					<input type="text" id="digitdisplay" value="" name="digitdisplay" disabled="disabled"/>
-					<input type="hidden" id="password" value="" name="password"/>
+					<input type="text" id="digitdisplay" value="" name="digitdisplay" disabled="disabled" />
+					<input type="hidden" id="password" value="" name="password" />
 					<ul class="keypad-keys">
 						<li class="digit" onClick="javascript:AddDigit('1');">1</li>
 						<li class="digit" onClick="javascript:AddDigit('2');">2</li>
@@ -403,20 +309,19 @@
 						<li class="digit" onClick="javascript:AddDigit('4');">4</li>
 						<li class="digit" onClick="javascript:AddDigit('5');">5</li>
 						<li class="digit" onClick="javascript:AddDigit('6');">6</li>
-						<li class="arm" onClick="javascript:SetSecStatus(1, zones);">Arm Home</li>
+						<li class="arm" onClick="javascript:SetSecStatus(1);">Arm Home</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li class="digit" onClick="javascript:AddDigit('7');">7</li>
 						<li class="digit" onClick="javascript:AddDigit('8');">8</li>
 						<li class="digit" onClick="javascript:AddDigit('9');">9</li>
-						<li class="arm" onClick="javascript:SetSecStatus(2, zones);">Arm Away</li>
+						<li class="arm" onClick="javascript:SetSecStatus(2);">Arm Away</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li style="visibility: hidden;"></li>
 						<li class="digit" onClick="javascript:AddDigit('0');">0</li>
-						<!--<li id="setall" onClick="javascript:beep();">All</li>-->
 						<li style="visibility: hidden;"></li>
-						<li class="btnclear" onClick="javascript:beep(); ShowStatus();">Cancel</li>
+						<li class="cancel" onClick="javascript:beep(); ShowStatus();">Cancel</li>
 					</ul>
 				</form>
 			</div>

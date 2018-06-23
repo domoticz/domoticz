@@ -53,14 +53,13 @@ Version history
 #define RELEASE_RT2 29
 
 CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, 
-	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit)
-
+	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit):
+m_szIPAddress(IPAddress),
+m_username(username),
+m_password(password)
 {
 	m_HwdID = ID;
-	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
-	m_username = username;
-	m_password = password;
 	m_stoprequested = false;
 	m_iModel = model;
         
@@ -286,7 +285,7 @@ void CEcoDevices::GetMeterDetails()
 	else
 	{
 		message = "EcoDevices firmware needs to be at least version ";
-		message = message + static_cast<std::ostringstream*>(&(std::ostringstream() << min_major << "." << min_minor << "." << min_release))->str();
+		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) +  "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
 		return;
@@ -447,7 +446,7 @@ void CEcoDevices::GetMeterRT2Details()
 	if (!((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release))))
 	{
 		message = "EcoDevices RT2 firmware needs to be at least version ";
-		message = message + static_cast<std::ostringstream*>(&(std::ostringstream() << min_major << "." << min_minor << "." << min_release))->str();
+		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
 		return;

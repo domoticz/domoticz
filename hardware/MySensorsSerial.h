@@ -3,14 +3,14 @@
 #include "ASyncSerial.h"
 #include "MySensorsBase.h"
 
-class MySensorsSerial: public AsyncSerial, public MySensorsBase
+class MySensorsSerial : public AsyncSerial, public MySensorsBase
 {
 public:
 	MySensorsSerial(const int ID, const std::string& devname, const int Mode1);
-    ~MySensorsSerial();
+	~MySensorsSerial();
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 
 	unsigned int m_iBaudRate;
 	boost::shared_ptr<boost::thread> m_thread;
@@ -19,10 +19,10 @@ private:
 	void Do_Work();
 	bool OpenSerialDevice();
 
-    /**
-     * Read callback, stores data in the buffer
-     */
-    void readCallback(const char *data, size_t len);
+	/**
+	 * Read callback, stores data in the buffer
+	 */
+	void readCallback(const char *data, size_t len);
 	void WriteInt(const std::string &sendStr);
 };
 

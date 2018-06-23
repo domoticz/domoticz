@@ -45,7 +45,7 @@ std::string SolarMaxTCP::MakeRequestString()
 	int DestAddress = SM_DEST_ADDRESS;
 	std::string RequestString = "64:KDY;KT0;PAC;UDC;UL1;IDC;IL1;PIN;PRL;TNF;TKK";
 	char szSendTemp[100];
-	char szSendRequest[100];
+	char szSendRequest[120];
 	sprintf(szSendTemp, "%02X;%02X;%02X|%s|", SourceAddress, DestAddress, (unsigned int)(RequestString.size() + 16), RequestString.c_str());
 	int Chksum = SolarMaxCalcChecksum((const unsigned char*)&szSendTemp, (int)strlen(szSendTemp));
 	sprintf(szSendRequest, "{%s%04X}", szSendTemp, Chksum);
@@ -156,11 +156,11 @@ bool SolarMaxTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
-		_log.Log(LOG_ERROR, "SolarMax: TCP could not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "SolarMax: TCP could not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "SolarMax: TCP connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS, "SolarMax: TCP connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	sOnConnected(this);
 	return true;
@@ -197,8 +197,6 @@ void SolarMaxTCP::Do_Work()
 			(!m_stoprequested)
 			)
 		{
-			if (m_stoprequested)
-				break;
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
 			{

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WOL.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -7,19 +8,23 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
 
-CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port):
-m_broadcast_address(BroadcastAddress)
+namespace Json
 {
-	m_HwdID=ID;
+	class Value;
+};
+
+CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port) :
+	m_broadcast_address(BroadcastAddress)
+{
+	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
-	m_wol_port=Port;//9;
+	m_wol_port = Port;//9;
 }
 
 CWOL::~CWOL(void)
 {
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 }
 
 void CWOL::Init()
@@ -29,11 +34,11 @@ void CWOL::Init()
 bool CWOL::StartHardware()
 {
 	Init();
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 
 	StartHeartbeatThread();
-	_log.Log(LOG_STATUS,"WOL: Started");
+	_log.Log(LOG_STATUS, "WOL: Started");
 
 	return true;
 }
@@ -41,8 +46,8 @@ bool CWOL::StartHardware()
 bool CWOL::StopHardware()
 {
 	StopHeartbeatThread();
-	m_bIsStarted=false;
-    return true;
+	m_bIsStarted = false;
+	return true;
 }
 
 //6 * 255 or(0xff)
@@ -91,8 +96,9 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 
 	// this call is what allows broadcast packets to be sent:
 	int broadcast = 1;
-	if (setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1) 
+	if (setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1)
 	{
+		closesocket(udpSocket);
 		return false;
 	}
 	udpClient.sin_family = AF_INET;
@@ -120,39 +126,39 @@ bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
-	unsigned char packettype=pSen->ICMND.packettype;
+	unsigned char packettype = pSen->ICMND.packettype;
 	//unsigned char subtype=pSen->ICMND.subtype;
 
-	if (packettype!=pTypeLighting2)
+	if (packettype != pTypeLighting2)
 		return false;
 
 	if (pSen->LIGHTING2.cmnd != light2_sOn) // only send WOL with ON command
 		return true;
 
-	int nodeID=(pSen->LIGHTING2.id3<<8)|pSen->LIGHTING2.id4;
+	int nodeID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
 	std::vector<std::vector<std::string> > result;
 
 	//Find our Node
-	result=m_sql.safe_query("SELECT MacAddress FROM WOLNodes WHERE (ID==%d)", nodeID);
-	if (result.size()<1)
+	result = m_sql.safe_query("SELECT MacAddress FROM WOLNodes WHERE (ID==%d)", nodeID);
+	if (result.empty())
 		return false; //Not Found
 
 	unsigned char tosend[102];
-	std::string mac_address=result[0][0];
+	std::string mac_address = result[0][0];
 	if (!GenerateWOLPacket(tosend, mac_address))
 	{
-		_log.Log(LOG_ERROR,"WOL: Error creating magic packet");
+		_log.Log(LOG_ERROR, "WOL: Error creating magic packet");
 		return false;
 	}
 
 	if (SendWOLPacket(tosend))
 	{
-		_log.Log(LOG_STATUS,"WOL: Wake-up send to: %s",mac_address.c_str());
+		_log.Log(LOG_STATUS, "WOL: Wake-up send to: %s", mac_address.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_ERROR,"WOL: Error sending notification to: %s",mac_address.c_str());
+		_log.Log(LOG_ERROR, "WOL: Error sending notification to: %s", mac_address.c_str());
 		return false;
 	}
 	return true;
@@ -163,28 +169,25 @@ void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), MACAddress.c_str());
-	if (result.size()>0)
+	if (!result.empty())
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress) VALUES (%d,'%q','%q')",
 		m_HwdID, Name.c_str(), MACAddress.c_str());
 
-	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), MACAddress.c_str());
-	if (result.size()<1)
+	if (result.empty())
 		return;
 
-	int ID=atoi(result[0][0].c_str());
+	int ID = atoi(result[0][0].c_str());
 
 	char szID[40];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
+	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also add a light (push) device
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d,'%q',%d,%d,%d,%d,1, 12,255,'%q',1,' ')",
-		m_HwdID, szID, int(1), pTypeLighting2, sTypeAC, int(STYPE_PushOn), Name.c_str());
+	m_sql.InsertDevice(m_HwdID, szID, 1, pTypeLighting2, sTypeAC, STYPE_PushOn, 1, " ", Name, 12, 255, 1);
 }
 
 bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string &MACAddress)
@@ -192,16 +195,16 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string &
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
-	if (result.size()<1)
+	if (result.empty())
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q' WHERE (HardwareID==%d) AND (ID==%d)",
 		Name.c_str(), MACAddress.c_str(), m_HwdID, ID);
 
 	char szID[40];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
+	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also update Light/Switch
 	m_sql.safe_query(
@@ -218,7 +221,7 @@ void CWOL::RemoveNode(const int ID)
 
 	//Also delete the switch
 	char szID[40];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
+	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 		m_HwdID, szID);
@@ -259,7 +262,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)",
 				iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

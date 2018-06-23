@@ -9,8 +9,10 @@
 #include "../main/SQLHelper.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/mainstructs.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
+#include "../notifications/NotificationHelper.h"
 #include "PythonObjects.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
@@ -19,9 +21,6 @@
 
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls accessto the message queue
-	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
-	extern boost::asio::io_service ios;
 	extern struct PyModuleDef DomoticzModuleDef;
 	extern void LogPythonException(CPlugin* pPlugin, const std::string &sHandler);
 
@@ -29,11 +28,6 @@ namespace Plugins {
 		CPlugin*	pPlugin;
 		PyObject*	error;
 	};
-
-	void PythonObjectsInit()
-	{
-		PyDateTime_IMPORT;
-	}
 
 	void CImage_dealloc(CImage* self)
 	{
@@ -77,9 +71,9 @@ namespace Plugins {
 				self->pPlugin = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -136,9 +130,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -158,7 +152,7 @@ namespace Plugins {
 			{
 				if (sFilename.length())
 				{
-					if (self->pPlugin->m_bDebug)
+					if (self->pPlugin->m_bDebug & PDM_IMAGE)
 					{
 						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->Name.c_str(), sFilename.c_str());
 					}
@@ -175,7 +169,7 @@ namespace Plugins {
 					{
 						// load associated custom images to make them available to python
 						std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT max(ID), Base, Name, Description FROM CustomImages");
-						if (result.size() > 0)
+						if (!result.empty())
 						{
 							PyType_Ready(&CImageType);
 							// Add image objects into the image dictionary with ID as the key
@@ -228,7 +222,7 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ImageID != -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_IMAGE)
 				{
 					_log.Log(LOG_NORM, "(%s) Deleting Image '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -237,10 +231,10 @@ namespace Plugins {
 				result = m_sql.safe_query("SELECT Name FROM CustomImages WHERE (ID==%d)", self->ImageID);
 				if (result.size() != 0)
 				{
-					result = m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
+					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
 					PyObject*	pKey = PyLong_FromLong(self->ImageID);
-					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
+					if (PyDict_DelItem((PyObject*)self->pPlugin->m_ImageDict, pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete image '%d' from images dictionary.", self->pPlugin->Name.c_str(), self->ImageID);
 						Py_INCREF(Py_None);
@@ -275,9 +269,11 @@ namespace Plugins {
 	void CDevice_dealloc(CDevice* self)
 	{
 		Py_XDECREF(self->Name);
+		Py_XDECREF(self->Description);
 		Py_XDECREF(self->sValue);
 		PyDict_Clear(self->Options);
 		Py_XDECREF(self->Options);
+		Py_XDECREF(self->Color);
 		Py_TYPE(self)->tp_free((PyObject*)self);
 	}
 
@@ -313,6 +309,11 @@ namespace Plugins {
 					Py_DECREF(self);
 					return NULL;
 				}
+				self->Description = PyUnicode_FromString("");
+				if (self->Description == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
 				self->nValue = 0;
 				self->sValue = PyUnicode_FromString("");
 				if (self->sValue == NULL) {
@@ -328,12 +329,18 @@ namespace Plugins {
 				self->Used = 0;
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
+				self->TimedOut = 0;
+				self->Color = PyUnicode_FromString(NoColor.toJSONString().c_str());
+				if (self->Color == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
 				self->pPlugin = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -341,6 +348,143 @@ namespace Plugins {
 		}
 
 		return (PyObject *)self;
+	}
+
+	static void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
+	{
+		Type = pTypeGeneral;
+
+		if (sTypeName == "Pressure")					SubType = sTypePressure;
+		else if (sTypeName == "Percentage")				SubType = sTypePercentage;
+		else if (sTypeName == "Gas")
+		{
+			Type = pTypeP1Gas;
+			SubType = sTypeP1Gas;
+		}
+		else if (sTypeName == "Voltage")				SubType = sTypeVoltage;
+		else if (sTypeName == "Text")					SubType = sTypeTextStatus;
+		else if (sTypeName == "Switch")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+		}
+		else if (sTypeName == "Alert")
+		{
+			sValue = "No Alert!";
+			SubType = sTypeAlert;
+		}
+		else if (sTypeName == "Current/Ampere")
+		{
+			sValue = "0.0;0.0;0.0";
+			Type = pTypeCURRENT;
+			SubType = sTypeELEC1;
+		}
+		else if (sTypeName == "Sound Level")			SubType = sTypeSoundLevel;
+		else if (sTypeName == "Barometer")
+		{
+			sValue = "1021.34;0";
+			SubType = sTypeBaro;
+		}
+		else if (sTypeName == "Visibility")				SubType = sTypeVisibility;
+		else if (sTypeName == "Distance")				SubType = sTypeDistance;
+		else if (sTypeName == "Counter Incremental")	SubType = sTypeCounterIncremental;
+		else if (sTypeName == "Soil Moisture")			SubType = sTypeSoilMoisture;
+		else if (sTypeName == "Leaf Wetness")			SubType = sTypeLeafWetness;
+		else if (sTypeName == "kWh")
+		{
+			sValue = "0; 0.0";
+			SubType = sTypeKwh;
+		}
+		else if (sTypeName == "Current (Single)")		SubType = sTypeCurrent;
+		else if (sTypeName == "Solar Radiation")		SubType = sTypeSolarRadiation;
+		else if (sTypeName == "Temperature")
+		{
+			Type = pTypeTEMP;
+			SubType = sTypeTEMP5;
+		}
+		else if (sTypeName == "Humidity")
+		{
+			Type = pTypeHUM;
+			SubType = sTypeHUM1;
+		}
+		else if (sTypeName == "Temp+Hum")
+		{
+			sValue = "0.0;50;1";
+			Type = pTypeTEMP_HUM;
+			SubType = sTypeTH1;
+		}
+		else if (sTypeName == "Temp+Hum+Baro")
+		{
+			sValue = "0.0;50;1;1010;1";
+			Type = pTypeTEMP_HUM_BARO;
+			SubType = sTypeTHB1;
+		}
+		else if (sTypeName == "Wind")
+		{
+			sValue = "0;N;0;0;0;0";
+			Type = pTypeWIND;
+			SubType = sTypeWIND1;
+		}
+		else if (sTypeName == "Rain")
+		{
+			sValue = "0;0";
+			Type = pTypeRAIN;
+			SubType = sTypeRAIN3;
+		}
+		else if (sTypeName == "UV")
+		{
+			sValue = "0;0";
+			Type = pTypeUV;
+			SubType = sTypeUV1;
+		}
+		else if (sTypeName == "Air Quality")
+		{
+			Type = pTypeAirQuality;
+			SubType = sTypeVoltcraft;
+		}
+		else if (sTypeName == "Usage")
+		{
+			Type = pTypeUsage;
+			SubType = sTypeElectric;
+		}
+		else if (sTypeName == "Illumination")
+		{
+			Type = pTypeLux;
+			SubType = sTypeLux;
+		}
+		else if (sTypeName == "Waterflow")				SubType = sTypeWaterflow;
+		else if (sTypeName == "Wind+Temp+Chill")
+		{
+			sValue = "0;N;0;0;0;0";
+			Type = pTypeWIND;
+			SubType = sTypeWIND4;
+		}
+		else if (sTypeName == "Selector Switch")
+		{
+			if (!OptionsIn || !PyDict_Check(OptionsIn)) {
+				PyDict_Clear(OptionsOut);
+				PyDict_SetItemString(OptionsOut, "LevelActions", PyUnicode_FromString("|||"));
+				PyDict_SetItemString(OptionsOut, "LevelNames", PyUnicode_FromString("Off|Level1|Level2|Level3"));
+				PyDict_SetItemString(OptionsOut, "LevelOffHidden", PyUnicode_FromString("false"));
+				PyDict_SetItemString(OptionsOut, "SelectorStyle", PyUnicode_FromString("0"));
+			}
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchTypeSelector;
+			SwitchType = STYPE_Selector;
+		}
+		else if (sTypeName == "Custom")
+		{
+			SubType = sTypeCustom;
+			if (!OptionsIn || !PyDict_Check(OptionsIn)) {
+				PyDict_Clear(OptionsOut);
+				PyDict_SetItemString(OptionsOut, "Custom", PyUnicode_FromString("1"));
+			}
+		}
+		else if (sTypeName == "Security Panel")
+		{
+			Type = pTypeSecurity1;
+			SubType = sTypeDomoticzSecurity;
+		}
 	}
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
@@ -355,7 +499,8 @@ namespace Plugins {
 		int			Image = -1;
 		PyObject*	Options = NULL;
 		int			Used = -1;
-		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "DeviceID", NULL };
+		char*		Description = NULL;
+		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "DeviceID", "Description", NULL };
 
 		try
 		{
@@ -379,7 +524,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOis", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -387,6 +532,10 @@ namespace Plugins {
 				if (Name) {
 					Py_DECREF(self->Name);
 					self->Name = PyUnicode_FromString(Name);
+				}
+				if (Description) {
+					Py_DECREF(self->Description);
+					self->Description = PyUnicode_FromString(Description);
 				}
 				if ((Unit > 0) && (Unit < 256))
 				{
@@ -408,146 +557,10 @@ namespace Plugins {
 					self->DeviceID = PyUnicode_FromString(szID);
 				}
 				if (TypeName) {
-					std::string	sTypeName = TypeName;
-
-					self->Type = pTypeGeneral;
-
-					if (sTypeName == "Pressure")					self->SubType = sTypePressure;
-					else if (sTypeName == "Percentage")				self->SubType = sTypePercentage;
-					else if (sTypeName == "Gas")
-					{
-						self->Type = pTypeP1Gas;
-						self->SubType = sTypeP1Gas;
-					}
-					else if (sTypeName == "Voltage")				self->SubType = sTypeVoltage;
-					else if (sTypeName == "Text")					self->SubType = sTypeTextStatus;
-					else if (sTypeName == "Switch")
-					{
-						self->Type = pTypeGeneralSwitch;
-						self->SubType = sSwitchGeneralSwitch;
-					}
-					else if (sTypeName == "Alert")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("No Alert!");
-						self->SubType = sTypeAlert;
-					}
-					else if (sTypeName == "Current/Ampere")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0.0;0.0;0.0");
-						self->Type = pTypeCURRENT;
-						self->SubType = sTypeELEC1;
-					}
-					else if (sTypeName == "Sound Level")			self->SubType = sTypeSoundLevel;
-					else if (sTypeName == "Barometer")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("1021.34;0");
-						self->SubType = sTypeBaro;
-					}
-					else if (sTypeName == "Visibility")				self->SubType = sTypeVisibility;
-					else if (sTypeName == "Distance")				self->SubType = sTypeDistance;
-					else if (sTypeName == "Counter Incremental")	self->SubType = sTypeCounterIncremental;
-					else if (sTypeName == "Soil Moisture")			self->SubType = sTypeSoilMoisture;
-					else if (sTypeName == "Leaf Wetness")			self->SubType = sTypeLeafWetness;
-					else if (sTypeName == "kWh")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0; 0.0");
-						self->SubType = sTypeKwh;
-					}
-					else if (sTypeName == "Current (Single)")		self->SubType = sTypeCurrent;
-					else if (sTypeName == "Solar Radiation")		self->SubType = sTypeSolarRadiation;
-					else if (sTypeName == "Temperature")
-					{
-						self->Type = pTypeTEMP;
-						self->SubType = sTypeTEMP5;
-					}
-					else if (sTypeName == "Humidity")
-					{
-						self->Type = pTypeHUM;
-						self->SubType = sTypeHUM1;
-					}
-					else if (sTypeName == "Temp+Hum")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0.0;50;1");
-						self->Type = pTypeTEMP_HUM;
-						self->SubType = sTypeTH1;
-					}
-					else if (sTypeName == "Temp+Hum+Baro")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0.0;50;1;1010;1");
-						self->Type = pTypeTEMP_HUM_BARO;
-						self->SubType = sTypeTHB1;
-					}
-					else if (sTypeName == "Wind")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0;N;0;0;0;0");
-						self->Type = pTypeWIND;
-						self->SubType = sTypeWIND1;
-					}
-					else if (sTypeName == "Rain")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0;0");
-						self->Type = pTypeRAIN;
-						self->SubType = sTypeRAIN3;
-					}
-					else if (sTypeName == "UV")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0;0");
-						self->Type = pTypeUV;
-						self->SubType = sTypeUV1;
-					}
-					else if (sTypeName == "Air Quality")
-					{
-						self->Type = pTypeAirQuality;
-						self->SubType = sTypeVoltcraft;
-					}
-					else if (sTypeName == "Usage")
-					{
-						self->Type = pTypeUsage;
-						self->SubType = sTypeElectric;
-					}
-					else if (sTypeName == "Illumination")
-					{
-						self->Type = pTypeLux;
-						self->SubType = sTypeLux;
-					}
-					else if (sTypeName == "Waterflow")				self->SubType = sTypeWaterflow;
-					else if (sTypeName == "Wind+Temp+Chill")
-					{
-						Py_DECREF(self->sValue);
-						self->sValue = PyUnicode_FromString("0;N;0;0;0;0");
-						self->Type = pTypeWIND;
-						self->SubType = sTypeWIND4;
-					}
-					else if (sTypeName == "Selector Switch")
-					{
-						if (!Options || !PyDict_Check(Options)) {
-							PyDict_Clear(self->Options);
-							PyDict_SetItemString(self->Options, "LevelActions", PyUnicode_FromString("|||"));
-							PyDict_SetItemString(self->Options, "LevelNames", PyUnicode_FromString("Off|Level1|Level2|Level3"));
-							PyDict_SetItemString(self->Options, "LevelOffHidden", PyUnicode_FromString("false"));
-							PyDict_SetItemString(self->Options, "SelectorStyle", PyUnicode_FromString("0"));
-						}
-						self->Type = pTypeGeneralSwitch;
-						self->SubType = sSwitchTypeSelector;
-						self->SwitchType = 18;
-					}
-					else if (sTypeName == "Custom")
-					{
-						self->SubType = sTypeCustom;
-						if (!Options || !PyDict_Check(Options)) {
-							PyDict_Clear(self->Options);
-							PyDict_SetItemString(self->Options, "Custom", PyUnicode_FromString("1"));
-						}
-					}
+					std::string sValue = "";
+					maptypename(std::string(TypeName), self->Type, self->SubType, self->SwitchType, sValue, Options, self->Options);
+					Py_DECREF(self->sValue);
+					self->sValue = PyUnicode_FromString(sValue.c_str());
 				}
 				if ((Type != -1) && Type) self->Type = Type;
 				if ((SubType != -1) && SubType) self->SubType = SubType;
@@ -560,17 +573,24 @@ namespace Plugins {
 					PyDict_Clear(self->Options);
 					while(PyDict_Next(Options, &pos, &pKey, &pValue))
 					{
-						PyObject *pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
-						PyObject *pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
-						if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
+						if (PyUnicode_Check(pValue))
 						{
-							_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+							PyObject *pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
+							PyObject *pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
+							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
+							{
+								_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+								Py_XDECREF(pKeyDict);
+								Py_XDECREF(pValueDict);
+								break;
+							}
 							Py_XDECREF(pKeyDict);
 							Py_XDECREF(pValueDict);
-							break;
 						}
-						Py_XDECREF(pKeyDict);
-						Py_XDECREF(pValueDict);
+						else
+						{
+							_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d): Only \"string\" type dictionary entries supported, but entry has type \"%s\"", self->pPlugin->Name.c_str(), self->HwdID, self->Unit, pValue->ob_type->tp_name);
+						}
 					}
 				}
 			}
@@ -582,9 +602,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -600,8 +620,8 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
-			if (result.size() > 0)
+			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			if (!result.empty())
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 				{
@@ -650,6 +670,10 @@ namespace Plugins {
 							}
 						}
 					}
+					Py_XDECREF(self->Description);
+					self->Description = PyUnicode_FromString(sd[15].c_str());
+					Py_XDECREF(self->Color);
+					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSONString().c_str()); //Parse the color to detect incorrectly formatted color data
 				}
 			}
 		}
@@ -670,78 +694,89 @@ namespace Plugins {
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			if (self->ID == -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
 					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
 
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-				if (result.size() == 0)
+				if (!m_sql.m_bAcceptNewHardware)
 				{
-					std::string	sValue = PyUnicode_AsUTF8(self->sValue);
-					std::string	sLongName = self->pPlugin->Name + " - " + sName;
-					if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
-					{
-						PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
-						std::string sOptionValue;
-						if (pValueDict == NULL)
-							sOptionValue = "";
-						else
-							sOptionValue = PyUnicode_AsUTF8(pValueDict);
-
-						m_sql.safe_query(
-							"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
-							self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sOptionValue.c_str());
-					}
-					else
-					{
-						m_sql.safe_query(
-							"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage) "
-							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d)",
-							self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image);
-					}
-
-					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-					if (result.size())
-					{
-						self->ID = atoi(result[0][0].c_str());
-
-						PyObject*	pKey = PyLong_FromLong(self->Unit);
-						if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
-						{
-							_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->Name.c_str(), self->Unit);
-							Py_INCREF(Py_None);
-							return Py_None;
-						}
-
-						// Device successfully created, now set the options when supplied
-						if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
-						{
-							PyObject *pKeyDict, *pValueDict;
-							Py_ssize_t pos = 0;
-							std::map<std::string, std::string> mpOptions;
-							while(PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
-								std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-								std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
-								mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
-							}
-							m_sql.SetDeviceOptions(self->ID, mpOptions);
-						}
-
-						// Refresh device data to ensure it is usable straight away
-						PyObject* pRetVal = CDevice_refresh(self);
-						Py_DECREF(pRetVal);
-					}
-					else
-					{
-						_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
-					}
+#ifdef _DEBUG
+					_log.Log(LOG_STATUS, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
+#endif
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+					if (result.size() == 0)
+					{
+						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
+						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSONString(); //Parse the color to detect incorrectly formatted color data
+						std::string	sLongName = self->pPlugin->Name + " - " + sName;
+						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
+						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
+						{
+							PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
+							std::string sOptionValue;
+							if (pValueDict == NULL)
+								sOptionValue = "";
+							else
+								sOptionValue = PyUnicode_AsUTF8(pValueDict);
+
+							m_sql.safe_query(
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q', '%q', '%q')",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str(), sColor.c_str(), sOptionValue.c_str());
+						}
+						else
+						{
+							m_sql.safe_query(
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q', '%q')",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str(), sColor.c_str());
+						}
+
+						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+						if (result.size())
+						{
+							self->ID = atoi(result[0][0].c_str());
+
+							PyObject*	pKey = PyLong_FromLong(self->Unit);
+							if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
+							{
+								_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->Name.c_str(), self->Unit);
+								Py_INCREF(Py_None);
+								return Py_None;
+							}
+
+							// Device successfully created, now set the options when supplied
+							if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
+							{
+								PyObject *pKeyDict, *pValueDict;
+								Py_ssize_t pos = 0;
+								std::map<std::string, std::string> mpOptions;
+								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
+									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
+									std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
+									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+								}
+								m_sql.SetDeviceOptions(self->ID, mpOptions);
+							}
+
+							// Refresh device data to ensure it is usable straight away
+							PyObject* pRetVal = CDevice_refresh(self);
+							Py_DECREF(pRetVal);
+						}
+						else
+						{
+							_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+						}
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+					}
 				}
 			}
 			else
@@ -767,47 +802,189 @@ namespace Plugins {
 			int			iSignalLevel = self->SignalLevel;
 			int			iBatteryLevel = self->BatteryLevel;
 			int			iImage = self->Image;
+			int			iTimedOut = self->TimedOut;
 			PyObject*	pOptionsDict = NULL;
+
+			char*		Name = NULL;
+			char*		TypeName = NULL;
+			int			iType = self->Type;
+			int			iSubType = self->SubType;
+			int			iSwitchType = self->SwitchType;
+			int			iUsed = self->Used;
+			uint64_t 		DevRowIdx;
+			char*		Description = NULL;
+			char*		Color = NULL;
+			bool		SuppressTriggers = false;
+
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
-			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", NULL };
+			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
+			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", "Color", "SuppressTriggers", NULL };
 
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiO", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict))
-			{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel' or 'Options' expected.", __func__, sName.c_str());
+			// Try to extract parameters needed to update device settings
+			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
+				{
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
 
-			if (self->pPlugin->m_bDebug)
+			if (self->pPlugin->m_bDebug & PDM_DEVICE)
 			{
 				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
-			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
+			if (!SuppressTriggers)
+			{
+				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+
+				// if this is an internal Security Panel then there are some extra updates required if state has changed
+				if ((self->Type == pTypeSecurity1) && (self->SubType = sTypeDomoticzSecurity) && (self->nValue != nValue))
+				{
+					switch (nValue)
+					{
+					case sStatusArmHome:
+					case sStatusArmHomeDelayed:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
+						break;
+					case sStatusArmAway:
+					case sStatusArmAwayDelayed:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
+						break;
+					case sStatusDisarm:
+					case sStatusNormal:
+					case sStatusNormalDelayed:
+					case sStatusNormalTamper:
+					case sStatusNormalDelayedTamper:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
+						break;
+					}
+				}
+
+				// Trigger any associated scene / groups
+				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue);
+
+				// Notify MQTT and various push mechanisms
+				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+			}
+
+			std::string sID = std::to_string(self->ID);
+
+			if (TypeName) {
+				// Reset nValue and sValue when changing device types
+				nValue = 0;
+				std::string stdsValue = "";
+
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
+
+				if (!SuppressTriggers)
+				{
+					m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, stdsValue.c_str(), sName, true);
+				}
+
+				// Notify MQTT and various push mechanisms
+				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+			}
+
+			// Name change
+			if (Name)
+			{
+				sName = Name;
+				m_sql.UpdateDeviceValue("Name", sName, sID);
+			}
+
+			// Description change
+			if (Description)
+			{
+				std::string sDescription = Description;
+				m_sql.UpdateDeviceValue("Description", sDescription, sID);
+			}
+
+			// Type change
+			if (iType != self->Type)
+			{
+				m_sql.UpdateDeviceValue("Type", iType, sID);
+			}
+
+			// SubType change
+			if (iSubType != self->SubType)
+			{
+				m_sql.UpdateDeviceValue("SubType", iSubType, sID);
+			}
+
+			// SwitchType change
+			if (iSwitchType != self->SwitchType)
+			{
+				m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
+			}
 
 			// Image change
 			if (iImage != self->Image)
 			{
-				time_t now = time(0);
-				struct tm ltime;
-				localtime_r(&now, &ltime);
-				m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
-					iImage, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
+				m_sql.UpdateDeviceValue("CustomImage", iImage, sID);
 			}
 
-			if ((self->SubType != sTypeCustom) && (pOptionsDict != NULL))
+			// Used change
+			if (iUsed != self->Used)
 			{
-				// Options provided, assume change
-				PyObject *pKeyDict, *pValueDict;
-				Py_ssize_t pos = 0;
-				std::map<std::string, std::string> mpOptions;
-				while(PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict)) {
-					std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-					std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
-					mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+				m_sql.UpdateDeviceValue("Used", iUsed, sID);
+			}
+
+			// Color change
+			if (Color)
+			{
+				std::string	sColor = _tColor(std::string(Color)).toJSONString(); //Parse the color to detect incorrectly formatted color data
+				m_sql.UpdateDeviceValue("Color", sColor, sID);
+
+				// TODO: Notify MQTT and various push mechanisms?
+				//m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+			}
+
+			// Options provided, assume change
+			if (pOptionsDict && PyDict_Check(pOptionsDict))
+			{
+				if (self->SubType != sTypeCustom)
+				{
+					PyObject *pKeyDict, *pValueDict;
+					Py_ssize_t pos = 0;
+					std::map<std::string, std::string> mpOptions;
+					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict)) {
+						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
+						std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
+						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+					}
+					m_sql.SetDeviceOptions(self->ID, mpOptions);
 				}
-				m_sql.SetDeviceOptions(self->ID, mpOptions);
+				else
+				{
+					std::string sOptionValue = "";
+					PyObject *pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+					if (pValue)
+					{
+						sOptionValue = PyUnicode_AsUTF8(pValue);
+					}
+
+					time_t now = time(0);
+					struct tm ltime;
+					localtime_r(&now, &ltime);
+					m_sql.UpdateDeviceValue("Options", iUsed, sID);
+					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
+						sOptionValue.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
+				}
+			}
+
+			// TimedOut change
+			if (iTimedOut != self->TimedOut)
+			{
+				self->TimedOut = iTimedOut;
+			}
+
+			if (!SuppressTriggers)
+			{
+				m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 			}
 
 			CDevice_refresh(self);
@@ -828,7 +1005,7 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ID != -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
 					_log.Log(LOG_NORM, "(%s) Deleting device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -837,7 +1014,7 @@ namespace Plugins {
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 				if (result.size() != 0)
 				{
-					result = m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 
 					PyObject*	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
@@ -874,9 +1051,9 @@ namespace Plugins {
 
 	void CConnection_dealloc(CConnection * self)
 	{
-		if (self->pPlugin && self->pPlugin->m_bDebug)
+		if (self->pPlugin && (self->pPlugin->m_bDebug & PDM_CONNECTION))
 		{
-			_log.Log(LOG_NORM, "(%s) Deallocating connection object to %s:%s.", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Address);
@@ -942,7 +1119,7 @@ namespace Plugins {
 					Py_DECREF(self);
 					return NULL;
 				}
-				self->Protocol = PyUnicode_FromString("");
+				self->Protocol = PyUnicode_FromString("None");
 				if (self->Protocol == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -952,9 +1129,9 @@ namespace Plugins {
 				self->pProtocol = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -996,7 +1173,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "sss|ssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				self->pPlugin = pModState->pPlugin;
 				if (pName) {
@@ -1021,9 +1198,7 @@ namespace Plugins {
 				{
 					Py_XDECREF(self->Protocol);
 					self->Protocol = PyUnicode_FromString(pProtocol);
-					ProtocolDirective*	Message = new ProtocolDirective(self->pPlugin, (PyObject*)self);
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
+					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, (PyObject*)self));
 				}
 			}
 			else
@@ -1034,9 +1209,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -1075,9 +1250,7 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		ConnectDirective*	Message = new ConnectDirective(self->pPlugin, (PyObject*)self);
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
+		self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, (PyObject*)self));
 
 		return Py_None;
 	}
@@ -1111,12 +1284,7 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		Py_XDECREF(self->Address);
-		self->Address = PyUnicode_FromString("127.0.0.1");
-
-		ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
+		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, (PyObject*)self));
 
 		return Py_None;
 	}
@@ -1133,28 +1301,19 @@ namespace Plugins {
 		}
 		else
 		{
-			Py_buffer	PyBuffer;
-			char*		szMessage = NULL;
-			char*		szVerb = NULL;
-			char*		szURL = NULL;
-			PyObject*	pHeaders = NULL;
+			PyObject*	pData = NULL;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "s*|ssOi", kwlist, &PyBuffer, &szVerb, &szURL, &pHeaders, &iDelay))
+			static char *kwlist[] = { "Message", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers,Delay expected.", self->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", self->pPlugin->Name.c_str());
 				LogPythonException(self->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				//	Add start command to message queue
-				WriteDirective*	Message = new WriteDirective(self->pPlugin, (PyObject*)self, &PyBuffer, szURL, szVerb, pHeaders, iDelay);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
+				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, (PyObject*)self, pData, iDelay));
 			}
-			Py_XDECREF(PyBuffer.obj);
 		}
 
 		Py_INCREF(Py_None);
@@ -1167,9 +1326,7 @@ namespace Plugins {
 		{
 			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
-				DisconnectDirective*	Message = new DisconnectDirective(self->pPlugin, (PyObject*)self);
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
+				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, (PyObject*)self));
 			}
 			else
 				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, self->pPlugin->Name.c_str());
@@ -1183,7 +1340,12 @@ namespace Plugins {
 
 	PyObject * CConnection_bytes(CConnection * self)
 	{
-		return PyLong_FromLong(self->pTransport->TotalBytes());
+		if (self->pTransport)
+		{
+			return PyLong_FromLong(self->pTransport->TotalBytes());
+		}
+
+		return PyBool_FromLong(0);
 	}
 
 	PyObject * CConnection_isconnecting(CConnection * self)
@@ -1208,16 +1370,16 @@ namespace Plugins {
 
 	PyObject * CConnection_timestamp(CConnection * self)
 	{
-		if (self->pTransport && false)
+		if (self->pTransport)
 		{
 			time_t	tLastSeen = self->pTransport->LastSeen();
 			struct tm ltime;
 			localtime_r(&tLastSeen, &ltime);
-			PyObject* pLastSeen = PyDateTime_FromDateAndTime(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, 0);
-			if (PyDateTime_CheckExact(pLastSeen))
-				return pLastSeen;
+			char date[32];
+			strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
+			PyObject* pLastSeen = PyUnicode_FromString(date);
+			return pLastSeen;
 		}
-		_log.Log(LOG_ERROR, "%s, LastSeen request from '%s' ignored. Not implemented yet.", __func__, self->pPlugin->Name.c_str());
 
 		Py_INCREF(Py_None);
 		return Py_None;
@@ -1225,11 +1387,25 @@ namespace Plugins {
 
 	PyObject * CConnection_str(CConnection * self)
 	{
-		PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s",
-			self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
-			(self->pTransport ? self->pTransport->TotalBytes() : -1),
-			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"));
-		return pRetVal;
+		if (self->pTransport)
+		{
+			time_t	tLastSeen = self->pTransport->LastSeen();
+			struct tm ltime;
+			localtime_r(&tLastSeen, &ltime);
+			char date[32];
+			strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
+			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s",
+				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
+				(self->pTransport ? self->pTransport->TotalBytes() : -1),
+				(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date);
+			return pRetVal;
+		}
+		else
+		{
+			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False",
+				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud);
+			return pRetVal;
+		}
 	}
 
 }

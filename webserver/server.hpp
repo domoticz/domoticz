@@ -78,7 +78,7 @@ public:
 	virtual ~server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'server[" + settings_.to_string() + "]'";
 	}
 protected:
@@ -100,7 +100,7 @@ public:
 	virtual ~ssl_server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'ssl_server[" + settings_.to_string() + "]'";
 	}
 
@@ -115,6 +115,12 @@ protected:
 	ssl_server_settings settings_;
 
 private:
+	/// Reload certificate and SSL params if they're changed
+	void reinit_connection();
+	time_t dhparam_tm_;
+	time_t cert_tm_;
+	time_t cert_chain_tm_;
+
 	/// callback for the certficiate passphrase
 	std::string get_passphrase() const;
 
