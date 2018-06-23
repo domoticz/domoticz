@@ -3,7 +3,11 @@
 #include "DomoticzHardware.h"
 #include <iosfwd>
 #include "hardwaretypes.h"
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 class CHoneywell : public CDomoticzHardwareBase
 {

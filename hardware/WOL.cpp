@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WOL.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -7,7 +8,11 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port) :
 	m_broadcast_address(BroadcastAddress)

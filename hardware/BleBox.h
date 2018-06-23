@@ -6,7 +6,11 @@
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 class BleBox : public CDomoticzHardwareBase
 {

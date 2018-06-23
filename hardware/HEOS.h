@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 
 #include "ASyncTCP.h"
-#include "../json/json.h"
 
 #include <iosfwd>
 #include <string>

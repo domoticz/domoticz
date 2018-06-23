@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "HEOS.h"
 #include "../hardware/hardwaretypes.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"

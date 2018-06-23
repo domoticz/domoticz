@@ -2,7 +2,11 @@
 
 #include "DomoticzHardware.h"
 #include <iosfwd>
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 class GoodweAPI : public CDomoticzHardwareBase
 {
@@ -23,7 +27,7 @@ private:
 	void GetMeterDetails();
 	void ParseStation(const std::string &sStationId, const std::string &sStationName);
 	void ParseDeviceList(const std::string &sStationId, const std::string &sStationName);
-	void ParseDevice(Json::Value device, const std::string &sStationId, const std::string &sStationName);
+	void ParseDevice(const Json::Value &device, const std::string &sStationId, const std::string &sStationName);
 private:
 	std::string m_UserName;
 	std::string m_Host;
