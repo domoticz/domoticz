@@ -263,7 +263,7 @@ void GetSwitchType(const char* ID, const unsigned char unit, const unsigned char
 	switchType = 0;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", ID, unit, devType, subType);
-	if (result.size() != 0)
+	if (!result.empty())
 	{
 		switchType = atoi(result[0][0].c_str());
 	}

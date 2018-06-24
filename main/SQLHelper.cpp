@@ -3873,7 +3873,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 	std::vector<std::vector<std::string> > result, result2;
 
 	result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
-	if (result.size() == 0)
+	if (result.empty())
 		return devRowID; //should never happen, because it was previously inserted if non-existent
 
 	std::string idx = result[0][0];
@@ -4119,7 +4119,7 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const un
 	result = safe_query(
 		"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 		HardwareID, ID, unit, devType, subType);
-	if (result.size() == 0)
+	if (result.empty())
 	{
 		_log.Log(LOG_ERROR, "Serious database error, problem getting ID from DeviceStatus!");
 		return -1;
@@ -4133,7 +4133,7 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const un
 bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType) {
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
-	if (result.size() == 0) {
+	if (result.empty()) {
 		return false;
 	}
 	else {
@@ -4153,7 +4153,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	bool bSameDeviceStatusValue = false;
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID, unit, devType, subType);
-	if (result.size() == 0)
+	if (result.empty())
 	{
 		//Insert
 		ulID = InsertDevice(HardwareID, ID, unit, devType, subType, 0, nValue, sValue, devname, signallevel, batterylevel);
@@ -4600,7 +4600,7 @@ void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsi
 	result = safe_query(
 		"SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 		HardwareID, ID, unit, devType, subType);
-	if (result.size() != 0)
+	if (!result.empty())
 	{
 		AddjValue = static_cast<float>(atof(result[0][0].c_str()));
 		AddjMulti = static_cast<float>(atof(result[0][1].c_str()));
@@ -4614,7 +4614,7 @@ void CSQLHelper::GetMeterType(const int HardwareID, const char* ID, const unsign
 	result = safe_query(
 		"SELECT SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 		HardwareID, ID, unit, devType, subType);
-	if (result.size() != 0)
+	if (!result.empty())
 	{
 		meterType = atoi(result[0][0].c_str());
 	}
@@ -4628,7 +4628,7 @@ void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const uns
 	result = safe_query(
 		"SELECT AddjValue2,AddjMulti2 FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 		HardwareID, ID, unit, devType, subType);
-	if (result.size() != 0)
+	if (!result.empty())
 	{
 		AddjValue = static_cast<float>(atof(result[0][0].c_str()));
 		AddjMulti = static_cast<float>(atof(result[0][1].c_str()));
@@ -4658,7 +4658,7 @@ void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const int nValue, 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ROWID FROM Preferences WHERE (Key='%q')",
 		Key.c_str());
-	if (result.size() == 0)
+	if (result.empty())
 	{
 		//Insert
 		result = safe_query("INSERT INTO Preferences (Key, nValue, sValue) VALUES ('%q', %d,'%q')",
@@ -4757,7 +4757,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ROWID FROM BackupLog WHERE (Key='%q')", Key);
-	if (result.size() == 0)
+	if (result.empty())
 	{
 		//Insert
 		safe_query(
@@ -4796,7 +4796,7 @@ bool CSQLHelper::HasTimers(const uint64_t Idx)
 	std::vector<std::vector<std::string> > result;
 
 	result = safe_query("SELECT COUNT(*) FROM Timers WHERE (DeviceRowID==%" PRIu64 ") AND (TimerPlan==%d)", Idx, m_ActiveTimerPlan);
-	if (result.size() != 0)
+	if (!result.empty())
 	{
 		std::vector<std::string> sd = result[0];
 		int totaltimers = atoi(sd[0].c_str());
@@ -4804,7 +4804,7 @@ bool CSQLHelper::HasTimers(const uint64_t Idx)
 			return true;
 	}
 	result = safe_query("SELECT COUNT(*) FROM SetpointTimers WHERE (DeviceRowID==%" PRIu64 ") AND (TimerPlan==%d)", Idx, m_ActiveTimerPlan);
-	if (result.size() != 0)
+	if (!result.empty())
 	{
 		std::vector<std::string> sd = result[0];
 		int totaltimers = atoi(sd[0].c_str());
@@ -4829,7 +4829,7 @@ bool CSQLHelper::HasSceneTimers(const uint64_t Idx)
 	std::vector<std::vector<std::string> > result;
 
 	result = safe_query("SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d)", Idx, m_ActiveTimerPlan);
-	if (result.size() == 0)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	int totaltimers = atoi(sd[0].c_str());
@@ -8350,7 +8350,7 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::
 
 						//Get our Database ROWID
 						result = safe_query("SELECT ID FROM CustomImages WHERE Base='%q'", IconBase.c_str());
-						if (result.size() == 0)
+						if (result.empty())
 						{
 							ErrorMessage = "Error adding new row to database!";
 							if (iTotalAdded > 0)

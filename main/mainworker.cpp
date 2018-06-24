@@ -2985,7 +2985,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 		//Get our index
 		result = m_sql.safe_query(
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
-		if (result.size() != 0)
+		if (!result.empty())
 		{
 			uint64_t ulID;
 			std::stringstream s_str(result[0][0]);
@@ -5838,7 +5838,7 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HwdID, ID.c_str(), Unit, devType, subType);
-		if (result.size() != 0)
+		if (!result.empty())
 		{
 			uint64_t ulID;
 			std::stringstream s_str(result[0][0]);
@@ -5859,7 +5859,7 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HwdID, ID.c_str(), Unit, devType, subType);
-		if (result.size() != 0)
+		if (!result.empty())
 		{
 			uint64_t ulID;
 			std::stringstream s_str(result[0][0]);

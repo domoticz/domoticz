@@ -322,7 +322,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
 				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')", DevID, szDate);
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					//Insert value into our database
 					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')", DevID, ulCounter, szDate);
@@ -389,7 +389,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 
 						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')",
 							DevID, szDate);
-						if (result.size() == 0)
+						if (result.empty())
 						{
 							//Insert value into our database
 							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')",

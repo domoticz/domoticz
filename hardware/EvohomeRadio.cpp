@@ -1730,7 +1730,7 @@ namespace http {
 				// Check if All Sensors has already been activated, if not create a temporary dummy sensor
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit > 12) AND (Unit <= 24)", HwdID, (int)pTypeEvohomeZone);
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					std::string devname = "Zone Temp";
 					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
