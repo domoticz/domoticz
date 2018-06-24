@@ -1235,11 +1235,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 		sSwitchValue = (nvalue == Color_LedOn) ? "1" : "0";
 		return true;
 	}
-
-	int slevel = atoi(result[0][2].c_str());
-	std::stringstream sstr;
-	sstr << int(slevel);
-	sSwitchValue = sstr.str();
+	sSwitchValue = std::to_string(atoi(result[0][2].c_str()));
 	return true;
 }
 
@@ -1385,10 +1381,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
 				int svalue = round(fvalue);
-
-				std::stringstream sstr;
-				sstr << svalue;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 		}
 		else {
@@ -1451,9 +1444,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			else if (cmnd == gswitch_sSetLevel)
 			{
-				std::stringstream sstr;
-				sstr << level;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(level), pChild->useAck, pChild->ackTimeout);
 			}
 		}
 		else {
@@ -1539,9 +1530,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				int svalue = pLed->value;
 				if (svalue > 100)
 					svalue = 100;
-				std::stringstream sstr;
-				sstr << svalue;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 			else if ((pLed->command == Color_LedOff) || (pLed->command == Color_LedOn))
 			{
@@ -1549,8 +1538,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 			}
 		}
-		else
-		{
+		else {
 			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
 			return false;
 		}
@@ -1628,9 +1616,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
 			if (pChild)
 			{
-				std::stringstream sstr;
-				sstr << ir_code;
-				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, std::to_string(ir_code), pChild->useAck, pChild->ackTimeout);
 			}
 		}
 		else {
@@ -1730,7 +1716,6 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			payload = results[5 + ip];
 		}
 	}
-	std::stringstream sstr;
 #ifdef _DEBUG
 	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s", node_id, child_sensor_id, message_type, ack, sub_type, payload.c_str());
 #endif
@@ -1757,10 +1742,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			//Set a unique node id from the controller
 			int newID = FindNextNodeID();
 			if (newID != -1)
-			{
-				sstr << newID;
-				SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
-			}
+				SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, std::to_string(newID));
 		}
 		break;
 		case I_CONFIG:
@@ -1811,8 +1793,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			boost::posix_time::ptime tlocal(boost::posix_time::second_clock::local_time());
 			boost::posix_time::time_duration dur = tlocal - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1));
 			time_t fltime(dur.total_seconds());
-			sstr << fltime;
-			SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+			SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, std::to_string(fltime));
 		}
 		break;
 		case I_HEARTBEAT:

@@ -42,8 +42,7 @@ void CCameraHandler::ReloadCameras()
 			std::vector<std::string> sd = itt;
 
 			cameraDevice citem;
-			std::stringstream s_str(sd[0]);
-			s_str >> citem.ID;
+			citem.ID = std::stoull(sd[0]);
 			citem.Name = sd[1];
 			citem.Address = sd[2];
 			citem.Port = atoi(sd[3].c_str());
@@ -77,11 +76,9 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 		{
 			std::vector<std::string> sd = itt;
 			cameraActiveDevice aDevice;
-			std::stringstream s_str(sd[0]);
-			s_str >> aDevice.ID;
+			aDevice.ID = std::stoull(sd[0]);
 			aDevice.DevSceneType = (unsigned char)atoi(sd[1].c_str());
-			std::stringstream s_str2(sd[2]);
-			s_str2 >> aDevice.DevSceneRowID;
+			aDevice.DevSceneRowID = std::stoull(sd[2]);
 			pCamera->mActiveDevices.push_back(aDevice);
 		}
 	}
@@ -90,10 +87,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 //Return 0 if NO, otherwise Cam IDX
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
 {
-	uint64_t ulID;
-	std::stringstream s_str(DevSceneID);
-	s_str >> ulID;
-	return IsDevSceneInCamera(DevSceneType, ulID);
+	return IsDevSceneInCamera(DevSceneType, std::stoull(DevSceneID));
 }
 
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
@@ -146,10 +140,7 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 {
-	uint64_t ulID;
-	std::stringstream s_str(CamID);
-	s_str >> ulID;
-	return GetCamera(ulID);
+	return GetCamera(std::stoull(CamID));
 }
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
@@ -164,10 +155,7 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
-	uint64_t ulID;
-	std::stringstream s_str(CamID);
-	s_str >> ulID;
-	return TakeSnapshot(ulID, camimage);
+	return TakeSnapshot(std::stoull(CamID), camimage);
 }
 
 bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)

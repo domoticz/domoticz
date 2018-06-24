@@ -736,13 +736,15 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 	else
 		root["Status"] = "Mixed";
 	root["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
+/*
 	uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 	//root["UsedByCamera"] = (camIDX != 0) ? true : false;
 	if (camIDX != 0) {
 		std::stringstream scidx;
 		scidx << camIDX;
-		//root["CameraIdx"] = scidx.str();
+		//root["CameraIdx"] = std::to_string(camIDX);
 	}
+*/
 	std::string message = root.toStyledString();
 	if (m_publish_topics & PT_out)
 	{

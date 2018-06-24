@@ -210,9 +210,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
 	{
 		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
-		std::stringstream sstr;
-		sstr << lookUpId;
-		std::string realID = sstr.str();
+		std::string realID = std::to_string(lookUpId);
 
 		if (pCmd->LIGHTING2.cmnd == 0)
 		{

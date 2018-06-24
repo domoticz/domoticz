@@ -239,9 +239,7 @@ void CSBFSpot::ImportOldMonthData()
 			return;
 		}
 	}
-	uint64_t ulID;
-	std::stringstream s_str(result[0][0]);
-	s_str >> ulID;
+	uint64_t ulID = std::stoull(result[0][0]);
 
 	//Try actual year, and previous year
 	time_t atime = time(NULL);
@@ -271,9 +269,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 	int iInvOff = 1;
 	char szLogFile[256];
 	std::string tmpPath = m_SBFDataPath;
-	std::stringstream sstr;
-	sstr << Year;
-	stdreplace(tmpPath, "%Y", sstr.str());
+	stdreplace(tmpPath, "%Y", std::to_string(Year));
 	sprintf(szLogFile, "%s%s-%04d%02d.csv", tmpPath.c_str(), m_SBFPlantName.c_str(),Year, Month);
 
 	std::ifstream infile;

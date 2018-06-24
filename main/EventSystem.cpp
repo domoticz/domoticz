@@ -224,8 +224,7 @@ void CEventSystem::LoadEvents()
 			std::vector<std::string> sd = *itt;
 
 			_tEventItem eitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> eitem.ID;
+			eitem.ID = std::stoull(sd[0]);
 			eitem.Name = sd[1] + "_" + sd[5];
 			eitem.Interpreter = sd[6];
 			std::transform(sd[7].begin(), sd[7].end(), sd[7].begin(), ::tolower);
@@ -260,8 +259,7 @@ void CEventSystem::LoadEvents()
 		{
 			std::vector<std::string> sd = *itt2;
 			CEventSystem::_tEventItem eitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> eitem.ID;
+			eitem.ID = std::stoull(sd[0]);
 			eitem.Name = sd[1];
 			eitem.Interpreter = sd[2];
 			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
@@ -385,10 +383,7 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 	item.JsonMapBool.clear();
 
 	Json::Value tempjson;
-	std::stringstream sstr;
-	sstr << ulDevID;
-
-	m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "", "", std::to_string(ulDevID), "", "", true, false, false, 0, "");
 	Json::ArrayIndex rsize = tempjson["result"].size();
 
 	if (rsize > 0)
@@ -459,8 +454,7 @@ void CEventSystem::GetCurrentStates()
 			std::string l_description;		l_description.reserve(200);
 			std::string l_deviceID;			l_deviceID.reserve(25);
 
-			std::stringstream s_str(sd[1]);
-			s_str >> sitem.ID;
+			sitem.ID = std::stoull(sd[1]);
 			sitem.deviceName = l_deviceName.assign(sd[2]);
 
 			sitem.nValue = atoi(sd[3].c_str());
@@ -506,8 +500,7 @@ void CEventSystem::GetCurrentUserVariables()
 		{
 			std::vector<std::string> sd = *itt;
 			_tUserVariable uvitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> uvitem.ID;
+			uvitem.ID = std::stoull(sd[0]);
 			uvitem.variableName = sd[1];
 			uvitem.variableValue = sd[2];
 			uvitem.variableType = atoi(sd[3].c_str());
@@ -534,8 +527,7 @@ void CEventSystem::GetCurrentScenesGroups()
 
 			std::vector<std::string> sd = *itt;
 			_tScenesGroups sgitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> sgitem.ID;
+			sgitem.ID = std::stoull(sd[0]);
 			unsigned char nValue = atoi(sd[2].c_str());
 
 			if (nValue == 0)
@@ -550,15 +542,11 @@ void CEventSystem::GetCurrentScenesGroups()
 			result2 = m_sql.safe_query("SELECT DISTINCT A.DeviceRowID FROM SceneDevices AS A, DeviceStatus AS B WHERE (A.SceneRowID == %" PRIu64 ") AND (A.DeviceRowID == B.ID)", sgitem.ID);
 			if (!result2.empty())
 			{
-				uint64_t deviceID;
 				std::vector<std::vector<std::string> >::const_iterator itt2;
 				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
 				{
-					std::stringstream ss;
 					std::vector<std::string> sd2 = *itt2;
-					ss << sd2[0];
-					ss >> deviceID;
-					sgitem.memberID.push_back(deviceID);
+					sgitem.memberID.push_back(std::stoull(sd2[0]));
 				}
 			}
 			m_scenesgroups[sgitem.ID] = sgitem;
@@ -902,12 +890,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 					{
 						std::vector<std::string> sd2 = result2[0];
 
-						unsigned long long total_min, total_max, total_real;
+						uint64_t total_min, total_max, total_real;
 
-						std::stringstream s_str1(sd2[0]);
-						s_str1 >> total_min;
-						std::stringstream s_str2(sd2[1]);
-						s_str2 >> total_max;
+						total_min = std::stoull(sd2[0]);
+						total_max = std::stoull(sd2[1]);
 						total_real = total_max - total_min;
 
 						char szTmp[100];
@@ -1037,13 +1023,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				std::vector<std::string> sd2 = result2[0];
 
-				unsigned long long total_min_gas, total_real_gas;
-				unsigned long long gasactual;
+				uint64_t total_min_gas, total_real_gas;
+				uint64_t gasactual;
 
-				std::stringstream s_str1(sd2[0]);
-				s_str1 >> total_min_gas;
-				std::stringstream s_str2(sitem.sValue);
-				s_str2 >> gasactual;
+				total_min_gas = std::stoull(sd2[0]);
+				gasactual = std::stoull(sitem.sValue);
 				total_real_gas = gasactual - total_min_gas;
 				utilityval = float(total_real_gas) / GasDivider;
 				isUtility = true;
@@ -1062,12 +1046,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 				{
 					std::vector<std::string> sd2 = result2[0];
 
-					unsigned long long total_min, total_max, total_real;
+					uint64_t total_min, total_max, total_real;
 
-					std::stringstream s_str1(sd2[0]);
-					s_str1 >> total_min;
-					std::stringstream s_str2(sd2[1]);
-					s_str2 >> total_max;
+					total_min = std::stoull(sd2[0]);
+					total_max = std::stoull(sd2[1]);
 					total_real = total_max - total_min;
 
 					char szTmp[100];
@@ -1885,17 +1867,11 @@ lua_State *CEventSystem::ParseBlocklyLua(lua_State *lua_state, const _tEventItem
 	// Replace Sunrise and sunset placeholder with actual time for query
 	if (conditions.find("@Sunrise") != std::string::npos)
 	{
-		int intRise = getSunRiseSunSetMinutes("Sunrise");
-		std::stringstream ssRise;
-		ssRise << intRise;
-		stdreplace(conditions, "@Sunrise", ssRise.str());
+		stdreplace(conditions, "@Sunrise", std::to_string(getSunRiseSunSetMinutes("Sunrise")));
 	}
 	if (conditions.find("@Sunset") != std::string::npos)
 	{
-		int intSet = getSunRiseSunSetMinutes("Sunset");
-		std::stringstream ssSet;
-		ssSet << intSet;
-		stdreplace(conditions, "@Sunset", ssSet.str());
+		stdreplace(conditions, "@Sunset", std::to_string(getSunRiseSunSetMinutes("Sunset")));
 	}
 
 	std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
@@ -3503,10 +3479,8 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			return false;
 		}
 		int nValue = -1, Protected = -1;
-		uint64_t idx;
 		std::string sValue;
-		std::stringstream ssIdx(strarray[0]);
-		ssIdx >> idx;
+		uint64_t idx = std::stoull(strarray[0]);
 		if (strarray.size() > 1 && !strarray[1].empty())
 			nValue = atoi(strarray[1].c_str());
 		if (strarray.size() > 2 && !strarray[2].empty())
@@ -3550,10 +3524,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			else
 			{
 				float DelayTime = afterTimerSeconds;
-				uint64_t idx;
-				std::stringstream sstr;
-				sstr << sd[0];
-				sstr >> idx;
+				uint64_t idx = std::stoull(sd[0]);
 				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, false));
 			}
 			scriptTrue = true;
@@ -3729,9 +3700,6 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			break;
 		}
 
-		std::stringstream sIdx;
-		sIdx << idx;
-
 		//Check if it's a setpoint device, and if so, set the actual setpoint
 		if (
 			((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
@@ -3739,17 +3707,17 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
-			m_mainworker.SetSetPoint(sIdx.str(), static_cast<float>(atof(sValue.c_str())));
+			m_mainworker.SetSetPoint(std::to_string(idx), static_cast<float>(atof(sValue.c_str())));
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nValue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
-			m_mainworker.SetZWaveThermostatMode(sIdx.str(), nValue);
+			m_mainworker.SetZWaveThermostatMode(std::to_string(idx), nValue);
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nValue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
-			m_mainworker.SetZWaveThermostatFanMode(sIdx.str(), nValue);
+			m_mainworker.SetZWaveThermostatFanMode(std::to_string(idx), nValue);
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeTextStatus))
 		{
@@ -4092,16 +4060,13 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	}
 	else if (dType == pTypeHUM)
 	{
-		std::stringstream sstr; sstr << nValue;
-		lstatus = sstr.str();
+		lstatus = std::to_string(nValue);
 	}
 	else if (switchtype == STYPE_Selector)
 	{
 		std::map<std::string, std::string> statuses;
 		GetSelectorSwitchStatuses(options, statuses);
-		std::stringstream sslevel;
-		sslevel << llevel;
-		lstatus = statuses[sslevel.str()];
+		lstatus = statuses[std::to_string(llevel)];
 	}
 	else if ((switchtype == STYPE_Contact) || (switchtype == STYPE_DoorContact))
 	{
@@ -4201,9 +4166,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		//OJO if lstatus  is still empty we use nValue for lstatus. ss for conversion
 		if (lstatus == "")
 		{
-			std::stringstream ss;
-			ss << (unsigned int)nValue;
-			lstatus = ss.str();
+			lstatus = std::to_string(nValue);
 		}
 	}
 	return lstatus;

@@ -160,10 +160,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		}
 		else if (xcmd->subtype == sSwitchGeneralSwitch && xcmd->unitcode == 7) {
 			//Xiaomi Gateway volume control
-			int level = xcmd->level;
-			std::stringstream ss;
-			ss << level;
-			m_GatewayVolume = ss.str();
+			m_GatewayVolume = std::to_string(xcmd->level);
 			//sid.insert(0, m_GatewayPrefix);
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"mid\\\":" + m_GatewayMusicId.c_str() + ",\\\"vol\\\":" + m_GatewayVolume.c_str() + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
@@ -172,9 +169,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			if (xcmd->cmnd == 1) {
 				level = 100;
 			}
-			std::stringstream ss;
-			ss << level;
-			message = "{\"cmd\":\"write\",\"model\":\"curtain\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"curtain_level\\\":\\\"" + ss.str() + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = "{\"cmd\":\"write\",\"model\":\"curtain\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"curtain_level\\\":\\\"" + std::to_string(level) + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 	}
 	else if (packettype == pTypeColorSwitch) {

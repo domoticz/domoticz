@@ -166,9 +166,7 @@ namespace http {
 					{
 						root["status"] = "OK";
 						root["title"] = "CreateVirtualSensor";
-						std::stringstream ss;
-						ss << vs_idx;
-						root["idx"] = ss.str().c_str();
+						root["idx"] = std::to_string(vs_idx);
 					}
 					break;
 				}
@@ -243,9 +241,7 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateSensor";
-				std::stringstream ss;
-				ss << vs_idx;
-				root["idx"] = ss.str().c_str();
+				root["idx"] = std::to_string(vs_idx);
 			}
 		}
 
