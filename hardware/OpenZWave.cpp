@@ -982,6 +982,18 @@ bool COpenZWave::OpenSerialConnector()
 	}
 	OpenZWave::Options::Get()->AddOptionString("NetworkKey", sValue, false);
 
+	int nValue = 3000; //default 10000
+	m_sql.GetPreferencesVar("ZWaveRetryTimeout", nValue);
+	OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", nValue);
+
+	nValue = 0; //default true
+	m_sql.GetPreferencesVar("ZWaveAssumeAwake", nValue);
+	OpenZWave::Options::Get()->AddOptionBool("AssumeAwake", (nValue == 1) ? true : false);
+
+	nValue = 1; //default true
+	m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", nValue);
+	OpenZWave::Options::Get()->AddOptionBool("PerformReturnRoutes", (nValue == 1) ? true : false);
+
 	OpenZWave::Options::Get()->Lock();
 
 	OpenZWave::Manager::Create();
@@ -3999,7 +4011,6 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 
 		//Poll Interval
 		root["result"][index]["config"][ivalue]["type"] = "short";
-
 		int intervalseconds = 60;
 		m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
 		root["result"][index]["config"][ivalue]["value"] = intervalseconds;
@@ -4070,6 +4081,51 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			"If you are using any Security Devices, you MUST set a network Key "
 			"The length should be 16 bytes!";
 		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		ivalue++;
+
+		//RetryTimeout
+		root["result"][index]["config"][ivalue]["type"] = "short";
+		int nValue = 3000;
+		m_sql.GetPreferencesVar("ZWaveRetryTimeout", nValue);
+		root["result"][index]["config"][ivalue]["value"] = nValue;
+
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
+		root["result"][index]["config"][ivalue]["label"] = "RetryTimeout";
+		root["result"][index]["config"][ivalue]["units"] = "ms"; //
+		root["result"][index]["config"][ivalue]["help"] = "How long do we wait to timeout messages sent";
+		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		ivalue++;
+
+		//AssumeAwake
+		root["result"][index]["config"][ivalue]["type"] = "list";
+		nValue = 0;
+		m_sql.GetPreferencesVar("ZWaveAssumeAwake", nValue);
+
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
+		root["result"][index]["config"][ivalue]["label"] = "Assume Awake";
+		root["result"][index]["config"][ivalue]["units"] = "";
+		root["result"][index]["config"][ivalue]["help"] = "Assume Devices that Support the Wakeup CC are awake when we first query them....";
+		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		root["result"][index]["config"][ivalue]["list_items"] = 2;
+		root["result"][index]["config"][ivalue]["listitem"][0] = "False";
+		root["result"][index]["config"][ivalue]["listitem"][1] = "True";
+		root["result"][index]["config"][ivalue]["value"] = (nValue == 0) ? "False" : "True";
+		ivalue++;
+
+		//PerformReturnRoutes
+		root["result"][index]["config"][ivalue]["type"] = "list";
+		nValue = 1;
+		m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", nValue);
+
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
+		root["result"][index]["config"][ivalue]["label"] = "Perform Return Routes";
+		root["result"][index]["config"][ivalue]["units"] = "";
+		root["result"][index]["config"][ivalue]["help"] = "if True, return routes will be updated";
+		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		root["result"][index]["config"][ivalue]["list_items"] = 2;
+		root["result"][index]["config"][ivalue]["listitem"][0] = "False";
+		root["result"][index]["config"][ivalue]["listitem"][1] = "True";
+		root["result"][index]["config"][ivalue]["value"] = (nValue == 0) ? "False" : "True";
 		ivalue++;
 
 		//Aeotec Blinking state
@@ -4320,6 +4376,42 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				}
 			}
 			else if (rvIndex == 5)
+			{
+				//RetryTimeout
+				int nValue = atoi(ValueVal.c_str());
+				int old_value = 3000;
+				m_sql.GetPreferencesVar("ZWaveRetryTimeout", old_value);
+				if (old_value != nValue)
+				{
+					m_sql.UpdatePreferencesVar("ZWaveRetryTimeout", nValue);
+					bRestartOpenZWave = true;
+				}
+			}
+			else if (rvIndex == 6)
+			{
+				//AssumeAwake
+				int nValue = (ValueVal == "False") ? 0 : 1;
+				int old_value = 0;
+				m_sql.GetPreferencesVar("ZWaveAssumeAwake", old_value);
+				if (old_value != nValue)
+				{
+					m_sql.UpdatePreferencesVar("ZWaveAssumeAwake", nValue);
+					bRestartOpenZWave = true;
+				}
+			}
+			else if (rvIndex == 7)
+			{
+				//PerformReturnRoutes
+				int nValue = (ValueVal == "False") ? 0 : 1;
+				int old_value = 1;
+				m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", old_value);
+				if (old_value != nValue)
+				{
+					m_sql.UpdatePreferencesVar("ZWavePerformReturnRoutes", nValue);
+					bRestartOpenZWave = true;
+				}
+			}
+			else if (rvIndex == 8)
 			{
 				uint32_t Manufacturer_id;
 				uint32_t Product_type;

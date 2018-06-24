@@ -1,3 +1,6 @@
+Version 4.xxxx (July xxth 2018)
+- Implemented: OpenZWave, controller options for RetryTimeout, AssumeAwake and PerformReturnRoutes can now be set
+
 Version 4.9700 (June 23th 2018)
 - Implemented: Blockly, now possible to directly add/update Text devices
 - Implemented: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
