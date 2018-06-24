@@ -3813,7 +3813,7 @@ define(['app'], function (app) {
 										statushtml = "";
 									}
 									else if (item.Type == "Usage") {
-										imagehtml += '<a href="#/Devices/' + item.idx + '/GraphLog"><img src="images/current48.png" class="lcursor" height="40" width="40"></a></td>\n';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/GraphLog"><img src="images/current48.png" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 									else if (item.SubType == "Soil Moisture") {
@@ -3869,7 +3869,7 @@ define(['app'], function (app) {
 										statushtml = "";
 									}
 									else if (item.SubType == "Sound Level") {
-										imagehtml += '<a href="#/Devices/' + item.idx + '/GraphLog"><img src="images/Speaker48_On.png" class="lcursor" height="40" width="40"></a></td>\n';
+										imagehtml = '<a href="#/Devices/' + item.idx + '/GraphLog"><img src="images/Speaker48_On.png" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
 
