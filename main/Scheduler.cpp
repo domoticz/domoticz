@@ -91,14 +91,8 @@ void CScheduler::ReloadSchedules()
 				titem.bIsThermostat = false;
 
 				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
-
-				{
-					std::stringstream s_str(sd[0]);
-					s_str >> titem.RowID; }
-				{
-					std::stringstream s_str(sd[14]);
-					s_str >> titem.TimerID; }
-
+				titem.RowID = std::stoull(sd[0]);
+				titem.TimerID= std::stoull(sd[14]);
 				titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
 				titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
 				titem.startTime = 0;
