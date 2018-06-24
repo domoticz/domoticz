@@ -428,7 +428,6 @@ hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/RAVEn.cpp
-hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp

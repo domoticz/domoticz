@@ -171,7 +171,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_WINDDELEN, "Winddelen" },
 		{ HTYPE_TE923, "TE923 USB Compatible Weather Station" },
 		{ HTYPE_Rego6XX, "Rego 6XX USB/serial interface" },
-		{ HTYPE_RazberryZWave, "Razberry Z-Wave via LAN interface (Deprecated)" },
+		{ HTYPE_FreeToUse, "Can be used for a feature hardware class" },
 		{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 		{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE, "1-Wire (System)" },
@@ -3578,7 +3578,6 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_RFXLAN:
 	case HTYPE_P1SmartMeterLAN:
 	case HTYPE_YouLess:
-	case HTYPE_RazberryZWave:
 	case HTYPE_OpenThermGatewayTCP:
 	case HTYPE_LimitlessLights:
 	case HTYPE_SolarEdgeTCP:

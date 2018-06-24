@@ -34,7 +34,6 @@
 #include "../hardware/VolcraftCO20.h"
 #endif
 #include "../hardware/Rego6XXSerial.h"
-#include "../hardware/Razberry.h"
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
 #endif
@@ -743,10 +742,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Domoticz:
 		//LAN
 		pHardware = new DomoticzTCP(ID, Address, Port, Username, Password);
-		break;
-	case HTYPE_RazberryZWave:
-		_log.Log(LOG_ERROR, "Razberry: Deprecated, support is removed! Use OpenZWave (see wiki)...");
-		return false;
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
