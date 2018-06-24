@@ -870,7 +870,8 @@ int main(int argc, char**argv)
 		}
 		if ((cmdLine.HasSwitch("-version")) || (cmdLine.HasSwitch("--version")))
 		{
-			DisplayAppVersion();
+			//Application version is already displayed
+			//DisplayAppVersion();
 			return 0;
 		}
 		if (cmdLine.HasSwitch("-userdata"))
