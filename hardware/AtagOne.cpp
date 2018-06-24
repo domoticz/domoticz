@@ -319,16 +319,15 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 		m_labels.push_back(svalueLng1);
 	if (!svalueLng2.empty())
 		m_labels.push_back(svalueLng2);
-	std::vector<std::string >::const_iterator itt;
 	// HTML structure of values in page.
 	//     <label class="col-xs-6 control-label">Apparaat alias</label>
 	//     <div class="col-xs-6">
 	//         <p class="form-control-static">CV-ketel</p>
 	//     </div> 
-	for (itt = m_labels.begin(); itt != m_labels.end(); ++itt)
+	for (const auto & itt : m_labels)
 	{
 		std::string sresult = hpage;
-		std::string sstring = ">" + *itt + "</label>";
+		std::string sstring = ">" + itt + "</label>";
 		size_t tpos = sresult.find(sstring);
 		if (tpos==std::string::npos)
 			continue;

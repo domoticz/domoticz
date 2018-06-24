@@ -4,7 +4,11 @@
 #include <iostream>
 #include "hardwaretypes.h"
 #include <map>
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 class CNestOAuthAPI : public CDomoticzHardwareBase
 {
@@ -26,12 +30,17 @@ class CNestOAuthAPI : public CDomoticzHardwareBase
 public:
 	CNestOAuthAPI(const int ID, const std::string &apikey, const std::string &extradata);
 	~CNestOAuthAPI(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 	bool SetManualEcoMode(const unsigned char node_id, const bool bIsOn);
-	bool PushToNestApi(const std::string sMethod, const std::string sUrl, const Json::Value jPostData, std::string & sResult);
+	bool PushToNestApi(const std::string &sMethod, const std::string &sUrl, const Json::Value &jPostData, std::string & sResult);
 	void SetProgramState(const int newState);
 private:
+	void Init();
+	bool StartHardware() override;
+	bool StopHardware() override;
+	void Do_Work();
+	void GetMeterDetails();
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
 	void UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std::string &defaultname);
@@ -41,7 +50,7 @@ private:
 	void Logout();
 	std::string FetchNestApiAccessToken(const std::string &productid, const std::string &secret, const std::string &pincode);
 	bool SetOAuthAccessToken(const unsigned int ID, std::string &newToken);
-
+private:
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_TransportURL;
@@ -57,11 +66,5 @@ private:
 	std::string m_ProductId;
 	std::string m_ProductSecret;
 	std::string m_PinCode;
-
-	void Init();
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
-	void GetMeterDetails();
 };
 

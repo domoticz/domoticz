@@ -146,9 +146,7 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	if (m_OutsideTemperatureIdx == 0)
 		return false;
 	Json::Value tempjson;
-	std::stringstream sstr;
-	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, false, false, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", std::to_string(m_OutsideTemperatureIdx), "", "", true, false, false, 0, "");
 
 	size_t tsize = tempjson.size();
 	if (tsize < 1)

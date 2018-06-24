@@ -50,16 +50,7 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	}
 }
 
-uint64_t strtoui64(std::string str)
-{
-	uint64_t ul;
-	std::stringstream ss;
-	ss << str;
-	ss >> ul;
-	return ul;
-}
-
-uint64_t hexstrtoui64(std::string str)
+uint64_t hexstrtoui64(const std::string &str)
 {
 	uint64_t ul;
 	std::stringstream ss;
@@ -110,10 +101,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (!ports.empty())
 	{
 		bFoundPort = true;
-		std::vector<int>::const_iterator itt;
-		for (itt = ports.begin(); itt != ports.end(); ++itt)
+		for (const auto & itt : ports)
 		{
-			sprintf(szPortName, "COM%d", *itt);
+			sprintf(szPortName, "COM%d", itt);
 			ret.push_back(szPortName);
 		}
 	}
@@ -133,11 +123,10 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			sprintf(szPortName, "COM%d", ii);
 
 			//Check if we did not already have it
-			std::vector<std::string>::const_iterator itt;
 			bool bFound = false;
-			for (itt = ret.begin(); itt != ret.end(); ++itt)
+			for (const auto & itt : ret)
 			{
-				if (*itt == szPortName)
+				if (itt == szPortName)
 				{
 					bFound = true;
 					break;
@@ -182,10 +171,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		EnumSerialPortsWindows(serialports);
 		if (!serialports.empty())
 		{
-			std::vector<SerialPortInfo>::const_iterator itt;
-			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+			for (const auto & itt : serialports)
 			{
-				ret.push_back(itt->szPortName); // add port
+				ret.push_back(itt.szPortName); // add port
 			}
 		}
 	}
@@ -612,7 +600,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 #endif
 	}
 	else
-		localtime_r(&(*ltime), &timeinfo);
+		localtime_r(ltime, &timeinfo);
 
 	if (format > TF_Time)
 	{
@@ -819,7 +807,7 @@ int MStoBeaufort(const float ms)
 	return 12;
 }
 
-bool dirent_is_directory(std::string dir, struct dirent *ent)
+bool dirent_is_directory(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_DIR)
 		return true;
@@ -836,7 +824,7 @@ bool dirent_is_directory(std::string dir, struct dirent *ent)
 	return false;
 }
 
-bool dirent_is_file(std::string dir, struct dirent *ent)
+bool dirent_is_file(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_REG)
 		return true;
@@ -1065,9 +1053,9 @@ int GenerateRandomNumber(const int range)
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
 {
 	DIR* dir;
-	struct dirent *ent;
 	if ((dir = opendir(DirPath.c_str())) != NULL)
 	{
+		struct dirent *ent;
 		while ((ent = readdir(dir)) != NULL)
 		{
 			if (dirent_is_directory(DirPath, ent))

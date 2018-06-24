@@ -490,7 +490,7 @@ define(['app'], function (app) {
 														else {
 															xhtm += 'btn-default"';
 														}
-														xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
+														xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.Protected + ');">' + levelName + '</button>';
 													});
 													selector$.html(xhtm);
 												} else if (item.SelectorStyle === 1) {
@@ -522,28 +522,51 @@ define(['app'], function (app) {
 												'<button class="' + class_3 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'3\',RefreshFavorites,' + item.Protected + ');">' + $.t("3") + '</button> ' +
 												'<button class="' + class_timer + '" type="button" onclick="SwitchLight(' + item.idx + ',\'timer\',RefreshFavorites,' + item.Protected + ');">' + $.t("Timer") + '</button>';
 										}
-										else if (item.SubType.indexOf("Lucci") == 0) {
+										else if (item.SubType.indexOf("Lucci Air DC") == 0) {
 											var class_1 = "btn btn-mini";
 											var class_2 = "btn btn-mini";
 											var class_3 = "btn btn-mini";
 											var class_4 = "btn btn-mini";
-											var class_light = "btn btn-mini";
-											if (item.Status == "hi") {
+											if (item.Status == "pow") {
 												class_1 += " btn-info";
 											}
-											else if (item.Status == "med") {
+											else if (item.Status == "plus") {
 												class_2 += " btn-info";
 											}
-											else if (item.Status == "low") {
+											else if (item.Status == "min") {
 												class_3 += " btn-info";
 											}
-											else if (item.Status == "off") {
+											else if (item.Status == "light") {
 												class_4 += " btn-info";
 											}
-											else if (item.Status == "light") {
-												class_light += " btn-info";
-											}
 											status =
+												'<button class="' + class_1 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'pow\',RefreshFavorites,' + item.Protected + ');">' + $.t("pow") + '</button> ' +
+												'<button class="' + class_2 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'plus\',RefreshFavorites,' + item.Protected + ');">' + $.t("plus") + '</button> ' +
+												'<button class="' + class_3 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'min\',RefreshFavorites,' + item.Protected + ');">' + $.t("min") + '</button> ' +
+												'<button class="' + class_4 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light\',RefreshFavorites,' + item.Protected + ');">' + $.t("light") + '</button>';
+										}
+										else if (item.SubType.indexOf("Lucci Air") == 0) {
+										    var class_1 = "btn btn-mini";
+										    var class_2 = "btn btn-mini";
+										    var class_3 = "btn btn-mini";
+										    var class_4 = "btn btn-mini";
+										    var class_light = "btn btn-mini";
+										    if (item.Status == "hi") {
+										        class_1 += " btn-info";
+										    }
+										    else if (item.Status == "med") {
+										        class_2 += " btn-info";
+										    }
+										    else if (item.Status == "low") {
+										        class_3 += " btn-info";
+										    }
+										    else if (item.Status == "off") {
+										        class_4 += " btn-info";
+										    }
+										    else if (item.Status == "light") {
+										        class_light += " btn-info";
+										    }
+										    status =
 												'<button class="' + class_1 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'hi\',RefreshFavorites,' + item.Protected + ');">' + $.t("hi") + '</button> ' +
 												'<button class="' + class_2 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'med\',RefreshFavorites,' + item.Protected + ');">' + $.t("med") + '</button> ' +
 												'<button class="' + class_3 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'low\',RefreshFavorites,' + item.Protected + ');">' + $.t("low") + '</button> ' +
@@ -921,7 +944,7 @@ define(['app'], function (app) {
 														else {
 															xhtm += 'btn-default"';
 														}
-														xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
+														xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.Protected + ');">' + levelName + '</button>';
 													});
 													selector$.html(xhtm);
 												} else if (item.SelectorStyle === 1) {
@@ -1413,7 +1436,6 @@ define(['app'], function (app) {
 									(item.Type == "Weight") ||
 									(item.Type == "Usage") ||
 									(item.SubType == "Percentage") ||
-									//((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Lucci')!=0))||
 									((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
 									(item.SubType == "kWh") ||
 									(item.SubType == "Soil Moisture") ||
@@ -1445,7 +1467,7 @@ define(['app'], function (app) {
 											}
 											else {
 												if (typeof item.CounterDeliv == 'undefined') {
-													status = item.CounterToday;
+													status = 'T: ' + item.CounterToday;
 												} else {
 													if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
 														status += 'U: T: ' + item.CounterToday;
@@ -1547,9 +1569,19 @@ define(['app'], function (app) {
 										var img = "";
 
 										if (typeof item.Counter != 'undefined') {
-											if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+											if (
+												(item.SubType == "Gas") ||
+												(item.SubType == "RFXMeter counter") ||
+												(item.SubType == "Counter Incremental")
+											) {
 												status = "";
 												bigtext = item.CounterToday;
+												if (
+													(item.SubType == "RFXMeter counter") ||
+													(item.SubType == "Counter Incremental")
+												) {
+													status = item.Counter;
+												}
 											}
 											else {
 												status = '' + $.t("Usage") + ': ' + item.CounterToday;
@@ -2242,6 +2274,29 @@ define(['app'], function (app) {
 											'<button class="' + class_4 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'off\',RefreshFavorites,' + item.Protected + ');">' + $.t("Off") + '</button> ' +
 											'<button class="' + class_timer + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light\',RefreshFavorites,' + item.Protected + ');">' + $.t("Light") + '</button>';
 									}
+									else if (item.SubType.indexOf("Lucci Air DC") == 0) {
+									    var class_1 = "btn btn-mini";
+									    var class_2 = "btn btn-mini";
+									    var class_3 = "btn btn-mini";
+									    var class_4 = "btn btn-mini";
+									    if (item.Status == "pow") {
+									        class_1 += " btn-info";
+									    }
+									    else if (item.Status == "plus") {
+									        class_2 += " btn-info";
+									    }
+									    else if (item.Status == "min") {
+									        class_3 += " btn-info";
+									    }
+									    else if (item.Status == "light") {
+									        class_4 += " btn-info";
+									    }
+									    status =
+											'<button class="' + class_1 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'pow\',RefreshFavorites,' + item.Protected + ');">' + $.t("pow") + '</button> ' +
+											'<button class="' + class_2 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'plus\',RefreshFavorites,' + item.Protected + ');">' + $.t("plus") + '</button> ' +
+											'<button class="' + class_3 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'min\',RefreshFavorites,' + item.Protected + ');">' + $.t("min") + '</button> ' +
+											'<button class="' + class_4 + '" type="button" onclick="SwitchLight(' + item.idx + ',\'light\',RefreshFavorites,' + item.Protected + ');">' + $.t("light") + '</button>';
+									}
 									else {
 										if (
 											(item.Status == 'On') ||
@@ -2307,7 +2362,7 @@ define(['app'], function (app) {
 												else {
 													xhtm += 'btn-default"';
 												}
-												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.Protected + ');">' + levelName + '</button>';
 											});
 											xhtm += '</div>';
 											xhtm += '</div>';
@@ -2630,8 +2685,11 @@ define(['app'], function (app) {
 									else if (item.SubType.indexOf("Itho") == 0) {
 										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
 									}
+									else if (item.SubType.indexOf("Lucci Air DC") == 0) {
+										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciDCPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
+									}
 									else if (item.SubType.indexOf("Lucci") == 0) {
-										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
+									    xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
 									}
 									else {
 										if (
@@ -2694,7 +2752,7 @@ define(['app'], function (app) {
 												else {
 													xhtm += 'btn-default"';
 												}
-												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.Protected + ');">' + levelName + '</button>';
 											});
 											xhtm += '</div>';
 											xhtm += '</td>';
@@ -3367,7 +3425,6 @@ define(['app'], function (app) {
 									(item.Type == "Weight") ||
 									(item.Type == "Usage") ||
 									(item.SubType == "Percentage") ||
-									//((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Lucci')!=0))||
 									((item.Type == "Thermostat") && (item.SubType == "SetPoint")) ||
 									(item.SubType == "Soil Moisture") ||
 									(item.SubType == "Leaf Wetness") ||
@@ -3638,7 +3695,11 @@ define(['app'], function (app) {
 											bigtexthtml += item.Usage;
 										}
 									}
-									else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+									else if (
+										(item.SubType == "Gas") ||
+										(item.SubType == "RFXMeter counter") ||
+										(item.SubType == "Counter Incremental")
+									) {
 										bigtexthtml += item.CounterToday;
 									}
 									else if (
@@ -3658,9 +3719,6 @@ define(['app'], function (app) {
 										(item.SubType == "Sound Level") ||
 										(item.SubType == "Waterflow") ||
 										(item.Type == "Current") ||
-										(item.SubType == "Gas") ||
-										(item.SubType == "RFXMeter counter") ||
-										(item.SubType == "Counter Incremental") ||
 										(item.SubType == "Custom Sensor")
 									) {
 										bigtexthtml += item.Data;
@@ -3706,7 +3764,13 @@ define(['app'], function (app) {
 												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 											}
 										}
-										if ((item.SubType != "Gas") && (item.SubType != "RFXMeter counter")) { // this is weird..
+										if (
+											(item.SubType == "RFXMeter counter") ||
+											(item.SubType == "Counter Incremental")
+										) {
+											statushtml = item.Counter;
+										}
+										else if (item.SubType != "Gas") { // this is weird..
 											statushtml = '' + $.t("Usage") + ': ' + item.CounterToday;
 										}
 										else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) { // added this to fill the status value. If it's the same as the bigtext, then it won't be shown again.

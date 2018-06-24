@@ -5,7 +5,7 @@
 #include "../../main/Logger.h"
 #include <boost/thread.hpp>
 #include <boost/optional.hpp>
-
+#include "../json/json.h"
 
 #define _1WIRE_SERVICE_PORT "1664"
 

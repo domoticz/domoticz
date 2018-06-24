@@ -9,8 +9,8 @@ public:
 	MySensorsSerial(const int ID, const std::string& devname, const int Mode1);
 	~MySensorsSerial();
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 
 	unsigned int m_iBaudRate;
 	boost::shared_ptr<boost::thread> m_thread;

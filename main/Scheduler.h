@@ -31,6 +31,30 @@ struct tScheduleItem
 	//internal
 	time_t startTime;
 
+	tScheduleItem() {
+		bEnabled = false;
+		bIsScene = false;
+		bIsThermostat = false;
+		RowID = 0;
+		TimerID = 0;
+		startDay = 0;
+		startMonth = 0;
+		startYear = 0;
+		startHour = 0;
+		startMin = 0;
+		timerType = TTYPE_ONTIME;
+		timerCmd = TCMD_ON;
+		Level = 0;
+		Temperature = 0.0f;
+		bUseRandomness = false;
+		Days = 0;
+		MDay = 0;
+		Month = 0;
+		Occurence = 0;
+		//internal
+		startTime = 0;
+	}
+
 	bool operator==(const tScheduleItem &comp) const {
 		return (this->TimerID == comp.TimerID)
 			&& (this->bIsScene == comp.bIsScene)

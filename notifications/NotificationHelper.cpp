@@ -9,7 +9,6 @@
 #include "../hardware/hardwaretypes.h"
 #include "NotificationHelper.h"
 #include "NotificationProwl.h"
-#include "NotificationNma.h"
 #include "NotificationPushbullet.h"
 #include "NotificationPushover.h"
 #include "NotificationPushsafer.h"
@@ -43,7 +42,6 @@ CNotificationHelper::CNotificationHelper()
 	/* more notifiers can be added here */
 
 	AddNotifier(new CNotificationProwl());
-	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushbullet());
 	AddNotifier(new CNotificationTelegram());
 	AddNotifier(new CNotificationPushover());
@@ -201,7 +199,7 @@ std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage,
 	return ret;
 }
 
-bool CNotificationHelper::ApplyRule(std::string rule, bool equal, bool less)
+bool CNotificationHelper::ApplyRule(const std::string &rule, const bool equal, const bool less)
 {
 	if (((rule == ">") || (rule == ">=")) && (!less) && (!equal))
 		return true;
@@ -822,7 +820,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
-	if (result.size() == 0)
+	if (result.empty())
 		return false;
 
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
@@ -883,7 +881,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
-	if (result.size() == 0)
+	if (result.empty())
 		return false;
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|";
 
@@ -971,7 +969,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%" PRIu64 ")",
 		Idx);
-	if (result.size() == 0)
+	if (result.empty())
 		return false;
 	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
@@ -1084,7 +1082,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	result = m_sql.safe_query("SELECT SwitchType, CustomImage, Options FROM DeviceStatus WHERE (ID=%" PRIu64 ")",
 		Idx);
-	if (result.size() == 0)
+	if (result.empty())
 		return false;
 	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
@@ -1177,7 +1175,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 
 	result = m_sql.safe_query("SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (ID=%" PRIu64 ")",
 		Idx);
-	if (result.size() == 0)
+	if (result.empty())
 		return false;
 	//double AddjValue = atof(result[0][0].c_str());
 	double AddjMulti = atof(result[0][1].c_str());
@@ -1202,7 +1200,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	{
 		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 			Idx, szDateEnd);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
 
@@ -1271,7 +1269,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 							continue;
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
-						if (result.size() == 0)
+						if (result.empty())
 							continue;
 						szExtraData = "|Name=" + itt2->DeviceName + "|SwitchType=" + result[0][0] + "|";
 						std::string ltype = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
@@ -1420,7 +1418,7 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 				}
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM Notifications WHERE (ID=='%" PRIu64 "') AND (Params=='%q')", itt2->ID, itt2->Params.c_str());
-				if (result.size() == 0)
+				if (result.empty())
 					return false;
 
 				m_sql.safe_query("UPDATE Notifications SET CustomMessage='%q' WHERE ID=='%" PRIu64 "'", szTmp.c_str(), itt2->ID);
@@ -1446,7 +1444,7 @@ bool CNotificationHelper::AddNotification(
 	//First check for duplicate, because we do not want this
 	result = m_sql.safe_query("SELECT ROWID FROM Notifications WHERE (DeviceRowID=='%q') AND (Params=='%q')",
 		DevIdx.c_str(), Param.c_str());
-	if (result.size() > 0)
+	if (!result.empty())
 		return false;//already there!
 
 	int iSendAlways = (SendAlways == true) ? 1 : 0;
@@ -1517,7 +1515,7 @@ void CNotificationHelper::ReloadNotifications()
 	m_sql.GetPreferencesVar("NotificationSwitchInterval", m_NotificationSwitchInterval);
 
 	result = m_sql.safe_query("SELECT ID, DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID");
-	if (result.size() == 0)
+	if (result.empty())
 		return;
 
 	time_t mtime = mytime(NULL);

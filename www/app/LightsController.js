@@ -746,7 +746,7 @@ define(['app'], function (app) {
 												else {
 													xhtm += 'btn-default"';
 												}
-												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.Protected + ');">' + levelName + '</button>';
 											});
 											selector$.html(xhtm);
 										} else if (item.SelectorStyle === 1) {
@@ -1253,9 +1253,13 @@ define(['app'], function (app) {
 								bAddTimer = false;
 								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
 							}
-							else if (item.SubType.indexOf("Lucci") == 0) {
+							else if (item.SubType.indexOf("Lucci Air DC") == 0) {
 								bAddTimer = false;
-								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciDCPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
+							}
+							else if (item.SubType.indexOf("Lucci") == 0) {
+							    bAddTimer = false;
+							    xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
 							}
 							else {
 								if (
@@ -1321,7 +1325,7 @@ define(['app'], function (app) {
 										else {
 											xhtm += 'btn-default"';
 										}
-										xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
+										xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.Protected + ');">' + levelName + '</button>';
 									});
 									xhtm += '</div>';
 								} else if (item.SelectorStyle === 1) {
@@ -1823,7 +1827,7 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #fanparams").show();
 			}
-			else if (lighttype == 305) {
+			else if ((lighttype == 305)||(lighttype == 306)) {
 				//Fan (Lucci Air)
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
@@ -2032,7 +2036,7 @@ define(['app'], function (app) {
 					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
 				mParams += "&id=" + ID;
 			}
-			else if (lighttype == 305) {
+			else if ((lighttype == 305)||(lighttype == 306)) {
 				//Fan (Lucci Air)
 				ID =
 					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +

@@ -19,8 +19,6 @@
 #include "PluginTransports.h"
 #include <datetime.h>
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-
 namespace Plugins {
 
 	extern struct PyModuleDef DomoticzModuleDef;
@@ -171,7 +169,7 @@ namespace Plugins {
 					{
 						// load associated custom images to make them available to python
 						std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT max(ID), Base, Name, Description FROM CustomImages");
-						if (result.size() > 0)
+						if (!result.empty())
 						{
 							PyType_Ready(&CImageType);
 							// Add image objects into the image dictionary with ID as the key
@@ -231,7 +229,7 @@ namespace Plugins {
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM CustomImages WHERE (ID==%d)", self->ImageID);
-				if (result.size() != 0)
+				if (!result.empty())
 				{
 					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
@@ -352,7 +350,7 @@ namespace Plugins {
 		return (PyObject *)self;
 	}
 
-	static void maptypename(std::string	sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
+	static void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
 	{
 		Type = pTypeGeneral;
 
@@ -623,7 +621,7 @@ namespace Plugins {
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 				{
@@ -711,7 +709,7 @@ namespace Plugins {
 				{
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-					if (result.size() == 0)
+					if (result.empty())
 					{
 						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
 						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSONString(); //Parse the color to detect incorrectly formatted color data
@@ -873,7 +871,7 @@ namespace Plugins {
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
 			}
 
-			std::string sID = SSTR(self->ID);
+			std::string sID = std::to_string(self->ID);
 
 			if (TypeName) {
 				// Reset nValue and sValue when changing device types
@@ -1014,7 +1012,7 @@ namespace Plugins {
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-				if (result.size() != 0)
+				if (!result.empty())
 				{
 					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 

@@ -189,13 +189,12 @@ void COpenWeatherMap::GetMeterDetails()
 		return;
 	}
 
-	float temp =- 999.9f;
-	int humidity = 0;
-	int barometric = 0;
-	int barometric_forecast = baroForecastNoInfo;
-
 	if (!root["main"].empty())
 	{
+		float temp = -999.9f;
+		int humidity = 0;
+		int barometric = 0;
+		int barometric_forecast = baroForecastNoInfo;
 		if (!root["main"]["temp"].empty())
 		{
 			temp = root["main"]["temp"].asFloat();

@@ -292,7 +292,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, Idx, 0);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bDeviceExits = false;
 	}

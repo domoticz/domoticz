@@ -256,9 +256,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
 		function confirmDecorator(fn, message) {
 			return function() {
+			    var args = arguments;
+
                 bootbox.confirm(message, function(result) {
                     if (result) {
-                        fn();
+                        fn.apply(null, args);
                     }
                 });
 			};

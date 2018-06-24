@@ -116,37 +116,14 @@ m_szIPAddress(IPAddress)
 	m_HwdID = ID;
 	m_stoprequested = false;
 	m_usIPPort = usIPPort;
-	m_bDoLogin = true;
 	m_lastgasusage = 0;
 	m_bClockMode = false;
-/*
-	// Generate some commonly used properties.
-	m_ConnectionPassword = NEFITEASY_ACCESSKEY_PREFIX + m_AccessKey;
-	std::string suffix = m_SerialNumber + "@" + NEFITEASY_HOST_URL;
-	m_jid = NEFITEASY_RRCCONTACT_PREFIX + suffix;
-	m_from = m_jid;
-	m_to = NEFITEASY_RRCGATEWAY_PREFIX + suffix;
 
-	if (ConnectToXMPP(NEFITEASY_HOST_URL, NEFITEASY_HOST_PORT))
-	{
-	}
-*/
 	Init();
 }
 
 CNefitEasy::~CNefitEasy(void)
 {
-	Logout();
-}
-
-bool CNefitEasy::ConnectToXMPP(const std::string &IPAddress, const int PortNumber)
-{
-	return false;
-}
-
-void CNefitEasy::Logout()
-{
-	m_bDoLogin = true;
 }
 
 void CNefitEasy::Init()

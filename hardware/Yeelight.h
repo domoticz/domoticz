@@ -9,22 +9,19 @@
 class Yeelight : public CDomoticzHardwareBase
 {
 public:
-	Yeelight(const int ID);
+	explicit Yeelight(const int ID);
 	~Yeelight(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-	void InsertUpdateSwitch(const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue,
-	                        const std::string &yeelightSat, const std::string &yeelightRGB, const std::string &yeelightCT, const std::string &yeelightColorMode);
-
-public:
-	//signals
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()> sDisconnected;
-
+	void InsertUpdateSwitch(
+		const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue,
+		const std::string &yeelightSat, const std::string &yeelightRGB, const std::string &yeelightCT, const std::string &yeelightColorMode);
 private:
-	bool StartHardware();
-	bool StopHardware();
-protected:
-	bool m_bDoRestart;
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
+private:
+	bool m_bDoRestart;
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 

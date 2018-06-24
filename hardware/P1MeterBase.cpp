@@ -240,7 +240,7 @@ bool P1MeterBase::MatchLine()
 					else if (atime>=m_gasoktime){
 						struct tm ltime;
 						localtime_r(&atime, &ltime);
-						char myts[16];
+						char myts[80];
 						sprintf(myts,"%02d%02d%02d%02d%02d%02dW",ltime.tm_year%100,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 						if (ltime.tm_isdst)
 						myts[12]='S';

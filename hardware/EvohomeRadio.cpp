@@ -36,6 +36,33 @@ extern std::string szUserDataFolder;
 
 #include <ctime>
 
+enum evoCommands
+{
+	cmdSysInfo = 0x10e0,
+	cmdZoneTemp = 0x30C9,
+	cmdZoneName = 0x0004,
+	cmdZoneHeatDemand = 0x3150,//Heat demand sent by an individual zone
+	cmdZoneInfo = 0x000A,
+	cmdZoneWindow = 0x12B0,//Open window/ventilation zone function
+	cmdSetPoint = 0x2309,
+	cmdSetpointOverride = 0x2349,
+	cmdDHWState = 0x1F41,
+	cmdDHWTemp = 0x1260,
+	cmdControllerMode = 0x2E04,
+	cmdControllerHeatDemand = 0x0008,//Heat demand sent by the controller for CH / DHW / Boiler  (F9/FA/FC)
+	cmdActuatorState = 0x3EF0,
+	cmdActuatorCheck = 0x3B00,
+	cmdBinding = 0x1FC9,
+	cmdExternalSensor = 0x0002,
+	cmdDeviceInfo = 0x0418,
+	cmdBatteryInfo = 0x1060,
+	//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
+	//0x1F09 //Unknown fixed message FF070D
+	//0x0005
+	//0x0006
+	//0x0404
+};
+
 const char  CEvohomeRadio::m_szNameErr[18]={0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F};
 const int CEvohomeRadio::m_evoToDczControllerMode[8]={0,5,1,2,3,-1,-1,4};//are the hidden modes actually valid?
 const int  CEvohomeRadio::m_evoToDczOverrideMode[5]={zmAuto,-1,zmPerm,-1,zmTmp};//are the hidden modes actually valid?
@@ -335,12 +362,12 @@ void CEvohomeRadio::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 
 void CEvohomeRadio::CheckRelayHeatDemand()
 {
-	for(tmap_relay_check_it it = m_RelayCheck.begin(); it != m_RelayCheck.end(); ++it)
+	for(const auto & it : m_RelayCheck)
 	{
-		if((boost::get_system_time()-it->second.m_stLastCheck)>boost::posix_time::seconds(1202)) //avg seems around 1202-1203 but not clear how reference point derived
+		if((boost::get_system_time()-it.second.m_stLastCheck)>boost::posix_time::seconds(1202)) //avg seems around 1202-1203 but not clear how reference point derived
 		{
-			Log(true,LOG_STATUS,"evohome: Relay: Refreshing heat demand devno=%d demand=%d",it->first,it->second.m_nDemand);
-			UpdateRelayHeatDemand(it->first,it->second.m_nDemand);
+			Log(true,LOG_STATUS,"evohome: Relay: Refreshing heat demand devno=%d demand=%d",it.first,it.second.m_nDemand);
+			UpdateRelayHeatDemand(it.first,it.second.m_nDemand);
 		}
 	}
 }
@@ -1703,7 +1730,7 @@ namespace http {
 				// Check if All Sensors has already been activated, if not create a temporary dummy sensor
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit > 12) AND (Unit <= 24)", HwdID, (int)pTypeEvohomeZone);
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					std::string devname = "Zone Temp";
 					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);

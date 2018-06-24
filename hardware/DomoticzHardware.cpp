@@ -471,13 +471,13 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bExists = false;
 		return 0;
 	}
 	result = m_sql.safe_query("SELECT MAX(Counter) FROM Meter_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bExists = false;
 		return 0.0f;
@@ -555,7 +555,7 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int Ch
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		SendSwitch(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname);
 	}

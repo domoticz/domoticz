@@ -100,9 +100,9 @@ namespace http {
 
 		void CProxyClient::ContinueConnect(const boost::system::error_code& error)
 		{
-				std::string address = "domoproxy.domoticz.com";
-				std::string port = "443";
-				boost::system::error_code ec;
+			std::string address = "domoproxy.domoticz.com";
+			std::string port = "443";
+			boost::system::error_code ec;
 
 			if (error) {
 				// timer was cancelled?
@@ -137,7 +137,7 @@ namespace http {
 					boost::bind(&CProxyClient::handle_handshake, shared_from_this(),
 						boost::asio::placeholders::error));
 			}
-		else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
+			else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
 			{
 				_socket->lowest_layer().close();
 				boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
@@ -172,7 +172,6 @@ namespace http {
 				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 			}
 			SockWriteBuf.clear();
-			ProxyPdu *pdu;
 			switch (connection_status) {
 			case status_connecting:
 				// a write occurred meanwhile a reconnect has been issued
@@ -184,17 +183,17 @@ namespace http {
 				if (bytes_transferred < SockWriteBuf.length()) {
 					_log.Log(LOG_ERROR, "PROXY: Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 				}
-			if (error) {
-				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
-			}
+				if (error) {
+					_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
+				}
 				write_in_progress = false;
-			if (!writeQ.empty()) {
-					pdu = writeQ.front();
-				writeQ.pop();
+				if (!writeQ.empty()) {
+					ProxyPdu *pdu = writeQ.front();
+					writeQ.pop();
 					SocketWrite(pdu);
-			}
+				}
 				break;
-		}
+			}
 		}
 
 		void CProxyClient::SocketWrite(ProxyPdu *pdu)
@@ -301,7 +300,7 @@ namespace http {
 
 			_socket->async_read_some(buf,
 				boost::bind(&CProxyClient::handle_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
-				);
+			);
 		}
 
 		void CProxyClient::GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
@@ -620,16 +619,16 @@ namespace http {
 			CValueLengthPart part(pdu);
 
 			switch (pdu._type) {
-			ONPDU(PDU_REQUEST)
-			ONPDU(PDU_ASSIGNKEY)
-			ONPDU(PDU_ENQUIRE)
-			ONPDU(PDU_AUTHRESP)
-			ONPDU(PDU_SERV_CONNECT)
-			ONPDU(PDU_SERV_DISCONNECT)
-			ONPDU(PDU_SERV_CONNECTRESP)
-			ONPDU(PDU_SERV_RECEIVE)
-			ONPDU(PDU_SERV_SEND)
-			ONPDU(PDU_SERV_ROSTERIND)
+				ONPDU(PDU_REQUEST)
+					ONPDU(PDU_ASSIGNKEY)
+					ONPDU(PDU_ENQUIRE)
+					ONPDU(PDU_AUTHRESP)
+					ONPDU(PDU_SERV_CONNECT)
+					ONPDU(PDU_SERV_DISCONNECT)
+					ONPDU(PDU_SERV_CONNECTRESP)
+					ONPDU(PDU_SERV_RECEIVE)
+					ONPDU(PDU_SERV_SEND)
+					ONPDU(PDU_SERV_ROSTERIND)
 					ONPDU(PDU_WS_OPEN)
 					ONPDU(PDU_WS_CLOSE)
 					ONPDU(PDU_WS_RECEIVE)
@@ -668,7 +667,6 @@ namespace http {
 
 		void CProxyClient::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 		{
-			const char *data;
 			// data read, no need for timeouts anymore
 			if (connection_status == status_connecting || doStop) {
 				return;
@@ -676,6 +674,7 @@ namespace http {
 			timer_.cancel();
 			if (!error)
 			{
+				const char *data;
 				_readbuf.commit(bytes_transferred);
 				switch (connection_status) {
 				case status_httpmode:
@@ -684,7 +683,7 @@ namespace http {
 						_readbuf.consume(_readbuf.size());
 						connection_status = status_connected;
 						LoginToService();
-				}
+					}
 					break;
 				case status_connected:
 					data = boost::asio::buffer_cast<const char*>(_readbuf.data());
@@ -692,7 +691,7 @@ namespace http {
 					if (frame.Parse((const unsigned char *)data, _readbuf.size())) {
 						ProxyPdu pdu(frame.Payload().c_str(), frame.Payload().length());
 						if (!pdu.Disconnected()) {
-				PduHandler(pdu);
+							PduHandler(pdu);
 							_readbuf.consume(frame.Consumed());
 						}
 					}
@@ -745,9 +744,9 @@ namespace http {
 		{
 		}
 
-		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)
+		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ):
+			m_pDocRoot(doc_root)
 		{
-			m_pDocRoot = doc_root;
 			m_pWebEm = webEm;
 			m_pDomServ = domServ;
 			m_thread = NULL;
@@ -830,7 +829,7 @@ namespace http {
 			}
 		}
 
-		void CProxySharedData::SetInstanceId(std::string instanceid)
+		void CProxySharedData::SetInstanceId(const std::string &instanceid)
 		{
 			_instanceid = instanceid;
 			m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", _instanceid);
@@ -879,7 +878,7 @@ namespace http {
 
 		void CProxySharedData::AddTCPClient(DomoticzTCP *client)
 		{
-			for (std::vector<DomoticzTCP *>::iterator it = TCPClients.begin(); it != TCPClients.end(); it++) {
+			for (std::vector<DomoticzTCP *>::iterator it = TCPClients.begin(); it != TCPClients.end(); ++it) {
 				if ((*it) == client) {
 					return;
 				}

@@ -9,8 +9,8 @@ public:
 	KMTronic433(const int ID, const std::string& devname);
 	~KMTronic433();
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 
 	void GetRelayStates();
 	int m_iQueryState;

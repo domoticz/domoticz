@@ -971,6 +971,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter your Goodwe username!'), 2500, true);
 					return;
 				}
+				Mode1 = $("#hardwarecontent #divgoodweweb #comboserverselect").val();
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -1929,11 +1930,13 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter your Goodwe username!'), 2500, true);
 					return;
 				}
+				Mode1 = $("#hardwarecontent #divgoodweweb #comboserverselect").val();
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(username) +
-					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -5483,6 +5486,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
 						}
 						else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
+							$("#hardwarecontent #hardwareparamsgoodweweb #comboserverselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
 						}
 						if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {

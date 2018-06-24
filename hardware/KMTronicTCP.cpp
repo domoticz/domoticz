@@ -256,17 +256,13 @@ void KMTronicTCP::ParseTemps(const std::string &sResult)
 	size_t ii;
 	std::string tmpstr;
 	std::string name;
-	int pos1;
-
 	int Idx = 1;
-
-	bool bHaveTemperature = false;
 
 	for (ii = 1; ii < results.size(); ii++)
 	{
 		tmpstr = stdstring_trim(results[ii]);
 
-
+		int pos1;
 		pos1 = tmpstr.find("<name>");
 		if (pos1 != std::string::npos)
 		{

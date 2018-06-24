@@ -164,7 +164,7 @@ void CToonThermostat::Init()
 	{
 		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
 		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = *result.begin();
 			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());
@@ -440,7 +440,7 @@ bool CToonThermostat::GetUUIDIdx(const std::string &UUID, int &idx)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [ROWID] FROM ToonDevices WHERE (HardwareID=%d) AND (UUID='%q')",
 		m_HwdID, UUID.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	idx = atoi(sd[0].c_str());
@@ -452,7 +452,7 @@ bool CToonThermostat::GetUUIDFromIdx(const int idx, std::string &UUID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [UUID] FROM ToonDevices WHERE (HardwareID=%d) AND (ROWID=%d)",
 		m_HwdID, idx);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	UUID = sd[0];

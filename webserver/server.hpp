@@ -78,7 +78,7 @@ public:
 	virtual ~server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'server[" + settings_.to_string() + "]'";
 	}
 protected:
@@ -100,7 +100,7 @@ public:
 	virtual ~ssl_server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'ssl_server[" + settings_.to_string() + "]'";
 	}
 

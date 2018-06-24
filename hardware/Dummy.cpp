@@ -148,7 +148,7 @@ namespace http {
 
 					unsigned long nid = 1; //could be the first device ever
 
-					if (result.size() > 0)
+					if (!result.empty())
 					{
 						nid = atol(result[0][0].c_str()) + 1;
 					}
@@ -166,9 +166,7 @@ namespace http {
 					{
 						root["status"] = "OK";
 						root["title"] = "CreateVirtualSensor";
-						std::stringstream ss;
-						ss << vs_idx;
-						root["idx"] = ss.str().c_str();
+						root["idx"] = std::to_string(vs_idx);
 					}
 					break;
 				}
@@ -225,7 +223,7 @@ namespace http {
 
 			unsigned long nid = 1; //could be the first device ever
 
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nid = atol(result[0][0].c_str()) + 1;
 			}
@@ -243,9 +241,7 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateSensor";
-				std::stringstream ss;
-				ss << vs_idx;
-				root["idx"] = ss.str().c_str();
+				root["idx"] = std::to_string(vs_idx);
 			}
 		}
 

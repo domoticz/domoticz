@@ -166,7 +166,7 @@ void CRtl433::Do_Work()
 				// load field values into a map
 				std::map<std::string, std::string> data;
 				std::vector<std::string>::iterator h = headers.begin();
-				for (std::vector<std::string>::iterator vi = values.begin(); vi != values.end(); vi++)
+				for (std::vector<std::string>::iterator vi = values.begin(); vi != values.end(); ++vi)
 				{
 					std::string header = *(h++);
 					data[header] = *vi;

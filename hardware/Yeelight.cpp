@@ -136,16 +136,13 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	else
 		sprintf(szDeviceID, "%08X", (unsigned int)sID);
 
-	int lastLevel = 0;
-	int nvalue = 0;
-	bool tIsOn = !(bIsOn);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue, LastLevel, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d)", m_HwdID, szDeviceID, pTypeColorSwitch);
 	int yeelightColorMode = atoi(syeelightColorMode.c_str());
 	if (yeelightColorMode > 0) {
 		_log.Debug(DEBUG_HARDWARE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
 	}
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "YeeLight: New Light Found (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(yeelightBright.c_str());
@@ -175,9 +172,9 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 			m_sql.UpdateDeviceValue("SubType", (int)YeeType, sIdx);
 		}
 
-		nvalue = atoi(result[0][0].c_str());
-		tIsOn = (nvalue != 0);
-		lastLevel = atoi(result[0][1].c_str());
+		int nvalue = atoi(result[0][0].c_str());
+		bool tIsOn = (nvalue != 0);
+		int lastLevel = atoi(result[0][1].c_str());
 		int value = atoi(yeelightBright.c_str());
 		if ((bIsOn != tIsOn) || (value != lastLevel))
 		{
@@ -204,7 +201,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	//_log.Log(LOG_STATUS, "YeeLight: WriteToHardware...............................");
-	_tColorSwitch *pLed = (_tColorSwitch*)pdata;
+	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 	uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
 	unsigned long lID;

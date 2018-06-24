@@ -40,6 +40,12 @@ set (domoticz_VERSION_MAJOR 3)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CXX_EXTENSIONS NO)
+endif()
+
 option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
 IF(USE_OPENSSL_STATIC)
 	set(OPENSSL_USE_STATIC_LIBS TRUE)
@@ -422,7 +428,6 @@ hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/RAVEn.cpp
-hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
@@ -479,7 +484,6 @@ notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
 notifications/NotificationLogitechMediaServer.cpp
-notifications/NotificationNma.cpp
 notifications/NotificationPushbullet.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
@@ -629,7 +633,7 @@ IF(CURL_FOUND)
   INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
   # add_definitions(-DWWW_ENABLE_SSL)
 else()
-  MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
+  MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-gnutls-dev')")
 ENDIF(CURL_FOUND)
 
 #
