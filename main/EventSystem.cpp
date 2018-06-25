@@ -897,7 +897,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 						total_real = total_max - total_min;
 
 						char szTmp[100];
-						sprintf(szTmp, "%llu", total_real);
+						sprintf(szTmp, "%" PRIu64, total_real);
 
 						float musage = 0;
 						_eMeterType metertype = (_eMeterType)sitem.switchtype;
@@ -917,7 +917,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 							sprintf(szTmp, "%.02f m3", musage);
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%llu", total_real);
+							sprintf(szTmp, "%" PRIu64, total_real);
 							break;
 						default:
 							continue; //not handled
@@ -1053,7 +1053,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					total_real = total_max - total_min;
 
 					char szTmp[100];
-					sprintf(szTmp, "%llu", total_real);
+					sprintf(szTmp, "%" PRIu64, total_real);
 
 					float musage = 0;
 					_eMeterType metertype = (_eMeterType)sitem.switchtype;
@@ -1073,7 +1073,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 						sprintf(szTmp, "%.02f m3", musage);
 						break;
 					case MTYPE_COUNTER:
-						sprintf(szTmp, "%llu", total_real);
+						sprintf(szTmp, "%" PRIu64, total_real);
 						break;
 					default:
 						continue; //not handled
