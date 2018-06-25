@@ -1138,8 +1138,10 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 				if (jpos != std::string::npos)
 					activityId = activityId.substr(0, jpos);
 			}
-			if ((jpos == std::string::npos) || activityId.empty())
+			if (jpos == std::string::npos)
 				activityId = "NaN";
+			else if (activityId.empty())
+				activityId = "-1";
 
 			jpos = szMessage.find("stateVersion");
 			if (jpos != std::string::npos)
