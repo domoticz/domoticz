@@ -68,7 +68,7 @@ void CInfluxPush::UpdateSettings()
 	sURL << m_InfluxIP << ":" << m_InfluxPort << "/write?";
 	if ((!m_InfluxUsername.empty()) && (!m_InfluxPassword.empty()))
 		sURL << "u=" << m_InfluxUsername << "&p=" << base64_decode(m_InfluxPassword) << "&";
-	sURL << "db=" << m_InfluxDatabase;
+	sURL << "db=" << m_InfluxDatabase << "&precision=s";
 	m_szURL = sURL.str();
 }
 
@@ -195,14 +195,15 @@ void CInfluxPush::Do_Work()
 		std::vector<_tPushItem>::iterator itt = _items2do.begin();
 		while (itt != _items2do.end())
 		{
+			if (!sSendData.empty())
+				sSendData += "\n";
+
 			std::stringstream sziData;
 			sziData << itt->skey << " value=" << itt->svalue;
 			if (m_bInfluxDebugActive) {
 				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
 			}
-			//sziData << " " << (itt->stimestamp * 1000000000);
-			if (!sSendData.empty())
-				sSendData += "\n";
+			sziData << " " << itt->stimestamp;
 			sSendData += sziData.str();
 			++itt;
 		}
@@ -210,7 +211,7 @@ void CInfluxPush::Do_Work()
 		std::string sResult;
 		if (!HTTPClient::POST(m_szURL, sSendData, ExtraHeaders, sResult, true, true))
 		{
-			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
+			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database/username/password)");
 		}
 	}
 }
