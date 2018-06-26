@@ -7937,8 +7937,6 @@ namespace http {
 			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
-			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
-
 			std::string IFTTTEnabled = request::findValue(&req, "IFTTTEnabled");
 			int iIFTTTEnabled = (IFTTTEnabled == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("IFTTTEnabled", iIFTTTEnabled);
