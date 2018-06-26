@@ -32,6 +32,8 @@ private:
 	std::string m_InfluxIP;
 	int m_InfluxPort;
 	std::string m_InfluxDatabase;
+	std::string m_InfluxUsername;
+	std::string m_InfluxPassword;
 	bool m_bInfluxDebugActive;
 };
 extern CInfluxPush m_influxpush;
