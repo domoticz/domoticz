@@ -344,7 +344,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 		filedata.insert(filedata.begin(), camimage.begin(), camimage.end());
 		std::string imgstring;
 		imgstring.insert(imgstring.end(), filedata.begin(), filedata.end());
-		imgstring = base64_encode((const unsigned char*)imgstring.c_str(), filedata.size());
+		imgstring = base64_encode(imgstring);
 		imgstring = WrapBase64(imgstring);
 
 		htmlMsg +=
@@ -477,8 +477,8 @@ namespace http {
 					(senabled == "true") ? 1 : 0,
 					address.c_str(),
 					port,
-					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
+					base64_encode(username).c_str(),
+					base64_encode(password).c_str(),
 					imageurl.c_str(),
 					cprotocol
 				);
@@ -529,8 +529,8 @@ namespace http {
 					(senabled == "true") ? 1 : 0,
 					address.c_str(),
 					port,
-					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
+					base64_encode(username).c_str(),
+					base64_encode(password).c_str(),
 					imageurl.c_str(),
 					cprotocol,
 					idx.c_str()

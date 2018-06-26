@@ -192,7 +192,7 @@ void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, iter3->first.c_str())));
 			*(iter3->second) = Value;
 			if (save) {
-				std::string ValueBase64 = base64_encode((const unsigned char*)Value.c_str(), Value.size());
+				std::string ValueBase64 = base64_encode(Value);
 				m_sql.UpdatePreferencesVar(iter3->first, ValueBase64);
 			}
 		}

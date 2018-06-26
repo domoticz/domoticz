@@ -130,7 +130,7 @@ void CHttpPoller::GetScript()
 		{
 			auth += m_password;
 		}
-		std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+		std::string encodedAuth = base64_encode(auth);
 		ExtraHeaders.push_back("Authorization:Basic " + encodedAuth);
 	}
 

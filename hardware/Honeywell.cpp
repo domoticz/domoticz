@@ -147,7 +147,7 @@ bool CHoneywell::refreshToken() {
 	std::string auth = HONEYWELL_APIKEY;
 	auth += ":";
 	auth += HONEYWELL_APISECRET;
-	std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+	std::string encodedAuth = base64_encode(auth);
 
 
 	std::vector<std::string> headers;

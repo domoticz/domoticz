@@ -606,7 +606,7 @@ int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, co
 	szCred.append(szUserName);
 	szCred.append("\0");
 	szCred.append(szPassword);
-	szAuth.append(base64_encode((const unsigned char*)szCred.c_str(), static_cast<unsigned int>(szCred.length())));
+	szAuth.append(base64_encode(szCred));
 	szAuth.append("</auth>");
 	return WriteToSocket(&szAuth);
 }

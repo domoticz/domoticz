@@ -6153,7 +6153,7 @@ namespace http {
 				m_sql.safe_query(
 					"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
 					(senabled == "true") ? 1 : 0,
-					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
+					base64_encode(username).c_str(),
 					password.c_str(),
 					rights,
 					(sRemoteSharing == "true") ? 1 : 0,
@@ -6196,7 +6196,7 @@ namespace http {
 						return;
 					}
 				}
-				std::string sHashedUsername = base64_encode((const unsigned char*)username.c_str(), username.size()).c_str();
+				std::string sHashedUsername = base64_encode(username);
 
 				// Invalid user's sessions if username or password has changed
 				std::string sOldUsername;
@@ -7645,7 +7645,7 @@ namespace http {
 				WebUserName = "";
 				WebPassword = "";
 			}
-			WebUserName = base64_encode((const unsigned char*)WebUserName.c_str(), WebUserName.size());
+			WebUserName = base64_encode(WebUserName);
 			if (WebPassword.size() != 32)
 			{
 				WebPassword = GenerateMD5Hash(WebPassword);
@@ -7926,7 +7926,7 @@ namespace http {
 			if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems) {
 				m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
 				if (md_password != pf_password) {
-					md_password = base64_encode((unsigned char const*)md_password.c_str(), md_password.size());
+					md_password = base64_encode(md_password);
 					m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
 				}
 				m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
@@ -7943,7 +7943,7 @@ namespace http {
 			int iIFTTTEnabled = (IFTTTEnabled == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("IFTTTEnabled", iIFTTTEnabled);
 			std::string szKey = request::findValue(&req, "IFTTTAPI");
-			m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode((unsigned char const*)szKey.c_str(), szKey.size()));
+			m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode(szKey));
 
 			m_notifications.LoadConfig();
 #ifdef ENABLE_PYTHON
@@ -8521,8 +8521,8 @@ namespace http {
 					double AddjMulti2 = atof(sd[18].c_str());
 					int LastLevel = atoi(sd[19].c_str());
 					int CustomImage = atoi(sd[20].c_str());
-					std::string strParam1 = base64_encode((const unsigned char*)sd[21].c_str(), sd[21].size());
-					std::string strParam2 = base64_encode((const unsigned char*)sd[22].c_str(), sd[22].size());
+					std::string strParam1 = base64_encode(sd[21]);
+					std::string strParam2 = base64_encode(sd[22]);
 					int iProtected = atoi(sd[23].c_str());
 
 					std::string Description = sd[27];
@@ -8733,7 +8733,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 						else if (pHardware->HwdType == HTYPE_DarkSky)
@@ -8742,7 +8742,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 						else if (pHardware->HwdType == HTYPE_AccuWeather)
@@ -8751,7 +8751,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 						else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
@@ -8760,7 +8760,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 					}
@@ -9122,8 +9122,8 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
 							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
-							root["result"][ii]["LevelNames"] = base64_encode((const unsigned char*)levelNames.c_str(), levelNames.size());
-							root["result"][ii]["LevelActions"] = base64_encode((const unsigned char*)levelActions.c_str(), levelActions.size());
+							root["result"][ii]["LevelNames"] = base64_encode(levelNames);
+							root["result"][ii]["LevelActions"] = base64_encode(levelActions);
 						}
 						sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
@@ -11230,8 +11230,8 @@ namespace http {
 					unsigned char scenetype = atoi(sd[5].c_str());
 					int iProtected = atoi(sd[7].c_str());
 
-					std::string onaction = base64_encode((const unsigned char*)sd[8].c_str(), sd[8].size());
-					std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
+					std::string onaction = base64_encode(sd[8]);
+					std::string offaction = base64_encode(sd[9]);
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sName;
@@ -17286,7 +17286,7 @@ namespace http {
 				m_sql.safe_query(
 					"INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate, RemoteHost) VALUES ('%q', '%q', '%q', '%q', '%q')",
 					session.id.c_str(),
-					base64_encode((const unsigned char*)session.username.c_str(), session.username.size()).c_str(),
+					base64_encode(session.username).c_str(),
 					session.auth_token.c_str(),
 					szExpires,
 					remote_host.c_str());

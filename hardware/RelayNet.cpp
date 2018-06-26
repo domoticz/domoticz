@@ -707,7 +707,7 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 			sLogin << m_username << ":" << m_password;
 
 			/* Generate UnEncrypted base64 Basic Authorization for username/password and add result to ExtraHeaders */
-			sAccessToken = base64_encode((const unsigned char *)(sLogin.str().c_str()), strlen(sLogin.str().c_str()));
+			sAccessToken = base64_encode(sLogin.str());
 			ExtraHeaders.push_back("Authorization: Basic " + sAccessToken);
 
 			/* Send URL to relay module and check return status */

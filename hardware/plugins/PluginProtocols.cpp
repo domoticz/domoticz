@@ -553,7 +553,7 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 				{
 					auth += m_Password;
 				}
-				std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+				std::string encodedAuth = base64_encode(auth);
 				sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
 			}
 

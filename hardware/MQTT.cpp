@@ -705,8 +705,8 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 	unsigned char scenetype = atoi(sd[5].c_str());
 	//int iProtected = atoi(sd[7].c_str());
 
-	//std::string onaction = base64_encode((const unsigned char*)sd[8].c_str(), sd[8].size());
-	//std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
+	//std::string onaction = base64_encode((sd[8]);
+	//std::string offaction = base64_encode(sd[9]);
 
 	Json::Value root;
 
