@@ -282,7 +282,6 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	bool setCt = false;
 	bool setMode = false;
 	_eHueColorMode mode;
-	_tHueLightState *pState = NULL;
 
 	if (LCmd=="On")
 	{
@@ -331,10 +330,12 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	}
 
 	// Update cached state
+	_tHueLightState *pState = NULL;
+
 	if (nodeID < 1000)
 	{
 		//Light
-		auto && ittLight = m_lights.find(nodeID);
+		std::map<int, _tHueLightState>::iterator ittLight = m_lights.find(nodeID);
 		if (ittLight != m_lights.end())
 		{
 			pState = &ittLight->second;
@@ -343,7 +344,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	else if (nodeID < 2000)
 	{
 		//Group
-		auto && ittGroup = m_groups.find(nodeID - 1000);
+		std::map<int, _tHueGroup>::iterator ittGroup = m_groups.find(nodeID - 1000);
 		if (ittGroup != m_groups.end())
 		{
 			pState = &ittGroup->second.gstate;
@@ -828,7 +829,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			_eHueLightType LType;
 			LightStateFromJSON(light["state"], tlight, LType);
 
-			auto && myLight = m_lights.find(lID);
+			std::map<int, _tHueLightState>::iterator myLight = m_lights.find(lID);
 			if (myLight != m_lights.end())
 			{
 				if (!StatesSimilar(myLight->second, tlight))
@@ -863,7 +864,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 			_eHueLightType LType;
 			LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key
 
-			auto && myGroup = m_groups.find(gID);
+			std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
 			if (myGroup != m_groups.end())
 			{
 				if (!StatesSimilar(myGroup->second.gstate, tstate))
@@ -941,7 +942,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	}
 
 	int gID = 0;
-	auto && myGroup = m_groups.find(gID);
+	std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
 	if (myGroup != m_groups.end())
 	{
 		if (!StatesSimilar(myGroup->second.gstate, tstate))
