@@ -14140,12 +14140,6 @@ namespace http {
 							EnergyDivider *= 100.0f;
 
 						int ii = 0;
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
-
-						int method = 0;
-						std::string sMethod = request::findValue(&req, "method");
-						if (sMethod.size() > 0)
-							method = atoi(sMethod.c_str());
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
@@ -14156,6 +14150,20 @@ namespace http {
 
 						std::string LastDateTime = "";
 						time_t lastTime = 0;
+
+						if ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)) {
+							result = m_sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+							bHaveFirstValue = true;
+							bHaveFirstRealValue = true;
+						}
+						else {
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+
+						int method = 0;
+						std::string sMethod = request::findValue(&req, "method");
+						if (sMethod.size() > 0)
+							method = atoi(sMethod.c_str());
 
 						if (!result.empty())
 						{
@@ -14218,7 +14226,9 @@ namespace http {
 												ii++;
 											}
 										}
-										ulFirstValue = actValue;
+										if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) {
+											ulFirstValue = actValue;
+										}
 										LastDateTime = actDateTimeHour;
 									}
 
@@ -14281,12 +14291,14 @@ namespace http {
 									}
 									else
 										bHaveFirstRealValue = true;
-									ulLastValue = actValue;
+									if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) {
+										ulLastValue = actValue;
+									}
 									lastTime = atime;
 								}
 							}
 						}
-						if ((bHaveFirstValue) && (method == 0))
+						if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)) && (bHaveFirstValue) && (method == 0))
 						{
 							//add last value
 							root["result"][ii]["d"] = LastDateTime + ":00";
@@ -14892,7 +14904,7 @@ namespace http {
 							}
 						}
 					}
-					else
+					else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
 					{
 						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
@@ -16069,7 +16081,7 @@ namespace http {
 								root["counter"] = szTmp;
 							}
 						}
-						else
+						else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
 						{
 							//Add last counter value
 							sprintf(szTmp, "%d", atoi(sValue.c_str()));
@@ -16388,7 +16400,7 @@ namespace http {
 							ii++;
 						}
 					}
-					else
+					else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
@@ -17112,7 +17124,7 @@ namespace http {
 							}
 						}
 					}
-					else
+					else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
