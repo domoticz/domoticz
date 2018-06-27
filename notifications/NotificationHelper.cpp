@@ -440,6 +440,13 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					return false;
 			}
 			break;
+		case pTypeEvohome:
+		case pTypeEvohomeRelay:
+		case pTypeEvohomeWater:
+		case pTypeEvohomeZone:
+			//not handled
+			return false;
+			break;
 		default:
 			break;
 	}
