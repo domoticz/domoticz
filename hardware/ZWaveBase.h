@@ -46,7 +46,6 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_CENTRAL_SCENE,
 
 		ZDTYPE_SENSOR_CUSTOM,
-
 	};
 	struct _tZWaveDevice
 	{

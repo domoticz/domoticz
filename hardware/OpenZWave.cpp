@@ -58,6 +58,7 @@ enum _eSensorScaleID
 	SCALEID_MOISTRUE,
 	SCALEID_TANK_CAPACITY,
 	SCALEID_RAIN_RATE,
+	SCALEID_SEISMIC_INTENSITY,
 };
 
 struct _tAlarmNameToIndexMapping
@@ -1757,8 +1758,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_VOLTAGE;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_VOLTAGE;
 					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
 					InsertDevice(_device);
 				}
@@ -1772,8 +1773,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_CURRENT;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_CURRENT;
 					_device.devType = ZDTYPE_SENSOR_AMPERE;
 					InsertDevice(_device);
 				}
@@ -1786,8 +1787,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_POWERFACTOR;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_POWERFACTOR;
 					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					InsertDevice(_device);
 				}
@@ -1800,8 +1801,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_GAS;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_GAS;
 					_device.devType = ZDTYPE_SENSOR_GAS;
 					InsertDevice(_device);
 				}
@@ -1814,8 +1815,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_WATER;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_WATER;
 					_device.devType = ZDTYPE_SENSOR_WATER;
 					InsertDevice(_device);
 				}
@@ -1984,8 +1985,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_GAS;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_GAS;
 					_device.devType = ZDTYPE_SENSOR_GAS;
 					InsertDevice(_device);
 				}
@@ -1998,8 +1999,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_WATER;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_WATER;
 					_device.devType = ZDTYPE_SENSOR_WATER;
 					InsertDevice(_device);
 				}
@@ -2012,8 +2013,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_CO2;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_CO2;
 					_device.devType = ZDTYPE_SENSOR_CO2;
 					InsertDevice(_device);
 				}
@@ -2026,8 +2027,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_MOISTRUE;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_MOISTRUE;
 					_device.devType = ZDTYPE_SENSOR_MOISTURE;
 					InsertDevice(_device);
 				}
@@ -2040,8 +2041,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_TANK_CAPACITY;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_TANK_CAPACITY;
 					_device.devType = ZDTYPE_SENSOR_TANK_CAPACITY;
 					InsertDevice(_device);
 				}
@@ -2054,6 +2055,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
+					_device.scaleMultiply = 1;
 					_device.devType = ZDTYPE_SWITCH_NORMAL;
 					InsertDevice(_device);
 				}
@@ -2066,10 +2068,24 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_RAIN_RATE;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_RAIN_RATE;
 					_device.devType = ZDTYPE_SENSOR_CUSTOM;
 					_device.custom_label = "mm/h";
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel == "Seismic Intensity")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_SEISMIC_INTENSITY;
+					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					InsertDevice(_device);
 				}
 			}
@@ -2577,6 +2593,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_TANK_CAPACITY;
 		else if (vLabel == "Rain Rate")
 			scaleID = SCALEID_RAIN_RATE;
+		else if (vLabel == "Seismic Intensity")
+			scaleID = SCALEID_SEISMIC_INTENSITY;
 
 		sstr << "." << scaleID;
 	}

@@ -1,5 +1,6 @@
 Version 4.xxxx (July xxth 2018)
 - Implemented: OpenZWave, controller options for RetryTimeout, AssumeAwake and PerformReturnRoutes can now be set
+- Implemented: OpenZWave, support for Seismic Intensity sensor
 - Implemented: InfluxDB Data push, support for Username/Password
 
 Version 4.9700 (June 23th 2018)
