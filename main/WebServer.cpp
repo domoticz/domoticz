@@ -14301,7 +14301,7 @@ namespace http {
 								}
 							}
 						}
-						if (!bIsManagedCounter)
+						if ((!bIsManagedCounter) && (bHaveFirstValue) && (method == 0))
 						{
 							//add last value
 							root["result"][ii]["d"] = LastDateTime + ":00";
