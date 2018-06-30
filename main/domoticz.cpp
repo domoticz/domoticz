@@ -36,6 +36,7 @@
 	#include "../msbuild/WindowsHelper.h"
 	#include <Shlobj.h>
 #else
+	#include <sys/prctl.h>
 	#include <sys/stat.h>
 	#include <sys/syscall.h>
 	#include <sys/types.h>
@@ -82,19 +83,23 @@ static bool dumpstack_gdb(void) {
 	sprintf(thread_buf, "(LWP %ld)", syscall(__NR_gettid));
 	char name_buf[512];
 	name_buf[readlink("/proc/self/exe", name_buf, 511)]=0;
-	
+
 	if (IsDebuggerPresent())
 	{
 		return false;
 	}
-	
+
+	// Allow us to be traced
+	// Note: Does not currently work in WSL: https://github.com/Microsoft/WSL/issues/3053
+	int retval = prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0);
+
 	// Spawn helper process which will keep running when gdb is attached to main domoticz process
 	pid_t intermediate_pid = fork();
 	if (intermediate_pid == -1)
 	{
 		return false;
 	}
-	
+
 	if (!intermediate_pid) {
 		// Wathchdog 1: Used to kill sub processes to gdb which may hang
 		pid_t timeout_pid1 = fork();
@@ -136,7 +141,7 @@ static bool dumpstack_gdb(void) {
 			if (dup2(fd, STDOUT_FILENO) == -1) _Exit(1);
 			if (dup2(fd, STDERR_FILENO) == -1) _Exit(1);
 			execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread apply all bt", "-ex", "bt", "-ex", "detach", name_buf, pid_buf, NULL);
-			
+
 			// If gdb failed to start, signal back
 			close(fd);
 			_Exit(1);
@@ -149,7 +154,7 @@ static bool dumpstack_gdb(void) {
 		{
 			int status;
 			pid_t exited_pid = wait(&status);
-			printf("pid %d exited, worker_pid: %d, timeout_pid1: %d, timeout_pid2: %d\n", exited_pid, worker_pid, timeout_pid1, timeout_pid2);
+			//printf("pid %d exited, worker_pid: %d, timeout_pid1: %d, timeout_pid2: %d\n", exited_pid, worker_pid, timeout_pid1, timeout_pid2);
 			if (exited_pid == worker_pid) {
 				if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
 				{
@@ -160,15 +165,15 @@ static bool dumpstack_gdb(void) {
 					result = 2; // Failed to start gdb
 				}
 				worker_pid = 0;
-				printf("Status: %x, wifexited: %u, wexitstatus: %u\n", status, WIFEXITED(status), WEXITSTATUS(status));
-				printf("Sending SIGKILL to timeout_pid1\n");
+				//printf("Status: %x, wifexited: %u, wexitstatus: %u\n", status, WIFEXITED(status), WEXITSTATUS(status));
+				//printf("Sending SIGKILL to timeout_pid1\n");
 				if (timeout_pid1) kill(timeout_pid1, SIGKILL);
 				if (timeout_pid2) kill(timeout_pid2, SIGKILL);
 			} else if (exited_pid == timeout_pid1) {
 				// Watchdog 1 timed out, attempt to recover by killing all gdb's child processes
 				char tmp[128];
 				timeout_pid1 = 0;
-				printf("Sending SIGKILL to worker_pid's children\n");
+				//printf("Sending SIGKILL to worker_pid's children\n");
 				if (worker_pid)
 				{
 					sprintf(tmp, "pkill -KILL -P %d", worker_pid);
@@ -177,7 +182,7 @@ static bool dumpstack_gdb(void) {
 			} else if (exited_pid == timeout_pid2) {
 				// Watchdog 2 timed out, give up
 				timeout_pid2 = 0;
-				printf("Sending SIGKILL to worker_pid\n");
+				//printf("Sending SIGKILL to worker_pid\n");
 				if (worker_pid) kill(worker_pid, SIGKILL);
 				if (timeout_pid1) kill(timeout_pid1, SIGKILL);
 			}
@@ -188,7 +193,7 @@ static bool dumpstack_gdb(void) {
 		size_t len = 0;
 		ssize_t read;
 		int status;
-		
+
 		pid_t res = 0;
 		res = waitpid(intermediate_pid, &status, 0);
 
@@ -203,30 +208,38 @@ static bool dumpstack_gdb(void) {
 				while ((read = getline(&line, &len, f)) != -1) {
 					if (foundThread)
 					{
-						if (strstr(line, "#") != line) break; // Full stack trace for thread printed
-						printf("%s", line);
+						if (strstr(line, "#") != line) break; // '#' means full stack trace for thread printed
+						if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+						_log.Log(LOG_ERROR, "%s", line);
 					}
 					else
 					{
 						if (strstr(line, thread_buf) != NULL)
 						{
 							foundThread = true;
-							printf("%s", line);
+							if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+							_log.Log(LOG_ERROR, "%s", line);
 						}
 						if (strstr(line, "No stack.") == line)
 						{
 							gdbSuccess = false;
-							printf("gdb failed to get stacktrace:\n > %s", line);
+							if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+							_log.Log(LOG_ERROR, "gdb failed to get stacktrace:\n > %s", line);
 						}
 					}
+					free(line);
+					line = NULL;
 				}
 
 				if (!foundThread)
 				{
-					printf("Did not find stack frame for thread %s, printing full gdb output:\n", thread_buf);
+					_log.Log(LOG_ERROR, "Did not find stack frame for thread %s, printing full gdb output:\n", thread_buf);
 					rewind(f);
 					while ((read = getline(&line, &len, f)) != -1) {
-						printf("> %s", line);
+						if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+						_log.Log(LOG_ERROR, "> %s", line);
+						free(line);
+						line = NULL;
 					}
 				}
 				fclose(f);
@@ -235,7 +248,7 @@ static bool dumpstack_gdb(void) {
 		}
 		else
 		{
-			printf("Failed to start gdb, will use backtrace() for printing stack frame\n");
+			_log.Log(LOG_ERROR, "Failed to start gdb, will use backtrace() for printing stack frame\n");
 		}
 	}
 	return false;
@@ -259,12 +272,59 @@ static void dumpstack_backtrace(void *info, void *ucontext) {
 	int n, count = backtrace(addrs, 128);
 	char** symbols = backtrace_symbols(addrs, count);
 
-	if (symbols) {
-		for (n = 0; n < count; n++) {
-			_log.Log(LOG_ERROR, "  %s", symbols[n]);
+	// skip first stack frame (points here)
+	for (int i = 0; i < count && symbols != NULL; ++i)
+	{
+		char *mangled_name = 0, *offset_begin = 0, *offset_end = 0;
+
+		// find parentheses and +address offset surrounding mangled name
+		for (char *p = symbols[i]; *p; ++p)
+		{
+			if (*p == '(')
+			{
+				mangled_name = p;
+			}
+			else if (*p == '+')
+			{
+				offset_begin = p;
+			}
+			else if (*p == ')')
+			{
+				offset_end = p;
+				break;
+			}
 		}
-		free(symbols);
+
+		// if the line could be processed, attempt to demangle the symbol
+		if (mangled_name && offset_begin && offset_end &&
+			mangled_name < offset_begin)
+		{
+			*mangled_name++ = '\0';
+			*offset_begin++ = '\0';
+			*offset_end++ = '\0';
+
+			int status;
+			char * real_name = abi::__cxa_demangle(mangled_name, 0, 0, &status);
+
+			// if demangling is successful, output the demangled function name
+			if (status == 0)
+			{
+				_log.Log(LOG_ERROR, "#%-2d %s : %s + %s%s", i, symbols[i], real_name, offset_begin, offset_end);
+			}
+			// otherwise, output the mangled function name
+			else
+			{
+				_log.Log(LOG_ERROR, "#%-2d %s : %s + %s%s", i, symbols[i], mangled_name, offset_begin, offset_end);
+			}
+			free(real_name);
+		}
+		// otherwise, print the whole line
+		else
+		{
+			_log.Log(LOG_ERROR, "#%-2d %s", i, symbols[i]);
+		}
 	}
+	free(symbols);
 }
 #else
 static void dumpstack_backtrace(void *info, void *ucontext) {
@@ -273,7 +333,7 @@ static void dumpstack_backtrace(void *info, void *ucontext) {
 
 static void dumpstack(void *info, void *ucontext) {
 	bool result = false;
-	
+
 	result = dumpstack_gdb();
 	if (!result) dumpstack_backtrace(info, ucontext);
 }
