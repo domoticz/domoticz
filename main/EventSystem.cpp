@@ -1414,8 +1414,7 @@ void CEventSystem::EventQueueThread()
 
 	while (!m_stoprequested)
 	{
-		bool hasPopped = m_eventqueue.timed_wait_and_pop<boost::posix_time::milliseconds>(item, boost::posix_time::milliseconds(5000));
-
+		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
 		if (!hasPopped)
 			continue;
 

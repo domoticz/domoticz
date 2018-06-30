@@ -2361,7 +2361,7 @@ void MySensorsBase::Do_Send_Work()
 	while (true)
 	{
 		std::string toSend;
-		bool hasPopped = m_sendQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(toSend, boost::posix_time::milliseconds(2000));
+		bool hasPopped = m_sendQueue.timed_wait_and_pop<std::chrono::duration<int> >(toSend, std::chrono::duration<int>(2));
 		if (!hasPopped) {
 			continue;
 		}
