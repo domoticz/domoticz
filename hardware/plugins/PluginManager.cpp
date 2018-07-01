@@ -139,10 +139,14 @@ namespace Plugins {
 			}
 
 			Py_Initialize();
-			m_InitialPythonThread = PyEval_SaveThread();
 
 			// Initialise threads. Python 3.7+ does this inside Py_Initialize so done here for compatibility
-			PyEval_InitThreads();
+			if (!PyEval_ThreadsInitialized())
+			{
+				PyEval_InitThreads();
+			}
+
+			m_InitialPythonThread = PyEval_SaveThread();
 
 			m_bEnabled = true;
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s'.", sVersion.c_str());

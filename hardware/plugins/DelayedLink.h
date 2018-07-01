@@ -87,6 +87,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_CallObject, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
+		DECLARE_PYTHON_SYMBOL(int, PyEval_ThreadsInitialized, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Get, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyEval_SaveThread, void);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
@@ -205,6 +206,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
 					RESOLVE_PYTHON_SYMBOL(PyFrame_GetLineNumber);
 					RESOLVE_PYTHON_SYMBOL(PyEval_InitThreads);
+					RESOLVE_PYTHON_SYMBOL(PyEval_ThreadsInitialized);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Get);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SaveThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
@@ -380,6 +382,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
 #define PyFrame_GetLineNumber	pythonLib->PyFrame_GetLineNumber
 #define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
+#define	PyEval_ThreadsInitialized	pythonLib->PyEval_ThreadsInitialized
 #define	PyThreadState_Get		pythonLib->PyThreadState_Get
 #define PyEval_SaveThread		pythonLib->PyEval_SaveThread
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
