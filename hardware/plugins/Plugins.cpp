@@ -35,6 +35,7 @@ extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
+extern MainWorker m_mainworker;
 
 namespace Plugins {
 
@@ -867,6 +868,7 @@ namespace Plugins {
 
 		try
 		{
+			PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
 			m_PyInterpreter = Py_NewInterpreter();
 			if (!m_PyInterpreter)
 			{
@@ -973,6 +975,7 @@ namespace Plugins {
 			}
 			_log.Log(LOG_STATUS, "(%s) Initialized %s", Name.c_str(), sExtraDetail.c_str());
 
+			PyEval_SaveThread();
 			return true;
 		}
 		catch (...)
@@ -981,6 +984,7 @@ namespace Plugins {
 		}
 
 Error:
+		PyEval_SaveThread();
 		m_bIsStarting = false;
 		return false;
 	}
@@ -1488,7 +1492,14 @@ Error:
 
 	void CPlugin::RestoreThread()
 	{
-		if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+		if (m_PyInterpreter)
+			PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+	}
+
+	void CPlugin::ReleaseThread()
+	{
+		if (m_PyInterpreter)
+			PyEval_SaveThread();
 	}
 
 	void CPlugin::Callback(std::string sHandler, void * pParams)
@@ -1537,6 +1548,7 @@ Error:
 			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
 			Py_XDECREF(m_PyModule);
+			PyEval_ReleaseLock();
 		}
 		catch (std::exception *e)
 		{

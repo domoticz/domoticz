@@ -73,6 +73,7 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PythonMutex);
 			m_pPlugin->RestoreThread();
 			ProcessLocked();
+			m_pPlugin->ReleaseThread();
 		};
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 	};
@@ -367,6 +368,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			boost::lock_guard<boost::mutex> l(PythonMutex);
 			m_pPlugin->RestoreThread();
 			ProcessLocked();
+			m_pPlugin->ReleaseThread();
 		};
 	};
 
@@ -454,6 +456,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			boost::lock_guard<boost::mutex> l(PythonMutex);
 			m_pPlugin->RestoreThread();
 			ProcessLocked();
+			m_pPlugin->ReleaseThread();
 		}
 	};
 

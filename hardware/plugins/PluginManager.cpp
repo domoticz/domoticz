@@ -141,6 +141,9 @@ namespace Plugins {
 			Py_Initialize();
 			m_InitialPythonThread = PyEval_SaveThread();
 
+			// Initialise threads. Python 3.7+ does this inside Py_Initialize so done here for compatibility
+			PyEval_InitThreads();
+
 			m_bEnabled = true;
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s'.", sVersion.c_str());
 		}
@@ -319,7 +322,13 @@ namespace Plugins {
 					}
 				}
 				// Free the memory for the message
-				if (Message) delete Message;
+				if (Message)
+				{
+					CPlugin* pPlugin = (CPlugin*)Message->Plugin();
+					pPlugin->RestoreThread();
+					delete Message;
+					pPlugin->ReleaseThread();
+				}
 			}
 			sleep_milliseconds(50);
 		}
