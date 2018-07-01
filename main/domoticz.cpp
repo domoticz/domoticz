@@ -31,21 +31,23 @@
 #include "../notifications/NotificationHelper.h"
 #include "appversion.h"
 #include "localtime_r.h"
+#include <sys/types.h>
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
 	#include <Shlobj.h>
 #else
-	#include <sys/prctl.h>
 	#include <sys/stat.h>
-	#include <sys/syscall.h>
-	#include <sys/types.h>
-	#include <sys/wait.h>
 	#include <unistd.h>
 	#include <syslog.h>
 	#include <errno.h>
 	#include <fcntl.h>
 	#include <string.h> 
+#if defined(__linux__)
+	#include <sys/prctl.h>
+	#include <sys/syscall.h>
+	#include <sys/wait.h>
+#endif
 #endif
 
 #if defined(__linux__) //&& defined(__arm__)
