@@ -108,6 +108,7 @@ namespace Plugins {
 		PluginDebugMask		m_bDebug;
 		bool				m_stoprequested;
 		bool				m_bIsStarting;
+		bool				m_bTracing;
 	};
 
 	class CPluginNotifier : public CNotificationBase

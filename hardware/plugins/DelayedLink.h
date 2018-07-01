@@ -119,6 +119,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(long, PyLong_AsLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsUTF8String, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_AddModule, const char*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_SetProfile, Py_tracefunc COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_SetTrace, Py_tracefunc COMMA PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -238,6 +240,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLong);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8String);
 					RESOLVE_PYTHON_SYMBOL(PyImport_AddModule);
+					RESOLVE_PYTHON_SYMBOL(PyEval_SetProfile);
+					RESOLVE_PYTHON_SYMBOL(PyEval_SetTrace);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -414,4 +418,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyLong_AsLong			pythonLib->PyLong_AsLong
 #define PyUnicode_AsUTF8String	pythonLib->PyUnicode_AsUTF8String
 #define PyImport_AddModule		pythonLib->PyImport_AddModule
+#define PyEval_SetProfile		pythonLib->PyEval_SetProfile
+#define PyEval_SetTrace			pythonLib->PyEval_SetTrace
 }
