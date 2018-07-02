@@ -20,7 +20,7 @@ class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 		std::string		sStatus;
 		std::string		sShortStatus;
 	};
-	
+
 public:
 	CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
 	~CHEOS(void);
@@ -36,11 +36,11 @@ private:
 	bool StopHardware() override;
 	bool WriteInt(const std::string &sendStr);
 	void Do_Work();
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
@@ -56,7 +56,7 @@ private:
 	int m_retrycntr;
 
 	int m_lastUpdate;
-	
+
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::string	m_IP;
@@ -67,7 +67,7 @@ private:
 	unsigned short m_usIPPort;
 	bool m_bDoRestart;
 	unsigned char m_buffer[1028];
-	int m_bufferpos;	
+	int m_bufferpos;
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 

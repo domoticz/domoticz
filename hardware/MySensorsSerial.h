@@ -23,6 +23,6 @@ private:
 	 * Read callback, stores data in the buffer
 	 */
 	void readCallback(const char *data, size_t len);
-	void WriteInt(const std::string &sendStr);
+	void WriteInt(const std::string &sendStr) override;
 };
 

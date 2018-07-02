@@ -14,7 +14,7 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn);
+	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) override;
 	void Init();
 	void GetMeterDetails();
 private:

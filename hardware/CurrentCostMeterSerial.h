@@ -15,7 +15,7 @@ public:
 	CurrentCostMeterSerial(const int ID, const std::string& devname, unsigned int baudRate);
     virtual ~CurrentCostMeterSerial();
 
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length);
+	virtual bool WriteToHardware(const char *pdata, const unsigned char length) override;
 protected:
 	virtual bool StartHardware() override;
 	virtual bool StopHardware() override;

@@ -22,15 +22,15 @@ protected:
 	unsigned short m_usIPPort;
 	bool m_bDoRestart;
 
-	void WriteInt(const std::string &sendStr);
+	void WriteInt(const std::string &sendStr) override;
 
 
 	void Do_Work();
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;

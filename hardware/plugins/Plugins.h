@@ -83,7 +83,7 @@ namespace Plugins {
 
 		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
 
-		bool	WriteToHardware(const char *pdata, const unsigned char length);
+		bool	WriteToHardware(const char *pdata, const unsigned char length) override;
 		void	Restart();
 		void	SendCommand(const int Unit, const std::string &command, const int level, const _tColor color);
 		void	SendCommand(const int Unit, const std::string &command, const float level);

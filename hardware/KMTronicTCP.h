@@ -16,7 +16,7 @@ private:
 	void ParseRelays(const std::string &sResult);
 	void ParseTemps(const std::string &sResult);
 	std::string GenerateURL(const bool bIsTempDevice);
-	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn);
+	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) override;
 	void Init();
 	void GetMeterDetails();
 	void Do_Work();

@@ -9,9 +9,9 @@ public:
 	CurrentCostMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	virtual ~CurrentCostMeterTCP(void);
 
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length);
+	virtual bool WriteToHardware(const char *pdata, const unsigned char length) override;
 
-protected:	
+protected:
 	virtual bool StartHardware() override;
 	virtual bool StopHardware() override;
 
