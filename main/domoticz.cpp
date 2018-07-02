@@ -31,13 +31,13 @@
 #include "../notifications/NotificationHelper.h"
 #include "appversion.h"
 #include "localtime_r.h"
-#include <sys/types.h>
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
 	#include <Shlobj.h>
 #else
 	#include <sys/stat.h>
+	#include <sys/types.h>
 	#include <unistd.h>
 	#include <syslog.h>
 	#include <errno.h>
@@ -461,8 +461,16 @@ int pidFilehandle = 0;
 
 int fatal_handling = 0;
 
-void signal_handler(int sig_num, siginfo_t * info, void * ucontext)
+void signal_handler(int sig_num
+#ifndef WIN32
+, siginfo_t * info, void * ucontext
+#endif
+)
 {
+#ifdef WIN32
+	void *info = NULL;
+	void *ucontext = NULL;
+#endif
 	switch(sig_num)
 	{
 #ifndef WIN32
@@ -484,12 +492,22 @@ void signal_handler(int sig_num, siginfo_t * info, void * ucontext)
 	case SIGABRT:
 	case SIGFPE:
 		if (fatal_handling) {
-			_log.Log(LOG_ERROR, "Domoticz received fatal signal %d (%s) while backtracing", sig_num, strsignal(sig_num));
+			_log.Log(LOG_ERROR, "Domoticz received fatal signal %d (%s) while backtracing", sig_num
+#ifndef WIN32
+				, strsignal(sig_num));
+#else
+				, "-");
+#endif
 			dumpstack_backtrace(info, ucontext);
 			exit(EXIT_FAILURE);
 		}
 		fatal_handling = 1;
-		_log.Log(LOG_ERROR, "Domoticz received fatal signal %d (%s)", sig_num, strsignal(sig_num));
+		_log.Log(LOG_ERROR, "Domoticz received fatal signal %d (%s)", sig_num
+#ifndef WIN32
+			, strsignal(sig_num));
+#else
+			, "-");
+#endif
 		dumpstack(info, ucontext);
 		// re-raise signal to enforce core dump
 		signal(sig_num, SIG_DFL);
@@ -1480,6 +1498,7 @@ int main(int argc, char**argv)
 
 	if (!g_bRunAsDaemon)
 	{
+#ifndef WIN32
 		struct sigaction newSigAction;
 
 		/* Set up a signal handler */
@@ -1494,6 +1513,10 @@ int main(int argc, char**argv)
 		sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
 		sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
 		sigaction(SIGFPE,  &newSigAction, NULL);    // catch floating point error
+#else
+		signal(SIGINT, signal_handler);
+		signal(SIGTERM, signal_handler);
+#endif
 	}
 
 	if (!m_mainworker.Start())
