@@ -122,6 +122,7 @@
             }
             
 			boost::lock_guard<boost::mutex> l(PythonMutex);
+			PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
 			m_PyInterpreter = Py_NewInterpreter();
             if (!m_PyInterpreter)
             {
@@ -144,7 +145,8 @@
             PythonEventsInitalized = 1;
             
             PyObject* pModule = Plugins::PythonEventsGetModule();
-            if (!pModule) {
+			PyEval_SaveThread();
+			if (!pModule) {
                 _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
                 return false;
             }
@@ -159,7 +161,8 @@
 				if (Plugins::Py_IsInitialized())
 					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
 				m_PyInterpreter = NULL;
-                _log.Log(LOG_STATUS, "EventSystem - Python stopped...");
+				PyEval_ReleaseLock();
+				_log.Log(LOG_STATUS, "EventSystem - Python stopped...");
                 return true;
             } else
                 return false;
@@ -217,7 +220,8 @@
 
                    if (!pModuleDict) {
                        _log.Log(LOG_ERROR, "Python EventSystem: Failed to open module dictionary.");
-                       return;
+					   PyEval_SaveThread();
+					   return;
                    }
 
                    if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device_name", Plugins::PyUnicode_FromString(m_devicestates[DeviceID].deviceName.c_str())) == -1) {
@@ -230,13 +234,15 @@
                    if (Plugins::PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
                    {
                        _log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
-                       return;
+					   PyEval_SaveThread();
+					   return;
                    }
                    Py_DECREF(m_DeviceDict);
 
                    if (Plugins::PyType_Ready(&Plugins::PDeviceType) < 0) {
                        _log.Log(LOG_ERROR, "Python EventSystem: Unable to ready DeviceType Object.");
-                       return;
+					   PyEval_SaveThread();
+					   return;
                    }
 
                    // Mutex
@@ -332,7 +338,8 @@
                    if (Plugins::PyDict_SetItemString(pModuleDict, "user_variables", (PyObject*)m_uservariablesDict) == -1)
                    {
                        _log.Log(LOG_ERROR, "Python EventSystem: Failed to add uservariables dictionary.");
-                       return;
+					   PyEval_SaveThread();
+					   return;
                    }
                    Py_DECREF(m_uservariablesDict);
 
@@ -401,7 +408,10 @@ free_module:
                 } else {
                     _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
                 }
-            } else {
+
+				PyEval_SaveThread();
+
+			} else {
                 _log.Log(LOG_ERROR, "EventSystem: Python not initalized");
             }
 

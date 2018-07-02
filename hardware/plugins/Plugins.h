@@ -78,6 +78,7 @@ namespace Plugins {
 		void	DisconnectEvent(CEventBase*);
 		void	Callback(std::string sHandler, void* pParams);
 		void	RestoreThread();
+		void	ReleaseThread();
 		void	Stop();
 
 		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
@@ -107,6 +108,7 @@ namespace Plugins {
 		PluginDebugMask		m_bDebug;
 		bool				m_stoprequested;
 		bool				m_bIsStarting;
+		bool				m_bTracing;
 	};
 
 	class CPluginNotifier : public CNotificationBase
