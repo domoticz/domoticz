@@ -15,7 +15,7 @@ private:
 	bool StopHardware() override;
 	bool OpenSerialDevice();
 	void Do_Work();
-	bool WriteInt(const std::string &sendString);
+	bool WriteInt(const std::string &sendString) override;
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	std::string m_szSerialPort;

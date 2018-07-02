@@ -18,11 +18,11 @@ private:
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 	void WriteInt(const std::string &sendStr);
 	void Do_Work();
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 private:

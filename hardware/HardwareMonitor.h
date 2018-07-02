@@ -12,7 +12,7 @@ class CHardwareMonitor : public CDomoticzHardwareBase
 public:
 	explicit CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
+	bool WriteToHardware(const char *pdata, const unsigned char length) override { return false; };
 #if defined (__linux__)
 	float GetProcessMemUsage();
 #endif

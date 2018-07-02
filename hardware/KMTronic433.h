@@ -26,6 +26,6 @@ private:
 	* Read callback, stores data in the buffer
 	*/
 	void readCallback(const char *data, size_t len);
-	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn);
+	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) override;
 };
 

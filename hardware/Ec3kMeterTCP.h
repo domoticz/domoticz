@@ -42,11 +42,11 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 	void ParseData(const unsigned char *pData, int Len);
 private:
 	int m_retrycntr;
