@@ -55,7 +55,7 @@ bool CHoneywell::StartHardware() {
 	Init();
 	mLastMinute = -1;
 	//Start worker thread
-	mThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHoneywell::Do_Work, this)));
+	mThread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CHoneywell::Do_Work, this)));
 	mIsStarted = true;
 	sOnConnected(this);
 	return (mThread != NULL);

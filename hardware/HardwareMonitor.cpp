@@ -115,7 +115,7 @@ bool CHardwareMonitor::StartHardware()
 #endif
 	m_stoprequested = false;
 	m_lastquerytime = 0;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHardwareMonitor::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CHardwareMonitor::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
@@ -131,7 +131,7 @@ bool CHardwareMonitor::StartHardware()
 
 bool CHardwareMonitor::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		m_stoprequested = true;
 		m_thread->join();

@@ -584,7 +584,7 @@ bool CHEOS::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHEOS::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CHEOS::Do_Work, this)));
 	return (m_thread != NULL);
 }
 
@@ -602,7 +602,7 @@ bool CHEOS::StopHardware()
 		}
 	}
 	try {
-		if (m_thread)
+		if (m_thread && m_thread->joinable())
 		{
 			m_thread->join();
 		}
@@ -632,7 +632,7 @@ void CHEOS::OnDisconnect()
 
 void CHEOS::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

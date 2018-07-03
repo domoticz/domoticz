@@ -30,7 +30,7 @@ bool KMTronicUDP::StartHardware()
 {
 	Init();
  	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronicUDP::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&KMTronicUDP::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "KMTronic: Started");
@@ -68,7 +68,7 @@ void KMTronicUDP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS, "KMTronic: UDP Worker stopped...");
-} 
+}
 
 bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char length)
 {
@@ -104,7 +104,7 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char length)
 
 		/** build the packet **/
 		buf[3]=Relay+'0';
-	
+
 		if (pSen->LIGHTING2.cmnd == light2_sOn)
 		{
 			buf[5]='1';

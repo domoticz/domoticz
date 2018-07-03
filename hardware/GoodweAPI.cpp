@@ -10,7 +10,7 @@
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
-#if defined(_WIN32) || defined(_WIN64) 
+#if defined(_WIN32) || defined(_WIN64)
 #define strcasecmp _stricmp
 #else
 #include <strings.h>
@@ -79,7 +79,7 @@ GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int Server
 {
 	m_HwdID=ID;
 	switch ((_eGoodweLocation)ServerLocation) {
-		case GOODWE_LOCATION_EUROPE: 
+		case GOODWE_LOCATION_EUROPE:
 			m_Host = GOODWE_HOST_EU;
 			break;
 		case GOODWE_LOCATION_OCEANIA:
@@ -89,7 +89,7 @@ GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int Server
 			m_Host = GOODWE_HOST_GLOBAL;
 			break;
 	}
-	
+
 	m_stoprequested=false;
 	Init();
 }
@@ -106,15 +106,15 @@ bool GoodweAPI::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&GoodweAPI::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&GoodweAPI::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 bool GoodweAPI::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		assert(m_thread);
 		m_stoprequested = true;
@@ -180,8 +180,8 @@ bool GoodweAPI::GoodweServerClient(const std::string &sPath, std::string &sResul
 
 uint32_t GoodweAPI::hash(const std::string &str)
 {
-	/* 
-	 * We need a way to generate the NodeId from the stationID 
+	/*
+	 * We need a way to generate the NodeId from the stationID
 	 * and the ChildID from device serial.
 	 * This hash is definitely not perfect as we reduce the 128 bit
          * stationID to an int (normally 32 bits).
@@ -192,7 +192,7 @@ uint32_t GoodweAPI::hash(const std::string &str)
 
 	long hash = 5381;
 	size_t i = 0;
-	
+
 	for (i = 0; i < str.size(); i++)
 	{
 		int c = str[i++];
@@ -217,11 +217,11 @@ float GoodweAPI::getPowerWatt(const std::string &str)
 	} else {
 		_log.Log(LOG_ERROR, "Invalid power units in %s", str.c_str());
 		result = 0;
-	}	
+	}
 	return result;
 }
 
-		
+
 float GoodweAPI::getEnergyWh(const std::string &str)
 {
 	float result;
@@ -238,7 +238,7 @@ float GoodweAPI::getEnergyWh(const std::string &str)
 	} else {
 		_log.Log(LOG_ERROR, "Invalid energy units in %s", str.c_str());
 		result = 0;
-	}	
+	}
 	return result;
 }
 
@@ -269,7 +269,7 @@ void GoodweAPI::GetMeterDetails()
 		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http user data!");
 		return;
 	}
- 
+
 #ifdef DEBUG_GoodweAPIW
 	SaveString2Disk(sResult, "/tmp/Goodwe2.json");
 #endif
@@ -304,7 +304,7 @@ void GoodweAPI::GetMeterDetails()
 		std::string sStationName = root[i][BY_USER_STATION_NAME].asString();
 
 		// ParseStation is not used for now as there may not be stations with multiple inverters
-		// ParseStation(sStationId, sStationName); 
+		// ParseStation(sStationId, sStationName);
 
 		ParseDeviceList(sStationId, sStationName);
 	}
@@ -463,7 +463,7 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 	float currentPowerW = getPowerWatt(sCurrentPower);
 	float totalEnergyKWh = getEnergyWh(sTotalEnergyKWh)/1000;
 
-	// Create NodeID and ChildID from station id and device serial 
+	// Create NodeID and ChildID from station id and device serial
 
 	uint32_t NodeID = hash(sStationId);
 	uint32_t ChildID = hash(sDeviceSerial);

@@ -117,7 +117,7 @@ bool CNotificationBase::SendMessageEx(
 		fText = CURLEncode::URLEncode(fText);
 	}
 
-	boost::mutex::scoped_lock SendMessageEx(SendMessageExMutex);
+	std::unique_lock<std::mutex> SendMessageEx(SendMessageExMutex);
 	bool bRet = SendMessageImplementation(Idx, Name, fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
 	if (bRet) {
 		_log.Log(LOG_NORM, "Notification sent (%s) => Success", _subsystemid.c_str());

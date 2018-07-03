@@ -52,10 +52,10 @@ private:
 private:
 	volatile bool m_stoprequested;
 	int m_PollInterval;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::map<const std::string, const int> m_devices;
-	boost::mutex m_mutex;
-	
+	std::mutex m_mutex;
+
 	_tColor m_RGBWColorState;
 	bool m_RGBWisWhiteState;
 	int m_RGBWbrightnessState;

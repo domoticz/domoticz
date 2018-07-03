@@ -38,5 +38,5 @@ private:
 	int m_pollInterval;
 	volatile bool m_stoprequested;
 	int m_iModel;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };

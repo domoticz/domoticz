@@ -32,8 +32,8 @@ bool OTGWTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&OTGWTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&OTGWTCP::Do_Work, this)));
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 bool OTGWTCP::StopHardware()
@@ -50,7 +50,7 @@ bool OTGWTCP::StopHardware()
 		}
 	}
 	try {
-		if (m_thread)
+		if (m_thread && m_thread->joinable())
 		{
 			m_thread->join();
 			m_thread.reset();
@@ -127,11 +127,11 @@ void OTGWTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
-} 
+}
 
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 

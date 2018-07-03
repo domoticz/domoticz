@@ -136,7 +136,7 @@ std::string C1WireForWindows::SendAndReceive(const std::string &requestToSend) c
 {
    // SendAndReceive can be called by 2 different thread contexts : writeData and GetDevices
    // So we have to set protection
-   boost::lock_guard<boost::mutex> locker(*(const_cast<boost::mutex*>(&m_SocketMutex)));
+   std::lock_guard<std::mutex> locker(*(const_cast<std::mutex*>(&m_SocketMutex)));
 
    return ::SendAndReceive(m_Socket,requestToSend);
 }

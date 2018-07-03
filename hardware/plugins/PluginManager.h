@@ -20,9 +20,9 @@ namespace Plugins {
 		static	std::map<int, CDomoticzHardwareBase*>	m_pPlugins;
 		static	std::map<std::string, std::string>		m_PluginXml;
 
-		boost::thread* m_thread;
+		std::shared_ptr<std::thread> m_thread;
 		volatile bool m_stoprequested;
-		boost::mutex m_mutex;
+		std::mutex m_mutex;
 
 		void Do_Work();
 

@@ -32,7 +32,7 @@ private:
 	std::string m_ThermostatID;
 	int m_OutsideTemperatureIdx;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	bool m_bDoLogin;
 	int m_LastMinute;

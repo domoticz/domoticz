@@ -9,7 +9,7 @@ typedef unsigned char byte;
 
 namespace Plugins {
 
-	extern boost::mutex PythonMutex;			// controls access to Python
+	extern std::mutex PythonMutex;			// controls access to Python
 
 	class CPluginMessageBase
 	{
@@ -70,7 +70,7 @@ namespace Plugins {
 		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
 		void Process()
 		{
-			boost::lock_guard<boost::mutex> l(PythonMutex);
+			std::lock_guard<std::mutex> l(PythonMutex);
 			m_pPlugin->RestoreThread();
 			ProcessLocked();
 			m_pPlugin->ReleaseThread();
@@ -365,7 +365,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	public:
 		CDirectiveBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
 		virtual void Process() {
-			boost::lock_guard<boost::mutex> l(PythonMutex);
+			std::lock_guard<std::mutex> l(PythonMutex);
 			m_pPlugin->RestoreThread();
 			ProcessLocked();
 			m_pPlugin->ReleaseThread();
@@ -453,7 +453,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		CEventBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
 		virtual void Process()
 		{
-			boost::lock_guard<boost::mutex> l(PythonMutex);
+			std::lock_guard<std::mutex> l(PythonMutex);
 			m_pPlugin->RestoreThread();
 			ProcessLocked();
 			m_pPlugin->ReleaseThread();

@@ -22,6 +22,6 @@ private:
 	std::string m_Username;
 	std::string m_Password;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

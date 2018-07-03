@@ -78,7 +78,7 @@ CEvohomeBase::~CEvohomeBase(void)
 
 bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
+	std::lock_guard<std::mutex> l(m_mtxZoneCount);
 	bool bRet=(m_nZoneCount!=nZoneCount);
 	m_nZoneCount=nZoneCount;
 	return bRet;
@@ -87,7 +87,7 @@ bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 
 bool CEvohomeBase::SetMaxZoneCount(uint8_t nZoneCount)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
+	std::lock_guard<std::mutex> l(m_mtxZoneCount);
 	int nMaxZones=std::max(m_nZoneCount,nZoneCount);
 	bool bRet=(m_nZoneCount!=nMaxZones);
 	m_nZoneCount=nMaxZones;
@@ -97,14 +97,14 @@ bool CEvohomeBase::SetMaxZoneCount(uint8_t nZoneCount)
 
 uint8_t CEvohomeBase::GetZoneCount()
 {
-	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
+	std::lock_guard<std::mutex> l(m_mtxZoneCount);
 	return m_nZoneCount; //return value is constructed before the lock is released
 }
 
 
 bool CEvohomeBase::SetControllerMode(uint8_t nControllerMode)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxControllerMode);
+	std::lock_guard<std::mutex> l(m_mtxControllerMode);
 	bool bRet=(m_nControllerMode!=nControllerMode);
 	m_nControllerMode=nControllerMode;
 	return bRet;
@@ -113,14 +113,14 @@ bool CEvohomeBase::SetControllerMode(uint8_t nControllerMode)
 
 uint8_t CEvohomeBase::GetControllerMode()
 {
-	boost::lock_guard<boost::mutex> l(m_mtxControllerMode);
+	std::lock_guard<std::mutex> l(m_mtxControllerMode);
 	return m_nControllerMode; //return value is constructed before the lock is released
 }
 
 
 void CEvohomeBase::InitControllerName()
 {
-	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
+	std::lock_guard<std::mutex> l(m_mtxControllerName);
 	if(m_szControllerName.empty())
 		m_szControllerName="EvoTouch Colour";
 }
@@ -128,21 +128,21 @@ void CEvohomeBase::InitControllerName()
 
 void CEvohomeBase::SetControllerName(const std::string &szName)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
+	std::lock_guard<std::mutex> l(m_mtxControllerName);
 	m_szControllerName=szName;
 }
 
 
 std::string CEvohomeBase::GetControllerName()
 {
-	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
+	std::lock_guard<std::mutex> l(m_mtxControllerName);
 	return m_szControllerName;
 }
 
 
 void CEvohomeBase::InitZoneNames()
 {
-	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
+	std::lock_guard<std::mutex> l(m_mtxZoneName);
 	char szTmp[1024];
 	for(int i=0;i<(int)m_ZoneNames.size();i++)
 	{
@@ -157,7 +157,7 @@ void CEvohomeBase::InitZoneNames()
 
 void CEvohomeBase::SetZoneName(const uint8_t nZone, const std::string &szName)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
+	std::lock_guard<std::mutex> l(m_mtxZoneName);
 	if(nZone>=m_ZoneNames.size()) //should be pre-sized to max zones
 		return;
 	m_ZoneNames[nZone]=szName;
@@ -166,7 +166,7 @@ void CEvohomeBase::SetZoneName(const uint8_t nZone, const std::string &szName)
 
 std::string CEvohomeBase::GetZoneName(uint8_t nZone)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
+	std::lock_guard<std::mutex> l(m_mtxZoneName);
 	if(nZone>=m_ZoneNames.size()) //should be pre-sized to max zones
 		return "Out of bounds";
 	return m_ZoneNames[nZone];
@@ -175,28 +175,28 @@ std::string CEvohomeBase::GetZoneName(uint8_t nZone)
 
 int CEvohomeBase::GetControllerID()
 {
-	boost::lock_guard<boost::mutex> l(m_mtxControllerID);
+	std::lock_guard<std::mutex> l(m_mtxControllerID);
 	return m_nDevID;
 }
 
 
 void CEvohomeBase::SetControllerID(int nID)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxControllerID);
+	std::lock_guard<std::mutex> l(m_mtxControllerID);
 	m_nDevID=nID;
 }
 
 
 int CEvohomeBase::GetGatewayID()
 {
-	boost::lock_guard<boost::mutex> l(m_mtxGatewayID);
+	std::lock_guard<std::mutex> l(m_mtxGatewayID);
 	return m_nMyID;
 }
 
 
 void CEvohomeBase::SetGatewayID(int nID)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxGatewayID);
+	std::lock_guard<std::mutex> l(m_mtxGatewayID);
 	m_nMyID=nID;
 }
 

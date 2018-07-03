@@ -39,11 +39,11 @@ extern MainWorker m_mainworker;
 
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls access to the message queue
+	extern std::mutex PluginMutex;	// controls access to the message queue
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
-	boost::mutex PythonMutex;			// controls access to Python
+	std::mutex PythonMutex;			// controls access to Python
 
 	//
 	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
@@ -767,7 +767,7 @@ namespace Plugins {
 
 	bool CPlugin::IoThreadRequired()
 	{
-		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+		std::lock_guard<std::mutex> l(m_TransportsMutex);
 		if (m_Transports.size())
 		{
 			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
@@ -799,13 +799,13 @@ namespace Plugins {
 
 	void CPlugin::AddConnection(CPluginTransport *pTransport)
 	{
-		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+		std::lock_guard<std::mutex> l(m_TransportsMutex);
 		m_Transports.push_back(pTransport);
 	}
 
 	void CPlugin::RemoveConnection(CPluginTransport *pTransport)
 	{
-		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+		std::lock_guard<std::mutex> l(m_TransportsMutex);
 		for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 		{
 			CPluginTransport*	pPluginTransport = *itt;
@@ -834,7 +834,7 @@ namespace Plugins {
 	void CPlugin::ClearMessageQueue()
 	{
 		// Copy the event queue to a temporary one, then copy back the events for other plugins
-		boost::lock_guard<boost::mutex> l(PluginMutex);
+		std::lock_guard<std::mutex> l(PluginMutex);
 		std::queue<CPluginMessageBase*>	TempMessageQueue(PluginMessageQueue);
 		while (!PluginMessageQueue.empty())
 			PluginMessageQueue.pop();
@@ -888,7 +888,7 @@ namespace Plugins {
 				// If we have connections queue disconnects
 				if (m_Transports.size())
 				{
-					boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+					std::lock_guard<std::mutex> l(m_TransportsMutex);
 					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 					{
 						CPluginTransport*	pPluginTransport = *itt;
@@ -926,7 +926,7 @@ namespace Plugins {
 
 			_log.Log(LOG_STATUS, "(%s) Stopping threads.", Name.c_str());
 
-			if (m_thread)
+			if (m_thread && m_thread->joinable())
 			{
 				m_thread->join();
 				m_thread.reset();
@@ -966,7 +966,7 @@ namespace Plugins {
 			// Check all connections are still valid, vector could be affected by a disconnect on another thread
 			try
 			{
-				boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+				std::lock_guard<std::mutex> l(m_TransportsMutex);
 				if (m_Transports.size())
 				{
 					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
@@ -997,7 +997,7 @@ namespace Plugins {
 	{
 		m_bIsStarted = false;
 
-		boost::lock_guard<boost::mutex> l(PythonMutex);
+		std::lock_guard<std::mutex> l(PythonMutex);
 
 		try
 		{
@@ -1061,7 +1061,7 @@ namespace Plugins {
 
 			//Start worker thread
 			m_stoprequested = false;
-			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPlugin::Do_Work, this)));
+			m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPlugin::Do_Work, this)));
 
 			if (!m_thread)
 			{
@@ -1566,7 +1566,7 @@ Error:
 		}
 
 		// Add message to queue
-		boost::lock_guard<boost::mutex> l(PluginMutex);
+		std::lock_guard<std::mutex> l(PluginMutex);
 		PluginMessageQueue.push(pMessage);
 	}
 

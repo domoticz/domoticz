@@ -51,7 +51,7 @@ protected:
 	virtual void SendHeartbeat();
 	void OnData(const unsigned char *pData, size_t length);
 	void WriteInt(const std::string &sendStr) override;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	boost::signals2::connection m_sDeviceReceivedConnection;
 	boost::signals2::connection m_sSwitchSceneConnection;

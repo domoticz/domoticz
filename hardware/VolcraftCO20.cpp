@@ -38,22 +38,22 @@ CVolcraftCO20::~CVolcraftCO20(void)
 bool CVolcraftCO20::StartHardware()
 {
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CVolcraftCO20::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CVolcraftCO20::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 
-	return (m_thread!=NULL);
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 bool CVolcraftCO20::StopHardware()
 {
 	/*
     m_stoprequested=true;
-	if (m_thread)
+	if (m_thread && m_thread->joinable())
 		m_thread->join();
 	return true;
     */
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		assert(m_thread);
 		m_stoprequested = true;
@@ -93,7 +93,7 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 	int ret;
 	struct usb_dev_handle *devh;
 	char driver_name[DRIVER_NAME_LEN] = "";
-	char usb_io_buf[USB_BUF_LEN] =	
+	char usb_io_buf[USB_BUF_LEN] =
 		"\x40\x68\x2a\x54"
 		"\x52\x0a\x40\x40"
 		"\x40\x40\x40\x40"
@@ -220,7 +220,7 @@ void CVolcraftCO20::GetSensorDetails()
 	}
 	catch (...)
 	{
-	
+
 	}
 }
 

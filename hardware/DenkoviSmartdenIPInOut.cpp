@@ -59,16 +59,16 @@ bool CDenkoviSmartdenIPInOut::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviSmartdenIPInOut::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDenkoviSmartdenIPInOut::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Denkovi_IP_In: Started");
-	return (m_thread!=NULL);
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 bool CDenkoviSmartdenIPInOut::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		assert(m_thread);
 		m_stoprequested = true;
@@ -251,7 +251,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 	for (ii = 1; ii < results.size(); ii++)
 	{
 		tmpstr = stdstring_trim(results[ii]);
-		
+
 		if (
 			(!bHaveDigitalInput) &&
 			(!bHaveDigitalOutput) &&

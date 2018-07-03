@@ -246,7 +246,7 @@ void connection::MyWrite(const std::string &buf)
 	case connection_http:
 	case connection_websocket:
 		// we dont send data anymore in websocket closing state
-		boost::unique_lock<boost::mutex>(writeMutex);
+		std::unique_lock<std::mutex>(writeMutex);
 		if (write_in_progress) {
 			// write in progress, add to queue
 			writeQ.push(buf);
@@ -383,7 +383,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 
 void connection::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 {
-	boost::unique_lock<boost::mutex>(writeMutex);
+	std::unique_lock<std::mutex>(writeMutex);
 	write_buffer.clear();
 	write_in_progress = false;
 	if (!error) {

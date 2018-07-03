@@ -62,7 +62,7 @@ bool Comm5TCP::StartHardware()
 	m_rxbufferpos = 0;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Comm5TCP::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&Comm5TCP::Do_Work, this)));
 
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: Started");
 
@@ -127,7 +127,7 @@ void Comm5TCP::Do_Work()
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: TCP/IP Worker stopped...");
 }
 
-void Comm5TCP::processSensorData(const std::string& line) 
+void Comm5TCP::processSensorData(const std::string& line)
 {
 	std::vector<std::string> tokens = tokenize(line);
 	if (tokens.size() < 2)
@@ -166,7 +166,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 		}
 		else if (startsWith(line, "210") && (!startsWith(line, "210 OK"))) {
 			processSensorData(line);
-		} 
+		}
 	}
 
 	// Trim consumed bytes.
@@ -219,7 +219,7 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 void Comm5TCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

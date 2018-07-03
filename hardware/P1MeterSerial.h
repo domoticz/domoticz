@@ -31,7 +31,7 @@ private:
 private:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 };
 

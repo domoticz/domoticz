@@ -184,7 +184,7 @@ bool I2C::StartHardware()
 		MCP23017_Init();
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&I2C::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&I2C::Do_Work, this)));
 	sOnConnected(this);
 	m_bIsStarted = true;
 	return (m_thread != NULL);
@@ -331,7 +331,7 @@ int I2C::i2c_Open(const char *I2CBusName)
 // PCF8574 and PCF8574A
 
 void I2C::PCF8574_ReadChipDetails()
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return;
 #else
@@ -357,7 +357,7 @@ void I2C::PCF8574_ReadChipDetails()
 
 
 int I2C::PCF8574_WritePin(uint8_t pin_number,uint8_t  value)
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return -1;
 #else
@@ -396,7 +396,7 @@ void I2C::MCP23017_Init()
 	uint16_t GPIO_reg = 0xFFFF;
 	int unit;
 	bool value;
-	
+
 	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
 	if (!results.empty())
 	{
@@ -441,7 +441,7 @@ void I2C::MCP23017_Init()
 }
 
 void I2C::MCP23017_ReadChipDetails()
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return;
 #else
@@ -469,7 +469,7 @@ void I2C::MCP23017_ReadChipDetails()
 }
 
 int I2C::MCP23017_WritePin(uint8_t pin_number,uint8_t  value)
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return -1;
 #else
@@ -479,14 +479,14 @@ int I2C::MCP23017_WritePin(uint8_t pin_number,uint8_t  value)
 	uint16_t new_data = 0;
 	i2c_data cur_data, cur_iodir;
 	int rc;
-	
+
 	pin_mask=0x01<<(pin_number);
 	iodir_mask &= ~(0x01 << (pin_number));
-	
+
 	// open i2c device
 	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0) return -1; 								// Error opening i2c device!
-	
+
 	rc = I2CReadReg16(fd, MCP23x17_GPIOA, &cur_data); 		// get current gio port value
 	if (rc < 0) {
 		_log.Log(LOG_NORM, "I2C::MCP23017_WritePin. %s. Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
@@ -500,10 +500,10 @@ int I2C::MCP23017_WritePin(uint8_t pin_number,uint8_t  value)
 		return -2; 						//read from i2c failed
 	}
 	cur_iodir.word &= iodir_mask; 							// create mask for iodir register to set pin as output.
-	
+
 	if (value==1) new_data = cur_data.word | pin_mask;		//prepare new value by combinating current value, mask and new value
 	else new_data = cur_data.word & ~pin_mask;
-	
+
 	if (new_data!=cur_data.word) { 							// if value change write new value
 		if (I2CWriteReg16(fd, MCP23x17_GPIOA, new_data) < 0 ) {
 			_log.Log(LOG_ERROR, "I2C::MCP23017_WritePin. %s: Failed to write to I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
@@ -724,7 +724,7 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data )
 //		_log.Log(LOG_NORM, "I2C::I2CReadReg16. %s, Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
 //		return rc;
 //	}
-	//return data.word ;	
+	//return data.word ;
 #endif
 }
 

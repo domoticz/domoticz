@@ -37,22 +37,22 @@ bool CTE923::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTE923::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CTE923::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 
-	return (m_thread!=NULL);
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 bool CTE923::StopHardware()
 {
 	/*
     m_stoprequested=true;
-	if (m_thread)
+	if (m_thread && m_thread->joinable())
 		m_thread->join();
 	return true;
     */
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		assert(m_thread);
 		m_stoprequested = true;

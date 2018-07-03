@@ -46,16 +46,16 @@ bool CDavisLoggerSerial::StartHardware()
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 	m_stoprequested = false;
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDavisLoggerSerial::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDavisLoggerSerial::Do_Work, this)));
 
-	return (m_thread!=NULL);
+	return (m_thread != NULL && m_thread->joinable());
 
 }
 
 bool CDavisLoggerSerial::StopHardware()
 {
 	m_stoprequested=true;
-	if (m_thread)
+	if (m_thread && m_thread->joinable())
 	{
 		m_thread->join();
 	}
@@ -163,11 +163,11 @@ void CDavisLoggerSerial::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"Davis: Serial Worker stopped...");
-} 
+}
 
 void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		//_log.Log(LOG_NORM,"Davis: received %ld bytes",len);
@@ -309,10 +309,10 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		bOutsideTemperatureValid=true;
 		//OutsideTemperature=((unsigned int)((pData[13] << 8) | pData[12])) / 10.f;
 		//OutsideTemperature = (OutsideTemperature - 32.0f) * 5.0f / 9.0f;
-		
+
 		uint8_t msb = pData[13];
 		uint8_t lsb = pData[12];
-		
+
 		uint16_t temp16 = ((msb << 8) | lsb);
 		if (temp16 > 0x800) {
 			// Negative values, convert to float from two complements int
@@ -321,7 +321,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		} else {
 			OutsideTemperature = (float)temp16 / 10.0f;
 		}
-		
+
 		// Convert to celsius
 		OutsideTemperature = (OutsideTemperature - 32.0f) * 5.0f / 9.0f;
 	}
@@ -503,7 +503,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	{
 		SendUVSensor(0, 1, 255, UV, "UV");
 	}
-	
+
 	//Rain Rate
 	if ((pData[41]!=0xFF)&&(pData[42]!=0xFF))
 	{

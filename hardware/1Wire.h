@@ -35,8 +35,8 @@ private:
 	void ReportIlluminance(const std::string& deviceId, const float illuminescence);
 private:
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_threadSensors;
-	boost::shared_ptr<boost::thread> m_threadSwitches;
+	std::shared_ptr<std::thread> m_threadSensors;
+	std::shared_ptr<std::thread> m_threadSwitches;
 	I_1WireSystem* m_system;
 	std::map<std::string, bool> m_LastSwitchState;
 	std::set<_t1WireDevice> m_sensors;

@@ -53,8 +53,8 @@ bool MQTT::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MQTT::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&MQTT::Do_Work, this)));
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 void MQTT::StopMQTT()
@@ -68,7 +68,7 @@ bool MQTT::StopHardware()
 	StopHeartbeatThread();
 	m_stoprequested=true;
 	try {
-		if (m_thread)
+		if (m_thread && m_thread->joinable())
 		{
 			m_thread->join();
 			m_thread.reset();

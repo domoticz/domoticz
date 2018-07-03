@@ -33,8 +33,8 @@ private:
 	unsigned int GetShortID(const std::string & nodeid);
 
 	bool m_bDoRestart;
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> m_udp_thread;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_udp_thread;
 	bool m_OutputMessage;
 	bool m_IncludeVoltage;
 	bool m_ListenPort9898;
@@ -48,7 +48,7 @@ private:
 	std::string m_GatewayPassword;
 	std::string m_GatewayMusicId;
 	std::string m_GatewayVolume;
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 
 	volatile bool m_stoprequested;
 
@@ -81,7 +81,7 @@ private:
 		std::string GetToken(const std::string &ip);
 		std::string GetSID(const std::string &sid);
 	private:
-		boost::mutex m_mutex;
+		std::mutex m_mutex;
 		std::vector<boost::tuple<std::string, std::string, std::string> > m_GatewayTokens;
 
 		XiaomiGatewayTokenManager() { ; }

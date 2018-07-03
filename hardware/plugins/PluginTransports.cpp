@@ -12,8 +12,8 @@
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"
 #include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/lock_guard.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>

@@ -30,7 +30,7 @@ protected:
 
 
 	int m_bufferpos;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	sockaddr_in m_addr;
 	int m_socket;

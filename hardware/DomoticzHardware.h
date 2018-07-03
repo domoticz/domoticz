@@ -94,19 +94,19 @@ protected:
 	void SendZWaveAlarmSensor(const int NodeID, const int InstanceID, const int BatteryLevel, const int aType, const int aValue, const std::string &defaultname);
 
 	int m_iHBCounter;
-	boost::mutex readQueueMutex;
+	std::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
 
 	//Barometric calculation (only for 1 sensor per hardware device!)
 	int CalculateBaroForecast(const double pressure);
-    
+
     bool m_bIsStarted;
-    
+
 private:
     void Do_Heartbeat_Work();
 
     volatile bool m_stopHeartbeatrequested;
-    boost::shared_ptr<boost::thread> m_Heartbeatthread;
+    std::shared_ptr<std::thread> m_Heartbeatthread;
 
     int m_baro_minuteCount;
     double m_pressureSamples[9][6];

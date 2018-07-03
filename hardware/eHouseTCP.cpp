@@ -527,7 +527,7 @@ bool eHouseTCP::StartHardware()
 #else
 
 #endif
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&eHouseTCP::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&eHouseTCP::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -547,7 +547,7 @@ bool eHouseTCP::StopHardware()
 	#endif
 	*/
 
-	if (m_thread)
+	if (m_thread && m_thread->joinable())
 	{
 		m_thread->join();
 	}

@@ -665,7 +665,7 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_background_task_thread)
+	if (m_background_task_thread && m_background_task_thread->joinable())
 	{
 		m_stoprequested = true;
 		m_background_task_thread->join();
@@ -3039,7 +3039,7 @@ bool CSQLHelper::OpenDatabase()
 
 bool CSQLHelper::StartThread()
 {
-	m_background_task_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSQLHelper::Do_Work, this)));
+	m_background_task_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CSQLHelper::Do_Work, this)));
 
 	return (m_background_task_thread != NULL);
 }
@@ -3086,7 +3086,7 @@ void CSQLHelper::Do_Work()
 		}
 
 		{ // additional scope for lock (accessing size should be within lock too)
-			boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+			std::lock_guard<std::mutex> l(m_background_task_mutex);
 			if (m_background_task_queue.size() > 0)
 			{
 				_items2do.clear();
@@ -3466,7 +3466,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
 
 	sqlite3_stmt *statement;
 	std::vector<std::vector<std::string> > results;
@@ -3533,7 +3533,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
 
 	sqlite3_stmt *statement;
 	std::vector<std::vector<std::string> > results;
@@ -4425,7 +4425,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 						nszUserDataFolder = ".";
 					s_scriptparams << nszUserDataFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn ? "On" : "Off") << " \"" << lstatus << "\"" << " \"" << devname << "\"";
 					//add script to background worker
-					boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+					std::lock_guard<std::mutex> l(m_background_task_mutex);
 					m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1, scriptname, s_scriptparams.str()));
 				}
 			}
@@ -4527,7 +4527,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					*/
 					if (bAdd2DelayQueue == true)
 					{
-						boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+						std::lock_guard<std::mutex> l(m_background_task_mutex);
 						_tTaskItem tItem = _tTaskItem::SwitchLight(AddjValue, ulID, HardwareID, ID, unit, devType, subType, switchtype, signallevel, batterylevel, cmd, sValue);
 						//Remove all instances with this device from the queue first
 						//otherwise command will be send twice, and first one will be to soon as it is currently counting
@@ -6744,7 +6744,7 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 #endif
 		{
 			//Avoid mutex deadlock here
-			boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+			std::lock_guard<std::mutex> l(m_sqlQueryMutex);
 
 			char* errorMessage;
 			sqlite3_exec(m_dbase, "BEGIN TRANSACTION", NULL, NULL, &errorMessage);
@@ -7121,7 +7121,7 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 
 void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 {
-	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+	std::lock_guard<std::mutex> l(m_background_task_mutex);
 
 	// Check if an event for the same device is already in queue, and if so, replace it
 	_log.Debug(DEBUG_NORM, "SQLH AddTask: Request to add task: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Color.toString().c_str(), tItem._relatedEvent.c_str());
@@ -7160,7 +7160,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 
 void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
 {
-	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+	std::lock_guard<std::mutex> l(m_background_task_mutex);
 
 	currentTasks.clear();
 
@@ -7266,7 +7266,7 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	OptimizeDatabase(m_dbase);
 	VacuumDatabase();
 
-	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
 
 	int rc;                     // Function return code
 	sqlite3 *pFile;             // Database connection opened on zFilename

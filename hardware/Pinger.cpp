@@ -124,7 +124,7 @@ private:
 		{
 			// DD 2 possible 'invalid' replies that will be discarded are:
 			// Type 8: Echo request, happens when we ping ourselves (localhost)
-			// Type 3: Destination host unreachable. 
+			// Type 3: Destination host unreachable.
 			start_receive();
 		}
 	}
@@ -173,7 +173,7 @@ bool CPinger::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPinger::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPinger::Do_Work, this)));
 	_log.Log(LOG_STATUS, "Pinger: Started");
 
 	return true;
@@ -184,7 +184,7 @@ bool CPinger::StopHardware()
 	StopHeartbeatThread();
 
 	try {
-		if (m_thread)
+		if (m_thread && m_thread->joinable())
 		{
 			m_stoprequested = true;
 			m_thread->join();
@@ -215,7 +215,7 @@ bool CPinger::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -243,7 +243,7 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 
 bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -269,7 +269,7 @@ bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::strin
 
 void CPinger::RemoveNode(const int ID)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
@@ -285,7 +285,7 @@ void CPinger::RemoveNode(const int ID)
 
 void CPinger::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
@@ -382,7 +382,7 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 
 void CPinger::DoPingHosts()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	std::vector<PingNode>::const_iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 	{

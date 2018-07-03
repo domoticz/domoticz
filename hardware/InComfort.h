@@ -35,7 +35,7 @@ private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	time_t m_LastUpdateFrequentChangingValues;
 	time_t m_LastUpdateSlowChangingValues;

@@ -75,11 +75,11 @@ bool C1Wire::StartHardware()
 	// Start worker thread
 	if (0 != m_sensorThreadPeriod)
 	{
-		m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
+		m_threadSensors = std::shared_ptr<std::thread>(new std::thread(std::bind(&C1Wire::SensorThread, this)));
 	}
 	if (0 != m_switchThreadPeriod)
 	{
-		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
+		m_threadSwitches = std::shared_ptr<std::thread>(new std::thread(std::bind(&C1Wire::SwitchThread, this)));
 	}
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -89,13 +89,13 @@ bool C1Wire::StartHardware()
 
 bool C1Wire::StopHardware()
 {
-	if (m_threadSensors)
+	if (m_threadSensors && m_threadSensors->joinable())
 	{
 		m_stoprequested = true;
 		m_threadSensors->join();
 	}
 
-	if (m_threadSwitches)
+	if (m_threadSwitches && m_threadSwitches->joinable())
 	{
 		m_stoprequested = true;
 		m_threadSwitches->join();

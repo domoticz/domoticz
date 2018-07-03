@@ -65,12 +65,12 @@ bool Meteostick::StopHardware()
 
 void Meteostick::StartPollerThread()
 {
-	m_pollerthread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Meteostick::Do_PollWork, this)));
+	m_pollerthread = std::shared_ptr<std::thread>(new std::thread(std::bind(&Meteostick::Do_PollWork, this)));
 }
 
 void Meteostick::StopPollerThread()
 {
-	if (m_pollerthread != NULL)
+	if (m_pollerthread != NULL && m_pollerthread->joinable())
 	{
 		assert(m_pollerthread);
 		m_stoprequestedpoller = true;
@@ -155,7 +155,7 @@ void Meteostick::Do_PollWork()
 
 void Meteostick::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 
@@ -246,7 +246,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	//tsen.WIND.temperatureh = 0;
 	//tsen.WIND.temperaturel = 0;
 	//tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
-	
+
 	float dWindSpeed = Speed * 3.6f;
 	float dWindChill = Temp;
 	if (dWindSpeed > 5 && Temp < 10)

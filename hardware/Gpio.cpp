@@ -79,7 +79,7 @@ Connection information:
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
 
-boost::shared_ptr<boost::thread> m_thread_interrupt[GPIO_PIN_MAX + 1];
+std::shared_ptr<std::thread> m_thread_interrupt[GPIO_PIN_MAX + 1];
 
 /*
  * Direct GPIO implementation, inspired by other hardware implementations such as PiFace and EnOcean
@@ -253,10 +253,10 @@ bool CGpio::StartHardware()
 			_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
 			m_stoprequested=true;
 		 }*/
-		m_thread_updatestartup = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::UpdateStartup, this)));
+		m_thread_updatestartup = std::shared_ptr<std::thread>(new std::thread(std::bind(&CGpio::UpdateStartup, this)));
 
 		if (m_pollinterval > 0)
-			m_thread_poller = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
+			m_thread_poller = std::shared_ptr<std::thread>(new std::thread(std::bind(&CGpio::Poller, this)));
 	}
 	else
 	{
@@ -273,16 +273,16 @@ bool CGpio::StopHardware()
 {
 	m_stoprequested = true;
 
-	if (m_thread_poller != NULL)
+	if (m_thread_poller != NULL && m_thread_poller->joinable())
 		m_thread_poller->join();
 
-	if (m_thread_updatestartup != NULL)
+	if (m_thread_updatestartup != NULL && m_thread_updatestartup->joinable())
 		m_thread_updatestartup->join();
 
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
-		if (m_thread_interrupt[it->GetPin()] != NULL)
+		if (m_thread_interrupt[it->GetPin()] != NULL && m_thread_interrupt[it->GetPin()]->joinable())
 			m_thread_interrupt[it->GetPin()]->join();
 	}
 
@@ -364,7 +364,7 @@ void CGpio::Poller()
 bool CGpio::CreateDomoticzDevices()
 {
 	std::vector<std::vector<std::string> > result;
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		bool createNewDevice = false;
@@ -419,7 +419,7 @@ CGpioPin* CGpio::GetPPinById(int id)
 
 void CGpio::UpdateDeviceStates(bool forceUpdate)
 {
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (it->GetIsInput())
@@ -470,7 +470,7 @@ bool CGpio::InitPins()
 	char szIdx[10];
 	char label[12];
 	std::vector<std::vector<std::string> > result;
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	pins.clear();
 
 	for (int gpio_pin = GPIO_PIN_MIN; gpio_pin <= GPIO_PIN_MAX; gpio_pin++)
@@ -500,7 +500,7 @@ bool CGpio::InitPins()
 			if (fd != -1)
 			{
 				pinPass = gpio_pin;
-				m_thread_interrupt[gpio_pin] = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::InterruptHandler, this)));
+				m_thread_interrupt[gpio_pin] = std::shared_ptr<std::thread>(new std::thread(std::bind(&CGpio::InterruptHandler, this)));
 				while (pinPass != -1)
 					sleep_milliseconds(1);
 			}

@@ -32,21 +32,21 @@ bool CWinddelen::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWinddelen::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CWinddelen::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 bool CWinddelen::StopHardware()
 {
 	/*
     m_stoprequested=true;
-	if (m_thread)
+	if (m_thread && m_thread->joinable())
 		m_thread->join();
 	return true;
     */
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		assert(m_thread);
 		m_stoprequested = true;
@@ -115,7 +115,7 @@ void CWinddelen::GetMeterDetails()
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");
-	
+
 	std::map<int,float> winddelen_per_mill;
   	winddelen_per_mill[1]=9910.0;
   	winddelen_per_mill[2]=10154.0;

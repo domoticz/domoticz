@@ -71,7 +71,7 @@ bool CWunderground::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWunderground::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CWunderground::Do_Work, this)));
 	if (!m_thread)
 		return false;
 	m_bIsStarted=true;
@@ -81,7 +81,7 @@ bool CWunderground::StartHardware()
 
 bool CWunderground::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		assert(m_thread);
 		m_stoprequested = true;
@@ -269,7 +269,7 @@ void CWunderground::GetMeterDetails()
 			else if (forcasticon=="clear")
 			{
 				barometric_forcast=baroForecastSunny;
-			}			
+			}
 			else if (forcasticon=="rain")
 			{
 				barometric_forcast=baroForecastRain;

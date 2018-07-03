@@ -55,7 +55,7 @@ private:
 	int m_V8secCounter2;
 	int m_V8minCounterBase;
 	int m_V8minCounter1;
-	
+
 	struct
 	{
 		long BlocID;
@@ -70,7 +70,7 @@ private:
 		bool ForceUpdateSTOR[12];
 		bool IsOutputBlink[12];
 	} m_BlocList_CAN[MAX_NUMBER_BLOC]; //30 blocs Maxi
-	
-	boost::shared_ptr<boost::thread> m_thread;
+
+	std::shared_ptr<std::thread> m_thread;
 };
 

@@ -1,7 +1,7 @@
 #pragma once
 
 /* Handles reading data from Rainforest Automation RAVEn:
- 
+
    http://rainforestautomation.com/wp-content/uploads/2014/02/raven_xml_api_r127.pdf
 
    Sample xml output:
@@ -26,7 +26,7 @@
 
 #define MAX_BUFFER_LEN  10000
 
-class RAVEn : public CDomoticzHardwareBase, 
+class RAVEn : public CDomoticzHardwareBase,
               public AsyncSerial
 {
 public:
@@ -39,7 +39,7 @@ private:
 	void readCallback(const char *indata, size_t inlen);
 private:
     const std::string device_;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
     char m_buffer[MAX_BUFFER_LEN];
     char* m_wptr;

@@ -43,7 +43,7 @@ protected:
    std::string SendAndReceive(const std::string &requestToSend) const;
 
    SOCKET m_Socket;
-   boost::mutex m_SocketMutex;
+   std::mutex m_SocketMutex;
 };
 
 class C1WireForWindowsReadException : public std::exception

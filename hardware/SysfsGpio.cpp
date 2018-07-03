@@ -181,7 +181,7 @@ bool CSysfsGpio::StartHardware()
 {
 	Init();
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGpio::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CSysfsGpio::Do_Work, this)));
 	m_bIsStarted = true;
 
 	return (m_thread != NULL);
@@ -193,7 +193,7 @@ bool CSysfsGpio::StopHardware()
 
 	try
 	{
-		if (m_thread)
+		if (m_thread && m_thread->joinable())
 		{
 			m_thread->join();
 		}
@@ -205,7 +205,7 @@ bool CSysfsGpio::StopHardware()
 
 	try
 	{
-		if (m_edge_thread)
+		if (m_edge_thread && m_edge_thread->joinable())
 		{
 			m_edge_thread->join();
 		}
@@ -319,7 +319,7 @@ void CSysfsGpio::EdgeDetectThread()
 
 	After one or more GPIO state change interrupts have been detected a poll is done to make
 	sure the domoticz database reflects the actual states of all GPIO pins in all cases. A
-	missed interrupt can occur when a GPIO pin changes state twice within m_debounce_msec. 
+	missed interrupt can occur when a GPIO pin changes state twice within m_debounce_msec.
 	Therefore it is a good practice to set m_debounce_msec to a value not higher then needed
 	depending on the input switch behavior.
 	*/
@@ -487,15 +487,15 @@ void CSysfsGpio::Init()
 	UpdateDomoticzInputs(false); /* Make sure database inputs are in sync with actual hardware */
 
 	_log.Log(LOG_STATUS, "Sysfs GPIO: Startup - polling:%s interrupts:%s debounce:%dmsec inputs:%d outputs:%d",
-		m_polling_enabled ? "yes":"no", 
-		m_interrupts_enabled ? "yes":"no", 
-		m_debounce_msec, 
-		input_count, 
+		m_polling_enabled ? "yes":"no",
+		m_interrupts_enabled ? "yes":"no",
+		m_debounce_msec,
+		input_count,
 		output_count);
 
 	if (m_interrupts_enabled)
 	{
-		m_edge_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGpio::EdgeDetectThread, this)));
+		m_edge_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CSysfsGpio::EdgeDetectThread, this)));
 	}
 }
 

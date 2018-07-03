@@ -24,8 +24,8 @@
 //		A	auto     10
 //		B	silence  20
 //		3	lvl_1    30
-//		4	lvl_2    40 
-//		5	lvl_3    50 
+//		4	lvl_2    40
+//		5	lvl_3    50
 //		6	lvl_4    60
 //		7	lvl_5    70
 // 7  : f_dir : represents the fan direction
@@ -37,7 +37,7 @@
 // 10 : temperature exterieure
 // 11 : temperature interieure
 // 12 : shum : description: represents the target humidity
-// 20 : consigne thermostat 
+// 20 : consigne thermostat
 
 
 #define Daikin_POLL_INTERVAL 300
@@ -103,16 +103,16 @@ bool CDaikin::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDaikin::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDaikin::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());
-	return (m_thread!=NULL);
+	return (m_thread != NULL && m_thread->joinable());
 }
 
 bool CDaikin::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		assert(m_thread);
 		m_stoprequested = true;
@@ -165,7 +165,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			SetGroupOnOFF(command);
 		}
-		else if (node_id==2) 
+		else if (node_id==2)
 		{
 			SetLedOnOFF(command);
 		}
@@ -260,7 +260,7 @@ void CDaikin::SetSetpoint(const int idx, const float temp)
 	szURL << "pow=" << m_pow;
 	szURL << "&mode=" << m_mode;
 
-	// cibre température 
+	// cibre température
 	char szTmp[100];
 	sprintf(szTmp, "%.1f", temp);
 	szURL << "&stemp=" << szTmp;
@@ -338,7 +338,7 @@ void CDaikin::GetBasicInfo()
 		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
-	/*	
+	/*
 	ret=OK,
 	type=aircon,
 	reg=eu,
@@ -401,22 +401,22 @@ void CDaikin::GetControlInfo()
 		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
-	/*	ret = OK, 
-		pow = 1, 
-		mode = 4, adv=, 
-		stemp = 20.0, shum = 0, 
-		dt1 = 20.0, dt2 = M, dt3 = 25.0, dt4 = 20.0, dt5 = 20.0, dt7 = 20.0, 
-		dh1 = 0, dh2 = 0, dh3 = 0, dh4 = 0, dh5 = 0, dh7 = 0, 
-		dhh = 50, 
-		b_mode = 4, 
-		b_stemp = 20.0, 
-		b_shum = 0, 
-		alert = 255, 
-		f_rate = A, 
-		f_dir = 0, 
-		b_f_rate = A, 
-		b_f_dir = 0, 
-		dfr1 = A, dfr2 = A, dfr3 = 5, dfr4 = A, dfr5 = A, dfr6 = 5, dfr7 = A, dfrh = 5, 
+	/*	ret = OK,
+		pow = 1,
+		mode = 4, adv=,
+		stemp = 20.0, shum = 0,
+		dt1 = 20.0, dt2 = M, dt3 = 25.0, dt4 = 20.0, dt5 = 20.0, dt7 = 20.0,
+		dh1 = 0, dh2 = 0, dh3 = 0, dh4 = 0, dh5 = 0, dh7 = 0,
+		dhh = 50,
+		b_mode = 4,
+		b_stemp = 20.0,
+		b_shum = 0,
+		alert = 255,
+		f_rate = A,
+		f_dir = 0,
+		b_f_rate = A,
+		b_f_dir = 0,
+		dfr1 = A, dfr2 = A, dfr3 = 5, dfr4 = A, dfr5 = A, dfr6 = 5, dfr7 = A, dfrh = 5,
 		dfd1 = 0, dfd2 = 0, dfd3 = 0, dfd4 = 0, dfd5 = 0, dfd6 = 0, dfd7 = 0, dfdh = 0
 	*/
 #ifdef DEBUG_DaikinW
@@ -458,7 +458,7 @@ void CDaikin::GetControlInfo()
 					InsertUpdateSwitchSelector(5, true, 30, "Mode");
 				else if (m_mode == "4") // HOT
 					InsertUpdateSwitchSelector(5, true, 40, "Mode");
-				else if (m_mode == "6") 
+				else if (m_mode == "6")
 					InsertUpdateSwitchSelector(5, true, 50, "Mode");
 				else if ((m_mode == "0") || (m_mode == "1" ) || ( m_mode == "7") )
 					InsertUpdateSwitchSelector(5, true, 10, "Mode");
@@ -490,7 +490,7 @@ void CDaikin::GetControlInfo()
 		}
 		else if (results2[0] == "f_rate")
 		{
-			 
+
 			m_f_rate=results2[1];
 			if (m_f_rate == "A") // DEHUMDIFICATOR
 				InsertUpdateSwitchSelector(6, true, 10, "Ventillation");
@@ -510,7 +510,7 @@ void CDaikin::GetControlInfo()
 		else if (results2[0] == "f_dir")
 		{
 			m_f_dir = results2[1];
-			if (m_f_dir == "0") // 
+			if (m_f_dir == "0") //
 				InsertUpdateSwitchSelector(7, true, 10, "Winds");
 			else if (m_f_dir == "1") // COLD
 				InsertUpdateSwitchSelector(7, true, 20, "Winds");
@@ -613,7 +613,7 @@ void CDaikin::SetLedOnOFF(const bool OnOFF)
 	std::string sResult;
 
 	_log.Debug(DEBUG_HARDWARE, "Daikin: Set Led ...");
-	
+
 	std::stringstream szURL;
 
 	if (m_Password.empty())
@@ -631,7 +631,7 @@ void CDaikin::SetLedOnOFF(const bool OnOFF)
 		szURL << "1";
 	else
 		szURL << "0";
-	
+
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
@@ -665,11 +665,11 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 
 	if (OnOFF)
 		szURL << "pow=1";
-	else 
+	else
 		szURL << "pow=0";
 
 	szURL << "&mode=" << m_mode;
-	
+
 	szURL << "&stemp=" << m_stemp;
 
 	szURL << "&shum=" << m_shum;
@@ -732,23 +732,23 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 
 	//check if this switch is already in the database
 	std::vector<std::vector<std::string> > result;
-	
+
 	// block this device if it is already added for another gateway hardware id
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID!=%d) AND (DeviceID=='%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-	
+
 	if (!result.empty()) {
 		return;
 	}
-	
+
 	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
-	
+
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
 	if (result.empty())
 	{
 		// New Hardware -> Create the corresponding devices Selector
 		if (customimage == 0) {
 			if (sID == 5) {
-				customimage = 16; //wall socket			
+				customimage = 16; //wall socket
 			}
 			else if ((sID == 6) || (sID == 7)) {
 				customimage = 7;
@@ -875,7 +875,7 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 		szURL << "&f_rate=6";
 	else if (NewLevel == 70)
 		szURL << "&f_rate=7";
-	
+
 	szURL << "&f_dir=" << m_f_dir;
 
 	if (!HTTPClient::GET(szURL.str(), sResult))

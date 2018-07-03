@@ -152,15 +152,14 @@ void CEventSystem::StartEventSystem()
 #endif
 
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
-	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEventSystem::Do_Work, this)));
+	m_eventqueuethread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEventSystem::EventQueueThread, this)));
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
 void CEventSystem::StopEventSystem()
 {
-
-	if (m_eventqueuethread)
+	if (m_eventqueuethread && m_eventqueuethread->joinable())
 	{
 		m_stoprequested = true;
 		UnlockEventQueueThread();
@@ -168,7 +167,7 @@ void CEventSystem::StopEventSystem()
 		m_eventqueue.clear();
 	}
 
-	if (m_thread)
+	if (m_thread && m_thread->joinable())
 	{
 		m_stoprequested = true;
 		m_thread->join();
@@ -1707,7 +1706,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "variable");
 	uservariablesMutexLock.unlock();
 
-	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
+	std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
 
 	if (m_tempValuesByID.size() > 0) {
@@ -2717,7 +2716,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	lua_setglobal(lua_state, "print");
 
 	{
-		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
+		std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 		GetCurrentMeasurementStates();
 
 		float thisDeviceTemp = 0;
@@ -3132,7 +3131,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString)
 {
-	boost::lock_guard<boost::mutex> l(luaMutex);
+	std::lock_guard<std::mutex> l(luaMutex);
 
 	lua_State *lua_state;
 	lua_state = luaL_newstate();
@@ -3250,9 +3249,9 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 		//luaThread = boost::thread(&CEventSystem::luaThread, lua_state, filename);
-		//boost::shared_ptr<boost::thread> luaThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename)));
+		//std::shared_ptr<std::thread> luaThread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEventSystem::luaThread, this, lua_state, filename)));
 		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
-		//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
+		//m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEventSystem::Do_Work, this)));
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());

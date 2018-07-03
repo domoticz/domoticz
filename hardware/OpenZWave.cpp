@@ -483,7 +483,7 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notification)
 {
 	// Must do this inside a critical section to avoid conflicts with the main thread
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	if (m_bIsShuttingDown)
 		return;
@@ -958,7 +958,7 @@ bool COpenZWave::OpenSerialConnector()
 	}
 	// Create the OpenZWave Manager.
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
-	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
+	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL
 	// the log file will appear in the program's working directory.
 	_log.Log(LOG_STATUS, "OpenZWave: using config in: %s", ConfigPath.c_str());
 	OpenZWave::Options::Create(ConfigPath, UserPath, "--SaveConfiguration=true ");
@@ -1043,7 +1043,7 @@ void COpenZWave::CloseSerialConnector()
 {
 	// program exit (clean up)
 	m_bIsShuttingDown = true;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	if (!m_pManager)
 		return;
@@ -3529,7 +3529,7 @@ void COpenZWave::GetConfigFile(std::string & filePath, std::string & fileContent
 	if (m_pManager == NULL)
 		return;
 
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	WriteControllerConfig();
 
 	char szFileName[255];
@@ -3918,7 +3918,7 @@ void COpenZWave::SetThermostatFanMode(const int nodeID, const int instanceID, co
 
 std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	std::vector<std::string> ret;
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -3949,7 +3949,7 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 
 std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	std::string retstr = "";
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -4656,7 +4656,7 @@ namespace http {
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
 						root["result"][ii]["IsPlus"] = pNode->IsPlus;
-						
+
 						char szDate[80];
 						struct tm loctime;
 						localtime_r(&pNode->LastSeen, &loctime);
@@ -5320,7 +5320,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendPollResponse());
 					reply::add_header_attachment(&rep, "poll.xml");
@@ -5343,7 +5343,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode));
 				}
 			}
@@ -5364,7 +5364,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode));
 				}
 			}
@@ -5382,7 +5382,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]));
 				}
 			}
@@ -5400,7 +5400,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]));
 				}
 			}
@@ -5426,7 +5426,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str())));
 				}
 			}
@@ -5450,7 +5450,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue));
 				}
 			}
@@ -5477,7 +5477,7 @@ namespace http {
 					if (pHardware->HwdType == HTYPE_OpenZWave)
 					{
 						COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-						boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+						std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 						reply::set_content(&rep, pOZWHardware->m_ozwcp.UpdateGroup(sFun, atoi(sNode.c_str()), atoi(sGroup.c_str()), glist));
 					}
 				}
@@ -5492,7 +5492,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
 				}
 			}
@@ -5505,7 +5505,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPTopo());
 					reply::add_header_attachment(&rep, "topo.xml");
 				}
@@ -5519,7 +5519,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 					reply::add_header_attachment(&rep, "stats.xml");
 				}
@@ -5543,7 +5543,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 				}
 			}
@@ -5571,7 +5571,7 @@ namespace http {
 			if (pHardware->HwdType == HTYPE_OpenZWave)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-				boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 				if (sFun == "test")
 				{

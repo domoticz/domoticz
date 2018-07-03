@@ -29,7 +29,7 @@ CCameraHandler::~CCameraHandler(void)
 void CCameraHandler::ReloadCameras()
 {
 	std::vector<std::string> _AddedCameras;
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	m_cameradevices.clear();
 	std::vector<std::vector<std::string> > result;
 
@@ -92,7 +92,7 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	for (const auto & itt : m_cameradevices)
 	{
 		for (const auto & itt2 : itt.mActiveDevices)
@@ -245,7 +245,7 @@ bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsi
 
 bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	cameraDevice *pCamera = GetCamera(CamID);
 	if (pCamera == NULL)

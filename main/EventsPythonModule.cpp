@@ -12,11 +12,11 @@
     namespace Plugins {
         #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
-		extern boost::mutex PythonMutex;		// only used during startup when multiple threads could use Python
+		extern std::mutex PythonMutex;		// only used during startup when multiple threads could use Python
 
 		void*   m_PyInterpreter;
         bool ModuleInitalized = false;
-        
+
         struct eventModule_state {
             PyObject*	error;
         };
@@ -105,23 +105,23 @@
             PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
             return pModule;
         }
-        
+
         int PythonEventsInitalized = 0;
 
         bool PythonEventsInitialize(const std::string &szUserDataFolder) {
-            
+
             if (!Plugins::Py_LoadLibrary())
             {
                 _log.Log(LOG_STATUS, "EventSystem - Python: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
                 return false;
             }
-            
+
             if (!Plugins::Py_IsInitialized()) {
                 _log.Log(LOG_STATUS, "EventSystem - Python: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
                 return false;
             }
-            
-			boost::lock_guard<boost::mutex> l(PythonMutex);
+
+			std::lock_guard<std::mutex> l(PythonMutex);
 			PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
 			m_PyInterpreter = Py_NewInterpreter();
             if (!m_PyInterpreter)
@@ -129,21 +129,21 @@
                 _log.Log(LOG_ERROR, "EventSystem - Python: Failed to create interpreter.");
                 return false;
             }
-            
+
             std::string ssPath;
 #ifdef WIN32
             ssPath  = szUserDataFolder + "scripts\\python\\;";
 #else
             ssPath  = szUserDataFolder + "scripts/python/:";
 #endif
-            
+
             std::wstring sPath = std::wstring(ssPath.begin(), ssPath.end());
-            
+
             sPath += Plugins::Py_GetPath();
             Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
-            
+
             PythonEventsInitalized = 1;
-            
+
             PyObject* pModule = Plugins::PythonEventsGetModule();
 			PyEval_SaveThread();
 			if (!pModule) {
@@ -153,10 +153,10 @@
             ModuleInitalized = true;
             return true;
         }
-        
+
         bool PythonEventsStop() {
             if (m_PyInterpreter) {
-				boost::lock_guard<boost::mutex> l(PythonMutex);
+				std::lock_guard<std::mutex> l(PythonMutex);
 				PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 				if (Plugins::Py_IsInitialized())
 					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
@@ -167,7 +167,7 @@
             } else
                 return false;
         }
-        
+
         PyObject* PythonEventsGetModule (void) {
             PyObject* pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
@@ -189,30 +189,30 @@
         }
 
         // main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
-        
+
         PyObject* mapToPythonDict(const std::map<std::string, float> &floatMap) {
-            
+
             return Py_None;
         }
-       
+
 
         void PythonEventsProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet) {
 
-       
+
             if (!ModuleInitalized) {
                 return;
             }
-            
+
 
            if (Plugins::Py_IsInitialized()) {
-               
-			   boost::lock_guard<boost::mutex> l(PythonMutex);
+
+			   std::lock_guard<std::mutex> l(PythonMutex);
 			   if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
-               
+
                /*{
                    _log.Log(LOG_ERROR, "EventSystem - Python: Failed to attach to interpreter");
                }*/
-            
+
                PyObject* pModule = Plugins::PythonEventsGetModule();
                if (pModule) {
 
@@ -353,7 +353,7 @@
                    }
 
                    // uservariablesMutexLock2.unlock();
-                   
+
                    // Add __main__ module
                    PyObject *pModule = Plugins::PyImport_AddModule("__main__");
                    Py_INCREF(pModule);
@@ -368,7 +368,7 @@
                        // Script-file
                        FILE* PythonScriptFile = fopen(filename.c_str(), "r");
                        Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
-                       
+
                        if (PythonScriptFile!=NULL)
                            fclose(PythonScriptFile);
                    }

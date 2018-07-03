@@ -55,7 +55,7 @@ private:
 	int									m_input_count;
 	int									m_relay_count;
 	int									m_retrycntr;
-	boost::shared_ptr<boost::thread> 	m_thread;
+	std::shared_ptr<std::thread> 	m_thread;
 	tRBUF 								m_Packet;
 };
 

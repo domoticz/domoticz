@@ -70,7 +70,7 @@ namespace http {
 			void WS_Write(long handlerid, const std::string &packet_data);
 			void SocketWrite(ProxyPdu *pdu);
 			/// make sure we only write one packet at a time
-			boost::mutex writeMutex;
+			std::mutex writeMutex;
 			bool write_in_progress;
 			void LoginToService();
 
@@ -157,7 +157,7 @@ namespace http {
 			DomoticzTCP *findSlaveById(const std::string &instanceid);
 		private:
 			std::string _instanceid;
-			boost::mutex prefs_mutex;
+			std::mutex prefs_mutex;
 			std::set<std::string> connectedips_;
 			std::set<std::string> connectedservers_;
 			std::vector<DomoticzTCP *>TCPClients;

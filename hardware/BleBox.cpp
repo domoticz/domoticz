@@ -51,7 +51,7 @@ bool BleBox::StartHardware()
 	m_stoprequested = false;
 
 	LoadNodes();
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&BleBox::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -61,7 +61,7 @@ bool BleBox::StopHardware()
 {
 	m_stoprequested = true;
 
-	if (m_thread)
+	if (m_thread && m_thread->joinable())
 	{
 		m_thread->join();
 	}
@@ -94,7 +94,7 @@ void BleBox::Do_Work()
 
 void BleBox::GetDevicesState()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	for (const auto & itt : m_devices)
 	{
@@ -1114,14 +1114,14 @@ void BleBox::RemoveAllNodes()
 
 void BleBox::UnloadNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_devices.clear();
 }
 
 bool BleBox::LoadNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
@@ -1177,7 +1177,7 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		return;
 
 
-	std::vector< boost::shared_ptr<boost::thread> > searchingThreads;
+	std::vector< std::shared_ptr<std::thread> > searchingThreads;
 
 	for (unsigned int i = 1; i < 255; ++i)
 	{
@@ -1188,12 +1188,13 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
 		if (itt == m_devices.end())
 		{
-			searchingThreads.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress))));
+			searchingThreads.push_back(std::shared_ptr<std::thread>(new std::thread(std::bind(&BleBox::AddNode, this, "unknown", IPAddress))));
 		}
 	}
 
 	for (size_t i = 1; i <= searchingThreads.size(); ++i)
 	{
-		searchingThreads[i - 1]->join();
+		if (searchingThreads[i - 1]->joinable())
+			searchingThreads[i - 1]->join();
 	}
 }

@@ -39,7 +39,7 @@ bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
     if (pSwitch->type != pTypeGeneralSwitch)
         return false; //only allowed to control switches
 
-    boost::unique_lock<boost::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_commands[pSwitch->id] = Command(*pSwitch);
     m_cond.notify_all();
     return true;
@@ -49,9 +49,9 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
 {
     char sid[16];
     sprintf(sid, "%08X", id);
-  
+
     std::vector<std::vector<std::string> > result;
-    result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", 
+    result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)",
                               m_HwdID, sid, pTypeGeneralSwitch, sSwitchTypeAC);
 	if (result.empty())
     {
@@ -90,12 +90,12 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
     _log.Log(LOG_NORM, "Tellstick: deviceEvent %d %d: %s", deviceId, method, data);
 
     char sid[16];
-    sprintf(sid, "%08d", deviceId);  
+    sprintf(sid, "%08d", deviceId);
 
     _tGeneralSwitch gswitch;
     gswitch.id = deviceId;
     gswitch.unitcode = 3;
-  
+
     switch (method)
     {
     case TELLSTICK_TURNON:
@@ -120,7 +120,7 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 {
     _log.Log(LOG_NORM, "Tellstick: rawDeviceEvent %d: %s", controllerId, data);
-	
+
     if (!data)
         return;
 
@@ -149,7 +149,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
         } else if (param.substr(0, delim).compare("windgust") == 0) {
             windgust = param.substr(delim+1, param.length()-delim);
         }
-        pos = message.find(";", pos+1);	
+        pos = message.find(";", pos+1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
         SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), atof(windaverage.c_str()), atof(windgust.c_str()), 0, 0, false, "Wind");
@@ -159,7 +159,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 void CTellstick::deviceEventCallback(int deviceId, int method, const char *data, int callbackId, void *context)
 {
     CTellstick *t = reinterpret_cast<CTellstick *>(context);
-    if (t) 
+    if (t)
     {
         /** Please note!
         * We are here in another thread than the main. Some measures to syncronize
@@ -172,7 +172,7 @@ void CTellstick::deviceEventCallback(int deviceId, int method, const char *data,
 void CTellstick::rawDeviceEventCallback(const char *data, int controllerId, int callbackId, void *context)
 {
     CTellstick *t = reinterpret_cast<CTellstick *>(context);
-    if (t) 
+    if (t)
     {
         /** Please note!
         * We are here in another thread than the main. Some measures to syncronize
@@ -186,7 +186,7 @@ void CTellstick::sensorEventCallback(const char *protocol, const char *model, in
                                      const char *value, int timestamp, int callbackId, void *context)
  {
     CTellstick *t = reinterpret_cast<CTellstick *>(context);
-    if (t) 
+    if (t)
     {
         /** Please note!
         * We are here in another thread than the main. Some measures to syncronize
@@ -233,9 +233,9 @@ bool CTellstick::StopHardware()
         tdUnregisterCallback(m_rawDeviceEventId);
     if (m_sensorEventId != -1)
         tdUnregisterCallback(m_sensorEventId);
-  
+
     tdClose();
-    boost::unique_lock<boost::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_bIsStarted = false;
     m_cond.notify_all();
     lock.unlock();
@@ -268,7 +268,7 @@ void CTellstick::SendCommand(int devID, const _tGeneralSwitch &genSwitch)
 
 void CTellstick::ThreadSendCommands()
 {
-    boost::unique_lock<boost::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     while (m_bIsStarted)
     {
         boost::system_time now = boost::get_system_time();
