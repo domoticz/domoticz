@@ -50,7 +50,7 @@
 #endif
 #endif
 
-#if defined(__linux__) //&& defined(__arm__)
+#if defined(__linux__)
 static int IsDebuggerPresent(void)
 {
 	char buf[1024];
