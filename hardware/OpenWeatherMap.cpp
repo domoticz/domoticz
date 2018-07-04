@@ -77,13 +77,13 @@ bool COpenWeatherMap::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "OpenWeatherMap: Started");
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool COpenWeatherMap::StopHardware()
 {
 	m_stoprequested = true;
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_thread->join();

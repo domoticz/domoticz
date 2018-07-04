@@ -71,12 +71,12 @@ bool CDarkSky::StartHardware()
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDarkSky::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CDarkSky::StopHardware()
 {
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;

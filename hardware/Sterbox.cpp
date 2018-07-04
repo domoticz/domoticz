@@ -41,12 +41,12 @@ bool CSterbox::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Sterbox: Started");
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CSterbox::StopHardware()
 {
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;

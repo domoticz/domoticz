@@ -2346,7 +2346,7 @@ bool MySensorsBase::StartSendQueue()
 
 void MySensorsBase::StopSendQueue()
 {
-	if (m_send_thread != NULL && m_send_thread->joinable())
+	if (m_send_thread != NULL)
 	{
 		assert(m_send_thread);
 		//Add a dummy queue item, so we stop

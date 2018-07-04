@@ -665,7 +665,7 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_background_task_thread && m_background_task_thread->joinable())
+	if (m_background_task_thread)
 	{
 		m_stoprequested = true;
 		m_background_task_thread->join();

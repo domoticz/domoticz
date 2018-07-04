@@ -61,7 +61,7 @@ bool BleBox::StopHardware()
 {
 	m_stoprequested = true;
 
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_thread->join();
 	}
@@ -1194,7 +1194,6 @@ void BleBox::SearchNodes(const std::string &ipmask)
 
 	for (size_t i = 1; i <= searchingThreads.size(); ++i)
 	{
-		if (searchingThreads[i - 1]->joinable())
-			searchingThreads[i - 1]->join();
+		searchingThreads[i - 1]->join();
 	}
 }

@@ -103,7 +103,7 @@ bool Comm5Serial::StopHardware()
 {
 	terminate();
 	m_stoprequested = true;
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.

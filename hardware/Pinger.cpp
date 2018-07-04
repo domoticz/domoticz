@@ -184,7 +184,7 @@ bool CPinger::StopHardware()
 	StopHeartbeatThread();
 
 	try {
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_stoprequested = true;
 			m_thread->join();

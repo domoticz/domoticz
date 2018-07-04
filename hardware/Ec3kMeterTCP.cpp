@@ -69,14 +69,14 @@ bool Ec3kMeterTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&Ec3kMeterTCP::Do_Work, this)));
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool Ec3kMeterTCP::StopHardware()
 {
 	m_stoprequested=true;
 	try {
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_thread->join();
 		}

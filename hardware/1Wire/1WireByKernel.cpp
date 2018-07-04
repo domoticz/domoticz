@@ -32,8 +32,7 @@ C1WireByKernel::C1WireByKernel()
 
 C1WireByKernel::~C1WireByKernel()
 {
-   if (m_thread->joinable())
-         m_thread->join();
+   m_thread->join();
 }
 
 bool C1WireByKernel::IsAvailable()

@@ -406,7 +406,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CTCPServer::Do_Work, this)));
 
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 #ifndef NOCLOUD

@@ -41,18 +41,18 @@ bool CTE923::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CTE923::StopHardware()
 {
 	/*
     m_stoprequested=true;
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 		m_thread->join();
 	return true;
     */
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;

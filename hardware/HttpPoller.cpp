@@ -64,12 +64,12 @@ bool CHttpPoller::StartHardware()
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CHttpPoller::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CHttpPoller::StopHardware()
 {
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		m_stoprequested = true;
 		m_thread->join();

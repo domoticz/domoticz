@@ -201,7 +201,7 @@ bool RelayNet::StopHardware()
 
 	try
 	{
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_thread->join();
 		}

@@ -98,7 +98,7 @@ bool USBtin::StartHardware()
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&USBtin::Do_Work, this)));
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 void USBtin::Restart()
@@ -111,7 +111,7 @@ void USBtin::Restart()
 bool USBtin::StopHardware()
 {
 	m_stoprequested = true; //Trigg to stop in while loop
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 		m_thread->join();
 	sleep_milliseconds(10);
 	terminate();

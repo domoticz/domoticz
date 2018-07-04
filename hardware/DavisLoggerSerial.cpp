@@ -48,14 +48,14 @@ bool CDavisLoggerSerial::StartHardware()
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDavisLoggerSerial::Do_Work, this)));
 
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 
 }
 
 bool CDavisLoggerSerial::StopHardware()
 {
 	m_stoprequested=true;
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_thread->join();
 	}

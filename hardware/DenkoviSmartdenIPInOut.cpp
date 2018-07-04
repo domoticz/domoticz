@@ -63,12 +63,12 @@ bool CDenkoviSmartdenIPInOut::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Denkovi_IP_In: Started");
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CDenkoviSmartdenIPInOut::StopHardware()
 {
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;

@@ -184,7 +184,7 @@ void CPanasonicNode::CPanasonicStatus::Clear()
 void CPanasonicNode::StopThread()
 {
 	try {
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_stoprequested = true;
 			m_thread->join();
@@ -798,7 +798,7 @@ bool CPanasonic::StopHardware()
 	StopHeartbeatThread();
 
 	try {
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_stoprequested = true;
 			m_thread->join();

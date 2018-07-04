@@ -110,11 +110,11 @@ bool COpenWebNetTCP::StopHardware()
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: StopHardware");
 
 	try {
-		if (m_monitorThread && m_monitorThread->joinable())
+		if (m_monitorThread)
 		{
 			m_monitorThread->join();
 		}
-		if (m_heartbeatThread && m_heartbeatThread->joinable())
+		if (m_heartbeatThread)
 		{
 			m_heartbeatThread->join();
 		}

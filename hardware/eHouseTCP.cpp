@@ -547,7 +547,7 @@ bool eHouseTCP::StopHardware()
 	#endif
 	*/
 
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_thread->join();
 	}

@@ -70,7 +70,7 @@ void OTGWSerial::StartPollerThread()
 
 void OTGWSerial::StopPollerThread()
 {
-	if (m_pollerthread != NULL && m_pollerthread->joinable())
+	if (m_pollerthread != NULL)
 	{
 		assert(m_pollerthread);
 		m_stoprequestedpoller = true;

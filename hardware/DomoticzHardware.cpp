@@ -100,7 +100,7 @@ void CDomoticzHardwareBase::StartHeartbeatThread()
 void CDomoticzHardwareBase::StopHeartbeatThread()
 {
 	m_stopHeartbeatrequested = true;
-	if (m_Heartbeatthread && m_Heartbeatthread->joinable())
+	if (m_Heartbeatthread)
 	{
 		m_Heartbeatthread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.

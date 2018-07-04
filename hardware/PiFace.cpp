@@ -731,7 +731,7 @@ bool CPiFace::StartHardware()
     else m_stoprequested=true;
     m_bIsStarted=true;
     sOnConnected(this);
-    return (m_thread != NULL && m_thread->joinable());
+    return (m_thread != NULL);
 }
 
 bool CPiFace::StopHardware()
@@ -740,12 +740,9 @@ bool CPiFace::StopHardware()
     if (m_thread != NULL)
     {
         m_stoprequested = true;
-        if (m_thread->joinable())
-        {
-            m_thread->join();
-            m_thread.reset();
-        }
-        if (m_queue_thread != NULL && m_queue_thread->joinable())
+        m_thread->join();
+        m_thread.reset();
+        if (m_queue_thread != NULL)
         {
             m_queue_thread->join();
             m_queue_thread.reset();

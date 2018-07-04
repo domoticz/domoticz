@@ -273,16 +273,16 @@ bool CGpio::StopHardware()
 {
 	m_stoprequested = true;
 
-	if (m_thread_poller != NULL && m_thread_poller->joinable())
+	if (m_thread_poller != NULL)
 		m_thread_poller->join();
 
-	if (m_thread_updatestartup != NULL && m_thread_updatestartup->joinable())
+	if (m_thread_updatestartup != NULL)
 		m_thread_updatestartup->join();
 
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
-		if (m_thread_interrupt[it->GetPin()] != NULL && m_thread_interrupt[it->GetPin()]->joinable())
+		if (m_thread_interrupt[it->GetPin()] != NULL)
 			m_thread_interrupt[it->GetPin()]->join();
 	}
 

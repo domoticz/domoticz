@@ -193,7 +193,7 @@ bool CSysfsGpio::StopHardware()
 
 	try
 	{
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_thread->join();
 		}
@@ -205,7 +205,7 @@ bool CSysfsGpio::StopHardware()
 
 	try
 	{
-		if (m_edge_thread && m_edge_thread->joinable())
+		if (m_edge_thread)
 		{
 			m_edge_thread->join();
 		}

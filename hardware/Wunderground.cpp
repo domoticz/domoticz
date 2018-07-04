@@ -81,7 +81,7 @@ bool CWunderground::StartHardware()
 
 bool CWunderground::StopHardware()
 {
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;

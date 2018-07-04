@@ -164,14 +164,14 @@ bool OnkyoAVTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&OnkyoAVTCP::Do_Work, this)));
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool OnkyoAVTCP::StopHardware()
 {
 	m_stoprequested=true;
 	try {
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_thread->join();
 		}

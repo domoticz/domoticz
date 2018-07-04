@@ -13,6 +13,7 @@
 #include "../main/localtime_r.h"
 
 #include <boost/exception/diagnostic_information.hpp>
+#include <cmath>
 #include <ctime>
 
 #if _DEBUG
@@ -432,13 +433,13 @@ bool CEnOceanESP3::StartHardware()
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEnOceanESP3::Do_Work, this)));
 
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CEnOceanESP3::StopHardware()
 {
 	m_stoprequested=true;
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.

@@ -59,7 +59,7 @@ bool Arilux::StopHardware()
 {
 	m_stoprequested = true;
 	try {
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_thread->join();
 		}

@@ -139,7 +139,7 @@ bool CRego6XXSerial::StartHardware()
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CRego6XXSerial::Do_Work, this)));
 
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CRego6XXSerial::StopHardware()

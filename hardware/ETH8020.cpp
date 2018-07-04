@@ -39,12 +39,12 @@ bool CETH8020::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "ETH8020: Started");
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CETH8020::StopHardware()
 {
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;

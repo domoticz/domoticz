@@ -1128,13 +1128,10 @@ bool MainWorker::Stop()
 		// Stop RxMessage thread before hardware to avoid NULL pointer exception
 		m_stopRxMessageThread = true;
 		UnlockRxMessageQueue();
-		if (m_rxMessageThread->joinable())
-		{
-			m_rxMessageThread->join();
-			m_rxMessageThread.reset();
-		}
+		m_rxMessageThread->join();
+		m_rxMessageThread.reset();
 	}
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_webservers.StopServers();
 		m_sharedserver.StopServer();

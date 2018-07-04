@@ -926,7 +926,7 @@ namespace Plugins {
 
 			_log.Log(LOG_STATUS, "(%s) Stopping threads.", Name.c_str());
 
-			if (m_thread && m_thread->joinable())
+			if (m_thread)
 			{
 				m_thread->join();
 				m_thread.reset();

@@ -25,13 +25,13 @@ bool CRFLinkSerial::StartHardware()
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CRFLinkSerial::Do_Work, this)));
 
-	return (m_thread != NULL && m_thread->joinable());
+	return (m_thread != NULL);
 }
 
 bool CRFLinkSerial::StopHardware()
 {
 	m_stoprequested=true;
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.

@@ -131,7 +131,7 @@ bool CHardwareMonitor::StartHardware()
 
 bool CHardwareMonitor::StopHardware()
 {
-	if (m_thread != NULL && m_thread->joinable())
+	if (m_thread != NULL)
 	{
 		m_stoprequested = true;
 		m_thread->join();

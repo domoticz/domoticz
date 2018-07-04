@@ -45,7 +45,7 @@ bool CRtl433::StartHardware()
 
 bool CRtl433::StopHardware()
 {
-	if (m_thread && m_thread->joinable())
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();

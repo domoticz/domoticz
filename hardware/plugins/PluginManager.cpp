@@ -343,7 +343,7 @@ namespace Plugins {
 	{
 		m_bAllPluginsStarted = false;
 
-		if (m_thread && m_thread->joinable())
+		if (m_thread)
 		{
 			m_stoprequested = true;
 			m_thread->join();

@@ -89,13 +89,13 @@ bool C1Wire::StartHardware()
 
 bool C1Wire::StopHardware()
 {
-	if (m_threadSensors && m_threadSensors->joinable())
+	if (m_threadSensors)
 	{
 		m_stoprequested = true;
 		m_threadSensors->join();
 	}
 
-	if (m_threadSwitches && m_threadSwitches->joinable())
+	if (m_threadSwitches)
 	{
 		m_stoprequested = true;
 		m_threadSwitches->join();
