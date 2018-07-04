@@ -110,7 +110,7 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	bool tIsOn = !(bIsOn);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeColorSwitch, YeeType);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "Arilux: New controller added (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(ariluxBright.c_str());

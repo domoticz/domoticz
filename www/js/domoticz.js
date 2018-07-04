@@ -10863,12 +10863,14 @@ function ShowIthoPopup(event, idx, refreshfunction, Protected, ismobile) {
 
 //Lucci
 function CloseLucciPopup() {
-	$("#lucci_popup").hide();
+    $("#lucci_popup").hide();
+    $("#lucci_dc_popup").hide();
 }
 
 function LucciSendCommand(lucci_cmnd) {
 	var switchcmd = lucci_cmnd;
 	$("#lucci_popup").hide();
+	$("#lucci_dc_popup").hide();
 	SwitchLight($.devIdx, switchcmd, $.refreshfunction, $.Protected);
 }
 
@@ -10925,6 +10927,61 @@ function ShowLucciPopup(event, idx, refreshfunction, Protected, ismobile) {
 	HandleProtection(Protected, function () {
 		ShowLucciPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
 	});
+}
+
+function ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile) {
+    $.devIdx = idx;
+    $.refreshfunction = refreshfunction;
+
+    if (typeof ismobile == 'undefined') {
+        $("#lucci_dc_popup").css({
+            "top": mouseY,
+            "left": mouseX + 15,
+            "position": "absolute",
+            "-ms-transform": "none",
+            "-moz-transform": "none",
+            "-webkit-transform": "none",
+            "transform": "none"
+        });
+    }
+    else {
+        $("#lucci_dc_popup").css({
+            "position": "fixed",
+            "left": "50%",
+            "top": "50%",
+            "-ms-transform": "translate(-50%,-50%)",
+            "-moz-transform": "translate(-50%,-50%)",
+            "-webkit-transform": "translate(-50%,-50%)",
+            "transform": "translate(-50%,-50%)"
+        });
+    }
+    $('#lucci_dc_popup').i18n();
+    $("#lucci_dc_popup").show();
+}
+
+function ShowLucciDCPopup(event, idx, refreshfunction, Protected, ismobile) {
+    event = event || window.event;
+    // If pageX/Y aren't available and clientX/Y are,
+    // calculate pageX/Y - logic taken from jQuery.
+    // (This is to support old IE)
+    if (event.pageX == null && event.clientX != null) {
+        eventDoc = (event.target && event.target.ownerDocument) || document;
+        doc = eventDoc.documentElement;
+        body = eventDoc.body;
+
+        event.pageX = event.clientX +
+			(doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+			(doc && doc.clientLeft || body && body.clientLeft || 0);
+        event.pageY = event.clientY +
+			(doc && doc.scrollTop || body && body.scrollTop || 0) -
+			(doc && doc.clientTop || body && body.clientTop || 0);
+    }
+    var mouseX = event.pageX;
+    var mouseY = event.pageY;
+
+    HandleProtection(Protected, function () {
+        ShowLucciDCPopupInt(mouseX, mouseY, idx, refreshfunction, ismobile);
+    });
 }
 
 function MakeDatatableTranslations() {

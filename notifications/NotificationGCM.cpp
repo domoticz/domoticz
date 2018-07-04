@@ -36,22 +36,19 @@ bool CNotificationGCM::SendMessageImplementation(
 
 	std::string sMidx;
 	std::vector<std::string> vDevices;
-	//std::string sDevice = "";
-	if (ExtraData.find("midx_") != std::string::npos)
+	if (ExtraData.find("midx_") != std::string::npos) {
 		sMidx = ExtraData.substr(5);
-	if (ExtraData.find("|Device=") != std::string::npos) {
-		std::string sDevice = ExtraData.substr(8);
-		if (!sDevice.empty())
-			boost::split(vDevices, sDevice, boost::is_any_of(";"));
+		boost::split(vDevices, sMidx, boost::is_any_of(";"));
 	}
 
 	std::string szQuery("SELECT SenderID, DeviceType FROM MobileDevices");
-	if (!sMidx.empty())
-		szQuery += " WHERE (ID == " + sMidx + ")";
-	else if (!vDevices.empty())
+	if (!vDevices.empty()) {
 		szQuery += " WHERE (ID IN (" + boost::algorithm::join(vDevices, ",") + "))";
-	else
+	}
+	else {
 		szQuery += " WHERE (Active == 1)";
+	}
+
 	result = m_sql.safe_query(szQuery.c_str());
 	if (result.empty())
 		return true;

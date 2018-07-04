@@ -418,7 +418,7 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 	}
 }
 
-void GoodweAPI::ParseDevice(Json::Value device, const std::string &sStationId, const std::string &sStationName)
+void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStationId, const std::string &sStationName)
 {
 	if (device[DEVICE_SERIAL].empty() )
 	{

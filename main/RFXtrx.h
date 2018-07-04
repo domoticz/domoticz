@@ -27,9 +27,23 @@ portions of this file.
 */
 
 /*
+SDK version 9.21
+	Fan LucciAir DC added
+	Casafan added
+	FT1211R fan controller added
+	Hualite blind added
+	Lighting1 Oase added
+
+SDK version 9.20
+	Lighting6 Cuveo added
+
+SDK version 9.19a
+	FS20 commands added
+
 SDK version 9.19
 	IRESPONSE868 added
-	IRESPONSE - msg4 FS20enabled changed to LEGRANDenabled
+	IRESPONSE updated
+	433 & 868 config bits updated
 
 SDK version 9.18
 	RAW transmit/receive added
@@ -379,52 +393,52 @@ SDK version 4.9
 #define msg3_LIGHTING4 0x08		//PT2262 and compatible
 #define msg3_RSL 0x10			//RSL,Revolt
 #define msg3_SX 0x20			//ByronSX,Selectplus
-#define msg3_IMAGINTRONIX 0x40
-#define msg3_undec 0x80
+#define msg3_IMAGINTRONIX 0x40	//Imagintronix,Opus
+#define msg3_undec 0x80			//display undecoded messages
 
-#define msg4_MERTIK 0x01
+#define msg4_MERTIK 0x01		//Mertik maxitrol
 #define msg4_AD 0x02			//AD LightwaveRF
 #define msg4_HID 0x04			//Hideki
 #define msg4_LCROS 0x08			//LaCrosse
 #define msg4_LEGRAND 0x10		//Legrand CAD
-#define msg4_RFU 0x20
-#define msg4_BLINDST0 0x40
-#define msg4_BLINDST1 0x80
+#define msg4_RFU 0x20			//RFU
+#define msg4_BLINDST0 0x40		//Rollertrol,Hasta new
+#define msg4_BLINDST1 0x80		//BlindsT1-4
 
-#define msg5_X10 0x01
-#define msg5_ARC 0x02
-#define msg5_AC 0x04
+#define msg5_X10 0x01			//X10
+#define msg5_ARC 0x02			//ARC
+#define msg5_AC 0x04			//AC
 #define msg5_HEU 0x08			//HomeEasy EU
 #define msg5_MEI 0x10			//Meiantech,Atlantic
-#define msg5_OREGON 0x20
-#define msg5_ATI 0x40
-#define msg5_VISONIC 0x80
+#define msg5_OREGON 0x20		//Oregon Scientific
+#define msg5_ATI 0x40			//ATI remotes
+#define msg5_VISONIC 0x80		//Visonic PowerCode
 
-#define msg6_KeeLoq 0x01
+#define msg6_KeeLoq 0x01		//Keeloq
 #define msg6_HC	0x02			//HomeConfort
-#define msg6_RFU2 0x04
-#define msg6_RFU3 0x08
-#define msg6_RFU4 0x10
-#define msg6_RFU5 0x20
+#define msg6_RFU2 0x04			//RFU
+#define msg6_RFU3 0x08			//RFU
+#define msg6_RFU4 0x10			//RFU
+#define msg6_RFU5 0x20			//RFU
 #define msg6_MCZ 0x40			//MCZ
 #define msg6_Funkbus 0x80		//Funkbus
 
 //868 config bits
 #define msg3_868_RFU0 0x01		//RFU
-#define msg3_868_RFU1 0x02		//RFU
-#define msg3_868_RFU2 0x04		//RFU
+#define msg3_868_DAVISAU 0x02	//Davis AU
+#define msg3_868_DAVISUS 0x04	//Davis US
 #define msg3_868_DAVISEU 0x08	//Davis EU
 #define msg3_868_RFU4 0x10		//RFU
-#define msg3_868_LACROSSE 0x20	//laCrosse
+#define msg3_868_LACROSSE 0x20	//LaCrosse
 #define msg3_868_ALECTO 0x40	//Alecto ACH2010
 #define msg3_868_UNDEC 0x80		//Enable undecoded
 
 #define msg4_868_EDISIO 0x01	//Edisio
-#define msg4_868_AD 0x02		//AD LightwaveRF
-#define msg4_868_FS20 0x04		//FS20
+#define msg4_868_RFU1 0x02		//RFU
+#define msg4_868_RFU2 0x04		//RFU
 #define msg4_868_RFU3 0x08		//RFU
-#define msg4_868_RFU4 0x10		//Legrand CAD
-#define msg4_868_RFU5 0x20		//RFU
+#define msg4_868_FS20 0x10		//FS20
+#define msg4_868_PROGUARD 0x20	//Proguard
 #define msg4_868_RFU6 0x40		//RFU
 #define msg4_868_RFU7 0x80		//RFU
 
@@ -432,19 +446,19 @@ SDK version 4.9
 #define msg5_868_RFU1 0x02		//RFU
 #define msg5_868_RFU2 0x04		//RFU
 #define msg5_868_RFU3 0x08		//RFU
-#define msg5_868_PROGUARD 0x10	//Proguard
-#define msg5_868_KEELOQ 0x20	//Keeloq
+#define msg5_868_RFU4 0x10		//RFU
+#define msg5_868_RFU5 0x20		//RFU
 #define msg5_868_MEI 0x40		//Meiantech,Atlantic
 #define msg5_868_VISONIC 0x80	//Visonic
 
-#define msg6_868_RFU0 0x01		//RFU
+#define msg6_868_KEELOQ 0x01	//Keeloq
 #define msg6_868_RFU1 0x02		//RFU
 #define msg6_868_RFU2 0x04		//RFU
 #define msg6_868_RFU3 0x08		//RFU
 #define msg6_868_RFU4 0x10		//RFU
-#define msg6_868_HONCHIME 0x20	//Honeywell Chime
-#define msg6_868_ITHOECO 0x40	//Itho CVE ECO RFT
-#define msg6_868_ITHO 0x80		//Itho CVE RFT
+#define msg6_868_RFU5 0x20		//RFU
+#define msg6_868_RFU6 0x40		//RFU
+#define msg6_868_RFU7 0x80		//RFU
 
 #define pTypeRecXmitMessage 0x02
 #define sTypeReceiverLockError 0x00
@@ -491,11 +505,13 @@ SDK version 4.9
 #define sTypeEnergenie5 0x9
 #define sTypeGDR2 0x0A
 #define sTypeHQ 0x0B
+#define sTypeOase 0x0C
 
 #define light1_sOff 0x0
 #define light1_sOn 0x1
 #define light1_sDim 0x2
 #define light1_sBright 0x3
+#define light1_sProgram 0x4
 #define light1_sAllOff 0x5
 #define light1_sAllOn 0x6
 #define light1_sChime 0x7
@@ -615,6 +631,7 @@ SDK version 4.9
 
 #define pTypeLighting6 0x15
 #define sTypeBlyss 0x0
+#define sTypeCuveo 0x1
 #define light6_sOn 0x0
 #define light6_sOff 0x1
 #define light6_sGroupOn 0x2
@@ -641,6 +658,10 @@ SDK version 4.9
 #define sTypeLucciAir 0x2
 #define sTypeSeavTXS4 0x3
 #define sTypeWestinghouse 0x4
+#define sTypeLucciAirDC 0x5
+#define sTypeCasafan 0x6
+#define sTypeFT1211R 0x7
+
 #define fan_sTimer 0x1
 #define fan_sMin 0x2
 #define fan_sLearn 0x3
@@ -668,6 +689,29 @@ SDK version 4.9
 #define fan_WestinghouseLow 0x3
 #define fan_WestinghouseOff 0x4
 #define fan_WestinghouseLight 0x5
+#define fan_LucciDCPower 0x1
+#define fan_LucciDCPlus 0x2
+#define fan_LucciDCMin 0x3
+#define fan_LucciDCLight 0x4
+#define fan_LucciDCReverse 0x5
+#define fan_LucciDCNaturalflow 0x6
+#define fan_LucciDCPair 0x7
+#define fan_CasafanHi 0x1
+#define fan_CasafanMed 0x2
+#define fan_CasafanLow 0x3
+#define fan_CasafanOff 0x4
+#define fan_CasafanLight 0x5
+#define fan_FT1211Rpower 0x1
+#define fan_FT1211Rlight 0x2
+#define fan_FT1211R1 0x3
+#define fan_FT1211R2 0x4
+#define fan_FT1211R3 0x5
+#define fan_FT1211R4 0x6
+#define fan_FT1211R5 0x7
+#define fan_FT1211Rfr 0x8
+#define fan_FT1211R1H 0x9
+#define fan_FT1211R4H 0xA
+#define fan_FT1211R8H 0xB
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -693,6 +737,7 @@ SDK version 4.9
 #define sTypeBlindsT11 0xB	//ASP
 #define sTypeBlindsT12 0xC	//Confexx
 #define sTypeBlindsT13 0xD	//Screenline
+#define sTypeBlindsT14 0xE	//Hualite
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
@@ -1069,8 +1114,8 @@ SDK version 4.9
 #define fs20_sProgram_timer 0x16
 #define fs20_sRequest_status 0x17
 #define fs20_sOff_for_time_period 0x18
-#define fs20_sOn_100_for_time_period 0x19
-#define fs20_sOn_last_dim_level_period 0x1A
+#define fs20_sOn_100_for_time_period 0x19 
+#define fs20_sOn_last_dim_level_period 0x1A 
 #define fs20_sReset 0x1B
 
 //RAW transit/receive
@@ -1121,7 +1166,7 @@ typedef union tRBUF {
 		//BYTE	msg4;
 		BYTE	BLINDST1enabled : 1;
 		BYTE	BLINDST0enabled : 1;
-		BYTE	PROGUARDenabled : 1;
+		BYTE	MSG4Reserved5 : 1;
 		BYTE	LEGRANDenabled : 1;
 		BYTE	LACROSSEenabled : 1;
 		BYTE	HIDEKIenabled : 1;
@@ -1164,7 +1209,7 @@ typedef union tRBUF {
 		BYTE	HIDEKIenabled : 1;
 		BYTE	LACROSSEenabled : 1;
 		BYTE	LEGRANDenabled : 1;
-		BYTE	PROGUARDenabled : 1;
+		BYTE	MSG4Reserved5 : 1;
 		BYTE	BLINDST0enabled : 1;
 		BYTE	BLINDST1enabled : 1;
 

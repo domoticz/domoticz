@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html manifest="html5.appcache">
 <head>
 		<meta charset="utf-8">
@@ -491,43 +491,45 @@ $(document).ready(function() {
 				<tr id="PopupLedColor">
 					<td>
 						<table id="ledtable" class="display" border="0" cellpadding="0" cellspacing="0">
-						<tr id="ColorMode">
-							<td><a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48" width="48"></a>
-							<a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48" width="48"></a>
-							<a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48" width="48"></a>
-							<a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48" width="48"></a>
-							<a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48" width="48"></a>
-							<a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48" width="48"></a>
-							<a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48" width="48"></a>
-							<a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected" height="48" width="48"></a>
-							<a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected" height="48" width="48"></a>
-							<a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected" height="48" width="48"></a></td>
-						</tr>
-						<tr>
-							<td align="left" style="width:200px">
-								<input type="text" id="popup_picker"  data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl"/>
-								<div class="btn-group">
-									<button id="popup_bright_up" class="btn btn-small" type="button">
-										Brightness Up
-									</button>
-									<button id="popup_bright_down" class="btn btn-small" type="button">
-										Brightness Down
-									</button>
-								</div>
-								<div class="btn-group">
-									<button id="popup_warmer" class="btn btn-small" type="button">
-										Warmer White
-									</button>
-									<button id="popup_colder" class="btn btn-small" type="button">
-										Colder White
-									</button>
-								</div>
-							</td>
-							<td align="left" style="vertical-align: center;">
-								<a id="popup_switch_on"><img src="images/pushon48.png" class="lcursor" height="48" width="48"></a><br>
-								<a id="popup_switch_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
-							</td>
-						</tr>
+							<tr id="ColorMode">
+								<td>
+									<a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48" width="48"></a>
+									<a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48" width="48"></a>
+									<a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48" width="48"></a>
+									<a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48" width="48"></a>
+									<a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48" width="48"></a>
+									<a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48" width="48"></a>
+									<a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48" width="48"></a>
+									<a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected" height="48" width="48"></a>
+									<a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected" height="48" width="48"></a>
+									<a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected" height="48" width="48"></a>
+								</td>
+							</tr>
+							<tr>
+								<td align="left" style="width:200px">
+									<input type="text" id="popup_picker" data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl" />
+									<div class="btn-group">
+										<button id="popup_bright_up" class="btn btn-small" type="button">
+											Brightness Up
+										</button>
+										<button id="popup_bright_down" class="btn btn-small" type="button">
+											Brightness Down
+										</button>
+									</div>
+									<div class="btn-group">
+										<button id="popup_warmer" class="btn btn-small" type="button">
+											Warmer White
+										</button>
+										<button id="popup_colder" class="btn btn-small" type="button">
+											Colder White
+										</button>
+									</div>
+								</td>
+								<td align="left" style="vertical-align: center;">
+									<a id="popup_switch_on"><img src="images/pushon48.png" class="lcursor" height="48" width="48"></a><br>
+									<a id="popup_switch_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
+								</td>
+							</tr>
 						</table>
 					</td>
 				</tr>
@@ -575,11 +577,11 @@ $(document).ready(function() {
 			<tr>
 				<td>
 					<center>
-					<br><br>
-					<button class="btn btn-info" onclick="IthoSendCommand('1')">1</button><br>
-					<button class="btn btn-info" onclick="IthoSendCommand('2')">2</button><br>
-					<button class="btn btn-info" onclick="IthoSendCommand('3')">3</button><br>
-					<button data-i18n="Timer" class="btn btn-info" onclick="IthoSendCommand('timer')">Timer</button><br>
+						<br><br>
+						<button class="btn btn-info" onclick="IthoSendCommand('1')">1</button><br>
+						<button class="btn btn-info" onclick="IthoSendCommand('2')">2</button><br>
+						<button class="btn btn-info" onclick="IthoSendCommand('3')">3</button><br>
+						<button data-i18n="Timer" class="btn btn-info" onclick="IthoSendCommand('timer')">Timer</button><br>
 					</center>
 					<br>
 				</td>
@@ -592,12 +594,29 @@ $(document).ready(function() {
 			<tr>
 				<td>
 					<center>
-					<br><br>
-					<button class="btn btn-info" onclick="LucciSendCommand('hi')">Hi</button><br>
-					<button class="btn btn-info" onclick="LucciSendCommand('med')">Med</button><br>
-					<button class="btn btn-info" onclick="LucciSendCommand('low')">Low</button><br>
-					<button class="btn btn-info" onclick="LucciSendCommand('off')">Off</button><br>
-					<button data-i18n="Light" class="btn btn-info" onclick="LucciSendCommand('light')">Light</button><br>
+						<br><br>
+						<button class="btn btn-info" onclick="LucciSendCommand('hi')">Hi</button><br>
+						<button class="btn btn-info" onclick="LucciSendCommand('med')">Med</button><br>
+						<button class="btn btn-info" onclick="LucciSendCommand('low')">Low</button><br>
+						<button class="btn btn-info" onclick="LucciSendCommand('off')">Off</button><br>
+						<button data-i18n="Light" class="btn btn-info" onclick="LucciSendCommand('light')">Light</button><br>
+					</center>
+					<br>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div id="lucci_dc_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
+		<div class="ui-close" onclick="CloseLucciPopup()"></div>
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td>
+					<center>
+						<br><br>
+						<button class="btn btn-info" onclick="LucciSendCommand('pow')">Pow</button><br>
+						<button class="btn btn-info" onclick="LucciSendCommand('plus')">Plus</button><br>
+						<button class="btn btn-info" onclick="LucciSendCommand('min')">Min</button><br>
+						<button data-i18n="Light" class="btn btn-info" onclick="LucciSendCommand('light')">Light</button><br>
 					</center>
 					<br>
 				</td>
@@ -605,14 +624,14 @@ $(document).ready(function() {
 		</table>
 	</div>
 	<div id="globaldaylog" style="display:none;">
-	  <h2 data-i18n="Day">Day</h2>
-	  <div id="globaldaygraph" style="height: 300px;"></div>
-	  <br>
-	  <h2 data-i18n="Month">Month</h2>
-	  <div id="globalmonthgraph" style="height: 300px;"></div>
-	  <br>
-	  <h2 data-i18n="Year">Year</h2>
-	  <div id="globalyeargraph" style="height: 300px;"></div>
+		<h2 data-i18n="Day">Day</h2>
+		<div id="globaldaygraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Month">Month</h2>
+		<div id="globalmonthgraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Year">Year</h2>
+		<div id="globalyeargraph" style="height: 300px;"></div>
 	</div>
 
 	<div id="dialog-camera-live" style="display:none;">
@@ -622,24 +641,28 @@ $(document).ready(function() {
 		<svg id="MediaRemote" class="MediaRemote" viewBox="50 -150 900 1875" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="grad1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="grad2" cx="50%" cy="80%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="grad3" cx="20%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="grad4" cx="80%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<path id="btnTriangle" d="M100 -140 l370 0 S  110,-100 60 250 L60 -100 S 60,-140 100 -140z" />
 				<path id="btnArrow" d="M190 45 l108 108 s -110,140 0,295 l-108 108 s -205,-235 0,-510z" />
-				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z"/>
-				<path id="symHouse" d="M0 0 l0 -30 l-10 0 l30 -30 l30 30 l-10 0 l0 30 l-10 0 l0 -20 l-10,0 l0 20 m-15 -35 l0 -22 l5 0 l0 20z"/>
+				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z" />
+				<path id="symHouse" d="M0 0 l0 -30 l-10 0 l30 -30 l30 30 l-10 0 l0 30 l-10 0 l0 -20 l-10,0 l0 20 m-15 -35 l0 -22 l5 0 l0 20z" />
 				<g id="symFullscreen" stroke="#393a39" stroke-width="10" stroke-linecap="round">
-					<line x1="0" y1="0" x2="80" y2="0" stroke-width="5"/>
-					<line x1="80" y1="0" x2="80" y2="80" stroke-width="5"/>
+					<line x1="0" y1="0" x2="80" y2="0" stroke-width="5" />
+					<line x1="80" y1="0" x2="80" y2="80" stroke-width="5" />
 					<line x1="25" y1="50" x2="62" y2="18" />
 					<line x1="65" y1="35" x2="65" y2="15" />
 					<line x1="45" y1="15" x2="65" y2="15" />
@@ -665,33 +688,33 @@ $(document).ready(function() {
 			<g>
 				<g>
 					<g>
-						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(1,10)"/>
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(1,10)" />
 						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Home');">
 							<title>Home</title>
 						</use>
-						<use xlink:href="#symHouse" class="remoteshadow" transform="translate(120,-30) scale(1.5)"/>
+						<use xlink:href="#symHouse" class="remoteshadow" transform="translate(120,-30) scale(1.5)" />
 					</g>
 					<g transform="rotate(90,500,300)">
-						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(10,-1)"/>
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(10,-1)" />
 						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Info');">
 							<title>Details</title>
 						</use>
 					</g>
-					<use xlink:href="#symI" class="remoteshadow" transform="translate(815,-100)"/>
+					<use xlink:href="#symI" class="remoteshadow" transform="translate(815,-100)" />
 					<g transform="rotate(180,500,300)">
-						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(-1,-10)"/>
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(-1,-10)" />
 						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('ContextMenu');">
 							<title>Menu</title>
 						</use>
 					</g>
-					<use xlink:href="#symMenu" class="remoteshadow" transform="translate(815,625)"/>
+					<use xlink:href="#symMenu" class="remoteshadow" transform="translate(815,625)" />
 					<g transform="rotate(270,500,300)">
-						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(-10,1)"/>
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(-10,1)" />
 						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Back');">
 							<title>Back</title>
 						</use>
 					</g>
-					<use xlink:href="#symBack" class="remoteshadow" transform="translate(107,625)"/>
+					<use xlink:href="#symBack" class="remoteshadow" transform="translate(107,625)" />
 					<g>
 						<circle cx="500" cy="312" r="200" class="remoteshadow" />
 						<circle cx="500" cy="300" r="200" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Select');">
@@ -701,31 +724,31 @@ $(document).ready(function() {
 					</g>
 					<g>
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(1,10)" />
-						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Left');" >
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Left');">
 							<title>Left</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 					<g transform="rotate(180,500,300)">
-						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-1,-10)"/>
-						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad2)" onclick="javascript:click_media_remote('Right');" >
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-1,-10)" />
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad2)" onclick="javascript:click_media_remote('Right');">
 							<title>Right</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 					<g transform="rotate(90,500,300)">
-						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(10,-1)"/>
-						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Up');" >
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(10,-1)" />
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Up');">
 							<title>Up</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow"  transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 					<g transform="rotate(270,500,300)">
-						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-10,1)"/>
-						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad4)" onclick="javascript:click_media_remote('Down');" >
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-10,1)" />
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad4)" onclick="javascript:click_media_remote('Down');">
 							<title>Down</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 				</g>
 				<g transform="translate(0,20)">
@@ -735,14 +758,14 @@ $(document).ready(function() {
 							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('FullScreen');">
 								<title>Fullscreen</title>
 							</circle>
-							<use xlink:href="#symFullscreen" class="remoteshadow" transform="translate(460,820)"/>
+							<use xlink:href="#symFullscreen" class="remoteshadow" transform="translate(460,820)" />
 						</g>
 						<g>
 							<circle cx="501" cy="1110" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1100" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('ShowSubtitles');">
 								<title>Subtitles</title>
 							</circle>
-							<use xlink:href="#symSubtitle" class="remoteshadow" transform="translate(440,1060)"/>
+							<use xlink:href="#symSubtitle" class="remoteshadow" transform="translate(440,1060)" />
 						</g>
 						<g>
 							<circle cx="501" cy="1350" r="110" class="remoteshadow" />
@@ -755,23 +778,23 @@ $(document).ready(function() {
 					<g transform="rotate(90,500,1000) translate(50,240) scale(1.1)">
 						<g>
 							<circle cx="510" cy="999" r="100" class="remoteshadow" />
-							<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad3)"  onclick="javascript:click_media_remote('Channels');">
+							<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Channels');">
 								<title>Channel</title>
 							</circle>
 						</g>
 						<g>
 							<path class="remoteshadow" d="M272 929 l150 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" />
-							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#grad3)" onclick="javascript:click_media_remote('ChannelUp');" >
+							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#grad3)" onclick="javascript:click_media_remote('ChannelUp');">
 								<title>Channel Up</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 						<g transform="rotate(180,500,1000)">
 							<path class="remoteshadow" d="M265 931 l140 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" />
-							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#grad4)" onclick="javascript:click_media_remote('ChannelDown');" >
+							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#grad4)" onclick="javascript:click_media_remote('ChannelDown');">
 								<title>Channel Down</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 					</g>
 					<text x="160" y="1110" class="remotetext" style="font-size: 90px; font-weight: bold;">CH</text>
@@ -785,55 +808,55 @@ $(document).ready(function() {
 						</g>
 						<g>
 							<path class="remoteshadow" d="M272 929 l150 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" />
-							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#grad3)" onclick="javascript:click_media_remote('VolumeUp');" >
+							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#grad3)" onclick="javascript:click_media_remote('VolumeUp');">
 								<title>Volume Up</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 						<g transform="rotate(180,500,1000)">
 							<path class="remoteshadow" d="M265 931 l140 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" />
-							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#grad4)" onclick="javascript:click_media_remote('VolumeDown');" >
+							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#grad4)" onclick="javascript:click_media_remote('VolumeDown');">
 								<title>Volume Down</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 					</g>
 				</g>
 				<g transform="translate(-50,500) scale(1.1)">
 					<g>
 						<path class="remoteshadow" d="M118 940 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('BigStepBack');" >
+						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('BigStepBack');">
 							<title>Skip Backwards</title>
 						</path>
-						<path transform="rotate(180,158,1000)" d="m 118 960 0,80 40,-40 m 0 -35 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
+						<path transform="rotate(180,158,1000)" d="m 118 960 0,80 40,-40 m 0 -35 l0 70 l15 0 l0 -70 z" class="remoteshadow" />
 					</g>
 					<g>
 						<path class="remoteshadow" d="M272 940 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('Rewind');" >
+						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('Rewind');">
 							<title>Rewind</title>
 						</path>
-						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
+						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow" />
 					</g>
 					<g transform="rotate(180,500,1000)">
 						<path class="remoteshadow" d="M118 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('BigStepForward');" >
+						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('BigStepForward');">
 							<title>Skip Forward</title>
 						</path>
-						<path transform="rotate(180,158,1000)" d="m 118 960 0,80 40,-40 m 0 -35 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
+						<path transform="rotate(180,158,1000)" d="m 118 960 0,80 40,-40 m 0 -35 l0 70 l15 0 l0 -70 z" class="remoteshadow" />
 					</g>
 					<g transform="rotate(180,500,1000)">
 						<path class="remoteshadow" d="M272 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('FastForward');" >
+						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('FastForward');">
 							<title>Fast Forward</title>
 						</path>
-						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
+						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow" />
 					</g>
 					<g>
 						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('PlayPause');">
 							<title>Play/Pause</title>
 						</circle>
-						<path d="m 450 960 0,80 40,-40 m 10 -35 l0 70 l15 0 l0 -70 m 10 0 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
+						<path d="m 450 960 0,80 40,-40 m 10 -35 l0 70 l15 0 l0 -70 m 10 0 l0 70 l15 0 l0 -70 z" class="remoteshadow" />
 					</g>
 				</g>
 			</g>
@@ -843,36 +866,40 @@ $(document).ready(function() {
 		<svg id="LMSPlayerRemote" class="MediaRemote" viewBox="50 -150 900 1875" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="gradient1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="gradient2" cx="50%" cy="80%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="gradient3" cx="20%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="gradient4" cx="80%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<path id="btnArrow" d="M190 45 l108 108 s -110,140 0,295 l-108 108 s -205,-235 0,-510z" />
-				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z"/>
-				<path id="symFavorites" d="m78.719,27.14565c0,-13.91432 -9.27593,-25.19366 -20.7181,-25.19366c-7.47142,0 -13.99653,4.8253 -17.64171,12.03655c-3.64471,-7.21125 -10.17255,-12.03655 -17.64396,-12.03655c-11.44209,0 -20.71526,11.27936 -20.71526,25.19366c0,7.57557 2.76051,14.35305 7.11123,18.96834l29.35747,35.70179c0.50146,0.60963 1.18136,0.95222 1.89052,0.95222c0.70933,0 1.38924,-0.3426 1.89052,-0.95222l29.35752,-35.70179c4.35098,-4.61546 7.11176,-11.39276 7.11176,-18.96834l0,0z"/>
-				<path id="symNowPlaying" d="m33.30051,35.74044l0,42.67448l0,0c0.04173,3.90186 -2.78493,8.30183 -8.64684,11.07083c-8.13374,3.83624 -16.69111,1.96458 -19.8218,-2.4681c-3.13087,-4.43826 -0.84096,-11.43206 7.2991,-15.27369c5.46821,-2.58305 11.13328,-2.57757 15.20631,-0.95218l0,-33.95688l0,-21.8899l59.63288,-10.94499l0,5.47249l0,16.4175l0,47.06338l0,0c0.03584,3.90186 -2.79081,8.29624 -8.64685,11.05997c-8.13385,3.83614 -16.69115,1.96458 -19.82185,-2.4682c-3.13081,-4.43816 -0.8409,-11.43205 7.29905,-15.27368c5.46832,-2.58305 11.13338,-2.57747 15.20631,-0.95218l0,-38.33483l-47.70631,8.75598l0,0zm0,0"/>
+				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z" />
+				<path id="symFavorites" d="m78.719,27.14565c0,-13.91432 -9.27593,-25.19366 -20.7181,-25.19366c-7.47142,0 -13.99653,4.8253 -17.64171,12.03655c-3.64471,-7.21125 -10.17255,-12.03655 -17.64396,-12.03655c-11.44209,0 -20.71526,11.27936 -20.71526,25.19366c0,7.57557 2.76051,14.35305 7.11123,18.96834l29.35747,35.70179c0.50146,0.60963 1.18136,0.95222 1.89052,0.95222c0.70933,0 1.38924,-0.3426 1.89052,-0.95222l29.35752,-35.70179c4.35098,-4.61546 7.11176,-11.39276 7.11176,-18.96834l0,0z" />
+				<path id="symNowPlaying" d="m33.30051,35.74044l0,42.67448l0,0c0.04173,3.90186 -2.78493,8.30183 -8.64684,11.07083c-8.13374,3.83624 -16.69111,1.96458 -19.8218,-2.4681c-3.13087,-4.43826 -0.84096,-11.43206 7.2991,-15.27369c5.46821,-2.58305 11.13328,-2.57757 15.20631,-0.95218l0,-33.95688l0,-21.8899l59.63288,-10.94499l0,5.47249l0,16.4175l0,47.06338l0,0c0.03584,3.90186 -2.79081,8.29624 -8.64685,11.05997c-8.13385,3.83614 -16.69115,1.96458 -19.82185,-2.4682c-3.13081,-4.43816 -0.8409,-11.43205 7.29905,-15.27368c5.46832,-2.58305 11.13338,-2.57747 15.20631,-0.95218l0,-38.33483l-47.70631,8.75598l0,0zm0,0" />
 				<g id="symRepeat" fill="#393a39">
-					<path d="m88.37501,62.33332c0,4.59166 -2.83431,8.33334 -6.31252,8.33334h-56.83774v-16.66666l-25.22475,25l25.22475,25v-16.66668h56.83774c10.44404,0 18.93752,-11.22916 18.93752,-25h-12.625l0,0z"/>
-					<path d="m18.9375,37.33338h56.81249v16.66662l25.25,-25l-25.25,-25v16.66662h-56.81249c-10.44403,0 -18.9375,11.2 -18.9375,25h12.625c0,-4.59163 2.83431,-8.33325 6.3125,-8.33325l0,0z"/>
+					<path d="m88.37501,62.33332c0,4.59166 -2.83431,8.33334 -6.31252,8.33334h-56.83774v-16.66666l-25.22475,25l25.22475,25v-16.66668h56.83774c10.44404,0 18.93752,-11.22916 18.93752,-25h-12.625l0,0z" />
+					<path d="m18.9375,37.33338h56.81249v16.66662l25.25,-25l-25.25,-25v16.66662h-56.81249c-10.44403,0 -18.9375,11.2 -18.9375,25h12.625c0,-4.59163 2.83431,-8.33325 6.3125,-8.33325l0,0z" />
 				</g>
 				<g id="symShuffle" fill="#393a39">
-					<polygon points="98.3429408578821,32.200117042093666 98.3429408578821,50.5339301317116 117.85200781683292,25.864964463319097 98.3429408578821,1.196000099182129 98.3429408578821,19.541192818332433 77.74903262176244,19.541192818332433 77.74903262176244,19.62657460259686 77.69951336897415,19.552575056375872 23.96629133943142,87.49184707361553 2.1525008833052937,87.49184707361553 2.1525008833052937,100.15075303779929 28.07156711271577,100.15075303779929 28.07156711271577,100.09954274852032 28.107582073480756,100.15075303779929 81.84980784321473,32.200117042093666"/>
-					<polygon points="46.12218635231315,54.518305578927425 53.19839318808758,45.570538744651344 28.107582073480756,13.849229943282808 28.067066560883717,13.894768025245298 28.067066560883717,13.849229943282808 2.1480000019073486,13.849229943282808 2.1480000019073486,26.508155471299574 23.96179078759937,26.508155471299574"/>
-					<polygon points="98.3429408578821,81.79987767728824 81.84980784321473,81.79987767728824 64.8120052323105,60.255803927428474 57.73579839653607,69.20926253285404 77.69951336897415,94.44742096726156 77.75353581012163,94.37342272529611 77.75353581012163,94.45880450956054 98.3429408578821,94.45880450956054 98.3429408578821,112.80400374998851 117.85200781683292,88.13503286457387 98.3429408578821,63.466061979159235"/>
+					<polygon points="98.3429408578821,32.200117042093666 98.3429408578821,50.5339301317116 117.85200781683292,25.864964463319097 98.3429408578821,1.196000099182129 98.3429408578821,19.541192818332433 77.74903262176244,19.541192818332433 77.74903262176244,19.62657460259686 77.69951336897415,19.552575056375872 23.96629133943142,87.49184707361553 2.1525008833052937,87.49184707361553 2.1525008833052937,100.15075303779929 28.07156711271577,100.15075303779929 28.07156711271577,100.09954274852032 28.107582073480756,100.15075303779929 81.84980784321473,32.200117042093666" />
+					<polygon points="46.12218635231315,54.518305578927425 53.19839318808758,45.570538744651344 28.107582073480756,13.849229943282808 28.067066560883717,13.894768025245298 28.067066560883717,13.849229943282808 2.1480000019073486,13.849229943282808 2.1480000019073486,26.508155471299574 23.96179078759937,26.508155471299574" />
+					<polygon points="98.3429408578821,81.79987767728824 81.84980784321473,81.79987767728824 64.8120052323105,60.255803927428474 57.73579839653607,69.20926253285404 77.69951336897415,94.44742096726156 77.75353581012163,94.37342272529611 77.75353581012163,94.45880450956054 98.3429408578821,94.45880450956054 98.3429408578821,112.80400374998851 117.85200781683292,88.13503286457387 98.3429408578821,63.466061979159235" />
 				</g>
 				<g id="symBrowse" stroke-miterlimit="10" stroke-linecap="round" stroke-width="12" stroke="#393a39" fill="none">
-					<line y2="76.67169" x2="22.98174" y1="9.19837" x1="9.056"/>
-					<line y2="77.51706" x2="25.04448" y1="8.353" x1="25.1764"/>
-					<line y2="78.60848" x2="26.91019" y1="17.34518" x1="54.42007"/>
-					<line y2="79.76611" x2="28.15343" y1="44.42258" x1="79.10156"/>
-					<line y2="82.276" x2="29.17687" y1="82.24778" x1="88.448"/>
+					<line y2="76.67169" x2="22.98174" y1="9.19837" x1="9.056" />
+					<line y2="77.51706" x2="25.04448" y1="8.353" x1="25.1764" />
+					<line y2="78.60848" x2="26.91019" y1="17.34518" x1="54.42007" />
+					<line y2="79.76611" x2="28.15343" y1="44.42258" x1="79.10156" />
+					<line y2="82.276" x2="29.17687" y1="82.24778" x1="88.448" />
 				</g>
 			</defs>
 			<g>
@@ -882,28 +909,28 @@ $(document).ready(function() {
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Left');">
 							<title>Left</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 					<g transform="rotate(180,500,300)">
-						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-1,-10)"/>
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-1,-10)" />
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#gradient2)" onclick="javascript:click_lmsplayer_remote('Right');">
 							<title>Right</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 					<g transform="rotate(90,500,300)">
-						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(10,-1)"/>
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(10,-1)" />
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#gradient3)" onclick="javascript:click_lmsplayer_remote('Up');">
 							<title>Up</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow"  transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 					<g transform="rotate(270,500,300)">
-						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-10,1)"/>
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-10,1)" />
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#gradient4)" onclick="javascript:click_lmsplayer_remote('Down');">
 							<title>Down</title>
 						</use>
-						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)" />
 					</g>
 				</g>
 				<g transform="translate(0,20)">
@@ -913,21 +940,21 @@ $(document).ready(function() {
 							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Favorites');">
 								<title>Favorites</title>
 							</circle>
-							<use xlink:href="#symFavorites" class="remoteshadow" transform="translate(460,820)"/>
+							<use xlink:href="#symFavorites" class="remoteshadow" transform="translate(460,820)" />
 						</g>
 						<g>
 							<circle cx="501" cy="1110" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1100" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Browse');">
 								<title>Browse</title>
 							</circle>
-							<use xlink:href="#symBrowse" class="remoteshadow" transform="translate(450,1055)"/>
+							<use xlink:href="#symBrowse" class="remoteshadow" transform="translate(450,1055)" />
 						</g>
 						<g>
 							<circle cx="501" cy="1350" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1340" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('NowPlaying');">
 								<title>Now playing</title>
 							</circle>
-							<use xlink:href="#symNowPlaying" class="remoteshadow" transform="translate(450,1300)"/>
+							<use xlink:href="#symNowPlaying" class="remoteshadow" transform="translate(450,1300)" />
 						</g>
 					</g>
 
@@ -937,14 +964,14 @@ $(document).ready(function() {
 							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Shuffle');">
 								<title>Shuffle</title>
 							</circle>
-							<use xlink:href="#symShuffle" class="remoteshadow" transform="translate(445,810)"/>
+							<use xlink:href="#symShuffle" class="remoteshadow" transform="translate(445,810)" />
 						</g>
 						<g>
 							<circle cx="501" cy="1110" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1100" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Repeat');">
 								<title>Repeat</title>
 							</circle>
-							<use xlink:href="#symRepeat" class="remoteshadow" transform="translate(450,1050)"/>
+							<use xlink:href="#symRepeat" class="remoteshadow" transform="translate(450,1050)" />
 						</g>
 						<g>
 							<circle cx="501" cy="1350" r="110" class="remoteshadow" />
@@ -967,14 +994,14 @@ $(document).ready(function() {
 							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#gradient3)" onclick="javascript:click_lmsplayer_remote('VolumeUp');">
 								<title>Volume Up</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 						<g transform="rotate(180,500,1000)">
 							<path class="remoteshadow" d="M265 931 l140 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" />
 							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#gradient4)" onclick="javascript:click_lmsplayer_remote('VolumeDown');">
 								<title>Volume Down</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 					</g>
 				</g>
@@ -984,28 +1011,28 @@ $(document).ready(function() {
 						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Rewind');">
 							<title>Rewind</title>
 						</path>
-						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
+						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow" />
 					</g>
 					<g transform="rotate(180,500,1000) translate(-145,0)">
 						<path class="remoteshadow" d="M272 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
 						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#gradient2)" onclick="javascript:click_lmsplayer_remote('Forward');">
 							<title>Forward</title>
 						</path>
-						<path class="remoteshadow" transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z"/>
+						<path class="remoteshadow" transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" />
 					</g>
 					<g transform="translate(-120,0)">
 						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Play');">
 							<title>Play</title>
 						</circle>
-						<path class="remoteshadow" d="m 485 960 0,80 40,-40"/>
+						<path class="remoteshadow" d="m 485 960 0,80 40,-40" />
 					</g>
 					<g transform="translate(120,0)">
 						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Pause');">
 							<title>Pause</title>
 						</circle>
-						<path class="remoteshadow" d="m 470 960 l0 70 l25 0 l0 -70 m 10 0 l0 70 l25 0 l0 -70 z"/>
+						<path class="remoteshadow" d="m 470 960 l0 70 l25 0 l0 -70 m 10 0 l0 70 l25 0 l0 -70 z" />
 					</g>
 				</g>
 			</g>
@@ -1015,35 +1042,39 @@ $(document).ready(function() {
 		<svg id="HEOSPlayerRemote" class="MediaRemote" viewBox="50 -150 900 1100" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="gradient1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="gradient2" cx="50%" cy="80%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="gradient3" cx="20%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
 				<radialGradient id="gradient4" cx="80%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:#cbcccb;" />
+					<stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
-				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z"/>
-				<path id="symFavorites" d="m78.719,27.14565c0,-13.91432 -9.27593,-25.19366 -20.7181,-25.19366c-7.47142,0 -13.99653,4.8253 -17.64171,12.03655c-3.64471,-7.21125 -10.17255,-12.03655 -17.64396,-12.03655c-11.44209,0 -20.71526,11.27936 -20.71526,25.19366c0,7.57557 2.76051,14.35305 7.11123,18.96834l29.35747,35.70179c0.50146,0.60963 1.18136,0.95222 1.89052,0.95222c0.70933,0 1.38924,-0.3426 1.89052,-0.95222l29.35752,-35.70179c4.35098,-4.61546 7.11176,-11.39276 7.11176,-18.96834l0,0z"/>
-				<path id="symNowPlaying" d="m33.30051,35.74044l0,42.67448l0,0c0.04173,3.90186 -2.78493,8.30183 -8.64684,11.07083c-8.13374,3.83624 -16.69111,1.96458 -19.8218,-2.4681c-3.13087,-4.43826 -0.84096,-11.43206 7.2991,-15.27369c5.46821,-2.58305 11.13328,-2.57757 15.20631,-0.95218l0,-33.95688l0,-21.8899l59.63288,-10.94499l0,5.47249l0,16.4175l0,47.06338l0,0c0.03584,3.90186 -2.79081,8.29624 -8.64685,11.05997c-8.13385,3.83614 -16.69115,1.96458 -19.82185,-2.4682c-3.13081,-4.43816 -0.8409,-11.43205 7.29905,-15.27368c5.46832,-2.58305 11.13338,-2.57747 15.20631,-0.95218l0,-38.33483l-47.70631,8.75598l0,0zm0,0"/>
+				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z" />
+				<path id="symFavorites" d="m78.719,27.14565c0,-13.91432 -9.27593,-25.19366 -20.7181,-25.19366c-7.47142,0 -13.99653,4.8253 -17.64171,12.03655c-3.64471,-7.21125 -10.17255,-12.03655 -17.64396,-12.03655c-11.44209,0 -20.71526,11.27936 -20.71526,25.19366c0,7.57557 2.76051,14.35305 7.11123,18.96834l29.35747,35.70179c0.50146,0.60963 1.18136,0.95222 1.89052,0.95222c0.70933,0 1.38924,-0.3426 1.89052,-0.95222l29.35752,-35.70179c4.35098,-4.61546 7.11176,-11.39276 7.11176,-18.96834l0,0z" />
+				<path id="symNowPlaying" d="m33.30051,35.74044l0,42.67448l0,0c0.04173,3.90186 -2.78493,8.30183 -8.64684,11.07083c-8.13374,3.83624 -16.69111,1.96458 -19.8218,-2.4681c-3.13087,-4.43826 -0.84096,-11.43206 7.2991,-15.27369c5.46821,-2.58305 11.13328,-2.57757 15.20631,-0.95218l0,-33.95688l0,-21.8899l59.63288,-10.94499l0,5.47249l0,16.4175l0,47.06338l0,0c0.03584,3.90186 -2.79081,8.29624 -8.64685,11.05997c-8.13385,3.83614 -16.69115,1.96458 -19.82185,-2.4682c-3.13081,-4.43816 -0.8409,-11.43205 7.29905,-15.27368c5.46832,-2.58305 11.13338,-2.57747 15.20631,-0.95218l0,-38.33483l-47.70631,8.75598l0,0zm0,0" />
 				<g id="symRepeat" fill="#393a39">
-					<path d="m88.37501,62.33332c0,4.59166 -2.83431,8.33334 -6.31252,8.33334h-56.83774v-16.66666l-25.22475,25l25.22475,25v-16.66668h56.83774c10.44404,0 18.93752,-11.22916 18.93752,-25h-12.625l0,0z"/>
-					<path d="m18.9375,37.33338h56.81249v16.66662l25.25,-25l-25.25,-25v16.66662h-56.81249c-10.44403,0 -18.9375,11.2 -18.9375,25h12.625c0,-4.59163 2.83431,-8.33325 6.3125,-8.33325l0,0z"/>
+					<path d="m88.37501,62.33332c0,4.59166 -2.83431,8.33334 -6.31252,8.33334h-56.83774v-16.66666l-25.22475,25l25.22475,25v-16.66668h56.83774c10.44404,0 18.93752,-11.22916 18.93752,-25h-12.625l0,0z" />
+					<path d="m18.9375,37.33338h56.81249v16.66662l25.25,-25l-25.25,-25v16.66662h-56.81249c-10.44403,0 -18.9375,11.2 -18.9375,25h12.625c0,-4.59163 2.83431,-8.33325 6.3125,-8.33325l0,0z" />
 				</g>
 				<g id="symShuffle" fill="#393a39">
-					<polygon points="98.3429408578821,32.200117042093666 98.3429408578821,50.5339301317116 117.85200781683292,25.864964463319097 98.3429408578821,1.196000099182129 98.3429408578821,19.541192818332433 77.74903262176244,19.541192818332433 77.74903262176244,19.62657460259686 77.69951336897415,19.552575056375872 23.96629133943142,87.49184707361553 2.1525008833052937,87.49184707361553 2.1525008833052937,100.15075303779929 28.07156711271577,100.15075303779929 28.07156711271577,100.09954274852032 28.107582073480756,100.15075303779929 81.84980784321473,32.200117042093666"/>
-					<polygon points="46.12218635231315,54.518305578927425 53.19839318808758,45.570538744651344 28.107582073480756,13.849229943282808 28.067066560883717,13.894768025245298 28.067066560883717,13.849229943282808 2.1480000019073486,13.849229943282808 2.1480000019073486,26.508155471299574 23.96179078759937,26.508155471299574"/>
-					<polygon points="98.3429408578821,81.79987767728824 81.84980784321473,81.79987767728824 64.8120052323105,60.255803927428474 57.73579839653607,69.20926253285404 77.69951336897415,94.44742096726156 77.75353581012163,94.37342272529611 77.75353581012163,94.45880450956054 98.3429408578821,94.45880450956054 98.3429408578821,112.80400374998851 117.85200781683292,88.13503286457387 98.3429408578821,63.466061979159235"/>
+					<polygon points="98.3429408578821,32.200117042093666 98.3429408578821,50.5339301317116 117.85200781683292,25.864964463319097 98.3429408578821,1.196000099182129 98.3429408578821,19.541192818332433 77.74903262176244,19.541192818332433 77.74903262176244,19.62657460259686 77.69951336897415,19.552575056375872 23.96629133943142,87.49184707361553 2.1525008833052937,87.49184707361553 2.1525008833052937,100.15075303779929 28.07156711271577,100.15075303779929 28.07156711271577,100.09954274852032 28.107582073480756,100.15075303779929 81.84980784321473,32.200117042093666" />
+					<polygon points="46.12218635231315,54.518305578927425 53.19839318808758,45.570538744651344 28.107582073480756,13.849229943282808 28.067066560883717,13.894768025245298 28.067066560883717,13.849229943282808 2.1480000019073486,13.849229943282808 2.1480000019073486,26.508155471299574 23.96179078759937,26.508155471299574" />
+					<polygon points="98.3429408578821,81.79987767728824 81.84980784321473,81.79987767728824 64.8120052323105,60.255803927428474 57.73579839653607,69.20926253285404 77.69951336897415,94.44742096726156 77.75353581012163,94.37342272529611 77.75353581012163,94.45880450956054 98.3429408578821,94.45880450956054 98.3429408578821,112.80400374998851 117.85200781683292,88.13503286457387 98.3429408578821,63.466061979159235" />
 				</g>
 				<g id="symBrowse" stroke-miterlimit="10" stroke-linecap="round" stroke-width="12" stroke="#393a39" fill="none">
-					<line y2="76.67169" x2="22.98174" y1="9.19837" x1="9.056"/>
-					<line y2="77.51706" x2="25.04448" y1="8.353" x1="25.1764"/>
-					<line y2="78.60848" x2="26.91019" y1="17.34518" x1="54.42007"/>
-					<line y2="79.76611" x2="28.15343" y1="44.42258" x1="79.10156"/>
-					<line y2="82.276" x2="29.17687" y1="82.24778" x1="88.448"/>
+					<line y2="76.67169" x2="22.98174" y1="9.19837" x1="9.056" />
+					<line y2="77.51706" x2="25.04448" y1="8.353" x1="25.1764" />
+					<line y2="78.60848" x2="26.91019" y1="17.34518" x1="54.42007" />
+					<line y2="79.76611" x2="28.15343" y1="44.42258" x1="79.10156" />
+					<line y2="82.276" x2="29.17687" y1="82.24778" x1="88.448" />
 				</g>
 			</defs>
 			<g>
@@ -1054,21 +1085,21 @@ $(document).ready(function() {
 							<circle cx="500" cy="10" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('Favorites');">
 								<title>Favorites</title>
 							</circle>
-							<use xlink:href="#symFavorites" class="remoteshadow" transform="translate(460,-30)"/>
+							<use xlink:href="#symFavorites" class="remoteshadow" transform="translate(460,-30)" />
 						</g>
 						<g>
 							<circle cx="501" cy="260" r="110" class="remoteshadow" />
 							<circle cx="500" cy="250" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('Browse');">
 								<title>Browse</title>
 							</circle>
-							<use xlink:href="#symBrowse" class="remoteshadow" transform="translate(450,205)"/>
+							<use xlink:href="#symBrowse" class="remoteshadow" transform="translate(450,205)" />
 						</g>
 						<g>
 							<circle cx="501" cy="500" r="110" class="remoteshadow" />
 							<circle cx="500" cy="490" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('NowPlaying');">
 								<title>Now playing</title>
 							</circle>
-							<use xlink:href="#symNowPlaying" class="remoteshadow" transform="translate(450,450)"/>
+							<use xlink:href="#symNowPlaying" class="remoteshadow" transform="translate(450,450)" />
 						</g>
 					</g>
 
@@ -1078,14 +1109,14 @@ $(document).ready(function() {
 							<circle cx="500" cy="10" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('Shuffle');">
 								<title>Shuffle</title>
 							</circle>
-							<use xlink:href="#symShuffle" class="remoteshadow" transform="translate(445,-40)"/>
+							<use xlink:href="#symShuffle" class="remoteshadow" transform="translate(445,-40)" />
 						</g>
 						<g>
 							<circle cx="501" cy="260" r="110" class="remoteshadow" />
 							<circle cx="500" cy="250" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('Repeat');">
 								<title>Repeat</title>
 							</circle>
-							<use xlink:href="#symRepeat" class="remoteshadow" transform="translate(450,200)"/>
+							<use xlink:href="#symRepeat" class="remoteshadow" transform="translate(450,200)" />
 						</g>
 						<g>
 							<circle cx="501" cy="500" r="110" class="remoteshadow" />
@@ -1108,14 +1139,14 @@ $(document).ready(function() {
 							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#gradient3)" onclick="javascript:click_heosplayer_remote('setVolumeUp');">
 								<title>Volume Up</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 						<g transform="rotate(180,500,1000)">
 							<path class="remoteshadow" d="M265 931 l140 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" />
 							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#gradient4)" onclick="javascript:click_heosplayer_remote('setVolumeDown');">
 								<title>Volume Down</title>
 							</path>
-							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow" />
 						</g>
 					</g>
 				</g>
@@ -1125,28 +1156,28 @@ $(document).ready(function() {
 						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('playPrev');">
 							<title>Play Previous</title>
 						</path>
-						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
+						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow" />
 					</g>
 					<g transform="rotate(180,500,1000) translate(-145,0)">
 						<path class="remoteshadow" d="M272 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
 						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#gradient2)" onclick="javascript:click_heosplayer_remote('playNext');">
 							<title>Play Next</title>
 						</path>
-						<path class="remoteshadow" transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z"/>
+						<path class="remoteshadow" transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" />
 					</g>
 					<g transform="translate(-120,0)">
 						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('play');">
 							<title>Play</title>
 						</circle>
-						<path class="remoteshadow" d="m 485 960 0,80 40,-40"/>
+						<path class="remoteshadow" d="m 485 960 0,80 40,-40" />
 					</g>
 					<g transform="translate(120,0)">
 						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_heosplayer_remote('pause');">
 							<title>Pause</title>
 						</circle>
-						<path class="remoteshadow" d="m 470 960 l0 70 l25 0 l0 -70 m 10 0 l0 70 l25 0 l0 -70 z"/>
+						<path class="remoteshadow" d="m 470 960 l0 70 l25 0 l0 -70 m 10 0 l0 70 l25 0 l0 -70 z" />
 					</g>
 				</g>
 			</g>
@@ -1159,7 +1190,7 @@ $(document).ready(function() {
 		<h2 data-i18n="Month">Month</h2>
 		<div id="monthgraph" style="height: 300px;"></div>
 		<br>
-		<h2  data-i18n="Year">Year</h2>
+		<h2 data-i18n="Year">Year</h2>
 		<div id="yeargraph" style="height: 300px;"></div>
 	</div>
 	<div id="dayweekmonthyearlog" style="display:none;">
@@ -1172,10 +1203,10 @@ $(document).ready(function() {
 		<h2 data-i18n="Month">Month</h2>
 		<div id="monthgraph" style="height: 300px;"></div>
 		<br>
-		<h2  data-i18n="Year">Year</h2>
+		<h2 data-i18n="Year">Year</h2>
 		<div id="yeargraph" style="height: 300px;"></div>
 	</div>
-	 <div id="windlog" style="display:none;">
+	<div id="windlog" style="display:none;">
 		<h2 data-i18n="Day">Day</h2>
 		<div id="winddaygraph" style="height: 300px;"></div>
 		<br>
@@ -1188,17 +1219,17 @@ $(document).ready(function() {
 		<div id="windyeargraph" style="height: 300px;"></div>
 	</div>
 	<div id="smartlog" style="display:none;">
-	  <h2 data-i18n="Day">Day</h2>
-	  <div id="smartdaygraph" style="height: 300px;"></div>
-	  <br>
-	  <h2 data-i18n="Week">Week</h2>
-	  <div id="smartweekgraph" style="height: 300px;"></div>
-	  <br>
-	  <h2 data-i18n="Month">Month</h2>
-	  <div id="smartmonthgraph" style="height: 300px;"></div>
-	  <br>
-	  <h2 data-i18n="Year">Year</h2>
-	  <div id="smartyeargraph" style="height: 300px;"></div>
+		<h2 data-i18n="Day">Day</h2>
+		<div id="smartdaygraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Week">Week</h2>
+		<div id="smartweekgraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Month">Month</h2>
+		<div id="smartmonthgraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Year">Year</h2>
+		<div id="smartyeargraph" style="height: 300px;"></div>
 	</div>
 	<div id="toptextmonthgas" style="display:none;">
 		<a class="btnstylerev" onclick="ShowP1YearReportGas(0)" data-i18n="Back">Back</a>&nbsp;
@@ -1210,22 +1241,22 @@ $(document).ready(function() {
 	</div>
 	<div id="toptextyeargas" style="display:none;">
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
-		<tr>
-			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
-			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
-		  <td align="right">
-				<span data-i18n="Year">Year</span>:
-				<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
-					<option value="2012">2012</option>
-					<option value="2013">2013</option>
-					<option value="2014">2014</option>
-					<option value="2015">2015</option>
-					<option value="2016">2016</option>
-					<option value="2017">2017</option>
-					<option value="2018">2018</option>
-				</select>
-		  </td>
-		</tr>
+			<tr>
+				<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+				<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
+				<td align="right">
+					<span data-i18n="Year">Year</span>:
+					<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
+						<option value="2012">2012</option>
+						<option value="2013">2013</option>
+						<option value="2014">2014</option>
+						<option value="2015">2015</option>
+						<option value="2016">2016</option>
+						<option value="2017">2017</option>
+						<option value="2018">2018</option>
+					</select>
+				</td>
+			</tr>
 		</table>
 		<br>
 		<span data-i18n="Total Usage" id="spanyeargastotalusage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
@@ -1243,22 +1274,22 @@ $(document).ready(function() {
 	</div>
 	<div id="toptextyearreportrain" style="display:none;">
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
-		<tr>
-			<a id="backbutton" class="btnstylerev" onclick="ShowWeather()" data-i18n="Back">Back</a>&nbsp;
-			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
-		  <td align="right">
-				<span data-i18n="Year">Year</span>:
-				<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
-					<option value="2012">2012</option>
-					<option value="2013">2013</option>
-					<option value="2014">2014</option>
-					<option value="2015">2015</option>
-					<option value="2016">2016</option>
-					<option value="2017">2017</option>
-					<option value="2018">2018</option>
-				</select>
-		  </td>
-		</tr>
+			<tr>
+				<a id="backbutton" class="btnstylerev" onclick="ShowWeather()" data-i18n="Back">Back</a>&nbsp;
+				<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
+				<td align="right">
+					<span data-i18n="Year">Year</span>:
+					<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
+						<option value="2012">2012</option>
+						<option value="2013">2013</option>
+						<option value="2014">2014</option>
+						<option value="2015">2015</option>
+						<option value="2016">2016</option>
+						<option value="2017">2017</option>
+						<option value="2018">2018</option>
+					</select>
+				</td>
+			</tr>
 		</table>
 		<br>
 		<span data-i18n="Total Rainfall">Total Rainfall</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
@@ -1321,22 +1352,22 @@ $(document).ready(function() {
 	</div>
 	<div id="toptextyear" style="display:none;">
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
-		<tr>
-			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
-			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
-		  <td align="right">
-				<span data-i18n="Year">Year</span>:
-				<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
-					<option value="2012">2012</option>
-					<option value="2013">2013</option>
-					<option value="2014">2014</option>
-					<option value="2015">2015</option>
-					<option value="2016">2016</option>
-					<option value="2017">2017</option>
-					<option value="2018">2018</option>
-				</select>
-		  </td>
-		</tr>
+			<tr>
+				<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+				<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
+				<td align="right">
+					<span data-i18n="Year">Year</span>:
+					<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
+						<option value="2012">2012</option>
+						<option value="2013">2013</option>
+						<option value="2014">2014</option>
+						<option value="2015">2015</option>
+						<option value="2016">2016</option>
+						<option value="2017">2017</option>
+						<option value="2018">2018</option>
+					</select>
+				</td>
+			</tr>
 		</table>
 		<br>
 		<span data-i18n="Total Usage">Total Usage</span>: <span data-i18n="T1">T1</span>: <span id="tut1">-</span> kWh, <span data-i18n="T2">T2</span>: <span id="tut2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tu">-</span> kWh<br>
@@ -1399,103 +1430,102 @@ $(document).ready(function() {
 	<div id="dialog-replacedevice" title="Replace Device">
 		<form>
 			<label for="newdevice"><span data-i18n="New Device"></span>: </label>
-			<select id="newdevice" style="width:250px" class="combobox ui-corner-all">
-			</select>
+			<select id="newdevice" style="width:250px" class="combobox ui-corner-all"></select>
 		</form>
 	</div>
-		 <div class="navbar navbar-inverse navbar-fixed-top" ng-controller="NavbarController" style="display: none;" has-User>
-			 <div class="navbar-inner">
-				<div class="container">
-					<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
-						<ul class="nav" id="appnavbar">
-							<li ng-show="config.EnableTabProxy" class="clDashboard"><a id="cProxy" href="/mydomoticz/dashboard"><img src="images/proxy.png"> <span class="hidden-phone hidden-tablet" data-i18n="Proxy">Proxy</span></a></li>
-							<li ng-show="config.EnableTabDashboard" class="divider-vertical clDashboard"></li>
-							<li ng-show="config.EnableTabDashboard" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
-							<li ng-show="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
-							<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
-							<li ng-show="config.EnableTabLights" class="divider-vertical clLightSwitches"></li>
-							<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
-							<li ng-show="config.EnableTabScenes" class="divider-vertical clScenes"></li>
-							<li ng-show="config.EnableTabScenes" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
-							<li ng-show="config.EnableTabTemp" class="divider-vertical clTemperature"></li>
-							<li ng-show="config.EnableTabTemp" ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
-							<li ng-show="config.EnableTabWeather" class="divider-vertical clWeather"></li>
-							<li ng-show="config.EnableTabWeather" ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
-							<li ng-show="config.EnableTabUtility" class="divider-vertical clUtility"></li>
-							<li ng-show="config.EnableTabUtility" ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
-							<li ng-show="config.EnableTabCustom" class="divider-vertical clcustommenu"></li>
-							<li ng-show="config.EnableTabCustom" class="dropdown clcustommenu">
-								<a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
-								<ul class="dropdown-menu pull-right" id="custommenu"></ul>
-							</li>
-							<li class="divider-vertical" style="display: none;" has-permission="Admin"></li>
-							<li class="dropdown" style="display: none;" has-permission="Admin">
-								<a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/setup.png"> <span class="hidden-phone hidden-tablet" data-i18n="Setup">Setup</span> <b class="caret hidden-phone hidden-tablet"></b></a>
-								<ul class="dropdown-menu pull-right">
-									<li ng-class="{'current_page_item':getClass('/Hardware')}" id="mHardware"><a id="cHardware" href="#Hardware"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
-									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
-									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
-									<li id="dUpdate" class="divider"></li>
-									<li ng-show="config.HaveUpdate && config.UseUpdate"><a href="#Update"><img src="images/update.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
-									<li ng-show="!config.HaveUpdate && config.UseUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/update.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+	<div class="navbar navbar-inverse navbar-fixed-top" ng-controller="NavbarController" style="display: none;" has-User>
+		<div class="navbar-inner">
+			<div class="container">
+				<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
+				<ul class="nav" id="appnavbar">
+					<li ng-show="config.EnableTabProxy" class="clDashboard"><a id="cProxy" href="/mydomoticz/dashboard"><img src="images/proxy.png"> <span class="hidden-phone hidden-tablet" data-i18n="Proxy">Proxy</span></a></li>
+					<li ng-show="config.EnableTabDashboard" class="divider-vertical clDashboard"></li>
+					<li ng-show="config.EnableTabDashboard" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
+					<li ng-show="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
+					<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
+					<li ng-show="config.EnableTabLights" class="divider-vertical clLightSwitches"></li>
+					<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+					<li ng-show="config.EnableTabScenes" class="divider-vertical clScenes"></li>
+					<li ng-show="config.EnableTabScenes" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
+					<li ng-show="config.EnableTabTemp" class="divider-vertical clTemperature"></li>
+					<li ng-show="config.EnableTabTemp" ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
+					<li ng-show="config.EnableTabWeather" class="divider-vertical clWeather"></li>
+					<li ng-show="config.EnableTabWeather" ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
+					<li ng-show="config.EnableTabUtility" class="divider-vertical clUtility"></li>
+					<li ng-show="config.EnableTabUtility" ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
+					<li ng-show="config.EnableTabCustom" class="divider-vertical clcustommenu"></li>
+					<li ng-show="config.EnableTabCustom" class="dropdown clcustommenu">
+						<a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
+						<ul class="dropdown-menu pull-right" id="custommenu"></ul>
+					</li>
+					<li class="divider-vertical" style="display: none;" has-permission="Admin"></li>
+					<li class="dropdown" style="display: none;" has-permission="Admin">
+						<a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/setup.png"> <span class="hidden-phone hidden-tablet" data-i18n="Setup">Setup</span> <b class="caret hidden-phone hidden-tablet"></b></a>
+						<ul class="dropdown-menu pull-right">
+							<li ng-class="{'current_page_item':getClass('/Hardware')}" id="mHardware"><a id="cHardware" href="#Hardware"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
+							<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
+							<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
+							<li id="dUpdate" class="divider"></li>
+							<li ng-show="config.HaveUpdate && config.UseUpdate"><a href="#Update"><img src="images/update.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
+							<li ng-show="!config.HaveUpdate && config.UseUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/update.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+							<li class="dropdown-submenu">
+								<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
+								<ul class="dropdown-menu pull-left">
+									<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Users')}" id="mUsers"><a id="cUsers" href="#Users"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/CustomIcons')}" id="mCustomIcons"><a id="cCustomIcons" href="#CustomIcons"><img src="images/customicons.png"> <span data-i18n="Custom Icons">Custom Icons</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Mobile')}" id="mMobile"><a id="cMobile" href="#Mobile"><img src="images/customicons.png"> <span data-i18n="Mobile Devices">Mobile Devices</span></a></li>
 									<li class="dropdown-submenu">
-										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
-										<ul class="dropdown-menu pull-left">
-											<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/Users')}" id="mUsers"><a id="cUsers" href="#Users"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/CustomIcons')}" id="mCustomIcons"><a id="cCustomIcons" href="#CustomIcons"><img src="images/customicons.png"> <span data-i18n="Custom Icons">Custom Icons</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/Mobile')}" id="mMobile"><a id="cMobile" href="#Mobile"><img src="images/customicons.png"> <span data-i18n="Mobile Devices">Mobile Devices</span></a></li>
-											<li class="dropdown-submenu">
-												<a id="cPlans" tabindex="-1"><img src="images/house.png"> <span data-i18n="Plans">Plans</span></a>
-												<ul class="dropdown-menu pull-right">
-													<li ng-class="{'current_page_item':getClass('/Roomplan')}" id="mRoomplan"><a id="cRoomplan" href="#Roomplan"> <span data-i18n="Roomplan">Roomplan</span></a></li>
-													<li ng-class="{'current_page_item':getClass('/Floorplanedit')}" id="mFloorplan"><a id="cFloorplan" href="#Floorplanedit"> <span data-i18n="Floorplan">Floorplan</span></a></li>
-													<li ng-class="{'current_page_item':getClass('/Timerplan')}" id="mTimerplan"><a id="cTimerplan" href="#Timerplan"> <span data-i18n="Timerplan">Timerplan</span></a></li>
-												</ul>
-											</li>
-											<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
-											<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html#{{config.language}}"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/Notification')}" id="mNotification"><a id="cNotification" href="#Notification"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
-											<li class="divider"></li>
-											<li class="dropdown-submenu">
-												<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
-												<ul class="dropdown-menu pull-right">
-													<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
-													<li ng-class="{'current_page_item':getClass('/DPHttp')}" id="mDPHttp"><a id="cDPHttp" href="#DPHttp"> <span data-i18n="HTTP">HTTP</span></a></li>
-													<li ng-class="{'current_page_item':getClass('/DPGooglePubSub')}" id="mDPGooglePubSub"><a id="cDPGooglePubSub" href="#DPGooglePubSub"> <span data-i18n="GooglePubSub">Google PubSub</span></a></li>
-													<li ng-class="{'current_page_item':getClass('/DPInflux')}" id="mDPInflux"><a id="cDPInflux" href="#DPInflux"> <span>InfluxDB</span></a></li>
-												</ul>
-											</li>
-											<li class="divider"></li>
-											<li id="mRestart"><a id="cRestart" href="javascript:SwitchLayout('Restart')"><img src="images/restart.png"> <span data-i18n="Restart System">Restart System</span></a></li>
-											<li id="mShutdown"><a id="cShutdown" href="javascript:SwitchLayout('Shutdown')"><img src="images/shutdown.png"> <span data-i18n="Shutdown System">Shutdown System</span></a></li>
+										<a id="cPlans" tabindex="-1"><img src="images/house.png"> <span data-i18n="Plans">Plans</span></a>
+										<ul class="dropdown-menu pull-right">
+											<li ng-class="{'current_page_item':getClass('/Roomplan')}" id="mRoomplan"><a id="cRoomplan" href="#Roomplan"> <span data-i18n="Roomplan">Roomplan</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Floorplanedit')}" id="mFloorplan"><a id="cFloorplan" href="#Floorplanedit"> <span data-i18n="Floorplan">Floorplan</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Timerplan')}" id="mTimerplan"><a id="cTimerplan" href="#Timerplan"> <span data-i18n="Timerplan">Timerplan</span></a></li>
+										</ul>
+									</li>
+									<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
+									<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html#{{config.language}}"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Notification')}" id="mNotification"><a id="cNotification" href="#Notification"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
+									<li class="divider"></li>
+									<li class="dropdown-submenu">
+										<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
+										<ul class="dropdown-menu pull-right">
+											<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/DPHttp')}" id="mDPHttp"><a id="cDPHttp" href="#DPHttp"> <span data-i18n="HTTP">HTTP</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/DPGooglePubSub')}" id="mDPGooglePubSub"><a id="cDPGooglePubSub" href="#DPGooglePubSub"> <span data-i18n="GooglePubSub">Google PubSub</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/DPInflux')}" id="mDPInflux"><a id="cDPInflux" href="#DPInflux"> <span>InfluxDB</span></a></li>
 										</ul>
 									</li>
 									<li class="divider"></li>
-									<li ng-class="{'current_page_item':getClass('/Log')}" id="mLog"><a id="cLog" href="#Log"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
-									<li class="divider"></li>
-									<li ng-class="{'current_page_item':getClass('/About')}" id="mAbout"><a id="cAbout" href="#About"><img src="images/about.png"> <span data-i18n="About">About</span></a></li>
-									<li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
-									<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+									<li id="mRestart"><a id="cRestart" href="javascript:SwitchLayout('Restart')"><img src="images/restart.png"> <span data-i18n="Restart System">Restart System</span></a></li>
+									<li id="mShutdown"><a id="cShutdown" href="javascript:SwitchLayout('Shutdown')"><img src="images/shutdown.png"> <span data-i18n="Shutdown System">Shutdown System</span></a></li>
 								</ul>
 							</li>
-							<li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
-							<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span></a></li>
+							<li class="divider"></li>
+							<li ng-class="{'current_page_item':getClass('/Log')}" id="mLog"><a id="cLog" href="#Log"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
+							<li class="divider"></li>
+							<li ng-class="{'current_page_item':getClass('/About')}" id="mAbout"><a id="cAbout" href="#About"><img src="images/about.png"> <span data-i18n="About">About</span></a></li>
+							<li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
+							<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
 						</ul>
-				</div>
+					</li>
+					<li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
+					<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span></a></li>
+				</ul>
 			</div>
 		</div>
-		<div id="holder">
-					<div class="container-fluid">
-							<div id="notification" style="display: none;"></div>
-							<div class="bannercontent">
-								<div id="main-view" ng-view></div>
-							</div>
-							<div id="copyright" style="display: none;" has-User>
-									<p>&copy; 2012-{{currentyear}} Domoticz | WWW: <a href="http://domoticz.com/" target="_blank">Domoticz.com</a></p>
-							</div>
-					</div> <!-- /container -->
-		</div>
-	</body>
+	</div>
+	<div id="holder">
+		<div class="container-fluid">
+			<div id="notification" style="display: none;"></div>
+			<div class="bannercontent">
+				<div id="main-view" ng-view></div>
+			</div>
+			<div id="copyright" style="display: none;" has-User>
+				<p>&copy; 2012-{{currentyear}} Domoticz | WWW: <a href="http://domoticz.com/" target="_blank">Domoticz.com</a></p>
+			</div>
+		</div> <!-- /container -->
+	</div>
+</body>
 </html>

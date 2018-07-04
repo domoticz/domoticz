@@ -391,19 +391,18 @@ void I2C::MCP23017_Init()
 #else
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
 	if (fd < 0) return; // Error opening i2c device!
-	std::vector<std::vector<std::string> > result;
-	std::vector<std::vector<std::string> >::const_iterator itt;
+	std::vector<std::vector<std::string> > results;
 	unsigned char nvalue;
 	uint16_t GPIO_reg = 0xFFFF;
 	int unit;
 	bool value;
 	
-	result = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
-	if (!result.empty())
+	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
+	if (!results.empty())
 	{
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : results)
 		{
-			std::vector<std::string> sd=*itt;
+			std::vector<std::string> sd=itt;
 			unit = atoi(sd[0].c_str());
 			nvalue = atoi(sd[1].c_str());
 

@@ -214,11 +214,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID,Base,Name,Description FROM CustomImages");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					int ID = atoi(sd[0].c_str());
 
@@ -237,13 +236,11 @@ namespace http {
 					_dbImageFiles["IconOn"] = szWWWFolder + "/images/" + IconFile48On;
 					_dbImageFiles["IconOff"] = szWWWFolder + "/images/" + IconFile48Off;
 
-					std::map<std::string, std::string>::const_iterator iItt;
-
 					//Check if files are on disk, else add them
-					for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
+					for (const auto & iItt : _dbImageFiles)
 					{
-						std::string TableField = iItt->first;
-						std::string IconFile = iItt->second;
+						std::string TableField = iItt.first;
+						std::string IconFile = iItt.second;
 
 						if (!file_exist(IconFile.c_str()))
 						{
@@ -323,12 +320,8 @@ namespace http {
 				{
 					std::vector<std::string> strarray;
 					StringSplit(WebLocalNetworks, ";", strarray);
-					std::vector<std::string>::const_iterator itt;
-					for (itt = strarray.begin(); itt != strarray.end(); ++itt)
-					{
-						std::string network = *itt;
-						m_pWebEm->AddLocalNetworks(network);
-					}
+					for (const auto & itt : strarray)
+						m_pWebEm->AddLocalNetworks(itt);
 					//add local hostname
 					m_pWebEm->AddLocalNetworks("");
 				}
@@ -340,12 +333,8 @@ namespace http {
 			{
 				std::vector<std::string> strarray;
 				StringSplit(WebRemoteProxyIPs, ";", strarray);
-				std::vector<std::string>::const_iterator itt;
-				for (itt = strarray.begin(); itt != strarray.end(); ++itt)
-				{
-					std::string ipaddr = *itt;
-					m_pWebEm->AddRemoteProxyIPs(ipaddr);
-				}
+				for (const auto & itt : strarray)
+					m_pWebEm->AddRemoteProxyIPs(itt);
 			}
 
 			//register callbacks
@@ -785,10 +774,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID FROM Floorplans ORDER BY [Order]");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
 					_FloorplanFiles[ImageURL] = 1;
 				}
@@ -810,10 +798,9 @@ namespace http {
 						{
 							response += "#Theme=" + sWebTheme + "\n";
 							//Add all theme files
-							std::map<std::string, int>::const_iterator itt;
-							for (itt = _ThemeFiles.begin(); itt != _ThemeFiles.end(); ++itt)
+							for (const auto & itt : _ThemeFiles)
 							{
-								std::string tfname = itt->first.substr(szWWWFolder.size() + 1);
+								std::string tfname = itt.first.substr(szWWWFolder.size() + 1);
 								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + "\n";
 							}
@@ -822,10 +809,9 @@ namespace http {
 						else if (sLine.find("#Floorplans") != std::string::npos)
 						{
 							//Add all floorplans
-							std::map<std::string, int>::const_iterator itt;
-							for (itt = _FloorplanFiles.begin(); itt != _FloorplanFiles.end(); ++itt)
+							for (const auto & itt : _FloorplanFiles)
 							{
-								std::string tfname = itt->first;
+								std::string tfname = itt.first;
 								response += tfname + "\n";
 							}
 							continue;
@@ -833,14 +819,13 @@ namespace http {
 						else if (sLine.find("#SwitchIcons") != std::string::npos)
 						{
 							//Add database switch icons
-							std::vector<_tCustomIcon>::const_iterator itt;
-							for (itt = m_custom_light_icons.begin(); itt != m_custom_light_icons.end(); ++itt)
+							for (const auto & itt : m_custom_light_icons)
 							{
-								if (itt->idx >= 100)
+								if (itt.idx >= 100)
 								{
-									std::string IconFile16 = itt->RootFile + ".png";
-									std::string IconFile48On = itt->RootFile + "48_On.png";
-									std::string IconFile48Off = itt->RootFile + "48_Off.png";
+									std::string IconFile16 = itt.RootFile + ".png";
+									std::string IconFile48On = itt.RootFile + "48_On.png";
+									std::string IconFile48Off = itt.RootFile + "48_Off.png";
 
 									response += "images/" + CURLEncode::URLEncode(IconFile16) + "\n";
 									response += "images/" + CURLEncode::URLEncode(IconFile48On) + "\n";
@@ -911,11 +896,10 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetThemes";
 			m_mainworker.GetAvailableWebThemes();
-			std::vector<std::string>::const_iterator itt;
 			int ii = 0;
-			for (itt = m_mainworker.m_webthemes.begin(); itt != m_mainworker.m_webthemes.end(); ++itt)
+			for (const auto & itt : m_mainworker.m_webthemes)
 			{
-				root["result"][ii]["theme"] = *itt;
+				root["result"][ii]["theme"] = itt;
 				ii++;
 			}
 		}
@@ -1038,12 +1022,11 @@ namespace http {
 					_htypes[Hardware_Type_Desc(ii)] = ii;
 	}
 			//return a sorted hardware list
-			std::map<std::string, int>::const_iterator itt;
 			int ii = 0;
-			for (itt = _htypes.begin(); itt != _htypes.end(); ++itt)
+			for (const auto & itt : _htypes)
 			{
-				root["result"][ii]["idx"] = itt->second;
-				root["result"][ii]["name"] = itt->first;
+				root["result"][ii]["idx"] = itt.second;
+				root["result"][ii]["name"] = itt.first;
 				ii++;
 			}
 
@@ -1813,11 +1796,10 @@ namespace http {
 				root["result"][0]["Wording"] = result[0];
 			}
 			else {
-				std::vector<std::string>::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::string ddOption = *itt;
+					std::string ddOption = itt;
 					root["result"][ii]["Value"] = ii + 1;
 					root["result"][ii]["Wording"] = ddOption.c_str();
 					ii++;
@@ -1927,11 +1909,10 @@ namespace http {
 			result = m_sql.GetUserVariables();
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Type"] = sd[2];
@@ -1957,11 +1938,10 @@ namespace http {
 				iVarID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Type"] = sd[2];
@@ -2039,17 +2019,16 @@ namespace http {
 			}
 
 			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog(lLevel);
-			std::list<CLogger::_tLogLineStruct>::const_iterator itt;
 			int ii = 0;
-			for (itt = logmessages.begin(); itt != logmessages.end(); ++itt)
+			for (const auto & itt : logmessages)
 			{
-				if (itt->logtime > lastlogtime)
+				if (itt.logtime > lastlogtime)
 				{
 					std::stringstream szLogTime;
-					szLogTime << itt->logtime;
+					szLogTime << itt.logtime;
 					root["LastLogTime"] = szLogTime.str();
-					root["result"][ii]["level"] = static_cast<int>(itt->level);
-					root["result"][ii]["message"] = itt->logmessage;
+					root["result"][ii]["level"] = static_cast<int>(itt.level);
+					root["result"][ii]["message"] = itt.logmessage;
 					ii++;
 				}
 			}
@@ -2145,10 +2124,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					bool bDoAdd = true;
 					if (iUnique)
@@ -2172,10 +2150,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					bool bDoAdd = true;
 					if (iUnique)
@@ -2246,11 +2223,10 @@ namespace http {
 				idx.c_str());
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					std::string ID = sd[0];
 					int DevSceneType = atoi(sd[1].c_str());
@@ -2353,7 +2329,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT [Order] FROM Plans WHERE (ID=='%q')",
 				idx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 			aOrder = result[0][0];
 
@@ -2362,7 +2338,7 @@ namespace http {
 				//Get next device order
 				result = m_sql.safe_query("SELECT ID, [Order] FROM Plans WHERE ([Order]>'%q') ORDER BY [Order] ASC",
 					aOrder.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				oID = result[0][0];
 				oOrder = result[0][1];
@@ -2372,7 +2348,7 @@ namespace http {
 				//Get previous device order
 				result = m_sql.safe_query("SELECT ID, [Order] FROM Plans WHERE ([Order]<'%q') ORDER BY [Order] DESC",
 					aOrder.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				oID = result[0][0];
 				oOrder = result[0][1];
@@ -2405,7 +2381,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT [Order] FROM DeviceToPlansMap WHERE ((ID=='%q') AND (PlanID=='%q'))",
 				idx.c_str(), planid.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 			aOrder = result[0][0];
 
@@ -2414,7 +2390,7 @@ namespace http {
 				//Get next device order
 				result = m_sql.safe_query("SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]>'%q') AND (PlanID=='%q')) ORDER BY [Order] ASC",
 					aOrder.c_str(), planid.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				oID = result[0][0];
 				oOrder = result[0][1];
@@ -2424,7 +2400,7 @@ namespace http {
 				//Get previous device order
 				result = m_sql.safe_query("SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]<'%q') AND (PlanID=='%q')) ORDER BY [Order] DESC",
 					aOrder.c_str(), planid.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				oID = result[0][0];
 				oOrder = result[0][1];
@@ -2452,11 +2428,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					ii++;
@@ -3411,10 +3386,9 @@ namespace http {
 
 					std::vector<std::string> arrayActivators;
 					StringSplit(result[0][0], ";", arrayActivators);
-					std::vector<std::string>::const_iterator ittAct;
-					for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+					for (const auto & ittAct : arrayActivators)
 					{
-						std::string sCodeCmd = *ittAct;
+						std::string sCodeCmd = ittAct;
 
 						std::vector<std::string> arrayCode;
 						StringSplit(sCodeCmd, ":", arrayCode);
@@ -3547,11 +3521,10 @@ namespace http {
 					idx.c_str());
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						root["result"][ii]["ID"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
@@ -3577,11 +3550,10 @@ namespace http {
 					idx.c_str());
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						root["result"][ii]["ID"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
@@ -3642,7 +3614,7 @@ namespace http {
 				//Get actual device order
 				result = m_sql.safe_query("SELECT SceneRowID, [Order] FROM SceneDevices WHERE (ID=='%q')",
 					idx.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				aScene = result[0][0];
 				aOrder = result[0][1];
@@ -3652,7 +3624,7 @@ namespace http {
 					//Get next device order
 					result = m_sql.safe_query("SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='%q' AND [Order]>'%q') ORDER BY [Order] ASC",
 						aScene.c_str(), aOrder.c_str());
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					oID = result[0][0];
 					oOrder = result[0][1];
@@ -3662,7 +3634,7 @@ namespace http {
 					//Get previous device order
 					result = m_sql.safe_query("SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='%q' AND [Order]<'%q') ORDER BY [Order] DESC",
 						aScene.c_str(), aOrder.c_str());
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					oID = result[0][0];
 					oOrder = result[0][1];
@@ -3699,11 +3671,10 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC");
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
@@ -3752,14 +3723,15 @@ namespace http {
 				}
 				else {
 					int ii = 0;
-					for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
-						CGpioPin pin = *it;
+					for (const auto & it : pins)
+					{
+						CGpioPin pin = it;
 						root["status"] = "OK";
 						root["result"][ii]["idx"] = pin.GetPin();
 						root["result"][ii]["Name"] = pin.ToString();
 						ii++;
-			}
-		}
+					}
+				}
 #else
 				root["status"] = "OK";
 				root["result"][0]["idx"] = 0;
@@ -3800,11 +3772,10 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						std::string ID = sd[0];
 						std::string Name = sd[1];
@@ -3931,10 +3902,9 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name");
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						std::string ID = sd[0];
 						std::string Name = sd[1];
@@ -3991,10 +3961,9 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						std::string ID = sd[0];
 						std::string Name = sd[1];
@@ -4018,11 +3987,10 @@ namespace http {
 					idx.c_str());
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						std::string ID = sd[0];
 						int DevSceneType = atoi(sd[1].c_str());
@@ -4597,9 +4565,20 @@ namespace http {
 					}
 					else if (lighttype == 305)
 					{
-						//Lucci Air
+						//Lucci Air/DC
 						dtype = pTypeFan;
 						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 306)
+					{
+						//Lucci Air DC
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDC;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;
@@ -5121,7 +5100,7 @@ namespace http {
 						result = m_sql.safe_query(
 							"SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
 							hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-						if (result.size() < 1)
+						if (result.empty())
 						{
 							root["message"] = "Error finding switch in Database!?!?";
 							return;
@@ -5194,6 +5173,17 @@ namespace http {
 						//Lucci Air
 						dtype = pTypeFan;
 						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 306)
+					{
+						//Lucci Air DC
+						dtype = pTypeFan;
+						subtype = sTypeLucciAirDC;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;
@@ -5310,7 +5300,7 @@ namespace http {
 				result = m_sql.safe_query(
 					"SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
 					hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-				if (result.size() < 1)
+				if (result.empty())
 				{
 					root["message"] = "Error finding switch in Database!?!?";
 					return;
@@ -5363,7 +5353,7 @@ namespace http {
 				//First get Device Type/SubType
 				result = m_sql.safe_query("SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == '%q')",
 					idx.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 
 				root["status"] = "OK";
@@ -5993,14 +5983,14 @@ namespace http {
 					//get device order 1
 					result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')",
 						idx1.c_str());
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					Order1 = result[0][0];
 
 					//get device order 2
 					result = m_sql.safe_query("SELECT [Order] FROM DeviceStatus WHERE (ID == '%q')",
 						idx2.c_str());
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					Order2 = result[0][0];
 
@@ -6029,14 +6019,14 @@ namespace http {
 					//get device order 1
 					result = m_sql.safe_query("SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == '%q') AND (PlanID==%d)",
 						idx1.c_str(), roomid);
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					Order1 = result[0][0];
 
 					//get device order 2
 					result = m_sql.safe_query("SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == '%q') AND (PlanID==%d)",
 						idx2.c_str(), roomid);
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					Order2 = result[0][0];
 
@@ -6077,14 +6067,14 @@ namespace http {
 				//get device order 1
 				result = m_sql.safe_query("SELECT [Order] FROM Scenes WHERE (ID == '%q')",
 					idx1.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				Order1 = result[0][0];
 
 				//get device order 2
 				result = m_sql.safe_query("SELECT [Order] FROM Scenes WHERE (ID == '%q')",
 					idx2.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				Order2 = result[0][0];
 
@@ -6276,7 +6266,7 @@ namespace http {
 				//First get Device Type/SubType
 				result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID == '%q')",
 					idx.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 
 				unsigned char dType = atoi(result[0][0].c_str());
@@ -7194,11 +7184,10 @@ namespace http {
 					result = m_sql.safe_query("SELECT ID, Name, ScaleFactor FROM Floorplans WHERE ID NOT IN(SELECT FloorplanID FROM Plans)");
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
 					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["name"] = sd[1];
@@ -7273,7 +7262,7 @@ namespace http {
 
 				result = m_sql.safe_query("SELECT [Order] FROM Floorplans WHERE (ID=='%q')",
 					idx.c_str());
-				if (result.size() < 1)
+				if (result.empty())
 					return;
 				aOrder = result[0][0];
 
@@ -7282,7 +7271,7 @@ namespace http {
 					//Get next device order
 					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]>'%q') ORDER BY [Order] ASC",
 						aOrder.c_str());
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					oID = result[0][0];
 					oOrder = result[0][1];
@@ -7292,7 +7281,7 @@ namespace http {
 					//Get previous device order
 					result = m_sql.safe_query("SELECT ID, [Order] FROM Floorplans WHERE ([Order]<'%q') ORDER BY [Order] DESC",
 						aOrder.c_str());
-					if (result.size() < 1)
+					if (result.empty())
 						return;
 					oID = result[0][0];
 					oOrder = result[0][1];
@@ -7321,10 +7310,9 @@ namespace http {
 				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name");
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						root["result"][ii]["type"] = 0;
 						root["result"][ii]["idx"] = sd[0];
@@ -7345,10 +7333,9 @@ namespace http {
 					idx.c_str());
 				if (!result.empty())
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					for (const auto & itt : result)
 					{
-						std::vector<std::string> sd = *itt;
+						std::vector<std::string> sd = itt;
 
 						root["result"][ii]["idx"] = sd[0];
 						root["result"][ii]["Name"] = sd[1];
@@ -7441,10 +7428,9 @@ namespace http {
 				_switchtypes[Switch_Type_Desc((_eSwitchType)ii)] = ii;
 			}
 			//return a sorted list
-			std::map<std::string, int>::const_iterator itt;
-			for (itt = _switchtypes.begin(); itt != _switchtypes.end(); ++itt)
+			for (const auto & itt : _switchtypes)
 			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", itt->second, itt->first.c_str());
+				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", itt.second, itt.first.c_str());
 				content_part += szTmp;
 			}
 		}
@@ -7463,7 +7449,6 @@ namespace http {
 		{
 			//return a sorted list
 			std::map<std::string, std::string> _ltypes;
-			std::map<std::string, std::string>::const_iterator itt;
 			char szTmp[200];
 			int ii = 0;
 			while (guiLanguage[ii].szShort != NULL)
@@ -7471,9 +7456,9 @@ namespace http {
 				_ltypes[guiLanguage[ii].szLong] = guiLanguage[ii].szShort;
 				ii++;
 			}
-			for (itt = _ltypes.begin(); itt != _ltypes.end(); ++itt)
+			for (const auto & itt : _ltypes)
 			{
-				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", itt->second.c_str(), itt->first.c_str());
+				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", itt.second.c_str(), itt.first.c_str());
 				content_part += szTmp;
 			}
 		}
@@ -7507,11 +7492,10 @@ namespace http {
 						result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 								if (bIsActive)
@@ -7561,10 +7545,9 @@ namespace http {
 		int CWebServer::FindUser(const char* szUserName)
 		{
 			int iUser = 0;
-			std::vector<_tWebUserPassword>::const_iterator itt;
-			for (itt = m_users.begin(); itt != m_users.end(); ++itt)
+			for (const auto & itt : m_users)
 			{
-				if (itt->Username == szUserName)
+				if (itt.Username == szUserName)
 					return iUser;
 				iUser++;
 			}
@@ -7573,10 +7556,9 @@ namespace http {
 
 		bool CWebServer::FindAdminUser()
 		{
-			std::vector<_tWebUserPassword>::const_iterator itt;
-			for (itt = m_users.begin(); itt != m_users.end(); ++itt)
+			for (const auto & itt : m_users)
 			{
-				if (itt->userrights == URIGHTS_ADMIN)
+				if (itt.userrights == URIGHTS_ADMIN)
 					return true;
 			}
 			return false;
@@ -7686,22 +7668,16 @@ namespace http {
 			m_pWebEm->ClearLocalNetworks();
 			std::vector<std::string> strarray;
 			StringSplit(WebLocalNetworks, ";", strarray);
-			for (std::vector<std::string>::const_iterator itt = strarray.begin(); itt != strarray.end(); ++itt)
-			{
-				std::string network = *itt;
-				m_pWebEm->AddLocalNetworks(network);
-			}
+			for (const auto & itt : strarray)
+				m_pWebEm->AddLocalNetworks(itt);
 			//add local hostname
 			m_pWebEm->AddLocalNetworks("");
 
 			m_pWebEm->ClearRemoteProxyIPs();
 			strarray.clear();
 			StringSplit(WebRemoteProxyIPs, ";", strarray);
-			for (std::vector<std::string>::const_iterator itt = strarray.begin(); itt != strarray.end(); ++itt)
-			{
-				std::string ipaddr = *itt;
-				m_pWebEm->AddRemoteProxyIPs(ipaddr);
-			}
+			for (const auto & itt : strarray)
+				m_pWebEm->AddRemoteProxyIPs(itt);
 
 			if (session.username.empty())
 			{
@@ -8036,11 +8012,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Mode1, Mode2 FROM Hardware");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 					_tHardwareListInt tlist;
 					int ID = atoi(sd[0].c_str());
 					tlist.Name = sd[1];
@@ -8175,10 +8150,9 @@ namespace http {
 
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							unsigned char favorite = atoi(sd[4].c_str());
 							//Check if we only want favorite devices
@@ -8485,10 +8459,9 @@ namespace http {
 
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					unsigned char favorite = atoi(sd[12].c_str());
 					if ((planID != "") && (planID != "0"))
@@ -10643,11 +10616,10 @@ namespace http {
 									std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
 									int smode = 0;
 									char szTmp[200];
-									std::vector<string>::const_iterator itt;
-									for (itt = vmodes.begin(); itt != vmodes.end(); ++itt)
+									for (const auto & itt : vmodes)
 									{
 										//Value supported
-										sprintf(szTmp, "%d;%s;", smode, (*itt).c_str());
+										sprintf(szTmp, "%d;%s;", smode, itt.c_str());
 										modes += szTmp;
 										smode++;
 									}
@@ -11059,19 +11031,18 @@ namespace http {
 
 		void CWebServer::RType_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::vector<_tCustomIcon>::const_iterator itt;
 			int ii = 0;
 
 			std::vector<_tCustomIcon> temp_custom_light_icons = m_custom_light_icons;
 			//Sort by name
 			std::sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(), compareIconsByName);
 
-			for (itt = temp_custom_light_icons.begin(); itt != temp_custom_light_icons.end(); ++itt)
+			for (const auto & itt : temp_custom_light_icons)
 			{
-				root["result"][ii]["idx"] = itt->idx;
-				root["result"][ii]["imageSrc"] = itt->RootFile;
-				root["result"][ii]["text"] = itt->Title;
-				root["result"][ii]["description"] = itt->Description;
+				root["result"][ii]["idx"] = itt.idx;
+				root["result"][ii]["imageSrc"] = itt.RootFile;
+				root["result"][ii]["text"] = itt.Title;
+				root["result"][ii]["description"] = itt.Description;
 				ii++;
 			}
 			root["status"] = "OK";
@@ -11089,11 +11060,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, [Order] FROM Plans ORDER BY [Order]");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					std::string Name = sd[1];
 					bool bIsHidden = (Name[0] == '$');
@@ -11131,10 +11101,9 @@ namespace http {
 			if (result.empty())
 				return;
 
-			std::vector<std::vector<std::string> >::const_iterator itt;
-			for (itt = result.begin(); itt != result.end(); ++itt)
+			for (const auto & itt : result)
 			{
-				std::vector<std::string> sd = *itt;
+				std::vector<std::string> sd = itt;
 				std::string Key = sd[0];
 				int nValue = atoi(sd[1].c_str());
 				std::string sValue = sd[2];
@@ -11180,11 +11149,10 @@ namespace http {
 			result2 = m_sql.safe_query("SELECT ID, Name, ScaleFactor, [Order] FROM Floorplans ORDER BY [Order]");
 			if (!result2.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result2.begin(); itt != result2.end(); ++itt)
+				for (const auto & itt : result2)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -11238,11 +11206,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					std::string sName = sd[1];
 					if ((bDisplayHidden == false) && (sName[0] == '$'))
@@ -11337,11 +11304,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
@@ -11481,11 +11447,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, RemoteSharing, TabsEnabled FROM USERS ORDER BY ID ASC");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
@@ -11519,11 +11484,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name ASC");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
@@ -11595,10 +11559,9 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				std::vector<std::string>::const_iterator ittAct;
-				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+				for (const auto & ittAct : arrayActivators)
 				{
-					std::string sCodeCmd = *ittAct;
+					std::string sCodeCmd = ittAct;
 
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
@@ -11676,10 +11639,9 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				std::vector<std::string>::const_iterator ittAct;
-				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+				for (const auto & ittAct : arrayActivators)
 				{
-					std::string sCodeCmd = *ittAct;
+					std::string sCodeCmd = ittAct;
 
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
@@ -11741,11 +11703,10 @@ namespace http {
 				//Get Activator device names
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
-				std::vector<std::string>::const_iterator ittAct;
 				std::string newActivation = "";
-				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+				for (const auto & ittAct : arrayActivators)
 				{
-					std::string sCodeCmd = *ittAct;
+					std::string sCodeCmd = ittAct;
 
 					std::vector<std::string> arrayCode;
 					StringSplit(sCodeCmd, ":", arrayCode);
@@ -11811,11 +11772,10 @@ namespace http {
 
 			bool bUseDirectPath = false;
 			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
-			std::vector<std::string>::iterator itt;
 			int ii = 0;
-			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+			for (const auto & itt : serialports)
 			{
-				root["result"][ii]["name"] = *itt;
+				root["result"][ii]["name"] = itt;
 				root["result"][ii]["value"] = ii;
 				ii++;
 			}
@@ -11830,10 +11790,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 					root["result"][ii]["name"] = sd[1];
 					root["result"][ii]["value"] = sd[0];
 					ii++;
@@ -11881,18 +11840,17 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetCustomIconSet";
 			int ii = 0;
-			std::vector<_tCustomIcon>::const_iterator itt;
-			for (itt = m_custom_light_icons.begin(); itt != m_custom_light_icons.end(); ++itt)
+			for (const auto & itt : m_custom_light_icons)
 			{
-				if (itt->idx >= 100)
+				if (itt.idx >= 100)
 				{
-					std::string IconFile16 = "images/" + itt->RootFile + ".png";
-					std::string IconFile48On = "images/" + itt->RootFile + "48_On.png";
-					std::string IconFile48Off = "images/" + itt->RootFile + "48_Off.png";
+					std::string IconFile16 = "images/" + itt.RootFile + ".png";
+					std::string IconFile48On = "images/" + itt.RootFile + "48_On.png";
+					std::string IconFile48Off = "images/" + itt.RootFile + "48_Off.png";
 
-					root["result"][ii]["idx"] = itt->idx - 100;
-					root["result"][ii]["Title"] = itt->Title;
-					root["result"][ii]["Description"] = itt->Description;
+					root["result"][ii]["idx"] = itt.idx - 100;
+					root["result"][ii]["Title"] = itt.Title;
+					root["result"][ii]["Description"] = itt.Description;
 					root["result"][ii]["IconFile16"] = IconFile16;
 					root["result"][ii]["IconFile48On"] = IconFile48On;
 					root["result"][ii]["IconFile48Off"] = IconFile48Off;
@@ -11919,14 +11877,13 @@ namespace http {
 			m_sql.safe_query("DELETE FROM CustomImages WHERE (ID == %d)", idx);
 
 			//Delete icons file from disk
-			std::vector<_tCustomIcon>::const_iterator itt;
-			for (itt = m_custom_light_icons.begin(); itt != m_custom_light_icons.end(); ++itt)
+			for (const auto & itt : m_custom_light_icons)
 			{
-				if (itt->idx == idx + 100)
+				if (itt.idx == idx + 100)
 				{
-					std::string IconFile16 = szWWWFolder + "/images/" + itt->RootFile + ".png";
-					std::string IconFile48On = szWWWFolder + "/images/" + itt->RootFile + "48_On.png";
-					std::string IconFile48Off = szWWWFolder + "/images/" + itt->RootFile + "48_Off.png";
+					std::string IconFile16 = szWWWFolder + "/images/" + itt.RootFile + ".png";
+					std::string IconFile48On = szWWWFolder + "/images/" + itt.RootFile + "48_On.png";
+					std::string IconFile48Off = szWWWFolder + "/images/" + itt.RootFile + "48_Off.png";
 					std::remove(IconFile16.c_str());
 					std::remove(IconFile48On.c_str());
 					std::remove(IconFile48Off.c_str());
@@ -12222,11 +12179,10 @@ namespace http {
 						result[0][0].c_str(), result[0][1].c_str(), idx);
 				}
 
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -12261,7 +12217,7 @@ namespace http {
 			result = m_sql.safe_query(
 				"SELECT A.LastUpdate, B.LastUpdate FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')",
 				sidx.c_str(), newidx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			std::string sLastUpdate_A = result[0][0];
@@ -12280,7 +12236,7 @@ namespace http {
 			result = m_sql.safe_query(
 				"SELECT HardwareID, DeviceID, Unit, Name, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue FROM DeviceStatus WHERE (ID == '%q')",
 				newidx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			root["status"] = "OK";
@@ -12303,11 +12259,10 @@ namespace http {
 			int ii = 0;
 
 			//Add known notification systems
-			std::map<std::string, CNotificationBase*>::const_iterator ittNotifiers;
-			for (ittNotifiers = m_notifications.m_notifiers.begin(); ittNotifiers != m_notifications.m_notifiers.end(); ++ittNotifiers)
+			for (const auto & ittNotifiers : m_notifications.m_notifiers)
 			{
-				root["notifiers"][ii]["name"] = ittNotifiers->first;
-				root["notifiers"][ii]["description"] = ittNotifiers->first;
+				root["notifiers"][ii]["name"] = ittNotifiers.first;
+				root["notifiers"][ii]["description"] = ittNotifiers.first;
 				ii++;
 			}
 
@@ -12320,20 +12275,19 @@ namespace http {
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
 			if (notifications.size() > 0)
 			{
-				std::vector<_tNotification>::const_iterator itt;
 				ii = 0;
-				for (itt = notifications.begin(); itt != notifications.end(); ++itt)
+				for (const auto & itt : notifications)
 				{
-					root["result"][ii]["idx"] = itt->ID;
-					std::string sParams = itt->Params;
+					root["result"][ii]["idx"] = itt.ID;
+					std::string sParams = itt.Params;
 					if (sParams.empty()) {
 						sParams = "S";
 					}
 					root["result"][ii]["Params"] = sParams;
-					root["result"][ii]["Priority"] = itt->Priority;
-					root["result"][ii]["SendAlways"] = itt->SendAlways;
-					root["result"][ii]["CustomMessage"] = itt->CustomMessage;
-					root["result"][ii]["ActiveSystems"] = itt->ActiveSystems;
+					root["result"][ii]["Priority"] = itt.Priority;
+					root["result"][ii]["SendAlways"] = itt.SendAlways;
+					root["result"][ii]["CustomMessage"] = itt.CustomMessage;
+					root["result"][ii]["ActiveSystems"] = itt.ActiveSystems;
 					ii++;
 				}
 			}
@@ -12351,11 +12305,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 					root["result"][ii]["DeviceRowIdx"] = sd[0];
 					ii++;
 				}
@@ -12454,7 +12407,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 
 			result = m_sql.safe_query("SELECT Type,SubType,HardwareID FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 			std::vector<std::string> sd = result[0];
 
@@ -12719,10 +12672,9 @@ namespace http {
 			root["cloudenabled"] = false;
 #endif
 
-			std::vector<std::vector<std::string> >::const_iterator itt;
-			for (itt = result.begin(); itt != result.end(); ++itt)
+			for (const auto & itt : result)
 			{
-				std::vector<std::string> sd = *itt;
+				std::vector<std::string> sd = itt;
 				std::string Key = sd[0];
 				int nValue = atoi(sd[1].c_str());
 				std::string sValue = sd[2];
@@ -13085,7 +13037,7 @@ namespace http {
 			//First get Device Type/SubType
 			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 				idx);
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			unsigned char dType = atoi(result[0][0].c_str());
@@ -13133,11 +13085,10 @@ namespace http {
 					GetSelectorSwitchStatuses(options, selectorStatuses);
 				}
 
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					int nValue = atoi(sd[1].c_str());
 					std::string sValue = sd[2];
@@ -13215,11 +13166,10 @@ namespace http {
 				idx);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Date"] = sd[2];
@@ -13245,11 +13195,10 @@ namespace http {
 			result = m_sql.safe_query("SELECT ROWID, nValue, Date FROM SceneLog WHERE (SceneRowID==%" PRIu64 ") ORDER BY Date DESC", idx);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					int nValue = atoi(sd[1].c_str());
 					root["result"][ii]["idx"] = sd[0];
@@ -13273,10 +13222,10 @@ namespace http {
 			char szTmp[300];
 
 			std::string sensor = request::findValue(&req, "sensor");
-			if (sensor.empty())
+			if (sensor == "")
 				return;
 			std::string srange = request::findValue(&req, "range");
-			if (srange.empty())
+			if (srange == "")
 				return;
 
 			time_t now = mytime(NULL);
@@ -13285,7 +13234,7 @@ namespace http {
 
 			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 				idx);
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			unsigned char dType = atoi(result[0][0].c_str());
@@ -13395,11 +13344,10 @@ namespace http {
 					result = m_sql.safe_query("SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
 						int ii = 0;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[4].substr(0, 16);
 							if (
@@ -13480,11 +13428,10 @@ namespace http {
 					result = m_sql.safe_query("SELECT Percentage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
 						int ii = 0;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["v"] = sd[0];
@@ -13499,11 +13446,10 @@ namespace http {
 					result = m_sql.safe_query("SELECT Speed, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
 						int ii = 0;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["v"] = sd[0];
@@ -13519,11 +13465,9 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						// P1 counter values can only increment, so these are more reliable for sorting than time which can decrement (when DST is turned off)
-						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Value1 ASC, Value5 ASC, Date ASC", dbasetable.c_str(), idx);
+						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
 							bool bHaveDeliverd = false;
 							bool bHaveFirstValue = false;
@@ -13536,11 +13480,10 @@ namespace http {
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
 
 							int lastDay = 0;
-							int lastDST = -1;
 
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								if (nMeterType == 0)
 								{
@@ -13561,34 +13504,6 @@ namespace http {
 									struct tm ntime;
 									time_t atime;
 									ParseSQLdatetime(atime, ntime, stime, -1);
-									if (lastDST > ntime.tm_isdst) // DST was turned off
-									{
-										struct tm ltime;
-										time_t tmptime;
-										localtime_r(&lastTime, &ltime);
-										int year = ltime.tm_year + 1900;
-										int mon = ltime.tm_mon + 1;
-										int day = ltime.tm_mday;
-										int hour = ltime.tm_hour;
-										int min = ltime.tm_min;
-										int sec = ltime.tm_sec;
-										constructTime(tmptime, ltime, year, mon, day, hour, min, sec, 0);
-										if (ltime.tm_isdst == 0)
-											lastTime = tmptime;
-										else // no standard time match for lastTime
-										{
-											localtime_r(&atime, &ltime);
-											year = ltime.tm_year + 1900;
-											mon = ltime.tm_mon + 1;
-											day = ltime.tm_mday;
-											hour = ltime.tm_hour;
-											min = ltime.tm_min;
-											sec = ltime.tm_sec;
-											constructTime(tmptime, ltime, year, mon, day, hour, min, sec, 1);
-											if (ltime.tm_isdst == 1)
-												atime = tmptime;
-										}
-									}
 									if (lastDay != ntime.tm_mday)
 									{
 										lastDay = ntime.tm_mday;
@@ -13605,28 +13520,23 @@ namespace http {
 										long curDeliv1 = (long)(actDeliv1 - lastDeliv1);
 										long curDeliv2 = (long)(actDeliv2 - lastDeliv2);
 
+										if ((curUsage1 < 0) || (curUsage1 > 100000))
+											curUsage1 = 0;
+										if ((curUsage2 < 0) || (curUsage2 > 100000))
+											curUsage2 = 0;
+										if ((curDeliv1 < 0) || (curDeliv1 > 100000))
+											curDeliv1 = 0;
+										if ((curDeliv2 < 0) || (curDeliv2 > 100000))
+											curDeliv2 = 0;
+
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
-											tdiff = 3600; // only reason for the same time to occur twice is a DST shift, meaning the actual time difference must be an hour
-										else if (tdiff <= -3600)
-											break; // impossible input - meter replaced?
-										else if (tdiff < 0)
-											tdiff += 3600; // assume that DST was turned off - can there be another reason?
-
+											tdiff = 1;
 										float tlaps = 3600.0f / tdiff;
 										curUsage1 *= int(tlaps);
 										curUsage2 *= int(tlaps);
 										curDeliv1 *= int(tlaps);
 										curDeliv2 *= int(tlaps);
-
-										if (curUsage1 > 100000)
-											curUsage1 = 0;
-										if (curUsage2 > 100000)
-											curUsage2 = 0;
-										if (curDeliv1 > 100000)
-											curDeliv1 = 0;
-										if (curDeliv2 > 100000)
-											curDeliv2 = 0;
 
 										root["result"][ii]["d"] = sd[6].substr(0, 16);
 
@@ -13694,7 +13604,6 @@ namespace http {
 									lastDeliv1 = actDeliv1;
 									lastDeliv2 = actDeliv2;
 									lastTime = atime;
-									lastDST = ntime.tm_isdst;
 								}
 								else
 								{
@@ -13723,11 +13632,10 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["co2"] = sd[0];
@@ -13743,11 +13651,10 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = sd[0];
@@ -13778,11 +13685,10 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								float fValue = float(atof(sd[0].c_str())) / vdiv;
@@ -13807,11 +13713,10 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = sd[0];
@@ -13827,11 +13732,10 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["lux"] = sd[0];
@@ -13847,14 +13751,13 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f );
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
 								root["result"][ii]["v"] = szTmp;
 								ii++;
 							}
@@ -13868,11 +13771,10 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["u"] = atof(sd[0].c_str()) / 10.0f;
@@ -13896,14 +13798,13 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
@@ -13971,14 +13872,13 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
 							int ii = 0;
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
@@ -14107,7 +14007,7 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (itt = result.begin(); itt!=result.end(); ++itt)
 							{
 								std::vector<std::string> sd = *itt;
 
@@ -14115,20 +14015,12 @@ namespace http {
 								{
 									//bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
-
-									std::stringstream s_str1(sd[0]);
-									long long actValue;
-									s_str1 >> actValue;
-
-									if (actValue >= ulLastValue)
-										ulLastValue = actValue;
-
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
 										if (bHaveFirstValue)
 										{
 											//root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
-											//^^ not necessarely bad, but is currently inconsistent with all other day graphs
+											//^^ not necessarily bad, but is currently inconsistent with all other day graphs
 											root["result"][ii]["d"] = LastDateTime + ":00";
 
 											long long ulTotalValue = ulLastValue - ulFirstValue;
@@ -14164,6 +14056,12 @@ namespace http {
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
 									}
+									std::stringstream s_str1(sd[0]);
+									long long actValue;
+									s_str1 >> actValue;
+
+									if (actValue >= ulLastValue)
+										ulLastValue = actValue;
 
 									if (!bHaveFirstValue)
 									{
@@ -14209,152 +14107,6 @@ namespace http {
 									}
 									root["result"][ii]["v"] = szTmp;
 									ii++;
-								}
-							}
-						}
-					}
-					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))
-					{
-						root["status"] = "OK";
-						root["title"] = "Graph " + sensor + " " + srange;
-						root["ValueQuantity"] = options["ValueQuantity"];
-						root["ValueUnits"] = options["ValueUnits"];
-
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
-						if (dType == pTypeP1Gas)
-							GasDivider = 1000.0f;
-						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-							EnergyDivider *= 100.0f;
-
-						int ii = 0;
-						result = m_sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
-
-						int method = 0;
-						std::string sMethod = request::findValue(&req, "method");
-						if (sMethod.size() > 0)
-							method = atoi(sMethod.c_str());
-
-						std::string LastDateTime = "";
-						time_t lastTime = 0;
-
-						if (!result.empty())
-						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
-							{
-								std::vector<std::string> sd = *itt;
-
-								if (method == 0)
-								{
-									//bars / hour
-
-									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
-									s_str1 >> actValue;
-
-									std::string actDateTimeHour = sd[1].substr(0, 13);
-									if (actDateTimeHour != LastDateTime)
-									{
-										struct tm ntime;
-										time_t atime;
-										if (actDateTimeHour.size() == 10)
-											actDateTimeHour += " 00";
-										constructTime(atime, ntime,
-											atoi(actDateTimeHour.substr(0, 4).c_str()),
-											atoi(actDateTimeHour.substr(5, 2).c_str()),
-											atoi(actDateTimeHour.substr(8, 2).c_str()),
-											atoi(actDateTimeHour.substr(11, 2).c_str()) - 1,
-											0, 0, -1);
-
-										char szTime[50];
-										sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
-										root["result"][ii]["d"] = szTime;
-
-										float TotalValue = float(actValue);
-
-										switch (metertype)
-										{
-											case MTYPE_ENERGY:
-											case MTYPE_ENERGY_GENERATED:
-												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
-												break;
-											case MTYPE_GAS:
-												sprintf(szTmp, "%.3f", TotalValue / GasDivider);
-												break;
-											case MTYPE_WATER:
-												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
-												break;
-											case MTYPE_COUNTER:
-												sprintf(szTmp, "%.1f", TotalValue);
-												break;
-											default:
-												strcpy(szTmp, "0");
-												break;
-										}
-										root["result"][ii]["v"] = szTmp;
-										ii++;
-										LastDateTime = actDateTimeHour;
-									}
-								}
-								else
-								{
-									//realtime graph
-									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
-									s_str1 >> actValue;
-
-									std::string stime = sd[1];
-									struct tm ntime;
-									time_t atime;
-									ParseSQLdatetime(atime, ntime, stime, -1);
-									long long curValue = actValue;
-
-									float tdiff = static_cast<float>(difftime(atime, lastTime));
-									if (tdiff == 0)
-										tdiff = 3600; // only reason for the same time to occur twice is a DST shift, meaning the actual time difference must be an hour
-									float tlaps = 3600.0f / tdiff;
-									curValue *= int(tlaps);
-
-									root["result"][ii]["d"] = sd[1].substr(0, 16);
-
-									float TotalValue = float(curValue);
-									switch (metertype)
-									{
-										case MTYPE_ENERGY:
-										case MTYPE_ENERGY_GENERATED:
-											sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
-											break;
-										case MTYPE_GAS:
-											sprintf(szTmp, "%.2f", TotalValue / GasDivider);
-											break;
-										case MTYPE_WATER:
-											sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
-											break;
-										case MTYPE_COUNTER:
-											sprintf(szTmp, "%.1f", TotalValue);
-											break;
-										default:
-											strcpy(szTmp, "0");
-											break;
-									}
-									root["result"][ii]["v"] = szTmp;
-									ii++;
-									lastTime = atime;
 								}
 							}
 						}
@@ -14407,10 +14159,9 @@ namespace http {
 
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								if (method == 0)
 								{
@@ -14495,7 +14246,7 @@ namespace http {
 
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
-											tdiff = 3600; // only reason for the same time to occur twice is a DST shift, meaning the actual time difference must be an hour
+											tdiff = 1;
 										float tlaps = 3600.0f / tdiff;
 										curValue *= int(tlaps);
 
@@ -14578,11 +14329,10 @@ namespace http {
 					result = m_sql.safe_query("SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
 						int ii = 0;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
@@ -14603,11 +14353,10 @@ namespace http {
 					result = m_sql.safe_query("SELECT Total, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
 						int ii = 0;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 							float ActTotal = static_cast<float>(atof(sd[0].c_str()));
 							int Hour = atoi(sd[1].substr(11, 2).c_str());
 							if (Hour != LastHour)
@@ -14650,11 +14399,10 @@ namespace http {
 					result = m_sql.safe_query("SELECT Direction, Speed, Gust, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
 						int ii = 0;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[3].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
@@ -14688,7 +14436,6 @@ namespace http {
 					result = m_sql.safe_query("SELECT Direction, Speed, Gust FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
 						std::map<int, int> _directions;
 						int wdirtabletemp[17][8];
 						std::string szLegendLabels[7];
@@ -14769,9 +14516,9 @@ namespace http {
 						}
 
 
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 							float fdirection = static_cast<float>(atof(sd[0].c_str()));
 							if (fdirection >= 360)
 								fdirection = 0;
@@ -14782,7 +14529,7 @@ namespace http {
 								gustOrg = speedOrg;
 							if (gustOrg == 0)
 								continue; //no direction if wind is still
-							float speed = speedOrg* m_sql.m_windscale;
+							float speed = speedOrg * m_sql.m_windscale;
 							float gust = gustOrg * m_sql.m_windscale;
 							int bucket = int(fdirection / 22.5f);
 
@@ -14830,7 +14577,7 @@ namespace http {
 							}
 							else if (m_sql.m_windunit == WINDUNIT_Beaufort)
 							{
-								float gustms = gustOrg*0.1f;
+								float gustms = gustOrg * 0.1f;
 								int iBeaufort = MStoBeaufort(gustms);
 								if (iBeaufort < 2) speedpos = 0;
 								else if (iBeaufort < 4) speedpos = 1;
@@ -14911,10 +14658,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
@@ -15008,10 +14754,9 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 								std::string szValueUsage1 = sd[0];
 								std::string szValueDeliv1 = sd[1];
@@ -15043,7 +14788,45 @@ namespace http {
 								root["delivered"] = true;
 							}
 						}
-						//add today (have to calculate it)
+					}
+					else
+					{
+						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						if (!result.empty())
+						{
+							for (const auto & itt : result)
+							{
+								std::vector<std::string> sd = itt;
+
+								root["result"][ii]["d"] = sd[1].substr(0, 16);
+								std::string szValue = sd[0];
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									szValue = szTmp;
+									break;
+								case MTYPE_GAS:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+									szValue = szTmp;
+									break;
+								case MTYPE_WATER:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									szValue = szTmp;
+									break;
+								default:
+									szValue = "0";
+									break;
+								}
+								root["result"][ii]["v"] = szValue;
+								ii++;
+							}
+						}
+					}
+					//add today (have to calculate it)
+					if (dType == pTypeP1Power)
+					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
@@ -15108,89 +14891,49 @@ namespace http {
 								root["delivered"] = true;
 							}
 						}
-					} //if (dType == pTypeP1Power)
+					}
 					else
 					{
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							std::vector<std::string> sd = result[0];
+
+							unsigned long long total_min, total_max, total_real;
+
+							std::stringstream s_str1(sd[0]);
+							s_str1 >> total_min;
+							std::stringstream s_str2(sd[1]);
+							s_str2 >> total_max;
+							total_real = total_max - total_min;
+							sprintf(szTmp, "%llu", total_real);
+							std::string szValue = szTmp;
+							switch (metertype)
 							{
-								std::vector<std::string> sd = *itt;
-
-								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								std::string szValue = sd[0];
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-									szValue = szTmp;
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
-									szValue = szTmp;
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
-									szValue = szTmp;
-									break;
-								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
-									szValue = szTmp;
-									break;
-								default:
-									szValue = "0";
-									break;
-								}
-								root["result"][ii]["v"] = szValue;
-								ii++;
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+								szValue = szTmp;
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+								szValue = szTmp;
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+								szValue = szTmp;
+								break;
+							default:
+								szValue = "0";
+								break;
 							}
+
+							root["result"][ii]["d"] = szDateEnd;
+							root["result"][ii]["v"] = szValue;
+							ii++;
 						}
-						if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) {
-							//add today (have to calculate it)
-							result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-								idx, szDateEnd);
-							if (!result.empty())
-							{
-								std::vector<std::string> sd = result[0];
-
-								unsigned long long total_min, total_max, total_real;
-
-								std::stringstream s_str1(sd[0]);
-								s_str1 >> total_min;
-								std::stringstream s_str2(sd[1]);
-								s_str2 >> total_max;
-								total_real = total_max - total_min;
-								sprintf(szTmp, "%llu", total_real);
-								std::string szValue = szTmp;
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-									szValue = szTmp;
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
-									szValue = szTmp;
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
-									szValue = szTmp;
-									break;
-								default:
-									szValue = "0";
-									break;
-								}
-
-								root["result"][ii]["d"] = szDateEnd;
-								root["result"][ii]["v"] = szValue;
-								ii++;
-							}
-						}
-					} //if (dType != pTypeP1Power)
+					}
 				}
 			}//week
 			else if ((srange == "month") || (srange == "year"))
@@ -15265,10 +15008,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[7].substr(0, 16);
 
@@ -15443,10 +15185,9 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["resultprev"][iPrev]["d"] = sd[7].substr(0, 16);
 
@@ -15536,10 +15277,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[3].substr(0, 16);
 							root["result"][ii]["v_min"] = sd[0];
@@ -15571,10 +15311,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							root["result"][ii]["v_max"] = sd[1];
@@ -15603,10 +15342,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
@@ -15630,10 +15368,9 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 							root["resultprev"][iPrev]["uvi"] = sd[0];
@@ -15649,10 +15386,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
@@ -15704,10 +15440,9 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["resultprev"][iPrev]["d"] = sd[2].substr(0, 16);
 							double mmval = atof(sd[0].c_str());
@@ -15773,10 +15508,9 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
@@ -15865,10 +15599,9 @@ namespace http {
 						{
 							bool bHaveDeliverd = false;
 							iPrev = 0;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
 
@@ -15908,10 +15641,9 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["co2_min"] = sd[0];
@@ -15924,10 +15656,9 @@ namespace http {
 						if (!result.empty())
 						{
 							iPrev = 0;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 								root["resultprev"][iPrev]["co2_max"] = sd[0];
@@ -15946,10 +15677,9 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								root["result"][ii]["v_min"] = sd[0];
@@ -15983,10 +15713,9 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								float fValue1 = float(atof(sd[0].c_str())) / vdiv;
 								float fValue2 = float(atof(sd[1].c_str())) / vdiv;
@@ -16037,10 +15766,9 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value1,Value2,Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["lux_min"] = sd[0];
@@ -16059,10 +15787,9 @@ namespace http {
 							"SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
@@ -16082,10 +15809,9 @@ namespace http {
 							"SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
 								root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0f;
@@ -16110,10 +15836,9 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
@@ -16197,10 +15922,9 @@ namespace http {
 							bool bHaveL1 = false;
 							bool bHaveL2 = false;
 							bool bHaveL3 = false;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
@@ -16345,31 +16069,19 @@ namespace http {
 								root["counter"] = szTmp;
 							}
 						}
-						else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
+						else
 						{
 							//Add last counter value
-							if (sValue.find('.') != std::string::npos)
-							{
-								sprintf(szTmp, "%.3f", AddjValue + atof(sValue.c_str()));
-							}
-							else
-							{
-								unsigned long long ullCounter;
-								std::stringstream s_str1(sValue);
-								s_str1 >> ullCounter;
-
-								sprintf(szTmp, "%llu", static_cast<unsigned long long>(AddjValue) + ullCounter);
-							}
+							sprintf(szTmp, "%d", atoi(sValue.c_str()));
 							root["counter"] = szTmp;
 						}
 						//Actual Year
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 
@@ -16425,10 +16137,9 @@ namespace http {
 						if (!result.empty())
 						{
 							iPrev = 0;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
 
@@ -16677,7 +16388,7 @@ namespace http {
 							ii++;
 						}
 					}
-					else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
+					else
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
@@ -16755,10 +16466,9 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];
@@ -16827,10 +16537,9 @@ namespace http {
 					if (!result.empty())
 					{
 						iPrev = 0;
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["resultprev"][iPrev]["d"] = sd[5].substr(0, 16);
 							root["resultprev"][iPrev]["di"] = sd[0];
@@ -16937,10 +16646,9 @@ namespace http {
 						int ii = 0;
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[4];//.substr(0,16);
 								if (sendTemp)
@@ -17011,10 +16719,9 @@ namespace http {
 						int ii = 0;
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 								if (sendTemp)
@@ -17076,8 +16783,8 @@ namespace http {
 									root["result"][ii]["se"] = se;
 									root["result"][ii]["sx"] = sx;
 									char szTmp[1024];
-									snprintf(szTmp, sizeof(szTmp), "%.1f %.1f %.1f", sm, se, sx);
-									_log.Log(LOG_STATUS, "%s", szTmp);
+									sprintf(szTmp, "%.1f %.1f %.1f", sm, se, sx);
+									_log.Log(LOG_STATUS, szTmp);
 
 								}
 								ii++;
@@ -17171,10 +16878,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[1].substr(0, 16);
 							root["result"][ii]["uvi"] = sd[0];
@@ -17205,10 +16911,9 @@ namespace http {
 					int ii = 0;
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
 							root["result"][ii]["mm"] = sd[0];
@@ -17289,10 +16994,9 @@ namespace http {
 						if (!result.empty())
 						{
 							bool bHaveDeliverd = false;
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
 
@@ -17323,10 +17027,9 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 						if (!result.empty())
 						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
+							for (const auto & itt : result)
 							{
-								std::vector<std::string> sd = *itt;
+								std::vector<std::string> sd = itt;
 
 								std::string szValue = sd[0];
 								switch (metertype)
@@ -17409,7 +17112,7 @@ namespace http {
 							}
 						}
 					}
-					else if (!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter)))
+					else
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
@@ -17464,10 +17167,9 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 					if (!result.empty())
 					{
-						std::vector<std::vector<std::string> >::const_iterator itt;
-						for (itt = result.begin(); itt != result.end(); ++itt)
+						for (const auto & itt : result)
 						{
-							std::vector<std::string> sd = *itt;
+							std::vector<std::string> sd = itt;
 
 							root["result"][ii]["d"] = sd[5].substr(0, 16);
 							root["result"][ii]["di"] = sd[0];

@@ -121,7 +121,7 @@ namespace http {
 				{}
 
 			/// Handle a request and produce a reply.
-			virtual void handle_request(const request& req, reply& rep);
+			virtual void handle_request(const request& req, reply& rep) override;
 		private:
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);

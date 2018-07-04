@@ -15,8 +15,8 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	int m_retrycntr;
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

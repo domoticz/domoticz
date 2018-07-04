@@ -53,7 +53,7 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
     std::vector<std::vector<std::string> > result;
     result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", 
                               m_HwdID, sid, pTypeGeneralSwitch, sSwitchTypeAC);
-    if (result.size() < 1)
+	if (result.empty())
     {
         _log.Log(LOG_NORM, "Tellstick: device %d %s: %s", id, sid ,devname);
 		m_sql.InsertDevice(m_HwdID, sid, 3, pTypeGeneralSwitch, sSwitchTypeAC, isDimmer ? STYPE_Dimmer : STYPE_OnOff, 0, " ", devname);

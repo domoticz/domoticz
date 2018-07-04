@@ -147,7 +147,7 @@ static point get_closest_point_to_point(point xy_point, const std::string &model
 	return point(cx, cy);
 }
 
-void CPhilipsHue::RgbFromXY(double x, double y, double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
+void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
 {
 	/* Returns (r, g, b) for given x, y values.
 	   Implementation of the instructions found on the Philips Hue iOS SDK docs: http://goo.gl/kWKXKl
@@ -240,7 +240,7 @@ void CPhilipsHue::RgbFromXY(double x, double y, double bri, const std::string &m
 	b8 = uint8_t(b * 255.0);
 }
 
-bool CPhilipsHue::StatesSimilar(_tHueLightState &s1, _tHueLightState &s2)
+bool CPhilipsHue::StatesSimilar(const _tHueLightState &s1, const _tHueLightState &s2)
 {
 	bool res = false;
 	if (s1.on == s2.on &&

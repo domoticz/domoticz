@@ -44,8 +44,8 @@ protected:
 	std::string m_CAFilename;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
-	virtual bool StartHardware();
-	virtual bool StopHardware();
+	virtual bool StartHardware() override;
+	virtual bool StopHardware() override;
 	void StopMQTT();
 	void Do_Work();
 	virtual void SendHeartbeat();

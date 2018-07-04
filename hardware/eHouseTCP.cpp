@@ -263,7 +263,7 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 		m_HwdID, IDX, devl);
 
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
 
@@ -271,7 +271,7 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 		if (i > 0)
 		{
 			result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)", i);
-			if (result.size() < 1)
+			if (result.empty())
 			{
 				m_sql.safe_query("INSERT INTO DeviceToPlansMap (DeviceRowID, DevSceneType, PlanID) VALUES ('%d', '%d', '%d')",
 					i, 0, PlanID);
@@ -305,7 +305,7 @@ int eHouseTCP::UpdateSQLPlan(int devh, int devl, int devtype, const char * Name)
 	result = m_sql.safe_query("SELECT ID FROM Plans WHERE (Name=='%q') ", devname.c_str());
 
 
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')", devname.c_str());
 	}

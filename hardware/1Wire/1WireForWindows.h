@@ -1,9 +1,13 @@
 #pragma once
 #ifdef WIN32
 #include "1WireSystem.h"
-#include "../../json/json.h"
 
 #include <boost/asio.hpp>
+
+namespace Json
+{
+	class Value;
+};
 
 class C1WireForWindows : public I_1WireSystem
 {

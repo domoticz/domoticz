@@ -227,13 +227,13 @@ void CSBFSpot::ImportOldMonthData()
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, "00000001", int(pTypeGeneral), int(sTypeKwh));
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Lets create the sensor, and try again
 		SendMeter(0, 1, 0, 0, "SolarMain");
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 			m_HwdID, "00000001", int(pTypeGeneral), int(sTypeKwh));
-		if (result.size() < 1)
+		if (result.empty())
 		{
 			_log.Log(LOG_ERROR, "SBFSpot Import Old Month Data: FAILED - Cannot find sensor in database");
 			return;
@@ -470,7 +470,7 @@ void CSBFSpot::GetMeterDetails()
 	if (ActHourMin - 120 > sunSet)
 		return;
 
-	char szLogFile[256];
+	char szLogFile[400];
 	char szDateStr[50];
 	strcpy(szDateStr, strftime_t("%Y%m%d", atime));
 	sprintf(szLogFile, "%s%s-Spot-%s.csv", strftime_t(m_SBFDataPath.c_str(), atime), m_SBFPlantName.c_str(), szDateStr);

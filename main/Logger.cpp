@@ -54,10 +54,9 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = flags.begin(); itt != flags.end(); ++itt)
+	for (const auto & itt : flags)
 	{
-		std::string wflag = *itt;
+		std::string wflag = itt;
 		stdstring_trim(wflag);
 		if (wflag.empty())
 			continue;
@@ -92,10 +91,9 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = flags.begin(); itt != flags.end(); ++itt)
+	for (const auto & itt : flags)
 	{
-		std::string wflag = *itt;
+		std::string wflag = itt;
 		stdstring_trim(wflag);
 		if (wflag.empty())
 			continue;
@@ -350,24 +348,21 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 		if (m_lastlog.find(level) == m_lastlog.end())
 			return mlist;
 
-		std::deque<_tLogLineStruct>::const_iterator itt;
-		for (itt = m_lastlog[level].begin(); itt != m_lastlog[level].end(); ++itt)
+		for (const auto & itt : m_lastlog[level])
 		{
-			if ((*itt).logtime > lastlogtime) {
-				mlist.push_back(*itt);
+			if (itt.logtime > lastlogtime) {
+				mlist.push_back(itt);
 			}
 		};
 	}
 	else
 	{
-		std::map<_eLogLevel, std::deque<_tLogLineStruct> >::const_iterator itt;
-		for (itt = m_lastlog.begin(); itt != m_lastlog.end(); ++itt)
+		for (const auto & itt : m_lastlog)
 		{
-			std::deque<_tLogLineStruct>::const_iterator itt2;
-			for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+			for (const auto & itt2 : itt.second)
 			{
-				if ((*itt2).logtime > lastlogtime) {
-					mlist.push_back(*itt2);
+				if (itt2.logtime > lastlogtime) {
+					mlist.push_back(itt2);
 				}
 			};
 		}
@@ -387,11 +382,8 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
-	std::deque<_tLogLineStruct>::const_iterator itt;
-	for (itt = m_notification_log.begin(); itt != m_notification_log.end(); ++itt)
-	{
-		mlist.push_back(*itt);
-	};
+	for (const auto & itt : m_notification_log)
+		mlist.push_back(itt);
 	m_notification_log.clear();
 	if (!mlist.empty())
 		m_LastLogNotificationsSend = mytime(NULL);

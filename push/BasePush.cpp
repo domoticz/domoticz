@@ -98,6 +98,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting1, sTypeEnergenie5, "Status" },
 		{ pTypeLighting1, sTypeGDR2, "Status" },
 		{ pTypeLighting1, sTypeHQ, "Status" },
+		{ pTypeLighting1, sTypeOase, "Status" },
 
 		{ pTypeLighting2, sTypeAC, "Status" },
 		{ pTypeLighting2, sTypeHEU, "Status" },
@@ -151,6 +152,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT11, "Status" },
 		{ pTypeBlinds, sTypeBlindsT12, "Status" },
 		{ pTypeBlinds, sTypeBlindsT13, "Status" },
+		{ pTypeBlinds, sTypeBlindsT14, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },

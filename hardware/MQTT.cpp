@@ -634,11 +634,10 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
-		std::map<std::string, std::string>::const_iterator ittOptions;
-		for (ittOptions = options.begin(); ittOptions != options.end(); ++ittOptions)
+		for (const auto & ittOptions : options)
 		{
-			std::string optionName = ittOptions->first.c_str();
-			std::string optionValue = ittOptions->second.c_str();
+			std::string optionName = ittOptions.first;
+			std::string optionValue = ittOptions.second;
 			root[optionName] = optionValue;
 		}
 
@@ -661,13 +660,12 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		std::vector<std::string> strarray;
 		StringSplit(svalue, ";", strarray);
 
-		std::vector<std::string>::const_iterator itt;
 		int sIndex = 1;
-		for (itt = strarray.begin(); itt != strarray.end(); ++itt)
+		for (const auto & itt : strarray)
 		{
 			std::stringstream szQuery;
 			szQuery << "svalue" << sIndex;
-			root[szQuery.str()] = *itt;
+			root[szQuery.str()] = itt;
 			sIndex++;
 		}
 		std::string message =  root.toStyledString();

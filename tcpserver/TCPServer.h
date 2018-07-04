@@ -72,10 +72,10 @@ class CTCPServerInt : public CTCPServerIntBase {
 public:
 	CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot);
 	~CTCPServerInt(void);
-	virtual void start();
-	virtual void stop();
+	virtual void start() override;
+	virtual void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c);
+	virtual void stopClient(CTCPClient_ptr c) override;
 private:
 
 	void handleAccept(const boost::system::error_code& error);
@@ -99,10 +99,10 @@ class CTCPServerProxied : public CTCPServerIntBase {
 public:
 	CTCPServerProxied(CTCPServer *pRoot, boost::shared_ptr<http::server::CProxyClient> proxy);
 	~CTCPServerProxied(void);
-	virtual void start();
-	virtual void stop();
+	virtual void start() override;
+	virtual void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c);
+	virtual void stopClient(CTCPClient_ptr c) override;
 
 	bool OnNewConnection(const std::string &token, const std::string &username, const std::string &password);
 	bool OnDisconnect(const std::string &token);

@@ -675,8 +675,9 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		else
 			ndevname = "Hot Water";
 
-		if (result.size() < 1) // create device
+		if (result.empty())
 		{
+			// create device
 			std::string sdevname;
 			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", sdevname);
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
@@ -805,7 +806,7 @@ std::string CEvohomeWeb::local_to_utc(const std::string &local_time)
 		m_lastDST = ltime.tm_isdst;
 		m_tzoffset = -1;
 	}
-	char until[22];
+	char until[100];
 	sprintf(until, "%04d-%02d-%02dT%02d:%02d:%02dZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	return std::string(until);
 }
@@ -1249,7 +1250,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 	int month = ltime.tm_mon;
 	int day = ltime.tm_mday;
 	int wday = ltime.tm_wday;
-	char rdata[30];
+	char rdata[100];
 	sprintf(rdata, "%04d-%02d-%02dT%02d:%02d:%02dZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	std::string szdatetime = std::string(rdata);
 	if (szdatetime <= schedule["nextSwitchpoint"].asString()) // our current cached values are still valid
@@ -1372,9 +1373,9 @@ bool CEvohomeWeb::verify_datetime(const std::string &datetime)
 	time_t ntime = mktime(&mtime);
 	if (ntime == -1)
 		return false;
-	char c_date[12];
+	char c_date[50];
 	sprintf(c_date, "%04d-%02d-%02d", mtime.tm_year + 1900, mtime.tm_mon + 1, mtime.tm_mday);
-	char c_time[12];
+	char c_time[50];
 	sprintf(c_time, "%02d:%02d:%02d", mtime.tm_hour, mtime.tm_min, mtime.tm_sec);
 	return ((s_date == std::string(c_date)) && (s_time == std::string(c_time)));
 }

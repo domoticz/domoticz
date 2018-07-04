@@ -101,10 +101,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (!ports.empty())
 	{
 		bFoundPort = true;
-		std::vector<int>::const_iterator itt;
-		for (itt = ports.begin(); itt != ports.end(); ++itt)
+		for (const auto & itt : ports)
 		{
-			sprintf(szPortName, "COM%d", *itt);
+			sprintf(szPortName, "COM%d", itt);
 			ret.push_back(szPortName);
 		}
 	}
@@ -124,11 +123,10 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			sprintf(szPortName, "COM%d", ii);
 
 			//Check if we did not already have it
-			std::vector<std::string>::const_iterator itt;
 			bool bFound = false;
-			for (itt = ret.begin(); itt != ret.end(); ++itt)
+			for (const auto & itt : ret)
 			{
-				if (*itt == szPortName)
+				if (itt == szPortName)
 				{
 					bFound = true;
 					break;
@@ -173,10 +171,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		EnumSerialPortsWindows(serialports);
 		if (!serialports.empty())
 		{
-			std::vector<SerialPortInfo>::const_iterator itt;
-			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+			for (const auto & itt : serialports)
 			{
-				ret.push_back(itt->szPortName); // add port
+				ret.push_back(itt.szPortName); // add port
 			}
 		}
 	}

@@ -1376,7 +1376,7 @@ bool CEnOceanESP2::ParseData()
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-				if (result.size() < 1)
+				if (result.empty())
 				{
 					//Add it to the database
 					result = m_sql.safe_query(
@@ -1392,7 +1392,7 @@ bool CEnOceanESP2::ParseData()
 			//Following sensors need to have had a teach-in
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-			if (result.size() < 1)
+			if (result.empty())
 			{
 				char *pszHumenTxt = enocean_hexToHuman(pFrame);
 				if (pszHumenTxt)
