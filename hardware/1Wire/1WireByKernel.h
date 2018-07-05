@@ -44,7 +44,8 @@ protected:
 
    void ThreadWriteRawDataDualChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
    void ThreadWriteRawData8ChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
-
+private:
+   volatile bool m_stoprequested;
    // Devices
    #define MAX_DIGITAL_IO  8
    class DeviceState

@@ -24,7 +24,8 @@
 #endif //_DEBUG
 
 
-C1WireByKernel::C1WireByKernel()
+C1WireByKernel::C1WireByKernel() :
+   m_stoprequested(false)
 {
    m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&C1WireByKernel::ThreadFunction, this)));
    _log.Log(LOG_STATUS,"Using 1-Wire support (kernel W1 module)...");
@@ -32,6 +33,10 @@ C1WireByKernel::C1WireByKernel()
 
 C1WireByKernel::~C1WireByKernel()
 {
+   m_stoprequested = true;
+   _t1WireDevice device;
+   DeviceState deviceState(device);
+   m_PendingChanges.push_back(deviceState); // wake up thread with dummy item
    m_thread->join();
 }
 
@@ -54,7 +59,7 @@ void C1WireByKernel::ThreadFunction()
 {
    try
    {
-      while (1)
+      while (!m_stoprequested)
       {
          // Read state of all devices
 		  ReadStates();

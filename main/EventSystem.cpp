@@ -152,8 +152,8 @@ void CEventSystem::StartEventSystem()
 #endif
 
 	m_stoprequested = false;
-	m_thread = new std::thread(&CEventSystem::Do_Work, this);
-	m_eventqueuethread = new std::thread(&CEventSystem::EventQueueThread, this);
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEventSystem::Do_Work, this)));
+	m_eventqueuethread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEventSystem::EventQueueThread, this)));
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
@@ -165,16 +165,14 @@ void CEventSystem::StopEventSystem()
 		UnlockEventQueueThread();
 		m_eventqueuethread->join();
 		m_eventqueue.clear();
-		delete m_eventqueuethread;
-		m_eventqueuethread = nullptr;
+		m_eventqueuethread.reset();
 	}
 
 	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
-		delete m_thread;
-		m_thread = nullptr;
+		m_thread.reset();
 	}
 
 #ifdef ENABLE_PYTHON
