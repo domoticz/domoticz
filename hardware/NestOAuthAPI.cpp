@@ -696,7 +696,7 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 	}
 	catch (std::exception& e)
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to get thermostat serial (for now). Try again later.");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to get thermostat serial (for now). Trying again later..(%s)",e.what());
 		return false;
 	}
 

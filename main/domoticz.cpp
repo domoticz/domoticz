@@ -93,9 +93,10 @@ static bool dumpstack_gdb(void) {
 
 	// Allow us to be traced
 	// Note: Does not currently work in WSL: https://github.com/Microsoft/WSL/issues/3053
+#ifdef PR_SET_PTRACER
 	int retval = prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0);
-
-	// Spawn helper process which will keep running when gdb is attached to main domoticz process
+#endif
+	// Spawn helper process which will keep running when gdb is attached to main Domoticz process
 	pid_t intermediate_pid = fork();
 	if (intermediate_pid == -1)
 	{
