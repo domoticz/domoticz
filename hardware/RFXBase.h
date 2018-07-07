@@ -21,7 +21,7 @@ private:
 	bool onInternalMessage(const unsigned char *pBuffer, const size_t Len);
 	static bool CheckValidRFXData(const uint8_t *pData);
 	void SendCommand(const unsigned char Cmd);
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	bool m_bReceiverStarted;
 };

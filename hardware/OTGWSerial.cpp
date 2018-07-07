@@ -5,13 +5,14 @@
 #include "../main/RFXtrx.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <boost/bind.hpp>
 #include "../main/localtime_r.h"
 
+#include <algorithm>
+#include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
+#include <iostream>
+#include <string>
 
 #define RETRY_DELAY 30
 #define OTGW_READ_INTERVAL 10
@@ -52,7 +53,7 @@ bool OTGWSerial::StopHardware()
 
 void OTGWSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 
@@ -64,12 +65,12 @@ void OTGWSerial::readCallback(const char *data, size_t len)
 
 void OTGWSerial::StartPollerThread()
 {
-	m_pollerthread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&OTGWSerial::Do_PollWork, this)));
+	m_pollerthread = std::shared_ptr<std::thread>(new std::thread(std::bind(&OTGWSerial::Do_PollWork, this)));
 }
 
 void OTGWSerial::StopPollerThread()
 {
-	if (m_pollerthread!=NULL)
+	if (m_pollerthread != NULL)
 	{
 		assert(m_pollerthread);
 		m_stoprequestedpoller = true;

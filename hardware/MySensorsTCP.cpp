@@ -36,7 +36,7 @@ bool MySensorsTCP::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsTCP::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&MySensorsTCP::Do_Work, this)));
 	StartSendQueue();
 	return (m_thread != NULL);
 }
@@ -135,7 +135,7 @@ void MySensorsTCP::Do_Work()
 
 void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

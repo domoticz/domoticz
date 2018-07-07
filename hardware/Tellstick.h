@@ -47,7 +47,7 @@ private:
     bool StartHardware() override;
     bool StopHardware() override;
     void SendCommand(int devID, const _tGeneralSwitch &cmd);
-    
+
     void ThreadSendCommands();
 private:
     int m_deviceEventId;
@@ -55,7 +55,7 @@ private:
     int m_sensorEventId;
 
     boost::thread m_thread;
-    boost::mutex m_mutex;
+    std::mutex m_mutex;
     boost::condition_variable m_cond;
     std::map<int, Command> m_commands;
     int m_numRepeats;

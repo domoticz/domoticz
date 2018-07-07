@@ -34,7 +34,7 @@ private:
 
 	int m_OutsideTemperatureIdx;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	int m_LastMinute;
 };

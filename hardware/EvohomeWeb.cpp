@@ -164,7 +164,7 @@ bool CEvohomeWeb::StartHardware()
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeWeb::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEvohomeWeb::Do_Work, this)));
 	if (!m_thread)
 		return false;
 	m_stoprequested = false;
@@ -336,7 +336,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			// Away unconditionally sets all zones to a preset temperature, even if Normal mode is lower
 			if (sznewmode == "Away")
 				setpoint = m_awaysetpoint;
-			else 
+			else
 			{
 				if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 				{
@@ -541,7 +541,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
 		if ((m_showhdtemps) && hz->hdtemp.empty())
 			szmode = "Offline";
-		else 
+		else
 		{
 			szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
 			if (szmode == "TemporaryOverride")

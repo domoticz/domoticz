@@ -115,7 +115,7 @@ bool DomoticzTCP::StartHardwareTCP()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&DomoticzTCP::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&DomoticzTCP::Do_Work, this)));
 
 	return (m_thread != NULL);
 }
@@ -270,7 +270,7 @@ void DomoticzTCP::Do_Work()
 			}
 			else
 			{
-				boost::lock_guard<boost::mutex> l(readQueueMutex);
+				std::lock_guard<std::mutex> l(readQueueMutex);
 				onRFXMessage((const unsigned char *)&buf, bread);
 			}
 		}
@@ -408,7 +408,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 void DomoticzTCP::FromProxy(const unsigned char *data, size_t datalen)
 {
 	/* data received from slave */
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	onRFXMessage(data, datalen);
 }
 

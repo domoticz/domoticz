@@ -923,7 +923,7 @@ bool CKodi::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CKodi::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CKodi::Do_Work, this)));
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
 	return true;
@@ -959,7 +959,7 @@ void CKodi::Do_Work()
 	{
 		if (scounter++ >= (m_iPollInterval*2))
 		{
-			boost::lock_guard<boost::mutex> l(m_mutex);
+			std::lock_guard<std::mutex> l(m_mutex);
 
 			scounter = 0;
 			bool bWorkToDo = false;
@@ -1126,7 +1126,7 @@ void CKodi::RemoveNode(const int ID)
 
 void CKodi::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
@@ -1145,7 +1145,7 @@ void CKodi::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		boost::lock_guard<boost::mutex> l(m_mutex);
+		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
 		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
@@ -1170,7 +1170,7 @@ void CKodi::UnloadNodes()
 {
 	int iRetryCounter = 0;
 
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);

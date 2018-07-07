@@ -53,17 +53,17 @@ bool ZWaveBase::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ZWaveBase::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&ZWaveBase::Do_Work, this)));
+	return (m_thread != NULL);
 }
 
 bool ZWaveBase::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;
-		if (m_thread!=NULL)
+		if (m_thread != NULL)
 			m_thread->join();
 	}
 	m_bIsStarted=false;
@@ -850,7 +850,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 
 bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	const _tZWaveDevice* pDevice=NULL;
 
@@ -916,7 +916,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				if ((cmnd== gswitch_sOff)||(cmnd== gswitch_sGroupOff))
 					svalue=0;
-				else 
+				else
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}

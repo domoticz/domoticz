@@ -128,7 +128,7 @@ public:
 	std::string		m_Name;
 
 	bool			m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 protected:
 	bool			m_Busy;
 	bool			m_Stoppable;
@@ -200,7 +200,7 @@ void CPanasonicNode::StopThread()
 bool CPanasonicNode::StartThread()
 {
 	StopThread();
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPanasonicNode::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPanasonicNode::Do_Work, this)));
 	return (m_thread != NULL);
 }
 
@@ -787,7 +787,7 @@ bool CPanasonic::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPanasonic::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPanasonic::Do_Work, this)));
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Started");
 
 	return true;
@@ -823,7 +823,7 @@ void CPanasonic::Do_Work()
 	{
 		if (scounter++ >= (m_iPollInterval * 2))
 		{
-			boost::lock_guard<boost::mutex> l(m_mutex);
+			std::lock_guard<std::mutex> l(m_mutex);
 
 			scounter = 0;
 			bool bWorkToDo = false;
@@ -976,7 +976,7 @@ void CPanasonic::RemoveNode(const int ID)
 
 void CPanasonic::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
@@ -995,7 +995,7 @@ void CPanasonic::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		boost::lock_guard<boost::mutex> l(m_mutex);
+		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
 		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
@@ -1020,7 +1020,7 @@ void CPanasonic::UnloadNodes()
 {
 	int iRetryCounter = 0;
 
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);

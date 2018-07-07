@@ -24,17 +24,20 @@
 #endif //_DEBUG
 
 
-C1WireByKernel::C1WireByKernel()
+C1WireByKernel::C1WireByKernel() :
+   m_stoprequested(false)
 {
-   m_Thread = new boost::thread(&C1WireByKernel::ThreadFunction,this);
+   m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&C1WireByKernel::ThreadFunction, this)));
    _log.Log(LOG_STATUS,"Using 1-Wire support (kernel W1 module)...");
 }
 
 C1WireByKernel::~C1WireByKernel()
 {
-   m_Thread->interrupt();
-   m_Thread->join();
-   delete m_Thread;
+   m_stoprequested = true;
+   _t1WireDevice device;
+   DeviceState deviceState(device);
+   m_PendingChanges.push_back(deviceState); // wake up thread with dummy item
+   m_thread->join();
 }
 
 bool C1WireByKernel::IsAvailable()
@@ -56,18 +59,17 @@ void C1WireByKernel::ThreadFunction()
 {
    try
    {
-      while (1)
+      while (!m_stoprequested)
       {
          // Read state of all devices
 		  ReadStates();
 
          // Wait only if no pending changes
-         boost::mutex::scoped_lock lock(m_PendingChangesMutex);
-         boost::system_time const timeout=boost::get_system_time()+boost::posix_time::seconds(10);
-         m_PendingChangesCondition.timed_wait(lock,timeout,IsPendingChanges(m_PendingChanges));
+         std::unique_lock<std::mutex> lock(m_PendingChangesMutex);
+         m_PendingChangesCondition.wait_for(lock, std::chrono::duration<int>(10), IsPendingChanges(m_PendingChanges));
       }
    }
-   catch(boost::thread_interrupted&)
+   catch(...)
    {
       // Thread is stopped
    }

@@ -3,6 +3,7 @@
 #include <curl/curl.h>
 #include "../main/Logger.h"
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 

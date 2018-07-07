@@ -51,7 +51,7 @@ private:
 	std::string m_username;
 	std::string m_password;
 	int m_retrycntr;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	sockaddr_in6 m_addr;
 	struct addrinfo *info;

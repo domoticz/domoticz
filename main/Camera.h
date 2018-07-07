@@ -52,7 +52,7 @@ public:
 private:
 	void ReloadCameraActiveDevices(const std::string &CamID);
 
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 	unsigned char m_seconds_counter;
 	std::vector<cameraDevice> m_cameradevices;
 };

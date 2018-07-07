@@ -18,7 +18,7 @@ private:
 	void Do_PollWork();
 	bool WriteInt(const unsigned char *pData, const unsigned char Len) override;
 	int m_retrycntr;
-	boost::shared_ptr<boost::thread> m_pollerthread;
+	std::shared_ptr<std::thread> m_pollerthread;
 	volatile bool m_stoprequestedpoller;
     void readCallback(const char *data, size_t len);
 };

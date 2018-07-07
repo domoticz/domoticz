@@ -2,7 +2,7 @@
 #include "SMTPClient.h"
 #include <curl/curl.h>
 #include "../main/Helper.h"
-#include <sstream>
+#include <string.h>
 
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"

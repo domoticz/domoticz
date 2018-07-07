@@ -22,7 +22,7 @@ private:
 	double m_lastquerytime;
 	void Do_Work();
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	void FetchData();
 	void GetInternalTemperature();
 	void GetInternalVoltage();

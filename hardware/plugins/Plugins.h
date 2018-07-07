@@ -43,10 +43,10 @@ namespace Plugins {
 
 		CPluginNotifier*	m_Notifier;
 
-		boost::mutex	m_TransportsMutex;
+		std::mutex	m_TransportsMutex;
 		std::vector<CPluginTransport*>	m_Transports;
 
-		boost::shared_ptr<boost::thread> m_thread;
+		std::shared_ptr<std::thread> m_thread;
 
 		bool StartHardware() override;
 		void Do_Work();

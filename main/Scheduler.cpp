@@ -34,7 +34,7 @@ CScheduler::~CScheduler(void)
 
 void CScheduler::StartScheduler()
 {
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CScheduler::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CScheduler::Do_Work, this)));
 }
 
 void CScheduler::StopScheduler()
@@ -48,7 +48,7 @@ void CScheduler::StopScheduler()
 
 std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	std::vector<tScheduleItem> ret;
 	for (const auto & itt : m_scheduleitems)
 		ret.push_back(itt);
@@ -57,7 +57,7 @@ std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 
 void CScheduler::ReloadSchedules()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	m_scheduleitems.clear();
 
 	std::vector<std::vector<std::string> > result;
@@ -352,7 +352,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 	bool bReloadSchedules = false;
 
 	{	//needed private scope for the lock
-		boost::lock_guard<boost::mutex> l(m_mutex);
+		std::lock_guard<std::mutex> l(m_mutex);
 
 		time_t temptime;
 		time_t atime = mytime(NULL);
@@ -722,7 +722,7 @@ void CScheduler::Do_Work()
 
 void CScheduler::CheckSchedules()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	time_t atime = mytime(NULL);
 	struct tm ltime;

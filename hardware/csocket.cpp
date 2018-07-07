@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "csocket.h"
 #include "../main/Logger.h"
-
+#include <string.h>
 
 #ifdef WIN32
 #include <winsock2.h>

@@ -79,7 +79,7 @@ private:
 	unsigned short m_Port;
 	std::string m_UserName;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::map<int, _tHueLightState> m_lights;
 	std::map<int, _tHueGroup> m_groups;
 	std::map<std::string, _tHueScene> m_scenes;

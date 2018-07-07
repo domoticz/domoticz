@@ -15,8 +15,8 @@ private:
 	static std::vector<std::string> ParseCSVLine(const char *input);
 private:
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::mutex m_pipe_mutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::mutex m_pipe_mutex;
 	FILE *m_hPipe;
 	std::string m_cmdline;
 };

@@ -62,7 +62,7 @@ protected:
 	CTCPServer *m_pRoot;
 
 	std::set<CTCPClient_ptr> connections_;
-	boost::mutex connectionMutex;
+	std::mutex connectionMutex;
 
 	friend class CTCPClient;
 	friend class CSharedClient;
@@ -136,13 +136,13 @@ public:
 	CTCPServerProxied *GetProxiedServer();
 #endif
 private:
-	boost::mutex m_server_mutex;
+	std::mutex m_server_mutex;
 	CTCPServerInt *m_pTCPServer;
 #ifndef NOCLOUD
 	CTCPServerProxied *m_pProxyServer;
 #endif
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	bool StartHardware() { return false; };
 	bool StopHardware() { return false; };
 

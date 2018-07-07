@@ -49,7 +49,7 @@ bool CDomoticzHardwareBase::Start()
 
 bool CDomoticzHardwareBase::Stop()
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	return StopHardware();
 }
 
@@ -94,7 +94,7 @@ bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
 	m_stopHeartbeatrequested = false;
-	m_Heartbeatthread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDomoticzHardwareBase::Do_Heartbeat_Work, this)));
+	m_Heartbeatthread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDomoticzHardwareBase::Do_Heartbeat_Work, this)));
 }
 
 void CDomoticzHardwareBase::StopHeartbeatThread()

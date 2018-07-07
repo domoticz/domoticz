@@ -57,7 +57,7 @@ private:
 	std::string m_AccessToken;
 	std::string m_UserID;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::map<int, _tNestThemostat> m_thermostats;
 	std::map<int, _tNestStructure> m_structures;
 	bool m_bDoLogin;

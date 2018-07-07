@@ -71,7 +71,7 @@ bool Yeelight::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Yeelight::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&Yeelight::Do_Work, this)));
 
 	return (m_thread != NULL);
 }

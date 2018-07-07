@@ -53,7 +53,7 @@ bool CInComfort::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CInComfort::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CInComfort::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -212,7 +212,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		}
 
 
-	// Compare the time of the last update to the current time. 
+	// Compare the time of the last update to the current time.
 	// For items changing frequently, update the value every 5 minutes, for all others update every 15 minutes
 	time_t currentTime = mytime(NULL);
 	bool updateFrequentChangingValues = (currentTime - m_LastUpdateFrequentChangingValues) >= 300;

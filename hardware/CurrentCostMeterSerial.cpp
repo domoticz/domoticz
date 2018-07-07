@@ -33,7 +33,7 @@ CurrentCostMeterSerial::~CurrentCostMeterSerial()
 bool CurrentCostMeterSerial::StartHardware()
 {
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CurrentCostMeterSerial::Do_Work, this)));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CurrentCostMeterSerial::Do_Work, this)));
 
 	//Try to open the Serial Port
 	try
@@ -85,7 +85,7 @@ bool CurrentCostMeterSerial::StopHardware()
 
 void CurrentCostMeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled

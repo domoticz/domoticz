@@ -89,7 +89,7 @@ bool CPhilipsHue::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::make_shared<boost::thread>(boost::bind(&CPhilipsHue::Do_Work, this));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPhilipsHue::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != NULL);

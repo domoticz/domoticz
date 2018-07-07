@@ -33,7 +33,7 @@ private:
 	volatile bool mStopRequested;
 	bool mNeedsTokenRefresh;
 	bool mIsStarted;
-	boost::shared_ptr<boost::thread> mThread;
+	std::shared_ptr<std::thread> mThread;
 	std::vector<std::string> mSessionHeaders;
 	std::map<int, Json::Value> mDeviceList;
 	std::map<int, std::string> mLocationList;
