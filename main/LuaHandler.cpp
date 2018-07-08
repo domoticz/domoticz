@@ -22,6 +22,7 @@ extern "C" {
 #include "SQLHelper.h"
 #include "mainworker.h"
 #include "../hardware/hardwaretypes.h"
+#include <boost/thread.hpp>
 
 extern std::string szUserDataFolder;
 

@@ -1,7 +1,6 @@
 #pragma once
 #include "WebServer.h"
 #ifndef NOCLOUD
-#include "../webserver/proxyclient.h"
 #include "../hardware/DomoticzTCP.h"
 #endif
 #include "../tcpserver/TCPServer.h"
@@ -9,7 +8,7 @@
 
 namespace http {
 	namespace server {
-
+		class CProxyManager;
 		class CWebServerHelper {
 		public:
 			CWebServerHelper();

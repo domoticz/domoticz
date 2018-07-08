@@ -5,6 +5,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/WebServerHelper.h"
+#include "../webserver/proxyclient.h"
 
 #define RETRY_DELAY 30
 

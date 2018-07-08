@@ -4,9 +4,6 @@
 #if defined WIN32
 #include "ws2tcpip.h"
 #endif
-#ifndef NOCLOUD
-#include "../webserver/proxyclient.h"
-#endif
 
 class DomoticzTCP : public CDomoticzHardwareBase
 {
