@@ -1,21 +1,11 @@
 #pragma once
 #ifndef NOCLOUD
-#include <iosfwd>
 #include <queue>
-#include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
-#include <list>
-#include <boost/thread/mutex.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
-#include "request_handler.hpp"
-// todo: do we need this?
-#include "connection_manager.hpp"
-#include "../main/Logger.h"
-#include "../hardware/DomoticzTCP.h"
-#include "WebsocketHandler.h"
 
 namespace tcp {
 	namespace server {

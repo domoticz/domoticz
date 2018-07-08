@@ -4,7 +4,6 @@
 
 #include "../main/localtime_r.h"
 #include <string>
-#include <vector>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 

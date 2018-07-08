@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 

@@ -2,8 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "../main/concurrent_queue.h"
-#include <map>
-#include <vector>
 
 class MySensorsBase : public CDomoticzHardwareBase
 {

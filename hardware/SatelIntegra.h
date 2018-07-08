@@ -3,7 +3,6 @@
 // implememtation for Security System : https://www.satel.pl/en/cat/2#cat15
 // by Fantom (szczukot@poczta.onet.pl)
 
-#include <map>
 #include "DomoticzHardware.h"
 
 class SatelIntegra : public CDomoticzHardwareBase

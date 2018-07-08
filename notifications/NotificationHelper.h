@@ -2,7 +2,6 @@
 #include "NotificationBase.h"
 #include "../webserver/cWebem.h"
 
-#include <vector>
 #include <string>
 
 #define NOTIFYALL std::string("")

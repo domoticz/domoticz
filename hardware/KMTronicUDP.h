@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "KMTronicBase.h"
 
 class KMTronicUDP : public KMTronicBase

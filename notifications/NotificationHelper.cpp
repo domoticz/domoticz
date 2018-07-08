@@ -26,7 +26,6 @@
 #include <inttypes.h>
 
 #include <boost/lexical_cast.hpp>
-#include <map>
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"

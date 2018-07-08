@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "CurrentCostMeterBase.h"
 
 class CurrentCostMeterTCP: public CurrentCostMeterBase

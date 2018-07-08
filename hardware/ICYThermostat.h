@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CICYThermostat : public CDomoticzHardwareBase
 {

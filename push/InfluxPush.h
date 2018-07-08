@@ -1,6 +1,5 @@
 #pragma once
 #include "BasePush.h"
-#include <map>
 
 class CInfluxPush : public CBasePush
 {

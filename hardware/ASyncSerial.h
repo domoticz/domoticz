@@ -6,9 +6,8 @@
 #include <boost/asio/serial_port_base.hpp>       // for serial_port_base
 #include <boost/noncopyable.hpp>                 // for noncopyable
 #include <boost/smart_ptr/shared_ptr.hpp>        // for shared_ptr
-#include <iosfwd>                                // for string
 #include <boost/function/function_fwd.hpp>       // for function
-
+#include <boost/exception/diagnostic_information.hpp> //for exception printing
 namespace boost { namespace system { class error_code; } }
 
 /**

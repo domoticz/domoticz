@@ -2,9 +2,7 @@
 
 #include "../hardware/DomoticzHardware.h"
 #include "TCPClient.h"
-#include "../webserver/proxyclient.h"
 #include <set>
-#include <vector>
 
 namespace tcp {
 namespace server {

@@ -3,13 +3,7 @@
 #ifdef WITH_TELLDUSCORE
 
 #include "DomoticzHardware.h"
-#include "hardwaretypes.h"
-#include <iosfwd>
-#include <map>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread_time.hpp>
+#include <condition_variable>
 
 class CTellstick : public CDomoticzHardwareBase
 {
@@ -54,9 +48,9 @@ private:
     int m_rawDeviceEventId;
     int m_sensorEventId;
 
-    boost::thread m_thread;
+	std::shared_ptr<std::thread> m_thread;
     std::mutex m_mutex;
-    boost::condition_variable m_cond;
+    std::condition_variable m_cond;
     std::map<int, Command> m_commands;
     int m_numRepeats;
     boost::posix_time::milliseconds m_repeatInterval;

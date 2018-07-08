@@ -1,9 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 #include "hardwaretypes.h"
-#include <map>
 
 class CNest : public CDomoticzHardwareBase
 {

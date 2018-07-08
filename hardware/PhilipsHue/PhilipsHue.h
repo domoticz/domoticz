@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../DomoticzHardware.h"
-#include <map>
 #include "PhilipsHueSensors.h"
 
 namespace Json

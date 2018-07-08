@@ -3,7 +3,6 @@
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include <string>
-#include <vector>
 
 struct tScheduleItem
 {

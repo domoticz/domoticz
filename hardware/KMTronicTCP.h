@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "KMTronicBase.h"
 
 class KMTronicTCP : public KMTronicBase

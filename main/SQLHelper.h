@@ -1,13 +1,11 @@
 #pragma once
 
-#include <vector>
 #include <string>
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
-#include <map>
 
 #define timer_resolution_hz 25
 

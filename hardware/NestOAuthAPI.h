@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 #include "hardwaretypes.h"
-#include <map>
 
 namespace Json
 {
