@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WebServerHelper.h"
+#include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 
 namespace http {
