@@ -861,7 +861,7 @@ void CSysfsGpio::UpdateGpioOutputs()
 	}
 }
 
-vector<std::string> CSysfsGpio::GetGpioDeviceId()
+std::vector<std::string> CSysfsGpio::GetGpioDeviceId()
 {
 	vector<std::string> gpio_deviceid;
 	char szIdx[10];
@@ -1007,7 +1007,7 @@ int CSysfsGpio::GpioOpenRw(int gpio_pin)
 //---------------------------------------------------------------------------
 //	Called by WebServer when devices are manually configured.
 //
-vector<int> CSysfsGpio::GetGpioIds()
+std::vector<int> CSysfsGpio::GetGpioIds()
 {
 	vector<int> gpio_ids;
 
@@ -1027,7 +1027,7 @@ vector<int> CSysfsGpio::GetGpioIds()
 	return gpio_ids;
 }
 
-vector<std::string> CSysfsGpio::GetGpioNames()
+std::vector<std::string> CSysfsGpio::GetGpioNames()
 {
 	vector<std::string> gpio_names;
 
