@@ -861,9 +861,9 @@ void CSysfsGpio::UpdateGpioOutputs()
 	}
 }
 
-vector<std::string> CSysfsGpio::GetGpioDeviceId()
+std::vector<std::string> CSysfsGpio::GetGpioDeviceId()
 {
-	vector<std::string> gpio_deviceid;
+	std::vector<std::string> gpio_deviceid;
 	char szIdx[10];
 	int id = GPIO_DEVICE_ID_BASE + m_sysfs_hwdid;
 
@@ -1007,13 +1007,13 @@ int CSysfsGpio::GpioOpenRw(int gpio_pin)
 //---------------------------------------------------------------------------
 //	Called by WebServer when devices are manually configured.
 //
-vector<int> CSysfsGpio::GetGpioIds()
+std::vector<int> CSysfsGpio::GetGpioIds()
 {
-	vector<int> gpio_ids;
+	std::vector<int> gpio_ids;
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
-		vector<vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+		std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 			m_sysfs_hwdid,
 			m_saved_state[i].pin_number);
 
@@ -1027,13 +1027,13 @@ vector<int> CSysfsGpio::GetGpioIds()
 	return gpio_ids;
 }
 
-vector<std::string> CSysfsGpio::GetGpioNames()
+std::vector<std::string> CSysfsGpio::GetGpioNames()
 {
-	vector<std::string> gpio_names;
+	std::vector<std::string> gpio_names;
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
-		vector<vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+		std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 			m_sysfs_hwdid,
 			m_saved_state[i].pin_number);
 
