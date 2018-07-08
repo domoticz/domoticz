@@ -445,7 +445,7 @@ bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
 bool g_bDontCacheWWW = false;
-_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
+http::server::_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
 bool g_bUseUpdater = true;
 http::server::server_settings webserver_settings;
 #ifdef WWW_ENABLE_SSL

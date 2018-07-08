@@ -154,9 +154,8 @@ master occurs once, 30 seconds after startup.
 #define GPIO_MAX_PATH		64
 #define GPIO_PATH			"/sys/class/gpio/gpio"
 #define GPIO_DEVICE_ID_BASE	0x030E0E00
-using namespace std;
 
-vector<gpio_info> CSysfsGpio::m_saved_state;
+std::vector<gpio_info> CSysfsGpio::m_saved_state;
 int CSysfsGpio::m_sysfs_hwdid;
 int CSysfsGpio::m_sysfs_req_update;
 
@@ -273,7 +272,7 @@ void CSysfsGpio::Do_Work()
 			if (counter == UPDATE_MASTER_COUNT)	/* only executes once, and only if we have a master/slave configuration */
 			{
 				bUpdateMaster = false;
-				vector<vector<string> > result;
+				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
 
 				if (!result.empty())
@@ -554,8 +553,8 @@ void CSysfsGpio::PollGpioInputs(bool PollOnce)
 
 void CSysfsGpio::CreateDomoticzDevices()
 {
-	vector<vector<string> > result;
-	vector<string> deviceid;
+	std::vector<std::vector<std::string> > result;
+	std::vector<std::string> deviceid;
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
@@ -578,7 +577,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 			{
 				if (!result.empty()) /* found */
 				{
-					vector<string> sd = result[0];
+					std::vector<std::string> sd = result[0];
 
 					if (sd[1].empty())
 					{
@@ -625,7 +624,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 			{
 				if (!result.empty()) /* found */
 				{
-					vector<string> sd = result[0];
+					std::vector<std::string> sd = result[0];
 
 					if (sd[1].empty())
 					{
@@ -669,13 +668,13 @@ void CSysfsGpio::UpdateDomoticzDatabase()
 	{
 		if (m_saved_state[i].request_update == 1)
 		{
-			vector<vector<string> > result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+			std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID,
 				m_saved_state[i].pin_number);
 
 			if (!result.empty())
 			{
-				//vector<string> sd = result[0];
+				//std::vector<std::string> sd = result[0];
 				m_saved_state[i].value = GpioRead(m_saved_state[i].pin_number, "value");
 
 				m_sql.safe_query(
@@ -718,13 +717,13 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 			{
 				bool	updateDatabase = false;
 				bool	log_db_change = false;
-				vector< vector<string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+				std::vector< std::vector<std::string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 					m_HwdID,
 					m_saved_state[i].pin_number);
 
 				if ((!result.empty()) && (result.size() > 0))
 				{
-					vector<string> sd = result[0];
+					std::vector<std::string> sd = result[0];
 
 					if (atoi(sd[1].c_str()) == 1) /* Check if device is used */
 					{
@@ -800,21 +799,21 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 
 		if (m_saved_state[index].id_valid == -1)
 		{
-			string sdeviceid;
-			vector< vector<string> > result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+			std::string sdeviceid;
+			std::vector< std::vector<std::string> > result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID,
 				pin);
 
 			if ((!result.empty() && (result.size() > 0)))
 			{
 				/* use database device id */
-				vector<string> sd = result[0];
+				std::vector<std::string> sd = result[0];
 				sdeviceid = sd[0];
 			}
 			else
 			{
 				/* use generated device id */
-				vector<string> deviceid = GetGpioDeviceId();
+				std::vector<std::string> deviceid = GetGpioDeviceId();
 				sdeviceid = deviceid[0];
 			}
 
@@ -842,13 +841,13 @@ void CSysfsGpio::UpdateGpioOutputs()
 	{
 		if (m_saved_state[i].direction == GPIO_OUT)
 		{
-			vector<vector<string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+			std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID,
 				m_saved_state[i].pin_number);
 
 			if ((!result.empty()) && (result.size() > 0))
 			{
-				vector<string> sd = result[0];
+				std::vector<std::string> sd = result[0];
 				m_saved_state[i].db_state = atoi(sd[0].c_str());
 
 				if (atoi(sd[1].c_str()))
@@ -862,9 +861,9 @@ void CSysfsGpio::UpdateGpioOutputs()
 	}
 }
 
-vector<string> CSysfsGpio::GetGpioDeviceId()
+vector<std::string> CSysfsGpio::GetGpioDeviceId()
 {
-	vector<string> gpio_deviceid;
+	vector<std::string> gpio_deviceid;
 	char szIdx[10];
 	int id = GPIO_DEVICE_ID_BASE + m_sysfs_hwdid;
 
@@ -1014,7 +1013,7 @@ vector<int> CSysfsGpio::GetGpioIds()
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
-		vector<vector<string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+		vector<vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 			m_sysfs_hwdid,
 			m_saved_state[i].pin_number);
 
@@ -1028,13 +1027,13 @@ vector<int> CSysfsGpio::GetGpioIds()
 	return gpio_ids;
 }
 
-vector<string> CSysfsGpio::GetGpioNames()
+vector<std::string> CSysfsGpio::GetGpioNames()
 {
-	vector<string> gpio_names;
+	vector<std::string> gpio_names;
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
-		vector<vector<string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+		vector<vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 			m_sysfs_hwdid,
 			m_saved_state[i].pin_number);
 

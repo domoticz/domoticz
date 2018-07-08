@@ -18,8 +18,6 @@
 #define COUNT_TYPE_RFXMETER 1
 #define COUNT_TYPE_ENERGY   2
 
-using namespace std;
-
 class CIOCount
 {
     friend class CIOPort;

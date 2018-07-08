@@ -69,8 +69,6 @@ History :
 #define	Multibloc_V8	0x01
 #define FreeCan			0x02
 
-using namespace std;
-
 USBtin::USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode) :
 m_szSerialPort(devname)
 {

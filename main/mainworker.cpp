@@ -176,8 +176,7 @@ extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
-extern _eWebCompressionMode g_wwwCompressMode;
-
+extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 
 
@@ -582,7 +581,7 @@ bool MainWorker::GetSunSettings()
 	return true;
 }
 
-void MainWorker::SetWebserverSettings(const server_settings & settings)
+void MainWorker::SetWebserverSettings(const http::server::server_settings & settings)
 {
 	m_webserver_settings.set(settings);
 }
@@ -603,7 +602,7 @@ std::string MainWorker::GetSecureWebserverPort()
 	return m_secure_webserver_settings.listening_port;
 }
 
-void MainWorker::SetSecureWebserverSettings(const ssl_server_settings & ssl_settings)
+void MainWorker::SetSecureWebserverSettings(const http::server::ssl_server_settings & ssl_settings)
 {
 	m_secure_webserver_settings.set(ssl_settings);
 }
@@ -1180,7 +1179,7 @@ bool MainWorker::StartThread()
 	int nValue = 0;
 	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
 	{
-		m_webservers.SetAuthenticationMethod((_eAuthenticationMethod)nValue);
+		m_webservers.SetAuthenticationMethod((http::server::_eAuthenticationMethod)nValue);
 	}
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
@@ -10885,7 +10884,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
 	}
 	// TODO: Something smarter if level is not valid?
-	level = max(level,0);
+	level =std::max(level,0);
 
 	//
 	//	For plugins all the specific logic below is irrelevent

@@ -45,7 +45,7 @@ public:
 		const std::string &Sound,
 		const bool bFromNotification);
 	void LoadConfig();
-	void ConfigFromGetvars(const request& req, const bool save);
+	void ConfigFromGetvars(const http::server::request& req, const bool save);
 	bool IsInConfig(const std::string &Key);
 
 	//notification functions

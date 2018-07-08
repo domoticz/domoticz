@@ -11,8 +11,6 @@
 #include "../json/json.h"
 #include <telldus-core.h>
 
-using namespace std;
-
 CTellstick::CTellstick(const int ID, int repeats, int repeatInterval)
     : m_deviceEventId(-1),
       m_rawDeviceEventId(-1),

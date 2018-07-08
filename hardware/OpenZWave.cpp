@@ -389,12 +389,12 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	if (!pNode)
 		return strState;
 
-	if (Manager::Get()->IsNodeFailed(homeID, nodeID))
+	if (OpenZWave::Manager::Get()->IsNodeFailed(homeID, nodeID))
 	{
 		strState = "Dead";
 	}
 	else {
-		if (Manager::Get()->IsNodeAwake(homeID, nodeID))
+		if (OpenZWave::Manager::Get()->IsNodeAwake(homeID, nodeID))
 			strState = "Awake";
 		else
 			strState = "Sleeping";
@@ -1034,7 +1034,7 @@ bool COpenZWave::OpenSerialConnector()
 	m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
 	m_bNightlyNetworkHeal = (nightly_heal != 0);
 
-	//Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
+	//OpenZWave::Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
 	return true;
 }
 
@@ -3415,13 +3415,13 @@ std::string COpenZWave::GetGroupName(const int nodeID, const int groupID)
 	return m_pManager->GetGroupLabel(m_controllerID, nodeID, groupID);
 }
 
-int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<string> &nodesingroup)
+int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<std::string> &nodesingroup)
 {
 
 	if (m_pManager == NULL)
 		return 0;
 
-	InstanceAssociation* arr;
+	OpenZWave::InstanceAssociation* arr;
 	int retval = m_pManager->GetAssociations(m_controllerID, nodeID, groupID, &arr);
 	if (retval > 0) {
 		for (int i = 0; i < retval; i++) {
@@ -5103,14 +5103,14 @@ namespace http {
 							if (numGroups > MaxNoOfGroups)
 								MaxNoOfGroups = numGroups;
 
-							std::vector< string > nodesingroup;
+							std::vector< std::string > nodesingroup;
 							int gi = 0;
 							for (int x = 1; x <= numGroups; x++)
 							{
 								int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID, x, nodesingroup);
 								if (numNodesInGroup > 0) {
 									std::stringstream list;
-									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<string>(list, ","));
+									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<std::string>(list, ","));
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
 									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, x);
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
