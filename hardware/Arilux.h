@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <iosfwd>
 
 class Arilux : public CDomoticzHardwareBase
 {

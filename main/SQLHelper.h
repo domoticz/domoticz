@@ -7,7 +7,6 @@
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
-#include <map>
 
 #define timer_resolution_hz 25
 

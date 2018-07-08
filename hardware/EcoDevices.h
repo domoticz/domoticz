@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "TeleinfoBase.h"

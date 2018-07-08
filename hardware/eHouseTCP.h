@@ -7,7 +7,6 @@
 // by Robert Jarzabek, iSys - Intelligent systems
 #include "eHouse/globals.h"
 
-//#include <map>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 

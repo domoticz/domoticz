@@ -1,13 +1,11 @@
 #pragma once
 #ifndef NOCLOUD
-#include <iosfwd>
 #include <queue>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
 #include <list>
-#include <boost/thread/mutex.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
 #include "request_handler.hpp"

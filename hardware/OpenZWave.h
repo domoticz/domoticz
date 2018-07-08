@@ -2,7 +2,6 @@
 
 #ifdef WITH_OPENZWAVE
 
-#include <map>
 #include <string>
 #include <time.h>
 #include "ZWaveBase.h"

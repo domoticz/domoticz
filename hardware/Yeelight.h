@@ -1,8 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <deque>
-#include <iosfwd>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 

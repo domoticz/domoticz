@@ -3,7 +3,6 @@
 #ifdef WIN32
 #include "1WireForWindows.h"
 #include "../../main/Logger.h"
-#include <boost/thread.hpp>
 #include <boost/optional.hpp>
 #include "../json/json.h"
 

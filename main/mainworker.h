@@ -5,7 +5,6 @@
 #include "Scheduler.h"
 #include "EventSystem.h"
 #include "Camera.h"
-#include <map>
 #include <deque>
 #include "WindCalculation.h"
 #include "../tcpserver/TCPServer.h"

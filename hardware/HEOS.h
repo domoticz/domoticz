@@ -1,12 +1,8 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-
 #include "ASyncTCP.h"
-
-#include <iosfwd>
 #include <string>
-#include <vector>
 
 class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 {

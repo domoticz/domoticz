@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "DomoticzHardware.h"
 
 class SolarMaxTCP : public CDomoticzHardwareBase

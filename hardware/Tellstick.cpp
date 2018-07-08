@@ -221,7 +221,7 @@ bool CTellstick::StartHardware()
     sOnConnected(this);
     _log.Log(LOG_NORM, "Tellstick: StartHardware");
     //Start worker thread
-    m_thread = boost::thread(boost::bind(&CTellstick::ThreadSendCommands, this));
+	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CTellstick::ThreadSendCommands, this)));
     return true;
 }
 

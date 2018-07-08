@@ -12,7 +12,6 @@
 #include "../main/WebServer.h"
 
 #include <sstream>
-#include <map>
 
 #define RETRY_DELAY 30
 
