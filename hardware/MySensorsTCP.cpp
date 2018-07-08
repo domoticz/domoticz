@@ -36,7 +36,7 @@ bool MySensorsTCP::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&MySensorsTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&MySensorsTCP::Do_Work, this));
 	StartSendQueue();
 	return (m_thread != NULL);
 }

@@ -37,7 +37,7 @@ bool CSterbox::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CSterbox::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&CSterbox::Do_Work, this));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Sterbox: Started");

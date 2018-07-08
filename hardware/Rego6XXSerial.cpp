@@ -137,7 +137,7 @@ bool CRego6XXSerial::StartHardware()
 	m_retrycntr=Rego6XX_RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CRego6XXSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&CRego6XXSerial::Do_Work, this));
 
 	return (m_thread != NULL);
 }

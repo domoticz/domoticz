@@ -38,7 +38,7 @@ CVolcraftCO20::~CVolcraftCO20(void)
 bool CVolcraftCO20::StartHardware()
 {
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CVolcraftCO20::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&CVolcraftCO20::Do_Work, this));
 	m_bIsStarted=true;
 	sOnConnected(this);
 

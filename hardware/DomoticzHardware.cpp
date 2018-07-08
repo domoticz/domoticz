@@ -80,7 +80,7 @@ bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
 	m_stopHeartbeatrequested = false;
-	m_Heartbeatthread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDomoticzHardwareBase::Do_Heartbeat_Work, this)));
+	m_Heartbeatthread = std::make_shared<std::thread>(std::bind(&CDomoticzHardwareBase::Do_Heartbeat_Work, this));
 }
 
 void CDomoticzHardwareBase::StopHeartbeatThread()

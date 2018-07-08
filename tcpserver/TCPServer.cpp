@@ -404,8 +404,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 	} while (exception);
 	_log.Log(LOG_NORM, "Starting shared server on: %s:%s", listen_address.c_str(), port.c_str());
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CTCPServer::Do_Work, this)));
-
+	m_thread = std::make_shared<std::thread>(std::bind(&CTCPServer::Do_Work, this));
 	return (m_thread != NULL);
 }
 

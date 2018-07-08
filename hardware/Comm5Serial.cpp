@@ -64,7 +64,7 @@ bool Comm5Serial::WriteToHardware(const char * pdata, const unsigned char length
 bool Comm5Serial::StartHardware()
 {
 	m_stoprequested = false;
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&Comm5Serial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&Comm5Serial::Do_Work, this));
 
 	//Try to open the Serial Port
 	try

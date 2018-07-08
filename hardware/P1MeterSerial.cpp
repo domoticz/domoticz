@@ -62,7 +62,7 @@ bool P1MeterSerial::StartHardware()
 	ParseData((const BYTE*)&buffer, ret, 1);
 #endif
 	m_stoprequested = false;
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&P1MeterSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&P1MeterSerial::Do_Work, this));
 
 	//Try to open the Serial Port
 	try

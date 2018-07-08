@@ -200,7 +200,7 @@ void CPanasonicNode::StopThread()
 bool CPanasonicNode::StartThread()
 {
 	StopThread();
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPanasonicNode::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&CPanasonicNode::Do_Work, this));
 	return (m_thread != NULL);
 }
 
@@ -787,7 +787,7 @@ bool CPanasonic::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPanasonic::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&CPanasonic::Do_Work, this));
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Started");
 
 	return true;

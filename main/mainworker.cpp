@@ -1206,9 +1206,8 @@ bool MainWorker::StartThread()
 		LoadSharedUsers();
 	}
 
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&MainWorker::Do_Work, this)));
-	m_rxMessageThread = std::shared_ptr<std::thread>(new std::thread(std::bind(&MainWorker::Do_Work_On_Rx_Messages, this)));
-
+	m_thread = std::make_shared<std::thread>(std::bind(&MainWorker::Do_Work, this));
+	m_rxMessageThread = std::make_shared<std::thread>(std::bind(&MainWorker::Do_Work_On_Rx_Messages, this));
 	return (m_thread != NULL) && (m_rxMessageThread != NULL);
 }
 

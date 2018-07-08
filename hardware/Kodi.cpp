@@ -923,7 +923,7 @@ bool CKodi::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CKodi::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&CKodi::Do_Work, this));
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
 	return true;

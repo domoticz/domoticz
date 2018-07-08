@@ -27,8 +27,8 @@
 C1WireByKernel::C1WireByKernel() :
    m_stoprequested(false)
 {
-   m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&C1WireByKernel::ThreadFunction, this)));
-   _log.Log(LOG_STATUS,"Using 1-Wire support (kernel W1 module)...");
+   m_thread = std::make_shared<std::thread>(std::bind(&C1WireByKernel::ThreadFunction, this));
+   _log.Log(LOG_STATUS, "Using 1-Wire support (kernel W1 module)...");
 }
 
 C1WireByKernel::~C1WireByKernel()

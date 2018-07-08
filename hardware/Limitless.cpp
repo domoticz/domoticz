@@ -262,7 +262,7 @@ bool CLimitLess::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CLimitLess::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(std::bind(&CLimitLess::Do_Work, this));
 	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
 	return (m_thread != NULL);
 }
