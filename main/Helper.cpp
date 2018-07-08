@@ -213,6 +213,11 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			{
 				ret.push_back("/dev/" + fname);
 			}
+			else if ((fname.find("ttyS")!=std::string::npos) && (fname.find("ttySAC") == std::string::npos))
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/" + fname);
+			}
 			else if (fname.find("tty.usbserial")!=std::string::npos)
 			{
 				bUseDirectPath=true;
