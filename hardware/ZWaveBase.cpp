@@ -3,7 +3,6 @@
 #include "ZWaveCommands.h"
 
 #include <sstream>      // std::stringstream
-#include <vector>
 #include <ctype.h>
 #include <iomanip>
 

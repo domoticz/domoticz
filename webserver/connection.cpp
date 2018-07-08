@@ -9,7 +9,6 @@
 //
 #include "stdafx.h"
 #include "connection.hpp"
-#include <vector>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include "connection_manager.hpp"

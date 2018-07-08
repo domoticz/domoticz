@@ -27,7 +27,6 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <vector>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>

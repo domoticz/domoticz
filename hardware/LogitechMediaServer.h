@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 
 #include <string>
-#include <vector>
 
 namespace Json
 {

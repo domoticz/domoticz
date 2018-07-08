@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include <string>
-#include <vector>
 
 class SolarEdgeAPI : public CDomoticzHardwareBase
 {

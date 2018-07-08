@@ -3,7 +3,6 @@
 #include "OpenZWave.h"
 
 #include <sstream>      // std::stringstream
-#include <vector>
 #include <ctype.h>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>

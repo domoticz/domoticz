@@ -12,7 +12,6 @@
 #define HTTP_REQUEST_HPP
 
 #include <string>
-#include <vector>
 #include "header.hpp"
 
 namespace http {

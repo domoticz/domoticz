@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include "ASyncSerial.h"
 #include "ZiBlueBase.h"
 

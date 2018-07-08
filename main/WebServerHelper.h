@@ -4,7 +4,6 @@
 #include "../hardware/DomoticzTCP.h"
 #endif
 #include "../tcpserver/TCPServer.h"
-#include <vector>
 
 namespace http {
 	namespace server {
