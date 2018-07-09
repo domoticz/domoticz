@@ -502,7 +502,7 @@ bool CGpio::InitPins()
 			if (fd != -1)
 			{
 				pinPass = gpio_pin;
-				m_thread_interrupt[gpio_pin] = stdstd::make_shared<std::thread>(std::bind(&CGpio::InterruptHandler, this));
+				m_thread_interrupt[gpio_pin] = std::make_shared<std::thread>(std::bind(&CGpio::InterruptHandler, this));
 				while (pinPass != -1)
 					sleep_milliseconds(1);
 			}
