@@ -150,7 +150,7 @@ bool CHarmonyHub::StartHardware()
 
 bool CHarmonyHub::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread != NULL && m_thread->joinable())
 	{
 		m_stoprequested = true;
 		m_thread->join();
