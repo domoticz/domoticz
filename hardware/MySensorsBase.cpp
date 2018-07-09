@@ -252,7 +252,7 @@ MySensorsBase::~MySensorsBase(void)
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string> > result, result2;
@@ -1247,7 +1247,7 @@ std::string MySensorsBase::GetGatewayVersion()
 bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
 {
 	//Check if Node is asleep, and if so, add the command to it's message queue
-	boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+	std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 	bool bIsAsleep = false;
 	std::map<int, bool>::iterator itt = m_node_sleep_states.find(NodeID);
 	if (itt != m_node_sleep_states.end())
@@ -1833,7 +1833,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			while (1 == 0);
 			if (node_id != 255)
 			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 				std::map<int, std::vector<_tMySensorSmartSleepQueueItem> >::const_iterator itt = m_node_sleep_queue.find(node_id);
 				if (itt != m_node_sleep_queue.end())
 				{
@@ -1854,7 +1854,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			while (1 == 0);
 			if (node_id != 255)
 			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 				m_node_sleep_states[node_id] = false;
 			}
 			break;
@@ -2340,7 +2340,7 @@ void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, con
 bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
-	m_send_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsBase::Do_Send_Work, this)));
+	m_send_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Send_Work, this);
 	return (m_send_thread != NULL);
 }
 

@@ -58,8 +58,8 @@ bool P1MeterTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&P1MeterTCP::Do_Work, this);
+	return (m_thread != NULL);
 }
 
 bool P1MeterTCP::StopHardware()
@@ -167,7 +167,7 @@ void P1MeterTCP::Do_Work()
 			}
 			else
 			{
-				boost::lock_guard<boost::mutex> l(readQueueMutex);
+				std::lock_guard<std::mutex> l(readQueueMutex);
 				ParseData((const unsigned char*)&data, bread, m_bDisableCRC, m_ratelimit);
 			}
 		}

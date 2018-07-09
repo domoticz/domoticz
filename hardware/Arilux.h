@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <iosfwd>
 
 class Arilux : public CDomoticzHardwareBase
 {
@@ -21,6 +20,6 @@ private:
 	_tColor m_color;
 	bool m_isWhite;
 	bool m_bDoRestart;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 };

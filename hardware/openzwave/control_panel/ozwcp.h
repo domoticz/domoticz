@@ -40,35 +40,33 @@
 #include "Driver.h"
 #include "Notification.h"
 
-using namespace OpenZWave;
-
 #define MAX_NODES 255
 
-extern const char *valueGenreStr(ValueID::ValueGenre);
-extern ValueID::ValueGenre valueGenreNum(char const *);
-extern const char *valueTypeStr(ValueID::ValueType);
-extern ValueID::ValueType valueTypeNum(char const *);
+extern const char *valueGenreStr(OpenZWave::ValueID::ValueGenre);
+extern OpenZWave::ValueID::ValueGenre valueGenreNum(char const *);
+extern const char *valueTypeStr(OpenZWave::ValueID::ValueType);
+extern OpenZWave::ValueID::ValueType valueTypeNum(char const *);
 extern const char *nodeBasicStr(uint8);
 extern const char *cclassStr(uint8);
 extern uint8 cclassNum(char const *str);
-extern const char *controllerErrorStr(Driver::ControllerError err);
+extern const char *controllerErrorStr(OpenZWave::Driver::ControllerError err);
 
 class MyValue {
   friend class MyNode;
 
  public:
- MyValue(ValueID id) : id(id) {};
+ MyValue(OpenZWave::ValueID id) : id(id) {};
   ~MyValue() {};
-  ValueID getId() { return id; }
+  OpenZWave::ValueID getId() { return id; }
  private:  
-  ValueID id;
+	 OpenZWave::ValueID id;
 };
 
 typedef struct {
   uint8 groupid;
   uint8 max;
-  string label;
-  vector<uint8> grouplist;
+  std::string label;
+  std::vector<uint8> grouplist;
 } MyGroup;
 
 class MyNode {
@@ -77,11 +75,11 @@ public:
   static void remove(int32 const);
   static int32 getNodeCount() { return nodecount; };
   void sortValues();
-  void addValue(ValueID id);
-  void removeValue(ValueID id);
-  void saveValue(ValueID id);
+  void addValue(OpenZWave::ValueID id);
+  void removeValue(OpenZWave::ValueID id);
+  void saveValue(OpenZWave::ValueID id);
   int32 getValueCount();
-  static MyValue *lookup(string id);
+  static MyValue *lookup(std::string id);
   MyValue *getValue(uint8 n);
   time_t getTime() { return mtime; }
   void setTime(time_t t) { mtime = t; }
@@ -105,9 +103,9 @@ private:
   time_t mtime;
   bool changed;
   static bool nodechanged;
-  static list<uint8> removed;
-  vector<MyGroup*> groups;
-  vector<MyValue*> values;
+  static std::list<uint8> removed;
+  std::vector<MyGroup*> groups;
+  std::vector<MyValue*> values;
 };
 
 class COpenZWaveControlPanel
@@ -115,7 +113,7 @@ class COpenZWaveControlPanel
 public:
 	COpenZWaveControlPanel();
 	~COpenZWaveControlPanel();
-	void OnCPNotification(Notification const* _notification);
+	void OnCPNotification(OpenZWave::Notification const* _notification);
 	std::string SendPollResponse();
 	std::string SendNodeConfResponse(int node_id);
 	std::string SendNodeValuesResponse(int node_id);
@@ -135,10 +133,10 @@ public:
 	void SetAllNodesChanged();
 	bool getAdminState() { return adminstate; }
 	void setAdminState(bool st) { adminstate = st; }
-	string getAdminFunction() { return adminfun; }
-	void setAdminFunction(string msg) { adminfun = msg; }
-	string getAdminMessage() { return adminmsg; }
-	void setAdminMessage(string msg) { adminmsg = msg; }
+	std::string getAdminFunction() { return adminfun; }
+	void setAdminFunction(std::string msg) { adminfun = msg; }
+	std::string getAdminMessage() { return adminmsg; }
+	void setAdminMessage(std::string msg) { adminmsg = msg; }
 private:
 	void web_get_groups(int n, TiXmlElement *ep);
 	void web_get_values(int i, TiXmlElement *ep);
@@ -146,8 +144,8 @@ private:
 	TiXmlElement *newstat(char const *tag, char const *label, char const *value);
 	unsigned long logbytes;
 	bool adminstate;
-	string adminmsg;
-	string adminfun;
+	std::string adminmsg;
+	std::string adminfun;
 	bool ready;
 };
 #endif

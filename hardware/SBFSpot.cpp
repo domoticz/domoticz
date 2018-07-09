@@ -18,7 +18,7 @@
 CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
 	std::vector<std::string> results;
-	
+
 	m_HwdID=ID;
 #ifdef WIN32
 	StringSplit(SMAConfigFile, ";", results);
@@ -103,17 +103,16 @@ bool CSBFSpot::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSBFSpot::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CSBFSpot::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CSBFSpot::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

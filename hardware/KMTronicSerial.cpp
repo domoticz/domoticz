@@ -6,11 +6,12 @@
 #include "../main/localtime_r.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
+
 #include <string>
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
-
+#include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 
 //#define DEBUG_KMTronic
@@ -41,11 +42,9 @@ bool KMTronicSerial::StartHardware()
 	m_retrycntr = RETRY_DELAY-2; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronicSerial::Do_Work, this)));
-
+	m_bIsStarted = true;
+	m_thread = std::make_shared<std::thread>(&KMTronicSerial::Do_Work, this);
 	return (m_thread != NULL);
-
-	return true;
 }
 
 bool KMTronicSerial::StopHardware()
@@ -139,7 +138,7 @@ bool KMTronicSerial::OpenSerialDevice()
 
 void KMTronicSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

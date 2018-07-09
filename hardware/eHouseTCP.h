@@ -7,7 +7,6 @@
 // by Robert Jarzabek, iSys - Intelligent systems
 #include "eHouse/globals.h"
 
-//#include <map>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
@@ -122,7 +121,7 @@ private:
 	WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
 #endif
 
-	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX + 1]);			//full wifi status 
+	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX + 1]);			//full wifi status
 	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX + 1]);		//full wifi status previous for detecting changes
 
 #ifndef REMOVEUNUSED
@@ -172,14 +171,14 @@ private:
 	const          std::string m_IPAddress; // "192.168.0.200"; - default eHouse PRO srv address
 	int m_pollInterval;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> EhouseTcpClientThread[MAX_CLIENT_SOCKETS];
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> EhouseTcpClientThread[MAX_CLIENT_SOCKETS];
 	unsigned char m_newData[7];
 	unsigned char DisablePerformEvent;
 
 	unsigned char m_userCode[8]; 	// password to eHouse 6 ascii chars
 
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 	bool m_alarmLast;
 	char ViaTCP;					//Statuses via TCP/IP connection
 	int PlanID;
@@ -188,7 +187,7 @@ private:
 	int UDP_PORT;					//Default UDP PORT
 	unsigned char nr_of_ch;
 	char DEBUG_AURA;				//Debug Aura
-	char CHANGED_DEBUG;				//Display changes signals (devices) on 
+	char CHANGED_DEBUG;				//Display changes signals (devices) on
 	unsigned int EventsCountInQueue;						//Events In queue count to bypass processing EventQueue when it is empty
 	char PassWord[6];				//Password for XOR Password
 	unsigned char ipaddrh;

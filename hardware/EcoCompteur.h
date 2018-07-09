@@ -25,6 +25,6 @@ private:
 	unsigned short m_refresh;
 
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

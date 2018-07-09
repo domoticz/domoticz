@@ -62,7 +62,7 @@ bool P1MeterSerial::StartHardware()
 	ParseData((const BYTE*)&buffer, ret, 1);
 #endif
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
 
 	//Try to open the Serial Port
 	try
@@ -135,7 +135,7 @@ bool P1MeterSerial::StopHardware()
 
 void P1MeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled

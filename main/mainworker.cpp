@@ -176,8 +176,7 @@ extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
-extern _eWebCompressionMode g_wwwCompressMode;
-
+extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 
 
@@ -306,7 +305,7 @@ void MainWorker::StopDomoticzHardware()
 	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
 	std::vector<CDomoticzHardwareBase*> OrgHardwaredevices;
 	{
-		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::lock_guard<std::mutex> l(m_devicemutex);
 		for (auto & itt : m_hardwaredevices)
 		{
 			OrgHardwaredevices.push_back(itt);
@@ -357,7 +356,7 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 	{
 		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
 	}
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
 	pHardware->sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
 	m_hardwaredevices.push_back(pHardware);
@@ -369,7 +368,7 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
 	CDomoticzHardwareBase *pOrgHardware = NULL;
 	{
-		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::lock_guard<std::mutex> l(m_devicemutex);
 		std::vector<CDomoticzHardwareBase*>::iterator itt;
 		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 		{
@@ -401,7 +400,7 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 
 int MainWorker::FindDomoticzHardware(int HwdId)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	int ii = 0;
 	for (const auto & itt : m_hardwaredevices)
 	{
@@ -414,7 +413,7 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 
 int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	int ii = 0;
 	for (const auto & itt : m_hardwaredevices)
 	{
@@ -427,7 +426,7 @@ int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 
 CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	for (auto & itt : m_hardwaredevices)
 	{
 		if (itt->m_HwdID == HwdId)
@@ -451,7 +450,7 @@ CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string &HwdId,
 
 CDomoticzHardwareBase* MainWorker::GetHardwareByType(const _eHardwareTypes HWType)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	for (auto & itt : m_hardwaredevices)
 	{
 		if (itt->HwdType == HWType)
@@ -582,7 +581,7 @@ bool MainWorker::GetSunSettings()
 	return true;
 }
 
-void MainWorker::SetWebserverSettings(const server_settings & settings)
+void MainWorker::SetWebserverSettings(const http::server::server_settings & settings)
 {
 	m_webserver_settings.set(settings);
 }
@@ -603,7 +602,7 @@ std::string MainWorker::GetSecureWebserverPort()
 	return m_secure_webserver_settings.listening_port;
 }
 
-void MainWorker::SetSecureWebserverSettings(const ssl_server_settings & ssl_settings)
+void MainWorker::SetSecureWebserverSettings(const http::server::ssl_server_settings & ssl_settings)
 {
 	m_secure_webserver_settings.set(ssl_settings);
 }
@@ -1180,7 +1179,7 @@ bool MainWorker::StartThread()
 	int nValue = 0;
 	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
 	{
-		m_webservers.SetAuthenticationMethod((_eAuthenticationMethod)nValue);
+		m_webservers.SetAuthenticationMethod((http::server::_eAuthenticationMethod)nValue);
 	}
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
@@ -1207,9 +1206,8 @@ bool MainWorker::StartThread()
 		LoadSharedUsers();
 	}
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work, this)));
-	m_rxMessageThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work_On_Rx_Messages, this)));
-
+	m_thread = std::make_shared<std::thread>(&MainWorker::Do_Work, this);
+	m_rxMessageThread = std::make_shared<std::thread>(&MainWorker::Do_Work_On_Rx_Messages, this);
 	return (m_thread != NULL) && (m_rxMessageThread != NULL);
 }
 
@@ -1679,7 +1677,7 @@ void MainWorker::Do_Work()
 				if (ltime.tm_hour == 4)
 				{
 					//Heal the OpenZWave network
-					boost::lock_guard<boost::mutex> l(m_devicemutex);
+					std::lock_guard<std::mutex> l(m_devicemutex);
 					std::vector<CDomoticzHardwareBase*>::iterator itt;
 					for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 					{
@@ -1920,7 +1918,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	if ((pHardware->HwdType == HTYPE_Domoticz) && (pHardware->m_HwdID == 8765))
 	{
 		//Directly process the command
-		boost::lock_guard<boost::mutex> l(m_decodeRXMessageMutex);
+		std::lock_guard<std::mutex> l(m_decodeRXMessageMutex);
 		ProcessRXMessage(pHardware, pRXCommand, defaultName, BatteryLevel);
 	}
 	else
@@ -10885,7 +10883,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
 	}
 	// TODO: Something smarter if level is not valid?
-	level = max(level,0);
+	level =std::max(level,0);
 
 	//
 	//	For plugins all the specific logic below is irrelevent
@@ -12818,7 +12816,7 @@ void MainWorker::HandleLogNotifications()
 
 void MainWorker::HeartbeatUpdate(const std::string &component)
 {
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
+	std::lock_guard<std::mutex> l(m_heartbeatmutex);
 	time_t now = time(0);
 	std::map<std::string, time_t >::iterator itt = m_componentheartbeats.find(component);
 	if (itt != m_componentheartbeats.end()) {
@@ -12831,7 +12829,7 @@ void MainWorker::HeartbeatUpdate(const std::string &component)
 
 void MainWorker::HeartbeatRemove(const std::string &component)
 {
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
+	std::lock_guard<std::mutex> l(m_heartbeatmutex);
 	std::map<std::string, time_t >::iterator itt = m_componentheartbeats.find(component);
 	if (itt != m_componentheartbeats.end()) {
 		m_componentheartbeats.erase(itt);
@@ -12840,8 +12838,8 @@ void MainWorker::HeartbeatRemove(const std::string &component)
 
 void MainWorker::HeartbeatCheck()
 {
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
-	boost::lock_guard<boost::mutex> l2(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_heartbeatmutex);
+	std::lock_guard<std::mutex> l2(m_devicemutex);
 
 	m_devicestorestart.clear();
 

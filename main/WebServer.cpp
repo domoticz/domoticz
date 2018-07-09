@@ -672,8 +672,7 @@ namespace http {
 
 			//Start normal worker thread
 			m_bDoStop = false;
-			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, shared_from_this())));
-
+			m_thread = std::make_shared<std::thread>(&CWebServer::Do_Work, this);
 			return (m_thread != NULL);
 		}
 
@@ -796,13 +795,13 @@ namespace http {
 						}
 						else if (sLine.find("#ThemeFiles") != std::string::npos)
 						{
-							response += "#Theme=" + sWebTheme + "\n";
+							response += "#Theme=" + sWebTheme + '\n';
 							//Add all theme files
 							for (const auto & itt : _ThemeFiles)
 							{
 								std::string tfname = itt.first.substr(szWWWFolder.size() + 1);
 								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
-								response += tfname + "\n";
+								response += tfname + '\n';
 							}
 							continue;
 						}
@@ -812,7 +811,7 @@ namespace http {
 							for (const auto & itt : _FloorplanFiles)
 							{
 								std::string tfname = itt.first;
-								response += tfname + "\n";
+								response += tfname + '\n';
 							}
 							continue;
 						}
@@ -827,14 +826,14 @@ namespace http {
 									std::string IconFile48On = itt.RootFile + "48_On.png";
 									std::string IconFile48Off = itt.RootFile + "48_Off.png";
 
-									response += "images/" + CURLEncode::URLEncode(IconFile16) + "\n";
-									response += "images/" + CURLEncode::URLEncode(IconFile48On) + "\n";
-									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + "\n";
+									response += "images/" + CURLEncode::URLEncode(IconFile16) + '\n';
+									response += "images/" + CURLEncode::URLEncode(IconFile48On) + '\n';
+									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + '\n';
 								}
 							}
 						}
 					}
-					response += sLine + "\n";
+					response += sLine + '\n';
 				}
 			}
 			reply::set_content(&rep, response);
@@ -877,7 +876,7 @@ namespace http {
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
@@ -1108,7 +1107,7 @@ namespace http {
 					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
 				}
 			}
-			else if (IsNetworkDevice(htype)) 
+			else if (IsNetworkDevice(htype))
 			{
 				//Lan
 				if (address.empty() || port == 0)
@@ -1227,7 +1226,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Tado) || 
+				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -4181,7 +4180,7 @@ namespace http {
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) 
+					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
 						return;
 					unsigned long rID = 0;
@@ -4767,7 +4766,7 @@ namespace http {
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) 
+					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
 						return;
 					unsigned long rID = 0;
@@ -6684,11 +6683,11 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "GetSecStatus";
-				
+
 				int secstatus = 0;
 				m_sql.GetPreferencesVar("SecStatus", secstatus);
 				root["secstatus"] = secstatus;
-				
+
 				int secondelay = 30;
 				m_sql.GetPreferencesVar("SecOnDelay", secondelay);
 				root["secondelay"] = secondelay;
@@ -9819,7 +9818,7 @@ namespace http {
 						root["result"][ii]["ValueUnits"] = "";
 						root["result"][ii]["ShowNotifications"] = false;
 						double meteroffset = AddjValue;
-						
+
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
@@ -11832,7 +11831,7 @@ namespace http {
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root)

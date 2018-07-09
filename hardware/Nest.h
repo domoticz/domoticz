@@ -1,9 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 #include "hardwaretypes.h"
-#include <map>
 
 class CNest : public CDomoticzHardwareBase
 {
@@ -41,7 +39,7 @@ private:
 //	std::string m_Serial;
 	//std::string m_StructureID;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::map<int, _tNestThemostat> m_thermostats;
 	bool m_bDoLogin;
 };

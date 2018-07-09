@@ -65,7 +65,7 @@ namespace Plugins {
     // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 #endif // ENABLE_PYTHON
 
-	boost::mutex PluginMutex;	// controls accessto the message queue
+	std::mutex PluginMutex;	// controls accessto the message queue
 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
@@ -78,7 +78,6 @@ namespace Plugins {
 		m_bAllPluginsStarted = false;
 		m_iPollInterval = 10;
 		m_InitialPythonThread = NULL;
-		m_thread = NULL;
 	}
 
 	CPluginSystem::~CPluginSystem(void)
@@ -88,7 +87,7 @@ namespace Plugins {
 	bool CPluginSystem::StartPluginSystem()
 	{
 		// Flush the message queue (should already be empty)
-		boost::lock_guard<boost::mutex> l(PluginMutex);
+		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
 			PluginMessageQueue.pop();
@@ -105,7 +104,7 @@ namespace Plugins {
 		// Pull UI elements from plugins and create manifest map in memory
 		BuildManifest();
 
-		m_thread = new boost::thread(boost::bind(&CPluginSystem::Do_Work, this));
+		m_thread = std::make_shared<std::thread>(&CPluginSystem::Do_Work, this);
 
 		szPyVersion = Py_GetVersion();
 
@@ -206,7 +205,7 @@ namespace Plugins {
 								if (!bFound && (line.find("<plugin") != std::string::npos))
 									bFound = true;
 								if (bFound)
-									sXML += line + "\n";
+									sXML += line + '\n';
 								if (line.find("</plugin>") != std::string::npos)
 									break;
 							}
@@ -229,7 +228,7 @@ namespace Plugins {
 		CPlugin*	pPlugin = NULL;
 		if (m_bEnabled)
 		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
+			std::lock_guard<std::mutex> l(PluginMutex);
 			pPlugin = new CPlugin(HwdID, Name, PluginKey);
 			m_pPlugins.insert(std::pair<int, CPlugin*>(HwdID, pPlugin));
 		}
@@ -244,7 +243,7 @@ namespace Plugins {
 	{
 		if (m_pPlugins.count(HwdID))
 		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
+			std::lock_guard<std::mutex> l(PluginMutex);
 			m_pPlugins.erase(HwdID);
 		}
 	}
@@ -295,7 +294,7 @@ namespace Plugins {
 				// Cycle once through the queue looking for the 1st message that is ready to process
 				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
+					std::lock_guard<std::mutex> l(PluginMutex);
 					CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
 					PluginMessageQueue.pop();
 					if (FrontMessage->m_When <= Now)
@@ -348,11 +347,10 @@ namespace Plugins {
 		{
 			m_stoprequested = true;
 			m_thread->join();
-			m_thread = NULL;
 		}
 
 		// Hardware should already be stopped so just flush the queue (should already be empty)
-		boost::lock_guard<boost::mutex> l(PluginMutex);
+		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
 			CPluginMessageBase* Message = PluginMessageQueue.front();

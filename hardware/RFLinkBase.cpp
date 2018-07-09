@@ -221,7 +221,7 @@ void CRFLinkBase::Add2SendQueue(const char* pData, const size_t length)
 {
 	std::string sBytes;
 	sBytes.insert(0,pData,length);
-	boost::lock_guard<boost::mutex> l(m_sendMutex);
+	std::lock_guard<std::mutex> l(m_sendMutex);
 	m_sendqueue.push_back(sBytes);
 }
 */
@@ -338,7 +338,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 //#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 //#endif
-		sstr << "\n";
+		sstr << '\n';
 		m_bTXokay = false; // clear OK flag
 		WriteInt(sstr.str());
 		time_t atime = mytime(NULL);
@@ -478,7 +478,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			std::stringstream sstr;
 			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << tswitchcmnd;
 			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
-			sstr << "\n";
+			sstr << '\n';
 			m_bTXokay = false; // clear OK flag
 			WriteInt(sstr.str());
 			time_t atime = mytime(NULL);
@@ -503,7 +503,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		//#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 		//#endif
-		sstr << "\n";
+		sstr << '\n';
 		m_bTXokay = false; // clear OK flag
 		WriteInt(sstr.str());
 		time_t atime = mytime(NULL);
@@ -528,7 +528,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			//#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 			//#endif
-			sstr << "\n";
+			sstr << '\n';
 			m_bTXokay = false; // clear OK flag
 			WriteInt(sstr.str());
 			time_t atime = mytime(NULL);

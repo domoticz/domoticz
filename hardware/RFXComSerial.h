@@ -5,7 +5,6 @@
 #include "ASyncSerial.h"
 #include "RFXBase.h"
 #include "serial/serial.h"
-#include <map>
 
 class RFXComSerial: public CRFXBase, AsyncSerial
 {

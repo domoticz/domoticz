@@ -1,10 +1,8 @@
 #include "stdafx.h"
 #ifndef NOCLOUD
 #include "proxyclient.h"
-#include "request.hpp"
-#include "reply.hpp"
-#include "request_parser.hpp"
-#include "../main/Helper.h"
+#include "../hardware/DomoticzTCP.h"
+#include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 #include "../tcpserver/TCPServer.h"
@@ -167,7 +165,7 @@ namespace http {
 			if (doStop) {
 				return;
 			}
-			boost::unique_lock<boost::mutex>(writeMutex);
+			std::unique_lock<std::mutex>(writeMutex);
 			if (bytes_transferred != SockWriteBuf.length()) {
 				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 			}
@@ -223,7 +221,7 @@ namespace http {
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
-			boost::unique_lock<boost::mutex>(writeMutex);
+			std::unique_lock<std::mutex>(writeMutex);
 			if (connection_status != status_connected) {
 				return;
 			}

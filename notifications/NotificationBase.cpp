@@ -9,6 +9,8 @@
 typedef std::map<std::string, std::string* >::iterator it_conf_type;
 typedef std::map<std::string, int* >::iterator it_conf_type_int;
 
+using namespace http::server;
+
 CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options):
 _subsystemid(subsystemid),
 _options(options),
@@ -117,7 +119,7 @@ bool CNotificationBase::SendMessageEx(
 		fText = CURLEncode::URLEncode(fText);
 	}
 
-	boost::mutex::scoped_lock SendMessageEx(SendMessageExMutex);
+	std::unique_lock<std::mutex> SendMessageEx(SendMessageExMutex);
 	bool bRet = SendMessageImplementation(Idx, Name, fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
 	if (bRet) {
 		_log.Log(LOG_NORM, "Notification sent (%s) => Success", _subsystemid.c_str());

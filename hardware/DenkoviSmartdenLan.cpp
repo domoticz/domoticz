@@ -39,18 +39,17 @@ bool CDenkoviSmartdenLan::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviSmartdenLan::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CDenkoviSmartdenLan::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Denkovi: Started");
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CDenkoviSmartdenLan::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

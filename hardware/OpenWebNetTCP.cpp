@@ -90,11 +90,11 @@ bool COpenWebNetTCP::StartHardware()
 	LastScanTimeEnergy = LastScanTimeEnergyTot = 0;	// Force first request command
 
 	//Start monitor thread
-	m_monitorThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNetTCP::MonitorFrames, this)));
+	m_monitorThread = std::make_shared<std::thread>(&COpenWebNetTCP::MonitorFrames, this);
 
 	//Start worker thread
 	if (m_monitorThread != NULL) {
-		m_heartbeatThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNetTCP::Do_Work, this)));
+		m_heartbeatThread = std::make_shared<std::thread>(&COpenWebNetTCP::Do_Work, this);
 	}
 
 	return (m_monitorThread != NULL && m_heartbeatThread != NULL);
@@ -415,7 +415,7 @@ void COpenWebNetTCP::MonitorFrames()
 				}
 				else
 				{
-					boost::lock_guard<boost::mutex> l(readQueueMutex);
+					std::lock_guard<std::mutex> l(readQueueMutex);
 					std::vector<bt_openwebnet> responses;
 					ParseData(data, bread, responses);
 
@@ -559,7 +559,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		m_HwdID, szIdx, unit, STYPE_BlindsPercentageInverted);
 
 	_tGeneralSwitch gswitch;
-	if (iLevel < 0 && result.empty()) //is a Normal Frame and device is standard 
+	if (iLevel < 0 && result.empty()) //is a Normal Frame and device is standard
 	{
 		gswitch.cmnd = Command;
 		gswitch.level = iLevel;
@@ -571,7 +571,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		gswitch.seqnbr = 0;
 		sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
 	}
-	if (iLevel >= 0 && !result.empty()) //is a Meseaure Frame (percentual) and device is Advanced 
+	if (iLevel >= 0 && !result.empty()) //is a Meseaure Frame (percentual) and device is Advanced
 	{
 		gswitch.cmnd = gswitch_sSetLevel;
 		gswitch.level = iLevel;
@@ -612,7 +612,7 @@ void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Comma
 	if (result.empty())
 	{
 		m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command, sCommand, strdev);
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", devname, m_HwdID, szIdx, unit);//can't update from devname ???    
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", devname, m_HwdID, szIdx, unit);//can't update from devname ???
 		return;
 	}
 
@@ -782,7 +782,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
 			return;
 		}
-		if (iter->IsMeasureFrame()) // Advanced motor actuator (percentual) *#2*19*10*10*65*000*0##    
+		if (iter->IsMeasureFrame()) // Advanced motor actuator (percentual) *#2*19*10*10*65*000*0##
 		{
 			std::string level = iter->Extract_value(1);
 			iLevel = atoi(level.c_str());
@@ -920,7 +920,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 		case 1:         //active
 			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Active");
-			iWhere = 0xff; // force where to 0xff because not exist	
+			iWhere = 0xff; // force where to 0xff because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
 			sCommand = "Active";
 			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
@@ -1196,10 +1196,10 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			ID4 = (unsigned char)(where & 0xFF);
 			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
-			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d)  AND (DeviceID=='%s') AND (SwitchType==%d)",  //*******is there a better method for get 
+			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d)  AND (DeviceID=='%s') AND (SwitchType==%d)",  //*******is there a better method for get
 				m_HwdID, szIdx, STYPE_BlindsPercentageInverted);																																					//*******SUBtype (STYPE_BlindsPercentageInverted) ??
 
-			if (result.empty())// from a normal button  
+			if (result.empty())// from a normal button
 			{
 				if (pCmd->cmnd == gswitch_sOff)
 				{
@@ -1461,7 +1461,7 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.frame_open.c_str(), responseBuffer);
 		}
 
-		boost::lock_guard<boost::mutex> l(readQueueMutex);
+		std::lock_guard<std::mutex> l(readQueueMutex);
 		ret = ParseData(responseBuffer, read, response);
 	}
 	else

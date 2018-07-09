@@ -1,7 +1,5 @@
 #pragma once
 
-#include <deque>
-#include <iosfwd>
 #include "ASyncTCP.h"
 #include "ZiBlueBase.h"
 
@@ -32,7 +30,7 @@ protected:
 	void OnError(const std::exception e) override;
 	void OnError(const boost::system::error_code& error) override;
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 };
 

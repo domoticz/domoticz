@@ -32,7 +32,7 @@ namespace tcp_proxy
 		enum { max_data_length = 32*1024 }; //8KB
 		unsigned char downstream_data_[max_data_length];
 		unsigned char upstream_data_[max_data_length];
-		boost::mutex mutex_;
+		std::mutex mutex_;
 	};
 	class acceptor
 	{

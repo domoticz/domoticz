@@ -61,15 +61,15 @@ bool CHttpPoller::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHttpPoller::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CHttpPoller::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CHttpPoller::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
 		m_stoprequested = true;
 		m_thread->join();

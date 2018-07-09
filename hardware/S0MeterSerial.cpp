@@ -5,12 +5,13 @@
 #include "../main/RFXtrx.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <boost/bind.hpp>
 
+#include <algorithm>
 #include <ctime>
+#include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <iostream>
+#include <string>
 
 #ifdef _DEBUG
 	//#define DEBUG_S0
@@ -116,7 +117,7 @@ bool S0MeterSerial::StopHardware()
 
 void S0MeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

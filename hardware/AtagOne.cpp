@@ -95,17 +95,16 @@ bool CAtagOne::StartHardware()
 	Init();
 	m_LastMinute = -1;
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CAtagOne::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CAtagOne::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CAtagOne::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
@@ -152,7 +151,7 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 	SaveString2Disk(sResult, "E:\\AtagOne_requesttoken.txt");
 #endif
 #endif
-	// <input name="__RequestVerificationToken" type="hidden" value="lFVlMZlt2-YJKAwZWS_K_p3gsQWjZOvBNBZ3lM8io_nFGFL0oRsj4YwQUdqGfyrEqGwEUPmm0FgKH1lPWdk257tuTWQ1" /> 
+	// <input name="__RequestVerificationToken" type="hidden" value="lFVlMZlt2-YJKAwZWS_K_p3gsQWjZOvBNBZ3lM8io_nFGFL0oRsj4YwQUdqGfyrEqGwEUPmm0FgKH1lPWdk257tuTWQ1" />
 	size_t tpos = sResult.find("__RequestVerificationToken");
 	if (tpos == std::string::npos)
 	{
@@ -323,7 +322,7 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 	//     <label class="col-xs-6 control-label">Apparaat alias</label>
 	//     <div class="col-xs-6">
 	//         <p class="form-control-static">CV-ketel</p>
-	//     </div> 
+	//     </div>
 	for (const auto & itt : m_labels)
 	{
 		std::string sresult = hpage;
@@ -495,7 +494,7 @@ void CAtagOne::GetMeterDetails()
 	{
 		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status");
 	}
-	
+
 }
 
 void CAtagOne::SetSetpoint(const int idx, const float temp)

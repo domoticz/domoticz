@@ -27,7 +27,6 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <vector>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
@@ -191,10 +190,10 @@ bool CEvohomeRadio::StartHardware()
 	//Start worker thread
 	m_bDoRestart=false;
 	m_retrycntr = EVOHOME_RETRY_DELAY; //will force reconnect first thing
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeRadio::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CEvohomeRadio::Do_Work, this);
 	m_bIsStarted=true;
 
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 std::string CEvohomeMsg::Encode()
@@ -355,7 +354,7 @@ void CEvohomeRadio::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	if(nDevNo<64 || nDevNo>=96 || GetGatewayID()==0) //atm no reason to interfere with non custom relays
 		return;
-	boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
+	std::lock_guard<std::mutex> l(m_mtxRelayCheck);
 	UpdateRelayHeatDemand(nDevNo,nDemand);
 }
 
@@ -691,7 +690,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 
 	if(nDevType==CEvohomeID::devRelay)//Binding a relay to the HGI80
 	{
-		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		std::unique_lock<std::mutex> lock(m_mtxBindNotify);
 		m_nBindID=0;
 		m_nBindIDType=nDevType;
 		/*if(!m_cndBindNotify.wait_for(lock,boost::posix_time::seconds(60)))
@@ -700,8 +699,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		while(m_nBindID==0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add(nDevNo).Add((uint16_t)cmdControllerHeatDemand).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0xFC).Add((uint16_t)cmdActuatorCheck).Add(CEvohomeID(nGatewayID)).Add((uint8_t)nDevNo).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			boost::system_time const wait=boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
-			if(!m_cndBindNotify.timed_wait(lock,wait) && boost::get_system_time()>timeout)
+			if(m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
 				return 0;
 		}
 
@@ -713,7 +711,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 	}
 	else if(nDevType==CEvohomeID::devSensor)//Binding the HGI80 to the evohome controller as an outdoor sensor (there are other sensors)
 	{
-		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		std::unique_lock<std::mutex> lock(m_mtxBindNotify);
 		m_nBindID=0;
 		m_nBindIDType=CEvohomeID::devController;
 
@@ -721,8 +719,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		while(m_nBindID==0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)2).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			boost::system_time const wait=boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
-			if(!m_cndBindNotify.timed_wait(lock,wait) && boost::get_system_time()>timeout)
+			if(m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
 				return 0;
 		}
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,m_nBindID,cmdBinding).Add((uint8_t)0).Add((uint16_t)0xFFFF).Add(CEvohomeID(nGatewayID)));
@@ -745,7 +742,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 			m_MaxDeviceID = ID + 1;
 		else
 			m_MaxDeviceID++;
-		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		std::unique_lock<std::mutex> lock(m_mtxBindNotify);
 		m_nBindID = 0;
 		m_nBindIDType = CEvohomeID::devController;
 		RFX_SETID3(m_MaxDeviceID, ID1, ID2, ID3);
@@ -754,8 +751,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		while (m_nBindID == 0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, nGatewayID, cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)2).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			boost::system_time const wait = boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
-			if (!m_cndBindNotify.timed_wait(lock, wait) && boost::get_system_time()>timeout)
+			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
 				return 0;
 		}
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, m_nBindID, cmdBinding).Add((uint8_t)0).Add((uint16_t)0x30C9).Add(ID1).Add(ID2).Add(ID3));
@@ -1308,7 +1304,7 @@ bool CEvohomeRadio::DecodeBinding(CEvohomeMsg &msg)
 	}
 	if(msg.type==CEvohomeMsg::pktwrt)
 	{
-		boost::lock_guard<boost::mutex> lock(m_mtxBindNotify);
+		std::lock_guard<std::mutex> lock(m_mtxBindNotify);
 		if(msg.id[0].GetIDType()==m_nBindIDType)
 		{
 			m_nBindID=msg.GetID(0);
@@ -1556,14 +1552,14 @@ bool CEvohomeRadio::DecodeBatteryInfo(CEvohomeMsg &msg)
 
 void CEvohomeRadio::AddSendQueue(const CEvohomeMsg &msg)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxSend);
+	std::lock_guard<std::mutex> l(m_mtxSend);
 	m_SendQueue.push_back(msg);//may throw bad_alloc
 }
 
 
 void CEvohomeRadio::PopSendQueue(const CEvohomeMsg &msg)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxSend);
+	std::lock_guard<std::mutex> l(m_mtxSend);
 	if(!m_SendQueue.empty())
 	{
 		if(m_SendQueue.front()==msg || m_nSendFail>=10)
@@ -1579,10 +1575,10 @@ void CEvohomeRadio::PopSendQueue(const CEvohomeMsg &msg)
 
 void CEvohomeRadio::Send()
 {
-	boost::lock_guard<boost::mutex> rl(readQueueMutex);//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
+	std::lock_guard<std::mutex> rl(readQueueMutex);//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
 	if(m_nBufPtr>0)
 		return;
-	boost::lock_guard<boost::mutex> sl(m_mtxSend);
+	std::lock_guard<std::mutex> sl(m_mtxSend);
 	if(!m_SendQueue.empty())
 	{
 		if(m_SendQueue.front().BadMsg())//message rejected by HGI80 which will not be picked up as a failed send
@@ -1667,7 +1663,7 @@ void CEvohomeRadio::Idle_Work()
             nStartup = 0;
         }
     }
-    boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
+    std::lock_guard<std::mutex> l(m_mtxRelayCheck);
     if(!m_RelayCheck.empty() && GetGatewayID()!=0)
     {
         CheckRelayHeatDemand();

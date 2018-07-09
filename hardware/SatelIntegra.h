@@ -3,7 +3,6 @@
 // implememtation for Security System : https://www.satel.pl/en/cat/2#cat15
 // by Fantom (szczukot@poczta.onet.pl)
 
-#include <map>
 #include "DomoticzHardware.h"
 
 class SatelIntegra : public CDomoticzHardwareBase
@@ -75,7 +74,7 @@ private:
 	const std::string m_IPAddress;
 	int m_pollInterval;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::map<unsigned int, const char*> errorCodes;
 	// filled by 0x7F command
 	unsigned char m_newData[7];
@@ -92,7 +91,7 @@ private:
 	bool m_armLastState[32];
 
 	// thread-safe for read and write
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 
 	bool m_alarmLast;
 };

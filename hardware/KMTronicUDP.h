@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "KMTronicBase.h"
 
 class KMTronicUDP : public KMTronicBase
@@ -22,7 +21,7 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_Username;
 	std::string m_Password;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 };
 

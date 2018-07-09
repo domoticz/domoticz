@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iosfwd>
 #include "ASyncTCP.h"
-//#include "MochadBase.h"
-
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
 
@@ -34,7 +31,7 @@ private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	bool m_bDoRestart;
 	int selected[17][17];

@@ -70,7 +70,7 @@ private:
 	fd_set m_rfds;
 	tRBUF m_Packet;
 
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> m_edge_thread;
-	boost::mutex m_state_mutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_edge_thread;
+	std::mutex m_state_mutex;
 };

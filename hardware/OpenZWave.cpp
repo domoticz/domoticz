@@ -3,7 +3,6 @@
 #include "OpenZWave.h"
 
 #include <sstream>      // std::stringstream
-#include <vector>
 #include <ctype.h>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
@@ -390,12 +389,12 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	if (!pNode)
 		return strState;
 
-	if (Manager::Get()->IsNodeFailed(homeID, nodeID))
+	if (OpenZWave::Manager::Get()->IsNodeFailed(homeID, nodeID))
 	{
 		strState = "Dead";
 	}
 	else {
-		if (Manager::Get()->IsNodeAwake(homeID, nodeID))
+		if (OpenZWave::Manager::Get()->IsNodeAwake(homeID, nodeID))
 			strState = "Awake";
 		else
 			strState = "Sleeping";
@@ -483,7 +482,7 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notification)
 {
 	// Must do this inside a critical section to avoid conflicts with the main thread
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	if (m_bIsShuttingDown)
 		return;
@@ -958,7 +957,7 @@ bool COpenZWave::OpenSerialConnector()
 	}
 	// Create the OpenZWave Manager.
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
-	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
+	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL
 	// the log file will appear in the program's working directory.
 	_log.Log(LOG_STATUS, "OpenZWave: using config in: %s", ConfigPath.c_str());
 	OpenZWave::Options::Create(ConfigPath, UserPath, "--SaveConfiguration=true ");
@@ -1035,7 +1034,7 @@ bool COpenZWave::OpenSerialConnector()
 	m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
 	m_bNightlyNetworkHeal = (nightly_heal != 0);
 
-	//Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
+	//OpenZWave::Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
 	return true;
 }
 
@@ -1043,7 +1042,7 @@ void COpenZWave::CloseSerialConnector()
 {
 	// program exit (clean up)
 	m_bIsShuttingDown = true;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	if (!m_pManager)
 		return;
@@ -3416,13 +3415,13 @@ std::string COpenZWave::GetGroupName(const int nodeID, const int groupID)
 	return m_pManager->GetGroupLabel(m_controllerID, nodeID, groupID);
 }
 
-int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<string> &nodesingroup)
+int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<std::string> &nodesingroup)
 {
 
 	if (m_pManager == NULL)
 		return 0;
 
-	InstanceAssociation* arr;
+	OpenZWave::InstanceAssociation* arr;
 	int retval = m_pManager->GetAssociations(m_controllerID, nodeID, groupID, &arr);
 	if (retval > 0) {
 		for (int i = 0; i < retval; i++) {
@@ -3529,7 +3528,7 @@ void COpenZWave::GetConfigFile(std::string & filePath, std::string & fileContent
 	if (m_pManager == NULL)
 		return;
 
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	WriteControllerConfig();
 
 	char szFileName[255];
@@ -3918,7 +3917,7 @@ void COpenZWave::SetThermostatFanMode(const int nodeID, const int instanceID, co
 
 std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	std::vector<std::string> ret;
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -3949,7 +3948,7 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 
 std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	std::string retstr = "";
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -4656,7 +4655,7 @@ namespace http {
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
 						root["result"][ii]["IsPlus"] = pNode->IsPlus;
-						
+
 						char szDate[80];
 						struct tm loctime;
 						localtime_r(&pNode->LastSeen, &loctime);
@@ -5104,14 +5103,14 @@ namespace http {
 							if (numGroups > MaxNoOfGroups)
 								MaxNoOfGroups = numGroups;
 
-							std::vector< string > nodesingroup;
+							std::vector< std::string > nodesingroup;
 							int gi = 0;
 							for (int x = 1; x <= numGroups; x++)
 							{
 								int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID, x, nodesingroup);
 								if (numNodesInGroup > 0) {
 									std::stringstream list;
-									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<string>(list, ","));
+									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<std::string>(list, ","));
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
 									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, x);
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
@@ -5320,7 +5319,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendPollResponse());
 					reply::add_header_attachment(&rep, "poll.xml");
@@ -5343,7 +5342,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode));
 				}
 			}
@@ -5364,7 +5363,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode));
 				}
 			}
@@ -5382,7 +5381,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]));
 				}
 			}
@@ -5400,7 +5399,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]));
 				}
 			}
@@ -5426,7 +5425,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str())));
 				}
 			}
@@ -5450,7 +5449,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue));
 				}
 			}
@@ -5477,7 +5476,7 @@ namespace http {
 					if (pHardware->HwdType == HTYPE_OpenZWave)
 					{
 						COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-						boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+						std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 						reply::set_content(&rep, pOZWHardware->m_ozwcp.UpdateGroup(sFun, atoi(sNode.c_str()), atoi(sGroup.c_str()), glist));
 					}
 				}
@@ -5492,7 +5491,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
 				}
 			}
@@ -5505,7 +5504,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPTopo());
 					reply::add_header_attachment(&rep, "topo.xml");
 				}
@@ -5519,7 +5518,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 					reply::add_header_attachment(&rep, "stats.xml");
 				}
@@ -5543,7 +5542,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 				}
 			}
@@ -5571,7 +5570,7 @@ namespace http {
 			if (pHardware->HwdType == HTYPE_OpenZWave)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-				boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 				if (sFun == "test")
 				{

@@ -53,8 +53,8 @@ bool MQTT::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MQTT::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
+	return (m_thread != NULL);
 }
 
 void MQTT::StopMQTT()

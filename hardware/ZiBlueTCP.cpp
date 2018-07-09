@@ -31,8 +31,8 @@ bool CZiBlueTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CZiBlueTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&CZiBlueTCP::Do_Work, this);
+	return (m_thread != NULL);
 }
 
 bool CZiBlueTCP::StopHardware()
@@ -154,11 +154,11 @@ void CZiBlueTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"ZiBlue: TCP/IP Worker stopped...");
-} 
+}
 
 void CZiBlueTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData((const char*)pData,length);
 }
 

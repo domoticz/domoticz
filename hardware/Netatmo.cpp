@@ -105,7 +105,7 @@ bool CNetatmo::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CNetatmo::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CNetatmo::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != NULL);

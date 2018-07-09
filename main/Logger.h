@@ -85,7 +85,7 @@ private:
 	uint32_t m_log_flags;
 	uint32_t m_debug_flags;
 
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 	std::ofstream m_outputfile;
 	std::map<_eLogLevel, std::deque<_tLogLineStruct> > m_lastlog;
 	std::deque<_tLogLineStruct> m_notification_log;

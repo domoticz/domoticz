@@ -42,7 +42,7 @@ private:
 	Rego6XXTemp	    m_Rego6XXTemp;
 	Rego6XXStatus	m_Rego6XXValue;
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	int m_retrycntr;
 	int m_pollDelaycntr;

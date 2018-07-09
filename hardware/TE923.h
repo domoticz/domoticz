@@ -5,7 +5,6 @@
 #ifdef WITH_LIBUSB
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CTE923 : public CDomoticzHardwareBase
 {
@@ -21,7 +20,7 @@ private:
 	void GetSensorDetails();
 private:
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 
 #endif //WITH_LIBUSB

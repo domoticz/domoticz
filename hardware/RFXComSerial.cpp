@@ -64,7 +64,7 @@ m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
-	
+
 	m_stoprequested=false;
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
@@ -99,16 +99,16 @@ bool RFXComSerial::StartHardware()
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
 
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 
 }
 
 bool RFXComSerial::StopHardware()
 {
 	m_stoprequested=true;
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 		m_thread->join();
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
     sleep_milliseconds(10);
@@ -163,7 +163,7 @@ void RFXComSerial::Do_Work()
 
 	}
 	_log.Log(LOG_STATUS,"RFXCOM: Serial Worker stopped...");
-} 
+}
 
 
 bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
@@ -518,7 +518,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 				_log.Log(LOG_ERROR, m_szUploadMessage);
 				return false;
 			}
-			
+
 		}
 		//
 		chksum = ~chksum + 1;
@@ -555,13 +555,13 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			}
 			break;
 		case 2:
-			//Extended Segment Address Record 
+			//Extended Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 2 not supported!";
 			_log.Log(LOG_ERROR, m_szUploadMessage);
 			infile.close();
 			return false;
 		case 3:
-			//Start Segment Address Record 
+			//Start Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 3 not supported!";
 			_log.Log(LOG_ERROR, m_szUploadMessage);
 			infile.close();
@@ -575,7 +575,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 				infile.close();
 				return false;
 			}
-			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5]; 
+			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5];
 			break;
 		case 5:
 			//Start Linear Address Record
@@ -765,7 +765,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 
 void RFXComSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		if (!m_bInBootloaderMode)

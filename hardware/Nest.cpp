@@ -77,17 +77,16 @@ bool CNest::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CNest::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CNest::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CNest::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
@@ -233,7 +232,7 @@ bool CNest::Login()
 		return false;
 	}
 	m_AccessToken = root["access_token"].asString();
-	
+
 	if (root["userid"].empty())
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
@@ -464,7 +463,7 @@ void CNest::GetMeterDetails()
 							}
 						}
 					}
-					
+
 				}
 			}
 			bool bIAlarm = false;

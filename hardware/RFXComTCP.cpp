@@ -31,8 +31,8 @@ bool RFXComTCP::StartHardware()
 	m_bIsStarted=true;
 	m_rxbufferpos=0;
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&RFXComTCP::Do_Work, this);
+	return (m_thread != NULL);
 }
 
 bool RFXComTCP::StopHardware()
@@ -94,11 +94,11 @@ void RFXComTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"RFXCOM: TCP/IP Worker stopped...");
-} 
+}
 
 void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	onInternalMessage(pData, length);
 }
 

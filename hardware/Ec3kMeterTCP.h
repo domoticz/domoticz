@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 
@@ -55,7 +54,7 @@ private:
 	unsigned short m_usIPPort;
 	bool m_bDoRestart;
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 };
 

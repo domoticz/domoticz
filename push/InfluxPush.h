@@ -1,6 +1,5 @@
 #pragma once
 #include "BasePush.h"
-#include <map>
 
 class CInfluxPush : public CBasePush
 {
@@ -19,8 +18,8 @@ private:
 	void OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
 	void DoInfluxPush();
 
-	boost::shared_ptr<boost::thread> m_background_task_thread;
-	boost::mutex m_background_task_mutex;
+	std::shared_ptr<std::thread> m_background_task_thread;
+	std::mutex m_background_task_mutex;
 	bool m_stoprequested;
 	bool StartThread();
 	void StopThread();

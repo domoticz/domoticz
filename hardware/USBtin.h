@@ -16,7 +16,6 @@ History :
 */
 
 #pragma once
-#include <vector>
 #include "ASyncSerial.h"
 #include "USBtin_MultiblocV8.h"
 #include "DomoticzHardware.h"
@@ -46,7 +45,7 @@ private:
 	boost::asio::serial_port_base::character_size m_iOptCsize;
 	boost::asio::serial_port_base::flow_control m_iOptFlow;
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	bool StartHardware() override;
 	bool StopHardware() override;

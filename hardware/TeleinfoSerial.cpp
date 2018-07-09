@@ -29,12 +29,12 @@ History :
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 
-#include <string>
 #include <algorithm>
-#include <iostream>
 #include <boost/bind.hpp>
-
+#include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
+#include <iostream>
+#include <string>
 
 #ifdef _DEBUG
 #define DEBUG_TeleinfoSerial
@@ -89,7 +89,7 @@ bool CTeleinfoSerial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		
+
 #ifdef DEBUG_TeleinfoSerial
 		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
@@ -142,7 +142,7 @@ bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char len
 
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
 	{
 		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", Name.c_str());

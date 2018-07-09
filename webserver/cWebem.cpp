@@ -851,7 +851,7 @@ namespace http {
 		{
 			m_userpasswords.clear();
 
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			m_sessions.clear(); //TODO : check if it is really necessary
 		}
 
@@ -997,7 +997,7 @@ namespace http {
 
 		WebEmSession * cWebem::GetSession(const std::string & ssid)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
 			{
@@ -1008,7 +1008,7 @@ namespace http {
 
 		void cWebem::AddSession(const WebEmSession & session)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			m_sessions[session.id] = session;
 		}
 
@@ -1019,7 +1019,7 @@ namespace http {
 
 		void cWebem::RemoveSession(const std::string & ssid)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
 			{
@@ -1029,7 +1029,7 @@ namespace http {
 
 		int cWebem::CountSessions()
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			return (int)m_sessions.size();
 		}
 
@@ -1041,7 +1041,7 @@ namespace http {
 			// Clean up timed out sessions from memory
 			std::vector<std::string> ssids;
 			{
-				boost::mutex::scoped_lock lock(m_sessionsMutex);
+				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				time_t now = mytime(NULL);
 				std::map<std::string, WebEmSession>::iterator itt;
 				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
@@ -1061,7 +1061,7 @@ namespace http {
 			int after = CountSessions();
 			std::stringstream ss;
 			{
-				boost::mutex::scoped_lock lock(m_sessionsMutex);
+				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				std::map<std::string, WebEmSession>::iterator itt;
 				int i = 0;
 				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)

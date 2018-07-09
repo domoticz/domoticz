@@ -99,17 +99,16 @@ bool CThermosmart::StartHardware()
 	Init();
 	m_LastMinute = -1;
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CThermosmart::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CThermosmart::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CThermosmart::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
@@ -336,7 +335,7 @@ void CThermosmart::GetMeterDetails()
 	std::string sResult;
 #ifdef DEBUG_ThermosmartThermostat_read
 	sResult = ReadFile("E:\\thermosmart_getdata.txt");
-#else	
+#else
 	if (m_bDoLogin)
 	{
 		if (!Login())

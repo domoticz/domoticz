@@ -73,19 +73,18 @@ COpenWeatherMap::~COpenWeatherMap(void)
 
 bool COpenWeatherMap::StartHardware()
 {
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWeatherMap::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&COpenWeatherMap::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "OpenWeatherMap: Started");
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool COpenWeatherMap::StopHardware()
 {
-	m_stoprequested = true;
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
+		m_stoprequested = true;
 		m_thread->join();
 	}
     m_bIsStarted=false;

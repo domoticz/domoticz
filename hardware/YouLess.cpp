@@ -57,17 +57,16 @@ bool CYouLess::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CYouLess::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CYouLess::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CYouLess::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
@@ -137,7 +136,7 @@ bool CYouLess::GetP1Details()
 		return false;
 
 	int Pwr = root["pwr"].asInt();
-	
+
 	unsigned long temp_usage;
 	temp_usage= (unsigned long)(root["p1"].asDouble() * 1000);
 	m_p1power.powerusage1 = temp_usage;

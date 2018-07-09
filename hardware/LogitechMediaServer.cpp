@@ -118,7 +118,7 @@ bool CLogitechMediaServer::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLogitechMediaServer::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
 
 	return (m_thread != NULL);
 }
@@ -336,7 +336,7 @@ void CLogitechMediaServer::Do_Work()
 			scounter++;
 			if ((scounter >= m_iPollInterval) || (bFirstTime))
 			{
-				boost::lock_guard<boost::mutex> l(m_mutex);
+				std::lock_guard<std::mutex> l(m_mutex);
 
 				scounter = 0;
 				bFirstTime = false;

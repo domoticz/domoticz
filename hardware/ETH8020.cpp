@@ -35,18 +35,17 @@ bool CETH8020::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CETH8020::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CETH8020::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "ETH8020: Started");
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 bool CETH8020::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

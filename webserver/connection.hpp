@@ -80,7 +80,7 @@ private:
   /// Handle completion of a write operation.
   void handle_write(const boost::system::error_code& e, size_t bytes_transferred);
   /// Protect the write queue
-  boost::mutex writeMutex;
+  std::mutex writeMutex;
   /// Is protected by writeMutex
   std::queue<std::string> writeQ;
   /// indicates if we are currently writing

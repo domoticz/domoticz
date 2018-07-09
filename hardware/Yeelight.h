@@ -1,8 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <deque>
-#include <iosfwd>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
@@ -22,7 +20,7 @@ private:
 	void Do_Work();
 private:
 	bool m_bDoRestart;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 
 	class udp_server
