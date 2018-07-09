@@ -62,7 +62,7 @@ bool Comm5TCP::StartHardware()
 	m_rxbufferpos = 0;
 
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&Comm5TCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&Comm5TCP::Do_Work, this);
 
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: Started");
 
@@ -73,7 +73,6 @@ bool Comm5TCP::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
@@ -208,9 +207,9 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 			return false;
 
 		if (pSen->LIGHTING2.cmnd == light2_sOff)
-			write("RESET " + std::to_string(Relay) + "\n");
+			write("RESET " + std::to_string(Relay) + '\n');
 		else
-			write("SET " + std::to_string(Relay) + "\n");
+			write("SET " + std::to_string(Relay) + '\n');
 
 		return true;
 	}

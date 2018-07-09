@@ -1061,7 +1061,7 @@ namespace Plugins {
 
 			//Start worker thread
 			m_stoprequested = false;
-			m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPlugin::Do_Work, this)));
+			m_thread = std::make_shared<std::thread>(&CPlugin::Do_Work, this);
 
 			if (!m_thread)
 			{

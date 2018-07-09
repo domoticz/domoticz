@@ -176,7 +176,7 @@ bool RelayNet::StartHardware()
 
 	if (m_input_count || m_relay_count)
 	{
-		m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&RelayNet::Do_Work, this)));
+		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
 	}
 
 	if (m_thread != NULL)

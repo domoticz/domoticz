@@ -96,7 +96,7 @@ bool SolarMaxTCP::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&SolarMaxTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&SolarMaxTCP::Do_Work, this);
 
 	return (m_thread != NULL);
 }

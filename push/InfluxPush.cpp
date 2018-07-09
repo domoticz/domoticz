@@ -157,7 +157,7 @@ bool CInfluxPush::StartThread()
 {
 	StopThread();
 	m_stoprequested = false;
-	m_background_task_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CInfluxPush::Do_Work, this)));
+	m_background_task_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
 	return (m_background_task_thread != NULL);
 }
 
@@ -196,7 +196,7 @@ void CInfluxPush::Do_Work()
 		while (itt != _items2do.end())
 		{
 			if (!sSendData.empty())
-				sSendData += "\n";
+				sSendData += '\n';
 
 			std::stringstream sziData;
 			sziData << itt->skey << " value=" << itt->svalue;

@@ -65,7 +65,7 @@ bool CDenkoviDevices::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CDenkoviDevices::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CDenkoviDevices::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
 	switch (m_iModel) {
@@ -98,7 +98,6 @@ bool CDenkoviDevices::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

@@ -24,22 +24,22 @@ public:
 
 	void SetHeartbeatReceived();
 
-	time_t m_LastHeartbeat;
-	time_t m_LastHeartbeatReceive;
-	bool m_bSkipReceiveCheck;
-	int m_HwdID;
-	unsigned long m_DataTimeout;
+	time_t m_LastHeartbeat = { 0 };
+	time_t m_LastHeartbeatReceive = { 0 };
+
+	int m_HwdID = { 0 }; //must be uniquely assigned
+	bool m_bSkipReceiveCheck = { false };
+	unsigned long m_DataTimeout = { 0 };
 	std::string Name;
 	_eHardwareTypes HwdType;
-	unsigned char m_SeqNr;
-	unsigned char m_rxbufferpos;
-	bool m_bEnableReceive;
+	unsigned char m_SeqNr = { 0 };
+	unsigned char m_rxbufferpos = { 0 };
+	bool m_bEnableReceive = { false };
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
-	void *m_pUserData;
-	bool m_bOutputLog;
+	void *m_pUserData = { NULL };
+	bool m_bOutputLog = { true };
 protected:
-
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
 	bool onRFXMessage(const unsigned char *pBuffer, const size_t Len);
@@ -93,27 +93,27 @@ protected:
 	void SendCustomSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel);
 	void SendZWaveAlarmSensor(const int NodeID, const int InstanceID, const int BatteryLevel, const int aType, const int aValue, const std::string &defaultname);
 
-	int m_iHBCounter;
+	int m_iHBCounter = { 0 };
 	std::mutex readQueueMutex;
-	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
+	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
 
 	//Barometric calculation (only for 1 sensor per hardware device!)
 	int CalculateBaroForecast(const double pressure);
 
-    bool m_bIsStarted;
+	bool m_bIsStarted = { false };
 
 private:
     void Do_Heartbeat_Work();
 
-    volatile bool m_stopHeartbeatrequested;
-    std::shared_ptr<std::thread> m_Heartbeatthread;
+	volatile bool m_stopHeartbeatrequested = { false };
+	std::shared_ptr<std::thread> m_Heartbeatthread = { nullptr };
 
-    int m_baro_minuteCount;
+	int m_baro_minuteCount = { 0 };
     double m_pressureSamples[9][6];
     double m_pressureAvg[9];
-    double m_dP_dt;
-    int m_last_forecast;
-    time_t m_BaroCalcLastTime;
+	double m_dP_dt = { 0 };
+	int m_last_forecast = { 0x07 }; //unknown
+	time_t m_BaroCalcLastTime = { 0 };
 
 };
 

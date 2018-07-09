@@ -27,20 +27,17 @@ const std::string kRoomTempDesc = "Room temperature ([devicename])";
 
 extern http::server::CWebServerHelper m_webservers;
 
-CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6) {
+CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+{
+	m_HwdID = ID;
+	mAccessToken = Username;
+	mRefreshToken = Password;
+	stdstring_trim(mAccessToken);
+	stdstring_trim(mRefreshToken);
 	if (Username.empty() || Password.empty()) {
 		_log.Log(LOG_ERROR, "Honeywell: Please update your access token/request token!...");
 	}
-	else {
-		mAccessToken = Username;
-		mRefreshToken = Password;
-		stdstring_trim(mAccessToken);
-		stdstring_trim(mRefreshToken);
-	}
-
-	m_HwdID = ID;
 	Init();
-
 }
 
 CHoneywell::~CHoneywell(void) {
@@ -55,7 +52,7 @@ bool CHoneywell::StartHardware() {
 	Init();
 	mLastMinute = -1;
 	//Start worker thread
-	mThread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CHoneywell::Do_Work, this)));
+	mThread = std::make_shared<std::thread>(&CHoneywell::Do_Work, this);
 	mIsStarted = true;
 	sOnConnected(this);
 	return (mThread != NULL);
@@ -64,9 +61,10 @@ bool CHoneywell::StartHardware() {
 bool CHoneywell::StopHardware() {
 	if (mThread != NULL)
 	{
-		assert(mThread);
-		mStopRequested = true;
-		mThread->join();
+		if (mThread->joinable()) {
+			mStopRequested = true;
+			mThread->join();
+		}
 	}
 
 	mIsStarted = false;

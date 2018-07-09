@@ -104,7 +104,7 @@ namespace Plugins {
 		// Pull UI elements from plugins and create manifest map in memory
 		BuildManifest();
 
-		m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPluginSystem::Do_Work, this)));
+		m_thread = std::make_shared<std::thread>(&CPluginSystem::Do_Work, this);
 
 		szPyVersion = Py_GetVersion();
 
@@ -205,7 +205,7 @@ namespace Plugins {
 								if (!bFound && (line.find("<plugin") != std::string::npos))
 									bFound = true;
 								if (bFound)
-									sXML += line + "\n";
+									sXML += line + '\n';
 								if (line.find("</plugin>") != std::string::npos)
 									break;
 							}

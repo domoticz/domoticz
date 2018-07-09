@@ -3,13 +3,6 @@
 #include "../../main/mainworker.h"
 #include "../../json/json.h"
 
-const string SensorTypeDaylight = "Daylight";
-const string SensorTypeZGPSwitch = "ZGPSwitch";
-const string SensorTypeZLLSwitch = "ZLLSwitch";
-const string SensorTypeZLLPresence = "ZLLPresence";
-const string SensorTypeZLLTemperature = "ZLLTemperature";
-const string SensorTypeZLLLightLevel = "ZLLLightLevel";
-
 CPHSensorState::CPHSensorState(): m_buttonevent(0), m_presence(false), m_temperature(0), m_lightlevel(0), m_dark(false), m_daylight(false) { }
 
 CPHSensorState::CPHSensorState(Json::Value state)

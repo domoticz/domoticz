@@ -431,7 +431,7 @@ bool CEnOceanESP3::StartHardware()
 	m_retrycntr=ENOCEAN_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CEnOceanESP3::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CEnOceanESP3::Do_Work, this);
 
 	return (m_thread != NULL);
 }

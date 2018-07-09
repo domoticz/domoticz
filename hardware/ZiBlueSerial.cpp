@@ -26,7 +26,7 @@ bool CZiBlueSerial::StartHardware()
 	m_retrycntr=ZiBlue_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CZiBlueSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CZiBlueSerial::Do_Work, this);
 
 	return (m_thread != NULL);
 }

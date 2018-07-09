@@ -25,13 +25,13 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#include <boost/lexical_cast.hpp>
-
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
 typedef std::map<std::string, CNotificationBase*>::iterator it_noti_type;
+
+using namespace http::server;
 
 CNotificationHelper::CNotificationHelper()
 {

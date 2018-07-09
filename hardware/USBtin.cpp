@@ -69,8 +69,6 @@ History :
 #define	Multibloc_V8	0x01
 #define FreeCan			0x02
 
-using namespace std;
-
 USBtin::USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode) :
 m_szSerialPort(devname)
 {
@@ -97,7 +95,7 @@ bool USBtin::StartHardware()
 	m_stoprequested = false;
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&USBtin::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
 	return (m_thread != NULL);
 }
 

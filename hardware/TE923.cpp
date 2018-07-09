@@ -37,7 +37,7 @@ bool CTE923::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CTE923::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CTE923::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 
@@ -54,7 +54,6 @@ bool CTE923::StopHardware()
     */
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

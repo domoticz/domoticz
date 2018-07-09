@@ -189,7 +189,7 @@ int CPiFace::LoadConfig(void)
 
     std::string configfile=szUserDataFolder + "piface.conf";
 
-    fstream ConfigFile(configfile.c_str(), ios::in);
+    std::fstream ConfigFile(configfile.c_str(), std::ios::in);
 
     if (!ConfigFile.is_open())
     {
@@ -199,7 +199,7 @@ int CPiFace::LoadConfig(void)
         _log.Log(LOG_ERROR,"PiFace: Auto creating for board 0");
         LoadDefaultConfig();
         AutoCreate_piface_config();
-        fstream ConfigFile(configfile.c_str(), ios::in);
+        std::fstream ConfigFile(configfile.c_str(), std::ios::in);
     }
 
 
@@ -571,7 +571,7 @@ void CPiFace::AutoCreate_piface_config(void)
     CIOPort *IOport;
 
     std::string configfile=szUserDataFolder + "piface.conf";
-    fstream ConfigFile(configfile.c_str(), ios::out);
+    std::fstream ConfigFile(configfile.c_str(), std::ios::out);
 
 	int total_explanations = sizeof(explanation);
 
@@ -723,8 +723,8 @@ bool CPiFace::StartHardware()
                     GetAndSetInitialDeviceState(devId);
             }
 
-            m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPiFace::Do_Work, this)));
-            m_queue_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CPiFace::Do_Work_Queue, this)));
+			m_thread = std::make_shared<std::thread>(&CPiFace::Do_Work, this);
+			m_queue_thread = std::make_shared<std::thread>(&CPiFace::Do_Work_Queue, this);
         }
         else m_stoprequested=true;
     }

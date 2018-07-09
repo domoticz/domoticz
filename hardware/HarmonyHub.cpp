@@ -141,7 +141,7 @@ bool CHarmonyHub::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CHarmonyHub::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CHarmonyHub::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -152,7 +152,6 @@ bool CHarmonyHub::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
@@ -1216,7 +1215,7 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 			pos += 5;
 			std::string szQueryResponse = szHarmonyData->substr(iqStart, pos - iqStart);
 #ifdef _DEBUG
-			std::cerr << szQueryResponse << "\n";
+			std::cerr << szQueryResponse << '\n';
 #endif
 			ProcessQueryResponse(&szQueryResponse);
 		}
@@ -1228,7 +1227,7 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 			pos += 10;
 			std::string szMessage = szHarmonyData->substr(msgStart, pos - msgStart);
 #ifdef _DEBUG
-			std::cerr << szMessage << "\n";
+			std::cerr << szMessage << '\n';
 #endif
 			ProcessHarmonyMessage(&szMessage);
 			m_bReceivedMessage = true; // need this to fast forward our ping interval counter

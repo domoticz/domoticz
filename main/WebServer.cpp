@@ -672,8 +672,7 @@ namespace http {
 
 			//Start normal worker thread
 			m_bDoStop = false;
-			m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CWebServer::Do_Work, shared_from_this())));
-
+			m_thread = std::make_shared<std::thread>(&CWebServer::Do_Work, this);
 			return (m_thread != NULL);
 		}
 
@@ -796,13 +795,13 @@ namespace http {
 						}
 						else if (sLine.find("#ThemeFiles") != std::string::npos)
 						{
-							response += "#Theme=" + sWebTheme + "\n";
+							response += "#Theme=" + sWebTheme + '\n';
 							//Add all theme files
 							for (const auto & itt : _ThemeFiles)
 							{
 								std::string tfname = itt.first.substr(szWWWFolder.size() + 1);
 								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
-								response += tfname + "\n";
+								response += tfname + '\n';
 							}
 							continue;
 						}
@@ -812,7 +811,7 @@ namespace http {
 							for (const auto & itt : _FloorplanFiles)
 							{
 								std::string tfname = itt.first;
-								response += tfname + "\n";
+								response += tfname + '\n';
 							}
 							continue;
 						}
@@ -827,14 +826,14 @@ namespace http {
 									std::string IconFile48On = itt.RootFile + "48_On.png";
 									std::string IconFile48Off = itt.RootFile + "48_Off.png";
 
-									response += "images/" + CURLEncode::URLEncode(IconFile16) + "\n";
-									response += "images/" + CURLEncode::URLEncode(IconFile48On) + "\n";
-									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + "\n";
+									response += "images/" + CURLEncode::URLEncode(IconFile16) + '\n';
+									response += "images/" + CURLEncode::URLEncode(IconFile48On) + '\n';
+									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + '\n';
 								}
 							}
 						}
 					}
-					response += sLine + "\n";
+					response += sLine + '\n';
 				}
 			}
 			reply::set_content(&rep, response);
@@ -877,7 +876,7 @@ namespace http {
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
@@ -11832,7 +11831,7 @@ namespace http {
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root)

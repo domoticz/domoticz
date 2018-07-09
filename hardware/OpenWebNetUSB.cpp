@@ -47,11 +47,8 @@ bool COpenWebNetUSB::StartHardware()
 	m_retrycntr = RETRY_DELAY - 2; //will force reconnect first thing
 
 								   //Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&COpenWebNetUSB::Do_Work, this)));
-
+	m_thread = std::make_shared<std::thread>(&COpenWebNetUSB::Do_Work, this);
 	return (m_thread != NULL);
-
-	return true;
 }
 
 void COpenWebNetUSB::Do_Work()
@@ -90,8 +87,8 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 
 	int who = 0;
 	int what = 0;
-	stringstream whereStr;
-	stringstream devIdStr;
+	std::stringstream whereStr;
+	std::stringstream devIdStr;
 
 	switch (subtype) {
 		case sSwitchBlindsT1:
@@ -217,12 +214,12 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 	}
 
 
-	stringstream whoStr;
-	stringstream whatStr;
+	std::stringstream whoStr;
+	std::stringstream whatStr;
 	whoStr << who;
 	whatStr << what;
 
-	vector<bt_openwebnet> responses;
+	std::vector<bt_openwebnet> responses;
 	bt_openwebnet request(whoStr.str(), whatStr.str(), whereStr.str(), "");
 	if (sendCommand(request, responses))
 	{
@@ -240,7 +237,7 @@ Find OpenWebNetDevice in DB
 **/
 bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* used)
 {
-	vector<vector<string> > result;
+	std::vector<std::vector<std::string> > result;
 
 	//make device ID
 	unsigned char ID1 = (unsigned char)((deviceID & 0xFF000000) >> 24);
@@ -292,7 +289,7 @@ bool COpenWebNetUSB::writeRead(const char* command, unsigned int commandSize, bo
 	return true;
 }
 
-bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, bool silent)
+bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, bool silent)
 {
 	m_bWriting = true;
 
@@ -344,7 +341,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 		return false;
 	}
 
-	string responseStr((const char*)m_readBuffer, m_readBufferSize);
+	std::string responseStr((const char*)m_readBuffer, m_readBufferSize);
 	bt_openwebnet responseSession(responseStr);
 	_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", OPENWEBNET_COMMAND_SESSION, responseStr.c_str());
 
@@ -381,19 +378,19 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 	return true;
 }
 
-bool COpenWebNetUSB::ParseData(char* data, int length, vector<bt_openwebnet>& messages)
+bool COpenWebNetUSB::ParseData(char* data, int length, std::vector<bt_openwebnet>& messages)
 {
-	string buffer = string(data, length);
+	std::string buffer = std::string(data, length);
 	size_t begin = 0;
-	size_t end = string::npos;
+	size_t end = std::string::npos;
 	do {
 		end = buffer.find(OPENWEBNET_END_FRAME, begin);
-		if (end != string::npos) {
+		if (end != std::string::npos) {
 			bt_openwebnet message(buffer.substr(begin, end - begin + 2));
 			messages.push_back(message);
 			begin = end + 2;
 		}
-	} while (end != string::npos);
+	} while (end != std::string::npos);
 
 	return true;
 }

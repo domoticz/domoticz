@@ -11,8 +11,6 @@
 #include "../json/json.h"
 #include <telldus-core.h>
 
-using namespace std;
-
 CTellstick::CTellstick(const int ID, int repeats, int repeatInterval)
     : m_deviceEventId(-1),
       m_rawDeviceEventId(-1),
@@ -221,8 +219,8 @@ bool CTellstick::StartHardware()
     sOnConnected(this);
     _log.Log(LOG_NORM, "Tellstick: StartHardware");
     //Start worker thread
-	m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&CTellstick::ThreadSendCommands, this)));
-    return true;
+	m_thread = std::make_shared<std::thread>(&CTellstick::ThreadSendCommands, this);
+	return true;
 }
 
 bool CTellstick::StopHardware()
