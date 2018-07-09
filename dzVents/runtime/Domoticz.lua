@@ -34,6 +34,8 @@ local function Domoticz(settings)
 	end
 
 	nowTime['isDayTime'] = timeofday['Daytime']
+	nowTime['isCivilDayTime'] = timeofday['Civildaytime']
+	nowTime['isCivilNightTime'] = timeofday['Civilnighttime']
 	nowTime['isNightTime'] = timeofday['Nighttime']
 	nowTime['sunriseInMinutes'] = timeofday['SunriseInMinutes']
 	nowTime['sunsetInMinutes'] = timeofday['SunsetInMinutes']

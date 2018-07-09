@@ -3195,12 +3195,27 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		nightTimeBool = true;
 	}
 
+	bool civilDaytTime = false;
+	bool civilNightTime = false;
+    if ((minutesSinceMidnight > sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
+        civilDaytTime = true;
+    }
+    else {
+        civilNightTime = true;
+    }
+
 	lua_createtable(lua_state, 4, 0);
 	lua_pushstring(lua_state, "Daytime");
 	lua_pushboolean(lua_state, dayTimeBool);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "Nighttime");
 	lua_pushboolean(lua_state, nightTimeBool);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "Civildaytime");
+	lua_pushboolean(lua_state, civilDaytTime);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "Civilnighttime");
+	lua_pushboolean(lua_state, civilNightTime);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunriseInMinutes");
 	lua_pushnumber(lua_state, sunTimers[0]);
