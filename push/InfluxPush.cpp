@@ -196,7 +196,7 @@ void CInfluxPush::Do_Work()
 		while (itt != _items2do.end())
 		{
 			if (!sSendData.empty())
-				sSendData += "\n";
+				sSendData += '\n';
 
 			std::stringstream sziData;
 			sziData << itt->skey << " value=" << itt->svalue;

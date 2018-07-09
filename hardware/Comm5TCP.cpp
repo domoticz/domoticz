@@ -208,9 +208,9 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 			return false;
 
 		if (pSen->LIGHTING2.cmnd == light2_sOff)
-			write("RESET " + std::to_string(Relay) + "\n");
+			write("RESET " + std::to_string(Relay) + '\n');
 		else
-			write("SET " + std::to_string(Relay) + "\n");
+			write("SET " + std::to_string(Relay) + '\n');
 
 		return true;
 	}

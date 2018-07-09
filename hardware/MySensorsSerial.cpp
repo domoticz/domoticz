@@ -178,7 +178,7 @@ bool MySensorsSerial::OpenSerialDevice()
 		if (results.size() != 6)
 			continue;
 
-		sLine += "\n";
+		sLine += '\n';
 		ParseData((const unsigned char*)sLine.c_str(), sLine.size());
 	}
 	infile.close();

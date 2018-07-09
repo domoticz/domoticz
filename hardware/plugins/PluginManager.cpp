@@ -205,7 +205,7 @@ namespace Plugins {
 								if (!bFound && (line.find("<plugin") != std::string::npos))
 									bFound = true;
 								if (bFound)
-									sXML += line + "\n";
+									sXML += line + '\n';
 								if (line.find("</plugin>") != std::string::npos)
 									break;
 							}

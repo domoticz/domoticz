@@ -1216,7 +1216,7 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 			pos += 5;
 			std::string szQueryResponse = szHarmonyData->substr(iqStart, pos - iqStart);
 #ifdef _DEBUG
-			std::cerr << szQueryResponse << "\n";
+			std::cerr << szQueryResponse << '\n';
 #endif
 			ProcessQueryResponse(&szQueryResponse);
 		}
@@ -1228,7 +1228,7 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 			pos += 10;
 			std::string szMessage = szHarmonyData->substr(msgStart, pos - msgStart);
 #ifdef _DEBUG
-			std::cerr << szMessage << "\n";
+			std::cerr << szMessage << '\n';
 #endif
 			ProcessHarmonyMessage(&szMessage);
 			m_bReceivedMessage = true; // need this to fast forward our ping interval counter

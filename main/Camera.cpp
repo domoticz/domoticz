@@ -273,13 +273,13 @@ std::string WrapBase64(const std::string &szSource, const size_t lsize = 72)
 	{
 		std::string pstring = cstring.substr(0, lsize);
 		if (!ret.empty())
-			ret += "\n";
+			ret += '\n';
 		ret += pstring;
 		cstring = cstring.substr(lsize);
 	}
 	if (!cstring.empty())
 	{
-		ret += "\n" + cstring;
+		ret += '\n' + cstring;
 	}
 	return ret;
 }
