@@ -30,7 +30,7 @@ bool KMTronicUDP::StartHardware()
 {
 	Init();
  	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&KMTronicUDP::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&KMTronicUDP::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "KMTronic: Started");
@@ -41,7 +41,6 @@ bool KMTronicUDP::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

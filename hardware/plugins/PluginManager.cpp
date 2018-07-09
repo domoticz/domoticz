@@ -104,7 +104,7 @@ namespace Plugins {
 		// Pull UI elements from plugins and create manifest map in memory
 		BuildManifest();
 
-		m_thread = std::make_shared<std::thread>(std::bind(&CPluginSystem::Do_Work, this));
+		m_thread = std::make_shared<std::thread>(&CPluginSystem::Do_Work, this);
 
 		szPyVersion = Py_GetVersion();
 

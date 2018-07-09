@@ -61,7 +61,7 @@ bool CHttpPoller::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CHttpPoller::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CHttpPoller::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != NULL);

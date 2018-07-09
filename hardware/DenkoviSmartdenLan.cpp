@@ -39,7 +39,7 @@ bool CDenkoviSmartdenLan::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CDenkoviSmartdenLan::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CDenkoviSmartdenLan::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Denkovi: Started");
@@ -50,7 +50,6 @@ bool CDenkoviSmartdenLan::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

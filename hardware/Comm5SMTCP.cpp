@@ -54,7 +54,7 @@ bool Comm5SMTCP::StartHardware()
 	m_rxbufferpos = 0;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&Comm5SMTCP::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&Comm5SMTCP::Do_Work, this);
 
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: Started");
 
@@ -65,7 +65,6 @@ bool Comm5SMTCP::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

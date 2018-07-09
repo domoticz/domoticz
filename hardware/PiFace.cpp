@@ -723,8 +723,8 @@ bool CPiFace::StartHardware()
                     GetAndSetInitialDeviceState(devId);
             }
 
-			m_thread = std::make_shared<std::thread>(std::bind(&CPiFace::Do_Work, this));
-			m_queue_thread = std::make_shared<std::thread>(std::bind(&CPiFace::Do_Work_Queue, this));
+			m_thread = std::make_shared<std::thread>(&CPiFace::Do_Work, this);
+			m_queue_thread = std::make_shared<std::thread>(&CPiFace::Do_Work_Queue, this);
         }
         else m_stoprequested=true;
     }

@@ -253,11 +253,11 @@ bool CGpio::StartHardware()
 			_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
 			m_stoprequested=true;
 		 }*/
-		m_thread_updatestartup = std::make_shared<std::thread>(std::bind(&CGpio::UpdateStartup, this));
+		m_thread_updatestartup = std::make_shared<std::thread>(&CGpio::UpdateStartup, this);
 
 		if (m_pollinterval > 0)
 		{
-			m_thread_poller = std::make_shared<std::thread>(std::bind(&CGpio::Poller, this));
+			m_thread_poller = std::make_shared<std::thread>(&CGpio::Poller, this);
 		}
 	}
 	else
@@ -502,7 +502,7 @@ bool CGpio::InitPins()
 			if (fd != -1)
 			{
 				pinPass = gpio_pin;
-				m_thread_interrupt[gpio_pin] = std::make_shared<std::thread>(std::bind(&CGpio::InterruptHandler, this));
+				m_thread_interrupt[gpio_pin] = std::make_shared<std::thread>(&CGpio::InterruptHandler, this);
 				while (pinPass != -1)
 					sleep_milliseconds(1);
 			}

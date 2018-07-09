@@ -74,7 +74,7 @@ bool CAnnaThermostat::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CAnnaThermostat::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CAnnaThermostat::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -84,7 +84,6 @@ bool CAnnaThermostat::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

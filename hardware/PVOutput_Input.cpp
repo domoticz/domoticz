@@ -35,7 +35,7 @@ bool CPVOutputInput::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CPVOutputInput::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CPVOutputInput::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -45,7 +45,6 @@ bool CPVOutputInput::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

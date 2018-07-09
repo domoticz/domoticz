@@ -43,7 +43,7 @@ bool KMTronicSerial::StartHardware()
 
 	//Start worker thread
 	m_bIsStarted = true;
-	m_thread = std::make_shared<std::thread>(std::bind(&KMTronicSerial::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&KMTronicSerial::Do_Work, this);
 	return (m_thread != NULL);
 }
 

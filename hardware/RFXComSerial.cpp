@@ -99,7 +99,7 @@ bool RFXComSerial::StartHardware()
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&RFXComSerial::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
 
 	return (m_thread != NULL);
 

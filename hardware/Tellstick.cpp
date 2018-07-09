@@ -219,7 +219,7 @@ bool CTellstick::StartHardware()
     sOnConnected(this);
     _log.Log(LOG_NORM, "Tellstick: StartHardware");
     //Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CTellstick::ThreadSendCommands, this));
+	m_thread = std::make_shared<std::thread>(&CTellstick::ThreadSendCommands, this);
 	return true;
 }
 

@@ -157,7 +157,7 @@ bool CInfluxPush::StartThread()
 {
 	StopThread();
 	m_stoprequested = false;
-	m_background_task_thread = std::make_shared<std::thread>(std::bind(&CInfluxPush::Do_Work, this));
+	m_background_task_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
 	return (m_background_task_thread != NULL);
 }
 

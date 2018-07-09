@@ -46,7 +46,7 @@ bool CTado::StartHardware()
 	_log.Log(LOG_NORM, "Tado: StartHardware() called.");
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CTado::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CTado::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -70,7 +70,6 @@ bool CTado::StopHardware()
 	_log.Log(LOG_NORM, "Tado: StopHardware() called.");
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

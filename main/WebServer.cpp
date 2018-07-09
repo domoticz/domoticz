@@ -672,7 +672,7 @@ namespace http {
 
 			//Start normal worker thread
 			m_bDoStop = false;
-			m_thread = std::make_shared<std::thread>(std::bind(&CWebServer::Do_Work, this));
+			m_thread = std::make_shared<std::thread>(&CWebServer::Do_Work, this);
 			return (m_thread != NULL);
 		}
 

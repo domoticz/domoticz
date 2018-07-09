@@ -2340,7 +2340,7 @@ void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, con
 bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
-	m_send_thread = std::make_shared<std::thread>(std::bind(&MySensorsBase::Do_Send_Work, this));
+	m_send_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Send_Work, this);
 	return (m_send_thread != NULL);
 }
 

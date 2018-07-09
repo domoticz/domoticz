@@ -624,7 +624,7 @@ bool XiaomiGateway::StartHardware()
 		XiaomiGatewayTokenManager::GetInstance();
 
 		//Start worker thread
-		m_thread = std::shared_ptr<std::thread>(new std::thread(std::bind(&XiaomiGateway::Do_Work, this)));
+		m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
 	}
 
 	return (m_thread != NULL);

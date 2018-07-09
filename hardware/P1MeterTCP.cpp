@@ -58,7 +58,7 @@ bool P1MeterTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&P1MeterTCP::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&P1MeterTCP::Do_Work, this);
 	return (m_thread != NULL);
 }
 

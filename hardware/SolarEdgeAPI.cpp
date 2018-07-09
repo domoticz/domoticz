@@ -73,7 +73,7 @@ SolarEdgeAPI::~SolarEdgeAPI(void)
 bool SolarEdgeAPI::StartHardware()
 {
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&SolarEdgeAPI::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&SolarEdgeAPI::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -83,7 +83,6 @@ bool SolarEdgeAPI::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

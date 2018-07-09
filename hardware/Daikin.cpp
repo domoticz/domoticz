@@ -103,7 +103,7 @@ bool CDaikin::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CDaikin::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CDaikin::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());
@@ -114,7 +114,6 @@ bool CDaikin::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}

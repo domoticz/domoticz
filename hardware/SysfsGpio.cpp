@@ -180,7 +180,7 @@ bool CSysfsGpio::StartHardware()
 {
 	Init();
 
-	m_thread = std::make_shared<std::thread>(std::bind(&CSysfsGpio::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CSysfsGpio::Do_Work, this);
 	m_bIsStarted = true;
 
 	return (m_thread != NULL);
@@ -494,7 +494,7 @@ void CSysfsGpio::Init()
 
 	if (m_interrupts_enabled)
 	{
-		m_edge_thread = std::make_shared<std::thread>(std::bind(&CSysfsGpio::EdgeDetectThread, this));
+		m_edge_thread = std::make_shared<std::thread>(&CSysfsGpio::EdgeDetectThread, this);
 	}
 }
 

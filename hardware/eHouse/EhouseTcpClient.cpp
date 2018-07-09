@@ -144,7 +144,7 @@ char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCou
 	EhouseSubmitData(tcp_client_socket_index);
 	ExecQueuedEvents();
 #else
-	EhouseTcpClientThread[tcp_client_socket_index] = std::make_shared<std::thread>(std::bind(&eHouseTCP::EhouseSubmitData, this, tcp_client_socket_index));
+	EhouseTcpClientThread[tcp_client_socket_index] = std::make_shared<std::thread>(&eHouseTCP::EhouseSubmitData, this, tcp_client_socket_index);
 
 	EhouseTcpClientThread[tcp_client_socket_index]->detach();
 	msl(100);

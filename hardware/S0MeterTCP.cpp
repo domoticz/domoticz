@@ -35,7 +35,7 @@ bool S0MeterTCP::StartHardware()
 	ReloadLastTotals();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&S0MeterTCP::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&S0MeterTCP::Do_Work, this);
 	return (m_thread != NULL);
 }
 

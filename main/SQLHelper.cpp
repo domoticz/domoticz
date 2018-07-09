@@ -3039,7 +3039,7 @@ bool CSQLHelper::OpenDatabase()
 
 bool CSQLHelper::StartThread()
 {
-	m_background_task_thread = std::make_shared<std::thread>(std::bind(&CSQLHelper::Do_Work, this));
+	m_background_task_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
 	return (m_background_task_thread != NULL);
 }
 

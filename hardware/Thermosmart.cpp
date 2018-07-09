@@ -99,7 +99,7 @@ bool CThermosmart::StartHardware()
 	Init();
 	m_LastMinute = -1;
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(std::bind(&CThermosmart::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CThermosmart::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != NULL);
@@ -109,7 +109,6 @@ bool CThermosmart::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
