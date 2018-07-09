@@ -1,21 +1,16 @@
 #include "stdafx.h"
 #include "Arilux.h"
-#include "../main/Logger.h"
-#include "../main/Helper.h"
-#include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "../hardware/hardwaretypes.h"
+#include "../main/Helper.h"
+#include "../main/localtime_r.h"
+#include "../main/Logger.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
 #include <numeric>
-#include <boost/array.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-
-
 
 /*
 Arilux AL-C0x is a Wifi LED Controller based on ESP8266.

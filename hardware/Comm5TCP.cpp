@@ -1,13 +1,9 @@
 #include "stdafx.h"
 #include "Comm5TCP.h"
+#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
-#include "../main/mainworker.h"
-
-#include <iostream>
-
-#include <boost/lexical_cast.hpp>
+#include "../main/RFXtrx.h"
 
 #define RETRY_DELAY 30
 #define Max_Comm5_MA_Relais 16

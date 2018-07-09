@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
@@ -2082,14 +2081,14 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			bHaveValue = true;
 			break;
 		case V_IR_RECEIVE:
-			pChild->SetValue(vType, (int)boost::lexical_cast<unsigned int>(payload));
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_CUSTOM:
 			//Request for a sensor state
 			if (!payload.empty())
 			{
-				uint64_t idx = boost::lexical_cast<uint64_t>(payload);
+				uint64_t idx = std::stoull(payload);
 				int nValue;
 				std::string sValue;
 				if (m_mainworker.GetSensorData(idx, nValue, sValue))

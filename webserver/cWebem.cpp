@@ -6,8 +6,6 @@
 #include "stdafx.h"
 #include "cWebem.h"
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // uuid generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
@@ -1506,7 +1504,7 @@ namespace http {
 				rep = reply::stock_reply(reply::internal_server_error);
 				return true;
 			}
-			int version = boost::lexical_cast<int>(h);
+			int version = atoi(h);
 			// we support versions 13 (and higher)
 			if (version < 13)
 			{

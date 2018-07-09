@@ -7,7 +7,6 @@
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
 #include "../main/WebServer.h"
-#include <boost/tokenizer.hpp>
 
 /*
 Driver for Legrand EcoCompteur IP (4 120 00)

@@ -1,21 +1,18 @@
 #include "stdafx.h"
 #include "Kodi.h"
+#include "../hardware/hardwaretypes.h"
 #include "../json/json.h"
+#include "../main/EventSystem.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../notifications/NotificationHelper.h"
-#include "../main/WebServer.h"
 #include "../main/mainworker.h"
-#include "../main/EventSystem.h"
-#include "../hardware/hardwaretypes.h"
-#include <boost/algorithm/string.hpp>
+#include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
+#include "../notifications/NotificationHelper.h"
 
-#include <iostream>
-
-#define round(a) ( int ) ( a + .5 )
 #define MAX_TITLE_LEN 40
-#define DEBUG_LOGGING (m_Port[0] == '-')
+
+//Giz: To Author, please try to rebuild this class using ASyncTCP
 
 void CKodiNode::CKodiStatus::Clear()
 {
@@ -165,7 +162,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 
 	m_Socket = NULL;
 
-	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
 
 	std::vector<std::vector<std::string> > result2;
 	result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, m_szDevID);
@@ -181,7 +178,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 CKodiNode::~CKodiNode(void)
 {
 	handleDisconnect();
-	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
 }
 
 void CKodiNode::handleMessage(std::string& pMessage)
@@ -193,7 +190,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		std::string	sMessage;
 		std::stringstream ssMessage;
 
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
+		_log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
 		bool bRet = jReader.parse(pMessage, root);
 		if ((!bRet) || (!root.isObject()))
 		{
@@ -252,7 +249,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 									m_CurrentStatus.Status(MSTAT_VIDEO);
 								else
 								{
-									if (DEBUG_LOGGING) _log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
+									_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
 								}
 
 								if (m_CurrentStatus.PlayerID() != "")  // if we now have a player id then request more details
@@ -282,27 +279,25 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							}
 							else if (root["method"] == "Application.OnVolumeChanged")
 							{
-								if (DEBUG_LOGGING)
-								{
-									float		iVolume = root["params"]["data"]["volume"].asFloat();
-									bool		bMuted = root["params"]["data"]["muted"].asBool();
-									_log.Log(LOG_NORM, "Kodi: (%s) Volume changed to %3.5f, Muted: %s.", m_Name.c_str(), iVolume, bMuted?"true":"false");
-								}
+								float		iVolume = root["params"]["data"]["volume"].asFloat();
+								bool		bMuted = root["params"]["data"]["muted"].asBool();
+								_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Volume changed to %3.5f, Muted: %s.", m_Name.c_str(), iVolume, bMuted?"true":"false");
 							}
 							else if (root["method"] == "Player.OnSpeedChanged")
 							{
-								if (DEBUG_LOGGING)
-								{
-									_log.Log(LOG_NORM, "Kodi: (%s) Speed changed.", m_Name.c_str());
-								}
+								_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Speed changed.", m_Name.c_str());
 							}
-							else if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Message warning, unhandled method: '%s'", m_Name.c_str(), root["method"].asCString());
+							else
+								_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Message warning, unhandled method: '%s'", m_Name.c_str(), root["method"].asCString());
 						}
-						else _log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no method: '%s'", m_Name.c_str(), pMessage.c_str());
+						else
+							_log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no method: '%s'", m_Name.c_str(), pMessage.c_str());
 					}
-					else _log.Log(LOG_ERROR, "Kodi: (%s) Message error, invalid sender: '%s'", m_Name.c_str(), root["params"]["sender"].asCString());
+					else
+						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, invalid sender: '%s'", m_Name.c_str(), root["params"]["sender"].asCString());
 				}
-				else _log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no sender: '%s'", m_Name.c_str(), pMessage.c_str());
+				else
+					_log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no sender: '%s'", m_Name.c_str(), pMessage.c_str());
 			}
 			else  // responses to queries
 			{
@@ -412,7 +407,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								bCanSuspend = root["result"]["cansuspend"].asBool();
 								if (bCanSuspend) sAction = "Suspend";
 							}
-							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
+							_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
 								bCanShutdown ? "true" : "false", bCanHibernate ? "true" : "false", bCanSuspend ? "true" : "false", sAction.c_str());
 
 							if (sAction != "Nothing")
@@ -489,12 +484,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								if (m_PlaylistPosition >= iFavCount) m_PlaylistPosition = iFavCount - 1;
 								if (iFavCount)
 									for (int i = 0; i < iFavCount; i++) {
-										if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Favourites %d is '%s', type '%s'.", m_Name.c_str(), i, root["result"]["favourites"][i]["title"].asCString(), root["result"]["favourites"][i]["type"].asCString());
+										_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourites %d is '%s', type '%s'.", m_Name.c_str(), i, root["result"]["favourites"][i]["title"].asCString(), root["result"]["favourites"][i]["type"].asCString());
 										std::string sType = root["result"]["favourites"][i]["type"].asCString();
 										if (i == m_PlaylistPosition) {
 											if (sType == "media") {
 												std::string sPath = root["result"]["favourites"][i]["path"].asCString();
-												if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Favourites %d has path '%s' and will be played.", m_Name.c_str(), i, sPath.c_str());
+												_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourites %d has path '%s' and will be played.", m_Name.c_str(), i, sPath.c_str());
 												ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"file\":\"" << sPath << "\"}},\"id\":2101}";
 												handleWrite(ssMessage.str());
 												break;
@@ -512,7 +507,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						break;
 					case 2101: // signal outcome
 						if (root["result"] == "OK")
-							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Favourite play request successful.", m_Name.c_str());
+							_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourite play request successful.", m_Name.c_str());
 						break;
 					default:
 						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown ID found: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -597,18 +592,16 @@ void CKodiNode::handleConnect()
 			}
 			else
 			{
-				if ((DEBUG_LOGGING) ||
-					(
-						(ec.value() != 113) &&
-						(ec.value() != 111) &&
-						(ec.value() != 10060) &&
-						(ec.value() != 10061) &&
-						(ec.value() != 10064) //&&
-						//(ec.value() != 10061)
-						)
-					) // Connection failed due to no response, no route or active refusal
+				if (
+					(ec.value() != 113) &&
+					(ec.value() != 111) &&
+					(ec.value() != 10060) &&
+					(ec.value() != 10061) &&
+					(ec.value() != 10064) //&&
+					//(ec.value() != 10061)
+					)
 				{
-					_log.Log(LOG_NORM, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+					_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
 				}
 				delete m_Socket;
 				m_Socket = NULL;
@@ -679,7 +672,7 @@ void CKodiNode::handleWrite(std::string pMessage)
 	if (!m_stoprequested) {
 		if (m_Socket)
 		{
-			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Sending data: '%s'", m_Name.c_str(), pMessage.c_str());
+			_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Sending data: '%s'", m_Name.c_str(), pMessage.c_str());
 			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
 			m_sLastMessage = pMessage;
 		}
@@ -694,7 +687,7 @@ void CKodiNode::handleDisconnect()
 {
 	if (m_Socket)
 	{
-		_log.Log(LOG_NORM, "Kodi: (%s) Disonnected.", m_Name.c_str());
+		_log.Log(LOG_NORM, "Kodi: (%s) Disconnected.", m_Name.c_str());
 		boost::system::error_code	ec;
 		m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		m_Socket->close();
@@ -706,7 +699,7 @@ void CKodiNode::handleDisconnect()
 void CKodiNode::Do_Work()
 {
 	m_Busy = true;
-	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Entering work loop.", m_Name.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Entering work loop.", m_Name.c_str());
 	int	iPollCount = 2;
 
 	try

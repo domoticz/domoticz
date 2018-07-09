@@ -12,7 +12,6 @@
 #include "../../httpclient/HTTPClient.h"
 #include "../../json/json.h"
 #include "../hardwaretypes.h"
-#include <boost/make_shared.hpp>
 
 #define round(a) ( int ) ( a + .5 )
 

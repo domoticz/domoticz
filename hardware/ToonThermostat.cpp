@@ -1,20 +1,18 @@
 #include "stdafx.h"
 #include "ToonThermostat.h"
+#include "hardwaretypes.h"
+#include "../httpclient/HTTPClient.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../httpclient/HTTPClient.h"
-#include "../main/mainworker.h"
 #include "../json/json.h"
 
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
-
-#define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat

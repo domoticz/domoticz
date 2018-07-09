@@ -13,27 +13,18 @@
  */
 #include "stdafx.h"
 #include "EvohomeRadio.h"
-#include "../main/Logger.h"
 #include "hardwaretypes.h"
-#include "../main/RFXtrx.h"
 #include "../main/Helper.h"
-#include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
 #include "../main/mainworker.h"
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <boost/bind.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
-
 extern std::string szUserDataFolder;
-
-#include <ctime>
 
 enum evoCommands
 {

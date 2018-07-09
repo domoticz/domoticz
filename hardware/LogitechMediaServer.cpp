@@ -1,16 +1,14 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
-#include <boost/lexical_cast.hpp>
 #include "../hardware/hardwaretypes.h"
 #include "../json/json.h"
 #include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../notifications/NotificationHelper.h"
-#include "../main/WebServer.h"
-#include "../main/mainworker.h"
 #include "../main/localtime_r.h"
-#include "../webserver/cWebem.h"
+#include "../main/Logger.h"
+#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
+#include "../notifications/NotificationHelper.h"
 #include "../httpclient/HTTPClient.h"
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
