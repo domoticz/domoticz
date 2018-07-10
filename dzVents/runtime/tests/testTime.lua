@@ -626,6 +626,192 @@ describe('Time', function()
 				end)
 			end)
 
+			describe('at civiltwilightend', function()
+
+				it('should return true if it is at civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_true(t.ruleIsAtCivilTwilightEnd('at civiltwilightend'))
+				end)
+
+				it('should return if it is not at civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 63 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_false(t.ruleIsAtCivilTwilightEnd('at civiltwilightend'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsAtCivilTwilightEnd('at blabalbba'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_true(t.ruleIsAtCivilTwilightEnd('some random at civiltwilightend text'))
+				end)
+			end)
+
+			describe('xx minutes before civiltwilightend', function()
+
+				it('should return true if it is xx minutes before civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:02:00')
+					assert.is_true(t.ruleIsBeforeCivilTwilightEnd('2 minutes before civiltwilightend'))
+				end)
+
+				it('should return if it is more than 2 minutes before civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:01:00')
+					assert.is_false(t.ruleIsBeforeCivilTwilightEnd('2 minutes before civiltwilightend'))
+				end)
+
+				it('should return if it is less than 2 minutes before civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:03:00')
+					assert.is_false(t.ruleIsBeforeCivilTwilightEnd('2 minutes before civiltwilightend'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsBeforeCivilTwilightEnd('minutes before civiltwilightend'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:02:00')
+					assert.is_true(t.ruleIsBeforeCivilTwilightEnd('some random 2 minutes before civiltwilightend text'))
+				end)
+			end)
+
+			describe('xx minutes after civiltwilightend', function()
+
+				it('should return true if it is xx minutes after civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:06:00')
+					assert.is_true(t.ruleIsAfterCivilTwilightEnd('2 minutes after civiltwilightend'))
+				end)
+
+				it('should return if it is more less 2 minutes after civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:05:00')
+					assert.is_false(t.ruleIsAfterCivilTwilightEnd('2 minutes after civiltwilightend'))
+				end)
+
+				it('should return if it is more than 2 minutes after civiltwilightend', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:07:00')
+					assert.is_false(t.ruleIsAfterCivilTwilightEnd('2 minutes after civiltwilightend'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsAfterCivilTwilightEnd('minutes after civiltwilightend'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:06:00')
+					assert.is_true(t.ruleIsAfterCivilTwilightEnd('some random 2 minutes after civiltwilightend text'))
+				end)
+			end)
+
+			describe('at civiltwilightstart', function()
+
+				it('should return true if it is at civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_true(t.ruleIsAtCivilTwilightStart('at civiltwilightstart'))
+				end)
+
+				it('should return if it is not at civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 63 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_false(t.ruleIsAtCivilTwilightStart('at civiltwilightstart'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsAtCivilTwilightStart('at blabalbba'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_true(t.ruleIsAtCivilTwilightStart('some random at civiltwilightstart text'))
+				end)
+			end)
+
+			describe('xx minutes before civiltwilightstart', function()
+
+				it('should return true if it is xx minutes before civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:02:00')
+					assert.is_true(t.ruleIsBeforeCivilTwilightStart('2 minutes before civiltwilightstart'))
+				end)
+
+				it('should return if it is more than 2 minutes before civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:01:00')
+					assert.is_false(t.ruleIsBeforeCivilTwilightStart('2 minutes before civiltwilightstart'))
+				end)
+
+				it('should return if it is less than 2 minutes before civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:03:00')
+					assert.is_false(t.ruleIsBeforeCivilTwilightStart('2 minutes before civiltwilightstart'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsBeforeCivilTwilightStart('minutes before civiltwilightstart'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:02:00')
+					assert.is_true(t.ruleIsBeforeCivilTwilightStart('some random 2 minutes before civiltwilightstart text'))
+				end)
+			end)
+
+			describe('xx minutes after civiltwilightstart', function()
+
+				it('should return true if it is xx minutes after civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:06:00')
+					assert.is_true(t.ruleIsAfterCivilTwilightStart('2 minutes after civiltwilightstart'))
+				end)
+
+				it('should return if it is more less 2 minutes after civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:05:00')
+					assert.is_false(t.ruleIsAfterCivilTwilightStart('2 minutes after civiltwilightstart'))
+				end)
+
+				it('should return if it is more than 2 minutes after civiltwilightstart', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:07:00')
+					assert.is_false(t.ruleIsAfterCivilTwilightStart('2 minutes after civiltwilightstart'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_nil(t.ruleIsAfterCivilTwilightStart('minutes after civiltwilightstart'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					_G.timeofday = { ['CivTwilightStartInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:06:00')
+					assert.is_true(t.ruleIsAfterCivilTwilightStart('some random 2 minutes after civiltwilightstart text'))
+				end)
+			end)
+
 			describe('at daytime', function()
 
 				it('should return true if it is day time', function()
