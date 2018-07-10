@@ -177,7 +177,7 @@ namespace tcp_proxy
 	{
 		try
 		{
-			session_ = boost::shared_ptr<bridge>(
+			session_ = std::shared_ptr<bridge>(
 				new bridge(io_service_)
 			);
 			session_->sDownstreamData.connect( boost::bind( &acceptor::OnDownstreamData, this, _1, _2 ) );

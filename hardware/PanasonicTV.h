@@ -33,7 +33,7 @@ private:
 	void ReloadNodes();
 	void UnloadNodes();
 private:
-	static	std::vector<boost::shared_ptr<CPanasonicNode> > m_pNodes;
+	static	std::vector<std::shared_ptr<CPanasonicNode> > m_pNodes;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::shared_ptr<std::thread> m_thread;

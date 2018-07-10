@@ -183,7 +183,7 @@ bool CSysfsGpio::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CSysfsGpio::Do_Work, this);
 	m_bIsStarted = true;
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CSysfsGpio::StopHardware()
@@ -195,6 +195,7 @@ bool CSysfsGpio::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -207,6 +208,7 @@ bool CSysfsGpio::StopHardware()
 		if (m_edge_thread)
 		{
 			m_edge_thread->join();
+			m_edge_thread.reset();
 		}
 	}
 	catch (...)

@@ -17,7 +17,6 @@
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
 #include "clx_unzip.h"
-#include <boost/lexical_cast.hpp>
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
 #ifdef ENABLE_PYTHON
@@ -669,6 +668,7 @@ CSQLHelper::~CSQLHelper(void)
 	{
 		m_stoprequested = true;
 		m_background_task_thread->join();
+		m_background_task_thread.reset();
 	}
 	if (m_dbase != NULL)
 	{

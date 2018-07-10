@@ -2,8 +2,6 @@
 #ifdef WIN32
 #include "1WireSystem.h"
 
-#include <boost/asio.hpp>
-
 namespace Json
 {
 	class Value;

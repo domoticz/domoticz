@@ -17,7 +17,7 @@ namespace http {
 	namespace server {
 		class cWebem;
 		struct _tWebUserPassword;
-class CWebServer : public session_store, public boost::enable_shared_from_this<CWebServer>
+class CWebServer : public session_store, public std::enable_shared_from_this<CWebServer>
 {
 	typedef boost::function< void(WebEmSession & session, const request& req, Json::Value &root) > webserver_response_function;
 public:

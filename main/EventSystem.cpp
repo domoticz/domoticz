@@ -3266,10 +3266,8 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	if (status == 0)
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
-		//luaThread = boost::thread(&CEventSystem::luaThread, lua_state, filename);
-		//std::shared_ptr<std::thread> luaThread = std::shared_ptr<std::thread>(new std::thread(&CEventSystem::luaThread, this, lua_state, filename))); //use std::make_shard
+
 		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
-		//m_thread = std::make_shared<std::thread>(&CEventSystem::Do_Work, this);
 
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
 		{

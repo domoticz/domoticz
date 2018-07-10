@@ -1,13 +1,9 @@
 #include "stdafx.h"
 #include "Comm5TCP.h"
+#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
-#include "../main/mainworker.h"
-
-#include <iostream>
-
-#include <boost/lexical_cast.hpp>
+#include "../main/RFXtrx.h"
 
 #define RETRY_DELAY 30
 #define Max_Comm5_MA_Relais 16
@@ -66,15 +62,16 @@ bool Comm5TCP::StartHardware()
 
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: Started");
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool Comm5TCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;

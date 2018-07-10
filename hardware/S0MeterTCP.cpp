@@ -36,7 +36,7 @@ bool S0MeterTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&S0MeterTCP::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool S0MeterTCP::StopHardware()

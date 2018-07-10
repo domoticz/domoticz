@@ -5,13 +5,13 @@
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
+#include "../main/Noncopyable.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
 #include <boost/asio.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 #include "pinger/icmp_header.h"
 #include "pinger/ipv4_header.h"
@@ -19,7 +19,7 @@
 #include <iostream>
 
 class pinger
-	: private boost::noncopyable
+	: private domoticz::noncopyable
 {
 public:
 	pinger(boost::asio::io_service& io_service, const char* destination, const int iPingTimeoutms)

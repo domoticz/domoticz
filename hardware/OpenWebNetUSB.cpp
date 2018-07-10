@@ -48,7 +48,7 @@ bool COpenWebNetUSB::StartHardware()
 
 								   //Start worker thread
 	m_thread = std::make_shared<std::thread>(&COpenWebNetUSB::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 void COpenWebNetUSB::Do_Work()
@@ -65,8 +65,11 @@ void COpenWebNetUSB::Do_Work()
 bool COpenWebNetUSB::StopHardware()
 {
 	m_stoprequested = true;
-	if (m_thread != NULL)
+	if (m_thread)
+	{
 		m_thread->join();
+		m_thread.reset();
+	}
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 	sleep_milliseconds(10);
 	terminate();

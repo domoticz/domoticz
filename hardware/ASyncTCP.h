@@ -8,7 +8,7 @@
 #include <exception>                       // for exception
 namespace boost { namespace system { class error_code; } }
 
-typedef boost::shared_ptr<class ASyncTCP> ASyncTCPRef;
+typedef std::shared_ptr<class ASyncTCP> ASyncTCPRef;
 
 class ASyncTCP
 {

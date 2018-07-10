@@ -12,7 +12,7 @@
 #define HTTP_REQUEST_HANDLER_HPP
 
 #include <string>
-#include <boost/noncopyable.hpp>
+#include "../main/Noncopyable.h"
 #ifndef WEBSERVER_DONT_USE_ZIP
 	#include <unzip.h>
 	#define USEWIN32IOAPI
@@ -35,7 +35,7 @@ struct modify_info {
 
 /// The common handler for all incoming requests.
 class request_handler
-  : private boost::noncopyable
+  : private domoticz::noncopyable
 {
 public:
   /// Construct with a directory containing files to be served.

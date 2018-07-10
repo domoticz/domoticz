@@ -28,6 +28,7 @@
 #include "ASyncSerial.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
+#include "../main/Noncopyable.h"
 
 #include <string>
 #include <algorithm>
@@ -46,7 +47,8 @@
 //Class AsyncSerial
 //
 
-class AsyncSerialImpl: private boost::noncopyable
+class AsyncSerialImpl
+	: private domoticz::noncopyable
 {
 public:
     AsyncSerialImpl(): io(), port(io), backgroundThread(), open(false),

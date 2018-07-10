@@ -91,12 +91,14 @@ bool C1Wire::StopHardware()
 	{
 		m_stoprequested = true;
 		m_threadSensors->join();
+		m_threadSensors.reset();
 	}
 
 	if (m_threadSwitches)
 	{
 		m_stoprequested = true;
 		m_threadSwitches->join();
+		m_threadSwitches.reset();
 	}
 
 	m_bIsStarted=false;

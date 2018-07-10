@@ -46,9 +46,9 @@ private:
 	unsigned int m_iBaudRate;
 
 	_eMState m_state;
-	std::shared_ptr<std::thread> m_pollerthread;
+	std::shared_ptr<std::thread> m_thread;
 	int m_retrycntr;
-	bool m_stoprequestedpoller;
+	bool m_stoprequested;
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
 };

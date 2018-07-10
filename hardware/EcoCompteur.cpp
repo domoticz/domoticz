@@ -7,7 +7,6 @@
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
 #include "../main/WebServer.h"
-#include <boost/tokenizer.hpp>
 
 /*
 Driver for Legrand EcoCompteur IP (4 120 00)
@@ -52,15 +51,16 @@ bool CEcoCompteur::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CEcoCompteur::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CEcoCompteur::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
