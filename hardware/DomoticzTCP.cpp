@@ -118,7 +118,7 @@ bool DomoticzTCP::StartHardwareTCP()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&DomoticzTCP::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool DomoticzTCP::StopHardware()
@@ -153,6 +153,7 @@ bool DomoticzTCP::StopHardwareTCP()
 			{
 				m_stoprequested = true;
 				m_thread->join();
+				m_thread.reset();
 			}
 		}
 		catch (...)

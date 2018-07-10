@@ -201,7 +201,7 @@ bool CPanasonicNode::StartThread()
 {
 	StopThread();
 	m_thread = std::make_shared<std::thread>(&CPanasonicNode::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 std::string	CPanasonicNode::CPanasonicStatus::LogMessage()
@@ -1011,8 +1011,6 @@ void CPanasonic::ReloadNodes()
 			(*itt)->StartThread();
 		}
 		sleep_milliseconds(100);
-		//_log.Log(LOG_NORM, "Panasonic Plugin: Starting I/O service thread.");
-		//boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
 	}
 }
 

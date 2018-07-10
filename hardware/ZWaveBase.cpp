@@ -53,15 +53,16 @@ bool ZWaveBase::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&ZWaveBase::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool ZWaveBase::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted=false;
 	return true;

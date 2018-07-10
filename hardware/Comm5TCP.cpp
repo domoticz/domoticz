@@ -62,15 +62,16 @@ bool Comm5TCP::StartHardware()
 
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: Started");
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool Comm5TCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;

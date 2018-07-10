@@ -126,6 +126,7 @@ bool P1MeterSerial::StopHardware()
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
     _log.Log(LOG_STATUS, "P1 Smart Meter: Serial Worker stopped...");

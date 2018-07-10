@@ -184,7 +184,7 @@ bool CEvohomeRadio::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CEvohomeRadio::Do_Work, this);
 	m_bIsStarted=true;
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 std::string CEvohomeMsg::Encode()

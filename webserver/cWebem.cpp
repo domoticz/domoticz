@@ -102,8 +102,8 @@ namespace http {
 				}
 				if (m_io_service_thread)
 				{
-					if (m_io_service_thread->joinable())
-						m_io_service_thread->join();
+					m_io_service_thread->join();
+					m_io_service_thread.reset();
 				}
 			}
 			catch (...)

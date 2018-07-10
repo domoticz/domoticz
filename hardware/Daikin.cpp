@@ -107,15 +107,16 @@ bool CDaikin::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CDaikin::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	_log.Log(LOG_STATUS, "Daikin: Stopped hardware %s ...", m_szIPAddress.c_str());
 	m_bIsStarted=false;

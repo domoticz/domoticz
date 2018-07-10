@@ -18,7 +18,7 @@ private:
 	void OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
 	void DoInfluxPush();
 
-	std::shared_ptr<std::thread> m_background_task_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;
 	bool m_stoprequested;
 	bool StartThread();

@@ -673,7 +673,7 @@ namespace http {
 			//Start normal worker thread
 			m_bDoStop = false;
 			m_thread = std::make_shared<std::thread>(&CWebServer::Do_Work, this);
-			return (m_thread != NULL);
+			return (m_thread != nullptr);
 		}
 
 		void CWebServer::StopServer()
@@ -684,7 +684,7 @@ namespace http {
 				if (m_pWebEm == NULL)
 					return;
 				m_pWebEm->Stop();
-				if (m_thread != NULL) {
+				if (m_thread) {
 					m_thread->join();
 					m_thread.reset();
 				}

@@ -123,7 +123,7 @@ namespace http {
 			void StartThread();
 			boost::asio::io_service io_service;
 			std::shared_ptr<CProxyClient> proxyclient;
-			boost::thread* m_thread;
+			std::shared_ptr<std::thread> m_thread;
 			std::string m_pDocRoot;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServer *m_pDomServ;

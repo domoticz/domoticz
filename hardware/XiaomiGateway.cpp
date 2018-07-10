@@ -627,7 +627,7 @@ bool XiaomiGateway::StartHardware()
 		m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
 	}
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool XiaomiGateway::StopHardware()
@@ -637,6 +637,7 @@ bool XiaomiGateway::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)

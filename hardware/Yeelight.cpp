@@ -73,7 +73,7 @@ bool Yeelight::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Yeelight::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool Yeelight::StopHardware()
@@ -83,6 +83,7 @@ bool Yeelight::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)

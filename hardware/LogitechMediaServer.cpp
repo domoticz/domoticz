@@ -118,7 +118,7 @@ bool CLogitechMediaServer::StartHardware()
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CLogitechMediaServer::StopHardware()

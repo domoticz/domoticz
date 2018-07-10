@@ -179,7 +179,7 @@ bool RelayNet::StartHardware()
 		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
 	}
 
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		bOk = true;
 		m_bIsStarted=true;
@@ -204,6 +204,7 @@ bool RelayNet::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)

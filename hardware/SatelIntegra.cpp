@@ -136,7 +136,7 @@ bool SatelIntegra::StartHardware()
 	m_thread = std::make_shared<std::thread>(&SatelIntegra::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool SatelIntegra::StopHardware()
@@ -150,6 +150,7 @@ bool SatelIntegra::StopHardware()
 	if (m_thread)
 	{
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	DestroySocket();

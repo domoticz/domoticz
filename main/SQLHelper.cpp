@@ -668,6 +668,7 @@ CSQLHelper::~CSQLHelper(void)
 	{
 		m_stoprequested = true;
 		m_background_task_thread->join();
+		m_background_task_thread.reset();
 	}
 	if (m_dbase != NULL)
 	{

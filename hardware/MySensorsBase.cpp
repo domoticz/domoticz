@@ -2345,13 +2345,13 @@ bool MySensorsBase::StartSendQueue()
 
 void MySensorsBase::StopSendQueue()
 {
-	if (m_send_thread != NULL)
+	if (m_send_thread)
 	{
-		assert(m_send_thread);
 		//Add a dummy queue item, so we stop
 		std::string emptyString;
 		m_sendQueue.push(emptyString);
 		m_send_thread->join();
+		m_send_thread.reset();
 	}
 }
 

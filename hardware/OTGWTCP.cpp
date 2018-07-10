@@ -33,7 +33,7 @@ bool OTGWTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool OTGWTCP::StopHardware()

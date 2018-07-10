@@ -101,15 +101,18 @@ bool RFXComSerial::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 
 }
 
 bool RFXComSerial::StopHardware()
 {
 	m_stoprequested=true;
-	if (m_thread != NULL)
+	if (m_thread)
+	{
 		m_thread->join();
+		m_thread.reset();
+	}
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
     sleep_milliseconds(10);
 	if (m_serial.isOpen())

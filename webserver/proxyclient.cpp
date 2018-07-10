@@ -747,28 +747,24 @@ namespace http {
 		{
 			m_pWebEm = webEm;
 			m_pDomServ = domServ;
-			m_thread = NULL;
 			_first = true;
 		}
 
 		CProxyManager::~CProxyManager()
 		{
-			if (m_thread) {
-				delete m_thread;
-			}
+			Stop();
 		}
 
 		int CProxyManager::Start(bool first)
 		{
 			_first = first;
-			m_thread = new boost::thread(boost::bind(&CProxyManager::StartThread, shared_from_this()));
+			m_thread = std::make_shared<std::thread>(&CProxyManager::StartThread, shared_from_this());
 			return 1;
 		}
 
 		void CProxyManager::StartThread()
 		{
 			try {
-				//boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::tlsv12_client);
 				boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
@@ -790,8 +786,8 @@ namespace http {
 		{
 			if (m_thread) {
 				io_service.post(boost::bind(&CProxyClient::Stop, proxyclient));
-				delete m_thread;
-				m_thread = NULL;
+				m_thread->join();
+				m_thread.reset();
 			}
 		}
 

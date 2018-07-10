@@ -176,10 +176,11 @@ bool CEvohomeWeb::StartHardware()
 
 bool CEvohomeWeb::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;

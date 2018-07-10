@@ -73,7 +73,7 @@ bool CAccuWeather::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CAccuWeather::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CAccuWeather::StopHardware()
@@ -82,6 +82,7 @@ bool CAccuWeather::StopHardware()
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;

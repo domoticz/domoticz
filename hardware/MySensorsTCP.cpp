@@ -38,7 +38,7 @@ bool MySensorsTCP::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MySensorsTCP::Do_Work, this);
 	StartSendQueue();
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool MySensorsTCP::StopHardware()
@@ -59,6 +59,7 @@ bool MySensorsTCP::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)

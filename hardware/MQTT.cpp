@@ -54,7 +54,7 @@ bool MQTT::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 void MQTT::StopMQTT()

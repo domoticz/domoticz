@@ -405,7 +405,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 	_log.Log(LOG_NORM, "Starting shared server on: %s:%s", listen_address.c_str(), port.c_str());
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTCPServer::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 #ifndef NOCLOUD
@@ -431,8 +431,10 @@ void CTCPServer::StopServer()
 	if (m_pTCPServer) {
 		m_pTCPServer->stop();
 	}
-	if (m_thread && m_thread->joinable()) {
+	if (m_thread)
+	{
 		m_thread->join();
+		m_thread.reset();
 	}
 	// This is the only time to delete it
 	if (m_pTCPServer) {

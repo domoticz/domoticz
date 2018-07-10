@@ -731,13 +731,13 @@ bool CPiFace::StartHardware()
     else m_stoprequested=true;
     m_bIsStarted=true;
     sOnConnected(this);
-    return (m_thread != NULL);
+    return (m_thread != nullptr);
 }
 
 bool CPiFace::StopHardware()
 {
     m_stoprequested=true;
-    if (m_thread != NULL)
+    if (m_thread)
     {
         m_stoprequested = true;
         m_thread->join();
