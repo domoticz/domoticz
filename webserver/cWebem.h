@@ -247,14 +247,14 @@ namespace http {
 			/// Rene: Beware: myRequestHandler should be declared BEFORE myServer
 			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)
-			boost::shared_ptr<server_base> myServer;
+			std::shared_ptr<server_base> myServer;
 			// root of url for reverse proxy servers
 			std::string m_webRoot;
 			/// sessions management
 			std::mutex m_sessionsMutex;
 			boost::asio::io_service m_io_service;
 			boost::asio::deadline_timer m_session_clean_timer;
-			boost::thread m_io_service_thread;
+			std::shared_ptr<std::thread> m_io_service_thread;
 		};
 
 	}

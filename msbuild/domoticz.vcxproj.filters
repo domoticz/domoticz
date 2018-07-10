@@ -2104,6 +2104,9 @@
     <ClInclude Include="..\zip\minizip_crypt.h">
       <Filter>zip\Base</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\Noncopyable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

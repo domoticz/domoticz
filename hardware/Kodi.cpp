@@ -13,6 +13,7 @@
 #define MAX_TITLE_LEN 40
 
 //Giz: To Author, please try to rebuild this class using ASyncTCP
+//Giz: Are those 'new'/thread lines not a memory leak ? Maybe use a shared_ptr for them ?
 
 void CKodiNode::CKodiStatus::Clear()
 {
@@ -887,7 +888,7 @@ void CKodiNode::SetExecuteCommand(const std::string& command)
 	m_ExecuteCommand = command;
 }
 
-std::vector<boost::shared_ptr<CKodiNode> > CKodi::m_pNodes;
+std::vector<std::shared_ptr<CKodiNode> > CKodi::m_pNodes;
 
 CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false)
 {
@@ -956,7 +957,7 @@ void CKodi::Do_Work()
 
 			scounter = 0;
 			bool bWorkToDo = false;
-			std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+			std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 			{
 				if (!(*itt)->IsBusy())
@@ -1014,7 +1015,7 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_DevID == DevID)
@@ -1144,11 +1145,11 @@ void CKodi::ReloadNodes()
 		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-			boost::shared_ptr<CKodiNode>	pNode = (boost::shared_ptr<CKodiNode>) new CKodiNode(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			std::shared_ptr<CKodiNode>	pNode = (std::shared_ptr<CKodiNode>) new CKodiNode(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each kodi
-		for (std::vector<boost::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		for (std::vector<std::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
 			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
@@ -1170,7 +1171,7 @@ void CKodi::UnloadNodes()
 
 	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
 	{
-		std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+		std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			(*itt)->StopRequest();
@@ -1189,7 +1190,7 @@ void CKodi::UnloadNodes()
 
 void CKodi::SendCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)
@@ -1204,7 +1205,7 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 
 bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 {
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)
@@ -1218,7 +1219,7 @@ bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 
 bool CKodi::SetExecuteCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)

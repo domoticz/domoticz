@@ -1,15 +1,12 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread/mutex.hpp>
 #include <boost/signals2.hpp>
 
 namespace tcp_proxy
 {
 	typedef boost::signals2::signal<void (const unsigned char *pData, const size_t Len)> OnProxyData;
-	class bridge : public boost::enable_shared_from_this<bridge>
+	class bridge : public std::enable_shared_from_this<bridge>
 	{
 	public:
 		explicit bridge(boost::asio::io_service& ios);
@@ -37,7 +34,7 @@ namespace tcp_proxy
 	class acceptor
 	{
 	public:
-		typedef boost::shared_ptr<bridge> ptr_type;
+		typedef std::shared_ptr<bridge> ptr_type;
 		acceptor(
 			const std::string& local_host, unsigned short local_port,
 			const std::string& upstream_host, const std::string& upstream_port);

@@ -51,7 +51,7 @@ namespace http {
 			myRequestHandler(doc_root, this),
 			m_DigistRealm("Domoticz.com"),
 			m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
-			m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
+			m_io_service_thread(std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &m_io_service))),
 			m_sessions(), // Rene, make sure we initialize m_sessions first, before starting a server
 			myServer(server_factory::create(settings, myRequestHandler))
 		{
@@ -99,7 +99,11 @@ namespace http {
 				if (!m_io_service.stopped())
 				{
 					m_io_service.stop();
-					m_io_service_thread.join();
+				}
+				if (m_io_service_thread)
+				{
+					if (m_io_service_thread->joinable())
+						m_io_service_thread->join();
 				}
 			}
 			catch (...)

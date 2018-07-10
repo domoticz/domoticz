@@ -23,7 +23,7 @@ namespace http {
 #define PDUPROTO(type) virtual void Handle##type(const char *pduname, CValueLengthPart &part);
 #define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, CValueLengthPart &part)
 
-		class CProxyClient : public boost::enable_shared_from_this<CProxyClient> {
+		class CProxyClient : public std::enable_shared_from_this<CProxyClient> {
 		public:
 			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
 			~CProxyClient();
@@ -85,7 +85,7 @@ namespace http {
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
-			boost::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > _socket;
+			std::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > _socket;
 			std::string _apikey;
 			std::string _password;
 			boost::asio::streambuf _readbuf;
@@ -112,17 +112,17 @@ namespace http {
 			std::map<long, CWebsocketHandler *> websocket_handlers;
 		};
 
-		class CProxyManager : public boost::enable_shared_from_this<CProxyManager> {
+		class CProxyManager : public std::enable_shared_from_this<CProxyManager> {
 		public:
 			CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
 			~CProxyManager();
 			int Start(bool first);
 			void Stop();
-			boost::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
+			std::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
 		private:
 			void StartThread();
 			boost::asio::io_service io_service;
-			boost::shared_ptr<CProxyClient> proxyclient;
+			std::shared_ptr<CProxyClient> proxyclient;
 			boost::thread* m_thread;
 			std::string m_pDocRoot;
 			http::server::cWebem *m_pWebEm;

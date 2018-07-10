@@ -795,7 +795,7 @@ namespace http {
 			}
 		}
 
-		boost::shared_ptr<CProxyClient> CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
+		std::shared_ptr<CProxyClient> CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
 			sharedData.AddTCPClient(master);
 			return proxyclient;
 		}

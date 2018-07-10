@@ -417,7 +417,7 @@ void Yeelight::udp_server::start_send()
 {
 	std::string testMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
 	//_log.Log(LOG_STATUS, "start_send..................");
-	boost::shared_ptr<std::string> message(
+	std::shared_ptr<std::string> message(
 		new std::string(testMessage));
 	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("239.255.255.250"), 1982);
 	socket_.send_to(boost::asio::buffer(*message), remote_endpoint_);
