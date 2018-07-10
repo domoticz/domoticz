@@ -29,7 +29,7 @@ bool CRFLinkTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRFLinkTCP::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CRFLinkTCP::StopHardware()

@@ -139,15 +139,16 @@ bool CRego6XXSerial::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRego6XXSerial::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CRego6XXSerial::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
     sleep_milliseconds(10);

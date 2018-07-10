@@ -52,19 +52,18 @@ bool CHoneywell::StartHardware() {
 	Init();
 	mLastMinute = -1;
 	//Start worker thread
-	mThread = std::make_shared<std::thread>(&CHoneywell::Do_Work, this);
+	m_thread = std::make_shared<std::thread>(&CHoneywell::Do_Work, this);
 	mIsStarted = true;
 	sOnConnected(this);
-	return (mThread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CHoneywell::StopHardware() {
-	if (mThread != NULL)
+	if (m_thread)
 	{
-		if (mThread->joinable()) {
-			mStopRequested = true;
-			mThread->join();
-		}
+		mStopRequested = true;
+		m_thread->join();
+		m_thread.reset();
 	}
 
 	mIsStarted = false;

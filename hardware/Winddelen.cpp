@@ -35,21 +35,16 @@ bool CWinddelen::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CWinddelen::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CWinddelen::StopHardware()
 {
-	/*
-    m_stoprequested=true;
 	if (m_thread)
-		m_thread->join();
-	return true;
-    */
-	if (m_thread != NULL)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;

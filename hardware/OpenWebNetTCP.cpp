@@ -113,10 +113,12 @@ bool COpenWebNetTCP::StopHardware()
 		if (m_monitorThread)
 		{
 			m_monitorThread->join();
+			m_monitorThread.reset();
 		}
 		if (m_heartbeatThread)
 		{
 			m_heartbeatThread->join();
+			m_heartbeatThread.reset();
 		}
 	}
 	catch (...)

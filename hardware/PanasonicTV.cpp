@@ -80,7 +80,7 @@ Possible Commands:
 
 */
 
-class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
+class CPanasonicNode //: public std::enable_shared_from_this<CPanasonicNode>
 {
 	class CPanasonicStatus
 	{
@@ -201,7 +201,7 @@ bool CPanasonicNode::StartThread()
 {
 	StopThread();
 	m_thread = std::make_shared<std::thread>(&CPanasonicNode::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 std::string	CPanasonicNode::CPanasonicStatus::LogMessage()
@@ -756,7 +756,7 @@ void CPanasonicNode::SetExecuteCommand(const std::string &command)
 	_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) SetExecuteCommand called with: '%s.", m_Name.c_str(), command.c_str());
 }
 
-std::vector<boost::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
+std::vector<std::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
 
 CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
@@ -827,7 +827,7 @@ void CPanasonic::Do_Work()
 
 			scounter = 0;
 			bool bWorkToDo = false;
-			std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+			std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 			{
 				if (!(*itt)->IsBusy())
@@ -873,7 +873,7 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
-	std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_DevID == DevID)
@@ -1001,18 +1001,16 @@ void CPanasonic::ReloadNodes()
 		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-			boost::shared_ptr<CPanasonicNode>	pNode = (boost::shared_ptr<CPanasonicNode>) new CPanasonicNode(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			std::shared_ptr<CPanasonicNode>	pNode = (std::shared_ptr<CPanasonicNode>) new CPanasonicNode(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each Panasonic TV
-		for (std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		for (std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
 			(*itt)->StartThread();
 		}
 		sleep_milliseconds(100);
-		//_log.Log(LOG_NORM, "Panasonic Plugin: Starting I/O service thread.");
-		//boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
 	}
 }
 
@@ -1027,7 +1025,7 @@ void CPanasonic::UnloadNodes()
 
 	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
 	{
-		std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+		std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			(*itt)->StopThread();
@@ -1046,7 +1044,7 @@ void CPanasonic::UnloadNodes()
 
 void CPanasonic::SendCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)
@@ -1062,7 +1060,7 @@ void CPanasonic::SendCommand(const int ID, const std::string &command)
 
 bool CPanasonic::SetExecuteCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)

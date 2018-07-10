@@ -98,7 +98,7 @@ bool SolarMaxTCP::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&SolarMaxTCP::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool SolarMaxTCP::StopHardware()
@@ -119,6 +119,7 @@ bool SolarMaxTCP::StopHardware()
 			{
 				m_stoprequested = true;
 				m_thread->join();
+				m_thread.reset();
 			}
 		}
 		catch (...)

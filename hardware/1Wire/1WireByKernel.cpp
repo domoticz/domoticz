@@ -37,7 +37,11 @@ C1WireByKernel::~C1WireByKernel()
    _t1WireDevice device;
    DeviceState deviceState(device);
    m_PendingChanges.push_back(deviceState); // wake up thread with dummy item
-   m_thread->join();
+   if (m_thread)
+   {
+	   m_thread->join();
+	   m_thread.reset();
+   }
 }
 
 bool C1WireByKernel::IsAvailable()

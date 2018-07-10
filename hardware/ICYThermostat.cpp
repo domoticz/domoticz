@@ -51,12 +51,12 @@ bool CICYThermostat::StartHardware()
 	m_thread = std::make_shared<std::thread>(&CICYThermostat::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CICYThermostat::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();

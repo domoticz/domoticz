@@ -1,12 +1,9 @@
 #include "stdafx.h"
 #include "Comm5Serial.h"
+#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
-#include "../main/mainworker.h"
-
-#include <iostream>
-#include <boost/lexical_cast.hpp>
+#include "../main/RFXtrx.h"
 
 /*
 	This driver allows Domoticz to control any I/O module from the MA-4xxx Family
@@ -108,6 +105,7 @@ bool Comm5Serial::StopHardware()
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;

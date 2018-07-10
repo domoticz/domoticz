@@ -6,8 +6,6 @@
 #include "stdafx.h"
 #include "cWebem.h"
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // uuid generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
@@ -53,7 +51,7 @@ namespace http {
 			myRequestHandler(doc_root, this),
 			m_DigistRealm("Domoticz.com"),
 			m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
-			m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
+			m_io_service_thread(std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &m_io_service))),
 			m_sessions(), // Rene, make sure we initialize m_sessions first, before starting a server
 			myServer(server_factory::create(settings, myRequestHandler))
 		{
@@ -101,7 +99,11 @@ namespace http {
 				if (!m_io_service.stopped())
 				{
 					m_io_service.stop();
-					m_io_service_thread.join();
+				}
+				if (m_io_service_thread)
+				{
+					m_io_service_thread->join();
+					m_io_service_thread.reset();
 				}
 			}
 			catch (...)
@@ -1506,7 +1508,7 @@ namespace http {
 				rep = reply::stock_reply(reply::internal_server_error);
 				return true;
 			}
-			int version = boost::lexical_cast<int>(h);
+			int version = atoi(h);
 			// we support versions 13 (and higher)
 			if (version < 13)
 			{

@@ -32,7 +32,7 @@ private:
 	volatile bool mStopRequested;
 	bool mNeedsTokenRefresh;
 	bool mIsStarted;
-	std::shared_ptr<std::thread> mThread;
+	std::shared_ptr<std::thread> m_thread;
 	std::vector<std::string> mSessionHeaders;
 	std::map<int, Json::Value> mDeviceList;
 	std::map<int, std::string> mLocationList;

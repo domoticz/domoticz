@@ -268,7 +268,7 @@ bool CGpio::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CGpio::StopHardware()
@@ -276,16 +276,25 @@ bool CGpio::StopHardware()
 	m_stoprequested = true;
 
 	if (m_thread_poller != NULL)
+	{
 		m_thread_poller->join();
+		m_thread_poller.reset();
+	}
 
 	if (m_thread_updatestartup != NULL)
+	{
 		m_thread_updatestartup->join();
+		m_thread_updatestartup.reset();
+	}
 
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (m_thread_interrupt[it->GetPin()] != NULL)
+		{
 			m_thread_interrupt[it->GetPin()]->join();
+			m_thread_interrupt[it->GetPin()].reset();
+		}
 	}
 
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)

@@ -201,7 +201,7 @@ bool USBtin_MultiblocV8::StartThread()
 	m_V8minCounter1 = (3600*6);
 	m_thread = std::make_shared<std::thread>(&USBtin_MultiblocV8::Do_Work, this);
 	_log.Log(LOG_STATUS,"MultiblocV8: thread started");
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 void USBtin_MultiblocV8::StopThread()
@@ -213,6 +213,7 @@ void USBtin_MultiblocV8::StopThread()
 			m_thread->join();
 			sleep_milliseconds(20); //wait time
 			_log.Log(LOG_STATUS,"MultiblocV8: thread stopped");
+			m_thread.reset();
 		}
 		ClearingBlocList();
 	}

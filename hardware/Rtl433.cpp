@@ -49,6 +49,7 @@ bool CRtl433::StopHardware()
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	m_bIsStarted = false;

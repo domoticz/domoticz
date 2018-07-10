@@ -247,7 +247,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 	acceptor_.bind(endpoint);
 	acceptor_.listen();
 
-	new_connection_ = boost::shared_ptr<CTCPClient>(new CTCPClient(io_service_, this));
+	new_connection_ = std::shared_ptr<CTCPClient>(new CTCPClient(io_service_, this));
 
 	acceptor_.async_accept(
 		*(new_connection_->socket()),
@@ -262,7 +262,7 @@ CTCPServerInt::~CTCPServerInt(void)
 
 #ifndef NOCLOUD
 // our proxied server
-CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, boost::shared_ptr<http::server::CProxyClient> proxy) : CTCPServerIntBase(pRoot)
+CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, std::shared_ptr<http::server::CProxyClient> proxy) : CTCPServerIntBase(pRoot)
 {
 	m_pProxyClient = proxy;
 }
@@ -305,7 +305,7 @@ bool CTCPServerProxied::OnDisconnect(const std::string &token)
 bool CTCPServerProxied::OnNewConnection(const std::string &token, const std::string &username, const std::string &password)
 {
 	CSharedClient *new_client = new CSharedClient(this, m_pProxyClient, token, username);
-	CTCPClient_ptr new_connection_ = boost::shared_ptr<CSharedClient>(new_client);
+	CTCPClient_ptr new_connection_ = std::shared_ptr<CSharedClient>(new_client);
 	if (!HandleAuthentication(new_connection_, username, password)) {
 		new_connection_.reset(); // deletes new_client
 		return false;
@@ -405,11 +405,11 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 	_log.Log(LOG_NORM, "Starting shared server on: %s:%s", listen_address.c_str(), port.c_str());
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTCPServer::Do_Work, this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 #ifndef NOCLOUD
-bool CTCPServer::StartServer(boost::shared_ptr<http::server::CProxyClient> proxy)
+bool CTCPServer::StartServer(std::shared_ptr<http::server::CProxyClient> proxy)
 {
 	_log.Log(LOG_NORM, "Accepting shared server connections via MyDomotiz (see settings menu).");
 	m_pProxyServer = new CTCPServerProxied(this, proxy);
@@ -431,8 +431,10 @@ void CTCPServer::StopServer()
 	if (m_pTCPServer) {
 		m_pTCPServer->stop();
 	}
-	if (m_thread && m_thread->joinable()) {
+	if (m_thread)
+	{
 		m_thread->join();
+		m_thread.reset();
 	}
 	// This is the only time to delete it
 	if (m_pTCPServer) {

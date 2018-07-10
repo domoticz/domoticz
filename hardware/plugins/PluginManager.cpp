@@ -347,6 +347,7 @@ namespace Plugins {
 		{
 			m_stoprequested = true;
 			m_thread->join();
+			m_thread.reset();
 		}
 
 		// Hardware should already be stopped so just flush the queue (should already be empty)

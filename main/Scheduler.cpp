@@ -43,6 +43,7 @@ void CScheduler::StopScheduler()
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 }
 

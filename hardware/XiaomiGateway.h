@@ -1,11 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-
-#include <memory>
-#include <string>
 #include <boost/tuple/tuple.hpp>
-#include <boost/thread/mutex.hpp>
 
 class XiaomiGateway : public CDomoticzHardwareBase
 {
