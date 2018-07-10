@@ -12,20 +12,24 @@
 #include "../../httpclient/HTTPClient.h"
 #include "../../json/json.h"
 #include "../hardwaretypes.h"
-#include <boost/make_shared.hpp>
 
 #define round(a) ( int ) ( a + .5 )
-
-using namespace std;
 
 #define HUE_DEFAULT_POLL_INTERVAL 10
 #define HUE_NOT_ADD_GROUPS 0x01
 #define HUE_NOT_ADD_SCENES 0x02
 
+#define SensorTypeDaylight "Daylight"
+#define SensorTypeZGPSwitch "ZGPSwitch"
+#define SensorTypeZLLSwitch "ZLLSwitch"
+#define SensorTypeZLLPresence "ZLLPresence"
+#define SensorTypeZLLTemperature "ZLLTemperature"
+#define SensorTypeZLLLightLevel "ZLLLightLevel"
+
 //#define DEBUG_PhilipsHue
 
 #ifdef DEBUG_PhilipsHue
-void SaveString2Disk(string str, string filename)
+void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
 	if (fOut)
@@ -34,14 +38,14 @@ void SaveString2Disk(string str, string filename)
 		fclose(fOut);
 	}
 }
-string ReadFile(string filename)
+std::string ReadFile(std::string filename)
 {
-	ifstream file;
-	string sResult = "";
+	std::ifstream file;
+	std::string sResult = "";
 	file.open(filename.c_str());
 	if (!file.is_open())
 		return "";
-	string sLine;
+	std::string sLine;
 	while (!file.eof())
 	{
 		getline(file, sLine);
@@ -52,7 +56,7 @@ string ReadFile(string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int PollInterval, const int Options) :
+CPhilipsHue::CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int PollInterval, const int Options) :
 m_IPAddress(IPAddress),
 m_UserName(Username)
 {
@@ -89,19 +93,19 @@ bool CPhilipsHue::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::make_shared<boost::thread>(boost::bind(&CPhilipsHue::Do_Work, this));
+	m_thread = std::make_shared<std::thread>(&CPhilipsHue::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CPhilipsHue::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -144,7 +148,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	int svalue = 0;
 	int svalue2 = 0;
 	int svalue3 = 0;
-	string LCmd = "";
+	std::string LCmd = "";
 	int nodeID = 0;
 
 	if (packettype == pTypeLighting2)
@@ -269,12 +273,12 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	return true;
 }
 
-bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int svalue, const int svalue2 /*= 0*/, const int svalue3 /*= 0*/)
+bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 /*= 0*/, const int svalue3 /*= 0*/)
 {
-	vector<string> ExtraHeaders;
+	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Content-Type: application/json");
-	string sResult;
-	stringstream sPostData;
+	std::string sResult;
+	std::stringstream sPostData;
 	bool setOn = false;
 	bool On = true;
 	bool setLevel = false;
@@ -282,7 +286,6 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	bool setCt = false;
 	bool setMode = false;
 	_eHueColorMode mode;
-	_tHueLightState *pState = NULL;
 
 	if (LCmd=="On")
 	{
@@ -331,6 +334,8 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	}
 
 	// Update cached state
+	_tHueLightState *pState = NULL;
+
 	if (nodeID < 1000)
 	{
 		//Light
@@ -359,7 +364,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 		if (setMode) pState->mode = mode;
 	}
 
-	stringstream sstr2;
+	std::stringstream sstr2;
 	if (nodeID < 1000)
 	{
 		//Light
@@ -382,7 +387,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 		//Because Scenes does not have a unique numeric value (but a string as ID),
 		//lookup the Options, and activate this scene
 
-		vector<vector<string> > result;
+		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT MacAddress FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, nodeID - 2000);
 		if (result.empty())
 		{
@@ -397,7 +402,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 			<< "/api/" << m_UserName
 			<< "/groups/0/action";
 	}
-	string sURL = sstr2.str();
+	std::string sURL = sstr2.str();
 	if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Error connecting to Hue bridge (Switch Light/Scene), (Check IPAddress/Username)");
@@ -414,7 +419,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 		return false;
 	}
 
-	if (sResult.find("error") != string::npos)
+	if (sResult.find("error") != std::string::npos)
 	{
 		//We had an error
 		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root[0]["error"]["description"].asString().c_str());
@@ -423,22 +428,22 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const string &LCmd, const int sv
 	return true;
 }
 
-string CPhilipsHue::RegisterUser(const string &IPAddress, const unsigned short Port, const string &username)
+std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username)
 {
-	string retStr = "Error;Unknown";
-	vector<string> ExtraHeaders;
+	std::string retStr = "Error;Unknown";
+	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Content-Type: application/json");
-	string sResult;
-	string sPostData;
+	std::string sResult;
+	std::string sPostData;
 
 	//Providing own username is not allowed, so don't use it and only provide devicetype
 	sPostData = "{ \"devicetype\": \"domoticz\" }";
 
-	stringstream sstr2;
+	std::stringstream sstr2;
 	sstr2 << "http://" << IPAddress
 		<< ":" << Port
 		<< "/api";
-	string sURL = sstr2.str();
+	std::string sURL = sstr2.str();
 
 	if (!HTTPClient::POST(sURL, sPostData, ExtraHeaders, sResult))
 	{
@@ -456,13 +461,13 @@ string CPhilipsHue::RegisterUser(const string &IPAddress, const unsigned short P
 		return retStr;
 	}
 
-	if (sResult.find("error") != string::npos)
+	if (sResult.find("error") != std::string::npos)
 	{
 		retStr = "Error;" + root[0]["error"]["description"].asString();
 		return retStr;
 	}
 
-	string new_username = root[0]["success"]["username"].asString();
+	std::string new_username = root[0]["success"]["username"].asString();
 	retStr = "OK;" + new_username;
 	return retStr;
 }
@@ -498,7 +503,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		}
 
 		//Get current nValue if exist
-		vector<vector<string> > result;
+		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT nValue, LastLevel, Color, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
 
@@ -580,7 +585,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		int cmd = (tstate.on ? Color_LedOn : Color_LedOff);
 
 		//Get current nValue if exist
-		vector<vector<string> > result;
+		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, sTypeColor_RGB_W, szID);
 
@@ -635,7 +640,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sprintf(szLevel, "%d", level);
 
 		//Check if we already exist
-		vector<vector<string> > result;
+		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change: Bri = %d, Level = %d", BrightnessLevel, level);
@@ -685,18 +690,18 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 
 bool CPhilipsHue::GetStates()
 {
-	string sResult;
+	std::string sResult;
 
 #ifdef DEBUG_PhilipsHue
 	sResult= ReadFile("E:\\philipshue.json");
 #else
-	stringstream sstr2;
+	std::stringstream sstr2;
 	sstr2 << "http://" << m_IPAddress
 		<< ":" << m_Port
 		<< "/api/" << m_UserName;
 	//Get Data
-	string sURL = sstr2.str();
-	vector<string> ExtraHeaders;
+	std::string sURL = sstr2.str();
+	std::vector<std::string> ExtraHeaders;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
@@ -717,7 +722,7 @@ bool CPhilipsHue::GetStates()
 		return false;
 	}
 
-	if (sResult.find("\"error\":") != string::npos)
+	if (sResult.find("\"error\":") != std::string::npos)
 	{
 		//We had an error
 		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root[0]["error"]["description"].asString().c_str());
@@ -821,23 +826,26 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 		Json::Value light = *iLight;
 		if (light.isObject())
 		{
-			string szLID = iLight.key().asString();
+			std::string szLID = iLight.key().asString();
 			int lID = atoi(szLID.c_str());
 
 			_tHueLightState tlight;
 			_eHueLightType LType;
+			bool bDoSend = true;
 			LightStateFromJSON(light["state"], tlight, LType);
 
-			auto && myLight = m_lights.find(lID);
+			auto myLight = m_lights.find(lID);
 			if (myLight != m_lights.end())
 			{
-				if (!StatesSimilar(myLight->second, tlight))
-				{
-					//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
-					myLight->second = tlight;
-					std::string modelid = light["modelid"].asString();
-					InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid, true);
-				}
+				if (StatesSimilar(myLight->second, tlight))
+					bDoSend = false;
+			}
+			if (bDoSend)
+			{
+				//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
+				m_lights[lID] = tlight;
+				std::string modelid = light["modelid"].asString();
+				InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 			}
 		}
 	}
@@ -856,33 +864,36 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		Json::Value group = *iGroup;
 		if (group.isObject())
 		{
-			string szGID = iGroup.key().asString();
+			std::string szGID = iGroup.key().asString();
 			int gID = atoi(szGID.c_str());
 
 			_tHueLightState tstate;
 			_eHueLightType LType;
+			bool bDoSend = true;
 			LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key
 
-			auto && myGroup = m_groups.find(gID);
+			auto myGroup = m_groups.find(gID);
 			if (myGroup != m_groups.end())
 			{
-				if (!StatesSimilar(myGroup->second.gstate, tstate))
-				{
-					myGroup->second.gstate = tstate;
-					string Name = "Group " + group["name"].asString();
-					InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
-				}
+				if (StatesSimilar(myGroup->second.gstate, tstate))
+					bDoSend = false;
+			}
+			if (bDoSend)
+			{
+				m_groups[gID].gstate = tstate;
+				std::string Name = "Group " + group["name"].asString();
+				InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 			}
 		}
 	}
 	//Special Request for Group0 (All Lights)
-	stringstream sstr2;
+	std::stringstream sstr2;
 	sstr2 << "http://" << m_IPAddress
 		<< ":" << m_Port
 		<< "/api/" << m_UserName
 		<< "/groups/0";
-	string sResult;
-	vector<string> ExtraHeaders;
+	std::string sResult;
+	std::vector<std::string> ExtraHeaders;
 	if (!HTTPClient::GET(sstr2.str(), ExtraHeaders, sResult))
 	{
 		//No group all(0)
@@ -897,14 +908,14 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		return false;
 	}
 
-	if (sResult.find("\"error\":") != string::npos)
+	if (sResult.find("\"error\":") != std::string::npos)
 	{
 		//We had an error
 		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root2[0]["error"]["description"].asString().c_str());
 		return false;
 	}
 
-	if (sResult.find("lights") == string::npos)
+	if (sResult.find("lights") == std::string::npos)
 	{
 		return false;
 	}
@@ -941,13 +952,13 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	}
 
 	int gID = 0;
-	auto && myGroup = m_groups.find(gID);
+	std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
 	if (myGroup != m_groups.end())
 	{
 		if (!StatesSimilar(myGroup->second.gstate, tstate))
 		{
 			myGroup->second.gstate = tstate;
-			string Name = "Group All Lights";
+			std::string Name = "Group All Lights";
 			InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 		}
 	}
@@ -973,7 +984,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 
 			//Strip some info
 			size_t tpos = hscene.name.find(" from ");
-			if (tpos != string::npos)
+			if (tpos != std::string::npos)
 			{
 				hscene.name = hscene.name.substr(0, tpos);
 			}
@@ -992,7 +1003,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 			if (bDoSend)
 			{
 				int sID = -1;
-				vector<vector<string> > result;
+				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, hscene.id.c_str());
 				if (!result.empty())
 				{
@@ -1011,7 +1022,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 					}
 					sID = atoi(result[0][0].c_str());
 				}
-				string Name = "Scene " + hscene.name;
+				std::string Name = "Scene " + hscene.name;
 				_tHueLightState tstate;
 				tstate.on = false;
 				tstate.level = 100;
@@ -1059,12 +1070,12 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				bNewSensor = true;
 			}
 			m_sensors.erase(sID);
-			m_sensors.insert(make_pair(sID, hsensor));
+			m_sensors.insert(std::make_pair(sID, hsensor));
 
 			if (bDoSend)
 			{
 				sID += 3000;
-				string device_name = hsensor.m_type + " " + hsensor.m_name;
+				std::string device_name = hsensor.m_type + " " + hsensor.m_name;
 				if (hsensor.m_type == SensorTypeDaylight)
 				{
 				}
@@ -1120,7 +1131,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 	return true;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool status, const string &Name, const uint8_t BatteryLevel)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool status, const std::string &Name, const uint8_t BatteryLevel)
 {
 	int sID = NodeID;
 	char ID[40];
@@ -1142,9 +1153,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType,
 	}
 
 	//check if this switch is already in the database
-	vector<vector<string> > result;
+	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID, pTypeGeneralSwitch);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel);
@@ -1169,17 +1180,17 @@ namespace http {
 			}
 			root["title"] = "RegisterOnHue";
 
-			string sipaddress = request::findValue(&req, "ipaddress");
-			string sport = request::findValue(&req, "port");
-			string susername = request::findValue(&req, "username");
+			std::string sipaddress = request::findValue(&req, "ipaddress");
+			std::string sport = request::findValue(&req, "port");
+			std::string susername = request::findValue(&req, "username");
 			if (
 				(sipaddress == "") ||
 				(sport == "")
 				)
 				return;
 
-			string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short)atoi(sport.c_str()), susername);
-			vector<string> strarray;
+			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short)atoi(sport.c_str()), susername);
+			std::vector<std::string> strarray;
 			StringSplit(sresult, ";", strarray);
 			if (strarray.size() != 2)
 				return;

@@ -15,11 +15,10 @@ public:
 	CurrentCostMeterSerial(const int ID, const std::string& devname, unsigned int baudRate);
     virtual ~CurrentCostMeterSerial();
 
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	virtual bool WriteToHardware(const char *pdata, const unsigned char length) override;
 protected:
-	virtual bool StartHardware();
-	virtual bool StopHardware();
+	virtual bool StartHardware() override;
+	virtual bool StopHardware() override;
 
 private:
 	void Do_Work();
@@ -28,7 +27,7 @@ private:
      */
     void readCallback(const char *data, size_t len);
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	std::string m_szSerialPort;
 	unsigned int m_baudRate;

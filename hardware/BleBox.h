@@ -6,52 +6,33 @@
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
-#include "../json/json.h"
 
-typedef struct _STR_DEVICE {
-	int			unit;
-	std::string api_name;
-	std::string name;
-	int			deviceID;
-	int			subType;
-	int			switchType;
-	std::string api_state;
-} STR_DEVICE;
+namespace Json
+{
+	class Value;
+};
 
 class BleBox : public CDomoticzHardwareBase
 {
 public:
 	BleBox(const int id, const int pollIntervalsec);
 	virtual ~BleBox();
-
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+	int GetDeviceType(const std::string &IPAddress);
 	void AddNode(const std::string &name, const std::string &IPAddress);
-	bool UpdateNode(const int id, const std::string &name, const std::string &IPAddress);
 	void RemoveNode(const int id);
 	void RemoveAllNodes();
 	void SetSettings(const int pollIntervalsec);
 	void Restart();
 	void UpdateFirmware();
-	void SearchNodes(const std::string &ipmask);
-	std::string GetUptime(const std::string &IPAddress);
-	int GetDeviceType(const std::string &IPAddress);
 	Json::Value GetApiDeviceState(const std::string &IPAddress);
-	bool IsNodeExists(const Json::Value &root, const std::string &node);
-	bool IsNodesExist(const Json::Value &root, const std::string &node, const std::string &value);
+	bool DoesNodeExists(const Json::Value &root, const std::string &node);
+	bool DoesNodeExists(const Json::Value &root, const std::string &node, const std::string &value);
+	std::string GetUptime(const std::string &IPAddress);
+	void SearchNodes(const std::string &ipmask);
 private:
-	volatile bool m_stoprequested;
-	int m_PollInterval;
-	boost::shared_ptr<boost::thread> m_thread;
-	std::map<const std::string, const int> m_devices;
-	boost::mutex m_mutex;
-	
-	_tColor m_RGBWColorState;
-	bool m_RGBWisWhiteState;
-	int m_RGBWbrightnessState;
-
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	std::string IdentifyDevice(const std::string &IPAddress);
@@ -68,4 +49,14 @@ private:
 	void ReloadNodes();
 	void UnloadNodes();
 	bool LoadNodes();
+private:
+	volatile bool m_stoprequested;
+	int m_PollInterval;
+	std::shared_ptr<std::thread> m_thread;
+	std::map<const std::string, const int> m_devices;
+	std::mutex m_mutex;
+
+	_tColor m_RGBWColorState;
+	bool m_RGBWisWhiteState;
+	int m_RGBWbrightnessState;
 };

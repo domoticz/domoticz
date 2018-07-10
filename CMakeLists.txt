@@ -36,7 +36,7 @@ MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 MESSAGE(STATUS "###########################")
 
 # The version number.
-set (domoticz_VERSION_MAJOR 3)
+set (domoticz_VERSION_MAJOR 4)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
@@ -428,7 +428,6 @@ hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/RAVEn.cpp
-hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp

@@ -13,28 +13,45 @@
  */
 #include "stdafx.h"
 #include "EvohomeRadio.h"
-#include "../main/Logger.h"
 #include "hardwaretypes.h"
-#include "../main/RFXtrx.h"
 #include "../main/Helper.h"
-#include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
 #include "../main/mainworker.h"
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include <boost/bind.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
-
 extern std::string szUserDataFolder;
 
-#include <ctime>
+enum evoCommands
+{
+	cmdSysInfo = 0x10e0,
+	cmdZoneTemp = 0x30C9,
+	cmdZoneName = 0x0004,
+	cmdZoneHeatDemand = 0x3150,//Heat demand sent by an individual zone
+	cmdZoneInfo = 0x000A,
+	cmdZoneWindow = 0x12B0,//Open window/ventilation zone function
+	cmdSetPoint = 0x2309,
+	cmdSetpointOverride = 0x2349,
+	cmdDHWState = 0x1F41,
+	cmdDHWTemp = 0x1260,
+	cmdControllerMode = 0x2E04,
+	cmdControllerHeatDemand = 0x0008,//Heat demand sent by the controller for CH / DHW / Boiler  (F9/FA/FC)
+	cmdActuatorState = 0x3EF0,
+	cmdActuatorCheck = 0x3B00,
+	cmdBinding = 0x1FC9,
+	cmdExternalSensor = 0x0002,
+	cmdDeviceInfo = 0x0418,
+	cmdBatteryInfo = 0x1060,
+	//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
+	//0x1F09 //Unknown fixed message FF070D
+	//0x0005
+	//0x0006
+	//0x0404
+};
 
 const char  CEvohomeRadio::m_szNameErr[18]={0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F};
 const int CEvohomeRadio::m_evoToDczControllerMode[8]={0,5,1,2,3,-1,-1,4};//are the hidden modes actually valid?
@@ -164,10 +181,10 @@ bool CEvohomeRadio::StartHardware()
 	//Start worker thread
 	m_bDoRestart=false;
 	m_retrycntr = EVOHOME_RETRY_DELAY; //will force reconnect first thing
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeRadio::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CEvohomeRadio::Do_Work, this);
 	m_bIsStarted=true;
 
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 std::string CEvohomeMsg::Encode()
@@ -328,7 +345,7 @@ void CEvohomeRadio::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	if(nDevNo<64 || nDevNo>=96 || GetGatewayID()==0) //atm no reason to interfere with non custom relays
 		return;
-	boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
+	std::lock_guard<std::mutex> l(m_mtxRelayCheck);
 	UpdateRelayHeatDemand(nDevNo,nDemand);
 }
 
@@ -664,7 +681,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 
 	if(nDevType==CEvohomeID::devRelay)//Binding a relay to the HGI80
 	{
-		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		std::unique_lock<std::mutex> lock(m_mtxBindNotify);
 		m_nBindID=0;
 		m_nBindIDType=nDevType;
 		/*if(!m_cndBindNotify.wait_for(lock,boost::posix_time::seconds(60)))
@@ -673,8 +690,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		while(m_nBindID==0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add(nDevNo).Add((uint16_t)cmdControllerHeatDemand).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0xFC).Add((uint16_t)cmdActuatorCheck).Add(CEvohomeID(nGatewayID)).Add((uint8_t)nDevNo).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			boost::system_time const wait=boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
-			if(!m_cndBindNotify.timed_wait(lock,wait) && boost::get_system_time()>timeout)
+			if(m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
 				return 0;
 		}
 
@@ -686,7 +702,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 	}
 	else if(nDevType==CEvohomeID::devSensor)//Binding the HGI80 to the evohome controller as an outdoor sensor (there are other sensors)
 	{
-		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		std::unique_lock<std::mutex> lock(m_mtxBindNotify);
 		m_nBindID=0;
 		m_nBindIDType=CEvohomeID::devController;
 
@@ -694,8 +710,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		while(m_nBindID==0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)2).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			boost::system_time const wait=boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
-			if(!m_cndBindNotify.timed_wait(lock,wait) && boost::get_system_time()>timeout)
+			if(m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
 				return 0;
 		}
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,m_nBindID,cmdBinding).Add((uint8_t)0).Add((uint16_t)0xFFFF).Add(CEvohomeID(nGatewayID)));
@@ -718,7 +733,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 			m_MaxDeviceID = ID + 1;
 		else
 			m_MaxDeviceID++;
-		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		std::unique_lock<std::mutex> lock(m_mtxBindNotify);
 		m_nBindID = 0;
 		m_nBindIDType = CEvohomeID::devController;
 		RFX_SETID3(m_MaxDeviceID, ID1, ID2, ID3);
@@ -727,8 +742,7 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		while (m_nBindID == 0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, nGatewayID, cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)2).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			boost::system_time const wait = boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
-			if (!m_cndBindNotify.timed_wait(lock, wait) && boost::get_system_time()>timeout)
+			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
 				return 0;
 		}
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, m_nBindID, cmdBinding).Add((uint8_t)0).Add((uint16_t)0x30C9).Add(ID1).Add(ID2).Add(ID3));
@@ -1281,7 +1295,7 @@ bool CEvohomeRadio::DecodeBinding(CEvohomeMsg &msg)
 	}
 	if(msg.type==CEvohomeMsg::pktwrt)
 	{
-		boost::lock_guard<boost::mutex> lock(m_mtxBindNotify);
+		std::lock_guard<std::mutex> lock(m_mtxBindNotify);
 		if(msg.id[0].GetIDType()==m_nBindIDType)
 		{
 			m_nBindID=msg.GetID(0);
@@ -1529,14 +1543,14 @@ bool CEvohomeRadio::DecodeBatteryInfo(CEvohomeMsg &msg)
 
 void CEvohomeRadio::AddSendQueue(const CEvohomeMsg &msg)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxSend);
+	std::lock_guard<std::mutex> l(m_mtxSend);
 	m_SendQueue.push_back(msg);//may throw bad_alloc
 }
 
 
 void CEvohomeRadio::PopSendQueue(const CEvohomeMsg &msg)
 {
-	boost::lock_guard<boost::mutex> l(m_mtxSend);
+	std::lock_guard<std::mutex> l(m_mtxSend);
 	if(!m_SendQueue.empty())
 	{
 		if(m_SendQueue.front()==msg || m_nSendFail>=10)
@@ -1552,10 +1566,10 @@ void CEvohomeRadio::PopSendQueue(const CEvohomeMsg &msg)
 
 void CEvohomeRadio::Send()
 {
-	boost::lock_guard<boost::mutex> rl(readQueueMutex);//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
+	std::lock_guard<std::mutex> rl(readQueueMutex);//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
 	if(m_nBufPtr>0)
 		return;
-	boost::lock_guard<boost::mutex> sl(m_mtxSend);
+	std::lock_guard<std::mutex> sl(m_mtxSend);
 	if(!m_SendQueue.empty())
 	{
 		if(m_SendQueue.front().BadMsg())//message rejected by HGI80 which will not be picked up as a failed send
@@ -1640,7 +1654,7 @@ void CEvohomeRadio::Idle_Work()
             nStartup = 0;
         }
     }
-    boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
+    std::lock_guard<std::mutex> l(m_mtxRelayCheck);
     if(!m_RelayCheck.empty() && GetGatewayID()!=0)
     {
         CheckRelayHeatDemand();
@@ -1703,7 +1717,7 @@ namespace http {
 				// Check if All Sensors has already been activated, if not create a temporary dummy sensor
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit > 12) AND (Unit <= 24)", HwdID, (int)pTypeEvohomeZone);
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					std::string devname = "Zone Temp";
 					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);

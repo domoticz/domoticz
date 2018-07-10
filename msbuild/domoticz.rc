@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "Version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -18,6 +17,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -44,30 +44,47 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
 //
-// TO CHANGE VERSION INFORMATION, EDIT PROJECT OPTIONS...
+// Version
 //
+
 1 VERSIONINFO
-FILEVERSION VER_FILE_VERSION
-PRODUCTVERSION VER_FILE_VERSION
-FILETYPE VFT_APP
-{
-  BLOCK "StringFileInfo"
-    {
-       BLOCK "040704E4"
-       {
-          VALUE "CompanyName", "Domoticz"
-          VALUE "FileVersion", VER_FILE_VERSION_STR 
-          VALUE "FileDescription", "Domoticz Home Automation"
-          VALUE "InternalName", "Domoticz"
-          VALUE "LegalCopyright", "GNU Version 2 or later"
-          VALUE "LegalTrademarks", "GNU Version 2 or later"
-          VALUE "OriginalFilename", "Domoticz.exe"
-          VALUE "ProductName", "Domoticz"
-          VALUE "ProductVersion", VER_FILE_VERSION_STR 
-       }
-    }
-}
+ FILEVERSION 4,0,0,9722
+ PRODUCTVERSION 4,0,0,9722
+ FILEFLAGSMASK 0x0L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x0L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040704e4"
+        BEGIN
+            VALUE "CompanyName", "Domoticz"
+            VALUE "FileDescription", "Domoticz Home Automation"
+            VALUE "FileVersion", "4.0.0.9722"
+            VALUE "InternalName", "Domoticz"
+            VALUE "LegalCopyright", "GNU Version 2 or later"
+            VALUE "LegalTrademarks", "GNU Version 2 or later"
+            VALUE "OriginalFilename", "Domoticz.exe"
+            VALUE "ProductName", "Domoticz"
+            VALUE "ProductVersion", "4.0.0.9722"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x407, 1252
+    END
+END
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
@@ -76,6 +93,7 @@ FILETYPE VFT_APP
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "domoticz.ico"
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

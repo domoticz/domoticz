@@ -4,13 +4,10 @@
 
 #include "../main/localtime_r.h"
 #include <string>
-#include <vector>
-#include "../json/json.h"
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
-class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
+class CKodiNode : public std::enable_shared_from_this<CKodiNode>
 {
 	class CKodiStatus
 	{
@@ -127,7 +124,7 @@ public:
 	CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms);
 	explicit CKodi(const int ID);
 	~CKodi(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);
 	void RemoveNode(const int ID);
@@ -140,19 +137,18 @@ public:
 private:
 	void Do_Work();
 
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 
 	void ReloadNodes();
 	void UnloadNodes();
-
-	static	std::vector<boost::shared_ptr<CKodiNode> > m_pNodes;
-
+private:
+	static	std::vector<std::shared_ptr<CKodiNode> > m_pNodes;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 	boost::asio::io_service m_ios;
 };
 

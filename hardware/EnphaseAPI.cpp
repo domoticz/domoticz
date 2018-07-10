@@ -54,19 +54,19 @@ EnphaseAPI::~EnphaseAPI(void)
 bool EnphaseAPI::StartHardware()
 {
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&EnphaseAPI::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&EnphaseAPI::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool EnphaseAPI::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;

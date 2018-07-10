@@ -98,7 +98,7 @@ namespace tcp_proxy
 	{
 		if (!error)
 		{
-			//boost::mutex::scoped_lock lock(mutex_);
+			//std::unique_lock<std::mutex> lock(mutex_);
 			sDownstreamData(reinterpret_cast<unsigned char*>(&downstream_data_[0]),static_cast<size_t>(bytes_transferred));
 			async_write(upstream_socket_,
 					boost::asio::buffer(downstream_data_,bytes_transferred),
@@ -130,7 +130,7 @@ namespace tcp_proxy
 	{
 		if (!error)
 		{
-			//boost::mutex::scoped_lock lock(mutex_);
+			//std::unique_lock<std::mutex> lock(mutex_);
 			sUpstreamData(reinterpret_cast<unsigned char*>(&upstream_data_[0]),static_cast<size_t>(bytes_transferred));
 
 			async_write(downstream_socket_,
@@ -145,7 +145,7 @@ namespace tcp_proxy
 
 	void bridge::close()
 	{
-		boost::mutex::scoped_lock lock(mutex_);
+		std::unique_lock<std::mutex> lock(mutex_);
 		if (downstream_socket_.is_open())
 		{
 			downstream_socket_.close();
@@ -177,7 +177,7 @@ namespace tcp_proxy
 	{
 		try
 		{
-			session_ = boost::shared_ptr<bridge>(
+			session_ = std::shared_ptr<bridge>(
 				new bridge(io_service_)
 			);
 			session_->sDownstreamData.connect( boost::bind( &acceptor::OnDownstreamData, this, _1, _2 ) );

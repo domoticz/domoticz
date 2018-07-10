@@ -1,20 +1,18 @@
 #include "stdafx.h"
 #include "ToonThermostat.h"
+#include "hardwaretypes.h"
+#include "../httpclient/HTTPClient.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../httpclient/HTTPClient.h"
-#include "../main/mainworker.h"
 #include "../json/json.h"
 
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
-
-#define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat
@@ -182,19 +180,19 @@ bool CToonThermostat::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CToonThermostat::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CToonThermostat::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CToonThermostat::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
 	if (!m_bDoLogin)
@@ -364,7 +362,7 @@ bool CToonThermostat::Login()
 	agreementIdChecksum = root["agreements"][m_Agreement]["agreementIdChecksum"].asString();
 
 	std::stringstream sstr2;
-	sstr2 << "clientId=" << m_ClientID 
+	sstr2 << "clientId=" << m_ClientID
 		 << "&clientIdChecksum=" << m_ClientIDChecksum
 		 << "&agreementId=" << agreementId
 		 << "&agreementIdChecksum=" << agreementIdChecksum
@@ -440,7 +438,7 @@ bool CToonThermostat::GetUUIDIdx(const std::string &UUID, int &idx)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [ROWID] FROM ToonDevices WHERE (HardwareID=%d) AND (UUID='%q')",
 		m_HwdID, UUID.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	idx = atoi(sd[0].c_str());
@@ -452,7 +450,7 @@ bool CToonThermostat::GetUUIDFromIdx(const int idx, std::string &UUID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [UUID] FROM ToonDevices WHERE (HardwareID=%d) AND (ROWID=%d)",
 		m_HwdID, idx);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	UUID = sd[0];

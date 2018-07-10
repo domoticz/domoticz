@@ -8,7 +8,7 @@
 
 #include <boost/asio.hpp>
 #include <string>
-#include <boost/noncopyable.hpp>
+#include "../main/Noncopyable.h"
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 #include "server_settings.hpp"
@@ -20,7 +20,7 @@ typedef boost::function< void() > init_connectionhandler_func;
 typedef boost::function< void(const boost::system::error_code & error) > accept_handler_func;
 
 /// The top-level class of the HTTP(S) server.
-class server_base : private boost::noncopyable {
+class server_base : private domoticz::noncopyable {
 public:
 	/// Construct the server to listen on the specified TCP address and port, and
 	/// serve up files from the given directory.
@@ -78,7 +78,7 @@ public:
 	virtual ~server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'server[" + settings_.to_string() + "]'";
 	}
 protected:
@@ -100,7 +100,7 @@ public:
 	virtual ~ssl_server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'ssl_server[" + settings_.to_string() + "]'";
 	}
 
@@ -132,10 +132,10 @@ private:
 /// server factory
 class server_factory {
 public:
-	static boost::shared_ptr<server_base> create(const server_settings & settings, request_handler & user_request_handler);
+	static std::shared_ptr<server_base> create(const server_settings & settings, request_handler & user_request_handler);
 
 #ifdef WWW_ENABLE_SSL
-	static boost::shared_ptr<server_base> create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
+	static std::shared_ptr<server_base> create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
 #endif
 };
 

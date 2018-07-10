@@ -6,7 +6,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #define OPENWEBNET_MSG_OPEN_OK "*#*1##"
 #define OPENWEBNET_MSG_OPEN_KO  "*#*0##"

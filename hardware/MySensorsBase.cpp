@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
@@ -252,7 +251,7 @@ MySensorsBase::~MySensorsBase(void)
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string> > result, result2;
@@ -1088,7 +1087,7 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int Su
 	std::vector<std::vector<std::string> > result;
 	// LLEMARINEL : #1312  Changed pTypeLighting2 to pTypeGeneralSwitch
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
-	if (result.size() < 1)
+	if (result.empty())
 		return; //not found!
 	time_t now = time(0);
 	struct tm ltime;
@@ -1106,7 +1105,7 @@ void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int Chil
 	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 	time_t now = time(0);
 	struct tm ltime;
@@ -1127,7 +1126,7 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 	time_t now = time(0);
 	struct tm ltime;
@@ -1200,7 +1199,7 @@ bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &bli
 	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	blind_value = atoi(result[0][0].c_str());
 	return true;
@@ -1222,7 +1221,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 	}
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, SubUnit);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	int nvalue = atoi(result[0][1].c_str());
 	if ((sub_type == V_STATUS) || (sub_type == V_TRIPPED))
@@ -1235,11 +1234,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 		sSwitchValue = (nvalue == Color_LedOn) ? "1" : "0";
 		return true;
 	}
-
-	int slevel = atoi(result[0][2].c_str());
-	std::stringstream sstr;
-	sstr << int(slevel);
-	sSwitchValue = sstr.str();
+	sSwitchValue = std::to_string(atoi(result[0][2].c_str()));
 	return true;
 }
 
@@ -1251,7 +1246,7 @@ std::string MySensorsBase::GetGatewayVersion()
 bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
 {
 	//Check if Node is asleep, and if so, add the command to it's message queue
-	boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+	std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 	bool bIsAsleep = false;
 	std::map<int, bool>::iterator itt = m_node_sleep_states.find(NodeID);
 	if (itt != m_node_sleep_states.end())
@@ -1385,10 +1380,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
 				int svalue = round(fvalue);
-
-				std::stringstream sstr;
-				sstr << svalue;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 		}
 		else {
@@ -1451,9 +1443,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			else if (cmnd == gswitch_sSetLevel)
 			{
-				std::stringstream sstr;
-				sstr << level;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(level), pChild->useAck, pChild->ackTimeout);
 			}
 		}
 		else {
@@ -1539,9 +1529,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				int svalue = pLed->value;
 				if (svalue > 100)
 					svalue = 100;
-				std::stringstream sstr;
-				sstr << svalue;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 			else if ((pLed->command == Color_LedOff) || (pLed->command == Color_LedOn))
 			{
@@ -1549,8 +1537,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 			}
 		}
-		else
-		{
+		else {
 			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
 			return false;
 		}
@@ -1628,9 +1615,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
 			if (pChild)
 			{
-				std::stringstream sstr;
-				sstr << ir_code;
-				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, std::to_string(ir_code), pChild->useAck, pChild->ackTimeout);
 			}
 		}
 		else {
@@ -1650,7 +1635,7 @@ void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int Var
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ROWID FROM MySensorsVars WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d) AND (VarID=%d)", m_HwdID, NodeID, ChildID, VarID);
-	if (result.size() == 0)
+	if (result.empty())
 	{
 		//Insert
 		m_sql.safe_query("INSERT INTO MySensorsVars (HardwareID, NodeID, ChildID, VarID, [Value]) VALUES (%d, %d, %d, %d,'%q')", m_HwdID, NodeID, ChildID, VarID, svalue.c_str());
@@ -1666,7 +1651,7 @@ bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID,
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [Value] FROM MySensorsVars WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d) AND (VarID=%d)", m_HwdID, NodeID, ChildID, VarID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	sValue = sd[0];
@@ -1677,7 +1662,7 @@ void MySensorsBase::UpdateChildDBInfo(const int NodeID, const int ChildID, const
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ROWID FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d)", m_HwdID, NodeID, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Insert
 		bool bUseAck = (ChildID == 255) ? false : true;
@@ -1697,7 +1682,7 @@ bool MySensorsBase::GetChildDBInfo(const int NodeID, const int ChildID, _ePresen
 	UseAck = false;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [Type], [Name], [UseAck] FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d)", m_HwdID, NodeID, ChildID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	pType = (_ePresentationType)atoi(result[0][0].c_str());
 	Name = result[0][1];
@@ -1730,7 +1715,6 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			payload = results[5 + ip];
 		}
 	}
-	std::stringstream sstr;
 #ifdef _DEBUG
 	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s", node_id, child_sensor_id, message_type, ack, sub_type, payload.c_str());
 #endif
@@ -1757,10 +1741,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			//Set a unique node id from the controller
 			int newID = FindNextNodeID();
 			if (newID != -1)
-			{
-				sstr << newID;
-				SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
-			}
+				SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, std::to_string(newID));
 		}
 		break;
 		case I_CONFIG:
@@ -1811,8 +1792,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			boost::posix_time::ptime tlocal(boost::posix_time::second_clock::local_time());
 			boost::posix_time::time_duration dur = tlocal - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1));
 			time_t fltime(dur.total_seconds());
-			sstr << fltime;
-			SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+			SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, std::to_string(fltime));
 		}
 		break;
 		case I_HEARTBEAT:
@@ -1852,7 +1832,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			while (1 == 0);
 			if (node_id != 255)
 			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 				std::map<int, std::vector<_tMySensorSmartSleepQueueItem> >::const_iterator itt = m_node_sleep_queue.find(node_id);
 				if (itt != m_node_sleep_queue.end())
 				{
@@ -1873,7 +1853,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			while (1 == 0);
 			if (node_id != 255)
 			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 				m_node_sleep_states[node_id] = false;
 			}
 			break;
@@ -2101,14 +2081,14 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			bHaveValue = true;
 			break;
 		case V_IR_RECEIVE:
-			pChild->SetValue(vType, (int)boost::lexical_cast<unsigned int>(payload));
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_CUSTOM:
 			//Request for a sensor state
 			if (!payload.empty())
 			{
-				uint64_t idx = boost::lexical_cast<uint64_t>(payload);
+				uint64_t idx = std::stoull(payload);
 				int nValue;
 				std::string sValue;
 				if (m_mainworker.GetSensorData(idx, nValue, sValue))
@@ -2359,19 +2339,19 @@ void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, con
 bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
-	m_send_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsBase::Do_Send_Work, this)));
+	m_send_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Send_Work, this);
 	return (m_send_thread != NULL);
 }
 
 void MySensorsBase::StopSendQueue()
 {
-	if (m_send_thread != NULL)
+	if (m_send_thread)
 	{
-		assert(m_send_thread);
 		//Add a dummy queue item, so we stop
 		std::string emptyString;
 		m_sendQueue.push(emptyString);
 		m_send_thread->join();
+		m_send_thread.reset();
 	}
 }
 
@@ -2380,7 +2360,7 @@ void MySensorsBase::Do_Send_Work()
 	while (true)
 	{
 		std::string toSend;
-		bool hasPopped = m_sendQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(toSend, boost::posix_time::milliseconds(2000));
+		bool hasPopped = m_sendQueue.timed_wait_and_pop<std::chrono::duration<int> >(toSend, std::chrono::duration<int>(2));
 		if (!hasPopped) {
 			continue;
 		}

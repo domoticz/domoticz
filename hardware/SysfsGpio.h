@@ -32,14 +32,13 @@ public:
 	CSysfsGpio(const int ID, const int ManualDevices, const int Debounce);
 	~CSysfsGpio();
 
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static std::vector<int> GetGpioIds();
 	static std::vector<std::string> GetGpioNames();
 	static void RequestDbUpdate(int pin);
-
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void FindGpioExports();
 	void Do_Work();
 	void EdgeDetectThread();
@@ -58,6 +57,7 @@ private:
 	int GetReadResult(int bytecount, char* value_str);
 	int GpioGetState(int index);
 	void GpioSaveState(int index, int value);
+
 	static std::vector<gpio_info> m_saved_state;
 	static int m_sysfs_hwdid;
 	static int m_sysfs_req_update;
@@ -70,7 +70,7 @@ private:
 	fd_set m_rfds;
 	tRBUF m_Packet;
 
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> m_edge_thread;
-	boost::mutex m_state_mutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_edge_thread;
+	std::mutex m_state_mutex;
 };

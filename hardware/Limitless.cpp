@@ -229,7 +229,7 @@ bool CLimitLess::StartHardware()
 
 	memset(&m_stRemoteDestAddr,0,sizeof(m_stRemoteDestAddr));
 	//m_stRemoteDestAddr.sin_family = AF_UNSPEC;
-	//m_stRemoteDestAddr.sin_family = PF_INET; 
+	//m_stRemoteDestAddr.sin_family = PF_INET;
 	m_stRemoteDestAddr.sin_family = AF_INET;     // host byte order
 	m_stRemoteDestAddr.sin_port = htons(m_usIPPort); // short, network byte order
 	m_stRemoteDestAddr.sin_addr = *((struct in_addr *)he->h_addr);
@@ -262,9 +262,9 @@ bool CLimitLess::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CLimitLess::Do_Work, this);
 	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CLimitLess::IsDataAvailable(const SOCKET sock)
@@ -416,11 +416,11 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 
 bool CLimitLess::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     if (m_RemoteSocket!=INVALID_SOCKET)
 	{
@@ -1427,7 +1427,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 
 			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')", idx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			int Mode1 = atoi(request::findValue(&req, "LimitlessType").c_str());

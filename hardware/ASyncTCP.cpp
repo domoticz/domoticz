@@ -2,6 +2,7 @@
 #include "ASyncTCP.h"
 
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
 #include "../main/Logger.h"                // for CLogger, _log, _eLogLevel:...
 struct hostent;

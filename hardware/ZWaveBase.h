@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <time.h>
 #include "DomoticzHardware.h"
 
@@ -46,7 +45,6 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_CENTRAL_SCENE,
 
 		ZDTYPE_SENSOR_CUSTOM,
-
 	};
 	struct _tZWaveDevice
 	{
@@ -132,20 +130,20 @@ public:
 
 	virtual bool GetInitialDevices()=0;
 	virtual bool GetUpdates()=0;
-	bool StartHardware();
-	bool StopHardware();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool StartHardware() override;
+	bool StopHardware() override;
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 public:
 	int m_LastIncludedNode;
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;
 	int m_LastRemovedNode;
-	boost::mutex m_NotificationMutex;
+	std::mutex m_NotificationMutex;
 private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
-	
+
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID);
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
@@ -180,7 +178,7 @@ private:
 	time_t m_updateTime;
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	bool m_stoprequested;
 };
 

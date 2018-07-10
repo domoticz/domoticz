@@ -141,7 +141,7 @@ void CFibaroPush::DoFibaroPush()
 					// Create basic authentication header
 					std::stringstream sstr;
 					sstr << fibaroUsername << ":" << fibaroPassword;
-					std::string m_AccessToken = base64_encode((const unsigned char *)(sstr.str().c_str()), strlen(sstr.str().c_str()));
+					std::string m_AccessToken = base64_encode(sstr.str());
 					ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 				}
 				else {

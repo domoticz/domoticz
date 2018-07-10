@@ -71,9 +71,9 @@ bool Yeelight::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Yeelight::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&Yeelight::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool Yeelight::StopHardware()
@@ -83,6 +83,7 @@ bool Yeelight::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -142,7 +143,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	if (yeelightColorMode > 0) {
 		_log.Debug(DEBUG_HARDWARE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
 	}
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "YeeLight: New Light Found (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(yeelightBright.c_str());
@@ -417,7 +418,7 @@ void Yeelight::udp_server::start_send()
 {
 	std::string testMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
 	//_log.Log(LOG_STATUS, "start_send..................");
-	boost::shared_ptr<std::string> message(
+	std::shared_ptr<std::string> message(
 		new std::string(testMessage));
 	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("239.255.255.250"), 1982);
 	socket_.send_to(boost::asio::buffer(*message), remote_endpoint_);

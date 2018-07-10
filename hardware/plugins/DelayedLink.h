@@ -86,8 +86,14 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_ImportModule, const char*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_CallObject, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
+		DECLARE_PYTHON_SYMBOL(int, PyEval_ThreadsInitialized, );
+		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Get, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyEval_SaveThread, void);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_ReleaseLock, );
+		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(int, PyGILState_Check, );
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, _PyObject_New, PyTypeObject*);
 #ifdef _DEBUG
@@ -114,6 +120,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(long, PyLong_AsLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsUTF8String, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_AddModule, const char*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_SetProfile, Py_tracefunc COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_SetTrace, Py_tracefunc COMMA PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -128,17 +136,20 @@ namespace Plugins {
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef _DEBUG
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python38_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
 #	else
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #	endif
 #else
+				if (!shared_lib_) FindLibrary("python3.8", true);
 				if (!shared_lib_) FindLibrary("python3.7", true);
 				if (!shared_lib_) FindLibrary("python3.6", true);
 				if (!shared_lib_) FindLibrary("python3.5", true);
@@ -194,8 +205,14 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
 					RESOLVE_PYTHON_SYMBOL(PyFrame_GetLineNumber);
+					RESOLVE_PYTHON_SYMBOL(PyEval_InitThreads);
+					RESOLVE_PYTHON_SYMBOL(PyEval_ThreadsInitialized);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Get);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SaveThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
+					RESOLVE_PYTHON_SYMBOL(PyEval_ReleaseLock);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Swap);
+					RESOLVE_PYTHON_SYMBOL(PyGILState_Check);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
 #ifdef _DEBUG
@@ -225,6 +242,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLong);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8String);
 					RESOLVE_PYTHON_SYMBOL(PyImport_AddModule);
+					RESOLVE_PYTHON_SYMBOL(PyEval_SetProfile);
+					RESOLVE_PYTHON_SYMBOL(PyEval_SetTrace);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -362,8 +381,14 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyImport_ImportModule	pythonLib->PyImport_ImportModule
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
 #define PyFrame_GetLineNumber	pythonLib->PyFrame_GetLineNumber
+#define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
+#define	PyEval_ThreadsInitialized	pythonLib->PyEval_ThreadsInitialized
+#define	PyThreadState_Get		pythonLib->PyThreadState_Get
 #define PyEval_SaveThread		pythonLib->PyEval_SaveThread
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
+#define PyEval_ReleaseLock		pythonLib->PyEval_ReleaseLock
+#define PyThreadState_Swap		pythonLib->PyThreadState_Swap
+#define PyGILState_Check		pythonLib->PyGILState_Check
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
@@ -396,4 +421,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyLong_AsLong			pythonLib->PyLong_AsLong
 #define PyUnicode_AsUTF8String	pythonLib->PyUnicode_AsUTF8String
 #define PyImport_AddModule		pythonLib->PyImport_AddModule
+#define PyEval_SetProfile		pythonLib->PyEval_SetProfile
+#define PyEval_SetTrace			pythonLib->PyEval_SetTrace
 }

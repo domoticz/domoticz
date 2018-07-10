@@ -3,8 +3,11 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 #include "hardwaretypes.h"
-#include <map>
-#include "../json/json.h"
+
+namespace Json
+{
+	class Value;
+};
 
 class CTado : public CDomoticzHardwareBase
 {
@@ -12,18 +15,16 @@ class CTado : public CDomoticzHardwareBase
 	public:
 		~CTado(void);
 		CTado(const int ID, const std::string &username, const std::string &password);
-
-		bool WriteToHardware(const char *pdata, const unsigned char length);
+		bool WriteToHardware(const char *pdata, const unsigned char length) override;
 		void SetSetpoint(const int idx, const float temp);
+	private:
 		void Init();
-		bool StartHardware();
-		bool StopHardware();
+		bool StartHardware() override;
+		bool StopHardware() override;
 		void Do_Work();
 
-		boost::shared_ptr<boost::thread> m_thread;
+		std::shared_ptr<std::thread> m_thread;
 		volatile bool m_stoprequested;
-
-	private:
 		struct _tTadoZone {
 			std::string Id;
 			std::string Name;
@@ -70,7 +71,7 @@ class CTado : public CDomoticzHardwareBase
 		bool CancelOverlay(const int Idx);
 		bool MatchValueFromJSKey(const std::string &sKeyName, const std::string &sJavascriptData, std::string & sValue);
 		std::vector<std::string> StringSplitEx(const std::string &inputString, const std::string &delimiter, const int maxelements = 0);
-
+private:
 		std::string m_TadoUsername;
 		std::string m_TadoPassword;
 		std::string m_TadoAuthToken;

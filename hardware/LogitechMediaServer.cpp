@@ -1,15 +1,14 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
-#include <boost/lexical_cast.hpp>
 #include "../hardware/hardwaretypes.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../notifications/NotificationHelper.h"
-#include "../main/WebServer.h"
-#include "../main/mainworker.h"
 #include "../main/localtime_r.h"
-#include "../webserver/cWebem.h"
+#include "../main/Logger.h"
+#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
+#include "../notifications/NotificationHelper.h"
 #include "../httpclient/HTTPClient.h"
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
@@ -117,9 +116,9 @@ bool CLogitechMediaServer::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLogitechMediaServer::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CLogitechMediaServer::StopHardware()
@@ -335,7 +334,7 @@ void CLogitechMediaServer::Do_Work()
 			scounter++;
 			if ((scounter >= m_iPollInterval) || (bFirstTime))
 			{
-				boost::lock_guard<boost::mutex> l(m_mutex);
+				std::lock_guard<std::mutex> l(m_mutex);
 
 				scounter = 0;
 				bFirstTime = false;
@@ -484,7 +483,7 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	_log.Log(LOG_STATUS, "Logitech Media Server: New Player '%s' added", Name.c_str());
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress='%q')", m_HwdID, MacAddress.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -923,14 +922,14 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "LMSGetPlaylists";
 
-			std::vector<CLogitechMediaServer::LMSPlaylistNode> m_nodes = pHardware->GetPlaylists();
-			std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;
+			std::vector<CLogitechMediaServer::LMSPlaylistNode> _nodes = pHardware->GetPlaylists();
 
 			int ii = 0;
-			for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt) {
-				root["result"][ii]["id"] = itt->ID;
-				root["result"][ii]["refid"] = itt->refID;
-				root["result"][ii]["Name"] = itt->Name;
+			for (const auto & itt : _nodes)
+			{
+				root["result"][ii]["id"] = itt.ID;
+				root["result"][ii]["refid"] = itt.refID;
+				root["result"][ii]["Name"] = itt.Name;
 				ii++;
 			}
 		}

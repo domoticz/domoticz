@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 #include "hardwaretypes.h"
 
 class csocket;
@@ -75,7 +74,6 @@ public:
 
 class CHarmonyHub : public CDomoticzHardwareBase
 {
-public:
 	enum _eConnectionStatus
 	{
 		DISCONNECTED=0,
@@ -84,16 +82,13 @@ public:
 		AUTHENTICATED,
 		BOUND
 	};
-
-
 public:
 	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port);
 	~CHarmonyHub(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	// Init and cleanup
@@ -132,9 +127,7 @@ private:
 
 	// Helper function for XMPP reading
 	bool IsTransmissionComplete(std::string *szHarmonyData);
-
-
-
+private:
 	// hardware parameters
 	std::string m_szHarmonyAddress;
 	unsigned short m_usHarmonyPort;
@@ -142,8 +135,8 @@ private:
 	// vars
 	volatile bool m_stoprequested;
 
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::mutex m_mutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::mutex m_mutex;
 
 	csocket * m_connection;
 	_eConnectionStatus m_connectionstatus;

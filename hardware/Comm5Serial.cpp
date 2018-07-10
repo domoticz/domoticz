@@ -1,12 +1,9 @@
 #include "stdafx.h"
 #include "Comm5Serial.h"
+#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
-#include "../main/mainworker.h"
-
-#include <iostream>
-#include <boost/lexical_cast.hpp>
+#include "../main/RFXtrx.h"
 
 /*
 	This driver allows Domoticz to control any I/O module from the MA-4xxx Family
@@ -64,7 +61,7 @@ bool Comm5Serial::WriteToHardware(const char * pdata, const unsigned char length
 bool Comm5Serial::StartHardware()
 {
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Comm5Serial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&Comm5Serial::Do_Work, this);
 
 	//Try to open the Serial Port
 	try
@@ -94,7 +91,7 @@ bool Comm5Serial::StartHardware()
 	}
 	m_bIsStarted=true;
 	setReadCallback(boost::bind(&Comm5Serial::readCallBack, this, _1, _2));
-	
+
 	sOnConnected(this);
 	return true;
 }
@@ -108,6 +105,7 @@ bool Comm5Serial::StopHardware()
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -117,7 +115,7 @@ void Comm5Serial::Do_Work()
 {
 	int sec_counter = 0;
 	int msec_counter = 0;
-	
+
 	queryRelayState();
 	querySensorState();
 	enableNotifications();
@@ -173,7 +171,7 @@ void Comm5Serial::enableNotificationResponseHandler(const std::string & frame)
 
 void Comm5Serial::readCallBack(const char * data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
@@ -247,11 +245,11 @@ void Comm5Serial::ParseData(const unsigned char* data, const size_t len)
 		case STFRAME_DATA:
 			frame.push_back(data[i]);
 			frameCRC = crc16_update(frameCRC, data[i]);
-			
+
 			if ( frame.size() >= frameSize )
 				currentState = STFRAME_CRC1;
 			break;
-		
+
 		case STFRAME_CRC1:
 			frame.push_back(data[i]);
 			frameCRC = crc16_update(frameCRC, 0);
@@ -329,7 +327,7 @@ void Comm5Serial::enableNotifications()
 
 void Comm5Serial::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

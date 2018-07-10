@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 enum _eDenkoviDevice
 {
@@ -14,26 +13,16 @@ enum _eDenkoviDevice
 	DDEV_SmartDEN_Notifier							//6
 };
 
-class CDenkoviDevices :
-	public CDomoticzHardwareBase
+class CDenkoviDevices :	public CDomoticzHardwareBase
 {
 public:
 	CDenkoviDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password, const int pollInterval, const int model);
 	~CDenkoviDevices(void);
-
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-	std::string m_szIPAddress;
-	unsigned short m_usIPPort;
-	std::string m_Password;
-	int m_pollInterval;
-	volatile bool m_stoprequested;
-	int m_iModel;
-	boost::shared_ptr<boost::thread> m_thread;
-
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 
@@ -41,4 +30,12 @@ private:
 	std::string DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter);
 	float DenkoviGetFloatParameter(std::string tmpstr, const std::string &tmpParameter);
 	int DenkoviCheckForIO(std::string tmpstr, const std::string &tmpIoType);
+private:
+	std::string m_szIPAddress;
+	unsigned short m_usIPPort;
+	std::string m_Password;
+	int m_pollInterval;
+	volatile bool m_stoprequested;
+	int m_iModel;
+	std::shared_ptr<std::thread> m_thread;
 };

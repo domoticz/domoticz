@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 #include "ASyncSerial.h"
 
-using namespace std;
 class bt_openwebnet;
 
 #define OPENWEBNET_DEVICE "OPENWEBNET"
@@ -24,31 +23,27 @@ class COpenWebNetUSB : public AsyncSerial, public CDomoticzHardwareBase
 public:
 	COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate);
 	~COpenWebNetUSB(void);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+private:
 	void Do_Work();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
-protected:
-
-	bool StartHardware();
-	bool StopHardware();
-
+	bool StartHardware() override;
+	bool StopHardware() override;
+	bool sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, bool silent = false);
+	bool FindDevice(int deviceID, int deviceUnit, int subType, int* used);
+	bool writeRead(const char* command, unsigned int commandSize, bool silent);
+	void readCallback(const char *data, size_t len);
+	bool ParseData(char* data, int length, std::vector<bt_openwebnet>& messages);//same as OpenWebNet class, TODO : inherit from mother class
+private:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	int m_retrycntr;
 
 	bool m_bHaveReceived;
 	unsigned char m_readBuffer[OPENWEBNET_SERIAL_BUFFER_SIZE];
 	int m_readBufferSize;
-
-	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, bool silent = false);
-	bool FindDevice(int deviceID, int deviceUnit, int subType, int* used);
-	bool writeRead(const char* command, unsigned int commandSize, bool silent);
-	void readCallback(const char *data, size_t len);
-	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);//same as OpenWebNet class, TODO : inherit from mother class
 
 	volatile bool m_bWriting;
 	volatile bool m_stoprequested;

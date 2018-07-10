@@ -7,7 +7,6 @@
 // by Robert Jarzabek, iSys - Intelligent systems
 #include "eHouse/globals.h"
 
-//#include <map>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
@@ -17,31 +16,15 @@ class eHouseTCP : public  CDomoticzHardwareBase
 public:
 	eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const int AutoDiscovery, const int EnableAlarms, const int EnablePro, const int opta, const int optb);
 	~eHouseTCP();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+private:
 	int ConnectTCP(unsigned int ip);
 	void AddTextEvents(unsigned char *ev, int size);						//Add hex coded string with eHouse events/codes
 	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);  //Add binary coded event from buffer
-	unsigned char eHEnableAutoDiscovery;									//enable eHouse Controllers Auto Discovery
-	unsigned char eHEnableProDiscovery;										//enable eHouse PRO Discovery
-	unsigned char eHEnableAlarmInputs;			//Future - Alarm inputs
-	char NoDetectTCPPack;
-	unsigned int  eHOptA;						//Admin options
-	unsigned int  eHOptB;						//Admin options
-
-private:
 	struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
 	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
 	void CalculateAdcWiFi(char index);
 	char eH1(unsigned char addrh, unsigned char addrl);
-
-	//Variables stored dynamically added during status reception (should be added sequentially)
-	union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
-	struct CommManagerNamesT        *ECMn;
-	union CMStatusT					*ECM;
-	union CMStatusT					*ECMPrv;				//Previous statuses for Update MSQL optimalization  (change data only updated)
-	struct eHouseProNamesT          *eHouseProN;
-	union eHouseProStatusUT			*eHouseProStatus;
-	union eHouseProStatusUT         *eHouseProStatusPrv;
 	void InitStructs(void);
 
 	union ERMFullStatT             *(eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);  		//full ERM status decoded
@@ -50,87 +33,13 @@ private:
 	union ERMFullStatT             *(eHRMs[EHOUSE1_RM_MAX + 1]);  				//full RM status decoded
 	union ERMFullStatT             *(eHRMPrev[EHOUSE1_RM_MAX + 1]);  			//full RM status decoded previous for detecting changes
 
-
 	struct EventQueueT				*(EvQ[EVENT_QUEUE_MAX]);		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
 	struct AURAT                    *(AuraDev[MAX_AURA_DEVS]);		// Aura status thermostat
 	struct AURAT                    *(AuraDevPrv[MAX_AURA_DEVS]);   // previous for detecting changes
 	struct AuraNamesT               *(AuraN[MAX_AURA_DEVS]);
 
-#ifndef REMOVEUNUSED
-	CANStatus 				eHCAN[EHOUSE_RF_MAX];
-	CANStatus 				eHCANRF[EHOUSE_RF_MAX];
-	CANStatus 				eHCANPrv[EHOUSE_RF_MAX];
-	CANStatus 				eHCANRFPrv[EHOUSE_RF_MAX];
-
-	eHouse1Status			eHPrv[EHOUSE1_RM_MAX];
-	CMStatus                eHEPrv[ETHERNET_EHOUSE_RM_MAX + 1];
-	WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
-#endif
-
-	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX + 1]);			//full wifi status 
-	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX + 1]);		//full wifi status previous for detecting changes
-
-
-
-
-#ifndef REMOVEUNUSED
-	WIFIFullStat            eHCANPrev[EHOUSE_CAN_MAX];
-	WIFIFullStat            eHRFPrev[EHOUSE_RF_MAX];
-	WIFIFullStat            eHCANs[EHOUSE_CAN_MAX];
-	WIFIFullStat            eHRFs[EHOUSE_RF_MAX];
-#endif
-	struct eHouse1NamesT                *(eHn[EHOUSE1_RM_MAX + 1]);			//names of i/o for rs-485 controllers
-	struct EtherneteHouseNamesT         *(eHEn[ETHERNET_EHOUSE_RM_MAX + 1]);	//names of i/o for Ethernet controllers
-	struct WiFieHouseNamesT             *(eHWIFIn[EHOUSE_WIFI_MAX + 1]);		//names of i/o for WiFi controllers
-
-#ifndef REMOVEUNUSED
-	eHouseCANNames              eHCANn[EHOUSE_RF_MAX + 1];
-	eHouseCANNames              eHCANRFn[EHOUSE_RF_MAX + 1];
-	SatelNames                  SatelN[MAX_SATEL];
-	SatelStatus                 SatelStat[MAX_SATEL];
-#endif
-
-	unsigned char COMMANAGER_IP_HIGH;        //default CommManager Ip addr h
-	unsigned char COMMANAGER_IP_LOW;         //default CommManager Ip addr l
-	unsigned char EHOUSE_PRO_HIGH;           //default eHouse Pro Server IP addr h
-	unsigned char EHOUSE_PRO_LOW;            //default eHouse Pro Server IP addr l
-	char VendorCode[6];
-	int TCPSocket;
-	unsigned char DEBUG_TCPCLIENT;
-	unsigned char EHOUSE_TCP_CLIENT_TIMEOUT;        //Tcp Client operation timeout Connect/send/receive
-	unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US;     //Tcp Client operation timeout Connect/send/receive
-	int EHOUSE_TCP_PORT;
-
-	float VccRef;
-	int   AdcRefMax;
-	float CalcCalibration;
-	char GetLine[SIZEOFTEXT];   //global variable for decoding names discovery
-	unsigned int GetIndex, GetSize;
-	int HeartBeat;
-	//unsigned int GetIndex, GetSize;
-	//int HeartBeat;
-
-
-	int AddrH, AddrL; //address high & low for controller type detection & construct idx
-	int m_modelIndex;
-	bool m_data32;
-	sockaddr_in m_addr;
-	int m_socket;
-	const         unsigned short m_IPPort;  // 9876;    default port
-	const          std::string m_IPAddress; // "192.168.0.200"; - default eHouse PRO srv address
-	int m_pollInterval;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> EhouseTcpClientThread[MAX_CLIENT_SOCKETS];
-	unsigned char m_newData[7];
-	unsigned char DisablePerformEvent;
-
-	unsigned char m_userCode[8]; 	// password to eHouse 6 ascii chars
-
-	boost::mutex m_mutex;
-	bool m_alarmLast;
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	bool CheckAddress();
@@ -181,6 +90,96 @@ private:
 	signed int GetIndexOfEvent(unsigned char *TempEvent);
 	void ExecQueuedEvents(void);
 	signed int hex2bin(const unsigned char *st, int offset);
+	char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
+	void EhouseSubmitData(int SocketIndex);
+	void eHType(int devtype, char *dta);
+private:
+	unsigned char eHEnableAutoDiscovery;									//enable eHouse Controllers Auto Discovery
+	unsigned char eHEnableProDiscovery;										//enable eHouse PRO Discovery
+	unsigned char eHEnableAlarmInputs;			//Future - Alarm inputs
+	char NoDetectTCPPack;
+	unsigned int  eHOptA;						//Admin options
+	unsigned int  eHOptB;						//Admin options
+
+	//Variables stored dynamically added during status reception (should be added sequentially)
+	union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
+	struct CommManagerNamesT        *ECMn;
+	union CMStatusT					*ECM;
+	union CMStatusT					*ECMPrv;				//Previous statuses for Update MSQL optimalization  (change data only updated)
+	struct eHouseProNamesT          *eHouseProN;
+	union eHouseProStatusUT			*eHouseProStatus;
+	union eHouseProStatusUT         *eHouseProStatusPrv;
+
+#ifndef REMOVEUNUSED
+	CANStatus 				eHCAN[EHOUSE_RF_MAX];
+	CANStatus 				eHCANRF[EHOUSE_RF_MAX];
+	CANStatus 				eHCANPrv[EHOUSE_RF_MAX];
+	CANStatus 				eHCANRFPrv[EHOUSE_RF_MAX];
+
+	eHouse1Status			eHPrv[EHOUSE1_RM_MAX];
+	CMStatus                eHEPrv[ETHERNET_EHOUSE_RM_MAX + 1];
+	WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
+#endif
+
+	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX + 1]);			//full wifi status
+	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX + 1]);		//full wifi status previous for detecting changes
+
+#ifndef REMOVEUNUSED
+	WIFIFullStat            eHCANPrev[EHOUSE_CAN_MAX];
+	WIFIFullStat            eHRFPrev[EHOUSE_RF_MAX];
+	WIFIFullStat            eHCANs[EHOUSE_CAN_MAX];
+	WIFIFullStat            eHRFs[EHOUSE_RF_MAX];
+#endif
+	struct eHouse1NamesT                *(eHn[EHOUSE1_RM_MAX + 1]);			//names of i/o for rs-485 controllers
+	struct EtherneteHouseNamesT         *(eHEn[ETHERNET_EHOUSE_RM_MAX + 1]);	//names of i/o for Ethernet controllers
+	struct WiFieHouseNamesT             *(eHWIFIn[EHOUSE_WIFI_MAX + 1]);		//names of i/o for WiFi controllers
+
+#ifndef REMOVEUNUSED
+	eHouseCANNames              eHCANn[EHOUSE_RF_MAX + 1];
+	eHouseCANNames              eHCANRFn[EHOUSE_RF_MAX + 1];
+	SatelNames                  SatelN[MAX_SATEL];
+	SatelStatus                 SatelStat[MAX_SATEL];
+#endif
+
+	unsigned char COMMANAGER_IP_HIGH;        //default CommManager Ip addr h
+	unsigned char COMMANAGER_IP_LOW;         //default CommManager Ip addr l
+	unsigned char EHOUSE_PRO_HIGH;           //default eHouse Pro Server IP addr h
+	unsigned char EHOUSE_PRO_LOW;            //default eHouse Pro Server IP addr l
+	char VendorCode[6];
+	int TCPSocket;
+	unsigned char DEBUG_TCPCLIENT;
+	unsigned char EHOUSE_TCP_CLIENT_TIMEOUT;        //Tcp Client operation timeout Connect/send/receive
+	unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US;     //Tcp Client operation timeout Connect/send/receive
+	int EHOUSE_TCP_PORT;
+
+	float VccRef;
+	int   AdcRefMax;
+	float CalcCalibration;
+	char GetLine[SIZEOFTEXT];   //global variable for decoding names discovery
+	unsigned int GetIndex, GetSize;
+	int HeartBeat;
+	//unsigned int GetIndex, GetSize;
+	//int HeartBeat;
+
+
+	int AddrH, AddrL; //address high & low for controller type detection & construct idx
+	int m_modelIndex;
+	bool m_data32;
+	sockaddr_in m_addr;
+	int m_socket;
+	const         unsigned short m_IPPort;  // 9876;    default port
+	const          std::string m_IPAddress; // "192.168.0.200"; - default eHouse PRO srv address
+	int m_pollInterval;
+	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> EhouseTcpClientThread[MAX_CLIENT_SOCKETS];
+	unsigned char m_newData[7];
+	unsigned char DisablePerformEvent;
+
+	unsigned char m_userCode[8]; 	// password to eHouse 6 ascii chars
+
+	std::mutex m_mutex;
+	bool m_alarmLast;
 	char ViaTCP;					//Statuses via TCP/IP connection
 	int PlanID;
 	int HwID;						//Domoticz Hardware ID
@@ -188,7 +187,7 @@ private:
 	int UDP_PORT;					//Default UDP PORT
 	unsigned char nr_of_ch;
 	char DEBUG_AURA;				//Debug Aura
-	char CHANGED_DEBUG;				//Display changes signals (devices) on 
+	char CHANGED_DEBUG;				//Display changes signals (devices) on
 	unsigned int EventsCountInQueue;						//Events In queue count to bypass processing EventQueue when it is empty
 	char PassWord[6];				//Password for XOR Password
 	unsigned char ipaddrh;
@@ -228,9 +227,6 @@ private:
 		//        unsigned char Stat;                   //Status of client
 	} TcpClientCon;
 	TcpClientCon    TC[MAX_CLIENT_SOCKETS];    //TCP Client Instances in case of multi-threading
-	char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
-	void EhouseSubmitData(int SocketIndex);
-	void eHType(int devtype, char *dta);
 	/*typedef struct tModel {
 		unsigned int type;          //controller type / interface
 		unsigned int  id;           //id for controller type detection

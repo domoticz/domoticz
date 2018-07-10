@@ -3,6 +3,7 @@
 #include "SQLHelper.h"
 #include "localtime_r.h"
 #include "../hardware/hardwaretypes.h"
+#include "../main/Logger.h"
 #include "../main/WebServerHelper.h"
 #include "dzVents.h"
 #define __STDC_FORMAT_MACROS
@@ -726,7 +727,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
-		if (result.size() == 0)
+		if (result.empty())
 			description = "";
 		else
 			description = result[0][0].c_str();

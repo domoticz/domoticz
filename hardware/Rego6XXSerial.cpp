@@ -34,7 +34,7 @@ typedef enum {
 	REGO_TYPE_END
 } RegoRegType;
 
-typedef struct _tRegoRegisters 
+typedef struct _tRegoRegisters
 {
 	char name[25];
 	unsigned short regNum_type1;
@@ -70,7 +70,7 @@ typedef union _tRegoReply
     } data;
 } RegoReply;
 
-RegoRegisters g_allRegisters[] = {  
+RegoRegisters g_allRegisters[] = {
 	{ "GT1 Radiator",           0x0209,	0x020B,	0x020D,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
 	{ "GT2 Out",		        0x020A,	0x020C,	0x020E,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
 	{ "GT3 Hot water",	        0x020B,	0x020D,	0x020F,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
@@ -137,17 +137,18 @@ bool CRego6XXSerial::StartHardware()
 	m_retrycntr=Rego6XX_RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CRego6XXSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CRego6XXSerial::Do_Work, this);
 
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CRego6XXSerial::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
     sleep_milliseconds(10);
@@ -281,7 +282,7 @@ void CRego6XXSerial::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"Rego6XX: Serial Worker stopped...");
-} 
+}
 
 
 bool CRego6XXSerial::OpenSerialDevice()
@@ -315,7 +316,7 @@ bool CRego6XXSerial::OpenSerialDevice()
 
 void CRego6XXSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
@@ -365,9 +366,9 @@ bool CRego6XXSerial::ParseData()
 		if(m_readBuffer[tail] == 0x01)
 		{
 			// Check crc
-			if(m_readBuffer[(tail + 4) & Rego6XX_READ_BUFFER_MASK] == 
-				(m_readBuffer[(tail + 1) & Rego6XX_READ_BUFFER_MASK] ^ 
-				 m_readBuffer[(tail + 2) & Rego6XX_READ_BUFFER_MASK] ^ 
+			if(m_readBuffer[(tail + 4) & Rego6XX_READ_BUFFER_MASK] ==
+				(m_readBuffer[(tail + 1) & Rego6XX_READ_BUFFER_MASK] ^
+				 m_readBuffer[(tail + 2) & Rego6XX_READ_BUFFER_MASK] ^
 				 m_readBuffer[(tail + 3) & Rego6XX_READ_BUFFER_MASK]))
 			{
 				// This is a proper message
@@ -375,7 +376,7 @@ bool CRego6XXSerial::ParseData()
 		        time_t atime=mytime(NULL);
                 signed short data = 0;
 				data = (m_readBuffer[(tail + 1) & Rego6XX_READ_BUFFER_MASK] << 14) |
-					   (m_readBuffer[(tail + 2) & Rego6XX_READ_BUFFER_MASK] << 7) | 
+					   (m_readBuffer[(tail + 2) & Rego6XX_READ_BUFFER_MASK] << 7) |
 						m_readBuffer[(tail + 3) & Rego6XX_READ_BUFFER_MASK];
 
 				if(g_allRegisters[m_pollcntr].type == REGO_TYPE_TEMP)
@@ -394,7 +395,7 @@ bool CRego6XXSerial::ParseData()
 				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_STATUS)
 				{
         			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
-					m_Rego6XXValue.value = data; 
+					m_Rego6XXValue.value = data;
                 	m_Rego6XXValue.subtype=sTypeRego6XXStatus;
                     if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
 			(difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= (3600 * 23))) // Send at least every 23 hours
@@ -407,7 +408,7 @@ bool CRego6XXSerial::ParseData()
 				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_COUNTER)
 				{
         			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
-					m_Rego6XXValue.value = data; 
+					m_Rego6XXValue.value = data;
                 	m_Rego6XXValue.subtype=sTypeRego6XXCounter;
                     if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
 			(difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= 3000)) // Send at least every 50 minutes
@@ -454,7 +455,7 @@ namespace http {
 			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')", idx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			unsigned char currentMode1 = atoi(result[0][0].c_str());

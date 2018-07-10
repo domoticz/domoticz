@@ -13,7 +13,7 @@ public:
 	CNetatmo(const int ID, const std::string& username, const std::string& password);
 	~CNetatmo(void);
 
-	bool WriteToHardware(const char *, const unsigned char);
+	bool WriteToHardware(const char *, const unsigned char) override;
 	void SetSetpoint(int idx, const float temp);
 	bool SetProgramState(const int idx, const int newState);
 private:
@@ -39,7 +39,7 @@ private:
 	time_t m_tSetpointUpdateTime;
 
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	time_t m_nextRefreshTs;
 
@@ -47,8 +47,8 @@ private:
 	std::map<int, float> m_OldRainCounter;
 
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	std::string MakeRequestURL(const _eNetatmoType NetatmoType);
 	void GetMeterDetails();

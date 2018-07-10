@@ -13,22 +13,8 @@
 
 CDomoticzHardwareBase::CDomoticzHardwareBase()
 {
-	m_HwdID=0; //should be uniquely assigned
-	m_bEnableReceive=false;
-	m_rxbufferpos=0;
-	m_SeqNr=0;
-	m_pUserData=NULL;
-	m_bIsStarted=false;
-	m_stopHeartbeatrequested = false;
 	mytime(&m_LastHeartbeat);
 	mytime(&m_LastHeartbeatReceive);
-	m_DataTimeout = 0;
-	m_bSkipReceiveCheck = false;
-	m_bOutputLog = true;
-	m_iHBCounter = 0;
-
-	m_baro_minuteCount = 0;
-	m_last_forecast = wsbaroforcast_unknown;
 	mytime(&m_BaroCalcLastTime);
 };
 
@@ -49,7 +35,7 @@ bool CDomoticzHardwareBase::Start()
 
 bool CDomoticzHardwareBase::Stop()
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	return StopHardware();
 }
 
@@ -94,7 +80,7 @@ bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
 	m_stopHeartbeatrequested = false;
-	m_Heartbeatthread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDomoticzHardwareBase::Do_Heartbeat_Work, this)));
+	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
 }
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
@@ -105,6 +91,7 @@ void CDomoticzHardwareBase::StopHeartbeatThread()
 		m_Heartbeatthread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_Heartbeatthread.reset();
 	}
 }
 
@@ -471,13 +458,13 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bExists = false;
 		return 0;
 	}
 	result = m_sql.safe_query("SELECT MAX(Counter) FROM Meter_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bExists = false;
 		return 0.0f;
@@ -555,7 +542,7 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int Ch
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		SendSwitch(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname);
 	}

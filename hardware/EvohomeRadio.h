@@ -15,82 +15,37 @@
 #pragma once
 
 #include "EvohomeBase.h"
+#include <condition_variable>
+#include <boost/thread/thread_time.hpp>
 
 #define EVOHOME_RETRY_DELAY 30
 
 class CEvohomeRadio : public CEvohomeBase
 {
-public:
-	CEvohomeRadio(const int ID, const std::string &UserContID);
-	~CEvohomeRadio(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
-	typedef boost::function< bool(CEvohomeMsg &msg) > fnc_evohome_decode;
-
-	enum evoCommands{
-		cmdSysInfo=0x10e0,
-		cmdZoneTemp=0x30C9,
-		cmdZoneName=0x0004,
-		cmdZoneHeatDemand=0x3150,//Heat demand sent by an individual zone
-		cmdZoneInfo=0x000A,
-		cmdZoneWindow=0x12B0,//Open window/ventilation zone function
-		cmdSetPoint=0x2309,
-		cmdSetpointOverride=0x2349,
-		cmdDHWState=0x1F41,
-		cmdDHWTemp=0x1260,
-		cmdControllerMode=0x2E04,
-		cmdControllerHeatDemand=0x0008,//Heat demand sent by the controller for CH / DHW / Boiler  (F9/FA/FC)
-		cmdActuatorState=0x3EF0,
-		cmdActuatorCheck=0x3B00,
-		cmdBinding=0x1FC9,
-		cmdExternalSensor=0x0002,
-		cmdDeviceInfo=0x0418,
-		cmdBatteryInfo=0x1060,
-		//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
-		//0x1F09 //Unknown fixed message FF070D
-		//0x0005
-		//0x0006
-		//0x0404
-	};
-
-	void SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
-	int Bind(uint8_t nDevNo, unsigned char nDevType);//use CEvohomeID::devType atm but there could be additional specialisations
-
-protected:
-	bool HandleLoopData(const char *data, size_t len);
-	void Send();
-
-	virtual void Do_Work() = 0;
-	virtual void Do_Send(std::string str) = 0;
-	virtual void OnConnect();
-	virtual void Idle_Work();
-
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
-	int m_retrycntr;
-	int m_nBufPtr;
-	bool m_bDoRestart;
-
 	struct _tRelayCheck
 	{
-		_tRelayCheck():m_stLastCheck(boost::posix_time::min_date_time),m_nDemand(0){}
-		_tRelayCheck(uint8_t demand):m_stLastCheck(boost::posix_time::min_date_time),m_nDemand(demand){}
-		_tRelayCheck(boost::system_time st, uint8_t demand):m_stLastCheck(st),m_nDemand(demand){}
+		_tRelayCheck() :m_stLastCheck(boost::posix_time::min_date_time), m_nDemand(0) {}
+		_tRelayCheck(uint8_t demand) :m_stLastCheck(boost::posix_time::min_date_time), m_nDemand(demand) {}
+		_tRelayCheck(boost::system_time st, uint8_t demand) :m_stLastCheck(st), m_nDemand(demand) {}
 		boost::system_time m_stLastCheck;
 		uint8_t m_nDemand;
 	};
 	typedef std::map < uint8_t, _tRelayCheck > tmap_relay_check;
-
-	unsigned int MultiControllerID[5];
-	bool AllSensors;
-	boost::mutex m_mtxRelayCheck;
-	tmap_relay_check m_RelayCheck;
-
-	bool startup;
-	boost::system_time stLastRelayCheck;
-	int nStartup;
-	int nStarts;
-
+public:
+	CEvohomeRadio(const int ID, const std::string &UserContID);
+	~CEvohomeRadio(void);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+	int Bind(uint8_t nDevNo, unsigned char nDevType);//use CEvohomeID::devType atm but there could be additional specialisations
+	void SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
+protected:
+	bool HandleLoopData(const char *data, size_t len);
+	virtual void OnConnect();
+	virtual void Do_Work() = 0;
+	virtual void Do_Send(std::string str) = 0;
+	virtual void Idle_Work();
+private:
+	typedef boost::function< bool(CEvohomeMsg &msg) > fnc_evohome_decode;
+	void Send();
 	void RequestCurrentState();
 	void RequestZoneState();
 	void RequestZoneNames();
@@ -107,9 +62,7 @@ protected:
 
 	void CheckRelayHeatDemand();
 	void SendRelayKeepAlive();
-
-private:
-	bool StartHardware();
+	bool StartHardware() override;
 
 	int ProcessBuf(char * buf, int size);
 	void ProcessMsg(const char * rawmsg);
@@ -141,9 +94,25 @@ private:
 	void SendExternalSensor();
 	void SendZoneSensor();
 
-	void RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID=0);
+	void RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID = 0);
 	void SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
 	void UpdateRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
+protected:
+	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
+	int m_retrycntr;
+	int m_nBufPtr;
+	bool m_bDoRestart;
+
+	unsigned int MultiControllerID[5];
+	bool AllSensors;
+	std::mutex m_mtxRelayCheck;
+	tmap_relay_check m_RelayCheck;
+
+	bool startup;
+	boost::system_time stLastRelayCheck;
+	int nStartup;
+	int nStarts;
 
 	static const int m_evoToDczControllerMode[8];
 	static const int m_evoToDczOverrideMode[5];
@@ -158,13 +127,13 @@ private:
 
 	std::map < unsigned int, fnc_evohome_decode > m_Decoders;
 	std::list < CEvohomeMsg > m_SendQueue;
-	boost::mutex m_mtxSend;
+	std::mutex m_mtxSend;
 	int m_nSendFail;
 
 	unsigned int m_nBindID;//device ID of bound device
 	unsigned char m_nBindIDType;//what type of device to bind
-	boost::mutex m_mtxBindNotify;
-	boost::condition_variable m_cndBindNotify;
+	std::mutex m_mtxBindNotify;
+	std::condition_variable m_cndBindNotify;
 
 	unsigned int m_UControllerID;
 
