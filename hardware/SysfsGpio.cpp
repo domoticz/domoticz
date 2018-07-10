@@ -208,7 +208,7 @@ bool CSysfsGpio::StopHardware()
 		if (m_edge_thread)
 		{
 			m_edge_thread->join();
-			m_egde_thread.reset();
+			m_edge_thread.reset();
 		}
 	}
 	catch (...)
