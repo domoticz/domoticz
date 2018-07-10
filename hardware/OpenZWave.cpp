@@ -3,9 +3,7 @@
 #include "OpenZWave.h"
 
 #include <sstream>      // std::stringstream
-#include <vector>
 #include <ctype.h>
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 #include "../main/Helper.h"
@@ -58,6 +56,7 @@ enum _eSensorScaleID
 	SCALEID_MOISTRUE,
 	SCALEID_TANK_CAPACITY,
 	SCALEID_RAIN_RATE,
+	SCALEID_SEISMIC_INTENSITY,
 };
 
 struct _tAlarmNameToIndexMapping
@@ -389,12 +388,12 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	if (!pNode)
 		return strState;
 
-	if (Manager::Get()->IsNodeFailed(homeID, nodeID))
+	if (OpenZWave::Manager::Get()->IsNodeFailed(homeID, nodeID))
 	{
 		strState = "Dead";
 	}
 	else {
-		if (Manager::Get()->IsNodeAwake(homeID, nodeID))
+		if (OpenZWave::Manager::Get()->IsNodeAwake(homeID, nodeID))
 			strState = "Awake";
 		else
 			strState = "Sleeping";
@@ -482,7 +481,7 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notification)
 {
 	// Must do this inside a critical section to avoid conflicts with the main thread
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	if (m_bIsShuttingDown)
 		return;
@@ -957,7 +956,7 @@ bool COpenZWave::OpenSerialConnector()
 	}
 	// Create the OpenZWave Manager.
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
-	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
+	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL
 	// the log file will appear in the program's working directory.
 	_log.Log(LOG_STATUS, "OpenZWave: using config in: %s", ConfigPath.c_str());
 	OpenZWave::Options::Create(ConfigPath, UserPath, "--SaveConfiguration=true ");
@@ -981,6 +980,18 @@ bool COpenZWave::OpenSerialConnector()
 		m_sql.UpdatePreferencesVar("ZWaveNetworkKey", sValue);
 	}
 	OpenZWave::Options::Get()->AddOptionString("NetworkKey", sValue, false);
+
+	int nValue = 3000; //default 10000
+	m_sql.GetPreferencesVar("ZWaveRetryTimeout", nValue);
+	OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", nValue);
+
+	nValue = 0; //default true
+	m_sql.GetPreferencesVar("ZWaveAssumeAwake", nValue);
+	OpenZWave::Options::Get()->AddOptionBool("AssumeAwake", (nValue == 1) ? true : false);
+
+	nValue = 1; //default true
+	m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", nValue);
+	OpenZWave::Options::Get()->AddOptionBool("PerformReturnRoutes", (nValue == 1) ? true : false);
 
 	OpenZWave::Options::Get()->Lock();
 
@@ -1022,7 +1033,7 @@ bool COpenZWave::OpenSerialConnector()
 	m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
 	m_bNightlyNetworkHeal = (nightly_heal != 0);
 
-	//Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
+	//OpenZWave::Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
 	return true;
 }
 
@@ -1030,7 +1041,7 @@ void COpenZWave::CloseSerialConnector()
 {
 	// program exit (clean up)
 	m_bIsShuttingDown = true;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	if (!m_pManager)
 		return;
@@ -1745,8 +1756,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_VOLTAGE;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_VOLTAGE;
 					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
 					InsertDevice(_device);
 				}
@@ -1760,8 +1771,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_CURRENT;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_CURRENT;
 					_device.devType = ZDTYPE_SENSOR_AMPERE;
 					InsertDevice(_device);
 				}
@@ -1774,8 +1785,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_POWERFACTOR;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_POWERFACTOR;
 					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					InsertDevice(_device);
 				}
@@ -1788,8 +1799,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_GAS;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_GAS;
 					_device.devType = ZDTYPE_SENSOR_GAS;
 					InsertDevice(_device);
 				}
@@ -1802,8 +1813,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_WATER;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_WATER;
 					_device.devType = ZDTYPE_SENSOR_WATER;
 					InsertDevice(_device);
 				}
@@ -1972,8 +1983,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_GAS;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_GAS;
 					_device.devType = ZDTYPE_SENSOR_GAS;
 					InsertDevice(_device);
 				}
@@ -1986,8 +1997,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_WATER;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_WATER;
 					_device.devType = ZDTYPE_SENSOR_WATER;
 					InsertDevice(_device);
 				}
@@ -2000,8 +2011,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_CO2;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_CO2;
 					_device.devType = ZDTYPE_SENSOR_CO2;
 					InsertDevice(_device);
 				}
@@ -2014,8 +2025,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_MOISTRUE;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_MOISTRUE;
 					_device.devType = ZDTYPE_SENSOR_MOISTURE;
 					InsertDevice(_device);
 				}
@@ -2028,8 +2039,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_TANK_CAPACITY;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_TANK_CAPACITY;
 					_device.devType = ZDTYPE_SENSOR_TANK_CAPACITY;
 					InsertDevice(_device);
 				}
@@ -2042,6 +2053,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
+					_device.scaleMultiply = 1;
 					_device.devType = ZDTYPE_SWITCH_NORMAL;
 					InsertDevice(_device);
 				}
@@ -2054,10 +2066,24 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
 					_device.floatValue = fValue;
-					_device.scaleID = SCALEID_RAIN_RATE;
 					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_RAIN_RATE;
 					_device.devType = ZDTYPE_SENSOR_CUSTOM;
 					_device.custom_label = "mm/h";
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel == "Seismic Intensity")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_SEISMIC_INTENSITY;
+					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					InsertDevice(_device);
 				}
 			}
@@ -2565,6 +2591,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_TANK_CAPACITY;
 		else if (vLabel == "Rain Rate")
 			scaleID = SCALEID_RAIN_RATE;
+		else if (vLabel == "Seismic Intensity")
+			scaleID = SCALEID_SEISMIC_INTENSITY;
 
 		sstr << "." << scaleID;
 	}
@@ -3348,7 +3376,7 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &
 	{
 		std::vector<std::string> sd = *itt;
 		int nodeID = atoi(sd[1].c_str());
-		unsigned int homeID = boost::lexical_cast<unsigned int>(sd[0]);
+		unsigned int homeID = (unsigned int)atoi(sd[0].c_str());
 		NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
 		if (pNode == NULL)
 			continue;
@@ -3386,13 +3414,13 @@ std::string COpenZWave::GetGroupName(const int nodeID, const int groupID)
 	return m_pManager->GetGroupLabel(m_controllerID, nodeID, groupID);
 }
 
-int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<string> &nodesingroup)
+int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<std::string> &nodesingroup)
 {
 
 	if (m_pManager == NULL)
 		return 0;
 
-	InstanceAssociation* arr;
+	OpenZWave::InstanceAssociation* arr;
 	int retval = m_pManager->GetAssociations(m_controllerID, nodeID, groupID, &arr);
 	if (retval > 0) {
 		for (int i = 0; i < retval; i++) {
@@ -3499,7 +3527,7 @@ void COpenZWave::GetConfigFile(std::string & filePath, std::string & fileContent
 	if (m_pManager == NULL)
 		return;
 
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	WriteControllerConfig();
 
 	char szFileName[255];
@@ -3888,7 +3916,7 @@ void COpenZWave::SetThermostatFanMode(const int nodeID, const int instanceID, co
 
 std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	std::vector<std::string> ret;
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -3919,7 +3947,7 @@ std::vector<std::string> COpenZWave::GetSupportedThermostatModes(const unsigned 
 
 std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 	std::string retstr = "";
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -3999,7 +4027,6 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 
 		//Poll Interval
 		root["result"][index]["config"][ivalue]["type"] = "short";
-
 		int intervalseconds = 60;
 		m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
 		root["result"][index]["config"][ivalue]["value"] = intervalseconds;
@@ -4070,6 +4097,51 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			"If you are using any Security Devices, you MUST set a network Key "
 			"The length should be 16 bytes!";
 		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		ivalue++;
+
+		//RetryTimeout
+		root["result"][index]["config"][ivalue]["type"] = "short";
+		int nValue = 3000;
+		m_sql.GetPreferencesVar("ZWaveRetryTimeout", nValue);
+		root["result"][index]["config"][ivalue]["value"] = nValue;
+
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
+		root["result"][index]["config"][ivalue]["label"] = "RetryTimeout";
+		root["result"][index]["config"][ivalue]["units"] = "ms"; //
+		root["result"][index]["config"][ivalue]["help"] = "How long do we wait to timeout messages sent";
+		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		ivalue++;
+
+		//AssumeAwake
+		root["result"][index]["config"][ivalue]["type"] = "list";
+		nValue = 0;
+		m_sql.GetPreferencesVar("ZWaveAssumeAwake", nValue);
+
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
+		root["result"][index]["config"][ivalue]["label"] = "Assume Awake";
+		root["result"][index]["config"][ivalue]["units"] = "";
+		root["result"][index]["config"][ivalue]["help"] = "Assume Devices that Support the Wakeup CC are awake when we first query them....";
+		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		root["result"][index]["config"][ivalue]["list_items"] = 2;
+		root["result"][index]["config"][ivalue]["listitem"][0] = "False";
+		root["result"][index]["config"][ivalue]["listitem"][1] = "True";
+		root["result"][index]["config"][ivalue]["value"] = (nValue == 0) ? "False" : "True";
+		ivalue++;
+
+		//PerformReturnRoutes
+		root["result"][index]["config"][ivalue]["type"] = "list";
+		nValue = 1;
+		m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", nValue);
+
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
+		root["result"][index]["config"][ivalue]["label"] = "Perform Return Routes";
+		root["result"][index]["config"][ivalue]["units"] = "";
+		root["result"][index]["config"][ivalue]["help"] = "if True, return routes will be updated";
+		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		root["result"][index]["config"][ivalue]["list_items"] = 2;
+		root["result"][index]["config"][ivalue]["listitem"][0] = "False";
+		root["result"][index]["config"][ivalue]["listitem"][1] = "True";
+		root["result"][index]["config"][ivalue]["value"] = (nValue == 0) ? "False" : "True";
 		ivalue++;
 
 		//Aeotec Blinking state
@@ -4321,6 +4393,42 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			}
 			else if (rvIndex == 5)
 			{
+				//RetryTimeout
+				int nValue = atoi(ValueVal.c_str());
+				int old_value = 3000;
+				m_sql.GetPreferencesVar("ZWaveRetryTimeout", old_value);
+				if (old_value != nValue)
+				{
+					m_sql.UpdatePreferencesVar("ZWaveRetryTimeout", nValue);
+					bRestartOpenZWave = true;
+				}
+			}
+			else if (rvIndex == 6)
+			{
+				//AssumeAwake
+				int nValue = (ValueVal == "False") ? 0 : 1;
+				int old_value = 0;
+				m_sql.GetPreferencesVar("ZWaveAssumeAwake", old_value);
+				if (old_value != nValue)
+				{
+					m_sql.UpdatePreferencesVar("ZWaveAssumeAwake", nValue);
+					bRestartOpenZWave = true;
+				}
+			}
+			else if (rvIndex == 7)
+			{
+				//PerformReturnRoutes
+				int nValue = (ValueVal == "False") ? 0 : 1;
+				int old_value = 1;
+				m_sql.GetPreferencesVar("ZWavePerformReturnRoutes", old_value);
+				if (old_value != nValue)
+				{
+					m_sql.UpdatePreferencesVar("ZWavePerformReturnRoutes", nValue);
+					bRestartOpenZWave = true;
+				}
+			}
+			else if (rvIndex == 8)
+			{
 				uint32_t Manufacturer_id;
 				uint32_t Product_type;
 				uint32_t Product_id;
@@ -4524,7 +4632,7 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
-					unsigned int homeID = boost::lexical_cast<unsigned int>(sd[1]);
+					unsigned int homeID = (unsigned int)atoi(sd[1].c_str());
 					int nodeID = atoi(sd[2].c_str());
 					//if (nodeID>1) //Don't include the controller
 					{
@@ -4546,7 +4654,7 @@ namespace http {
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
 						root["result"][ii]["IsPlus"] = pNode->IsPlus;
-						
+
 						char szDate[80];
 						struct tm loctime;
 						localtime_r(&pNode->LastSeen, &loctime);
@@ -4595,7 +4703,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4623,7 +4731,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4980,7 +5088,7 @@ namespace http {
 					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
 						std::vector<std::string> sd = *itt;
-						unsigned int homeID = boost::lexical_cast<unsigned int>(sd[1]);
+						unsigned int homeID = (unsigned int)atoi(sd[1].c_str());
 						int nodeID = atoi(sd[2].c_str());
 						COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
 						if (pNode == NULL)
@@ -4994,14 +5102,14 @@ namespace http {
 							if (numGroups > MaxNoOfGroups)
 								MaxNoOfGroups = numGroups;
 
-							std::vector< string > nodesingroup;
+							std::vector< std::string > nodesingroup;
 							int gi = 0;
 							for (int x = 1; x <= numGroups; x++)
 							{
 								int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID, x, nodesingroup);
 								if (numNodesInGroup > 0) {
 									std::stringstream list;
-									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<string>(list, ","));
+									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<std::string>(list, ","));
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
 									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, x);
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
@@ -5061,7 +5169,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -5085,7 +5193,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -5210,7 +5318,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendPollResponse());
 					reply::add_header_attachment(&rep, "poll.xml");
@@ -5233,7 +5341,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode));
 				}
 			}
@@ -5254,7 +5362,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode));
 				}
 			}
@@ -5272,7 +5380,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]));
 				}
 			}
@@ -5290,7 +5398,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]));
 				}
 			}
@@ -5316,7 +5424,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str())));
 				}
 			}
@@ -5340,7 +5448,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue));
 				}
 			}
@@ -5367,7 +5475,7 @@ namespace http {
 					if (pHardware->HwdType == HTYPE_OpenZWave)
 					{
 						COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-						boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+						std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 						reply::set_content(&rep, pOZWHardware->m_ozwcp.UpdateGroup(sFun, atoi(sNode.c_str()), atoi(sGroup.c_str()), glist));
 					}
 				}
@@ -5382,7 +5490,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
 				}
 			}
@@ -5395,7 +5503,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPTopo());
 					reply::add_header_attachment(&rep, "topo.xml");
 				}
@@ -5409,7 +5517,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 					reply::add_header_attachment(&rep, "stats.xml");
 				}
@@ -5433,7 +5541,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 				}
 			}
@@ -5461,7 +5569,7 @@ namespace http {
 			if (pHardware->HwdType == HTYPE_OpenZWave)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-				boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 				if (sFun == "test")
 				{
@@ -5531,7 +5639,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -5556,7 +5664,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)

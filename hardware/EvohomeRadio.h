@@ -15,6 +15,8 @@
 #pragma once
 
 #include "EvohomeBase.h"
+#include <condition_variable>
+#include <boost/thread/thread_time.hpp>
 
 #define EVOHOME_RETRY_DELAY 30
 
@@ -97,14 +99,14 @@ private:
 	void UpdateRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
 protected:
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	int m_retrycntr;
 	int m_nBufPtr;
 	bool m_bDoRestart;
 
 	unsigned int MultiControllerID[5];
 	bool AllSensors;
-	boost::mutex m_mtxRelayCheck;
+	std::mutex m_mtxRelayCheck;
 	tmap_relay_check m_RelayCheck;
 
 	bool startup;
@@ -125,13 +127,13 @@ protected:
 
 	std::map < unsigned int, fnc_evohome_decode > m_Decoders;
 	std::list < CEvohomeMsg > m_SendQueue;
-	boost::mutex m_mtxSend;
+	std::mutex m_mtxSend;
 	int m_nSendFail;
 
 	unsigned int m_nBindID;//device ID of bound device
 	unsigned char m_nBindIDType;//what type of device to bind
-	boost::mutex m_mtxBindNotify;
-	boost::condition_variable m_cndBindNotify;
+	std::mutex m_mtxBindNotify;
+	std::condition_variable m_cndBindNotify;
 
 	unsigned int m_UControllerID;
 

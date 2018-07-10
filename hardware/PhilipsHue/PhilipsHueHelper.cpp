@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PhilipsHue.h"
 #include "../../main/Logger.h"
+#include <cmath>
 
 /*
  * Helper funtions to convert from Philips XY color to RGB

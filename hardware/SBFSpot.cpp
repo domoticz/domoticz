@@ -18,7 +18,7 @@
 CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
 	std::vector<std::string> results;
-	
+
 	m_HwdID=ID;
 #ifdef WIN32
 	StringSplit(SMAConfigFile, ";", results);
@@ -103,19 +103,19 @@ bool CSBFSpot::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSBFSpot::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CSBFSpot::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CSBFSpot::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -239,9 +239,7 @@ void CSBFSpot::ImportOldMonthData()
 			return;
 		}
 	}
-	uint64_t ulID;
-	std::stringstream s_str(result[0][0]);
-	s_str >> ulID;
+	uint64_t ulID = std::stoull(result[0][0]);
 
 	//Try actual year, and previous year
 	time_t atime = time(NULL);
@@ -271,9 +269,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 	int iInvOff = 1;
 	char szLogFile[256];
 	std::string tmpPath = m_SBFDataPath;
-	std::stringstream sstr;
-	sstr << Year;
-	stdreplace(tmpPath, "%Y", sstr.str());
+	stdreplace(tmpPath, "%Y", std::to_string(Year));
 	sprintf(szLogFile, "%s%s-%04d%02d.csv", tmpPath.c_str(), m_SBFPlantName.c_str(),Year, Month);
 
 	std::ifstream infile;
@@ -326,7 +322,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
 				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')", DevID, szDate);
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					//Insert value into our database
 					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')", DevID, ulCounter, szDate);
@@ -393,7 +389,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 
 						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')",
 							DevID, szDate);
-						if (result.size() == 0)
+						if (result.empty())
 						{
 							//Insert value into our database
 							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')",

@@ -229,7 +229,7 @@ namespace Plugins {
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM CustomImages WHERE (ID==%d)", self->ImageID);
-				if (result.size() != 0)
+				if (!result.empty())
 				{
 					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
@@ -709,7 +709,7 @@ namespace Plugins {
 				{
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-					if (result.size() == 0)
+					if (result.empty())
 					{
 						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
 						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSONString(); //Parse the color to detect incorrectly formatted color data
@@ -1012,7 +1012,7 @@ namespace Plugins {
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-				if (result.size() != 0)
+				if (!result.empty())
 				{
 					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 

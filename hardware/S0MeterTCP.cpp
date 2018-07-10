@@ -35,8 +35,8 @@ bool S0MeterTCP::StartHardware()
 	ReloadLastTotals();
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&S0MeterTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&S0MeterTCP::Do_Work, this);
+	return (m_thread != nullptr);
 }
 
 bool S0MeterTCP::StopHardware()
@@ -134,7 +134,7 @@ bool S0MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 void S0MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData((const unsigned char*)pData,length);
 }
 

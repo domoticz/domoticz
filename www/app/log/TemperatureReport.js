@@ -281,11 +281,11 @@ define(['app'], function (app) {
             var columns = [];
 
             var humidityRenderer = function (data) {
-                return data.toFixed(0) + '%';
+                return data.toFixed(0);
             };
 
             var temperatureRenderer = function (data) {
-                return data.toFixed(1) + '\u00B0' + vm.degreeType;
+                return data.toFixed(1);
             };
 
             if (vm.isMonthView) {
@@ -320,15 +320,15 @@ define(['app'], function (app) {
             }
 
             if (data.isOnlyHumidity && vm.isMonthView) {
-                columns.push({ title: $.t('Humidity'), data: 'avg', render: humidityRenderer })
+                columns.push({ title: $.t('Humidity (%)'), data: 'avg', render: humidityRenderer })
             } else if (data.isOnlyHumidity) {
-                columns.push({ title: $.t('Avg. Hum'), data: 'avg', render: humidityRenderer });
-                columns.push({ title: $.t('Min. Hum'), data: 'min', render: humidityRenderer });
-                columns.push({ title: $.t('Max. Hum'), data: 'max', render: humidityRenderer });
+                columns.push({ title: $.t('Avg. Hum (%)'), data: 'avg', render: humidityRenderer });
+                columns.push({ title: $.t('Min. Hum (%)'), data: 'min', render: humidityRenderer });
+                columns.push({ title: $.t('Max. Hum (%)'), data: 'max', render: humidityRenderer });
             } else {
-                columns.push({ title: $.t('Avg. Temp'), data: 'avg', render: temperatureRenderer });
-                columns.push({ title: $.t('Min. Temp'), data: 'min', render: temperatureRenderer });
-                columns.push({ title: $.t('Max. Temp'), data: 'max', render: temperatureRenderer });
+                columns.push({ title: $.t('Avg. Temp (\u00B0' + vm.degreeType + ')'), data: 'avg', render: temperatureRenderer });
+                columns.push({ title: $.t('Min. Temp (\u00B0' + vm.degreeType + ')'), data: 'min', render: temperatureRenderer });
+                columns.push({ title: $.t('Max. Temp (\u00B0' + vm.degreeType + ')'), data: 'max', render: temperatureRenderer });
             }
 
             columns.push({

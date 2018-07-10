@@ -672,9 +672,8 @@ namespace http {
 
 			//Start normal worker thread
 			m_bDoStop = false;
-			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, shared_from_this())));
-
-			return (m_thread != NULL);
+			m_thread = std::make_shared<std::thread>(&CWebServer::Do_Work, this);
+			return (m_thread != nullptr);
 		}
 
 		void CWebServer::StopServer()
@@ -685,7 +684,7 @@ namespace http {
 				if (m_pWebEm == NULL)
 					return;
 				m_pWebEm->Stop();
-				if (m_thread != NULL) {
+				if (m_thread) {
 					m_thread->join();
 					m_thread.reset();
 				}
@@ -796,13 +795,13 @@ namespace http {
 						}
 						else if (sLine.find("#ThemeFiles") != std::string::npos)
 						{
-							response += "#Theme=" + sWebTheme + "\n";
+							response += "#Theme=" + sWebTheme + '\n';
 							//Add all theme files
 							for (const auto & itt : _ThemeFiles)
 							{
 								std::string tfname = itt.first.substr(szWWWFolder.size() + 1);
 								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
-								response += tfname + "\n";
+								response += tfname + '\n';
 							}
 							continue;
 						}
@@ -812,7 +811,7 @@ namespace http {
 							for (const auto & itt : _FloorplanFiles)
 							{
 								std::string tfname = itt.first;
-								response += tfname + "\n";
+								response += tfname + '\n';
 							}
 							continue;
 						}
@@ -827,14 +826,14 @@ namespace http {
 									std::string IconFile48On = itt.RootFile + "48_On.png";
 									std::string IconFile48Off = itt.RootFile + "48_Off.png";
 
-									response += "images/" + CURLEncode::URLEncode(IconFile16) + "\n";
-									response += "images/" + CURLEncode::URLEncode(IconFile48On) + "\n";
-									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + "\n";
+									response += "images/" + CURLEncode::URLEncode(IconFile16) + '\n';
+									response += "images/" + CURLEncode::URLEncode(IconFile48On) + '\n';
+									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + '\n';
 								}
 							}
 						}
 					}
-					response += sLine + "\n";
+					response += sLine + '\n';
 				}
 			}
 			reply::set_content(&rep, response);
@@ -877,7 +876,7 @@ namespace http {
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
@@ -1018,6 +1017,8 @@ namespace http {
 #endif
 				if (ii == HTYPE_PythonPlugin)
 					bDoAdd = false;
+				else if (ii == HTYPE_FreeToUse) //Safe to remove when you changed this type for a new hardware class!
+					bDoAdd = false;
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
 	}
@@ -1106,7 +1107,7 @@ namespace http {
 					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
 				}
 			}
-			else if (IsNetworkDevice(htype)) 
+			else if (IsNetworkDevice(htype))
 			{
 				//Lan
 				if (address.empty() || port == 0)
@@ -1225,7 +1226,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Tado) || 
+				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1484,7 +1485,7 @@ namespace http {
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) ||
-				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
+				(htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
@@ -2199,7 +2200,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=='%q') AND (DevSceneType==%d) AND (PlanID=='%q')",
 				activeidx.c_str(), activetype, idx.c_str());
-			if (result.size() == 0)
+			if (result.empty())
 			{
 				m_sql.safe_query(
 					"INSERT INTO DeviceToPlansMap (DevSceneType,DeviceRowID, PlanID) VALUES (%d,'%q','%q')",
@@ -3328,7 +3329,7 @@ namespace http {
 				//first check if it is not already a sub device
 				result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')",
 					subidx.c_str(), idx.c_str());
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					root["status"] = "OK";
 					root["title"] = "AddSubDevice";
@@ -3415,7 +3416,7 @@ namespace http {
 					result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)",
 						devidx.c_str(), idx.c_str(), ondelay);
 				}
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					root["status"] = "OK";
 					root["title"] = "AddSceneDevice";
@@ -4067,7 +4068,7 @@ namespace http {
 					" AND (DevSceneType==%d) AND (DevSceneRowID=='%q')"
 					" AND (DevSceneWhen==%d)",
 					idx.c_str(), activetype, activeidx.c_str(), activewhen);
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					root["status"] = "OK";
 					root["title"] = "AddCameraActiveDevice";
@@ -4179,7 +4180,7 @@ namespace http {
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) 
+					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
 						return;
 					unsigned long rID = 0;
@@ -4765,7 +4766,7 @@ namespace http {
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) 
+					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
 						return;
 					unsigned long rID = 0;
@@ -5324,7 +5325,7 @@ namespace http {
 						result = m_sql.safe_query(
 							"SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')",
 							ID.c_str(), maindeviceidx.c_str());
-						if (result.size() == 0)
+						if (result.empty())
 						{
 							//no it is not, add it
 							result = m_sql.safe_query(
@@ -6151,7 +6152,7 @@ namespace http {
 				m_sql.safe_query(
 					"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
 					(senabled == "true") ? 1 : 0,
-					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
+					base64_encode(username).c_str(),
 					password.c_str(),
 					rights,
 					(sRemoteSharing == "true") ? 1 : 0,
@@ -6194,7 +6195,7 @@ namespace http {
 						return;
 					}
 				}
-				std::string sHashedUsername = base64_encode((const unsigned char*)username.c_str(), username.size()).c_str();
+				std::string sHashedUsername = base64_encode(username);
 
 				// Invalid user's sessions if username or password has changed
 				std::string sOldUsername;
@@ -6682,11 +6683,11 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "GetSecStatus";
-				
+
 				int secstatus = 0;
 				m_sql.GetPreferencesVar("SecStatus", secstatus);
 				root["secstatus"] = secstatus;
-				
+
 				int secondelay = 30;
 				m_sql.GetPreferencesVar("SecOnDelay", secondelay);
 				root["secondelay"] = secondelay;
@@ -7643,7 +7644,7 @@ namespace http {
 				WebUserName = "";
 				WebPassword = "";
 			}
-			WebUserName = base64_encode((const unsigned char*)WebUserName.c_str(), WebUserName.size());
+			WebUserName = base64_encode(WebUserName);
 			if (WebPassword.size() != 32)
 			{
 				WebPassword = GenerateMD5Hash(WebPassword);
@@ -7924,7 +7925,7 @@ namespace http {
 			if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems) {
 				m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
 				if (md_password != pf_password) {
-					md_password = base64_encode((unsigned char const*)md_password.c_str(), md_password.size());
+					md_password = base64_encode(md_password);
 					m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
 				}
 				m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
@@ -7935,13 +7936,11 @@ namespace http {
 			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
-			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
-
 			std::string IFTTTEnabled = request::findValue(&req, "IFTTTEnabled");
 			int iIFTTTEnabled = (IFTTTEnabled == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("IFTTTEnabled", iIFTTTEnabled);
 			std::string szKey = request::findValue(&req, "IFTTTAPI");
-			m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode((unsigned char const*)szKey.c_str(), szKey.size()));
+			m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode(szKey));
 
 			m_notifications.LoadConfig();
 #ifdef ENABLE_PYTHON
@@ -8519,8 +8518,8 @@ namespace http {
 					double AddjMulti2 = atof(sd[18].c_str());
 					int LastLevel = atoi(sd[19].c_str());
 					int CustomImage = atoi(sd[20].c_str());
-					std::string strParam1 = base64_encode((const unsigned char*)sd[21].c_str(), sd[21].size());
-					std::string strParam2 = base64_encode((const unsigned char*)sd[22].c_str(), sd[22].size());
+					std::string strParam1 = base64_encode(sd[21]);
+					std::string strParam2 = base64_encode(sd[22]);
 					int iProtected = atoi(sd[23].c_str());
 
 					std::string Description = sd[27];
@@ -8731,7 +8730,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 						else if (pHardware->HwdType == HTYPE_DarkSky)
@@ -8740,7 +8739,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 						else if (pHardware->HwdType == HTYPE_AccuWeather)
@@ -8749,7 +8748,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 						else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
@@ -8758,7 +8757,7 @@ namespace http {
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
-								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 							}
 						}
 					}
@@ -9120,8 +9119,8 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
 							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
-							root["result"][ii]["LevelNames"] = base64_encode((const unsigned char*)levelNames.c_str(), levelNames.size());
-							root["result"][ii]["LevelActions"] = base64_encode((const unsigned char*)levelActions.c_str(), levelActions.size());
+							root["result"][ii]["LevelNames"] = base64_encode(levelNames);
+							root["result"][ii]["LevelActions"] = base64_encode(levelActions);
 						}
 						sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
@@ -9819,7 +9818,7 @@ namespace http {
 						root["result"][ii]["ValueUnits"] = "";
 						root["result"][ii]["ShowNotifications"] = false;
 						double meteroffset = AddjValue;
-						
+
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
@@ -11228,8 +11227,8 @@ namespace http {
 					unsigned char scenetype = atoi(sd[5].c_str());
 					int iProtected = atoi(sd[7].c_str());
 
-					std::string onaction = base64_encode((const unsigned char*)sd[8].c_str(), sd[8].size());
-					std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
+					std::string onaction = base64_encode(sd[8]);
+					std::string offaction = base64_encode(sd[9]);
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sName;
@@ -11832,7 +11831,7 @@ namespace http {
 				reply::set_content(&rep, root.toStyledString());
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root)
@@ -12624,7 +12623,7 @@ namespace http {
 					//first check if it is not already a sub device
 					result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')",
 						idx.c_str(), maindeviceidx.c_str());
-					if (result.size() == 0)
+					if (result.empty())
 					{
 						//no it is not, add it
 						m_sql.safe_query(
@@ -13254,6 +13253,9 @@ namespace http {
 				metertype = MTYPE_GAS;
 			else if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 				metertype = MTYPE_COUNTER;
+
+			// Special case of managed counter: Usage instead of Value in Meter table, and we don't want to calculate last value
+			bool bIsManagedCounter = (dType == pTypeGeneral) && (dSubType == sTypeManagedCounter);
 
 			double AddjValue = atof(result[0][3].c_str());
 			double AddjMulti = atof(result[0][4].c_str());
@@ -14140,12 +14142,6 @@ namespace http {
 							EnergyDivider *= 100.0f;
 
 						int ii = 0;
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
-
-						int method = 0;
-						std::string sMethod = request::findValue(&req, "method");
-						if (sMethod.size() > 0)
-							method = atoi(sMethod.c_str());
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
@@ -14156,6 +14152,20 @@ namespace http {
 
 						std::string LastDateTime = "";
 						time_t lastTime = 0;
+
+						if (bIsManagedCounter) {
+							result = m_sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+							bHaveFirstValue = true;
+							bHaveFirstRealValue = true;
+						}
+						else {
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+
+						int method = 0;
+						std::string sMethod = request::findValue(&req, "method");
+						if (sMethod.size() > 0)
+							method = atoi(sMethod.c_str());
 
 						if (!result.empty())
 						{
@@ -14191,7 +14201,10 @@ namespace http {
 											sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
 											root["result"][ii]["d"] = szTime;
 
-											float TotalValue = float(actValue - ulFirstValue);
+											//float TotalValue = float(actValue - ulFirstValue);
+											
+											//prevents graph from going crazy if the meter counter resets 
+											float TotalValue = (actValue >= ulFirstValue) ? float(actValue - ulFirstValue) : actValue;
 
 											//if (TotalValue != 0)
 											{
@@ -14218,7 +14231,9 @@ namespace http {
 												ii++;
 											}
 										}
-										ulFirstValue = actValue;
+										if (!bIsManagedCounter) {
+											ulFirstValue = actValue;
+										}
 										LastDateTime = actDateTimeHour;
 									}
 
@@ -14281,12 +14296,14 @@ namespace http {
 									}
 									else
 										bHaveFirstRealValue = true;
-									ulLastValue = actValue;
+									if (!bIsManagedCounter) {
+										ulLastValue = actValue;
+									}
 									lastTime = atime;
 								}
 							}
 						}
-						if ((bHaveFirstValue) && (method == 0))
+						if ((!bIsManagedCounter) && (bHaveFirstValue) && (method == 0))
 						{
 							//add last value
 							root["result"][ii]["d"] = LastDateTime + ":00";
@@ -14892,7 +14909,7 @@ namespace http {
 							}
 						}
 					}
-					else
+					else if (!bIsManagedCounter)
 					{
 						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
@@ -16069,7 +16086,7 @@ namespace http {
 								root["counter"] = szTmp;
 							}
 						}
-						else
+						else if (!bIsManagedCounter)
 						{
 							//Add last counter value
 							sprintf(szTmp, "%d", atoi(sValue.c_str()));
@@ -16388,7 +16405,7 @@ namespace http {
 							ii++;
 						}
 					}
-					else
+					else if (!bIsManagedCounter)
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
@@ -17112,7 +17129,7 @@ namespace http {
 							}
 						}
 					}
-					else
+					else if (!bIsManagedCounter)
 					{
 						result = m_sql.safe_query(
 							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
@@ -17284,7 +17301,7 @@ namespace http {
 				m_sql.safe_query(
 					"INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate, RemoteHost) VALUES ('%q', '%q', '%q', '%q', '%q')",
 					session.id.c_str(),
-					base64_encode((const unsigned char*)session.username.c_str(), session.username.size()).c_str(),
+					base64_encode(session.username).c_str(),
 					session.auth_token.c_str(),
 					szExpires,
 					remote_host.c_str());

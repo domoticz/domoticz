@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <iosfwd>
 
 class CYouLess : public CDomoticzHardwareBase
 {
@@ -30,7 +29,7 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_Password;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	YouLessMeter	m_meter;
 	bool m_bCheckP1;

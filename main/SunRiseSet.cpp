@@ -5,6 +5,8 @@
 #include "localtime_r.h"
 //#include <sys/timeb.h>
 #include <boost/date_time/c_local_time_adjustor.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+
 
 #ifndef PI
 #define PI			3.1415926535897932384

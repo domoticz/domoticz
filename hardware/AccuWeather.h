@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CAccuWeather : public CDomoticzHardwareBase
 {
@@ -23,6 +22,6 @@ private:
 	std::string m_LocationKey;
 	std::string m_ForecastURL;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

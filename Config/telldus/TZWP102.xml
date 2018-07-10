@@ -32,7 +32,7 @@
                         <Item label="The LED follows the load status" value="0"/>
             <Item label="When operating plug, the LED is lit for 5 seconds" value="1"/>
         </Value>
-                <Value type="byte" index="16" genre="config" label="Send report on change of power consumption (W)" units="Watts" min="0" max="2500" size="2" value="50">
+                <Value type="short" index="16" genre="config" label="Send report on change of power consumption (W)" units="Watts" min="0" max="2500" size="2" value="50">
             <Help>
                 This parameter will send a power report automatically if the power value changes of x W (Watts) compared to the last report. Default 50.
             </Help>

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CSBFSpot : public CDomoticzHardwareBase
 {
@@ -31,6 +30,6 @@ private:
 
 	std::string m_LastDateTime;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

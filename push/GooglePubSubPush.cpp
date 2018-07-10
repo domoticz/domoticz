@@ -19,7 +19,6 @@ extern "C" {
 #include <Python.h>
 }
 #include <boost/python.hpp>
-using namespace boost::python;
 #endif
 
 extern std::string szUserDataFolder;

@@ -54,20 +54,20 @@ bool Comm5SMTCP::StartHardware()
 	m_rxbufferpos = 0;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Comm5SMTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&Comm5SMTCP::Do_Work, this);
 
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: Started");
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool Comm5SMTCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -172,7 +172,7 @@ bool Comm5SMTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 void Comm5SMTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

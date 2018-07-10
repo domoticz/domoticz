@@ -4,12 +4,10 @@
 
 #include "../main/localtime_r.h"
 #include <string>
-#include <vector>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
-class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
+class CKodiNode : public std::enable_shared_from_this<CKodiNode>
 {
 	class CKodiStatus
 	{
@@ -145,12 +143,12 @@ private:
 	void ReloadNodes();
 	void UnloadNodes();
 private:
-	static	std::vector<boost::shared_ptr<CKodiNode> > m_pNodes;
+	static	std::vector<std::shared_ptr<CKodiNode> > m_pNodes;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 	boost::asio::io_service m_ios;
 };
 

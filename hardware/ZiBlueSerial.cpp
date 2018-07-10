@@ -4,6 +4,8 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 
+#include <boost/exception/diagnostic_information.hpp>
+
 #define ZiBlue_RETRY_DELAY 30
 
 CZiBlueSerial::CZiBlueSerial(const int ID, const std::string& devname) :
@@ -24,9 +26,9 @@ bool CZiBlueSerial::StartHardware()
 	m_retrycntr=ZiBlue_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CZiBlueSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CZiBlueSerial::Do_Work, this);
 
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CZiBlueSerial::StopHardware()
@@ -37,6 +39,7 @@ bool CZiBlueSerial::StopHardware()
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	terminate();
 	m_bIsStarted=false;
@@ -146,7 +149,7 @@ bool CZiBlueSerial::OpenSerialDevice()
 
 void CZiBlueSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(data, len);
 }
 

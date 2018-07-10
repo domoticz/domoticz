@@ -17,6 +17,12 @@
 		</SupportedModes>
 	</CommandClass>
 
+	<CommandClass id="49" name="COMMAND_CLASS_SENSOR_MULTILEVEL" version="1" request_flags="4" create_vars="true" base="0">
+      <Value type="decimal" genre="user" instance="1" index="1" label="Internal sensor" units="C" read_only="true" write_only="false" min="0" max="0"/>
+      <Value type="decimal" genre="user" instance="2" index="1" label="External sensor" units="C" read_only="true" write_only="false" min="0" max="0" />
+      <Value type="decimal" genre="user" instance="3" index="1" label="Floor sensor" units="C" read_only="true" write_only="false" min="0" max="0" />
+  </CommandClass>
+
 	<CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
 		<Instance index="1"/>
 		<Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="0" max="0" value="21"/>

@@ -51,10 +51,10 @@ bool BleBox::StartHardware()
 	m_stoprequested = false;
 
 	LoadNodes();
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&BleBox::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool BleBox::StopHardware()
@@ -64,6 +64,7 @@ bool BleBox::StopHardware()
 	if (m_thread)
 	{
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	m_bIsStarted = false;
@@ -94,7 +95,7 @@ void BleBox::Do_Work()
 
 void BleBox::GetDevicesState()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	for (const auto & itt : m_devices)
 	{
@@ -1114,14 +1115,14 @@ void BleBox::RemoveAllNodes()
 
 void BleBox::UnloadNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_devices.clear();
 }
 
 bool BleBox::LoadNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
@@ -1177,7 +1178,7 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		return;
 
 
-	std::vector< boost::shared_ptr<boost::thread> > searchingThreads;
+	std::vector< std::shared_ptr<std::thread> > searchingThreads;
 
 	for (unsigned int i = 1; i < 255; ++i)
 	{
@@ -1188,7 +1189,7 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
 		if (itt == m_devices.end())
 		{
-			searchingThreads.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress))));
+			searchingThreads.push_back(std::make_shared<std::thread>(&BleBox::AddNode, this, "unknown", IPAddress));
 		}
 	}
 

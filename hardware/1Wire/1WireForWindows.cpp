@@ -3,9 +3,9 @@
 #ifdef WIN32
 #include "1WireForWindows.h"
 #include "../../main/Logger.h"
-#include <boost/thread.hpp>
 #include <boost/optional.hpp>
 #include "../json/json.h"
+#include <WS2tcpip.h>
 
 #define _1WIRE_SERVICE_PORT "1664"
 
@@ -136,11 +136,12 @@ std::string C1WireForWindows::SendAndReceive(const std::string &requestToSend) c
 {
    // SendAndReceive can be called by 2 different thread contexts : writeData and GetDevices
    // So we have to set protection
-   boost::lock_guard<boost::mutex> locker(*(const_cast<boost::mutex*>(&m_SocketMutex)));
+   std::lock_guard<std::mutex> locker(*(const_cast<std::mutex*>(&m_SocketMutex)));
 
    return ::SendAndReceive(m_Socket,requestToSend);
 }
 
+//Giz: To Author, please rewrite to use this without boost!
 bool C1WireForWindows::IsAvailable()
 {
 #ifdef _DEBUG
@@ -151,7 +152,7 @@ bool C1WireForWindows::IsAvailable()
    if (IsAvailable.is_initialized())
       return IsAvailable.get();
 
-   // Make a connection only to know if 1-wire is avalaible
+   // Make a connection only to know if 1-wire is available
    SOCKET theSocket = ConnectToService();
    if (theSocket == INVALID_SOCKET)
    {

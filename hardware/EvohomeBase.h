@@ -23,6 +23,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include <condition_variable>
 
 #define RFX_SETID3(ID,id1,id2,id3) {id1=ID>>16&0xFF;id2=ID>>8&0xFF;id3=ID&0xFF;}
 #define RFX_GETID3(id1,id2,id3) ((id1<<16)|(id2<<8)|id3)
@@ -539,27 +540,27 @@ private:
 	std::vector <zoneModeType> m_ZoneOverrideLocal;
 
 	uint8_t m_nZoneCount;
-	boost::mutex m_mtxZoneCount;
+	std::mutex m_mtxZoneCount;
 
 	uint8_t m_nControllerMode;
-	boost::mutex m_mtxControllerMode;
+	std::mutex m_mtxControllerMode;
 
 	std::string m_szControllerName;
-	boost::mutex m_mtxControllerName;
+	std::mutex m_mtxControllerName;
 
 	std::vector <std::string> m_ZoneNames;
-	boost::mutex m_mtxZoneName;
+	std::mutex m_mtxZoneName;
 
 	unsigned int m_nDevID;//controller ID
-	boost::mutex m_mtxControllerID;
+	std::mutex m_mtxControllerID;
 
 	unsigned int m_nMyID;//gateway ID
-	boost::mutex m_mtxGatewayID;
+	std::mutex m_mtxGatewayID;
 
 	unsigned int m_nBindID;//device ID of bound device
 	unsigned char m_nBindIDType;//what type of device to bind
-	boost::mutex m_mtxBindNotify;
-	boost::condition_variable m_cndBindNotify;
+	std::mutex m_mtxBindNotify;
+	std::condition_variable m_cndBindNotify;
 
 	unsigned int m_MaxDeviceID;
 

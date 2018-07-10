@@ -164,7 +164,7 @@ bool CEvohomeWeb::StartHardware()
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeWeb::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CEvohomeWeb::Do_Work, this);
 	if (!m_thread)
 		return false;
 	m_stoprequested = false;
@@ -176,11 +176,11 @@ bool CEvohomeWeb::StartHardware()
 
 bool CEvohomeWeb::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -336,7 +336,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			// Away unconditionally sets all zones to a preset temperature, even if Normal mode is lower
 			if (sznewmode == "Away")
 				setpoint = m_awaysetpoint;
-			else 
+			else
 			{
 				if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 				{
@@ -384,10 +384,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 bool CEvohomeWeb::SetSetpoint(const char *pdata)
 {
 	REVOBUF *pEvo = (REVOBUF*)pdata;
-
-	std::stringstream ssID;
-	ssID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
-	std::string zoneId(ssID.str());
+	std::string zoneId(std::to_string((int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3)));
 
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL) // zone number not known by installation (manually added?)
@@ -450,9 +447,7 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 
 	REVOBUF *pEvo = (REVOBUF*)pdata;
 
-	std::stringstream ssID;
-	ssID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
-	std::string dhwId(ssID.str());
+	std::string dhwId(std::to_string((int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3)));
 
 	std::string DHWstate = (pEvo->EVOHOME2.temperature == 0) ? "off" : "on";
 
@@ -546,7 +541,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
 		if ((m_showhdtemps) && hz->hdtemp.empty())
 			szmode = "Offline";
-		else 
+		else
 		{
 			szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
 			if (szmode == "TemporaryOverride")
@@ -684,11 +679,8 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		}
 		else if ((result[0][1] != szId) || (result[0][2] != ndevname))
 		{
-			uint64_t DevRowIdx;
-			std::stringstream s_str(result[0][0]);
-			s_str >> DevRowIdx;
 			// also wipe StrParam1 - we do not want a double action from the old (python) script when changing the setpoint
-			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", szId.c_str(), ndevname.c_str(), DevRowIdx);
+			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", szId.c_str(), ndevname.c_str(), std::stoull(result[0][0]));
 		}
 	}
 

@@ -6,10 +6,9 @@
 #include <boost/asio/ip/tcp.hpp>           // for tcp, tcp::endpoint, tcp::s...
 #include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr
 #include <exception>                       // for exception
-#include <iosfwd>                        // for string
 namespace boost { namespace system { class error_code; } }
 
-typedef boost::shared_ptr<class ASyncTCP> ASyncTCPRef;
+typedef std::shared_ptr<class ASyncTCP> ASyncTCPRef;
 
 class ASyncTCP
 {
