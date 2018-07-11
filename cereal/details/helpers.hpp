@@ -37,8 +37,8 @@
 #include <unordered_map>
 #include <stdexcept>
 
-#include "cereal/macros.hpp"
-#include "cereal/details/static_object.hpp"
+#include "../macros.hpp"
+#include "../details/static_object.hpp"
 
 namespace cereal
 {
@@ -57,7 +57,7 @@ namespace cereal
       a fixed size type instead of size_t, which may vary from machine to
       machine.
 
-      The default value for CEREAL_SIZE_TYPE is specified in cereal/macros.hpp */
+      The default value for CEREAL_SIZE_TYPE is specified in ../macros.hpp */
   using size_type = CEREAL_SIZE_TYPE;
 
   // forward decls

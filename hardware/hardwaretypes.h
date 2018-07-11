@@ -1,5 +1,15 @@
 #pragma once
 
+#include "../cereal/cereal.hpp"
+//#include "../cereal/types/string.hpp"
+//#include "../cereal/types/utility.hpp"
+//#include "../cereal/types/memory.hpp"
+//#include "../cereal/types/complex.hpp"
+//#include "../cereal/types/base_class.hpp"
+//#include "../cereal/types/array.hpp"
+//#include "../cereal/types/vector.hpp"
+//#include "../cereal/types/map.hpp"
+
 #include "ColorSwitch.h"
 
 #define sTypeDomoticzSecurity 0x83
@@ -530,14 +540,14 @@ typedef struct _tGeneralSwitch {
 		ar & cereal::make_nvp("type", type);
 		ar & cereal::make_nvp("subtype", subtype);
 		ar & cereal::make_nvp("id", id);
-		ar & cereal::make_mvp("unitcode", unitcode);
-		ar & cereal::make_mvp("cmnd", cmnd);
-		ar & cereal::make_mvp("level", level);
-		ar & cereal::make_mvp("rssi", rssi);
-		ar & cereal::make_mvp("battery_level", battery_level);
-		ar & cereal::make_mvp("seqnbr", seqnbr);
-		ar & cereal::make_mvp("reserved_int", reserved_int);
-		ar & cereal::make_mvp("reserved_float", reserved_float);
+		ar & cereal::make_nvp("unitcode", unitcode);
+		ar & cereal::make_nvp("cmnd", cmnd);
+		ar & cereal::make_nvp("level", level);
+		ar & cereal::make_nvp("rssi", rssi);
+		ar & cereal::make_nvp("battery_level", battery_level);
+		ar & cereal::make_nvp("seqnbr", seqnbr);
+		ar & cereal::make_nvp("reserved_int", reserved_int);
+		ar & cereal::make_nvp("reserved_float", reserved_float);
 	}
 
 	_tGeneralSwitch()
