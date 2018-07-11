@@ -227,21 +227,20 @@ bool CEvohomeWeb::WriteToHardware(const char *pdata, const unsigned char length)
 		return false;
 
 	m_lastconnect=0;
-	REVOBUF *tsen = (REVOBUF*)pdata;
 	switch (pdata[1])
 	{
 	case pTypeEvohome:
-		if (length < sizeof(REVOBUF::_tEVOHOME1))
+		if (length < sizeof(_tEVOHOME1))
 			return false;
-		return SetSystemMode(tsen->EVOHOME1.status);
+		return SetSystemMode(((_tEVOHOME1*)pdata)->status);
 		break;
 	case pTypeEvohomeZone:
-		if (length < sizeof(REVOBUF::_tEVOHOME2))
+		if (length < sizeof(_tEVOHOME2))
 			return false;
 		return SetSetpoint(pdata);
 		break;
 	case pTypeEvohomeWater:
-		if (length < sizeof(REVOBUF::_tEVOHOME2))
+		if (length < sizeof(_tEVOHOME2))
 			return false;
 		return SetDHWState(pdata);
 		break;
@@ -383,8 +382,8 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 
 bool CEvohomeWeb::SetSetpoint(const char *pdata)
 {
-	REVOBUF *pEvo = (REVOBUF*)pdata;
-	std::string zoneId(std::to_string((int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3)));
+	_tEVOHOME2 *pEvo = (_tEVOHOME2*)pdata;
+	std::string zoneId(std::to_string((int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3)));
 
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL) // zone number not known by installation (manually added?)
@@ -393,7 +392,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 		return false;
 	}
 
-	if ((pEvo->EVOHOME2.mode) == 0) // cancel override
+	if ((pEvo->mode) == 0) // cancel override
 	{
 		if (!cancel_temperature_override(zoneId))
 			return false;
@@ -403,34 +402,34 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 		if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 		{
 			szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-			pEvo->EVOHOME2.temperature = (int16_t)(strtod(szsetpoint.c_str(), NULL) * 100);
+			pEvo->temperature = (int16_t)(strtod(szsetpoint.c_str(), NULL) * 100);
 		}
 
 		if ((m_showschedule) && (!szuntil.empty()))
 		{
-			pEvo->EVOHOME2.year = (uint16_t)(atoi(szuntil.substr(0, 4).c_str()));
-			pEvo->EVOHOME2.month = (uint8_t)(atoi(szuntil.substr(5, 2).c_str()));
-			pEvo->EVOHOME2.day = (uint8_t)(atoi(szuntil.substr(8, 2).c_str()));
-			pEvo->EVOHOME2.hrs = (uint8_t)(atoi(szuntil.substr(11, 2).c_str()));
-			pEvo->EVOHOME2.mins = (uint8_t)(atoi(szuntil.substr(14, 2).c_str()));
+			pEvo->year = (uint16_t)(atoi(szuntil.substr(0, 4).c_str()));
+			pEvo->month = (uint8_t)(atoi(szuntil.substr(5, 2).c_str()));
+			pEvo->day = (uint8_t)(atoi(szuntil.substr(8, 2).c_str()));
+			pEvo->hrs = (uint8_t)(atoi(szuntil.substr(11, 2).c_str()));
+			pEvo->mins = (uint8_t)(atoi(szuntil.substr(14, 2).c_str()));
 		}
 		else
-			pEvo->EVOHOME2.year = 0;
+			pEvo->year = 0;
 		return true;
 	}
 
-	int temperature_int = (int)pEvo->EVOHOME2.temperature / 100;
-	int temperature_frac = (int)pEvo->EVOHOME2.temperature % 100;
+	int temperature_int = (int)pEvo->temperature / 100;
+	int temperature_frac = (int)pEvo->temperature % 100;
 	std::stringstream s_setpoint;
 	s_setpoint << temperature_int << "." << temperature_frac;
 
-	if ((pEvo->EVOHOME2.mode) == 1) // permanent override
+	if ((pEvo->mode) == 1) // permanent override
 	{
 		return set_temperature(zoneId, s_setpoint.str(), "");
 	}
-	if ((pEvo->EVOHOME2.mode) == 2) // temporary override
+	if ((pEvo->mode) == 2) // temporary override
 	{
-		std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+		std::string szISODate(CEvohomeDateTime::GetISODate(pEvo));
 		return set_temperature(zoneId, s_setpoint.str(), szISODate);
 	}
 	return false;
@@ -445,23 +444,23 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 		return false;
 	}
 
-	REVOBUF *pEvo = (REVOBUF*)pdata;
+	_tEVOHOME2 *pEvo = (_tEVOHOME2*)pdata;
 
-	std::string dhwId(std::to_string((int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3)));
+	std::string dhwId(std::to_string((int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3)));
 
-	std::string DHWstate = (pEvo->EVOHOME2.temperature == 0) ? "off" : "on";
+	std::string DHWstate = (pEvo->temperature == 0) ? "off" : "on";
 
-	if ((pEvo->EVOHOME2.mode) == 0) // cancel override (web front end does not appear to support this?)
+	if ((pEvo->mode) == 0) // cancel override (web front end does not appear to support this?)
 	{
 		DHWstate = "auto";
 	}
-	if ((pEvo->EVOHOME2.mode) <= 1) // permanent override
+	if ((pEvo->mode) <= 1) // permanent override
 	{
 		return set_dhw_mode(dhwId, DHWstate, "");
 	}
-	if ((pEvo->EVOHOME2.mode) == 2) // temporary override
+	if ((pEvo->mode) == 2) // temporary override
 	{
-		std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+		std::string szISODate(CEvohomeDateTime::GetISODate(pEvo));
 		return set_dhw_mode(dhwId, DHWstate, szISODate);
 	}
 	return false;
@@ -481,15 +480,15 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 	while (sysmode < 7 && strcmp(szsystemMode.c_str(), m_szWebAPIMode[sysmode]) != 0)
 		sysmode++;
 
-	REVOBUF tsen;
-	memset(&tsen, 0, sizeof(REVOBUF));
-	tsen.EVOHOME1.len = sizeof(tsen.EVOHOME1) - 1;
-	tsen.EVOHOME1.type = pTypeEvohome;
-	tsen.EVOHOME1.subtype = sTypeEvohome;
-	RFX_SETID3(ID, tsen.EVOHOME1.id1, tsen.EVOHOME1.id2, tsen.EVOHOME1.id3);
-	tsen.EVOHOME1.mode = 0; // web API does not support temp override of controller mode
-	tsen.EVOHOME1.status = sysmode;
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME1, "Controller mode", -1);
+	_tEVOHOME1 tsen;
+	memset(&tsen, 0, sizeof(_tEVOHOME1));
+	tsen.len = sizeof(_tEVOHOME1) - 1;
+	tsen.type = pTypeEvohome;
+	tsen.subtype = sTypeEvohome;
+	RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3);
+	tsen.mode = 0; // web API does not support temp override of controller mode
+	tsen.status = sysmode;
+	sDecodeRXMessage(this, (const unsigned char *)&tsen, "Controller mode", -1);
 
 	if (GetControllerName().empty() || m_updatedev)
 	{

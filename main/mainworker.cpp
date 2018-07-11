@@ -6459,38 +6459,124 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
+void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	char szTmp[100];
+	const _tEVOHOME1 *pEvo = reinterpret_cast<const _tEVOHOME1*>(pResponse);
+	unsigned char devType = pTypeEvohome;
+	unsigned char subType = pEvo->subtype;
+	std::stringstream szID;
+	if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
+		szID << std::hex << (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
+	else //GB3: web based evohome uses decimal device ID's
+		szID << std::dec << (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
+	std::string ID(szID.str());
+	unsigned char Unit = 0;
+	unsigned char cmnd = pEvo->status;
+	unsigned char SignalLevel = 255;//Unknown
+	unsigned char BatteryLevel = 255;//Unknown
+
+	std::string szUntilDate;
+	if (pEvo->mode == CEvohomeBase::cmTmp)//temporary
+		szUntilDate = CEvohomeDateTime::GetISODate(pEvo);
+
+	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
+
+	//FIXME A similar check is also done in switch modal do we want to forward the ooc flag and rely on this check entirely?
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
+		HwdID, ID.c_str());
+	bool bNewDev = false;
+	std::string name;
+	if (!result.empty())
+	{
+		std::vector<std::string> sd = result[0];
+		if (atoi(sd[7].c_str()) == cmnd && sd[8] == szUntilDate)
+			return;
+	}
+	else
+	{
+		bNewDev = true;
+		if (!pEvoHW)
+			return;
+		name = pEvoHW->GetControllerName();
+		if (name.empty())
+			return;
+	}
+
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szUntilDate.c_str(), procResult.DeviceName, pEvo->action != 0);
+	if (DevRowIdx == -1)
+		return;
+	if (bNewDev)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
+			name.c_str(), DevRowIdx);
+		procResult.DeviceName = name;
+	}
+
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
+	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
+	{
+		WriteMessageStart();
+		switch (pEvo->subtype)
+		{
+		case sTypeEvohome:
+			WriteMessage("subtype       = Evohome");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pEvo->type, pEvo->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
+			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->id1, pEvo->id2, pEvo->id3);
+		else //GB3: web based evohome uses decimal device ID's
+			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3));
+		WriteMessage(szTmp);
+		sprintf(szTmp, "action        = %d", (int)pEvo->action);
+		WriteMessage(szTmp);
+		WriteMessage("status        = ");
+		WriteMessage(pEvoHW->GetControllerModeName(pEvo->status));
+
+		WriteMessageEnd();
+	}
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
 void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
+	const _tEVOHOME2 *pEvo = reinterpret_cast<const _tEVOHOME2*>(pResponse);
 	unsigned char cmnd = 0;
 	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
 
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	if (pEvo->EVOHOME2.type == pTypeEvohomeZone && pEvo->EVOHOME2.zone > 12) //Allow for additional Zone Temp devices which require DeviceID
+	if (pEvo->type == pTypeEvohomeZone && pEvo->zone > 12) //Allow for additional Zone Temp devices which require DeviceID
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
-			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
+			HwdID, (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3), (int)pEvo->type);
 	}
-	else if (pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
+	else if (pEvo->zone)//if unit number is available the id3 will be the controller device id
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == %d) AND (Type==%d)",
-			HwdID, (int)pEvo->EVOHOME2.zone, (int)pEvo->EVOHOME2.type);
+			HwdID, (int)pEvo->zone, (int)pEvo->type);
 	}
 	else//unit number not available then id3 should be the zone device id
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
-			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
+			HwdID, (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3), (int)pEvo->type);
 	}
-	if (result.size() < 1 && !pEvo->EVOHOME2.zone)
+	if (result.size() < 1 && !pEvo->zone)
 		return;
 
 	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
@@ -6514,11 +6600,11 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	else
 	{
 		bNewDev = true;
-		Unit = pEvo->EVOHOME2.zone;//should always be non zero
-		dType = pEvo->EVOHOME2.type;
-		dSubType = pEvo->EVOHOME2.subtype;
+		Unit = pEvo->zone;//should always be non zero
+		dType = pEvo->type;
+		dSubType = pEvo->subtype;
 
-		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
+		szID << std::hex << (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
 		szDevID = szID.str();
 
 		if (!pEvoHW)
@@ -6534,45 +6620,45 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		szUpdateStat = "0.0;0.0;Auto";
 	}
 
-	if (pEvo->EVOHOME2.updatetype == CEvohomeBase::updBattery)
-		BatteryLevel = pEvo->EVOHOME2.battery_level;
+	if (pEvo->updatetype == CEvohomeBase::updBattery)
+		BatteryLevel = pEvo->battery_level;
 	else
 	{
-		if (dType == pTypeEvohomeWater && pEvo->EVOHOME2.updatetype == pEvoHW->updSetPoint)
-			sprintf(szTmp, "%s", pEvo->EVOHOME2.temperature ? "On" : "Off");
+		if (dType == pTypeEvohomeWater && pEvo->updatetype == pEvoHW->updSetPoint)
+			sprintf(szTmp, "%s", pEvo->temperature ? "On" : "Off");
 		else
-			sprintf(szTmp, "%.2f", pEvo->EVOHOME2.temperature / 100.0f);
+			sprintf(szTmp, "%.2f", pEvo->temperature / 100.0f);
 
 		std::vector<std::string> strarray;
 		StringSplit(szUpdateStat, ";", strarray);
 		if (strarray.size() >= 3)
 		{
-			if (pEvo->EVOHOME2.updatetype == pEvoHW->updSetPoint)//SetPoint
+			if (pEvo->updatetype == pEvoHW->updSetPoint)//SetPoint
 			{
 				strarray[1] = szTmp;
-				if (pEvo->EVOHOME2.mode <= pEvoHW->zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
+				if (pEvo->mode <= pEvoHW->zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
 				{
-					int nControllerMode = pEvo->EVOHOME2.controllermode;
+					int nControllerMode = pEvo->controllermode;
 					if (dType == pTypeEvohomeWater && (nControllerMode == pEvoHW->cmEvoHeatingOff || nControllerMode == pEvoHW->cmEvoAutoWithEco || nControllerMode == pEvoHW->cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
 						nControllerMode = pEvoHW->cmEvoAuto;
-					if (pEvo->EVOHOME2.mode == pEvoHW->zmAuto || nControllerMode == pEvoHW->cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
+					if (pEvo->mode == pEvoHW->zmAuto || nControllerMode == pEvoHW->cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
 						strarray[2] = pEvoHW->GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
 					else
-						strarray[2] = pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
-					if (pEvo->EVOHOME2.mode == pEvoHW->zmTmp)
+						strarray[2] = pEvoHW->GetZoneModeName(pEvo->mode);
+					if (pEvo->mode == pEvoHW->zmTmp)
 					{
-						std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+						std::string szISODate(CEvohomeDateTime::GetISODate(pEvo));
 						if (strarray.size() < 4) //add or set until
 							strarray.push_back(szISODate);
 						else
 							strarray[3] = szISODate;
 					}
-					else if ((pEvo->EVOHOME2.mode == pEvoHW->zmAuto) && (HwdType == HTYPE_EVOHOME_WEB))
+					else if ((pEvo->mode == pEvoHW->zmAuto) && (HwdType == HTYPE_EVOHOME_WEB))
 					{
 						strarray[2] = "FollowSchedule";
-						if ((pEvo->EVOHOME2.year != 0) && (pEvo->EVOHOME2.year != 0xFFFF))
+						if ((pEvo->year != 0) && (pEvo->year != 0xFFFF))
 						{
-							std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+							std::string szISODate(CEvohomeDateTime::GetISODate(pEvo));
 							if (strarray.size() < 4) //add or set until
 								strarray.push_back(szISODate);
 							else
@@ -6585,9 +6671,9 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 							strarray.resize(3);
 				}
 			}
-			else if (pEvo->EVOHOME2.updatetype == pEvoHW->updOverride)
+			else if (pEvo->updatetype == pEvoHW->updOverride)
 			{
-				strarray[2] = pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
+				strarray[2] = pEvoHW->GetZoneModeName(pEvo->mode);
 				if (strarray.size() >= 4) //remove until
 					strarray.resize(3);
 			}
@@ -6608,105 +6694,19 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
-void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
-{
-	char szTmp[100];
-	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
-	unsigned char devType = pTypeEvohome;
-	unsigned char subType = pEvo->EVOHOME1.subtype;
-	std::stringstream szID;
-	if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
-		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
-	else //GB3: web based evohome uses decimal device ID's
-		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
-	std::string ID(szID.str());
-	unsigned char Unit = 0;
-	unsigned char cmnd = pEvo->EVOHOME1.status;
-	unsigned char SignalLevel = 255;//Unknown
-	unsigned char BatteryLevel = 255;//Unknown
-
-	std::string szUntilDate;
-	if (pEvo->EVOHOME1.mode == CEvohomeBase::cmTmp)//temporary
-		szUntilDate = CEvohomeDateTime::GetISODate(pEvo->EVOHOME1);
-
-	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
-
-	//FIXME A similar check is also done in switchmodal do we want to forward the ooc flag and rely on this check entirely?
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
-		HwdID, ID.c_str());
-	bool bNewDev = false;
-	std::string name;
-	if (!result.empty())
-	{
-		std::vector<std::string> sd = result[0];
-		if (atoi(sd[7].c_str()) == cmnd && sd[8] == szUntilDate)
-			return;
-	}
-	else
-	{
-		bNewDev = true;
-		if (!pEvoHW)
-			return;
-		name = pEvoHW->GetControllerName();
-		if (name.empty())
-			return;
-	}
-
-	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szUntilDate.c_str(), procResult.DeviceName, pEvo->EVOHOME1.action != 0);
-	if (DevRowIdx == -1)
-		return;
-	if (bNewDev)
-	{
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
-			name.c_str(), DevRowIdx);
-		procResult.DeviceName = name;
-	}
-
-	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
-	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
-	{
-		WriteMessageStart();
-		switch (pEvo->EVOHOME1.subtype)
-		{
-		case sTypeEvohome:
-			WriteMessage("subtype       = Evohome");
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pEvo->EVOHOME1.type, pEvo->EVOHOME1.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-
-		if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
-			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
-		else //GB3: web based evohome uses decimal device ID's
-			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3));
-		WriteMessage(szTmp);
-		sprintf(szTmp, "action        = %d", (int)pEvo->EVOHOME1.action);
-		WriteMessage(szTmp);
-		WriteMessage("status        = ");
-		WriteMessage(pEvoHW->GetControllerModeName(pEvo->EVOHOME1.status));
-
-		WriteMessageEnd();
-	}
-	procResult.DeviceRowIdx = DevRowIdx;
-}
-
 void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
+	const _tEVOHOME3 *pEvo = reinterpret_cast<const _tEVOHOME3*>(pResponse);
 	unsigned char devType = pTypeEvohomeRelay;
-	unsigned char subType = pEvo->EVOHOME1.subtype;
+	unsigned char subType = pEvo->subtype;
 	std::stringstream szID;
-	int nDevID = (int)RFX_GETID3(pEvo->EVOHOME3.id1, pEvo->EVOHOME3.id2, pEvo->EVOHOME3.id3);
+	int nDevID = (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
 	szID << std::hex << nDevID;
 	std::string ID(szID.str());
-	unsigned char Unit = pEvo->EVOHOME3.devno;
-	unsigned char cmnd = (pEvo->EVOHOME3.demand > 0) ? light1_sOn : light1_sOff;
-	sprintf(szTmp, "%d", pEvo->EVOHOME3.demand);
+	unsigned char Unit = pEvo->devno;
+	unsigned char cmnd = (pEvo->demand > 0) ? light1_sOn : light1_sOff;
+	sprintf(szTmp, "%d", pEvo->demand);
 	std::string szDemand(szTmp);
 	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
@@ -6725,17 +6725,17 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		result = m_sql.safe_query(
 			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d') AND (Type==%d) AND (DeviceID == '%q')",
-			HwdID, (int)Unit, (int)pEvo->EVOHOME3.type, ID.c_str());
+			HwdID, (int)Unit, (int)pEvo->type, ID.c_str());
 	if (!result.empty())
 	{
-		if (pEvo->EVOHOME3.demand == 0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
+		if (pEvo->demand == 0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
 			return;
 		unsigned char cur_cmnd = atoi(result[0][5].c_str());
 		BatteryLevel = atoi(result[0][7].c_str());
 
-		if (pEvo->EVOHOME3.updatetype == CEvohomeBase::updBattery)
+		if (pEvo->updatetype == CEvohomeBase::updBattery)
 		{
-			BatteryLevel = pEvo->EVOHOME3.battery_level;
+			BatteryLevel = pEvo->battery_level;
 			szDemand = result[0][6];
 			cmnd = (atoi(szDemand.c_str()) > 0) ? light1_sOn : light1_sOff;
 		}
@@ -6756,10 +6756,10 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		if (Unit == 0xFF || (nDevID == 0 && Unit > 12))
 			return;
 		bNewDev = true;
-		if (pEvo->EVOHOME3.demand == 0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
+		if (pEvo->demand == 0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
 			szDemand = "0";
-		if (pEvo->EVOHOME3.updatetype == CEvohomeBase::updBattery)
-			BatteryLevel = pEvo->EVOHOME3.battery_level;
+		if (pEvo->updatetype == CEvohomeBase::updBattery)
+			BatteryLevel = pEvo->battery_level;
 	}
 
 	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szDemand.c_str(), procResult.DeviceName);
@@ -6774,7 +6774,7 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			procResult.DeviceName = "DHW Valve";
 		else if (Unit == 0xFC)
 		{
-			if (pEvo->EVOHOME3.id1 >> 2 == CEvohomeID::devBridge) // Evohome OT Bridge
+			if (pEvo->id1 >> 2 == CEvohomeID::devBridge) // Evohome OT Bridge
 				procResult.DeviceName = "Boiler (OT Bridge)";
 			else
 				procResult.DeviceName = "Boiler";
@@ -11646,19 +11646,19 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	break;
 	case pTypeEvohomeRelay:
 	{
-		REVOBUF lcmd;
-		memset(&lcmd, 0, sizeof(REVOBUF));
-		lcmd.EVOHOME3.len = sizeof(lcmd.EVOHOME3) - 1;
-		lcmd.EVOHOME3.type = pTypeEvohomeRelay;
-		lcmd.EVOHOME3.subtype = sTypeEvohomeRelay;
-		RFX_SETID3(ID, lcmd.EVOHOME3.id1, lcmd.EVOHOME3.id2, lcmd.EVOHOME3.id3)
-			lcmd.EVOHOME3.devno = Unit;
+		_tEVOHOME3 lcmd;
+		memset(&lcmd, 0, sizeof(_tEVOHOME3));
+		lcmd.len = sizeof(_tEVOHOME3) - 1;
+		lcmd.type = pTypeEvohomeRelay;
+		lcmd.subtype = sTypeEvohomeRelay;
+		RFX_SETID3(ID, lcmd.id1, lcmd.id2, lcmd.id3)
+			lcmd.devno = Unit;
 		if (switchcmd == "On")
-			lcmd.EVOHOME3.demand = 200;
+			lcmd.demand = 200;
 		else
-			lcmd.EVOHOME3.demand = level;
+			lcmd.demand = level;
 
-		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.EVOHOME3)))
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tEVOHOME3)))
 			return false;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
@@ -11814,19 +11814,19 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	s_strid >> ID;
 
 	//Update Domoticz evohome Device
-	REVOBUF tsen;
-	memset(&tsen, 0, sizeof(REVOBUF));
-	tsen.EVOHOME1.len = sizeof(tsen.EVOHOME1) - 1;
-	tsen.EVOHOME1.type = pTypeEvohome;
-	tsen.EVOHOME1.subtype = sTypeEvohome;
-	RFX_SETID3(ID, tsen.EVOHOME1.id1, tsen.EVOHOME1.id2, tsen.EVOHOME1.id3)
-		tsen.EVOHOME1.action = (action == "1") ? 1 : 0;
-	tsen.EVOHOME1.status = nStatus;
+	_tEVOHOME1 tsen;
+	memset(&tsen, 0, sizeof(_tEVOHOME1));
+	tsen.len = sizeof(_tEVOHOME1) - 1;
+	tsen.type = pTypeEvohome;
+	tsen.subtype = sTypeEvohome;
+	RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3)
+	tsen.action = (action == "1") ? 1 : 0;
+	tsen.status = nStatus;
 
-	tsen.EVOHOME1.mode = until.empty() ? CEvohomeBase::cmPerm : CEvohomeBase::cmTmp;
-	if (tsen.EVOHOME1.mode == CEvohomeBase::cmTmp)
-		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1, until.c_str());
-	WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME1));
+	tsen.mode = until.empty() ? CEvohomeBase::cmPerm : CEvohomeBase::cmTmp;
+	if (tsen.mode == CEvohomeBase::cmTmp)
+		CEvohomeDateTime::DecodeISODate(tsen, until.c_str());
+	WriteToHardware(HardwareID, (const char*)&tsen, sizeof(_tEVOHOME1));
 
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 	PushRxMessage(pHardware, (const unsigned char *)&tsen, NULL, 255);
@@ -11939,20 +11939,19 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 
 	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 	{
-		REVOBUF tsen;
-		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
-		tsen.EVOHOME2.len = sizeof(tsen.EVOHOME2) - 1;
-		tsen.EVOHOME2.type = dType;
-		tsen.EVOHOME2.subtype = dSubType;
-		RFX_SETID3(ID, tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3)
-
-			tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
-		tsen.EVOHOME2.updatetype = CEvohomeBase::updSetPoint;//setpoint
-		tsen.EVOHOME2.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue*100.0f);
-		tsen.EVOHOME2.mode = nEvoMode;
+		_tEVOHOME2 tsen;
+		memset(&tsen, 0, sizeof(_tEVOHOME2));
+		tsen.len = sizeof(_tEVOHOME2) - 1;
+		tsen.type = dType;
+		tsen.subtype = dSubType;
+		RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3)
+		tsen.zone = Unit;//controller is 0 so let our zones start from 1...
+		tsen.updatetype = CEvohomeBase::updSetPoint;//setpoint
+		tsen.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue*100.0f);
+		tsen.mode = nEvoMode;
 		if (nEvoMode == CEvohomeBase::zmTmp)
-			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2, until.c_str());
-		WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME2));
+			CEvohomeDateTime::DecodeISODate(tsen, until.c_str());
+		WriteToHardware(HardwareID, (const char*)&tsen, sizeof(_tEVOHOME2));
 
 		//Pass across the current controller mode if we're going to update as per the hw device
 		result = m_sql.safe_query(
@@ -11961,7 +11960,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		if (!result.empty())
 		{
 			sd = result[0];
-			tsen.EVOHOME2.controllermode = atoi(sd[2].c_str());
+			tsen.controllermode = atoi(sd[2].c_str());
 		}
 		//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 		PushAndWaitRxMessage(pHardware, (const unsigned char*)&tsen, NULL, -1);
