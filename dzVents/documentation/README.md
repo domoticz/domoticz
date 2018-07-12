@@ -524,15 +524,15 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
-    - **isDayTime**
-    - **isNightTime**
-    - **isCivilDayTime**
-    - **isCivilNightTime**
+    - **isDayTime**: *Boolean*
+    - **isNightTime**: *Boolean*
+    - **isCivilDayTime**: *Boolean*. <sup>2.4.7</sup>
+    - **isCivilNightTime**: *Boolean*. <sup>2.4.7</sup>
     - **isToday**: *Boolean*. Indicates if the device was updated today
     - **sunriseInMinutes**: *Number*. Number of minutes since midnight when the sun will rise.
     - **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
-    - **civTwilightStartInMinutes**: *Number*. Number of minutes since midnight when the civil twilight will start.
-    - **civTwilightEndInMinutes**: *Number*. Number of minutes since midnight when the civil twilight will end.
+    - **civTwilightStartInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
+    - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
    - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
    - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
