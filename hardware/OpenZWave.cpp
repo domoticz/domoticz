@@ -3376,7 +3376,7 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &
 	{
 		std::vector<std::string> sd = *itt;
 		int nodeID = atoi(sd[1].c_str());
-		unsigned int homeID = (unsigned int)atoi(sd[0].c_str());
+		unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[0]));
 		NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
 		if (pNode == NULL)
 			continue;
@@ -4632,7 +4632,7 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
-					unsigned int homeID = (unsigned int)atoi(sd[1].c_str());
+					unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[1]));
 					int nodeID = atoi(sd[2].c_str());
 					//if (nodeID>1) //Don't include the controller
 					{
@@ -4703,7 +4703,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4731,7 +4731,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -5088,7 +5088,7 @@ namespace http {
 					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
 						std::vector<std::string> sd = *itt;
-						unsigned int homeID = (unsigned int)atoi(sd[1].c_str());
+						unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[1]));
 						int nodeID = atoi(sd[2].c_str());
 						COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
 						if (pNode == NULL)
@@ -5169,7 +5169,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -5193,7 +5193,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -5639,7 +5639,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -5664,7 +5664,7 @@ namespace http {
 			if (!result.empty())
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)

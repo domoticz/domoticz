@@ -194,7 +194,7 @@ public:
 	CEvohomeDateTime(const unsigned char* msg, unsigned char nOfs){Decode(msg,nOfs);}
 	~CEvohomeDateTime(){}
 
-	template <class T> CEvohomeDateTime& operator = (const T &in){year=in.year;month=in.month;day=in.day;hrs=in.hrs;mins=in.mins;return *this;}
+	template <class T> CEvohomeDateTime& operator = (const T &in){year=in->year;month=in->month;day=in->day;hrs=in->hrs;mins=in->mins;return *this;}
 
 	template <class T> static unsigned char DecodeTime(T &out, const unsigned char* msg, unsigned char nOfs)
 	{
@@ -229,10 +229,10 @@ public:
 
 	template <class T> static std::string GetISODate(const T &in)
 	{
-		if(in.year==0xFFFF)
+		if(in->year==0xFFFF)
 			return "";
 		char szTmp[256];
-		sprintf(szTmp,std::string("%d-%02d-%02d").append((in.hrs!=0xFF)?"T%02d:%02d:00":"T00:00:00").c_str(),in.year,in.month,in.day,in.hrs,in.mins);
+		sprintf(szTmp,std::string("%d-%02d-%02d").append((in->hrs!=0xFF)?"T%02d:%02d:00":"T00:00:00").c_str(),in->year,in->month,in->day,in->hrs,in->mins);
 		return szTmp;
 	}
 
