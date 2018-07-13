@@ -150,7 +150,7 @@ void CDenkoviDevices::Do_Work()
 	}
 }
 
-bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const _tGeneralSwitch *pSen = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
@@ -473,8 +473,8 @@ void CDenkoviDevices::GetMeterDetails()
 	}
 	size_t ii;
 	std::string tmpstr;
-	int tmpState;
-	int tmpValue;
+	int tmpState = 0;
+	int tmpValue = 0;
 	float tmpTiValue = NAN;
 	std::string tmpMeasure;
 	std::string tmpName;
@@ -749,7 +749,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				name = "Analog Output " + std::to_string(Idx) + " (" + name + ")";
 				double val = (100 / 1023) * tmpValue;
-				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (int)val, name);
+				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)val, name);
 				Idx = -1;
 				bHaveAnalogOutput = false;
 				continue;
@@ -832,7 +832,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHavePWM && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "PWM " + std::to_string(Idx) + " (" + name + ")";
-				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, tmpValue, name);
+				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)tmpValue, name);
 				Idx = -1;
 				bHavePWM = false;
 				continue;

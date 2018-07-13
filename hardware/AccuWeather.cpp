@@ -112,7 +112,7 @@ void CAccuWeather::Do_Work()
 	_log.Log(LOG_STATUS,"AccuWeather Worker stopped...");
 }
 
-bool CAccuWeather::WriteToHardware(const char *pdata, const unsigned char length)
+bool CAccuWeather::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -345,7 +345,7 @@ void CAccuWeather::GetMeterDetails()
 			int wind_degrees = -1;
 			float windspeed_ms = 0;
 			float windgust_ms = 0;
-			float wind_temp = temp;
+			//float wind_temp = temp;
 			float wind_chill = temp;
 
 			if (!root["Wind"]["Direction"].empty())

@@ -128,7 +128,7 @@ public:
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
-	bool WriteToHardware(const char *pdata, const unsigned char length) { return true; };
+	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) { return true; };
 	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
 #ifndef NOCLOUD
 	CTCPServerProxied *GetProxiedServer();

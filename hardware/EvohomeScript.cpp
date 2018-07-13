@@ -99,7 +99,7 @@ bool CEvohomeScript::WriteToHardware(const char *pdata, const unsigned char leng
 }
 
 
-void CEvohomeScript::RunScript(const char *pdata, const unsigned char length)
+void CEvohomeScript::RunScript(const char *pdata, const unsigned char /*length*/)
 {
 	if(!pdata)
 		return;

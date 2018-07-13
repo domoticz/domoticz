@@ -360,7 +360,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1300;
 		float volt = static_cast<float>(atof(devValue.c_str()));
-		SendVoltageSensor(0, doffset + dindex, 255, volt, devName);
+		SendVoltageSensor(0, (uint8_t)(doffset + dindex), 255, volt, devName);
 	}
 	else if (qType == "Current")
 	{
@@ -484,7 +484,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		while (pEnumerator)
 		{
 			ULONG uReturn = 0;
-			HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+			hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
 			if (FAILED(hr) || (0 == uReturn))
 			{
 				break;

@@ -27,7 +27,8 @@ Comm5Serial::Comm5Serial(const int ID, const std::string& devname, unsigned int 
 	frameCRC = 0;
 }
 
-bool Comm5Serial::WriteToHardware(const char * pdata, const unsigned char length) {
+bool Comm5Serial::WriteToHardware(const char * pdata, const unsigned char /*length*/)
+{
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
@@ -113,7 +114,7 @@ bool Comm5Serial::StopHardware()
 
 void Comm5Serial::Do_Work()
 {
-	int sec_counter = 0;
+	//int sec_counter = 0;
 	int msec_counter = 0;
 
 	queryRelayState();
@@ -133,10 +134,10 @@ void Comm5Serial::Do_Work()
 	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Serial Worker stopped...");
 }
 
-void Comm5Serial::requestDigitalInputResponseHandler(const std::string & frame)
+void Comm5Serial::requestDigitalInputResponseHandler(const std::string & mframe)
 {
-	uint8_t mask = frame[5];
-	uint8_t sensorStatus = frame[6];
+	//uint8_t mask = mframe[5];
+	uint8_t sensorStatus = mframe[6];
 
 	for (int i = 0; i < 8; ++i) {
 		bool on = (sensorStatus & (1 << i)) != 0 ? true : false;
@@ -149,24 +150,23 @@ void Comm5Serial::requestDigitalInputResponseHandler(const std::string & frame)
 	reqState = Idle;
 }
 
-void Comm5Serial::requestDigitalOutputResponseHandler(const std::string & frame)
+void Comm5Serial::requestDigitalOutputResponseHandler(const std::string & mframe)
 {
 	//  0     1     2       3       4        5        6
 	// 0x05 0x64 <size> <control> <id> <operation> <value>
 
-	relayStatus = frame[6];
+	relayStatus = mframe[6];
 	for (int i = 0; i < 8; ++i) {
 		bool on = (relayStatus & (1 << i)) != 0 ? true : false;
 		SendSwitch(i + 1, 1, 255, on, 0, "Relay " + std::to_string(i + 1));
 	}
 }
 
-void Comm5Serial::enableNotificationResponseHandler(const std::string & frame)
+void Comm5Serial::enableNotificationResponseHandler(const std::string & /*mframe*/)
 {
-	uint8_t operation = frame[5];
-	uint8_t operationType = frame[6];
-	uint8_t mask = frame[7];
-
+	//uint8_t operation = mframe[5];
+	//uint8_t operationType = mframe[6];
+	//uint8_t mask = mframe[7];
 }
 
 void Comm5Serial::readCallBack(const char * data, size_t len)
@@ -188,7 +188,7 @@ static uint16_t crc16_update(uint16_t crc, uint8_t data)
 	for (i = 0; i<8; i++)
 	{
 		if (crc & 0x8000)
-			crc = (crc << 1) ^ POLYNOME;
+			crc = (uint16_t)((crc << 1) ^ POLYNOME);
 		else
 			crc <<= 1;
 	}
@@ -270,17 +270,17 @@ void Comm5Serial::ParseData(const unsigned char* data, const size_t len)
 	}
 }
 
-void Comm5Serial::parseFrame(std::string & frame)
+void Comm5Serial::parseFrame(const std::string & mframe)
 {
-	switch (frame.at(4)) {
+	switch (mframe.at(4)) {
 	case 0x01:
-		requestDigitalInputResponseHandler(frame);
+		requestDigitalInputResponseHandler(mframe);
 		break;
 	case 0x02:
-		requestDigitalOutputResponseHandler(frame);
+		requestDigitalOutputResponseHandler(mframe);
 		break;
 	case 0x04:
-		enableNotificationResponseHandler(frame);
+		enableNotificationResponseHandler(mframe);
 		break;
 	}
 }
@@ -288,19 +288,19 @@ void Comm5Serial::parseFrame(std::string & frame)
 bool Comm5Serial::writeFrame(const std::string & data)
 {
 	char length = (uint8_t)data.size();
-	std::string frame("\x05\x64", 2);
-	frame.push_back(length);
-	frame.push_back(0x00);
-	frame.append(data);
+	std::string mframe("\x05\x64", 2);
+	mframe.push_back(length);
+	mframe.push_back(0x00);
+	mframe.append(data);
 	uint16_t crc = 0;
-	for (size_t i = 0; i < frame.size(); ++i)
-		crc = crc16_update(crc, frame.at(i));
+	for (size_t i = 0; i < mframe.size(); ++i)
+		crc = crc16_update(crc, mframe.at(i));
 	crc = crc16_update(crc, 0);
 	crc = crc16_update(crc, 0);
 
-	frame.append(1, crc >> 8);
-	frame.append(1, crc & 0xFF);
-	write(frame);
+	mframe.append(1, crc >> 8);
+	mframe.append(1, crc & 0xFF);
+	write(mframe);
 	return true;
 }
 

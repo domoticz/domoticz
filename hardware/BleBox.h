@@ -44,7 +44,7 @@ private:
 	Json::Value SendCommand(const std::string &IPAddress, const std::string &command, const int timeOut = 3);
 	void GetDevicesState();
 
-	void SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
+	void SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
 
 	void ReloadNodes();
 	void UnloadNodes();

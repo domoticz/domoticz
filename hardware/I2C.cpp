@@ -202,9 +202,8 @@ bool I2C::StopHardware()
 	return true;
 }
 
-bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
+bool I2C::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
-	int rc = 0;
 	if (m_dev_type != I2CTYPE_PCF8574 && m_dev_type != I2CTYPE_MCP23017)
 		return false;
 

@@ -123,7 +123,7 @@ bool CEcoDevices::StopHardware()
 void CEcoDevices::Do_Work()
 {
 	int sec_counter = m_iRateLimit - 2; // Make sure we update once soon after restart
-	_log.Log(LOG_STATUS, "(%s): Worker started...", Name.c_str());
+	_log.Log(LOG_STATUS, "(%s): Worker started...", m_Name.c_str());
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -138,10 +138,10 @@ void CEcoDevices::Do_Work()
 				GetMeterRT2Details();
 		}
 	}
-	_log.Log(LOG_STATUS, "(%s): Worker stoped...", Name.c_str());
+	_log.Log(LOG_STATUS, "(%s): Worker stopped...", m_Name.c_str());
 }
 
-bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEcoDevices::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return true;
 }
@@ -212,11 +212,11 @@ void CEcoDevices::GetMeterDetails()
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_NORM, "(%s) Fetching counters and status data", Name.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching counters and status data", m_Name.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting data from: %s", Name.c_str(), sstr.str().c_str());
+		_log.Log(LOG_ERROR, "(%s) Error getting data from: %s", m_Name.c_str(), sstr.str().c_str());
 		return;
 	}
 
@@ -224,7 +224,7 @@ void CEcoDevices::GetMeterDetails()
 	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
-		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /status.xml: %s", Name.c_str(), XMLdoc.ErrorDesc());
+		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());
 		return;
 	}
 
@@ -287,7 +287,7 @@ void CEcoDevices::GetMeterDetails()
 		message = "EcoDevices firmware needs to be at least version ";
 		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) +  "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
-		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
+		_log.Log(LOG_ERROR, "(%s) %s", m_Name.c_str(), message.c_str());
 		return;
 	}
 
@@ -299,10 +299,10 @@ void CEcoDevices::GetMeterDetails()
 		sstr.str("");
 		sstr << m_ssURL.str() << "/protect/settings/teleinfo1.xml";
 
-		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", Name.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", m_Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo1.xml from EcoDevices!", Name.c_str());
+			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo1.xml from EcoDevices!", m_Name.c_str());
 			return;
 		}
 #ifdef DEBUG_EcoDevices
@@ -324,10 +324,10 @@ void CEcoDevices::GetMeterDetails()
 		sstr.str("");
 		sstr << m_ssURL.str() << "/protect/settings/teleinfo2.xml";
 
-		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 2 data", Name.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 2 data", m_Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo2.xml!", Name.c_str());
+			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo2.xml!", m_Name.c_str());
 			return;
 		}
 #ifdef DEBUG_EcoDevices
@@ -360,7 +360,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::stringstream sstr;
 	std::map<std::string, std::string> XMLmap;
 	TiXmlDocument XMLdoc("Teleinfo.xml");
-	time_t atime = mytime(NULL);
+	//time_t atime = mytime(NULL);
 	int   i, major, minor, release;
 	int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
@@ -371,7 +371,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::string sURL = sstr.str();
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting system information from: %s", Name.c_str(), sstr.str().c_str());
+		_log.Log(LOG_ERROR, "(%s) Error getting system information from: %s", m_Name.c_str(), sstr.str().c_str());
 		return;
 	}
 
@@ -380,12 +380,12 @@ void CEcoDevices::GetMeterRT2Details()
 	bool bRet = jReader.parse(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", m_Name.c_str());
 		return;
 	}
 	if (root["confighostname"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", m_Name.c_str());
 	}
 	else
 	{
@@ -405,11 +405,11 @@ void CEcoDevices::GetMeterRT2Details()
 
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", Name.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", m_Name.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting status.xml!", Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) Error getting status.xml!", m_Name.c_str());
 		return;
 	}
 
@@ -417,7 +417,7 @@ void CEcoDevices::GetMeterRT2Details()
 	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
-		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", Name.c_str(), XMLdoc.ErrorDesc());
+		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());
 		return;
 	}
 
@@ -426,7 +426,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::string product = S_xpath_string(XMLdoc.RootElement(), "/response/product/text()").c_str();
 	if (product != "ECODEVICES RT 2")
 	{
-		_log.Log(LOG_ERROR, "(%s) Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", Name.c_str(), product.c_str());
+		_log.Log(LOG_ERROR, "(%s) Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", m_Name.c_str(), product.c_str());
 		return;
 	}
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/infofirm/text()").c_str();
@@ -448,7 +448,7 @@ void CEcoDevices::GetMeterRT2Details()
 		message = "EcoDevices RT2 firmware needs to be at least version ";
 		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
-		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
+		_log.Log(LOG_ERROR, "(%s) %s", m_Name.c_str(), message.c_str());
 		return;
 	}
 
@@ -512,7 +512,7 @@ void CEcoDevices::GetMeterRT2Details()
 			fvalue1 = (float)atof(splitresults[0].c_str());
 			if (fvalue1 > 0) SendMeterSensor(m_HwdID, i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
 			fvalue2 = (float)atof(splitresults[1].c_str());
-			if (fvalue2 > 0) SendWaterflowSensor(m_HwdID, i, 255, fvalue2, m_status.hostname + " " + label);
+			if (fvalue2 > 0) SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
 		}
 	}
 }

@@ -88,7 +88,7 @@ bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 bool CEvohomeBase::SetMaxZoneCount(uint8_t nZoneCount)
 {
 	std::lock_guard<std::mutex> l(m_mtxZoneCount);
-	int nMaxZones=std::max(m_nZoneCount,nZoneCount);
+	uint8_t nMaxZones=std::max(m_nZoneCount,nZoneCount);
 	bool bRet=(m_nZoneCount!=nMaxZones);
 	m_nZoneCount=nMaxZones;
 	return bRet;
@@ -315,7 +315,7 @@ namespace http {
 					root["message"] = "Maximum number of supported zones reached";
 					return;
 				}
-				m_sql.UpdateValue(HwdID, ID, nDevCount + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+				m_sql.UpdateValue(HwdID, ID, (uint8_t)nDevCount + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
 				bCreated = true;
 				break;
 			case pTypeEvohomeWater://DHW...should be 1 per hardware

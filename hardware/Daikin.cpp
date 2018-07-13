@@ -146,7 +146,7 @@ void CDaikin::Do_Work()
 
 // pData = _tThermostat
 
-bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -159,7 +159,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		//Light command
 		int node_id = pCmd->LIGHTING2.id4;
-		int child_sensor_id = pCmd->LIGHTING2.unitcode;
+		//int child_sensor_id = pCmd->LIGHTING2.unitcode;
 		bool command = pCmd->LIGHTING2.cmnd;
 		if (node_id == 1)
 		{
@@ -176,7 +176,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		//Light command
 		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int node_id = pSwitch->id;
-		int child_sensor_id = pSwitch->unitcode;
+		//int child_sensor_id = pSwitch->unitcode;
 		bool command = pSwitch->cmnd;
 
 		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
@@ -211,15 +211,15 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 	else if (packettype == pTypeBlinds)
 	{
 		//Blinds/Window command
-		int node_id = pCmd->BLINDS1.id3;
-		int child_sensor_id = pCmd->BLINDS1.unitcode;
+		//int node_id = pCmd->BLINDS1.id3;
+		//int child_sensor_id = pCmd->BLINDS1.unitcode;
 	}
 	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
 	{
 		//Set Point
 		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat *>(pCmd);
 		int node_id = pMeter->id2;
-		int child_sensor_id = pMeter->id3;
+		//int child_sensor_id = pMeter->id3;
 
 		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
 
@@ -239,7 +239,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 // https://github.com/ael-code/daikin-control
 // sample aircon/set_control_info?pow=1&mode=4&f_rate=A&f_dir=0&stemp=18.0&shum=0
 
-void CDaikin::SetSetpoint(const int idx, const float temp)
+void CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 {
 	std::string sResult;
 
@@ -288,7 +288,7 @@ void CDaikin::SetSetpoint(const int idx, const float temp)
 // sample aircon/set_control_info?pow=1&mode=4&f_rate=A&f_dir=0&stemp=18.0&shum=0
 
 
-void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, const bool bOn, const double Level, const std::string &defaultname)
 {
 	_tGeneralSwitch gswitch;
 	gswitch.subtype = sSwitchGeneralSwitch;
@@ -297,7 +297,7 @@ void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const 
 	gswitch.id = Idx;
 
 	// Get device level to set
-	int level = static_cast<int>(Level);
+	//int level = static_cast<int>(Level);
 
 	// Now check the values
 	if (bOn)
@@ -727,7 +727,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 
 	xcmd.subtype = sSwitchTypeSelector;
 	if (level > 0) {
-		xcmd.level = level;
+		xcmd.level = (uint8_t)level;
 	}
 
 	//check if this switch is already in the database
@@ -759,17 +759,17 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
 		// SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03"
 		if (!result.empty()) {
-			std::string Idx = result[0][0];
+			std::string sIdx = result[0][0];
 			if (defaultname == "Mode") {
-				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));
+				m_sql.SetDeviceOptions(atoi(sIdx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));
 			}
 			else if (defaultname == "Ventillation") {
 				//for the Fans
-				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|Silence|Lev 1|Lev 2|Lev 3|Lev 4|Lev 5;LevelOffHidden:true;LevelActions:00|10|20|30|40|50|60|70", false));
+				m_sql.SetDeviceOptions(atoi(sIdx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|Silence|Lev 1|Lev 2|Lev 3|Lev 4|Lev 5;LevelOffHidden:true;LevelActions:00|10|20|30|40|50|60|70", false));
 			}
 			else if (defaultname == "Winds") {
 				//for the Wings
-				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
+				m_sql.SetDeviceOptions(atoi(sIdx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
 			}
 		}
 	}

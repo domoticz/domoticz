@@ -218,10 +218,10 @@ void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
 	double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
+	uint8_t level = (uint8_t)(rlevel);
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);

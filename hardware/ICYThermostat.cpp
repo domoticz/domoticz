@@ -88,7 +88,7 @@ void CICYThermostat::Do_Work()
 	_log.Log(LOG_STATUS,"ICYThermostat: Worker stopped...");
 }
 
-bool CICYThermostat::WriteToHardware(const char *pdata, const unsigned char length)
+bool CICYThermostat::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

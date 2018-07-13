@@ -29,7 +29,7 @@ void DeviceIdToByteArray(const std::string &deviceId,/*out*/unsigned char* byteA
    for (unsigned int idx=0;idx<DEVICE_ID_SIZE;idx++)
    {
       std::stringstream ss;
-      unsigned int i;
+      uint8_t i;
       ss << std::hex << str.substr(2*idx,2);
       if (!(ss >> i))
          byteArray[DEVICE_ID_SIZE-idx-1]=0;

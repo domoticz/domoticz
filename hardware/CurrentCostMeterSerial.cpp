@@ -94,7 +94,7 @@ void CurrentCostMeterSerial::readCallback(const char *data, size_t len)
 	ParseData(data, static_cast<int>(len));
 }
 
-bool CurrentCostMeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool CurrentCostMeterSerial::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

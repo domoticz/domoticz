@@ -132,7 +132,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
-bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char length)
+bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if (m_UserName.size() == 0)
 		return false;
@@ -156,7 +156,7 @@ bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char len
 	return false;
 }
 
-void CAnnaThermostat::SetSetpoint(const int idx, const float temp)
+void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 {
 	if (m_UserName.size() == 0)
 		return;
@@ -202,12 +202,12 @@ void CAnnaThermostat::SetSetpoint(const int idx, const float temp)
 
 }
 
-bool CAnnaThermostat::SetAway(const bool bIsAway)
+bool CAnnaThermostat::SetAway(const bool /*bIsAway*/)
 {
 	return false;
 }
 
-void CAnnaThermostat::SetProgramState(const int newState)
+void CAnnaThermostat::SetProgramState(const int /*newState*/)
 {
 	if (m_UserName.size() == 0)
 		return;

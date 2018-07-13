@@ -27,7 +27,7 @@ const std::string kRoomTempDesc = "Room temperature ([devicename])";
 
 extern http::server::CWebServerHelper m_webservers;
 
-CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::string &Password)
 {
 	m_HwdID = ID;
 	mAccessToken = Username;
@@ -97,7 +97,8 @@ void CHoneywell::Do_Work() {
 //
 // callback from Domoticz backend to update the Honeywell thermostat
 //
-bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char length) {
+bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char /*length*/)
+{
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
 	{
@@ -121,10 +122,7 @@ bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char length) 
 		int nodeID = pCmd->LIGHTING2.id4;
 		int devID = nodeID / 10;
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
-		float temp = therm->temp;
-		int calculatedTemp = (int)temp;
-
-		SetSetpoint(devID, temp, nodeID);
+		SetSetpoint(devID, therm->temp, nodeID);
 	}
 	return false;
 }
@@ -248,7 +246,7 @@ void CHoneywell::GetMeterDetails() {
 			temperature = (float)device["changeableValues"]["heatSetpoint"].asFloat();
 			desc = kHeatSetPointDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSetPointSensor(10 * devNr + 4, temperature, desc);
+			SendSetPointSensor((uint8_t)(10 * devNr + 4), temperature, desc);
 			devNr++;
 		}
 	}
@@ -275,7 +273,7 @@ void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, c
 //
 // transfer pause status to Honeywell api
 //
-void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int nodeid)
+void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int /*nodeid*/)
 {
 	std::string url = HONEYWELL_UPDATE_THERMOSTAT;
 	std::string deviceID = mDeviceList[idx]["deviceID"].asString();
@@ -305,7 +303,7 @@ void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int nodeid)
 //
 // transfer the updated temperature to Honeywell API
 //
-void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
+void CHoneywell::SetSetpoint(const int idx, const float temp, const int /*nodeid*/)
 {
 	std::string url = HONEYWELL_UPDATE_THERMOSTAT;
 	std::string deviceID = mDeviceList[idx]["deviceID"].asString();
@@ -329,7 +327,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 
 	std::string desc = kHeatSetPointDesc;
 	stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-	SendSetPointSensor(10 * idx + 4, temp, desc);
+	SendSetPointSensor((uint8_t)(10 * idx + 4), temp, desc);
 
 	desc = kHeatingDesc;
 	stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());

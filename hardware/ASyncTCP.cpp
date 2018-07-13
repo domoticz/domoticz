@@ -329,7 +329,7 @@ void ASyncTCP::do_close()
 	mSocket.close();
 }
 
-void ASyncTCP::do_reconnect(const boost::system::error_code& error)
+void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 {
 	if(mIsConnected) return;
 	if(mIsClosing) return;

@@ -14,7 +14,7 @@ private:
 	bool isConnected() { return mIsConnected; };
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 	void WriteInt(const std::string &sendStr);
 	void Do_Work();
 	void OnConnect() override;

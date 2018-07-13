@@ -27,9 +27,9 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool Connect();
-	void requestDigitalInputResponseHandler(const std::string& frame);
-	void requestDigitalOutputResponseHandler(const std::string& frame);
-	void enableNotificationResponseHandler(const std::string& frame);
+	void requestDigitalInputResponseHandler(const std::string& mframe);
+	void requestDigitalOutputResponseHandler(const std::string& mframe);
+	void enableNotificationResponseHandler(const std::string& mframe);
 	void readCallBack(const char* data, size_t len);
 protected:
 	void OnData(const unsigned char *pData, size_t length);
@@ -37,7 +37,7 @@ protected:
 
 	void Do_Work();
 	void ParseData(const unsigned char *data, const size_t len);
-	void parseFrame(std::string& frame);
+	void parseFrame(const std::string& mframe);
 	bool writeFrame(const std::string&);
 
 

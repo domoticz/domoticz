@@ -39,7 +39,7 @@ void CEcoCompteur::Init()
 {
 }
 
-bool CEcoCompteur::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEcoCompteur::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

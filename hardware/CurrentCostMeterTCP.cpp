@@ -174,7 +174,7 @@ void CurrentCostMeterTCP::Do_Work()
 	_log.Log(LOG_STATUS,"CurrentCost Smart Meter: TCP/IP Worker stopped...");
 }
 
-void CurrentCostMeterTCP::write(const char *data, size_t size)
+void CurrentCostMeterTCP::write(const char* /*data*/, size_t /*size*/)
 {
 }
 

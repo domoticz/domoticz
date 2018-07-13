@@ -139,11 +139,11 @@ public:
 			}
 			// the browser sends blanks as +
 			while (1) {
-				size_t p = value.find("+");
-				if (p == std::string::npos) {
+				size_t p2 = value.find("+");
+				if (p2 == std::string::npos) {
 					break;
 				}
-				value.replace(p, 1, " ");
+				value.replace(p2, 1, " ");
 			}
 
 			values.insert(std::pair< std::string, std::string >(name, value));

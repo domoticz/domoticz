@@ -79,7 +79,7 @@ History:
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port):
 m_szHarmonyAddress(IPAddress)
 {
-	m_usHarmonyPort = port;
+	m_usHarmonyPort = (unsigned short)port;
 	m_HwdID=ID;
 	Init();
 }
@@ -164,7 +164,7 @@ bool CHarmonyHub::StopHardware()
 }
 
 
-bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
+bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -442,7 +442,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	result = m_sql.safe_query("SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, actHex.c_str());
 	if (!result.empty())
 	{
-		UpdateSwitch(atoi(result[0][1].c_str()), activityID.c_str(),on,result[0][0]);
+		UpdateSwitch((uint8_t)(atoi(result[0][1].c_str())), activityID.c_str(),on,result[0][0]);
 	}
 }
 
@@ -452,7 +452,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 * Insert/Update a single activity switch (unconditional)		*
 *									*
 ************************************************************************/
-void CHarmonyHub::UpdateSwitch(unsigned char idx, const char *realID, const bool bOn, const std::string &defaultname)
+void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const bool bOn, const std::string &defaultname)
 {
 	std::stringstream hexId ;
 	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
@@ -480,7 +480,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx, const char *realID, const bool
 	lcmd.LIGHTING2.id3 = (i_Id>> 8) & 0xFF;
 	lcmd.LIGHTING2.id4 = (i_Id) & 0xFF;
 	lcmd.LIGHTING2.unitcode = 1;
-	int level = 15;
+	uint8_t level = 15;
 	if (!bOn)
 	{
 		level = 0;
@@ -820,17 +820,16 @@ void CHarmonyHub::ProcessHarmonyConnect(std::string *szHarmonyData)
 			sendStatus = SendAuth(m_connection, m_szAuthorizationToken, m_szAuthorizationToken);
 	}
 
-	else if ((m_connectionstatus = INITIALIZED) && (*szHarmonyData == "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>"))
+	else if ((m_connectionstatus == INITIALIZED) && (*szHarmonyData == "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>"))
 	{
-		// authentication succesful - restart our stream to bind
+		// authentication successful - restart our stream to bind
 #ifdef _DEBUG
 		std::cerr << "connectionstatus = authenticated\n";
 #endif
 		m_connectionstatus = AUTHENTICATED;
 		sendStatus = StartStream(m_connection);
 	}
-
-	else if ((m_connectionstatus = AUTHENTICATED) && (szHarmonyData->find("<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>") != std::string::npos))
+	else if ((m_connectionstatus == AUTHENTICATED) && (szHarmonyData->find("<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>") != std::string::npos))
 	{
 		// stream bind completed
 		m_connectionstatus = BOUND;
@@ -1092,7 +1091,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 	if (szMessage.find("stateDigest?notify", pos) != std::string::npos)
 	{
 		// Event state notification
-		char cActivityStatus;
+		char cActivityStatus = 0;
 
 		size_t jpos = szMessage.find("activityStatus");
 		if (jpos != std::string::npos)

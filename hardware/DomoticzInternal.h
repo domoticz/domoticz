@@ -19,7 +19,7 @@ public:
 	explicit DomoticzInternal(const int ID);
 	~DomoticzInternal();
 
-	bool WriteToHardware(const char *pdata, const unsigned char length) {
+	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) {
 		// nothing to do yet
 		return false;
 	};

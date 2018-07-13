@@ -78,7 +78,7 @@ CAtagOne::~CAtagOne(void)
 {
 }
 
-void CAtagOne::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+void CAtagOne::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
 {
 	m_OutsideTemperatureIdx = Mode1;
 }
@@ -293,7 +293,7 @@ bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	return true;
 }
 
-bool CAtagOne::WriteToHardware(const char *pdata, const unsigned char length)
+bool CAtagOne::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -542,10 +542,10 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 #ifdef DEBUG_AtagOneThermostat
 	SaveString2Disk(sResult, "E:\\AtagOne_setsetpoint.txt");
 #endif
-	SendSetPointSensor(0,0,idx, dtemp, "");
+	SendSetPointSensor(0,0, (const uint8_t)idx, dtemp, "");
 }
 
-void CAtagOne::SetPauseStatus(const bool bIsPause)
+void CAtagOne::SetPauseStatus(const bool /*bIsPause*/)
 {
 }
 
@@ -557,7 +557,7 @@ void CAtagOne::SendOutsideTemperature()
 	SetOutsideTemp(temp);
 }
 
-void CAtagOne::SetOutsideTemp(const float temp)
+void CAtagOne::SetOutsideTemp(const float /*temp*/)
 {
 }
 

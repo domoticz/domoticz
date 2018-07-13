@@ -187,7 +187,7 @@ unsigned int CTCPServerIntBase::GetUserDevicesCount(const std::string &username)
 	return (unsigned int) pUser->Devices.size();
 }
 
-void CTCPServerIntBase::SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
 {
 	std::lock_guard<std::mutex> l(connectionMutex);
 
@@ -349,7 +349,7 @@ CTCPServer::CTCPServer()
 #endif
 }
 
-CTCPServer::CTCPServer(const int ID)
+CTCPServer::CTCPServer(const int /*ID*/)
 {
 	m_pTCPServer = NULL;
 #ifndef NOCLOUD
@@ -507,7 +507,7 @@ void CTCPServer::DoDecodeMessage(const CTCPClientBase *pClient, const unsigned c
 {
 	HwdType = HTYPE_Domoticz;
 	m_HwdID=8765;
-	Name="DomoticzFromMaster";
+	m_Name="DomoticzFromMaster";
 	m_SeqNr=1;
 	m_pUserData=(void*)pClient;
 	sDecodeRXMessage(this, pRXCommand, NULL, -1);

@@ -456,7 +456,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		hName = "";
 	}
 	else {
-		hName = pHardware->Name;
+		hName = pHardware->m_Name;
 	}
 
 	if (nexpected > 0) {

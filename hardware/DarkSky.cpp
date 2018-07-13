@@ -106,7 +106,7 @@ void CDarkSky::Do_Work()
 	_log.Log(LOG_STATUS,"DarkSky: Worker stopped...");
 }
 
-bool CDarkSky::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDarkSky::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -240,8 +240,8 @@ void CDarkSky::GetMeterDetails()
 	float windgust_ms=0;
 	float wind_temp=temp;
 	float wind_chill=temp;
-	int windgust=1;
-	float windchill=-1;
+	//int windgust=1;
+	//float windchill=-1;
 
 	if (root["currently"]["windBearing"].empty()==false)
 	{

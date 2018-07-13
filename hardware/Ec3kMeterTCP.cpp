@@ -178,7 +178,7 @@ void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
 		_log.Log(LOG_ERROR, "Ec3kMeter: %s", error.message().c_str());
 }
 
-bool Ec3kMeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool Ec3kMeterTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	if (!mIsConnected)
 	{
@@ -276,7 +276,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 		std::stringstream sensorNameWMaxSS;
 		sensorNameWMaxSS << "EC3K meter " << std::hex << id << " maximum";
 		const std::string sensorNameWMax = sensorNameWMaxSS.str();
-		SendWattMeter(id, 2, 255, w_max, sensorNameWMax);
+		SendWattMeter((uint8_t)id, 2, 255, w_max, sensorNameWMax);
 
 		// TODO: send times + reset_count?
 	}

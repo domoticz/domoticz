@@ -165,7 +165,7 @@ void Comm5SMTCP::querySensorState()
 	write("PRESSURE\n\r");
 }
 
-bool Comm5SMTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool Comm5SMTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

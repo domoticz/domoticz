@@ -14,7 +14,7 @@ class eHouseTCP : public  CDomoticzHardwareBase
 
 {
 public:
-	eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const int AutoDiscovery, const int EnableAlarms, const int EnablePro, const int opta, const int optb);
+	eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const unsigned char AutoDiscovery, const unsigned char EnableAlarms, const unsigned char EnablePro, const int opta, const int optb);
 	~eHouseTCP();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
@@ -75,7 +75,7 @@ private:
 	void GetUDPNamesCM(unsigned char *data, int nbytes);
 	void GetUDPNamesPRO(unsigned char *data, int nbytes);
 	void GetUDPNamesWiFi(unsigned char *data, int nbytes);
-	int UpdateSQLState(int devh, int devl, int devtype, int type, int subtype, int swtype, int code, int nr, char signal, int nValue, const char  *sValue, const char * Name, const char * SignalName, bool on_off, int battery);
+	int UpdateSQLState(int devh, const uint8_t devl, int devtype, const uint8_t type, const uint8_t subtype, int swtype, int code, int nr, const uint8_t signal, int nValue, const char  *sValue, const char * Name, const char * SignalName, bool on_off, const uint8_t battery);
 	void UpdateSQLStatus(int devh, int devl, int devtype, int code, int nr, char signal, int nValue, const char  *sValue, int battery);
 	int UpdateSQLPlan(int devh, int devl, int devtype, const char * Name);
 	void UpdatePGM(int adrh, int adrl, int devtype, const char *names, int idx);
@@ -146,7 +146,7 @@ private:
 	unsigned char EHOUSE_PRO_HIGH;           //default eHouse Pro Server IP addr h
 	unsigned char EHOUSE_PRO_LOW;            //default eHouse Pro Server IP addr l
 	char VendorCode[6];
-	int TCPSocket;
+	int m_TCPSocket;
 	unsigned char DEBUG_TCPCLIENT;
 	unsigned char EHOUSE_TCP_CLIENT_TIMEOUT;        //Tcp Client operation timeout Connect/send/receive
 	unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US;     //Tcp Client operation timeout Connect/send/receive
@@ -162,7 +162,7 @@ private:
 	//int HeartBeat;
 
 
-	int AddrH, AddrL; //address high & low for controller type detection & construct idx
+	uint8_t m_AddrH, m_AddrL; //address high & low for controller type detection & construct idx
 	int m_modelIndex;
 	bool m_data32;
 	sockaddr_in m_addr;
@@ -198,7 +198,7 @@ private:
 	unsigned char eHouse1FrameEmpty;						//eHouse1 bus free after reception of all status for Safer Event submissions
 	unsigned char SrvAddrH, SrvAddrL, SrvAddrU, SrvAddrM;	//eHouse Pro server IP address splited
 
-	unsigned char *dta;
+	unsigned char *m_dta;
 	unsigned char disablers485;
 	unsigned char StatusDebug,	//Log status reception
 		IRPerform;				//Perform InfraRed signals

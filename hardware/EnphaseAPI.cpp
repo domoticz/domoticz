@@ -38,7 +38,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
+EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigned short /*usIPPort*/) :
 	m_szIPAddress(IPAddress)
 {
 	m_p1power.ID = 1;
@@ -94,7 +94,7 @@ void EnphaseAPI::Do_Work()
 	_log.Log(LOG_STATUS, "EnphaseAPI Worker stopped...");
 }
 
-bool EnphaseAPI::WriteToHardware(const char *pdata, const unsigned char length)
+bool EnphaseAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

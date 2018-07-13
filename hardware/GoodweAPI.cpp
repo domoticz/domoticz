@@ -143,7 +143,7 @@ void GoodweAPI::Do_Work()
 	_log.Log(LOG_STATUS,"GoodweAPI Worker stopped...");
 }
 
-bool GoodweAPI::WriteToHardware(const char *pdata, const unsigned char length)
+bool GoodweAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

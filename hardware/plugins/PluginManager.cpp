@@ -315,7 +315,7 @@ namespace Plugins {
 						const CPlugin* pPlugin = Message->Plugin();
 						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
 						{
-							_log.Log(LOG_NORM, "(" + pPlugin->Name + ") Processing '" + std::string(Message->Name()) + "' message");
+							_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") Processing '" + std::string(Message->Name()) + "' message");
 						}
 						Message->Process();
 					}
@@ -358,7 +358,7 @@ namespace Plugins {
 			const CPlugin* pPlugin = Message->Plugin();
 			if (pPlugin)
 			{
-				_log.Log(LOG_NORM, "(" + pPlugin->Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
+				_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
 			}
 			PluginMessageQueue.pop();
 		}

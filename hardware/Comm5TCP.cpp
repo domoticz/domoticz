@@ -185,7 +185,7 @@ void Comm5TCP::enableNotifications()
 	notificationEnabled = true;
 }
 
-bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 

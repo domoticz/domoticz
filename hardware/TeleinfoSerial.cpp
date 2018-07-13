@@ -84,7 +84,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
+		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", m_Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
 		open(m_szSerialPort, m_iBaudRate, m_iOptParity, m_iOptCsize);
 	}
 	catch (boost::exception & e)
@@ -117,9 +117,9 @@ bool CTeleinfoSerial::StartHardware()
 	teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
 
 	if (m_bDisableCRC)
-		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", m_Name.c_str());
 	else
-		_log.Log(LOG_STATUS, "(%s) CRC checks will be performed on incoming data", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) CRC checks will be performed on incoming data", m_Name.c_str());
 
 	return true;
 }
@@ -145,7 +145,7 @@ void CTeleinfoSerial::readCallback(const char *data, size_t len)
 	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
 	{
-		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", m_Name.c_str());
 		return;
 	}
 	ParseData(data, static_cast<int>(len));
@@ -212,7 +212,7 @@ void CTeleinfoSerial::MatchLine()
 	{
 		m_counter = 0;
 		#ifdef DEBUG_TeleinfoSerial
-		_log.Log(LOG_NORM,"(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
+		_log.Log(LOG_NORM,"(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", m_Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
 		#endif
 		ProcessTeleinfo(teleinfo);
 		mytime(&m_LastHeartbeat);// keep heartbeat happy
@@ -307,7 +307,7 @@ bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 		if (isMode1 != (int)true)// This will evaluate to false when isMode still equals to 255 at second run
 		{
 			isMode1 = true;
-			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name.c_str());
+			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", m_Name.c_str());
 		}
 	}
 	else if (mode2 == checksum)
@@ -316,15 +316,15 @@ bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 		if (isMode1 != false)	 // if this is first run, will still be at 255
 		{
 			isMode1 = false;
-			_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name.c_str());
+			_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", m_Name.c_str());
 		}
 	}
 	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
 	if (isMode1 != 255)
-		_log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", Name.c_str(), m_buffer);
+		_log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", m_Name.c_str(), m_buffer);
 
 	#ifdef DEBUG_TeleinfoSerial
-	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name.c_str(), m_buffer);
+	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", m_Name.c_str(), m_buffer);
 	#endif
 	return line_ok;
 }

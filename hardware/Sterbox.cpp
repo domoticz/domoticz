@@ -342,12 +342,12 @@ void CSterbox::GetMeterDetails()
 					pos1 = tmpinp.find("v");
 					if (pos1 != std::string::npos)
 					{
-						SendVoltageSensor(0, jj, 255, lValue, sstr.str());
+						SendVoltageSensor(0, (uint8_t)jj, 255, lValue, sstr.str());
 					}
 					pos1 = tmpinp.find("l");
 					if (pos1 != std::string::npos)
 					{
-						SendLuxSensor(0, jj, 255,lValue, sstr.str());
+						SendLuxSensor(0, (uint8_t)jj, 255,lValue, sstr.str());
 					}
 					pos1 = tmpinp.find("h");
 					if (pos1 != std::string::npos)

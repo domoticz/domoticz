@@ -14,7 +14,7 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

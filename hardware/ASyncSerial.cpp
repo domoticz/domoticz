@@ -128,10 +128,10 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 }
 
 void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rate,
-	boost::asio::serial_port_base::parity opt_parity,
-	boost::asio::serial_port_base::character_size opt_csize,
-	boost::asio::serial_port_base::flow_control opt_flow,
-	boost::asio::serial_port_base::stop_bits opt_stop)
+	boost::asio::serial_port_base::parity /*opt_parity*/,
+	boost::asio::serial_port_base::character_size /*opt_csize*/,
+	boost::asio::serial_port_base::flow_control /*opt_flow*/,
+	boost::asio::serial_port_base::stop_bits /*opt_stop*/)
 {
 	if(isOpen()) close();
 

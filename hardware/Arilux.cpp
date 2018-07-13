@@ -87,7 +87,7 @@ void Arilux::Do_Work()
 }
 
 
-void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &lightName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &ariluxBright, const std::string &ariluxHue)
+void Arilux::InsertUpdateSwitch(const std::string &/*nodeID*/, const std::string &lightName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &ariluxBright, const std::string &/*ariluxHue*/)
 {
 	std::vector<std::string> ipaddress;
 	StringSplit(Location, ".", ipaddress);
@@ -117,11 +117,11 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 			//level = 0;
 		}
 		_tColorSwitch ycmd;
-		ycmd.subtype = YeeType;
+		ycmd.subtype = (uint8_t)YeeType;
 		ycmd.id = sID;
 		ycmd.dunit = 0;
 		ycmd.value = value;
-		ycmd.command = cmd;
+		ycmd.command = (uint8_t)cmd;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
@@ -141,11 +141,11 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 				cmd = Color_SetBrightnessLevel;
 			}
 			_tColorSwitch ycmd;
-			ycmd.subtype = YeeType;
+			ycmd.subtype = (uint8_t)YeeType;
 			ycmd.id = sID;
 			ycmd.dunit = 0;
 			ycmd.value = value;
-			ycmd.command = cmd;
+			ycmd.command = (uint8_t)cmd;
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
 		}
 	}
@@ -195,11 +195,11 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 }
 
 
-bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
+bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	_log.Debug(DEBUG_HARDWARE, "Arilux: WriteToHardware...............................");
 	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
-	uint8_t command = pLed->command;
+	//uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
 
 	unsigned long lID;
@@ -361,7 +361,7 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_AddArilux(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_AddArilux(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			root["title"] = "AddArilux";
 

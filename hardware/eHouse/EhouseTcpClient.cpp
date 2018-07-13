@@ -139,7 +139,7 @@ char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCou
 	//TC[tcp_client_socket_index].Stat = TC_NOT_CONNECTED;//is this necessary
 	memcpy((void *)&TC[tcp_client_socket_index].Events, Events, TC[tcp_client_socket_index].EventSize * EVENT_SIZE);  //copy Events to buffer for thread or SubmitData function
 	memcpy((void *)&TC[tcp_client_socket_index].EventsToRun, EventsToRun, EventCount);
-	int param = tcp_client_socket_index;
+	//int param = tcp_client_socket_index;
 #ifndef EHOUSE_TCP_CLIENT_THREAD
 	EhouseSubmitData(tcp_client_socket_index);
 	ExecQueuedEvents();
@@ -250,7 +250,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 	}
 	server.sin_addr.s_addr = SrvAddrU | (SrvAddrM << 8) | (ClientCon->AddrH << 16) | (ClientCon->AddrL << 24);
 	server.sin_family = AF_INET;                    //tcp v4
-	server.sin_port = htons(EHOUSE_TCP_PORT);       //assign eHouse Port
+	server.sin_port = htons((u_short)EHOUSE_TCP_PORT);       //assign eHouse Port
 	if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Connecting to: %s", SocketIndex, line);
 	if (connect(ClientCon->Socket, (struct sockaddr *) &server, sizeof(server)) < 0)
 	{

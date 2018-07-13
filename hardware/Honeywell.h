@@ -11,7 +11,7 @@ namespace Json
 class CHoneywell : public CDomoticzHardwareBase
 {
 public:
-	CHoneywell(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
+	CHoneywell(const int ID, const std::string &Username, const std::string &Password);
 	~CHoneywell(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:

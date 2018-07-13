@@ -23,7 +23,7 @@ private:
 	void PollSwitches();
 
 	// Messages to Domoticz
-	void ReportLightState(const std::string& deviceId, const int unit, const bool state);
+	void ReportLightState(const std::string& deviceId, const uint8_t unit, const bool state);
 	void ReportWiper(const std::string& deviceId, const int wiper);
 	void ReportTemperature(const std::string& deviceId, const float temperature);
 	void ReportTemperatureHumidity(const std::string& deviceId, const float temperature, const float humidity);

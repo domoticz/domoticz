@@ -146,7 +146,7 @@ bool C1WireForWindows::IsAvailable()
 {
 #ifdef _DEBUG
 	return false;
-#endif
+#else
    static boost::optional<bool> IsAvailable;
 
    if (IsAvailable.is_initialized())
@@ -189,6 +189,7 @@ bool C1WireForWindows::IsAvailable()
 
    IsAvailable=ansRoot.get("Available",false).asBool();
    return IsAvailable.get();
+#endif
 }
 
 C1WireForWindows::C1WireForWindows()
@@ -228,8 +229,7 @@ void C1WireForWindows::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) co
 
    if (!ansRoot["InvalidRequest"].isNull())
    {
-      Log(LOG_ERROR,"1-wire GetDevices : get an InvalidRequest answer with reason \"%s\"\n",
-         ansRoot.get("Reason","unknown reason").asString());
+      Log(LOG_ERROR,"1-wire GetDevices : get an InvalidRequest answer with reason \"%s\"\n", ansRoot.get("Reason","unknown reason").asString().c_str());
       return;
    }
 
@@ -431,7 +431,7 @@ void C1WireForWindows::PrepareDevices()
 {
 }
 
-void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
+void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value, const unsigned int)
 {
    if (m_Socket==INVALID_SOCKET)
       return;

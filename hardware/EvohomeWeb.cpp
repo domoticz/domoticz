@@ -98,20 +98,20 @@ void CEvohomeWeb::Init()
 bool CEvohomeWeb::StartSession()
 {
 	if (!m_bequiet)
-		_log.Log(LOG_STATUS, "(%s) connect to Evohome server", this->Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) connect to Evohome server", m_Name.c_str());
 	m_loggedon = false;
 	if (!login(m_username, m_password))
 	{
 		m_logonfailures++;
 		if (m_logonfailures > LOGONFAILTRESHOLD)
-			_log.Log(LOG_STATUS, "(%s) logon fail treshold reached - trottling", this->Name.c_str());
+			_log.Log(LOG_STATUS, "(%s) logon fail treshold reached - trottling", m_Name.c_str());
 		if ((m_logonfailures * m_refreshrate) > MAXPOLINTERVAL)
 			m_logonfailures--;
 		return false;
 	}
 	if (!full_installation())
 	{
-		_log.Log(LOG_ERROR, "(%s) failed to retrieve installation info from server", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) failed to retrieve installation info from server", m_Name.c_str());
 		return false;
 	}
 	m_tcs = NULL;
@@ -126,7 +126,7 @@ bool CEvohomeWeb::StartSession()
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) installation at [%d,%d,%d] does not exist - verify your settings", this->Name.c_str(), m_locationId, m_gatewayId, m_systemId);
+		_log.Log(LOG_ERROR, "(%s) installation at [%d,%d,%d] does not exist - verify your settings", m_Name.c_str(), m_locationId, m_gatewayId, m_systemId);
 		return false;
 	}
 
@@ -191,7 +191,7 @@ void CEvohomeWeb::Do_Work()
 {
 	int sec_counter = m_refreshrate - MINPOLINTERVAL;
 	int pollcounter = LOGONFAILTRESHOLD;
-	_log.Log(LOG_STATUS, "(%s) Worker started...", this->Name.c_str());
+	_log.Log(LOG_STATUS, "(%s) Worker started...", m_Name.c_str());
 	m_lastconnect=0;
 	while (!m_stoprequested)
 	{
@@ -213,7 +213,7 @@ void CEvohomeWeb::Do_Work()
 			m_lastconnect=0;
 		}
 	}
-	_log.Log(LOG_STATUS, "(%s) Worker stopped...", this->Name.c_str());
+	_log.Log(LOG_STATUS, "(%s) Worker stopped...", m_Name.c_str());
 }
 
 
@@ -259,7 +259,7 @@ bool CEvohomeWeb::GetStatus()
 		return false;
 	}
 
-	_log.Log(LOG_NORM, "(%s) fetch data from server", this->Name.c_str());
+	_log.Log(LOG_NORM, "(%s) fetch data from server", m_Name.c_str());
 
 	// system status
 	DecodeControllerMode(m_tcs);
@@ -284,7 +284,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 	std::string sznewmode = GetWebAPIModeName(sysmode);
 	if (set_system_mode(m_tcs->systemId, (int)(m_dczToEvoWebAPIMode[sysmode])))
 	{
-		_log.Log(LOG_NORM, "(%s) changed system status to %s", this->Name.c_str(), GetControllerModeName(sysmode));
+		_log.Log(LOG_NORM, "(%s) changed system status to %s", m_Name.c_str(), GetControllerModeName(sysmode));
 
 		if (sznewmode == "HeatingOff")
 		{
@@ -307,7 +307,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				std::stringstream ssUpdateStat;
 				ssUpdateStat << sztemperature << ";5;" << sznewmode;
 				std::string sdevname;
-				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+				m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 			}
 			return true;
 		}
@@ -370,11 +370,11 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 					ssUpdateStat << ";" << szuntil;
 			}
 			std::string sdevname;
-			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, hz->zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+			m_sql.UpdateValue(this->m_HwdID, hz->zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 		}
 		return true;
 	}
-	_log.Log(LOG_ERROR, "(%s) error changing system status", this->Name.c_str());
+	_log.Log(LOG_ERROR, "(%s) error changing system status", m_Name.c_str());
 	m_loggedon = false;
 	return false;
 }
@@ -388,7 +388,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL) // zone number not known by installation (manually added?)
 	{
-		_log.Log(LOG_ERROR, "(%s) attempt to change setpoint on unknown zone", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) attempt to change setpoint on unknown zone", m_Name.c_str());
 		return false;
 	}
 
@@ -440,7 +440,7 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 {
 	if (!has_dhw(m_tcs)) // Installation has no Hot Water device
 	{
-		_log.Log(LOG_ERROR, "(%s) attempt to set state on non existing Hot Water device", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) attempt to set state on non existing Hot Water device", m_Name.c_str());
 		return false;
 	}
 
@@ -561,7 +561,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		{
 			m_awaysetpoint = new_awaysetpoint;
 			m_sql.safe_query("UPDATE Hardware SET Extra='%0.2f;%d' WHERE ID=%d", m_awaysetpoint, m_wdayoff, this->m_HwdID);
-			_log.Log(LOG_STATUS, "(%s) change Away setpoint to '%0.2f' because of non matching setpoint (%s)", this->Name.c_str(), m_awaysetpoint, (*hz->installationInfo)["name"].asString().c_str());
+			_log.Log(LOG_STATUS, "(%s) change Away setpoint to '%0.2f' because of non matching setpoint (%s)", m_Name.c_str(), m_awaysetpoint, (*hz->installationInfo)["name"].asString().c_str());
 		}
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	}
@@ -601,7 +601,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 					{
 						m_sql.safe_query("UPDATE Hardware SET Extra='%0.2f;%d' WHERE ID=%d", m_awaysetpoint, m_wdayoff, this->m_HwdID);
 
-						_log.Log(LOG_STATUS, "(%s) change Day Off schedule reference to '%s' because of non matching setpoint (%s)", this->Name.c_str(), weekdays[m_wdayoff].c_str(), (*hz->installationInfo)["name"].asString().c_str());
+						_log.Log(LOG_STATUS, "(%s) change Day Off schedule reference to '%s' because of non matching setpoint (%s)", m_Name.c_str(), weekdays[m_wdayoff].c_str(), (*hz->installationInfo)["name"].asString().c_str());
 					}
 					if (m_showschedule)
 						szuntil = local_to_utc(get_next_switchpoint(hz));
@@ -627,7 +627,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 			// also wipe StrParam1 - we do not want a double action from the old (python) script when changing the setpoint
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", ssnewname.str().c_str(), DevRowIdx);
 			if (sdevname.find("zone ") != std::string::npos)
-				_log.Log(LOG_STATUS, "(%s) register new zone '%s'", this->Name.c_str(), ssnewname.str().c_str());
+				_log.Log(LOG_STATUS, "(%s) register new zone '%s'", m_Name.c_str(), ssnewname.str().c_str());
 		}
 	}
 
@@ -749,7 +749,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				sprintf(ID, "%lu", nid);
 				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, ID, unit, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", sdevname);
 				if (DevRowIdx == -1)
-					return -1;
+					return (uint8_t)-1;
 				char devname[8];
 				sprintf(devname, "zone %d", (int)row);
 				sprintf(ID, "%lu", evoID);
@@ -758,9 +758,9 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				return (uint8_t)(unit);
 			}
 		}
-		_log.Log(LOG_ERROR, "(%s) cannot add new zone because you have no free zones left", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) cannot add new zone because you have no free zones left", m_Name.c_str());
 	}
-	return -1;
+	return (uint8_t)-1;
 }
 
 
@@ -847,7 +847,7 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 	std::string s_res;
 	if (!HTTPClient::POST(EVOHOME_HOST"/Auth/OAuth/Token", pdata.str(), LoginHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at login!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at login!", m_Name.c_str());
 		return false;
 	}
 
@@ -864,13 +864,15 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 			i++;
 			c = html[i];
 		}
-		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", this->Name.c_str(), edata.str().c_str());
+		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), edata.str().c_str());
 		return false;
 	}
 
 	Json::Value j_login;
 	Json::Reader jReader;
 	bool ret = jReader.parse(s_res.c_str(), j_login);
+	if (!ret)
+		return false;
 
 	std::string szError = "";
 	if (j_login.isMember("error"))
@@ -879,7 +881,7 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 		szError = j_login["message"].asString();
 	if (!szError.empty())
 	{
-		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", this->Name.c_str(), szError.c_str());
+		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), szError.c_str());
 		return false;
 	}
 
@@ -906,12 +908,14 @@ bool CEvohomeWeb::user_account()
 	std::string s_res;
 	if (!HTTPClient::GET(EVOHOME_HOST"/WebAPI/emea/api/v1/userAccount", m_SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve user account info!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve user account info!", m_Name.c_str());
 		return false;
 	}
 	Json::Value j_account;
 	Json::Reader jReader;
 	bool ret = jReader.parse(s_res.c_str(), j_account);
+	if (!ret)
+		return false;
 
 	if (!j_account.isMember("userId"))
 		return false;
@@ -1019,7 +1023,7 @@ bool CEvohomeWeb::full_installation()
 	std::string s_res;
 	if (!HTTPClient::GET(url.str(), m_SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve installation!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve installation!", m_Name.c_str());
 		return false;
 	}
 
@@ -1029,6 +1033,8 @@ bool CEvohomeWeb::full_installation()
 	Json::Reader jReader;
 	m_j_fi.clear();
 	bool ret = jReader.parse(ss_jdata.str(), m_j_fi);
+	if (!ret)
+		return false;
 
 	if (!m_j_fi["locations"].isArray())
 		return false; // invalid return
@@ -1038,7 +1044,7 @@ bool CEvohomeWeb::full_installation()
 		return false; // invalid return
 	if (m_j_fi["locations"][0].isMember("message"))
 	{
-		_log.Log(LOG_ERROR, "(%s) retrieve installation returned message: %s", this->Name.c_str(), m_j_fi["locations"][0]["message"].asString().c_str());
+		_log.Log(LOG_ERROR, "(%s) retrieve installation returned message: %s", m_Name.c_str(), m_j_fi["locations"][0]["message"].asString().c_str());
 		return false;
 	}
 	for (size_t i = 0; i < l; ++i)
@@ -1083,13 +1089,16 @@ bool CEvohomeWeb::get_status(int location)
 	std::string s_res;
 	if (!HTTPClient::GET(url.str(), m_SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at get status!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at get status!", m_Name.c_str());
 		return false;
 	}
 
 	Json::Reader jReader;
 	m_j_stat.clear();
 	bool ret = jReader.parse(s_res, m_j_stat);
+	if (!ret)
+		return false;
+
 	m_locations[location].status = &m_j_stat;
 	j_loc = m_locations[location].status;
 
@@ -1138,7 +1147,7 @@ bool CEvohomeWeb::get_status(int location)
 		valid_json = false;
 
 	if (!valid_json)
-		_log.Log(LOG_ERROR, "(%s) status request did not return a valid response", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) status request did not return a valid response", m_Name.c_str());
 	return valid_json;
 }
 
@@ -1467,7 +1476,7 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 	std::string s_res;
 	if (!HTTPClient::POST(EVOHOME_HOST"/WebAPI/api/Session", pdata.str(), LoginHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at login!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at login!", m_Name.c_str());
 		return false;
 	}
 
@@ -1484,7 +1493,7 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 			i++;
 			c = html[i];
 		}
-		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", this->Name.c_str(), edata.str().c_str());
+		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), edata.str().c_str());
 		return false;
 	}
 
@@ -1500,7 +1509,7 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 	Json::Reader jReader;
 	if (!jReader.parse(s_res.c_str(), j_login))
 	{
-		_log.Log(LOG_ERROR, "(%s) cannot parse return data from v1 login", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) cannot parse return data from v1 login", m_Name.c_str());
 		return false;
 	}
 
@@ -1511,13 +1520,13 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 		szError = j_login["message"].asString();
 	if (!szError.empty())
 	{
-		_log.Log(LOG_ERROR, "(%s) v1 login failed with message: %s", this->Name.c_str(), szError.c_str());
+		_log.Log(LOG_ERROR, "(%s) v1 login failed with message: %s", m_Name.c_str(), szError.c_str());
 		return false;
 	}
 
 	if (!j_login.isMember("sessionId") || !j_login.isMember("userInfo") || !j_login["userInfo"].isObject() || !j_login["userInfo"].isMember("userID"))
 	{
-		_log.Log(LOG_ERROR, "(%s) v1 login returned unknown data", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) v1 login returned unknown data", m_Name.c_str());
 		return false;
 	}
 
@@ -1542,7 +1551,7 @@ void CEvohomeWeb::get_v1_temps()
 	std::string s_res;
 	if (!HTTPClient::GET(url.str(), m_v1SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve of v1 temperatures!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve of v1 temperatures!", m_Name.c_str());
 		return;
 	}
 
@@ -1575,7 +1584,7 @@ void CEvohomeWeb::get_v1_temps()
 				double v1temp = (*j_dev)["thermostat"]["indoorTemperature"].asDouble();
 				if (v1temp > 127) // allow rounding error
 				{
-					_log.Log(LOG_ERROR, "(%s) zone %s does not report a temperature", this->Name.c_str(), zoneId.c_str());
+					_log.Log(LOG_ERROR, "(%s) zone %s does not report a temperature", m_Name.c_str(), zoneId.c_str());
 					v2zone->hdtemp = "";
 					continue;
 				}
