@@ -16,14 +16,13 @@ public:
 	ASyncTCP();
 	virtual ~ASyncTCP(void);
 
-	void write(const std::string &msg);
-
 	void connect(const std::string &ip, unsigned short port);
 	void connect(boost::asio::ip::tcp::endpoint& endpoint);
-
 	void disconnect();
+	bool isConnected() { return mIsConnected; };
 
-	bool isConnected(){ return mIsConnected; };
+	void write(const std::string &msg);
+	void write(const uint8_t *pData, size_t length);
 
 	void update();
 protected:
@@ -35,8 +34,6 @@ protected:
 	void handle_connect(const boost::system::error_code& error);
 	void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
 	void write_end(const boost::system::error_code& error);
-
-	void write(const unsigned char *pData, size_t length);
 	void do_close();
 
 	void do_reconnect(const boost::system::error_code& error);
