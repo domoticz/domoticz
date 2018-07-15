@@ -747,11 +747,24 @@ namespace Plugins {
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject*	pCode = frame->f_code;
-				PyBytesObject*	pFileBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_filename);
-				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
-				_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", m_Name.c_str(), lineno, pFileBytes->ob_sval, pFuncBytes->ob_sval);
-				Py_XDECREF(pFileBytes);
-				Py_XDECREF(pFuncBytes);
+				std::string		FileName = "";
+				if (pCode->co_filename)
+				{
+					PyBytesObject*	pFileBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_filename);
+					FileName = pFileBytes->ob_sval;
+					Py_XDECREF(pFileBytes);
+				}
+				std::string		FuncName = "Unknown";
+				if (pCode->co_name)
+				{
+					PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
+					FuncName = pFuncBytes->ob_sval;
+					Py_XDECREF(pFuncBytes);
+				}
+				if (FileName.length())
+					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%'s, function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
+				else
+					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
 			}
 			pTraceback = pTraceback->tb_next;
 		}
