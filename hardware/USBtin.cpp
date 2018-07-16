@@ -114,6 +114,7 @@ bool USBtin::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
+	//TODO: Add proper synchronized shutdown of read thread instead of fixed timeout
 	sleep_milliseconds(10);
 	terminate();
 	m_bIsStarted = false;

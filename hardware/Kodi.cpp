@@ -1169,7 +1169,10 @@ void CKodi::UnloadNodes()
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
+	bool empty = m_pNodes.empty();
+	bool stopped = m_ios.stopped();
+
+	while ((!empty || !stopped) && (iRetryCounter < 120))
 	{
 		std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
@@ -1183,7 +1186,15 @@ void CKodi::UnloadNodes()
 			}
 		}
 		iRetryCounter++;
+		_log.Log(LOG_NORM, "Kodi: RetryCounter: %d", iRetryCounter);
 		sleep_milliseconds(500);
+		empty = m_pNodes.empty();
+		stopped = m_ios.stopped();
+	}
+	if (!empty || !stopped)
+	{
+		_log.Log(LOG_ERROR, "Kodi: Failed to stop nodes, m_pNodes.empty(): %u, m_ios.stopped(): %u", empty, stopped);
+		abort();
 	}
 	m_pNodes.clear();
 }

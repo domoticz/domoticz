@@ -893,6 +893,7 @@ namespace Plugins {
 				if (m_bIsStarting)
 				{
 					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after %d seconds", m_Name.c_str(), timeout);
+					abort();
 				}
 			}
 
@@ -931,10 +932,8 @@ namespace Plugins {
 				}
 				if (m_bIsStarted)
 				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after %d seconds, flushing event queue...", m_Name.c_str(), timeout);
-
-					ClearMessageQueue();
-					m_bIsStarted = false;
+					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after %d seconds...", m_Name.c_str(), timeout);
+					abort();
 				}
 			}
 
