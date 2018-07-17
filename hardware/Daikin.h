@@ -41,5 +41,6 @@ private:
 	std::string m_led;
 	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
+	int sec_counter;    // use in Do_Work() and will allow to trigger faster GetMeterDetails()
 };
 
