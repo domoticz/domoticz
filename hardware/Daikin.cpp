@@ -524,7 +524,30 @@ void CDaikin::GetControlInfo()
 		{
 			m_shum = results2[1];
 		}
-
+                else if (results2[0] == "dt1" )
+                        m_dt[1] = results2[1];
+                else if (results2[0] == "dt2" )
+                        m_dt[2] = results2[1];
+                else if (results2[0] == "dt3" )
+                        m_dt[3] = results2[1];
+                else if (results2[0] == "dt4" )
+                        m_dt[4] = results2[1];
+                else if (results2[0] == "dt5" )
+                        m_dt[5] = results2[1];
+                else if (results2[0] == "dt7" )
+                        m_dt[7] = results2[1];
+                else if (results2[0] == "dh1" )
+                        m_dh[1] = results2[1];
+                else if (results2[0] == "dh2" )
+                        m_dh[2] = results2[1];
+                else if (results2[0] == "dh3" )
+                        m_dh[3] = results2[1];
+                else if (results2[0] == "dh4" )
+                        m_dh[4] = results2[1];
+                else if (results2[0] == "dh5" )
+                        m_dh[5] = results2[1];
+                else if (results2[0] == "dh7" )
+                        m_dh[7] = results2[1];
 	}
 
 }
@@ -809,10 +832,22 @@ void CDaikin::SetModeLevel(const int NewLevel)
         else if (NewLevel == 50)
                 szURL << "&mode=6"; /* 50-FAN   6 */
 
-	szURL << "&stemp=" << m_stemp;
-
-	szURL << "&shum=" << m_shum;
-
+	if (NewLevel == 0 ) // 0 is AUTO, but there is no dt0! So in case lets force to dt1 and dh1
+        {
+                szURL << "&stemp=" << m_dt[1];
+                szURL << "&shum=" << m_dh[1];
+        }
+        else if (NewLevel == 6 ) // FAN mode, there is no temp/hum memorized.
+        {
+                szURL << "&stemp=" << "20";
+                szURL << "&shum=" << "0";
+        }
+        else // DEHUMDIFICATOR, COLD, HOT ( 2,3,6 )
+        {
+                szURL << "&stemp=" << m_dt[(NewLevel/10)];
+                szURL << "&shum=" << m_dh[(NewLevel/10)];
+        }
+	
 	szURL << "&f_rate=" << m_f_rate;
 
 	szURL << "&f_dir=" << m_f_dir;
