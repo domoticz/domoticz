@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
@@ -33,11 +32,11 @@ private:
 	void KeepConnectionAlive();
 
 	/* ASyncTCP required methodes */
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 private:
 	std::string 						m_szIPAddress;
 	unsigned short 						m_usIPPort;
@@ -55,7 +54,7 @@ private:
 	int									m_input_count;
 	int									m_relay_count;
 	int									m_retrycntr;
-	boost::shared_ptr<boost::thread> 	m_thread;
+	std::shared_ptr<std::thread> 	m_thread;
 	tRBUF 								m_Packet;
 };
 

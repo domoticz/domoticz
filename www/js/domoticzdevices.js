@@ -1378,7 +1378,7 @@ function Current(item) {
                 this.smallStatus = this.data;
                 break;
             case "Usage":
-                this.LogLink = this.onClick = "ShowUsageLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/GraphLog'";
                 break;
             case "General":
                 switch (this.subtype) {
@@ -1387,7 +1387,7 @@ function Current(item) {
                         this.smallStatus = this.data;
                         break;
                     case "Voltage":
-                        this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + escape(this.name) + "', '" + this.switchTypeVal + "', 'VoltageGeneral');";
+                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/GraphLog'";
                         this.smallStatus = this.data;
                         break;
                     default:
@@ -1408,7 +1408,7 @@ function Custom(item) {
         if (arguments.length != 0) {
         this.parent.constructor(item);
                 this.image = "images/Custom.png";
-                this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "'," + this.index + ",'" + escape(this.name) + "','" + this.sensorunit + "','" + this.subtype + "');";
+                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/GraphLog'";
                 this.data = '';
         }
 }
@@ -1594,7 +1594,7 @@ Pushoff.inheritsFrom(BinarySwitch);
 function Radiation(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "'," + this.index + ",'" + this.name + "', '" + this.switchTypeVal + "', 'Radiation');";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/GraphLog'";
     }
 }
 Radiation.inheritsFrom(WeatherSensor);
@@ -1691,7 +1691,7 @@ Text.inheritsFrom(Sensor);
 function Visibility(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "'," + this.index + ",'" + this.name + "', '" + this.switchTypeVal + "', '" + this.subtype + "');";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/GraphLog'";
     }
 }
 Visibility.inheritsFrom(WeatherSensor);

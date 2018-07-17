@@ -2,7 +2,7 @@
 *
 Legrand MyHome / OpenWebNet USB Interface board driver for Domoticz
 Date: 05-10-2016
-Written by: Stéphane Lebrasseur
+Written by: Stï¿½phane Lebrasseur
 License: Public domain
 ************************************************************************/
 
@@ -16,11 +16,13 @@ License: Public domain
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include "../main/SQLHelper.h"
-#include <string>
+
 #include <algorithm>
-#include <iostream>
-#include <boost/bind.hpp>
 #include <ctime>
+#include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <iostream>
+#include <string>
 
 
 COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate)
@@ -45,11 +47,8 @@ bool COpenWebNetUSB::StartHardware()
 	m_retrycntr = RETRY_DELAY - 2; //will force reconnect first thing
 
 								   //Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNetUSB::Do_Work, this)));
-
-	return (m_thread != NULL);
-
-	return true;
+	m_thread = std::make_shared<std::thread>(&COpenWebNetUSB::Do_Work, this);
+	return (m_thread != nullptr);
 }
 
 void COpenWebNetUSB::Do_Work()
@@ -66,8 +65,11 @@ void COpenWebNetUSB::Do_Work()
 bool COpenWebNetUSB::StopHardware()
 {
 	m_stoprequested = true;
-	if (m_thread != NULL)
+	if (m_thread)
+	{
 		m_thread->join();
+		m_thread.reset();
+	}
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 	sleep_milliseconds(10);
 	terminate();
@@ -88,9 +90,9 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 
 	int who = 0;
 	int what = 0;
-	stringstream whereStr;
-	stringstream devIdStr;
-	
+	std::stringstream whereStr;
+	std::stringstream devIdStr;
+
 	switch (subtype) {
 		case sSwitchBlindsT1:
 		case sSwitchLightT1:
@@ -105,7 +107,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 			//Transmission broadcast (0# prefix) in ZigBee (#9 suffix), command light OFF and you want to control the UNIT 1 : * 1 * 0 * 0#01#9##
 			//Transmission broadcast (0# prefix) in ZigBee (#9 suffix), command light OFF and you want to control the all UNIT : * 1 * 0 * 0#00#9##
 			whereStr << pCmd->id * 100 + pCmd->unitcode << ZIGBEE_SUFFIX;
-			break; 
+			break;
 		default:
 			_log.Log(LOG_STATUS, "COpenWebNetUSB unknown command: packettype=%d subtype=%d", packettype, subtype);
 			return false;
@@ -120,7 +122,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 				case sSwitchBlindsT2:
 					//Blinds/Window command
 					who = WHO_AUTOMATION;
-			
+
 					if (pCmd->cmnd == gswitch_sOff)
 					{
 						what = AUTOMATION_WHAT_UP;
@@ -138,7 +140,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 				case sSwitchLightT2:
 					//Light/Switch command
 					who = WHO_LIGHTING;
-			
+
 					if (pCmd->cmnd == gswitch_sOff)
 					{
 						what = LIGHTING_WHAT_OFF;
@@ -202,7 +204,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 					break;
 			}
 			break;
-	
+
 		default:
 			_log.Log(LOG_STATUS, "COpenWebNetUSB unknown command: packettype=%d subtype=%d", packettype, subtype);
 			return false;
@@ -215,12 +217,12 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 	}
 
 
-	stringstream whoStr;
-	stringstream whatStr;
+	std::stringstream whoStr;
+	std::stringstream whatStr;
 	whoStr << who;
 	whatStr << what;
 
-	vector<bt_openwebnet> responses;
+	std::vector<bt_openwebnet> responses;
 	bt_openwebnet request(whoStr.str(), whatStr.str(), whereStr.str(), "");
 	if (sendCommand(request, responses))
 	{
@@ -238,8 +240,8 @@ Find OpenWebNetDevice in DB
 **/
 bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* used)
 {
-	vector<vector<string> > result;
-	
+	std::vector<std::vector<std::string> > result;
+
 	//make device ID
 	unsigned char ID1 = (unsigned char)((deviceID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((deviceID & 0xFF0000) >> 16);
@@ -270,7 +272,7 @@ bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* 
 
 bool COpenWebNetUSB::writeRead(const char* command, unsigned int commandSize, bool silent)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	m_readBufferSize = 0;
 	memset(m_readBuffer, 0, OPENWEBNET_SERIAL_BUFFER_SIZE);
@@ -290,7 +292,7 @@ bool COpenWebNetUSB::writeRead(const char* command, unsigned int commandSize, bo
 	return true;
 }
 
-bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, bool silent)
+bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, bool silent)
 {
 	m_bWriting = true;
 
@@ -336,13 +338,13 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 	sOnConnected(this);
 	m_bIsStarted = true;
 
-	
+
 	if (!writeRead(OPENWEBNET_COMMAND_SESSION, strlen(OPENWEBNET_COMMAND_SESSION), silent)) {
 		m_bWriting = false;
 		return false;
 	}
 
-	string responseStr((const char*)m_readBuffer, m_readBufferSize);
+	std::string responseStr((const char*)m_readBuffer, m_readBufferSize);
 	bt_openwebnet responseSession(responseStr);
 	_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", OPENWEBNET_COMMAND_SESSION, responseStr.c_str());
 
@@ -379,26 +381,26 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 	return true;
 }
 
-bool COpenWebNetUSB::ParseData(char* data, int length, vector<bt_openwebnet>& messages)
+bool COpenWebNetUSB::ParseData(char* data, int length, std::vector<bt_openwebnet>& messages)
 {
-	string buffer = string(data, length);
+	std::string buffer = std::string(data, length);
 	size_t begin = 0;
-	size_t end = string::npos;
+	size_t end = std::string::npos;
 	do {
 		end = buffer.find(OPENWEBNET_END_FRAME, begin);
-		if (end != string::npos) {
+		if (end != std::string::npos) {
 			bt_openwebnet message(buffer.substr(begin, end - begin + 2));
 			messages.push_back(message);
 			begin = end + 2;
 		}
-	} while (end != string::npos);
+	} while (end != std::string::npos);
 
 	return true;
 }
 
 void COpenWebNetUSB::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

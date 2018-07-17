@@ -31,7 +31,7 @@ Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned 
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
-	m_stoprequestedpoller = false;
+	m_stoprequested = false;
 	m_state = MSTATE_INIT;
 	m_bufferpos = 0;
 	for (int ii = 0; ii < MAX_IDS; ii++)
@@ -65,16 +65,16 @@ bool Meteostick::StopHardware()
 
 void Meteostick::StartPollerThread()
 {
-	m_pollerthread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Meteostick::Do_PollWork, this)));
+	m_thread = std::make_shared<std::thread>(&Meteostick::Do_PollWork, this);
 }
 
 void Meteostick::StopPollerThread()
 {
-	if (m_pollerthread != NULL)
+	if (m_thread)
 	{
-		assert(m_pollerthread);
-		m_stoprequestedpoller = true;
-		m_pollerthread->join();
+		m_stoprequested = true;
+		m_thread->join();
+		m_thread.reset();
 	}
 }
 
@@ -126,7 +126,7 @@ bool Meteostick::OpenSerialDevice()
 void Meteostick::Do_PollWork()
 {
 	int sec_counter = 0;
-	while (!m_stoprequestedpoller)
+	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
@@ -155,7 +155,7 @@ void Meteostick::Do_PollWork()
 
 void Meteostick::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 
@@ -246,7 +246,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	//tsen.WIND.temperatureh = 0;
 	//tsen.WIND.temperaturel = 0;
 	//tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
-	
+
 	float dWindSpeed = Speed * 3.6f;
 	float dWindChill = Temp;
 	if (dWindSpeed > 5 && Temp < 10)

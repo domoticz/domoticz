@@ -56,20 +56,20 @@ bool KMTronicTCP::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronicTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&KMTronicTCP::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "KMTronic: Started");
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool KMTronicTCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -89,7 +89,7 @@ void KMTronicTCP::Do_Work()
 		}
 
 		int iPollInterval = KMTRONIC_POLL_INTERVAL;
-		
+
 		if (m_bIsTempDevice)
 			iPollInterval = 30;
 
@@ -99,7 +99,7 @@ void KMTronicTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");
-} 
+}
 
 bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {

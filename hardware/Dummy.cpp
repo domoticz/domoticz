@@ -131,7 +131,7 @@ namespace http {
 			int sensortype = atoi(ssensortype.c_str());
 			unsigned int type = 0;
 			unsigned int subType = 0;
-			uint64_t DeviceRowIdx = -1;
+			uint64_t DeviceRowIdx = (uint64_t )-1;
 
 			for (int i = 0; i < sizeof(mappedsensorname) / sizeof(mappedsensorname[0]); i++)
 			{
@@ -166,9 +166,7 @@ namespace http {
 					{
 						root["status"] = "OK";
 						root["title"] = "CreateVirtualSensor";
-						std::stringstream ss;
-						ss << vs_idx;
-						root["idx"] = ss.str().c_str();
+						root["idx"] = std::to_string(vs_idx);
 					}
 					break;
 				}
@@ -243,9 +241,7 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateSensor";
-				std::stringstream ss;
-				ss << vs_idx;
-				root["idx"] = ss.str().c_str();
+				root["idx"] = std::to_string(vs_idx);
 			}
 		}
 

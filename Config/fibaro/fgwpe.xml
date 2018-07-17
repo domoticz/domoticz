@@ -139,7 +139,7 @@
       <Item label="illumination turned off completely" value="9" />
     </Value>
 
-    <Value type="short" genre="config" instance="1" index="70" label="Oveload safety switch" value="65535" size="2">
+    <Value type="short" genre="config" instance="1" index="70" label="Overload safety switch" value="65535" size="2">
       <Help>This function allows for turning off the controlled device in case of exceeding the defined power. Controlled device will be turned off even if "always on" function is active (parameter 1). Controlled device can be turned back on via B-button or sending a control frame. By default this function is inactive.  Default setting: 65535 (6553,5W) Available settings: 10 - 65535 (1W - 6553,5W).  Value higher than 32000 (3200W) turns the overload safety switch off, i.e. this functionality is turned off by default. Default setting: 65535 (6553,5W)</Help>
     </Value>
   </CommandClass>

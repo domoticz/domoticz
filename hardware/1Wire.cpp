@@ -73,13 +73,11 @@ bool C1Wire::StartHardware()
 	m_system->PrepareDevices();
 
 	// Start worker thread
-	if (0 != m_sensorThreadPeriod)
-	{
-		m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
+	if (m_sensorThreadPeriod != 0) {
+		m_threadSensors = std::make_shared<std::thread>(&C1Wire::SensorThread, this);
 	}
-	if (0 != m_switchThreadPeriod)
-	{
-		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
+	if (m_switchThreadPeriod != 0) {
+		m_threadSwitches = std::make_shared<std::thread>(&C1Wire::SwitchThread, this);
 	}
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -93,12 +91,14 @@ bool C1Wire::StopHardware()
 	{
 		m_stoprequested = true;
 		m_threadSensors->join();
+		m_threadSensors.reset();
 	}
 
 	if (m_threadSwitches)
 	{
 		m_stoprequested = true;
 		m_threadSwitches->join();
+		m_threadSwitches.reset();
 	}
 
 	m_bIsStarted=false;
@@ -277,7 +277,7 @@ void C1Wire::SwitchThread()
 }
 
 
-bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
+bool C1Wire::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen= reinterpret_cast<const tRBUF*>(pdata);
 
@@ -497,7 +497,7 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId, const float 
 	SendTempHumSensor(lID, 255, temperature, round(humidity), "TempHum");
 }
 
-void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const bool state)
+void C1Wire::ReportLightState(const std::string& deviceId, const uint8_t unit, const bool state)
 {
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);
@@ -514,7 +514,7 @@ void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const un
 	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1]+unit, 255, (const float)counter/1000.0f, "Counter");
 }
 
-void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const int voltage)
+void C1Wire::ReportVoltage(const std::string& /*deviceId*/, const int unit, const int voltage)
 {
 	if (voltage == -1000.0)
 		return;
@@ -526,7 +526,7 @@ void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const in
 	tsen.RFXSENSOR.packettype=pTypeRFXSensor;
 	tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
 	tsen.RFXSENSOR.rssi=12;
-	tsen.RFXSENSOR.id=unit+1;
+	tsen.RFXSENSOR.id=(uint8_t)(unit+1);
 
 	tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
 	tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));

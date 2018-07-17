@@ -2,8 +2,6 @@
 #ifdef WIN32
 #include "1WireSystem.h"
 
-#include <boost/asio.hpp>
-
 namespace Json
 {
 	class Value;
@@ -43,7 +41,7 @@ protected:
    std::string SendAndReceive(const std::string &requestToSend) const;
 
    SOCKET m_Socket;
-   boost::mutex m_SocketMutex;
+   std::mutex m_SocketMutex;
 };
 
 class C1WireForWindowsReadException : public std::exception

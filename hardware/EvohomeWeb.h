@@ -123,7 +123,7 @@ private:
 	bool v1_login(const std::string &user, const std::string &password);
 	void get_v1_temps();
 private:
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 
 	std::string m_username;

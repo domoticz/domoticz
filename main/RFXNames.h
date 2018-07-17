@@ -97,7 +97,7 @@ enum _eMediaStatus
 };
 
 enum _eHardwareTypes {
-	HTYPE_RFXtrx315 = 0,			//0
+	HTYPE_RFXtrx315 = 0,		//0
 	HTYPE_RFXtrx433,			//1
 	HTYPE_RFXLAN,				//2
 	HTYPE_Domoticz,				//3
@@ -106,7 +106,7 @@ enum _eHardwareTypes {
 	HTYPE_YouLess,				//6
 	HTYPE_TE923,				//7
 	HTYPE_Rego6XX,				//8
-	HTYPE_RazberryZWave,		//9
+	HTYPE_FreeToUse,			//9
 	HTYPE_DavisVantage,			//10
 	HTYPE_VOLCRAFTCO20,			//11
 	HTYPE_1WIRE,				//12

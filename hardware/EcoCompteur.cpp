@@ -7,7 +7,6 @@
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
 #include "../main/WebServer.h"
-#include <boost/tokenizer.hpp>
 
 /*
 Driver for Legrand EcoCompteur IP (4 120 00)
@@ -22,11 +21,7 @@ TODO :
 	- Retreiving custom names (parsing html files)
 */
 
-using namespace std;
-using namespace boost;
-using namespace Json;
-
-CEcoCompteur::CEcoCompteur(const int ID, const string& url, const unsigned short port):
+CEcoCompteur::CEcoCompteur(const int ID, const std::string& url, const unsigned short port):
 	m_url(url)
 {
 	m_port = port;
@@ -44,7 +39,7 @@ void CEcoCompteur::Init()
 {
 }
 
-bool CEcoCompteur::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEcoCompteur::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -53,18 +48,19 @@ bool CEcoCompteur::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(bind(&CEcoCompteur::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CEcoCompteur::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CEcoCompteur::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -94,8 +90,8 @@ void CEcoCompteur::Do_Work()
 void CEcoCompteur::GetScript()
 {
 	// Download instantaneous wattage
-	string sInst;
-	string sUrl = m_url + "/inst.json";
+	std::string sInst;
+	std::string sUrl = m_url + "/inst.json";
 	if (!HTTPClient::GET(sUrl, sInst))
 	{
 		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'inst.json' from url : " + m_url);
@@ -112,8 +108,8 @@ void CEcoCompteur::GetScript()
 	}
 
 	// Parsing inst.json
-	Value root;
-	Reader jReader;
+	Json::Value root;
+	Json::Reader jReader;
 	jReader.parse(sInst, root);
 
 	// Parsing log2.csv
@@ -123,15 +119,15 @@ void CEcoCompteur::GetScript()
 		return;
 	}
 	size_t position = sLog2.rfind("\r\n",sLog2.length()-3);	// Looking for the beginning of lastline
-	if (position == string::npos)	// if not found -> there is only one line in the file
+	if (position == std::string::npos)	// if not found -> there is only one line in the file
 	{
 		position = 0;
 	} else {						// else, we skip 2 leading chars (\r\n)
 		position += 2;
 	}
-	string lastline = sLog2.substr(position, sLog2.length() - position - 2); // finally getting lastline
-	vector<string> fields;
-	split(fields, lastline, is_any_of(";"));				// Splitting on ';'
+	std::string lastline = sLog2.substr(position, sLog2.length() - position - 2); // finally getting lastline
+	std::vector<std::string> fields;
+	StringSplit(lastline, ";", fields);
 
 	// Sending kWh meter data
 	if (!root["data1"].empty())

@@ -35,20 +35,20 @@ bool CETH8020::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CETH8020::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CETH8020::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "ETH8020: Started");
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CETH8020::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -75,7 +75,7 @@ void CETH8020::Do_Work()
 	_log.Log(LOG_STATUS,"ETH8020: Worker stopped...");
 }
 
-bool CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
+bool CETH8020::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -127,10 +127,10 @@ bool CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void CETH8020::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
 	double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
+	uint8_t level = (uint8_t)(rlevel);
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
@@ -212,7 +212,7 @@ void CETH8020::GetMeterDetails()
 	size_t ii;
 	std::string tmpstr;
 	int pos1;
-	int Idx = 0;
+	uint8_t Idx = 0;
 	for (ii = 1; ii < results.size(); ii++)
 	{
 		tmpstr = results[ii];
@@ -222,7 +222,7 @@ void CETH8020::GetMeterDetails()
 			pos1 = tmpstr.find(">");
 			if (pos1 != std::string::npos)
 			{
-				Idx = atoi(tmpstr.substr(0, pos1).c_str());
+				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
 				tmpstr = tmpstr.substr(pos1+1);
 				pos1 = tmpstr.find("<");
 				if (pos1 != std::string::npos)
@@ -240,7 +240,7 @@ void CETH8020::GetMeterDetails()
 			pos1 = tmpstr.find(">");
 			if (pos1 != std::string::npos)
 			{
-				Idx = atoi(tmpstr.substr(0, pos1).c_str());
+				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
 				tmpstr = tmpstr.substr(pos1 + 1);
 				pos1 = tmpstr.find("<");
 				if (pos1 != std::string::npos)
@@ -251,7 +251,7 @@ void CETH8020::GetMeterDetails()
 						voltage = 5.0f;
 					std::stringstream sstr;
 					sstr << "Voltage " << Idx;
-					SendVoltageSensor(0, Idx, 255, voltage, sstr.str());
+					SendVoltageSensor(0, (uint8_t)Idx, 255, voltage, sstr.str());
 				}
 			}
 		}

@@ -34,7 +34,7 @@
             </Help>
         </Value>
         <Value type="list" genre="config" instance="1" index="15" label="Second channel - operating mode" value="0" size="1">
-            <Help>This parameter allows to choose operating for the 2st channel controlled by the S2 switch.</Help>
+            <Help>This parameter allows to choose operating for the 2nd channel controlled by the S2 switch.</Help>
             <Item label="Standard operation" value="0"/>
             <Item label="Delay On" value="1"/>
             <Item label="Delay Off" value="2"/>

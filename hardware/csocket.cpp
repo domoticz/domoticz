@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "csocket.h"
 #include "../main/Logger.h"
-
+#include <string.h>
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -126,7 +126,7 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 #endif
 
 	// connect to remote socket
-	m_remoteSocketAddr.sin_port = htons(m_remotePort);
+	m_remoteSocketAddr.sin_port = htons((u_short)m_remotePort);
 #ifdef WIN32
 	unsigned long nonblock = 1;
 	ioctlsocket(m_socket, FIONBIO, &nonblock);

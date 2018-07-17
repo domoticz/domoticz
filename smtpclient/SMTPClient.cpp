@@ -2,7 +2,7 @@
 #include "SMTPClient.h"
 #include <curl/curl.h>
 #include "../main/Helper.h"
-#include <sstream>
+#include <string.h>
 
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"
@@ -223,7 +223,7 @@ const std::string SMTPClient::MakeMessage()
 	MakeBoundry(szBoundaryMixed);
 
 	//From
-	ret = "From: " + m_From + "\n";
+	ret = "From: " + m_From + '\n';
 
 	//To (first one, rest in BCC)
 	ii = 0;
@@ -242,11 +242,11 @@ const std::string SMTPClient::MakeMessage()
 		}
 		ii++;
 	}
-	ret += "\n";
+	ret += '\n';
 
 	///////////////////////////////////////////////////////////////////////////
 	// add the subject
-	ret += "Subject: " + m_Subject + "\n";
+	ret += "Subject: " + m_Subject + '\n';
 	///////////////////////////////////////////////////////////////////////////
 	// add the current time.
 	// format is
@@ -269,7 +269,7 @@ const std::string SMTPClient::MakeMessage()
 		if (GetTimeZoneInformation(&tzinfo) != TIME_ZONE_ID_INVALID)
 			sprintf(timestring + strlen(timestring), " %c%02i%02i", (tzinfo.Bias > 0 ? '-' : '+'), (int)-tzinfo.Bias / 60, (int)-tzinfo.Bias % 60);
 		ret += timestring;
-		ret += "\n";
+		ret += '\n';
 	}
 #endif
 	ret += "MIME-Version: 1.0\n";
@@ -295,35 +295,35 @@ const std::string SMTPClient::MakeMessage()
 			ret += "Content-type: text/plain; charset=utf-8; format=flowed\n"
 				"Content-transfer-encoding: 8bit\n\n";
 			ret += m_PlainBody;
-			ret += "\n";
+			ret += '\n';
 		}
 		if (!m_HTMLBody.empty())
 		{
-			ret += "--" + std::string(szBoundary) + "\n";
+			ret += "--" + std::string(szBoundary) + '\n';
 			ret += "Content-type: text/html; charset=utf-8\n"
 				"Content-Transfer-Encoding: 8bit\n\n";
 			ret += m_HTMLBody;
-			ret += "\n";
+			ret += '\n';
 		}
 		ret += "--" + std::string(szBoundary) + "--\n";
 	}
 	else
 	{
 		//no text
-		ret += "--" + std::string(szBoundaryMixed) + "\n";
+		ret += "--" + std::string(szBoundaryMixed) + '\n';
 		ret += "Content-type: text/plain; charset=utf-8; format=flowed\n"
 			"Content-transfer-encoding: 7bit\n\n";
-		ret += "\n";
+		ret += '\n';
 	}
 
 	if (!m_Attachments.empty())
 	{
-		ret += "\n";
+		ret += '\n';
 		// now add each attachment.
 		std::vector<std::pair<std::string, std::string> >::const_iterator it1;
 		for (it1 = m_Attachments.begin(); it1 != m_Attachments.end(); ++it1)
 		{
-			ret += "--" + std::string(szBoundaryMixed) + "\n";
+			ret += "--" + std::string(szBoundaryMixed) + '\n';
 			if (it1->second.length() > 3)
 			{ // long enough for an extension
 				std::string typ(it1->second.substr(it1->second.length() - 4, 4));
@@ -363,7 +363,7 @@ const std::string SMTPClient::MakeMessage()
 			ret += "Content-Disposition: attachment;\n filename=\"" + it1->second + "\"\n\n";
 
 			ret.insert(ret.end(), it1->first.begin(), it1->first.end());
-			ret += "\n";
+			ret += '\n';
 		}
 		ret += "--" + std::string(szBoundaryMixed) + "--\n";
 	}

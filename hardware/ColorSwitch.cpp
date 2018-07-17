@@ -64,12 +64,12 @@ void _tColor::fromJSON(const Json::Value &root)
 		int tmp = root.get("m", 0).asInt();
 		if (tmp == ColorModeNone || tmp > ColorModeLast) return;
 		mode = ColorMode(tmp);
-		t = root.get("t", 0).asInt();
-		r = root.get("r", 0).asInt();
-		g = root.get("g", 0).asInt();
-		b = root.get("b", 0).asInt();
-		cw = root.get("cw", 0).asInt();
-		ww = root.get("ww", 0).asInt();
+		t = (uint8_t)root.get("t", 0).asInt();
+		r = (uint8_t)root.get("r", 0).asInt();
+		g = (uint8_t)root.get("g", 0).asInt();
+		b = (uint8_t)root.get("b", 0).asInt();
+		cw = (uint8_t)root.get("cw", 0).asInt();
+		ww = (uint8_t)root.get("ww", 0).asInt();
 		//level = root.get("l", 0).asInt();
 	}
 	catch (...) {

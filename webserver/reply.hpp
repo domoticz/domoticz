@@ -12,7 +12,6 @@
 #define HTTP_REPLY_HPP
 
 #include <string>
-#include <vector>
 #include <iterator>
 #include <boost/asio.hpp>
 #include "header.hpp"

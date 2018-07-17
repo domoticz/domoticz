@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include <string>
-#include <vector>
 
 class SolarEdgeAPI : public CDomoticzHardwareBase
 {
@@ -35,6 +34,6 @@ private:
 	double m_totalEnergy;
 
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

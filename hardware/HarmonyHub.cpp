@@ -1,20 +1,20 @@
 /******************************************************************************
-Permission is hereby granted, free of charge, to any person obtaining a copy  
-of this software and associated documentation files (the "Software"), to deal 
-in the Software without restriction, including without limitation the rights 
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom the Software is 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all 
+The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===========
@@ -32,7 +32,8 @@ History:
  - Complete overhaul: Abandon original methods from harmonyhubcontrol (gordonb3)
     =>	use a centralized (polled) socket reader function rather than wait for a direct
 	response to a socket write operation.
-
+ 25 June 2018:
+ - Make debug lines available to the logging system
 */
 
 //#define _DEBUG
@@ -78,7 +79,7 @@ History:
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port):
 m_szHarmonyAddress(IPAddress)
 {
-	m_usHarmonyPort = port;
+	m_usHarmonyPort = (unsigned short)port;
 	m_HwdID=ID;
 	Init();
 }
@@ -140,20 +141,20 @@ bool CHarmonyHub::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHarmonyHub::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CHarmonyHub::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 
 bool CHarmonyHub::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	m_bIsChangingActivity = false;
@@ -163,7 +164,7 @@ bool CHarmonyHub::StopHardware()
 }
 
 
-bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
+bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -210,9 +211,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
 	{
 		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
-		std::stringstream sstr;
-		sstr << lookUpId;
-		std::string realID = sstr.str();
+		std::string realID = std::to_string(lookUpId);
 
 		if (pCmd->LIGHTING2.cmnd == 0)
 		{
@@ -245,7 +244,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CHarmonyHub::Do_Work()
 {
-	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started..."); 
+	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started...");
 
 	unsigned int pcounter = 0;		// ping interval counter
 	unsigned int tcounter = 0;		// 1/25 seconds
@@ -443,7 +442,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	result = m_sql.safe_query("SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, actHex.c_str());
 	if (!result.empty())
 	{
-		UpdateSwitch(atoi(result[0][1].c_str()), activityID.c_str(),on,result[0][0]);
+		UpdateSwitch((uint8_t)(atoi(result[0][1].c_str())), activityID.c_str(),on,result[0][0]);
 	}
 }
 
@@ -453,7 +452,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 * Insert/Update a single activity switch (unconditional)		*
 *									*
 ************************************************************************/
-void CHarmonyHub::UpdateSwitch(unsigned char idx, const char *realID, const bool bOn, const std::string &defaultname)
+void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const bool bOn, const std::string &defaultname)
 {
 	std::stringstream hexId ;
 	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
@@ -481,7 +480,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx, const char *realID, const bool
 	lcmd.LIGHTING2.id3 = (i_Id>> 8) & 0xFF;
 	lcmd.LIGHTING2.id4 = (i_Id) & 0xFF;
 	lcmd.LIGHTING2.unitcode = 1;
-	int level = 15;
+	uint8_t level = 15;
 	if (!bOn)
 	{
 		level = 0;
@@ -607,7 +606,7 @@ int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, co
 	szCred.append(szUserName);
 	szCred.append("\0");
 	szCred.append(szPassword);
-	szAuth.append(base64_encode((const unsigned char*)szCred.c_str(), static_cast<unsigned int>(szCred.length())));
+	szAuth.append(base64_encode(szCred));
 	szAuth.append("</auth>");
 	return WriteToSocket(&szAuth);
 }
@@ -707,7 +706,7 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &
 ************************************************************************/
 bool CHarmonyHub::CheckForHarmonyData()
 {
-	boost::lock_guard<boost::mutex> lock(m_mutex);
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	if (m_connectionstatus == DISCONNECTED)
 		return false;
@@ -821,17 +820,16 @@ void CHarmonyHub::ProcessHarmonyConnect(std::string *szHarmonyData)
 			sendStatus = SendAuth(m_connection, m_szAuthorizationToken, m_szAuthorizationToken);
 	}
 
-	else if ((m_connectionstatus = INITIALIZED) && (*szHarmonyData == "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>"))
+	else if ((m_connectionstatus == INITIALIZED) && (*szHarmonyData == "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>"))
 	{
-		// authentication succesful - restart our stream to bind
+		// authentication successful - restart our stream to bind
 #ifdef _DEBUG
 		std::cerr << "connectionstatus = authenticated\n";
 #endif
 		m_connectionstatus = AUTHENTICATED;
 		sendStatus = StartStream(m_connection);
 	}
-
-	else if ((m_connectionstatus = AUTHENTICATED) && (szHarmonyData->find("<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>") != std::string::npos))
+	else if ((m_connectionstatus == AUTHENTICATED) && (szHarmonyData->find("<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>") != std::string::npos))
 	{
 		// stream bind completed
 		m_connectionstatus = BOUND;
@@ -908,21 +906,24 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			pos = szJsonString.find("]]>");
 			if (pos != std::string::npos)
 			{
-#ifdef _DEBUG
-				std::cerr << "current activity ID = " << atoi(szJsonString.substr(0, pos).c_str()) << "\n";
-#endif
+				std::string szCurrentActivity = szJsonString.substr(0, pos);
+				if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
+				{
+					_log.Debug(DEBUG_HARDWARE, "Harmony Hub: Current activity ID = %d (%s)", atoi(szCurrentActivity.c_str()), m_mapActivities[szCurrentActivity].c_str());
+				}
+
 				if (m_szCurActivityID.empty()) // initialize all switches
 				{
-					m_szCurActivityID = szJsonString.substr(0, pos);
+					m_szCurActivityID = szCurrentActivity;
 					for (const auto & itt : m_mapActivities)
 					{
 						UpdateSwitch(0, itt.first.c_str(), (m_szCurActivityID == itt.first), itt.second);
 					}
 				}
-				else
+				else if (m_szCurActivityID != szCurrentActivity)
 				{
 					CheckSetActivity(m_szCurActivityID, false);
-					m_szCurActivityID = szJsonString.substr(0, pos);
+					m_szCurActivityID = szCurrentActivity;
 					CheckSetActivity(m_szCurActivityID, true);
 				}
 			}
@@ -974,7 +975,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
 			return;
 		}
-		
+
 		if (j_result["activity"].empty())
 		{
 			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
@@ -996,25 +997,25 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities, JSon activity)");
 		}
 
-#ifdef _DEBUG
-		std::cerr << "parsed json data\n";
-		std::string resultString = "{";
-
-		std::map<std::string, std::string>::iterator it = m_mapActivities.begin();
-		std::map<std::string, std::string>::iterator ite = m_mapActivities.end();
-		for (; it != ite; ++it)
+		if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
 		{
-			resultString.append("\"");
-			resultString.append(it->second);
-			resultString.append("\":\"");
-			resultString.append(it->first);
-			resultString.append("\",");
-		}
-		resultString=resultString.substr(0, resultString.size()-1);
-		resultString.append("}");
+			std::string resultString = "Harmony Hub: Activity list: {";
 
-		std::cerr << resultString << "\n";
-#endif
+			std::map<std::string, std::string>::iterator it = m_mapActivities.begin();
+			std::map<std::string, std::string>::iterator ite = m_mapActivities.end();
+			for (; it != ite; ++it)
+			{
+				resultString.append("\"");
+				resultString.append(it->second);
+				resultString.append("\":\"");
+				resultString.append(it->first);
+				resultString.append("\",");
+			}
+			resultString=resultString.substr(0, resultString.size()-1);
+			resultString.append("}");
+
+			_log.Debug(DEBUG_HARDWARE, resultString);
+		}
 	}
 
 	// mime='vnd.logitech.connect/vnd.logitech.pair'
@@ -1090,8 +1091,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 	if (szMessage.find("stateDigest?notify", pos) != std::string::npos)
 	{
 		// Event state notification
-		char cActivityStatus;
-		std::string activityId;
+		char cActivityStatus = 0;
 
 		size_t jpos = szMessage.find("activityStatus");
 		if (jpos != std::string::npos)
@@ -1108,9 +1108,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			}
 		}
 
-#ifndef _DEBUG
-		if (m_szHubSwVersion.empty())
-#endif
+		if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE) || (m_szHubSwVersion.empty()))
 		{
 			jpos = szMessage.find("hubSwVersion");
 			if (jpos != std::string::npos)
@@ -1119,32 +1117,48 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 				jpos = m_szHubSwVersion.find("\"");
 				if (jpos != std::string::npos)
 				{
+					if (m_szHubSwVersion.empty())
+						_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_szHubSwVersion.c_str());
 					m_szHubSwVersion = m_szHubSwVersion.substr(0, jpos);
-#ifndef _DEBUG
-					_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_szHubSwVersion.c_str());
-#endif
 				}
 			}
 		}
 
-#ifdef _DEBUG
-		jpos = szMessage.find("runningActivityList");
-		if (jpos != std::string::npos)
+		if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
 		{
-			activityId = szMessage.substr(jpos+22, 16); // limit string length for end delimiter search
-			jpos = activityId.find("\"");
+			std::string activityId, stateVersion;
+			jpos = szMessage.find("runningActivityList");
 			if (jpos != std::string::npos)
-				activityId = activityId.substr(0, jpos);
-		}
-		if ((jpos == std::string::npos) || activityId.empty())
-			activityId = "-1";
+			{
+				activityId = szMessage.substr(jpos+22, 16); // limit string length for end delimiter search
+				jpos = activityId.find("\"");
+				if (jpos != std::string::npos)
+					activityId = activityId.substr(0, jpos);
+			}
+			if (jpos == std::string::npos)
+				activityId = "NaN";
+			else if (activityId.empty())
+				activityId = "-1";
 
-		_log.Log(LOG_STATUS, "Harmony Hub: Event state notification: activityId = %s, activityStatus = %c, hubSwVersion = %s", activityId.c_str(), cActivityStatus, m_szHubSwVersion.c_str());
-#endif
+			jpos = szMessage.find("stateVersion");
+			if (jpos != std::string::npos)
+			{
+				stateVersion = szMessage.substr(jpos+14, 16); // limit string length for end delimiter search
+				jpos = stateVersion.find(",");
+				if (jpos != std::string::npos)
+					stateVersion = stateVersion.substr(0, jpos);
+			}
+			if ((jpos == std::string::npos) || stateVersion.empty())
+				stateVersion = "NaN";
+
+			_log.Debug(DEBUG_HARDWARE, "Harmony Hub: Event state notification: stateVersion = %s, hubSwVersion = %s, activityStatus = %c, activityId = %s", stateVersion.c_str(), m_szHubSwVersion.c_str(), cActivityStatus, activityId.c_str() );
+		}
 	}
 
 	// <event xmlns="connect.logitech.com" type="harmony.engine?startActivityFinished">
-	else if (szMessage.find("engine?startActivityFinished", pos) != std::string::npos)
+	// <event xmlns="connect.logitech.com" type="harmony.engine?helpdiscretes">
+	else if ((szMessage.find("engine?startActivityFinished", pos) != std::string::npos) ||
+		 (szMessage.find("engine?helpdiscretes", pos) != std::string::npos))
 	{
 		// start activity finished
 		size_t jpos = szMessage.find("activityId");
@@ -1170,7 +1184,6 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 		}
 	}
 
-
 }
 
 
@@ -1190,7 +1203,7 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 		if (szHarmonyData->compare(pos, 5, "<iq/>") == 0)
 		{
 #ifdef _DEBUG
-			std::cout << "received ACK\n";
+			std::cerr << "received ACK\n";
 #endif
 			pos += 5;
 		}
@@ -1202,7 +1215,7 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 			pos += 5;
 			std::string szQueryResponse = szHarmonyData->substr(iqStart, pos - iqStart);
 #ifdef _DEBUG
-			std::cerr << szQueryResponse << "\n";
+			std::cerr << szQueryResponse << '\n';
 #endif
 			ProcessQueryResponse(&szQueryResponse);
 		}
@@ -1214,7 +1227,7 @@ void CHarmonyHub::ParseHarmonyTransmission(std::string *szHarmonyData)
 			pos += 10;
 			std::string szMessage = szHarmonyData->substr(msgStart, pos - msgStart);
 #ifdef _DEBUG
-			std::cerr << szMessage << "\n";
+			std::cerr << szMessage << '\n';
 #endif
 			ProcessHarmonyMessage(&szMessage);
 			m_bReceivedMessage = true; // need this to fast forward our ping interval counter

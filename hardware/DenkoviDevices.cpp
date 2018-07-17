@@ -65,7 +65,7 @@ bool CDenkoviDevices::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviDevices::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CDenkoviDevices::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
 	switch (m_iModel) {
@@ -91,16 +91,16 @@ bool CDenkoviDevices::StartHardware()
 		_log.Log(LOG_STATUS, "SmartDEN Notifier: Started");
 		break;
 	}
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CDenkoviDevices::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -150,7 +150,7 @@ void CDenkoviDevices::Do_Work()
 	}
 }
 
-bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const _tGeneralSwitch *pSen = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
@@ -473,8 +473,8 @@ void CDenkoviDevices::GetMeterDetails()
 	}
 	size_t ii;
 	std::string tmpstr;
-	int tmpState;
-	int tmpValue;
+	int tmpState = 0;
+	int tmpValue = 0;
 	float tmpTiValue = NAN;
 	std::string tmpMeasure;
 	std::string tmpName;
@@ -749,7 +749,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				name = "Analog Output " + std::to_string(Idx) + " (" + name + ")";
 				double val = (100 / 1023) * tmpValue;
-				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (int)val, name);
+				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)val, name);
 				Idx = -1;
 				bHaveAnalogOutput = false;
 				continue;
@@ -832,7 +832,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHavePWM && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "PWM " + std::to_string(Idx) + " (" + name + ")";
-				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, tmpValue, name);
+				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)tmpValue, name);
 				Idx = -1;
 				bHavePWM = false;
 				continue;

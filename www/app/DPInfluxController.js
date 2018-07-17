@@ -13,6 +13,8 @@ define(['app'], function (app) {
 							$('#influxremote #tcpaddress').val(data.InfluxIP);
 							$('#influxremote #tcpport').val(data.InfluxPort);
 							$('#influxremote #database').val(data.InfluxDatabase);
+							$('#influxremote #username').val(data.InfluxUsername);
+							$('#influxremote #password').val(data.InfluxPassword);
 							$('#influxremote #influxlinkenabled').prop('checked', false);
 							if (data.InfluxActive) {
 								$('#influxremote #influxlinkenabled').prop('checked', true);
@@ -42,6 +44,8 @@ define(['app'], function (app) {
 			if (port.Length==0)
 				port="8086";
 			var database = $('#influxremote #database').val();
+			var username = $('#influxremote #username').val();
+			var password = $('#influxremote #password').val();
 			var debugenabled = 0;
 			if ($('#influxremote #debugenabled').is(":checked"))
 			{
@@ -54,6 +58,8 @@ define(['app'], function (app) {
 					"&remote=" + encodeURIComponent(remoteurl) +
 					"&port=" + port +
 					"&database=" + encodeURIComponent(database) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
 					"&debugenabled=" + debugenabled,
 				 async: false, 
 				 dataType: 'json',
