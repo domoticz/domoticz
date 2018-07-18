@@ -15,6 +15,8 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();
+	void SendCurrentSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, 
+		const float Amp, const std::string &defaultname);
 	bool StartHardware() override;
 	bool StopHardware() override;
 	uint32_t hash(const std::string &str);
