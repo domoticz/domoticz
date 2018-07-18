@@ -16,9 +16,6 @@
 #include <strings.h>
 #endif
 
-
-//#define DEBUG_GoodweAPI 1
-
 #define GOODWE_HOST_GLOBAL "https://hk.goodwe-power.com/"
 #define GOODWE_HOST_EU "https://eu.goodwe-power.com/"
 #define GOODWE_HOST_AU "https://au.goodwe-power.com/"
@@ -26,6 +23,7 @@
 #define GOODWE_BY_USER_PATH "Mobile/GetMyPowerStationByUser?userName="
 #define GOODWE_BY_STATION_PATH "Mobile/GetMyPowerStationById?stationId="
 #define GOODWE_DEVICE_LIST_PATH "Mobile/GetMyDeviceListById?stationId="
+#define GOODWE_DEVICE_LISTV3_PATH "Mobile/GetMyDeviceListById_V3?stationId="
 
 // parameter names for GetMyPowerStationByUser
 
@@ -50,6 +48,7 @@
 #define DEVICE_DAY_TOTAL_KWH "eday"
 #define DEVICE_TOTAL_KWH "etotal"
 #define DEVICE_ERROR_MSG "errormsg"
+#define DEVICE_RESULT "result"
 
 enum _eGoodweLocation {
 	GOODWE_LOCATION_GLOBAL= 0,      // Global server
@@ -201,21 +200,17 @@ uint32_t GoodweAPI::hash(const std::string &str)
 	return (uint32_t)hash;
 }
 
+/* 
+   TODO Remove ????
+
 float GoodweAPI::getPowerWatt(const std::string &str)
 {
 	float result;
 	std::string units;
 	std::stringstream input;
 	input << str;
-	if (!(input >> result >> units)) {
+	if (!(input >> result)) {
 		_log.Log(LOG_ERROR, "Error parsing %s for power!", str.c_str());
-		result = 0;
-	} else if (units == "W") {
-		/* nothing to do here */
-	} else if (units == "kW") {
-		result = result * 1000;
-	} else {
-		_log.Log(LOG_ERROR, "Invalid power units in %s", str.c_str());
 		result = 0;
 	}
 	return result;
@@ -228,19 +223,41 @@ float GoodweAPI::getEnergyWh(const std::string &str)
 	std::string units;
 	std::stringstream input;
 	input << str;
-	if (!(input >> result >> units)) {
+	if (!(input >> result)) {
 		_log.Log(LOG_ERROR, "Error parsing %s for energy!", str.c_str());
-		result = 0;
-	} else if (units == "Wh") {
-		/* nothing to do here */
-	} else if (units == "kWh") {
-		result = result * 1000;
-	} else {
-		_log.Log(LOG_ERROR, "Invalid energy units in %s", str.c_str());
 		result = 0;
 	}
 	return result;
 }
+
+*/
+
+bool GoodweAPI::getStdStringFromJson(Json::Value inputValue, std::string &outputValue, std::string errorString)
+{
+	if (inputValue.empty()) {
+		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString);
+		return false;
+	}
+	outputValue = inputValue.asString();
+	return true;
+}
+
+bool GoodweAPI::getFloatFromJson(Json::Value inputValue, float &outputValue, std::string errorString)
+{
+	std::string tempStr;
+	if (!getStdStringFromJson(inputValue, tempStr, errorString))
+	{
+		return false;
+	}
+	std::stringstream input;
+	input << tempStr;
+	if (!(input >> outputValue)) {
+		_log.Log(LOG_ERROR, "Error converting %s", errorString);
+		return false;
+	}
+	return true;
+}
+
 
 void GoodweAPI::GetMeterDetails()
 {
@@ -273,8 +290,8 @@ void GoodweAPI::GetMeterDetails()
 #ifdef DEBUG_GoodweAPIW
 	SaveString2Disk(sResult, "/tmp/Goodwe2.json");
 #endif
-	Json::Value root;
 	Json::Reader jReader;
+	Json::Value root;
 	bool ret=jReader.parse(sResult,root);
 	if (!ret)
 	{
@@ -303,88 +320,15 @@ void GoodweAPI::GetMeterDetails()
 		std::string sStationId = root[i][BY_USER_STATION_ID].asString();
 		std::string sStationName = root[i][BY_USER_STATION_NAME].asString();
 
-		// ParseStation is not used for now as there may not be stations with multiple inverters
-		// ParseStation(sStationId, sStationName);
-
 		ParseDeviceList(sStationId, sStationName);
 	}
 }
 
-void GoodweAPI::ParseStation(const std::string &sStationId, const std::string &sStationName)
-{
-	// fetch power station details
-
-	std::string sResult;
-	std::string sPATH = GOODWE_BY_STATION_PATH + sStationId;
-	bool bret;
-
-	bret = GoodweServerClient(sPATH, sResult);
-
-	if (!bret)
-	{
-		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http data for station %s!", sStationName.c_str());
-		return;
-	}
-
-#ifdef DEBUG_GoodweAPIW
-	SaveString2Disk(sResult, "/tmp/Goodwe3.json");
-#endif
-
-	Json::Value root;
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		_log.Log(LOG_ERROR, "GoodweAPI: Invalid station data received!");
-		return;
-	}
-
-	// Check completeness of received data
-
-	if (root[BY_STATION_CURRENT_POWER_KW].empty())
-	{
-		_log.Log(LOG_ERROR, "GoodweAPI: invalid ID data received - curpower is missing!");
-		return;
-	}
-
-	if (root[BY_STATION_TOTAL_KWH].empty())
-	{
-		_log.Log(LOG_ERROR, "GoodweAPI: invalid ID data received - etotal is missing!");
-		return;
-	}
-
-	if (root[BY_STATION_STATUS].empty())
-	{
-		_log.Log(LOG_ERROR, "GoodweAPI: invalid ID data received - status is missing!");
-		return;
-	}
-
-	// retrieve strings
-
-	std::string sStatus = root[BY_STATION_STATUS].asString();
-	std::string sCurrentPower = root[BY_STATION_CURRENT_POWER_KW].asString();
-	std::string sTotalEnergy = root[BY_STATION_TOTAL_KWH].asString();
-
-	// Retrieve the values from the strings
-
-	float currentPowerW = getPowerWatt(sCurrentPower);
-	float totalEnergyKWh = getEnergyWh(sTotalEnergy) / 1000;
-
-	// Calcullate NodeID from stationId
-
-	uint32_t NodeID = hash(sStationId);
-
-	// Use the station name from the Goodwe website as defaultname
-
-	SendKwhMeter(NodeID, 1, 255, currentPowerW, totalEnergyKWh, "Station " + sStationName + " Return");
-	SendTextSensor(NodeID, 2, 255, sStatus, "Station " + sStationName + " status");
-}
-
 void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string &sStationName)
 {
-	// fetch interverter list
+	// fetch inverter list
 
-	std::string sPATH = GOODWE_DEVICE_LIST_PATH + sStationId;
+	std::string sPATH = GOODWE_DEVICE_LISTV3_PATH + sStationId;
 	bool bret;
 	std::string sResult;
 
@@ -407,61 +351,41 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 		return;
 	}
 
-	if (root.size() < 1)
+	Json::Value result;
+	result = root[DEVICE_RESULT];
+	if (result.size() < 1)
 	{
-		_log.Log(LOG_STATUS, "GoodweAPI: List if devices / devices is empty!");
+		_log.Log(LOG_STATUS, "GoodweAPI: devicelist result is empty!");
 		return;
 	}
-	for (Json::ArrayIndex i = 0; i < root.size(); i++)
+
+	for (Json::ArrayIndex i = 0; i < result.size(); i++)
 	{
-		ParseDevice(root[i], sStationId, sStationName);
+		ParseDevice(result[i], sStationId, sStationName);
 	}
 }
 
 void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStationId, const std::string &sStationName)
 {
-	if (device[DEVICE_SERIAL].empty() )
-	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: no or invalid device data received - inverter serial nr is missing!");
+	std::string sDeviceSerial;
+	std::string sCurrentPower;
+	std::string sTotalEnergyKWh;
+	std::string sErrorMsg;
+	std::string sStatus;
+	float fCurrentPowerW;
+	float fTotalEnergyKWh;
+
+	// Parse received JSON
+	
+	if ( !getStdStringFromJson( device[DEVICE_SERIAL], sDeviceSerial, "Inverter Serial Number") |
+	     !getFloatFromJson( device[DEVICE_CURRENT_POWER_W], fCurrentPowerW, "Current Power") |
+	     !getStdStringFromJson( device[DEVICE_STATUS], sStatus, "Device Status") |
+	     !getFloatFromJson( device[DEVICE_TOTAL_KWH], fTotalEnergyKWh, "Total Energy Produced") |
+	     !getStdStringFromJson( device[DEVICE_ERROR_MSG], sErrorMsg, "Error Message")) {
+		
+		// Error parsing message, return
 		return;
 	}
-	if (device[DEVICE_CURRENT_POWER_W].empty() )
-	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: invalid device data received - power is missing!");
-		return;
-	}
-
-	if (device[DEVICE_STATUS].empty() )
-	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: invalid device data received - status is missing!");
-		return;
-	}
-
-	if (device[DEVICE_TOTAL_KWH].empty() )
-	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: invalid device data received - eTotal is missing!");
-		return;
-	}
-
-	if (device[DEVICE_ERROR_MSG].empty() )
-	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: invalid device data received - error message is missing!");
-		return;
-	}
-
-	// fetch strings
-
-	std::string sDeviceSerial = device[DEVICE_SERIAL].asString();
-	std::string sCurrentPower = device[DEVICE_CURRENT_POWER_W].asString();
-	std::string sTotalEnergyKWh = device[DEVICE_TOTAL_KWH].asString();
-	std::string sErrorMsg = device[DEVICE_ERROR_MSG].asString();
-	std::string sStatus = device[DEVICE_STATUS].asString();
-
-
-	// convert currentPower and totalPower to floats
-
-	float currentPowerW = getPowerWatt(sCurrentPower);
-	float totalEnergyKWh = getEnergyWh(sTotalEnergyKWh)/1000;
 
 	// Create NodeID and ChildID from station id and device serial
 
@@ -476,9 +400,11 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 	// do not send meter values when status is not normal (meter values are 0 when offline)
 	// It is unknown if other cases exist where 0 is returned, so we compare to "Normal"
 
-	if (sStatus.compare("Normal") == 0)
+	// TODO CLEAN UP STATUS ????? */
+	// if (sStatus.compare("Normal") == 0)
+	if (sStatus.compare("1") == 0)
         {
-		SendKwhMeter(NodeID, ChildID, 255, currentPowerW, totalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
+		SendKwhMeter(NodeID, ChildID, 255, fCurrentPowerW, fTotalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
 	}
 	SendTextSensor(NodeID, ChildID + 1 , 255, sStatus, sStationName + " " + sDeviceSerial + " status");
 	SendTextSensor(NodeID, ChildID + 2 , 255, sErrorMsg, sStationName + " " + sDeviceSerial + " error");

@@ -20,11 +20,10 @@ private:
 	uint32_t hash(const std::string &str);
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 	bool GoodweServerClient(const std::string &sPATH, std::string &sResult);
-	float getPowerWatt(const std::string &str);
-	float getEnergyWh(const std::string &str);
+	bool getStdStringFromJson(Json::Value inputValue, std::string &outputValue, std::string errorString);	
+	bool getFloatFromJson(Json::Value inputValue, float &outputValue, std::string errorString);
 	void Do_Work();
 	void GetMeterDetails();
-	void ParseStation(const std::string &sStationId, const std::string &sStationName);
 	void ParseDeviceList(const std::string &sStationId, const std::string &sStationName);
 	void ParseDevice(const Json::Value &device, const std::string &sStationId, const std::string &sStationName);
 private:
