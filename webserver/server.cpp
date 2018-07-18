@@ -9,6 +9,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 namespace http {
 namespace server {
@@ -21,7 +22,8 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		request_handler_(user_request_handler),
 		timeout_(20), // default read timeout in seconds
 		is_running(false),
-		is_stop_complete(false) {
+		is_stop_complete(false),
+		m_heartbeat_timer(io_service_) {
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
 	}
@@ -61,6 +63,8 @@ void server_base::run() {
 	// for new incoming connections.
 	try {
 		is_running = true;
+		boost::asio::steady_timer m_heartbeat_timer(io_service_);
+		heart_beat();
 		io_service_.run();
 		is_running = false;
 	} catch (std::exception& e) {
@@ -107,6 +111,9 @@ void server_base::stop() {
 		sleep_milliseconds(500);
 	}
 	io_service_.stop();
+
+	// Deregister heartbeat
+	m_mainworker.HeartbeatRemove(std::string("WebServer:") + settings_.listening_port);
 }
 
 void server_base::handle_stop() {
@@ -118,6 +125,16 @@ void server_base::handle_stop() {
 	}
 	connection_manager_.stop_all();
 	is_stop_complete = true;
+}
+
+void server_base::heart_beat()
+{
+	// Heartbeat
+	m_mainworker.HeartbeatUpdate(std::string("WebServer:") + settings_.listening_port);
+
+	// Schedule next heartbeat
+	m_heartbeat_timer.expires_after(std::chrono::seconds(12));
+	m_heartbeat_timer.async_wait(boost::bind(&server_base::heart_beat, this));
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :

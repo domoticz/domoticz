@@ -133,6 +133,7 @@ public:
 	std::vector<std::string> m_webthemes;
 	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
 
+	std::atomic<time_t> m_LastHeartbeat = { 0 };
 private:
 	void HandleAutomaticBackups();
 	uint64_t PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);

@@ -68,6 +68,9 @@ protected:
 private:
 	/// Handle a request to stop the server.
 	void handle_stop();
+
+	boost::asio::steady_timer m_heartbeat_timer;
+	void heart_beat();
 };
 
 class server : public server_base {

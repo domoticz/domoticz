@@ -222,6 +222,7 @@ MainWorker::MainWorker()
 	m_bIgnoreUsernamePassword = false;
 
 	time_t atime = mytime(NULL);
+	m_LastHeartbeat = atime;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 	m_ScheduleLastMinute = ltime.tm_min;
@@ -1701,6 +1702,7 @@ void MainWorker::Do_Work()
 		}
 		if (ltime.tm_sec % 30 == 0)
 		{
+			m_LastHeartbeat = mytime(NULL);
 			HeartbeatCheck();
 		}
 	}
@@ -12849,10 +12851,11 @@ void MainWorker::HeartbeatCheck()
 
 	for (const auto & itt : m_componentheartbeats)
 	{
-		double dif = difftime(now, itt.second);
-		if (dif > 60)
+		double diff = difftime(now, itt.second);
+		if (diff > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", itt.first.c_str());
+			raise(SIGUSR1);
 		}
 	}
 
