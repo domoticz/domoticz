@@ -224,42 +224,10 @@ uint32_t GoodweAPI::hash(const std::string &str)
 	return (uint32_t)hash;
 }
 
-/* 
-   TODO Remove ????
-
-float GoodweAPI::getPowerWatt(const std::string &str)
-{
-	float result;
-	std::string units;
-	std::stringstream input;
-	input << str;
-	if (!(input >> result)) {
-		_log.Log(LOG_ERROR, "Error parsing %s for power!", str.c_str());
-		result = 0;
-	}
-	return result;
-}
-
-
-float GoodweAPI::getEnergyWh(const std::string &str)
-{
-	float result;
-	std::string units;
-	std::stringstream input;
-	input << str;
-	if (!(input >> result)) {
-		_log.Log(LOG_ERROR, "Error parsing %s for energy!", str.c_str());
-		result = 0;
-	}
-	return result;
-}
-
-*/
-
 bool GoodweAPI::getStdStringFromJson(Json::Value inputValue, std::string &outputValue, std::string errorString)
 {
 	if (inputValue.empty()) {
-		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString);
+		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString.c_str());
 		return false;
 	}
 	outputValue = inputValue.asString();
@@ -276,7 +244,7 @@ bool GoodweAPI::getFloatFromJson(Json::Value inputValue, float &outputValue, std
 	std::stringstream input;
 	input << tempStr;
 	if (!(input >> outputValue)) {
-		_log.Log(LOG_ERROR, "Error converting %s", errorString);
+		_log.Log(LOG_ERROR, "Error converting %s", errorString.c_str());
 		return false;
 	}
 	return true;
