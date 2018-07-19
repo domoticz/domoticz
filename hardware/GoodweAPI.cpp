@@ -68,6 +68,22 @@
 // 2 is unknown 
 #define STATUS_OFFLINE 3
 
+// Child Indexes 
+#define IDX_KWH 0
+#define IDX_STATUS 1
+#define IDX_ERRORMSG 2
+#define IDX_VOLT_L1 3
+#define IDX_VOLT_L2 4
+#define IDX_VOLT_L3 5
+#define IDX_VOLT_S1 6
+#define IDX_VOLT_S2 7
+#define IDX_CUR_L1 8
+#define IDX_CUR_L2 9
+#define IDX_CUR_L3 10
+#define IDX_CUR_S1 11
+#define IDX_CUR_S2 12
+
+
 enum _eGoodweLocation {
 	GOODWE_LOCATION_GLOBAL= 0,      // Global server
 	GOODWE_LOCATION_OCEANIA = 1,    // Australian server
@@ -441,31 +457,44 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 	
 	if (iStatus == STATUS_NORMAL)
         {
-		SendKwhMeter(NodeID, ChildID, 255, fCurrentPowerW, fTotalEnergyKWh, 
+		SendKwhMeter(NodeID, ChildID + IDX_KWH, 255, fCurrentPowerW, fTotalEnergyKWh, 
 			sStationName + " " + sDeviceSerial + " Return");
 	}
-	SendTextSensor(NodeID, ChildID + 1 , 255, getStatusString(iStatus), 
+	SendTextSensor(NodeID, ChildID + IDX_STATUS , 255, getStatusString(iStatus), 
 		sStationName + " " + sDeviceSerial + " status");
-	SendTextSensor(NodeID, ChildID + 2 , 255, sErrorMsg, 
+	SendTextSensor(NodeID, ChildID + IDX_ERRORMSG , 255, sErrorMsg, 
 		sStationName + " " + sDeviceSerial + " error");
-	SendVoltageSensor(NodeID, ChildID + 3, 255, fVoltagePhase1, 
+	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L1, 255, fVoltagePhase1, 
 		sStationName + " " + sDeviceSerial + " Mains L1");
-	SendVoltageSensor(NodeID, ChildID + 4, 255, fVoltagePhase2, 
-		sStationName + " " + sDeviceSerial + " Mains L2");
-	SendVoltageSensor(NodeID, ChildID + 5, 255, fVoltagePhase3, 
-		sStationName + " " + sDeviceSerial + " Mains L3");
-	SendVoltageSensor(NodeID, ChildID + 6, 255, fVoltageString1, 
+	SendCurrentSensor(NodeID, ChildID + IDX_CUR_L1, 255, fCurrentPhase1, 
+		sStationName + " " + sDeviceSerial + " Mains L1");
+
+	// Send data for L2 and L3 only when we detect a voltage
+
+	if (fVoltagePhase2 > 0.1f) {
+		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L2, 255, fVoltagePhase2, 
+			sStationName + " " + sDeviceSerial + " Mains L2");
+		SendCurrentSensor(NodeID, ChildID + IDX_CUR_L2, 255, fCurrentPhase2, 
+			sStationName + " " + sDeviceSerial + " Mains L2");
+	}
+	if (fVoltagePhase3 > 0.1f) {
+		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L3, 255, fVoltagePhase3, 
+			sStationName + " " + sDeviceSerial + " Mains L3");
+		SendCurrentSensor(NodeID, ChildID + IDX_CUR_L3, 255, fCurrentPhase3, 
+			sStationName + " " + sDeviceSerial + " Mains L3");
+	}
+
+	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S1, 255, fVoltageString1, 
 		sStationName + " " + sDeviceSerial + "Input string 1");
-	SendVoltageSensor(NodeID, ChildID + 7, 255, fVoltageString2, 
-		sStationName + " " + sDeviceSerial + "Input string 2");
-	SendCurrentSensor(NodeID, ChildID + 8, 255, fCurrentPhase1, 
-		sStationName + " " + sDeviceSerial + " Mains L1");
-	SendCurrentSensor(NodeID, ChildID + 9, 255, fCurrentPhase2, 
-		sStationName + " " + sDeviceSerial + " Mains L2");
-	SendCurrentSensor(NodeID, ChildID + 10, 255, fCurrentPhase3, 
-		sStationName + " " + sDeviceSerial + " Mains L3");
-	SendCurrentSensor(NodeID, ChildID + 11, 255, fCurrentString1, 
+	SendCurrentSensor(NodeID, ChildID + IDX_CUR_S1, 255, fCurrentString1, 
 		sStationName + " " + sDeviceSerial + " Input String 1");
-	SendCurrentSensor(NodeID, ChildID + 12, 255, fCurrentString2, 
-		sStationName + " " + sDeviceSerial + " Input String 2");
+
+	// Send data for string 2 only when we detect a voltage
+
+	if (fVoltageString2 > 0.1f) {
+		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S2, 255, fVoltageString2, 
+			sStationName + " " + sDeviceSerial + "Input string 2");
+		SendCurrentSensor(NodeID, ChildID + IDX_CUR_S2, 255, fCurrentString2, 
+			sStationName + " " + sDeviceSerial + " Input String 2");
+	}
 }
