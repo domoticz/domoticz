@@ -22,8 +22,9 @@ private:
 	uint32_t hash(const std::string &str);
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 	bool GoodweServerClient(const std::string &sPATH, std::string &sResult);
-	bool getStdStringFromJson(Json::Value inputValue, std::string &outputValue, std::string errorString);	
-	bool getFloatFromJson(Json::Value inputValue, float &outputValue, std::string errorString);
+	bool getValueFromJson(const Json::Value &inputValue, std::string &outputValue, const std::string errorString);	
+	bool getValueFromJson(const Json::Value &inputValue, float &outputValue, const std::string errorString);
+	bool getValueFromJson(const Json::Value &inputValue, int &outputValue, const std::string errorString);
 	void Do_Work();
 	void GetMeterDetails();
 	void ParseDeviceList(const std::string &sStationId, const std::string &sStationName);
