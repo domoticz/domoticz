@@ -7,6 +7,10 @@
 #include "../main/WebServerHelper.h"
 #include "../webserver/proxyclient.h"
 
+#ifdef WIN32
+#define SHUT_RDWR SD_BOTH
+#endif
+
 #define RETRY_DELAY 30
 
 extern http::server::CWebServerHelper m_webservers;
