@@ -147,19 +147,17 @@ bool DomoticzTCP::StopHardwareTCP()
 			//Don't throw from a Stop command
 		}
 	}
-	else {
-		try {
-			if (m_thread)
-			{
-				m_stoprequested = true;
-				m_thread->join();
-				m_thread.reset();
-			}
-		}
-		catch (...)
+	try {
+		if (m_thread)
 		{
-			//Don't throw from a Stop command
+			m_stoprequested = true;
+			m_thread->join();
+			m_thread.reset();
 		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
 	}
 	m_bIsStarted = false;
 	return true;
@@ -213,11 +211,11 @@ void DomoticzTCP::disconnectTCP()
 	m_stoprequested = true;
 	if (m_socket != INVALID_SOCKET)
 	{
+		shutdown(m_socket, SHUT_RDWR);
 		closesocket(m_socket);	//will terminate the thread
 		m_socket = INVALID_SOCKET;
 		sleep_seconds(1);
 	}
-	//m_thread-> join();
 }
 
 void DomoticzTCP::Do_Work()
