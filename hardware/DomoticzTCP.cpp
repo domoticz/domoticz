@@ -214,7 +214,6 @@ void DomoticzTCP::disconnectTCP()
 		shutdown(m_socket, SHUT_RDWR);
 		closesocket(m_socket);	//will terminate the thread
 		m_socket = INVALID_SOCKET;
-		sleep_seconds(1);
 	}
 }
 
