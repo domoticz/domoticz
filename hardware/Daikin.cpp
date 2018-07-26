@@ -34,10 +34,10 @@
 //		1	vertical wings motion	20
 //		2	horizontal wings motion	30
 //		3	vertical and horizontal wings motion	40
-// 10 : temperature exterieure
-// 11 : temperature interieure
+// 10 : Outside temperature
+// 11 : Inside temperature
 // 12 : shum : description: represents the target humidity
-// 20 : consigne thermostat
+// 20 : SetPoint
 
 
 #define Daikin_POLL_INTERVAL 300
