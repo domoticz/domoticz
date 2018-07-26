@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sys/time.h>
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include "Helper.h"
