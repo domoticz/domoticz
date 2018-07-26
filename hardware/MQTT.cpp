@@ -710,7 +710,7 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 
 	Json::Value root;
 
-	root["idx"] = sd[0];
+	root["idx"] = atoi(sd[0].c_str());
 	root["Name"] = sName;
 	//root["Description"] = sd[10];
 	//root["Favorite"] = atoi(sd[3].c_str());
