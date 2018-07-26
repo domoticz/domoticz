@@ -41,9 +41,9 @@ private:
 	std::string m_led;
 	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
-	int m_sec_counter;    // use in Do_Work() and will allow to trigger faster GetMeterDetails()        
-	std::string m_dt[8];     // Memorized Temp target for each mode. Retreived from Daikin device
-        std::string m_dh[8];     // Memorized Humidity target for each mode. Retreive from Daikin device
+	int m_sec_counter;            
+	std::string m_dt[8];     // Memorized Temp target for each mode. 
+        std::string m_dh[8];     // Memorized Humidity target for each mode. 
 	
 };
 
