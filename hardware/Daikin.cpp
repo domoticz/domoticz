@@ -125,18 +125,18 @@ bool CDaikin::StopHardware()
 
 void CDaikin::Do_Work()
 {
-	sec_counter = Daikin_POLL_INTERVAL - 2; // Trigger immediatly (in 2s) a POLL after startup.
+	m_sec_counter = Daikin_POLL_INTERVAL - 2; // Trigger immediatly (in 2s) a POLL after startup.
 
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		sec_counter++;
+		m_sec_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (m_sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (sec_counter % Daikin_POLL_INTERVAL == 0)
+		if (m_sec_counter % Daikin_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
 		}
@@ -713,7 +713,7 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 		_log.Log(LOG_ERROR, "Daikin: Invalid response");
 		return;
 	}
-	if (OnOFF) sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s as we have Powe On
+	if (OnOFF) m_sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s as we have Powe On
 }
 
 
@@ -863,7 +863,7 @@ void CDaikin::SetModeLevel(const int NewLevel)
 		_log.Log(LOG_ERROR, "Daikin: Invalid response");
 		return;
 	}
-	sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s
+	m_sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s
 }
 
 void CDaikin::SetF_RateLevel(const int NewLevel)
