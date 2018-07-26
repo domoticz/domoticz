@@ -12,6 +12,7 @@
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <regex>
 
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
@@ -669,7 +670,42 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 	catch (std::exception& e) {
-		_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address: %s", e.what());
+		_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (using boost asio): %s", e.what());
+	}
+
+	
+	if (m_LocalIp == "") {
+		try {
+	
+			// get output from ifconfig
+			std::string ifconfigStr;	
+			FILE * stream = popen("ifconfig", "r");
+			const int max_buffer = 256;
+    			char buffer[max_buffer];
+
+	    		if (stream) {
+  				while (!feof(stream))
+    					if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
+    				pclose(stream);
+    			}
+	
+			// regex pattern to match ip address in ifconfig output
+			// with <ip> being a valid ip, pattern will match "inet <ip>", "inet addr:<ip>", "inet: <ip>", "inet addr <ip>"
+			std::regex pattern("[inet|inet:][ ]*[addr|addr:]*[ ]*(\\d{1,3}(\\.\\d{1,3}){3})");
+			std::smatch match;
+			
+			if (std::regex_search(ifconfigStr, match, pattern)){
+        			 m_LocalIp = match[1];
+				 _log.Log(LOG_STATUS, "XiaomiGateway: Using %s for local IP address (parsed from ifconfig).", m_LocalIp.c_str());
+			}
+			else {
+				_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (parsing ifconfig).");
+			}
+		}
+	
+        	catch (std::exception& e) {
+                	_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (parsing ifconfig): %s", e.what());
+        	}
 	}
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
