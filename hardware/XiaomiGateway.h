@@ -3,12 +3,24 @@
 #include "DomoticzHardware.h"
 #include <boost/tuple/tuple.hpp>
 
+#define MAX_LOG_LINE_LENGTH (2048*3)
+
 class XiaomiGateway : public CDomoticzHardwareBase
 {
 public:
 	explicit XiaomiGateway(const int ID);
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+
+	int GetGatewayHardwareID(){ return m_HwdID; };
+	std::string GetGatewayIp(){ return m_GatewayIp; };
+	std::string GetGatewaySid(){ return m_GatewaySID; };
+
+	bool IsMainGateway(){ return m_ListenPort9898; };
+	void SetAsMainGateway(){ m_ListenPort9898 = true; };
+	void UnSetMainGateway(){ m_ListenPort9898 = false; };
+	void Restart();
+
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
