@@ -12857,7 +12857,11 @@ void MainWorker::HeartbeatCheck()
 		if (diff > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
+#ifdef WIN32
+			abort();
+#else
 			raise(SIGUSR1);
+#endif
 		}
 	}
 

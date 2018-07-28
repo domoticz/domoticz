@@ -517,6 +517,7 @@ void signal_handler(int sig_num
 		signal(sig_num, SIG_DFL);
 		raise(sig_num);
 		break;
+#ifndef WIN32
 	case SIGUSR1:
 		fatal_handling = 1;
 		_log.Log(LOG_ERROR, "Domoticz is exiting due to watchdog triggered...");
@@ -529,7 +530,8 @@ void signal_handler(int sig_num
 		signal(sig_num, SIG_DFL);
 		raise(sig_num);
 		break;
-	} 
+	}
+#endif
 }
 
 #ifndef WIN32
@@ -1063,14 +1065,22 @@ static void heartbeat_check()
 	if (diff > 60)
 	{
 		_log.Log(LOG_ERROR, "mainworker seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
+#ifdef WIN32
+		abort();
+#else
 		raise(SIGUSR1);
+#endif
 	}
 
 	diff = difftime(now, m_LastHeartbeat);
 	if (diff > 60)
 	{
 		_log.Log(LOG_ERROR, "main thread seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
+#ifdef WIN32
+		abort();
+#else
 		raise(SIGUSR1);
+#endif
 	}
 }
 
@@ -1570,7 +1580,6 @@ int main(int argc, char**argv)
 #else
 		signal(SIGINT, signal_handler);
 		signal(SIGTERM, signal_handler);
-		signal(SIGUSR1, signal_handler);
 #endif
 	}
 
