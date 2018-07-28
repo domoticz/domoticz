@@ -462,7 +462,6 @@ std::string pidfile = PID_FILE;
 int pidFilehandle = 0;
 
 int fatal_handling = 0;
-bool watchdog_barked = false;
 
 void signal_handler(int sig_num
 #ifndef WIN32
@@ -502,7 +501,9 @@ void signal_handler(int sig_num
 				, "-");
 #endif
 			dumpstack_backtrace(info, ucontext);
-			exit(EXIT_FAILURE);
+			// re-raise signal to enforce core dump
+			signal(sig_num, SIG_DFL);
+			raise(sig_num);
 		}
 		fatal_handling = 1;
 		_log.Log(LOG_ERROR, "Domoticz received fatal signal %d (%s)", sig_num
@@ -517,8 +518,8 @@ void signal_handler(int sig_num
 		raise(sig_num);
 		break;
 	case SIGUSR1:
+		fatal_handling = 1;
 		_log.Log(LOG_ERROR, "Domoticz is exiting due to watchdog triggered...");
-		watchdog_barked = true;
 		// Print call stack of all threads to aid debugging of deadlock
 		dumpstack_gdb(true);
 		g_bStopApplication = true;
@@ -1061,14 +1062,14 @@ static void heartbeat_check()
 	double diff = difftime(now, m_mainworker.m_LastHeartbeat);
 	if (diff > 60)
 	{
-		_log.Log(LOG_ERROR, "mainworker seems to have ended or hung unexpectedly");
+		_log.Log(LOG_ERROR, "mainworker seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
 		raise(SIGUSR1);
 	}
 
 	diff = difftime(now, m_LastHeartbeat);
 	if (diff > 60)
 	{
-		_log.Log(LOG_ERROR, "main thread seems to have ended or hung unexpectedly");
+		_log.Log(LOG_ERROR, "main thread seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
 		raise(SIGUSR1);
 	}
 }
@@ -1619,17 +1620,14 @@ int main(int argc, char**argv)
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");
 	fflush(stdout);
-	if (!watchdog_barked)
+	_log.Log(LOG_STATUS, "Stopping worker...");
+	try
 	{
-		_log.Log(LOG_STATUS, "Stopping worker...");
-		try
-		{
-			m_mainworker.Stop();
-		}
-		catch (...)
-		{
+		m_mainworker.Stop();
+	}
+	catch (...)
+	{
 
-		}
 	}
 #ifndef WIN32
 	if (g_bRunAsDaemon)

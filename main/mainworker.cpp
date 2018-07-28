@@ -1521,6 +1521,7 @@ void MainWorker::ParseRFXLogFile()
 void MainWorker::Do_Work()
 {
 	int second_counter = 0;
+	int heartbeat_counter = 0;
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
@@ -1700,8 +1701,9 @@ void MainWorker::Do_Work()
 				HandleAutomaticBackups();
 			}
 		}
-		if (ltime.tm_sec % 30 == 0)
+		if (heartbeat_counter++ > 30)
 		{
+			heartbeat_counter = 0;
 			m_LastHeartbeat = mytime(NULL);
 			HeartbeatCheck();
 		}
@@ -12854,7 +12856,7 @@ void MainWorker::HeartbeatCheck()
 		double diff = difftime(now, itt.second);
 		if (diff > 60)
 		{
-			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", itt.first.c_str());
+			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
 			raise(SIGUSR1);
 		}
 	}

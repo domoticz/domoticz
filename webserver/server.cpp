@@ -63,8 +63,7 @@ void server_base::run() {
 	// for new incoming connections.
 	try {
 		is_running = true;
-		boost::asio::steady_timer m_heartbeat_timer(io_service_);
-		heart_beat();
+		heart_beat(boost::system::error_code());
 		io_service_.run();
 		is_running = false;
 	} catch (std::exception& e) {
@@ -127,14 +126,16 @@ void server_base::handle_stop() {
 	is_stop_complete = true;
 }
 
-void server_base::heart_beat()
+void server_base::heart_beat(const boost::system::error_code& error)
 {
-	// Heartbeat
-	m_mainworker.HeartbeatUpdate(std::string("WebServer:") + settings_.listening_port);
+	if (!error) {
+		// Heartbeat
+		m_mainworker.HeartbeatUpdate(std::string("WebServer:") + settings_.listening_port);
 
-	// Schedule next heartbeat
-	m_heartbeat_timer.expires_after(std::chrono::seconds(12));
-	m_heartbeat_timer.async_wait(boost::bind(&server_base::heart_beat, this));
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_after(std::chrono::seconds(4));
+		m_heartbeat_timer.async_wait(boost::bind(&server_base::heart_beat, this, boost::asio::placeholders::error));
+	}
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
