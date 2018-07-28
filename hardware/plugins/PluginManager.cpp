@@ -65,8 +65,8 @@ namespace Plugins {
     // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 #endif // ENABLE_PYTHON
 
-	std::mutex PluginMutex;	// controls accessto the message queue
-	std::queue<CPluginMessageBase*>	PluginMessageQueue;
+	std::mutex PluginMutex;	// controls access to the m_pPlugins map
+	concurrent_queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
@@ -87,10 +87,11 @@ namespace Plugins {
 	bool CPluginSystem::StartPluginSystem()
 	{
 		// Flush the message queue (should already be empty)
-		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
-			PluginMessageQueue.pop();
+			// TODO: If there are messages, they should be deleted, not just popped, or there will be a memory leak
+			CPluginMessageBase* tmp = NULL;
+			PluginMessageQueue.try_pop(tmp);
 		}
 
 		m_pPlugins.clear();
@@ -294,9 +295,9 @@ namespace Plugins {
 				// Cycle once through the queue looking for the 1st message that is ready to process
 				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
-					std::lock_guard<std::mutex> l(PluginMutex);
-					CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
-					PluginMessageQueue.pop();
+					CPluginMessageBase* FrontMessage = NULL;
+					PluginMessageQueue.try_pop(FrontMessage);
+					if (!FrontMessage) continue;
 					if (FrontMessage->m_When <= Now)
 					{
 						// Message is ready now or was already ready (this is the case for almost all messages)
@@ -351,18 +352,20 @@ namespace Plugins {
 		}
 
 		// Hardware should already be stopped so just flush the queue (should already be empty)
-		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
-			CPluginMessageBase* Message = PluginMessageQueue.front();
+			CPluginMessageBase* Message = NULL;
+			PluginMessageQueue.try_pop(Message);
+			if (!Message) continue;
+
 			const CPlugin* pPlugin = Message->Plugin();
 			if (pPlugin)
 			{
 				_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
 			}
-			PluginMessageQueue.pop();
 		}
 
+		std::lock_guard<std::mutex> l(PluginMutex);
 		m_pPlugins.clear();
 
 		if (Py_LoadLibrary()  && m_InitialPythonThread)
