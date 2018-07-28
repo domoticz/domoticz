@@ -530,8 +530,8 @@ void signal_handler(int sig_num
 		signal(sig_num, SIG_DFL);
 		raise(sig_num);
 		break;
-	}
 #endif
+	}
 }
 
 #ifndef WIN32
