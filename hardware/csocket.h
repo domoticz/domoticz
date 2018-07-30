@@ -3,6 +3,7 @@
 #define CSOCKET_H
 
 #include <string>
+#include <cmath>
 
 #ifdef WIN32
 	#include <winsock2.h>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "CurrentCostMeterBase.h"
 
 class CurrentCostMeterTCP: public CurrentCostMeterBase
@@ -9,9 +8,9 @@ public:
 	CurrentCostMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	virtual ~CurrentCostMeterTCP(void);
 
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length);
+	virtual bool WriteToHardware(const char *pdata, const unsigned char length) override;
 
-protected:	
+protected:
 	virtual bool StartHardware() override;
 	virtual bool StopHardware() override;
 
@@ -25,7 +24,7 @@ private:
 	int m_retrycntr;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	sockaddr_in m_addr;
 	int m_socket;

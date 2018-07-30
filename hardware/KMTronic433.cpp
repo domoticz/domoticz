@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 
 #include <ctime>
 
@@ -41,9 +42,9 @@ bool KMTronic433::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronic433::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&KMTronic433::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 
 	return true;
 }
@@ -51,8 +52,11 @@ bool KMTronic433::StartHardware()
 bool KMTronic433::StopHardware()
 {
 	m_stoprequested = true;
-	if (m_thread != NULL)
+	if (m_thread)
+	{
 		m_thread->join();
+		m_thread.reset();
+	}
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 	sleep_milliseconds(10);
 	terminate();
@@ -141,7 +145,7 @@ bool KMTronic433::OpenSerialDevice()
 
 void KMTronic433::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

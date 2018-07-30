@@ -532,6 +532,7 @@ define(['app'], function (app) {
 								bHaveAddedDevider = true;
 							}
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+							var graphLogLink = '#/Devices/' + item.idx + '/GraphLog';
 
 							var xhtm =
 								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
@@ -598,32 +599,32 @@ define(['app'], function (app) {
 								xhtm += item.Data;
 							}
 							xhtm += '</td>\n';
-							xhtm += '\t      <td id="img"><img src="images/';
+							xhtm += '\t      <td id="img">';
 							var status = "";
 							if (typeof item.Counter != 'undefined') {
 								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 									if (item.SwitchTypeVal == 1) {
-										xhtm += 'Gas48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 2) {
-										xhtm += 'Water48_On.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Water48_On.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 3) {
-										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 4) {
-										xhtm += 'PV48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
 									}
 									else {
-										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
 									}
 								}
 								else {
 									if (item.SubType == "Gas") {
-										xhtm += 'Gas48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
 									}
 									else {
-										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
 									}
 								}
 								if (
@@ -638,98 +639,98 @@ define(['app'], function (app) {
 								}
 							}
 							else if (item.Type == "Current") {
-								xhtm += 'current48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 								if (((item.Type == "Energy") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
-									xhtm += 'PV48.png" height="48" width="48"></td>\n';
+									xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += 'current48.png" height="48" width="48"></td>\n';
+									xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								}
 								if (typeof item.CounterToday != 'undefined') {
 									status += $.t("Today") + ': ' + item.CounterToday;
 								}
 							}
 							else if (item.Type == "Air Quality") {
-								xhtm += 'air48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/air48.png" height="48" width="48"></td>\n';
 								status = item.Quality;
 							}
 							else if (item.SubType == "Custom Sensor") {
-								xhtm += item.Image + '48_On.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Soil Moisture") {
-								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
 								status = item.Desc;
 							}
 							else if (item.SubType == "Percentage") {
-								xhtm += 'Percentage48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/Percentage48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Fan") {
-								xhtm += 'Fan48_On.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/Fan48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Leaf Wetness") {
-								xhtm += 'leaf48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/leaf48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Distance") {
-								xhtm += 'visibility48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/visibility48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
-								xhtm += 'current48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Text") {
-								xhtm += 'text48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/text48.png" height="48" width="48"></td>\n';
 								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Alert") {
-								xhtm += 'Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
 								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Pressure") {
-								xhtm += 'gauge48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/gauge48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Lux") {
-								xhtm += 'lux48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/lux48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Weight") {
-								xhtm += 'scale48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/scale48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Usage") {
-								xhtm += 'current48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
-								xhtm += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
+								xhtm += '<img src="images/override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Clock") {
-								xhtm += 'clock48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/clock48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Mode") {
-								xhtm += 'mode48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Fan Mode") {
-								xhtm += 'mode48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Sound Level") {
-								xhtm += 'Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
+								xhtm += '<a href="#/Devices/' + item.idx + '/GraphLog"><img src="images/Speaker48_On.png" class="lcursor" height="48" width="48"></a></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Waterflow") {
-								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
@@ -777,13 +778,13 @@ define(['app'], function (app) {
 								}
 							}
 							else if (item.SubType == "Custom Sensor") {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.SensorUnit) + '\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditCustomSensorDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', ' + item.SensorType + ', \'' + escape(item.SensorUnit) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Percentage") {
-								xhtm += '<a class="btnsmall" onclick="ShowPercentageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
@@ -795,25 +796,25 @@ define(['app'], function (app) {
 								}
 							}
 							else if ((item.SubType == "Soil Moisture") || (item.SubType == "Leaf Wetness") || (item.SubType == "Waterflow")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Lux") {
-								xhtm += '<a class="btnsmall" onclick="ShowLuxLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Weight") {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.Type + '\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Usage") {
-								xhtm += '<a class="btnsmall" onclick="ShowUsageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
@@ -890,37 +891,37 @@ define(['app'], function (app) {
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Voltage")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'VoltageGeneral\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Distance")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'DistanceGeneral\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Current")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'CurrentGeneral\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Pressure")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'Pressure\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Sound Level")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}

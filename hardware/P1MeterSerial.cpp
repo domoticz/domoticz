@@ -62,7 +62,7 @@ bool P1MeterSerial::StartHardware()
 	ParseData((const BYTE*)&buffer, ret, 1);
 #endif
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
 
 	//Try to open the Serial Port
 	try
@@ -126,6 +126,7 @@ bool P1MeterSerial::StopHardware()
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
     _log.Log(LOG_STATUS, "P1 Smart Meter: Serial Worker stopped...");
@@ -135,7 +136,7 @@ bool P1MeterSerial::StopHardware()
 
 void P1MeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled

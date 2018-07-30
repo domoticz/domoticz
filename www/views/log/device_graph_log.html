@@ -1,0 +1,35 @@
+<div class="container">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+
+    <h2 class="text-center">{{ ::vm.pageName }}</h2>
+
+    <h2>{{ ::'Day' | translate }}</h2>
+    <device-log-chart
+            class="device-log-chart"
+            ng-if="::vm.device"
+            device="::vm.device"
+            range="day"
+    />
+
+    <h2>{{ ::'Month' | translate }}</h2>
+    <device-log-chart
+            class="device-log-chart"
+            ng-if="::vm.device"
+            device="::vm.device"
+            range="month"
+    />
+
+    <h2>{{ ::'Year' | translate }}</h2>
+    <device-log-chart
+            class="device-log-chart"
+            ng-if="::vm.device"
+            device="::vm.device"
+            range="year"
+    />
+</div>

@@ -43,7 +43,7 @@ private:
 	int WriteCmd(int fd, uint8_t devAction);
 
 private:
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 
 	_eI2CType m_dev_type;

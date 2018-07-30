@@ -26,7 +26,7 @@ m_refresh(refresh)
 	if (strextra.size() == 3 || strextra.size() == 4 || strextra.size() == 5)
 	{
 		m_script = base64_decode(strextra[0]);
-		m_method = atoi(base64_decode(strextra[1]).c_str());
+		m_method = (unsigned short)atoi(base64_decode(strextra[1]).c_str());
 		m_contenttype = base64_decode(strextra[2]);
 		if (strextra.size() >= 4)
 		{
@@ -52,7 +52,7 @@ void CHttpPoller::Init()
 {
 }
 
-bool CHttpPoller::WriteToHardware(const char *pdata, const unsigned char length)
+bool CHttpPoller::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -61,18 +61,19 @@ bool CHttpPoller::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHttpPoller::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CHttpPoller::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CHttpPoller::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -130,7 +131,7 @@ void CHttpPoller::GetScript()
 		{
 			auth += m_password;
 		}
-		std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+		std::string encodedAuth = base64_encode(auth);
 		ExtraHeaders.push_back("Authorization:Basic " + encodedAuth);
 	}
 

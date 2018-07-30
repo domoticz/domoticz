@@ -99,19 +99,19 @@ bool CThermosmart::StartHardware()
 	Init();
 	m_LastMinute = -1;
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CThermosmart::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CThermosmart::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CThermosmart::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
 	if (!m_bDoLogin)
@@ -146,9 +146,7 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	if (m_OutsideTemperatureIdx == 0)
 		return false;
 	Json::Value tempjson;
-	std::stringstream sstr;
-	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, false, false, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", std::to_string(m_OutsideTemperatureIdx), "", "", true, false, false, 0, "");
 
 	size_t tsize = tempjson.size();
 	if (tsize < 1)
@@ -338,7 +336,7 @@ void CThermosmart::GetMeterDetails()
 	std::string sResult;
 #ifdef DEBUG_ThermosmartThermostat_read
 	sResult = ReadFile("E:\\thermosmart_getdata.txt");
-#else	
+#else
 	if (m_bDoLogin)
 	{
 		if (!Login())

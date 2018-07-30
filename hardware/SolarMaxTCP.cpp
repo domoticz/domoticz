@@ -96,9 +96,9 @@ bool SolarMaxTCP::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SolarMaxTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&SolarMaxTCP::Do_Work, this);
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool SolarMaxTCP::StopHardware()
@@ -119,6 +119,7 @@ bool SolarMaxTCP::StopHardware()
 			{
 				m_stoprequested = true;
 				m_thread->join();
+				m_thread.reset();
 			}
 		}
 		catch (...)
@@ -236,7 +237,7 @@ void SolarMaxTCP::Do_Work()
 				}
 				else
 				{
-					boost::lock_guard<boost::mutex> l(readQueueMutex);
+					std::lock_guard<std::mutex> l(readQueueMutex);
 					ParseData((const unsigned char *)&buf, bread);
 				}
 			}

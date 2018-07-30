@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "KMTronicBase.h"
 
 class KMTronicTCP : public KMTronicBase
@@ -16,7 +15,7 @@ private:
 	void ParseRelays(const std::string &sResult);
 	void ParseTemps(const std::string &sResult);
 	std::string GenerateURL(const bool bIsTempDevice);
-	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn);
+	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) override;
 	void Init();
 	void GetMeterDetails();
 	void Do_Work();
@@ -25,7 +24,7 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_Username;
 	std::string m_Password;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	bool m_bCheckedForTempDevice;
 	bool m_bIsTempDevice;

@@ -33,7 +33,7 @@ CurrentCostMeterSerial::~CurrentCostMeterSerial()
 bool CurrentCostMeterSerial::StartHardware()
 {
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CurrentCostMeterSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CurrentCostMeterSerial::Do_Work, this);
 
 	//Try to open the Serial Port
 	try
@@ -77,6 +77,7 @@ bool CurrentCostMeterSerial::StopHardware()
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -85,7 +86,7 @@ bool CurrentCostMeterSerial::StopHardware()
 
 void CurrentCostMeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
@@ -93,7 +94,7 @@ void CurrentCostMeterSerial::readCallback(const char *data, size_t len)
 	ParseData(data, static_cast<int>(len));
 }
 
-bool CurrentCostMeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool CurrentCostMeterSerial::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

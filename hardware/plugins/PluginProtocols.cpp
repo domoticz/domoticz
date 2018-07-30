@@ -7,17 +7,9 @@
 
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
-
 #include "../main/Helper.h"
-#include "DelayedLink.h"
-
 #include "../main/Logger.h"
 #include "../webserver/Base64.h"
-
-#include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/lock_guard.hpp>
-
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 
@@ -553,7 +545,7 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 				{
 					auth += m_Password;
 				}
-				std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+				std::string encodedAuth = base64_encode(auth);
 				sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
 			}
 

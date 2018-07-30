@@ -88,8 +88,8 @@ private:
 
 	time_t LastScanTime, LastScanTimeEnergy, LastScanTimeEnergyTot;
 
-	boost::shared_ptr<boost::thread> m_monitorThread;
-	boost::shared_ptr<boost::thread> m_heartbeatThread;
+	std::shared_ptr<std::thread> m_monitorThread;
+	std::shared_ptr<std::thread> m_heartbeatThread;
 	volatile bool m_stoprequested;
 	volatile uint32_t mask_request_status;
 	int m_heartbeatcntr;

@@ -1,7 +1,6 @@
 #pragma once
 
 
-#include <iosfwd>
 #include <set>
 #include "DomoticzHardware.h"
 #include "../hardware/1Wire/1WireCommon.h"
@@ -24,7 +23,7 @@ private:
 	void PollSwitches();
 
 	// Messages to Domoticz
-	void ReportLightState(const std::string& deviceId, const int unit, const bool state);
+	void ReportLightState(const std::string& deviceId, const uint8_t unit, const bool state);
 	void ReportWiper(const std::string& deviceId, const int wiper);
 	void ReportTemperature(const std::string& deviceId, const float temperature);
 	void ReportTemperatureHumidity(const std::string& deviceId, const float temperature, const float humidity);
@@ -35,8 +34,8 @@ private:
 	void ReportIlluminance(const std::string& deviceId, const float illuminescence);
 private:
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_threadSensors;
-	boost::shared_ptr<boost::thread> m_threadSwitches;
+	std::shared_ptr<std::thread> m_threadSensors;
+	std::shared_ptr<std::thread> m_threadSwitches;
 	I_1WireSystem* m_system;
 	std::map<std::string, bool> m_LastSwitchState;
 	std::set<_t1WireDevice> m_sensors;

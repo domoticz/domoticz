@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "KMTronicBase.h"
 
 class KMTronicUDP : public KMTronicBase
@@ -14,7 +13,7 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn);
+	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) override;
 	void Init();
 	void GetMeterDetails();
 private:
@@ -22,7 +21,7 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_Username;
 	std::string m_Password;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 };
 

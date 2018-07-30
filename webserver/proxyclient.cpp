@@ -1,10 +1,8 @@
 #include "stdafx.h"
 #ifndef NOCLOUD
 #include "proxyclient.h"
-#include "request.hpp"
-#include "reply.hpp"
-#include "request_parser.hpp"
-#include "../main/Helper.h"
+#include "../hardware/DomoticzTCP.h"
+#include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 #include "../tcpserver/TCPServer.h"
@@ -167,7 +165,7 @@ namespace http {
 			if (doStop) {
 				return;
 			}
-			boost::unique_lock<boost::mutex>(writeMutex);
+			std::unique_lock<std::mutex>(writeMutex);
 			if (bytes_transferred != SockWriteBuf.length()) {
 				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 			}
@@ -223,7 +221,7 @@ namespace http {
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
-			boost::unique_lock<boost::mutex>(writeMutex);
+			std::unique_lock<std::mutex>(writeMutex);
 			if (connection_status != status_connected) {
 				return;
 			}
@@ -749,28 +747,24 @@ namespace http {
 		{
 			m_pWebEm = webEm;
 			m_pDomServ = domServ;
-			m_thread = NULL;
 			_first = true;
 		}
 
 		CProxyManager::~CProxyManager()
 		{
-			if (m_thread) {
-				delete m_thread;
-			}
+			Stop();
 		}
 
 		int CProxyManager::Start(bool first)
 		{
 			_first = first;
-			m_thread = new boost::thread(boost::bind(&CProxyManager::StartThread, shared_from_this()));
+			m_thread = std::make_shared<std::thread>(&CProxyManager::StartThread, shared_from_this());
 			return 1;
 		}
 
 		void CProxyManager::StartThread()
 		{
 			try {
-				//boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::tlsv12_client);
 				boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
@@ -792,12 +786,12 @@ namespace http {
 		{
 			if (m_thread) {
 				io_service.post(boost::bind(&CProxyClient::Stop, proxyclient));
-				delete m_thread;
-				m_thread = NULL;
+				m_thread->join();
+				m_thread.reset();
 			}
 		}
 
-		boost::shared_ptr<CProxyClient> CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
+		std::shared_ptr<CProxyClient> CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
 			sharedData.AddTCPClient(master);
 			return proxyclient;
 		}

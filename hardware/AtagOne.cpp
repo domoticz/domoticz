@@ -78,7 +78,7 @@ CAtagOne::~CAtagOne(void)
 {
 }
 
-void CAtagOne::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+void CAtagOne::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
 {
 	m_OutsideTemperatureIdx = Mode1;
 }
@@ -95,19 +95,19 @@ bool CAtagOne::StartHardware()
 	Init();
 	m_LastMinute = -1;
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CAtagOne::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CAtagOne::Do_Work, this);
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CAtagOne::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -152,7 +152,7 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 	SaveString2Disk(sResult, "E:\\AtagOne_requesttoken.txt");
 #endif
 #endif
-	// <input name="__RequestVerificationToken" type="hidden" value="lFVlMZlt2-YJKAwZWS_K_p3gsQWjZOvBNBZ3lM8io_nFGFL0oRsj4YwQUdqGfyrEqGwEUPmm0FgKH1lPWdk257tuTWQ1" /> 
+	// <input name="__RequestVerificationToken" type="hidden" value="lFVlMZlt2-YJKAwZWS_K_p3gsQWjZOvBNBZ3lM8io_nFGFL0oRsj4YwQUdqGfyrEqGwEUPmm0FgKH1lPWdk257tuTWQ1" />
 	size_t tpos = sResult.find("__RequestVerificationToken");
 	if (tpos == std::string::npos)
 	{
@@ -293,7 +293,7 @@ bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	return true;
 }
 
-bool CAtagOne::WriteToHardware(const char *pdata, const unsigned char length)
+bool CAtagOne::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -323,7 +323,7 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 	//     <label class="col-xs-6 control-label">Apparaat alias</label>
 	//     <div class="col-xs-6">
 	//         <p class="form-control-static">CV-ketel</p>
-	//     </div> 
+	//     </div>
 	for (const auto & itt : m_labels)
 	{
 		std::string sresult = hpage;
@@ -495,7 +495,7 @@ void CAtagOne::GetMeterDetails()
 	{
 		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status");
 	}
-	
+
 }
 
 void CAtagOne::SetSetpoint(const int idx, const float temp)
@@ -542,10 +542,10 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 #ifdef DEBUG_AtagOneThermostat
 	SaveString2Disk(sResult, "E:\\AtagOne_setsetpoint.txt");
 #endif
-	SendSetPointSensor(0,0,idx, dtemp, "");
+	SendSetPointSensor(0,0, (const uint8_t)idx, dtemp, "");
 }
 
-void CAtagOne::SetPauseStatus(const bool bIsPause)
+void CAtagOne::SetPauseStatus(const bool /*bIsPause*/)
 {
 }
 
@@ -557,7 +557,7 @@ void CAtagOne::SendOutsideTemperature()
 	SetOutsideTemp(temp);
 }
 
-void CAtagOne::SetOutsideTemp(const float temp)
+void CAtagOne::SetOutsideTemp(const float /*temp*/)
 {
 }
 

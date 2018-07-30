@@ -206,7 +206,7 @@ void CHttpPush::DoHttpPush()
 				if (httpAuthInt == 1) {			// BASIC authentication
 					std::stringstream sstr;
 					sstr << httpAuthBasicLogin << ":" << httpAuthBasicPassword;
-					std::string m_AccessToken = base64_encode((const unsigned char *)(sstr.str().c_str()), strlen(sstr.str().c_str()));
+					std::string m_AccessToken = base64_encode(sstr.str());
 					ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 				}
 				sendValue = CURLEncode::URLEncode(sendValue);

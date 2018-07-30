@@ -8,8 +8,8 @@
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../webserver/Base64.h"
 #include "../main/WebServer.h"
+#include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
 #include "../main/localtime_r.h"
 #define __STDC_FORMAT_MACROS
@@ -46,6 +46,9 @@ void CInfluxPush::UpdateSettings()
 	m_sql.GetPreferencesVar("InfluxIP", m_InfluxIP);
 	m_sql.GetPreferencesVar("InfluxPort", m_InfluxPort);
 	m_sql.GetPreferencesVar("InfluxDatabase", m_InfluxDatabase);
+	m_sql.GetPreferencesVar("InfluxUsername", m_InfluxUsername);
+	m_sql.GetPreferencesVar("InfluxPassword", m_InfluxPassword);
+
 	int InfluxDebugActiveInt = 0;
 	m_bInfluxDebugActive = false;
 	m_sql.GetPreferencesVar("InfluxDebug", InfluxDebugActiveInt);
@@ -54,15 +57,18 @@ void CInfluxPush::UpdateSettings()
 	}
 	m_szURL = "";
 	if (
-		(m_InfluxIP == "") ||
+		(m_InfluxIP.empty()) ||
 		(m_InfluxPort == 0) ||
-		(m_InfluxDatabase == "")
+		(m_InfluxDatabase.empty())
 		)
 		return;
 	std::stringstream sURL;
 	if (m_InfluxIP.find("://") == std::string::npos)
 		sURL << "http://";
-	sURL << m_InfluxIP << ":" << m_InfluxPort << "/write?db=" << m_InfluxDatabase;
+	sURL << m_InfluxIP << ":" << m_InfluxPort << "/write?";
+	if ((!m_InfluxUsername.empty()) && (!m_InfluxPassword.empty()))
+		sURL << "u=" << m_InfluxUsername << "&p=" << base64_decode(m_InfluxPassword) << "&";
+	sURL << "db=" << m_InfluxDatabase << "&precision=s";
 	m_szURL = sURL.str();
 }
 
@@ -139,7 +145,7 @@ void CInfluxPush::DoInfluxPush()
 					m_PushedItems[szKey] = pItem;
 				}
 
-				boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+				std::lock_guard<std::mutex> l(m_background_task_mutex);
 				if (m_background_task_queue.size() < 50)
 					m_background_task_queue.push_back(pItem);
 			}
@@ -151,16 +157,17 @@ bool CInfluxPush::StartThread()
 {
 	StopThread();
 	m_stoprequested = false;
-	m_background_task_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CInfluxPush::Do_Work, this)));
-	return (m_background_task_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
+	return (m_thread != NULL);
 }
 
 void CInfluxPush::StopThread()
 {
-	if (m_background_task_thread)
+	if (m_thread)
 	{
 		m_stoprequested = true;
-		m_background_task_thread->join();
+		m_thread->join();
+		m_thread.reset();
 	}
 }
 
@@ -174,7 +181,7 @@ void CInfluxPush::Do_Work()
 		sleep_milliseconds(500);
 
 		{ // additional scope for lock (accessing size should be within lock too)
-			boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+			std::lock_guard<std::mutex> l(m_background_task_mutex);
 			if (m_background_task_queue.empty())
 				continue;
 			_items2do = m_background_task_queue;
@@ -189,14 +196,15 @@ void CInfluxPush::Do_Work()
 		std::vector<_tPushItem>::iterator itt = _items2do.begin();
 		while (itt != _items2do.end())
 		{
+			if (!sSendData.empty())
+				sSendData += '\n';
+
 			std::stringstream sziData;
 			sziData << itt->skey << " value=" << itt->svalue;
 			if (m_bInfluxDebugActive) {
 				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
 			}
-			//sziData << " " << (itt->stimestamp * 1000000000);
-			if (!sSendData.empty())
-				sSendData += "\n";
+			sziData << " " << itt->stimestamp;
 			sSendData += sziData.str();
 			++itt;
 		}
@@ -204,7 +212,7 @@ void CInfluxPush::Do_Work()
 		std::string sResult;
 		if (!HTTPClient::POST(m_szURL, sSendData, ExtraHeaders, sResult, true, true))
 		{
-			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
+			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database/username/password)");
 		}
 	}
 }
@@ -225,6 +233,8 @@ namespace http {
 			std::string remote = request::findValue(&req, "remote");
 			std::string port = request::findValue(&req, "port");
 			std::string database = request::findValue(&req, "database");
+			std::string username = request::findValue(&req, "username");
+			std::string password = request::findValue(&req, "password");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
 			if (
 				(linkactive == "") ||
@@ -240,6 +250,8 @@ namespace http {
 			m_sql.UpdatePreferencesVar("InfluxIP", remote.c_str());
 			m_sql.UpdatePreferencesVar("InfluxPort", atoi(port.c_str()));
 			m_sql.UpdatePreferencesVar("InfluxDatabase", database.c_str());
+			m_sql.UpdatePreferencesVar("InfluxUsername", username.c_str());
+			m_sql.UpdatePreferencesVar("InfluxPassword", base64_encode(password));
 			m_sql.UpdatePreferencesVar("InfluxDebug", idebugenabled);
 			m_influxpush.UpdateSettings();
 			root["status"] = "OK";
@@ -272,6 +284,14 @@ namespace http {
 			if (m_sql.GetPreferencesVar("InfluxDatabase", sValue))
 			{
 				root["InfluxDatabase"] = sValue;
+			}
+			if (m_sql.GetPreferencesVar("InfluxUsername", sValue))
+			{
+				root["InfluxUsername"] = sValue;
+			}
+			if (m_sql.GetPreferencesVar("InfluxPassword", sValue))
+			{
+				root["InfluxPassword"] = base64_decode(sValue);
 			}
 			if (m_sql.GetPreferencesVar("InfluxDebug", nValue)) {
 				root["InfluxDebug"] = nValue;

@@ -1,12 +1,8 @@
 #pragma once
 
-#include <iosfwd>
 #include "DomoticzHardware.h"
 #if defined WIN32
 #include "ws2tcpip.h"
-#endif
-#ifndef NOCLOUD
-#include "../webserver/proxyclient.h"
 #endif
 
 class DomoticzTCP : public CDomoticzHardwareBase
@@ -51,7 +47,7 @@ private:
 	std::string m_username;
 	std::string m_password;
 	int m_retrycntr;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 	sockaddr_in6 m_addr;
 	struct addrinfo *info;

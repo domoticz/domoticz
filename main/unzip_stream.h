@@ -39,7 +39,6 @@
 #include <cstring>
 #include <string>
 #include <istream>
-#include <vector>
 #include <unzip.h>
 
 namespace clx {

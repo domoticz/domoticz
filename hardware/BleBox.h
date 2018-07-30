@@ -44,7 +44,7 @@ private:
 	Json::Value SendCommand(const std::string &IPAddress, const std::string &command, const int timeOut = 3);
 	void GetDevicesState();
 
-	void SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
+	void SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
 
 	void ReloadNodes();
 	void UnloadNodes();
@@ -52,10 +52,10 @@ private:
 private:
 	volatile bool m_stoprequested;
 	int m_PollInterval;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::map<const std::string, const int> m_devices;
-	boost::mutex m_mutex;
-	
+	std::mutex m_mutex;
+
 	_tColor m_RGBWColorState;
 	bool m_RGBWisWhiteState;
 	int m_RGBWbrightnessState;

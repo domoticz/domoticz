@@ -1,3 +1,6 @@
+[2.4.7]
+- Added support for civil twilight in rules
+
 [2.4.6]
 - Added Youless device
 - Added more to the documentation section for http requests

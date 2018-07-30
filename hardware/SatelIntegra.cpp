@@ -133,10 +133,10 @@ bool SatelIntegra::StartHardware()
 		return false;
 	}
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SatelIntegra::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&SatelIntegra::Do_Work, this);
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool SatelIntegra::StopHardware()
@@ -146,10 +146,11 @@ bool SatelIntegra::StopHardware()
 #endif
 
 	m_stoprequested = true;
-	
+
 	if (m_thread)
 	{
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	DestroySocket();
@@ -914,7 +915,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			{
 				id = id - 1024;
 				if (cmnd == gswitch_sOn)
-				{ 
+				{
 					id++;
 				}
 				cmnd = gswitch_sOn;
@@ -1132,7 +1133,7 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 
 int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2)
 {
-	boost::lock_guard<boost::mutex> lock(m_mutex);
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	if (!ConnectToIntegra())
 	{
@@ -1179,7 +1180,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 	// remove special chars
 	int offset = 0;
-	for (int i = 0; i < ret; i++) 
+	for (int i = 0; i < ret; i++)
 	{
 		buffer[i] = buffer[i + offset];
 		if (buffer[i] == 0xFE && buffer[i + 1] == 0xF0)
@@ -1194,8 +1195,8 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	{
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ret - 2] == 0xFE) // check prefix and sufix
 		{
-			if ( (buffer[2] != 0xEF) 
-		 	  && ((ret - 6) != expectedLength1) 
+			if ( (buffer[2] != 0xEF)
+		 	  && ((ret - 6) != expectedLength1)
 			  && ((ret - 6) != expectedLength2))
 			{
 				_log.Log(LOG_ERROR, "Satel Integra: bad data length received");

@@ -584,8 +584,8 @@ bool CHEOS::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHEOS::Do_Work, this)));
-	return (m_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&CHEOS::Do_Work, this);
+	return (m_thread != nullptr);
 }
 
 bool CHEOS::StopHardware()
@@ -605,6 +605,7 @@ bool CHEOS::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -632,7 +633,7 @@ void CHEOS::OnDisconnect()
 
 void CHEOS::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 
@@ -786,7 +787,7 @@ void CHEOS::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-bool CHEOS::WriteToHardware(const char *pdata, const unsigned char length)
+bool CHEOS::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -801,7 +802,7 @@ bool CHEOS::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		if (itt->DevID == DevID)
 		{
-			int iParam = pSen->LIGHTING2.level;
+			//int iParam = pSen->LIGHTING2.level;
 			std::string sParam;
 			switch (pSen->LIGHTING2.cmnd)
 			{
@@ -903,13 +904,13 @@ namespace http {
 			pHardware->SetSettings(iMode1, iMode2);
 		}
 
-		void CWebServer::Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_HEOSMediaCommand(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			std::string sIdx = request::findValue(&req, "idx");
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
-			int idx = atoi(sIdx.c_str());
+			//int idx = atoi(sIdx.c_str());
 			root["status"] = "OK";
 			root["title"] = "HEOSMediaCommand";
 
@@ -922,7 +923,7 @@ namespace http {
 				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
 				int PlayerID = atoi(result[0][1].c_str());
 				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
-				int HwID = atoi(result[0][3].c_str());
+				//int HwID = atoi(result[0][3].c_str());
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{

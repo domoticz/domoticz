@@ -72,26 +72,25 @@ bool CEvohomeScript::WriteToHardware(const char *pdata, const unsigned char leng
 {
 	if(!pdata)
 		return false;
-	REVOBUF *tsen=(REVOBUF*)pdata;
 	switch (pdata[1])
 	{
 		case pTypeEvohome:
-			if (length<sizeof(REVOBUF::_tEVOHOME1))
+			if (length<sizeof(_tEVOHOME1))
 				return false;
 			//This is a switch so the on action script will be run anyway
 			break;
 		case pTypeEvohomeZone:
-			if (length<sizeof(REVOBUF::_tEVOHOME2))
+			if (length<sizeof(_tEVOHOME2))
 				return false;
 			RunScript(pdata,length);
 			break;
 		case pTypeEvohomeWater:
-			if (length<sizeof(REVOBUF::_tEVOHOME2))
+			if (length<sizeof(_tEVOHOME2))
 				return false;
 			RunScript(pdata,length);
 			break;
 		case pTypeEvohomeRelay:
-			if (length<sizeof(REVOBUF::_tEVOHOME3))
+			if (length<sizeof(_tEVOHOME3))
 				return false;
 			//Only supported by HGI80
 			break;
@@ -100,13 +99,13 @@ bool CEvohomeScript::WriteToHardware(const char *pdata, const unsigned char leng
 }
 
 
-void CEvohomeScript::RunScript(const char *pdata, const unsigned char length)
+void CEvohomeScript::RunScript(const char *pdata, const unsigned char /*length*/)
 {
 	if(!pdata)
 		return;
-	REVOBUF *tsen=(REVOBUF*)pdata;
+	_tEVOHOME2 *tsen=(_tEVOHOME2*)pdata;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",	m_HwdID, (int)tsen->EVOHOME2.zone, (int)tsen->EVOHOME2.type);
+	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",	m_HwdID, (int)tsen->zone, (int)tsen->type);
 	if (!result.empty())
 	{
 		unsigned long ID;
@@ -124,21 +123,21 @@ void CEvohomeScript::RunScript(const char *pdata, const unsigned char length)
 			boost::replace_all(OnAction, "{deviceid}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << (int)tsen->EVOHOME2.zone;
+			s_strid << (int)tsen->zone;
 			boost::replace_all(OnAction, "{unit}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << (int)tsen->EVOHOME2.mode;
+			s_strid << (int)tsen->mode;
 			boost::replace_all(OnAction, "{mode}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << tsen->EVOHOME2.temperature / 100.0f;
+			s_strid << tsen->temperature / 100.0f;
 			boost::replace_all(OnAction, "{setpoint}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << (int)tsen->EVOHOME2.temperature;
+			s_strid << (int)tsen->temperature;
 			boost::replace_all(OnAction, "{state}", s_strid.str());
-			boost::replace_all(OnAction, "{until}", CEvohomeDateTime::GetISODate(tsen->EVOHOME2));
+			boost::replace_all(OnAction, "{until}", CEvohomeDateTime::GetISODate(tsen));
 			//Execute possible script
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
