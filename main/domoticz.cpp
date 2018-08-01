@@ -572,7 +572,9 @@ std::string pidfile = PID_FILE;
 int pidFilehandle = 0;
 
 int fatal_handling = 0;
+#ifndef WIN32
 pthread_t fatal_handling_thread;
+#endif
 
 void signal_handler(int sig_num
 #ifndef WIN32
@@ -621,6 +623,7 @@ void signal_handler(int sig_num
 #if defined(__linux__)
 			printRegInfo(info, ((ucontext_t *)ucontext));
 #endif
+#ifndef WIN32
 			if (!pthread_equal(fatal_handling_thread, pthread_self()))
 			{
 				// fatal error in other thread, wait for dump handler to finish
@@ -628,13 +631,16 @@ void signal_handler(int sig_num
 				// TODO: Replace sleep with read from FIFO
 				sleep(120);
 			}
+#endif
 			dumpstack_backtrace(info, ucontext);
 			// re-raise signal to enforce core dump
 			signal(sig_num, SIG_DFL);
 			raise(sig_num);
 		}
 		fatal_handling = 1;
+#ifndef WIN32
 		fatal_handling_thread = pthread_self();
+#endif
 		_log.Log(LOG_ERROR, "Domoticz(pid:%d, tid:%d('%s')) received fatal signal %d (%s)", getpid(), tid, thread_name, sig_num
 #ifndef WIN32
 			, strsignal(sig_num));
