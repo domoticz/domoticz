@@ -11,6 +11,8 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
+extern bool g_bIsWSL;
+
 namespace http {
 namespace server {
 
@@ -63,7 +65,8 @@ void server_base::run() {
 	// for new incoming connections.
 	try {
 		is_running = true;
-		heart_beat(boost::system::error_code());
+		// Don't enable heartbeat in WSL due to https://github.com/Microsoft/WSL/issues/3091 (Fixed in Windows 10 1809 / build 17686)
+		if (!g_bIsWSL) heart_beat(boost::system::error_code());
 		io_service_.run();
 		is_running = false;
 	} catch (std::exception& e) {
