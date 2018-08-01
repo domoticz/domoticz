@@ -44,6 +44,7 @@ bool KMTronicSerial::StartHardware()
 	//Start worker thread
 	m_bIsStarted = true;
 	m_thread = std::make_shared<std::thread>(&KMTronicSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "KMTronicSerial");
 	return (m_thread != nullptr);
 }
 

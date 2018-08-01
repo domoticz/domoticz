@@ -104,6 +104,7 @@ bool CDaikin::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDaikin::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Daikin");
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());

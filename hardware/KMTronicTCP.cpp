@@ -57,6 +57,7 @@ bool KMTronicTCP::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&KMTronicTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "KMTronicTCP");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "KMTronic: Started");

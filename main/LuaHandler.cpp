@@ -211,6 +211,7 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 		boost::thread aluaThread(boost::bind(&CLuaHandler::luaThread, this, lua_state, fullfilename));
+		SetThreadName(aluaThread.native_handle(), "aluaThread");
 		aluaThread.timed_join(boost::posix_time::seconds(10));
 		return true;
 	}

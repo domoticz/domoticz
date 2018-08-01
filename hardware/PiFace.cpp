@@ -724,7 +724,9 @@ bool CPiFace::StartHardware()
             }
 
 			m_thread = std::make_shared<std::thread>(&CPiFace::Do_Work, this);
+			SetThreadName(m_thread->native_handle(), "PiFace");
 			m_queue_thread = std::make_shared<std::thread>(&CPiFace::Do_Work_Queue, this);
+			SetThreadName(m_queue_thread->native_handle(), "PiFaceQueue");
         }
         else m_stoprequested=true;
     }

@@ -117,6 +117,7 @@ bool CLogitechMediaServer::StartHardware()
 	//Start worker thread
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Logitech");
 
 	return (m_thread != nullptr);
 }
@@ -350,6 +351,7 @@ void CLogitechMediaServer::Do_Work()
 					{
 						m_iThreadsRunning++;
 						boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, *itt));
+						SetThreadName(t.native_handle(), "LogitechNode");
 						t.join();
 					}
 				}

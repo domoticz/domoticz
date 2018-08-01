@@ -1063,6 +1063,8 @@ namespace Plugins {
 			//Start worker thread
 			m_stoprequested = false;
 			m_thread = std::make_shared<std::thread>(&CPlugin::Do_Work, this);
+			std::string plugin_name = "Plugin_" + m_PluginKey;
+			SetThreadName(m_thread->native_handle(), plugin_name.c_str());
 
 			if (!m_thread)
 			{

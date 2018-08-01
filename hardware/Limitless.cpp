@@ -263,6 +263,7 @@ bool CLimitLess::StartHardware()
 	sOnConnected(this);
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CLimitLess::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Limitless");
 	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
 	return (m_thread != nullptr);
 }

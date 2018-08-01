@@ -117,6 +117,7 @@ bool DomoticzTCP::StartHardwareTCP()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&DomoticzTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DomoticzTCP");
 
 	return (m_thread != nullptr);
 }

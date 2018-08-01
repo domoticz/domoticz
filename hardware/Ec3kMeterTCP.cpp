@@ -69,6 +69,7 @@ bool Ec3kMeterTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Ec3kMeterTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Ec3kMeterTCP");
 	return (m_thread != nullptr);
 }
 

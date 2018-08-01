@@ -105,6 +105,7 @@ namespace Plugins {
 		BuildManifest();
 
 		m_thread = std::make_shared<std::thread>(&CPluginSystem::Do_Work, this);
+		SetThreadName(m_thread->native_handle(), "PluginMgr");
 
 		szPyVersion = Py_GetVersion();
 
@@ -260,6 +261,7 @@ namespace Plugins {
 		// Create initial IO Service thread
 		ios.reset();
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+		SetThreadName(bt.native_handle(), "PluginMgr_IO");
 
 		while (!m_stoprequested)
 		{
@@ -281,6 +283,7 @@ namespace Plugins {
 					ios.reset();
 					_log.Log(LOG_NORM, "PluginSystem: Restarting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+					SetThreadName(bt.native_handle(), "PluginMgr_IO");
 				}
 			}
 

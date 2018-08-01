@@ -67,6 +67,7 @@ namespace Plugins {
 					ios.reset();
 					if (pPlugin->m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+					SetThreadName(bt.native_handle(), "PluginMgr_IO");
 				}
 			}
 		}
@@ -121,6 +122,7 @@ namespace Plugins {
 				ios.reset();
 				if (pPlugin->m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				SetThreadName(bt.native_handle(), "PluginMgr_IO");
 			}
 		}
 		else
@@ -158,6 +160,7 @@ namespace Plugins {
 					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+					SetThreadName(bt.native_handle(), "PluginMgr_IO");
 				}
 			}
 		}
@@ -384,6 +387,7 @@ namespace Plugins {
 					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+					SetThreadName(bt.native_handle(), "PluginMgr_IO");
 				}
 			}
 			catch (boost::system::system_error se)
@@ -528,6 +532,7 @@ namespace Plugins {
 				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				SetThreadName(bt.native_handle(), "PluginMgr_IO");
 			}
 
 			m_bConnected = true;
@@ -748,6 +753,7 @@ namespace Plugins {
 				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				SetThreadName(bt.native_handle(), "PluginMgr_IO");
 			}
 		}
 		catch (std::exception& e)

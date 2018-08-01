@@ -673,6 +673,8 @@ namespace http {
 			//Start normal worker thread
 			m_bDoStop = false;
 			m_thread = std::make_shared<std::thread>(&CWebServer::Do_Work, this);
+			std::string server_name = "WebServer_" + settings.listening_port;
+			SetThreadName(m_thread->native_handle(), server_name.c_str());
 			return (m_thread != nullptr);
 		}
 

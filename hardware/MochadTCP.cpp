@@ -101,6 +101,7 @@ bool MochadTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MochadTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MochadTCP");
 	return (m_thread != nullptr);
 }
 
