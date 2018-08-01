@@ -112,6 +112,17 @@ static int IsDebuggerPresent(void)
 	return debugger_present;
 }
 
+static bool printRegInfo(siginfo_t * info, ucontext_t * ucontext)
+{
+#if defined(REG_RIP) //x86_64
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP]);
+#elif defined(REG_EIP) //x86
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_EIP]);
+#else // arm
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.arm_lr);
+#endif
+}
+
 static bool printSingleThreadInfo(FILE* f, const char* pattern, bool& foundThread, bool& gdbSuccess)
 {
 	char * line = NULL;
@@ -608,7 +619,7 @@ void signal_handler(int sig_num
 				, "-");
 #endif
 #if defined(__linux__)
-			_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP]);
+			printRegInfo(info, ((ucontext_t *)ucontext));
 #endif
 			if (!pthread_equal(fatal_handling_thread, pthread_self()))
 			{
@@ -631,7 +642,7 @@ void signal_handler(int sig_num
 			, "-");
 #endif
 #if defined(__linux__)
-		_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP]);
+		printRegInfo(info, ((ucontext_t *)ucontext));
 #endif
 		dumpstack(info, ucontext);
 		// re-raise signal to enforce core dump
