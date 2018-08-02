@@ -1223,7 +1223,7 @@ static void heartbeat_check()
 	}
 }
 
-static bool stop_watchdog = false;
+static std::atomic<bool> stop_watchdog{false};
 
 void Do_Watchdog_Work()
 {

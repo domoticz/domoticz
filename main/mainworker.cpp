@@ -1701,7 +1701,7 @@ void MainWorker::Do_Work()
 				HandleAutomaticBackups();
 			}
 		}
-		if (heartbeat_counter++ > 30)
+		if (heartbeat_counter++ > 12)
 		{
 			heartbeat_counter = 0;
 			m_LastHeartbeat = mytime(NULL);
