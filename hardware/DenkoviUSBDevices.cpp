@@ -76,7 +76,7 @@ bool CDenkoviUSBDevices::StartHardware()
 	catch (...)
 	{
 		if (m_iModel == DDEV_USB_16R)
-			_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error opening serial port (%s)!", m_szSerialPort);
+			_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error opening serial port!");
 		return false;
 	}
 	m_bIsStarted = true;
