@@ -353,6 +353,8 @@ hardware/DavisLoggerSerial.cpp
 hardware/DenkoviSmartdenIPInOut.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DenkoviDevices.cpp
+hardware/DenkoviUSBDevices.cpp
+hardware/DenkoviTCPDevices.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
