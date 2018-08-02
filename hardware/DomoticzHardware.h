@@ -100,7 +100,7 @@ protected:
 	//Barometric calculation (only for 1 sensor per hardware device!)
 	int CalculateBaroForecast(const double pressure);
 
-	bool m_bIsStarted = { false };
+	std::atomic<bool> m_bIsStarted = { false };
 
 private:
     void Do_Heartbeat_Work();

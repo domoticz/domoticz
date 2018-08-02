@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include <string>
@@ -87,7 +88,7 @@ private:
 	time_t m_tAstTwStart;
 	time_t m_tAstTwEnd;
 	std::mutex m_mutex;
-	volatile bool m_stoprequested;
+	std::atomic<bool> m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::vector<tScheduleItem> m_scheduleitems;
 

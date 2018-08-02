@@ -260,31 +260,12 @@ namespace Plugins {
 
 		// Create initial IO Service thread
 		ios.reset();
+		// Create some work to keep IO Service alive
+		auto work = boost::asio::io_service::work(ios);
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 
 		while (!m_stoprequested)
 		{
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
-			{
-				bool bIos_required = false;
-				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
-				{
-					CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
-					if (pPlugin && pPlugin->IoThreadRequired())
-					{
-						bIos_required = true;
-						break;
-					}
-				}
-
-				if (bIos_required)
-				{
-					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Restarting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-				}
-			}
-
 			time_t	Now = time(0);
 			bool	bProcessed = true;
 			while (bProcessed)
@@ -328,6 +309,7 @@ namespace Plugins {
 				// Free the memory for the message
 				if (Message)
 				{
+					std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection inside the message
 					CPlugin* pPlugin = (CPlugin*)Message->Plugin();
 					pPlugin->RestoreThread();
 					delete Message;

@@ -40,7 +40,6 @@ extern MainWorker m_mainworker;
 namespace Plugins {
 
 	extern concurrent_queue<CPluginMessageBase*>	PluginMessageQueue;
-	extern boost::asio::io_service ios;
 
 	std::mutex PythonMutex;			// controls access to Python
 
@@ -765,21 +764,6 @@ namespace Plugins {
 		if (pTraceback) Py_XDECREF(pTraceback);
 	}
 
-	bool CPlugin::IoThreadRequired()
-	{
-		std::lock_guard<std::mutex> l(m_TransportsMutex);
-		if (m_Transports.size())
-		{
-			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
-			{
-				CPluginTransport*	pPluginTransport = *itt;
-				if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
-					return true;
-			}
-		}
-		return false;
-	}
-
 	int CPlugin::PollInterval(int Interval)
 	{
 		if (Interval > 0)
@@ -891,13 +875,16 @@ namespace Plugins {
 				// If we have connections queue disconnects
 				if (m_Transports.size())
 				{
-					std::lock_guard<std::mutex> l(m_TransportsMutex);
+					std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
+					                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
+					std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
 					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 					{
 						CPluginTransport*	pPluginTransport = *itt;
 						// Tell transport to disconnect if required
 						if (pPluginTransport)
 						{
+							//std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 							MessagePlugin(new DisconnectDirective(this, pPluginTransport->Connection()));
 						}
 					}
@@ -969,11 +956,14 @@ namespace Plugins {
 			// Check all connections are still valid, vector could be affected by a disconnect on another thread
 			try
 			{
-				std::lock_guard<std::mutex> l(m_TransportsMutex);
+				std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
+				                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
+				std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
 				if (m_Transports.size())
 				{
 					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 					{
+						//std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 						CPluginTransport*	pPluginTransport = *itt;
 						pPluginTransport->VerifyConnection();
 					}
