@@ -214,6 +214,8 @@ enum _eHardwareTypes {
 	HTYPE_Honeywell,			//114
 	HTYPE_Tado,					//115
 	HTYPE_DenkoviDevices,		//116
+	HTYPE_DenkoviUSBDevices,	//117
+	HTYPE_DenkoviTCPDevices,	//118
 	HTYPE_END
 };
 
