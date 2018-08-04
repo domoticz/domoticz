@@ -73,8 +73,9 @@ namespace Plugins {
 		std::string		m_Username;
 		std::string		m_Password;
 		int				m_PacketID;
+		bool			m_bErrored;
 	public:
-		CPluginProtocolMQTT(bool Secure) : m_PacketID(1) { m_Secure = Secure; };
+		CPluginProtocolMQTT(bool Secure) : m_PacketID(1), m_bErrored(false) { m_Secure = Secure; };
 		virtual void				ProcessInbound(const ReadEvent* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		void						AuthenticationDetails(const std::string &Username, const std::string &Password)
