@@ -678,16 +678,29 @@ void XiaomiGateway::Do_Work()
 		try {
 	
 			// get output from ifconfig
-			std::string ifconfigStr;	
-			FILE * stream = popen("ifconfig", "r");
-			const int max_buffer = 256;
-    			char buffer[max_buffer];
+			std::string ifconfigStr;
+                        const int max_buffer = 256;
+                        char buffer[max_buffer];
 
-	    		if (stream) {
-  				while (!feof(stream))
-    					if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
-    				pclose(stream);
-    			}
+			// compiler specific as popen/pclose does not exist on Windows
+			// fixes compilation error, but won't work on Windows (ifconfig does not exist)
+			#ifdef _WIN32
+				FILE * stream = _popen("ifconfig", "r");
+		    		if (stream) {
+  					while (!feof(stream))
+    						if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
+    					_pclose(stream);
+    				}
+                        #else
+                                FILE * stream = popen("ifconfig", "r");
+                                if (stream) {
+                                        while (!feof(stream))
+                                                if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
+                                        pclose(stream);
+                                }
+                        #endif
+
+
 	
 			// regex pattern to match ip address in ifconfig output
 			// with <ip> being a valid ip, pattern will match "inet <ip>", "inet addr:<ip>", "inet: <ip>", "inet addr <ip>"
