@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <boost/signals2.hpp>
 #include "../main/RFXNames.h"
 

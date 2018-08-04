@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include "BasePush.h"
 
 class CInfluxPush : public CBasePush
