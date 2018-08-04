@@ -279,7 +279,7 @@ namespace Plugins {
 					CPluginMessageBase* FrontMessage = NULL;
 					PluginMessageQueue.try_pop(FrontMessage);
 					if (!FrontMessage) continue;
-					if (FrontMessage->m_When <= Now)
+					if (!FrontMessage->m_Delay || FrontMessage->m_When <= Now)
 					{
 						// Message is ready now or was already ready (this is the case for almost all messages)
 						Message = FrontMessage;
