@@ -39,7 +39,8 @@ extern MainWorker m_mainworker;
 
 namespace Plugins {
 
-	extern concurrent_queue<CPluginMessageBase*>	PluginMessageQueue;
+	extern std::mutex PluginMutex;	// controls access to the message queue
+	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 
 	std::mutex PythonMutex;			// controls access to Python
 
@@ -818,13 +819,10 @@ namespace Plugins {
 	void CPlugin::ClearMessageQueue()
 	{
 		// Copy the event queue to a temporary one, then copy back the events for other plugins
-		std::queue<CPluginMessageBase*>	TempMessageQueue;
+		std::lock_guard<std::mutex> l(PluginMutex);
+		std::queue<CPluginMessageBase*>	TempMessageQueue(PluginMessageQueue);
 		while (!PluginMessageQueue.empty())
-		{
-			CPluginMessageBase* tmp = NULL;
-			PluginMessageQueue.try_pop(tmp);
-			if (tmp) TempMessageQueue.push(tmp);
-		}
+			PluginMessageQueue.pop();
 
 		while (!TempMessageQueue.empty())
 		{
@@ -1559,6 +1557,7 @@ Error:
 		}
 
 		// Add message to queue
+		std::lock_guard<std::mutex> l(PluginMutex);
 		PluginMessageQueue.push(pMessage);
 	}
 

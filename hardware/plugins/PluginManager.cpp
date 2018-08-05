@@ -65,8 +65,8 @@ namespace Plugins {
     // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 #endif // ENABLE_PYTHON
 
-	std::mutex PluginMutex;	// controls access to the m_pPlugins map
-	concurrent_queue<CPluginMessageBase*>	PluginMessageQueue;
+	std::mutex PluginMutex;	// controls accessto the message queue and m_pPlugins map
+	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
@@ -87,11 +87,10 @@ namespace Plugins {
 	bool CPluginSystem::StartPluginSystem()
 	{
 		// Flush the message queue (should already be empty)
+		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
-			// TODO: If there are messages, they should be deleted, not just popped, or there will be a memory leak
-			CPluginMessageBase* tmp = NULL;
-			PluginMessageQueue.try_pop(tmp);
+			PluginMessageQueue.pop();
 		}
 
 		m_pPlugins.clear();
@@ -274,19 +273,21 @@ namespace Plugins {
 				bProcessed = false;
 
 				// Cycle once through the queue looking for the 1st message that is ready to process
-				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
-					CPluginMessageBase* FrontMessage = NULL;
-					PluginMessageQueue.try_pop(FrontMessage);
-					if (!FrontMessage) continue;
-					if (!FrontMessage->m_Delay || FrontMessage->m_When <= Now)
+					std::lock_guard<std::mutex> l(PluginMutex);
+					for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 					{
-						// Message is ready now or was already ready (this is the case for almost all messages)
-						Message = FrontMessage;
-						break;
+						CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
+						PluginMessageQueue.pop();
+						if (!FrontMessage->m_Delay || FrontMessage->m_When <= Now)
+						{
+							// Message is ready now or was already ready (this is the case for almost all messages)
+							Message = FrontMessage;
+							break;
+						}
+						// Message is for sometime in the future so requeue it (this happens when the 'Delay' parameter is used on a Send)
+						PluginMessageQueue.push(FrontMessage);
 					}
-					// Message is for sometime in the future so requeue it (this happens when the 'Delay' parameter is used on a Send)
-					PluginMessageQueue.push(FrontMessage);
 				}
 
 				if (Message)
@@ -334,20 +335,18 @@ namespace Plugins {
 		}
 
 		// Hardware should already be stopped so just flush the queue (should already be empty)
+		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
-			CPluginMessageBase* Message = NULL;
-			PluginMessageQueue.try_pop(Message);
-			if (!Message) continue;
-
+			CPluginMessageBase* Message = PluginMessageQueue.front();
 			const CPlugin* pPlugin = Message->Plugin();
 			if (pPlugin)
 			{
 				_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
 			}
+			PluginMessageQueue.pop();
 		}
 
-		std::lock_guard<std::mutex> l(PluginMutex);
 		m_pPlugins.clear();
 
 		if (Py_LoadLibrary()  && m_InitialPythonThread)
