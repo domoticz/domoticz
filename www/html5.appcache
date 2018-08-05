@@ -471,6 +471,7 @@ i18n/domoticz-zh.json
 
 # Scripts
 app/log/components.js
+app/log/DeviceLog.js
 app/log/factories.js
 app/log/GraphLog.js
 app/log/LightLog.js
@@ -600,8 +601,10 @@ secpanel/js/ion.sound.min.js
 # HTML pages
 views/log/device_graph_log.html
 views/log/device_light_log.html
+views/log/device_log.html
 views/log/device_temperature_log.html
 views/log/device_temperature_report.html
+views/log/device_text_log.html
 views/log/scene_log.html
 views/about.html
 views/cam.html

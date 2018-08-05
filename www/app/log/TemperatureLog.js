@@ -1,5 +1,21 @@
 define(['app', 'log/factories'], function (app) {
 
+    app.component('deviceTemperatureLog', {
+        bindings: {
+            device: '<',
+        },
+        templateUrl: 'views/log/device_temperature_log.html',
+        controller: function() {
+            var vm = this;
+
+            vm.$onInit = function() {
+                vm.deviceIdx = vm.device.idx;
+                vm.deviceType = vm.device.Type;
+                vm.degreeType = $.myglobals.tempsign;
+            }
+        }
+    });
+
     app.directive('temperatureLogChart', function () {
         return {
             scope: {
@@ -165,22 +181,6 @@ define(['app', 'log/factories'], function (app) {
                     }
                 }
             }
-        }
-    });
-
-    app.controller('DeviceTemperatureLogController', function ($routeParams, deviceApi) {
-        var vm = this;
-
-        init();
-
-        function init() {
-            vm.deviceIdx = $routeParams.id;
-            vm.degreeType = $.myglobals.tempsign;
-
-            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
-                vm.deviceName = device.Name;
-                vm.deviceType = device.Type;
-            });
         }
     });
 });
