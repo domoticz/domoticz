@@ -704,7 +704,7 @@ void XiaomiGateway::Do_Work()
 	
 			// regex pattern to match ip address in ifconfig output
 			// with <ip> being a valid ip, pattern will match "inet <ip>", "inet addr:<ip>", "inet: <ip>", "inet addr <ip>"
-			std::regex pattern("[inet|inet:][ ]*[addr|addr:]*[ ]*(\\d{1,3}(\\.\\d{1,3}){3})");
+			std::regex pattern("[inet|inet:][ ]*[addr|addr:]*[ ]*(?!127)(\\d{1,3}(\\.\\d{1,3}){3})");
 			std::smatch match;
 			
 			if (std::regex_search(ifconfigStr, match, pattern)){
