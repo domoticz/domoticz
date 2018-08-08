@@ -673,54 +673,67 @@ void XiaomiGateway::Do_Work()
 		_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (using boost asio): %s", e.what());
 	}
 
-	
 	if (m_LocalIp == "") {
 		try {
+			
+			// get network ip range to search for from Xiaomi gateway
+			std::string GatewayNetwork;
+			_log.Log(LOG_STATUS, "XiaomiGateway: IP of gateway: %s", m_GatewayIp.c_str());	
+			
+			// pattern to match first 3 octets of Xiaomi gateway
+			std::regex pattern("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
+			std::smatch match;
+  
+			if (std::regex_search(m_GatewayIp, match, pattern)){
+        			GatewayNetwork = match[1];
+				_log.Log(LOG_STATUS, "XiaomiGateway: gateway network section: %s", GatewayNetwork.c_str());
+			}
+			else {
+				_log.Log(LOG_STATUS, "XiaomiGateway: cannot determine gateway network section from Xiaomi gateway ip address");
+			}
 	
-			// get output from ifconfig
+			// get output from ifconfig (Linux) or ipconfig (Windows)
 			std::string ifconfigStr;
                         const int max_buffer = 256;
                         char buffer[max_buffer];
 
 			// compiler specific as popen/pclose does not exist on Windows
-			// fixes compilation error, but won't work on Windows (ifconfig does not exist)
+			// may work on Windows, but not well tested
 			#ifdef _WIN32
-				FILE * stream = _popen("ifconfig", "r");
+				FILE * stream = _popen("ipconfig", "r");
 		    		if (stream) {
   					while (!feof(stream))
     						if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
-    					_pclose(stream);
+    							_pclose(stream);
     				}
-                        #else
-                                FILE * stream = popen("ifconfig", "r");
-                                if (stream) {
-                                        while (!feof(stream))
-                                                if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
-                                        pclose(stream);
-                                }
-                        #endif
-
-
+			#else
+				FILE * stream = popen("ifconfig", "r");
+				if (stream) {
+					while (!feof(stream))
+						if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
+							pclose(stream);
+				}
+			#endif
 	
-			// regex pattern to match ip address in ifconfig output
-			// with <ip> being a valid ip, pattern will match "inet <ip>", "inet addr:<ip>", "inet: <ip>", "inet addr <ip>"
-			std::regex pattern("[inet|inet:][ ]*[addr|addr:]*[ ]*(?!127)(\\d{1,3}(\\.\\d{1,3}){3})");
-			std::smatch match;
-			
+			// regex pattern to match ip address in ifconfig or ipconfig output
+			// searches for an ip starting with same network section (first 3 octets) as the Xiaomi gateway
+			// with <ip> being a valid ip, pattern will match "inet <ip>", "inet addr:<ip>", "inet: <ip>", "inet addr <ip>" etc
+			pattern = ("[inet|inet:][ ]*[addr|addr:]*[ ]*(?="+ GatewayNetwork + ")(\\d{1,3}(\\.\\d{1,3}){3})");
+
 			if (std::regex_search(ifconfigStr, match, pattern)){
         			 m_LocalIp = match[1];
-				 _log.Log(LOG_STATUS, "XiaomiGateway: Using %s for local IP address (parsed from ifconfig).", m_LocalIp.c_str());
+				 _log.Log(LOG_STATUS, "XiaomiGateway: Using %s for Domoticz local IP address (parsed from ifconfig).", m_LocalIp.c_str());
 			}
 			else {
-				_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (parsing ifconfig).");
+				_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local Domoticz IP address (parsing ifconfig).");
 			}
 		}
-	
-        	catch (std::exception& e) {
-                	_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (parsing ifconfig): %s", e.what());
-        	}
-	}
 
+		catch (std::exception& e) {
+			_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (parsing ifconfig): %s", e.what());
+		}
+	}
+	
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
 	boost::thread bt;
 	if (m_ListenPort9898) {
