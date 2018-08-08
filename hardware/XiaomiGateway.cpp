@@ -674,8 +674,8 @@ void XiaomiGateway::Do_Work()
 	}
 
 	if (m_LocalIp == "") {
+		std::string ifconfigOrIpconfig;
 		try {
-			
 			// get network ip range to search for from Xiaomi gateway
 			std::string GatewayNetwork;
 			_log.Log(LOG_STATUS, "XiaomiGateway: IP of gateway: %s", m_GatewayIp.c_str());	
@@ -706,6 +706,7 @@ void XiaomiGateway::Do_Work()
     						if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
     							_pclose(stream);
     				}
+				ifconfigOrIpconfig = "ipconfig";
 			#else
 				FILE * stream = popen("ifconfig", "r");
 				if (stream) {
@@ -713,6 +714,7 @@ void XiaomiGateway::Do_Work()
 						if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
 							pclose(stream);
 				}
+				ifconfigOrIpconfig = "ifconfig";
 			#endif
 	
 			// regex pattern to match ip address in ifconfig or ipconfig output
@@ -722,15 +724,15 @@ void XiaomiGateway::Do_Work()
 
 			if (std::regex_search(ifconfigStr, match, pattern)){
         			 m_LocalIp = match[1];
-				 _log.Log(LOG_STATUS, "XiaomiGateway: Using %s for Domoticz local IP address (parsed from ifconfig).", m_LocalIp.c_str());
+				 _log.Log(LOG_STATUS, "XiaomiGateway: Using %s for Domoticz local IP address (parsed from %s).", m_LocalIp.c_str(), ifconfigOrIpconfig.c_str());
 			}
 			else {
-				_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local Domoticz IP address (parsing ifconfig).");
+				_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local Domoticz IP address (parsing %s).", ifconfigOrIpconfig.c_str());
 			}
 		}
 
 		catch (std::exception& e) {
-			_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (parsing ifconfig): %s", e.what());
+			_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address (parsing %s): %s", ifconfigOrIpconfig.c_str(), e.what());
 		}
 	}
 	
