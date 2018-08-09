@@ -3,7 +3,6 @@
 
 time_t m_lasttime=time(NULL);
 std::mutex TimeMutex_;
-std::mutex TimeMutex2_;
 
 #if defined(localtime_r) || defined(__APPLE__) || defined(__USE_POSIX)
 	#define HAVE_LOCALTIME_R
@@ -31,7 +30,6 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
 
 time_t mytime(time_t * _Time)
 {
-	std::unique_lock<std::mutex> lock(TimeMutex2_);
 	time_t acttime=time(_Time);
 	if (acttime<m_lasttime)
 		return m_lasttime;
