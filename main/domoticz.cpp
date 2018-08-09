@@ -1243,6 +1243,7 @@ int main(int argc, char**argv)
 	time_t atime = mytime(NULL);
 	m_LastHeartbeat = atime;
 	std::thread thread_watchdog(Do_Watchdog_Work);
+	SetThreadName(thread_watchdog.native_handle(), "Watchdog");
 #if defined WIN32
 #ifndef _DEBUG
 	CreateMutexA(0, FALSE, "Local\\Domoticz"); 

@@ -57,6 +57,7 @@ namespace http {
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
 			m_io_service_thread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &m_io_service));
+			SetThreadName(m_io_service_thread->native_handle(), "Webem_ssncleaner");
 		}
 
 		cWebem::~cWebem()
