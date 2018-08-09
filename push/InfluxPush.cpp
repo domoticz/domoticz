@@ -158,6 +158,7 @@ bool CInfluxPush::StartThread()
 	StopThread();
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "InfluxPush");
 	return (m_thread != NULL);
 }
 

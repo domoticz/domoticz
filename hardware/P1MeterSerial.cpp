@@ -63,6 +63,7 @@ bool P1MeterSerial::StartHardware()
 #endif
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "P1MeterSerial");
 
 	//Try to open the Serial Port
 	try

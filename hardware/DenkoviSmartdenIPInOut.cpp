@@ -60,6 +60,7 @@ bool CDenkoviSmartdenIPInOut::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDenkoviSmartdenIPInOut::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DenkoviSmartdenIPInOut");
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Denkovi_IP_In: Started");

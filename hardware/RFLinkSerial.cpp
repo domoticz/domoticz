@@ -24,6 +24,7 @@ bool CRFLinkSerial::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRFLinkSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "RFLinkSerial");
 
 	return (m_thread != nullptr);
 }

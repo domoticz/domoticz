@@ -135,7 +135,10 @@ bool CNotificationHelper::SendMessageEx(
 		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
 			if (bThread)
+			{
 				boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
+				SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
+			}
 			else
 				bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}

@@ -81,6 +81,7 @@ void CDomoticzHardwareBase::StartHeartbeatThread()
 {
 	m_stopHeartbeatrequested = false;
 	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
+	SetThreadName(m_Heartbeatthread->native_handle(), "Domoticz_HBWork");
 }
 
 void CDomoticzHardwareBase::StopHeartbeatThread()

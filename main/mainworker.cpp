@@ -1207,7 +1207,9 @@ bool MainWorker::StartThread()
 	}
 
 	m_thread = std::make_shared<std::thread>(&MainWorker::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MainWorker");
 	m_rxMessageThread = std::make_shared<std::thread>(&MainWorker::Do_Work_On_Rx_Messages, this);
+	SetThreadName(m_rxMessageThread->native_handle(), "MainWorkerRxMsg");
 	return (m_thread != nullptr) && (m_rxMessageThread != NULL);
 }
 

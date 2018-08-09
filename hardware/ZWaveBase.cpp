@@ -53,6 +53,7 @@ bool ZWaveBase::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&ZWaveBase::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "ZWaveBase");
 	return (m_thread != nullptr);
 }
 

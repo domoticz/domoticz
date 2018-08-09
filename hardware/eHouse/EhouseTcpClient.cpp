@@ -21,6 +21,7 @@
  */
 
 #include "stdafx.h"
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../eHouseTCP.h"
 #ifndef WIN32
@@ -145,6 +146,7 @@ char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCou
 	ExecQueuedEvents();
 #else
 	EhouseTcpClientThread[tcp_client_socket_index] = std::make_shared<std::thread>(&eHouseTCP::EhouseSubmitData, this, tcp_client_socket_index);
+	SetThreadName(EhouseTcpClientThread[tcp_client_socket_index]->native_handle(), "EHouseTCPClient");
 
 	EhouseTcpClientThread[tcp_client_socket_index]->detach();
 	msl(100);

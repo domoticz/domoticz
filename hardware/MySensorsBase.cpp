@@ -2340,6 +2340,7 @@ bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
 	m_send_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Send_Work, this);
+	SetThreadName(m_send_thread->native_handle(), "MySensorsBase");
 	return (m_send_thread != NULL);
 }
 

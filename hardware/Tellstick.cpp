@@ -220,6 +220,7 @@ bool CTellstick::StartHardware()
     _log.Log(LOG_NORM, "Tellstick: StartHardware");
     //Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTellstick::ThreadSendCommands, this);
+	SetThreadName(m_thread->native_handle(), "Tellstick");
 	return true;
 }
 

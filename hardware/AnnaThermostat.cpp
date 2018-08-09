@@ -75,6 +75,7 @@ bool CAnnaThermostat::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CAnnaThermostat::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "AnnaThermostat");
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);

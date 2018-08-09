@@ -254,10 +254,12 @@ bool CGpio::StartHardware()
 			m_stoprequested=true;
 		 }*/
 		m_thread_updatestartup = std::make_shared<std::thread>(&CGpio::UpdateStartup, this);
+		SetThreadName(m_thread_updatestartup->native_handle(), "GPIO_UpdStartup");
 
 		if (m_pollinterval > 0)
 		{
 			m_thread_poller = std::make_shared<std::thread>(&CGpio::Poller, this);
+			SetThreadName(m_thread_poller->native_handle(), "GPIO_Poller");
 		}
 	}
 	else
@@ -512,6 +514,7 @@ bool CGpio::InitPins()
 			{
 				pinPass = gpio_pin;
 				m_thread_interrupt[gpio_pin] = std::make_shared<std::thread>(&CGpio::InterruptHandler, this);
+				SetThreadName(m_thread_interrupt[gpio_pin]->native_handle(), "GPIO_Interrupt");
 				while (pinPass != -1)
 					sleep_milliseconds(1);
 			}
