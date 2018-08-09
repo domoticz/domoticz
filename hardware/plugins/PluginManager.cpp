@@ -65,7 +65,7 @@ namespace Plugins {
     // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 #endif // ENABLE_PYTHON
 
-	std::mutex PluginMutex;	// controls accessto the message queue
+	std::mutex PluginMutex;	// controls accessto the message queue and m_pPlugins map
 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
@@ -259,31 +259,12 @@ namespace Plugins {
 
 		// Create initial IO Service thread
 		ios.reset();
+		// Create some work to keep IO Service alive
+		auto work = boost::asio::io_service::work(ios);
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 
 		while (!m_stoprequested)
 		{
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
-			{
-				bool bIos_required = false;
-				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
-				{
-					CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
-					if (pPlugin && pPlugin->IoThreadRequired())
-					{
-						bIos_required = true;
-						break;
-					}
-				}
-
-				if (bIos_required)
-				{
-					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Restarting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-				}
-			}
-
 			time_t	Now = time(0);
 			bool	bProcessed = true;
 			while (bProcessed)
@@ -292,19 +273,21 @@ namespace Plugins {
 				bProcessed = false;
 
 				// Cycle once through the queue looking for the 1st message that is ready to process
-				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
 					std::lock_guard<std::mutex> l(PluginMutex);
-					CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
-					PluginMessageQueue.pop();
-					if (FrontMessage->m_When <= Now)
+					for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 					{
-						// Message is ready now or was already ready (this is the case for almost all messages)
-						Message = FrontMessage;
-						break;
+						CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
+						PluginMessageQueue.pop();
+						if (!FrontMessage->m_Delay || FrontMessage->m_When <= Now)
+						{
+							// Message is ready now or was already ready (this is the case for almost all messages)
+							Message = FrontMessage;
+							break;
+						}
+						// Message is for sometime in the future so requeue it (this happens when the 'Delay' parameter is used on a Send)
+						PluginMessageQueue.push(FrontMessage);
 					}
-					// Message is for sometime in the future so requeue it (this happens when the 'Delay' parameter is used on a Send)
-					PluginMessageQueue.push(FrontMessage);
 				}
 
 				if (Message)
@@ -327,6 +310,7 @@ namespace Plugins {
 				// Free the memory for the message
 				if (Message)
 				{
+					std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection inside the message
 					CPlugin* pPlugin = (CPlugin*)Message->Plugin();
 					pPlugin->RestoreThread();
 					delete Message;

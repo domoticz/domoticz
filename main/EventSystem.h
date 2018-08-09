@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <string>
 #include <boost/thread/shared_mutex.hpp>
 
@@ -186,7 +187,7 @@ private:
 	boost::shared_mutex m_eventtriggerMutex;
 	std::mutex m_measurementStatesMutex;
 	std::mutex luaMutex;
-	volatile bool m_stoprequested;
+	std::atomic<bool> m_stoprequested;
 	std::shared_ptr<std::thread> m_thread, m_eventqueuethread;
 	int m_SecStatus;
 	std::string m_lua_Dir;
