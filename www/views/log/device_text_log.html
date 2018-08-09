@@ -4,11 +4,11 @@
     <tr>
         <td></td>
         <td align="right">
-            <button class="btnstyle3" id="clearlog" ng-click="vm.clearLog()">{{ ::'Clear' | translate }}</button>
+            <button class="btnstyle3"
+                    ng-click="vm.clearLog()"
+                    ng-disabled="!vm.log.length">
+                {{ ::'Clear' | translate }}
+            </button>
         </td>
     </tr>
 </table>
-
-<br>
-
-<div id="lightgraph" style="height: 200px;"></div>

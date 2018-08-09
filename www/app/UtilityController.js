@@ -532,7 +532,7 @@ define(['app'], function (app) {
 								bHaveAddedDevider = true;
 							}
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-							var graphLogLink = '#/Devices/' + item.idx + '/GraphLog';
+							var graphLogLink = '#/Devices/' + item.idx + '/Log';
 
 							var xhtm =
 								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
@@ -726,7 +726,7 @@ define(['app'], function (app) {
 								status = "";
 							}
 							else if (item.SubType == "Sound Level") {
-								xhtm += '<a href="#/Devices/' + item.idx + '/GraphLog"><img src="images/Speaker48_On.png" class="lcursor" height="48" width="48"></a></td>\n';
+								xhtm += '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Speaker48_On.png" class="lcursor" height="48" width="48"></a></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Waterflow") {
@@ -840,7 +840,7 @@ define(['app'], function (app) {
 							else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 								if (permissions.hasPermission("Admin")) {
 									var timerLink = '#/Devices/'+item.idx+'/Timers';
-									var logLink = '#/Devices/'+item.idx+'/TemperatureLog';
+									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
@@ -855,7 +855,7 @@ define(['app'], function (app) {
 							else if (item.Type == "Radiator 1") {
 								if (permissions.hasPermission("Admin")) {
 									var timerLink = '#/Devices/'+item.idx+'/Timers';
-									var logLink = '#/Devices/'+item.idx+'/TemperatureLog';
+									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
@@ -868,7 +868,7 @@ define(['app'], function (app) {
 								}
 							}
 							else if (item.SubType == "Text") {
-                                var logLink = '#/Devices/'+item.idx+'/TextLog';
+                                var logLink = '#/Devices/'+item.idx+'/Log';
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
@@ -927,7 +927,7 @@ define(['app'], function (app) {
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Alert")) {
-                                var logLink = '#/Devices/'+item.idx+'/TextLog';
+                                var logLink = '#/Devices/'+item.idx+'/Log';
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {

@@ -1,4 +1,11 @@
 define(['app', 'log/factories', 'log/components'], function (app) {
+    app.component('deviceGraphLog', {
+        bindings: {
+            device: '<'
+        },
+        templateUrl: 'views/log/device_graph_log.html',
+    });
+
     app.component('deviceLogChart', {
         bindings: {
             device: '<',
@@ -253,21 +260,6 @@ define(['app', 'log/factories', 'log/components'], function (app) {
                     return $.t(vm.device.SubType)
                 }
             }
-        }
-    });
-
-    app.controller('DeviceGraphLogController', function ($routeParams, domoticzApi, deviceApi, permissions) {
-        var vm = this;
-
-        init();
-
-        function init() {
-            vm.deviceIdx = $routeParams.id;
-
-            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
-                vm.pageName = device.Name;
-                vm.device = device;
-            });
         }
     });
 });

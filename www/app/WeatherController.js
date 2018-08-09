@@ -556,10 +556,10 @@ define(['app'], function (app) {
 							return ShowWindLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
 						}
 						else if (typeof item.Visibility != 'undefined') {
-							return $location.path('/Devices/' + item.idx + '/GraphLog');
+							return $location.path('/Devices/' + item.idx + '/Log');
 						}
 						else if (typeof item.Radiation != 'undefined') {
-                            return $location.path('/Devices/' + item.idx + '/GraphLog');
+                            return $location.path('/Devices/' + item.idx + '/Log');
 						}
 					};
 
