@@ -34,10 +34,10 @@
 //		1	vertical wings motion	20
 //		2	horizontal wings motion	30
 //		3	vertical and horizontal wings motion	40
-// 10 : temperature exterieure
-// 11 : temperature interieure
+// 10 : Outside temperature
+// 11 : Inside temperature
 // 12 : shum : description: represents the target humidity
-// 20 : consigne thermostat
+// 20 : SetPoint
 
 
 #define Daikin_POLL_INTERVAL 300
@@ -125,18 +125,18 @@ bool CDaikin::StopHardware()
 
 void CDaikin::Do_Work()
 {
-	int sec_counter = Daikin_POLL_INTERVAL - 2;
+	m_sec_counter = Daikin_POLL_INTERVAL - 2; // Trigger immediatly (in 2s) a POLL after startup.
 
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		sec_counter++;
+		m_sec_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (m_sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (sec_counter % Daikin_POLL_INTERVAL == 0)
+		if (m_sec_counter % Daikin_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
 		}
@@ -260,7 +260,7 @@ void CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 	szURL << "pow=" << m_pow;
 	szURL << "&mode=" << m_mode;
 
-	// cibre température
+	// cible température
 	char szTmp[100];
 	sprintf(szTmp, "%.1f", temp);
 	szURL << "&stemp=" << szTmp;
@@ -458,9 +458,9 @@ void CDaikin::GetControlInfo()
 					InsertUpdateSwitchSelector(5, true, 30, "Mode");
 				else if (m_mode == "4") // HOT
 					InsertUpdateSwitchSelector(5, true, 40, "Mode");
-				else if (m_mode == "6")
+				else if (m_mode == "6") // FAN
 					InsertUpdateSwitchSelector(5, true, 50, "Mode");
-				else if ((m_mode == "0") || (m_mode == "1" ) || ( m_mode == "7") )
+				else if ((m_mode == "0") || (m_mode == "1" ) || ( m_mode == "7") ) // AUTO
 					InsertUpdateSwitchSelector(5, true, 10, "Mode");
 			}
 		}
@@ -492,31 +492,31 @@ void CDaikin::GetControlInfo()
 		{
 
 			m_f_rate=results2[1];
-			if (m_f_rate == "A") // DEHUMDIFICATOR
+			if (m_f_rate == "A") // AUTOMATIC
 				InsertUpdateSwitchSelector(6, true, 10, "Ventillation");
-			else if (m_f_rate == "B") // COLD
+			else if (m_f_rate == "B") // SILENCE
 				InsertUpdateSwitchSelector(6, true, 20, "Ventillation");
-			else if (m_f_rate == "3") // HOT
+			else if (m_f_rate == "3") // Level 1
 				InsertUpdateSwitchSelector(6, true, 30, "Ventillation");
-			else if (m_f_rate == "4")
+			else if (m_f_rate == "4") // Level 2
 				InsertUpdateSwitchSelector(6, true, 40, "Ventillation");
-			else if (m_f_rate == "5")
+			else if (m_f_rate == "5") // Level 3
 				InsertUpdateSwitchSelector(6, true, 50, "Ventillation");
-			else if (m_f_rate == "6")
+			else if (m_f_rate == "6") // Level 4
 				InsertUpdateSwitchSelector(6, true, 60, "Ventillation");
-			else if (m_f_rate == "7")
+			else if (m_f_rate == "7") // Level 5
 				InsertUpdateSwitchSelector(6, true, 70, "Ventillation");
 		}
 		else if (results2[0] == "f_dir")
 		{
 			m_f_dir = results2[1];
-			if (m_f_dir == "0") //
+			if (m_f_dir == "0") // All wings off
 				InsertUpdateSwitchSelector(7, true, 10, "Winds");
-			else if (m_f_dir == "1") // COLD
+			else if (m_f_dir == "1") // Vertical wings in motion
 				InsertUpdateSwitchSelector(7, true, 20, "Winds");
-			else if (m_f_dir == "2") // COLD
+			else if (m_f_dir == "2") // Horizontal wings in motion
 				InsertUpdateSwitchSelector(7, true, 30, "Winds");
-			else if (m_f_dir == "3") // COLD
+			else if (m_f_dir == "3") // Vertical and Horizontal wings in motion
 				InsertUpdateSwitchSelector(7, true, 40, "Winds");
 
 		}
@@ -524,7 +524,30 @@ void CDaikin::GetControlInfo()
 		{
 			m_shum = results2[1];
 		}
-
+                else if (results2[0] == "dt1" )
+                        m_dt[1] = results2[1];
+                else if (results2[0] == "dt2" )
+                        m_dt[2] = results2[1];
+                else if (results2[0] == "dt3" )
+                        m_dt[3] = results2[1];
+                else if (results2[0] == "dt4" )
+                        m_dt[4] = results2[1];
+                else if (results2[0] == "dt5" )
+                        m_dt[5] = results2[1];
+                else if (results2[0] == "dt7" )
+                        m_dt[7] = results2[1];
+                else if (results2[0] == "dh1" )
+                        m_dh[1] = results2[1];
+                else if (results2[0] == "dh2" )
+                        m_dh[2] = results2[1];
+                else if (results2[0] == "dh3" )
+                        m_dh[3] = results2[1];
+                else if (results2[0] == "dh4" )
+                        m_dh[4] = results2[1];
+                else if (results2[0] == "dh5" )
+                        m_dh[5] = results2[1];
+                else if (results2[0] == "dh7" )
+                        m_dh[7] = results2[1];
 	}
 
 }
@@ -690,7 +713,7 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 		_log.Log(LOG_ERROR, "Daikin: Invalid response");
 		return;
 	}
-
+	if (OnOFF) m_sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s as we have Powe On
 }
 
 
@@ -809,10 +832,22 @@ void CDaikin::SetModeLevel(const int NewLevel)
         else if (NewLevel == 50)
                 szURL << "&mode=6"; /* 50-FAN   6 */
 
-	szURL << "&stemp=" << m_stemp;
-
-	szURL << "&shum=" << m_shum;
-
+	if (NewLevel == 0 ) // 0 is AUTO, but there is no dt0! So in case lets force to dt1 and dh1
+        {
+                szURL << "&stemp=" << m_dt[1];
+                szURL << "&shum=" << m_dh[1];
+        }
+        else if (NewLevel == 6 ) // FAN mode, there is no temp/hum memorized.
+        {
+                szURL << "&stemp=" << "20";
+                szURL << "&shum=" << "0";
+        }
+        else // DEHUMDIFICATOR, COLD, HOT ( 2,3,6 )
+        {
+                szURL << "&stemp=" << m_dt[(NewLevel/10)];
+                szURL << "&shum=" << m_dh[(NewLevel/10)];
+        }
+	
 	szURL << "&f_rate=" << m_f_rate;
 
 	szURL << "&f_dir=" << m_f_dir;
@@ -823,15 +858,12 @@ void CDaikin::SetModeLevel(const int NewLevel)
 		return;
 	}
 
-
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "Daikin: Invalid response");
 		return;
 	}
-
-
-
+	m_sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s
 }
 
 void CDaikin::SetF_RateLevel(const int NewLevel)
