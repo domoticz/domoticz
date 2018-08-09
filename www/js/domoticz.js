@@ -1964,7 +1964,7 @@ function AddDataToCurrentChart(data, chart, switchtype, isday) {
 				}, false);
 				chart.addSeries({
 					id: 'current3max',
-					name: 'Current_L3_Min',
+					name: 'Current_L3_Max',
 					color: 'rgba(112,146,190,0.8)',
 					yAxis: 0,
 					tooltip: {
@@ -2092,7 +2092,7 @@ function AddDataToCurrentChart(data, chart, switchtype, isday) {
 				}, false);
 				chart.addSeries({
 					id: 'current3max',
-					name: $.t('Usage') + ' L3_Min',
+					name: $.t('Usage') + ' L3_Max',
 					color: 'rgba(112,146,190,0.8)',
 					yAxis: 0,
 					tooltip: {
