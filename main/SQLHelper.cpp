@@ -670,12 +670,7 @@ CSQLHelper::~CSQLHelper(void)
 		m_background_task_thread->join();
 		m_background_task_thread.reset();
 	}
-	if (m_dbase != NULL)
-	{
-		OptimizeDatabase(m_dbase);
-		sqlite3_close(m_dbase);
-		m_dbase = NULL;
-	}
+	CloseDatabase();
 }
 
 bool CSQLHelper::OpenDatabase()
@@ -3035,6 +3030,17 @@ bool CSQLHelper::OpenDatabase()
 	if (!StartThread())
 		return false;
 	return true;
+}
+
+void CSQLHelper::CloseDatabase()
+{
+	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	if (m_dbase != NULL)
+	{
+		OptimizeDatabase(m_dbase);
+		sqlite3_close(m_dbase);
+		m_dbase = NULL;
+	}
 }
 
 bool CSQLHelper::StartThread()

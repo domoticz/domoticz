@@ -285,11 +285,12 @@ public:
 	CSQLHelper(void);
 	~CSQLHelper(void);
 
-	bool OpenDatabase();
 	void SetDatabaseName(const std::string &DBName);
 
-	bool BackupDatabase(const std::string &OutputFile);
+	bool OpenDatabase();
+	void CloseDatabase();
 
+	bool BackupDatabase(const std::string &OutputFile);
 	bool RestoreDatabase(const std::string &dbase);
 
 	//Returns DeviceRowID
