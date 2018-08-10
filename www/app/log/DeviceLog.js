@@ -48,8 +48,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             if (!vm.device) {
                 return undefined;
             }
-
-            return ['Temp', 'Thermostat', 'Humidity', 'Radiator 1'].includes(vm.device.Type)
+            
+            return (/Temp|Thermostat|Humidity|Radiator/i).test(vm.device.Type)
         }
 
         function isGraphLog() {
