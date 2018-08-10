@@ -20,10 +20,11 @@ namespace Plugins {
 		std::string	m_Name;
 		int			m_HwdID;
 		int			m_Unit;
+		bool		m_Delay;
 		time_t		m_When;
 
 	protected:
-		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_Unit(-1)
+		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_Unit(-1), m_Delay(false)
 		{
 			m_Name = __func__;
 			m_When = time(0);
@@ -410,7 +411,11 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			m_Object = pData;
 			if (m_Object)
 				Py_INCREF(m_Object);
-			if (Delay) m_When += Delay;
+			if (Delay)
+			{
+				m_When += Delay;
+				m_Delay=true;
+			}
 		};
 		~WriteDirective()
 		{
