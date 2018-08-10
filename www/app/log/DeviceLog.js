@@ -48,8 +48,10 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             if (!vm.device) {
                 return undefined;
             }
-            
-            return (/Temp|Thermostat|Humidity|Radiator/i).test(vm.device.Type)
+            //This goes wrong (when we also use this log call from the weather tab), for wind sensors
+            //as this is placed in weather and temperature, we might have to set a parameter in the url
+            //for now, we assume it is a temperature
+            return (/Temp|Thermostat|Humidity|Radiator|Wind/i).test(vm.device.Type)
         }
 
         function isGraphLog() {
