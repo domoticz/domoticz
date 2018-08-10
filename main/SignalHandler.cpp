@@ -153,7 +153,7 @@ static bool dumpstack_gdb(bool printAllThreads) {
 	}
 
 	// Allow us to be traced
-	// Note: Does not currently work in WSL: https://github.com/Microsoft/WSL/issues/3053
+	// Note: Does not currently work in WSL: https://github.com/Microsoft/WSL/issues/3053 (Fixed in Windows 10 build 17723)
 #ifdef PR_SET_PTRACER
 	int retval = prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0);
 #endif
@@ -455,7 +455,7 @@ void signal_handler(int sig_num
 			if (!pthread_equal(fatal_handling_thread, pthread_self()))
 			{
 				// fatal error in other thread, wait for dump handler to finish
-				// If using WSL, may be caused by https://github.com/Microsoft/WSL/issues/1731
+				// If using WSL, may be caused by https://github.com/Microsoft/WSL/issues/1731 (Fixed in Windows 10 build 17728)
 				// TODO: Replace sleep with read from FIFO
 				sleep(120);
 			}
