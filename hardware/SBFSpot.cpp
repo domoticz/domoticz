@@ -141,7 +141,7 @@ void CSBFSpot::Do_Work()
 			GetMeterDetails();
 		}
 		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	_log.Log(LOG_STATUS,"SBFSpot: Worker stopped...");

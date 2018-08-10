@@ -83,7 +83,7 @@ void CInComfort::Do_Work()
 		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter%INCOMFORT_POLL_INTERVAL == 0)
 		{

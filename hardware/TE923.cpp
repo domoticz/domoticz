@@ -66,7 +66,7 @@ void CTE923::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (sec_counter % TE923_POLL_INTERVAL == 0)

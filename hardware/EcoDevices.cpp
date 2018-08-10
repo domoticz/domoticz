@@ -129,7 +129,7 @@ void CEcoDevices::Do_Work()
 	{
 		sleep_seconds(1);
 		sec_counter++;
-		mytime(&m_LastHeartbeat);
+		m_LastHeartbeat = mytime(NULL);
 		if (sec_counter >= m_iRateLimit)
 		{
 			sec_counter = 0;

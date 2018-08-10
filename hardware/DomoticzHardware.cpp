@@ -13,8 +13,8 @@
 
 CDomoticzHardwareBase::CDomoticzHardwareBase()
 {
-	mytime(&m_LastHeartbeat);
-	mytime(&m_LastHeartbeatReceive);
+	m_LastHeartbeat = mytime(NULL);
+	m_LastHeartbeatReceive = mytime(NULL);
 	mytime(&m_BaroCalcLastTime);
 };
 
@@ -111,7 +111,7 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 			secCounter = 0;
 			hbCounter++;
 			if (hbCounter % 12 == 0) {
-				mytime(&m_LastHeartbeat);
+				m_LastHeartbeat = mytime(NULL);
 			}
 		}
 	}
@@ -119,7 +119,7 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 
 void CDomoticzHardwareBase::SetHeartbeatReceived()
 {
-	mytime(&m_LastHeartbeatReceive);
+	m_LastHeartbeatReceive = mytime(NULL);
 }
 
 void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
