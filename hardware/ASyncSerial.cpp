@@ -122,6 +122,7 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
     pimpl->io.post(boost::bind(&AsyncSerial::doRead, this));
 
     boost::thread t(boost::bind(&boost::asio::io_service::run, &pimpl->io));
+	SetThreadName(t.native_handle(), "AsyncSer_Background");
     pimpl->backgroundThread.swap(t);
     setErrorStatus(false);//If we get here, no error
     pimpl->open=true; //Port is now open
@@ -154,6 +155,7 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 	pimpl->io.post(boost::bind(&AsyncSerial::doRead, this));
 
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &pimpl->io));
+	SetThreadName(t.native_handle(), "AsyncSer_Background");
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false);//If we get here, no error
 	pimpl->open=true; //Port is now open
