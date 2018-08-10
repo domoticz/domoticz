@@ -1193,7 +1193,7 @@ void DisplayAppVersion()
 	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
 }
 
-static std::atomic<time_t> m_LastHeartbeat = { 0 };
+static time_t m_LastHeartbeat = 0;
 
 static void heartbeat_check()
 {
@@ -1223,7 +1223,7 @@ static void heartbeat_check()
 	}
 }
 
-static std::atomic<bool> stop_watchdog{false};
+static bool stop_watchdog = false;
 
 void Do_Watchdog_Work()
 {

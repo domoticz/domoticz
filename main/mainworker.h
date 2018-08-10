@@ -35,7 +35,7 @@ public:
 	CDomoticzHardwareBase* GetHardwareByIDType(const std::string &HwdId, const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
 
-	void HeartbeatUpdate(const std::string &component);
+	void HeartbeatUpdate(const std::string &component, bool critical = true);
 	void HeartbeatRemove(const std::string &component);
 	void HeartbeatCheck();
 
@@ -133,12 +133,12 @@ public:
 	std::vector<std::string> m_webthemes;
 	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
 
-	std::atomic<time_t> m_LastHeartbeat = { 0 };
+	time_t m_LastHeartbeat = 0;
 private:
 	void HandleAutomaticBackups();
 	uint64_t PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	void HandleLogNotifications();
-	std::map<std::string, time_t > m_componentheartbeats;
+	std::map<std::string, std::pair<time_t, bool> > m_componentheartbeats;
 	std::mutex m_heartbeatmutex;
 
 	std::mutex m_decodeRXMessageMutex;
