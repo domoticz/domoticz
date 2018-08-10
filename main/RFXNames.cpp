@@ -243,7 +243,7 @@ const char *Hardware_Type_Desc(int hType)
 	{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
 	{ HTYPE_RAVEn, "Rainforest RAVEn USB" },
 	{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
-	{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
+	{ HTYPE_RESERVED_FOR_YOU_1, "" },
 	{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)" },
 	{ HTYPE_BleBox, "BleBox devices" },
 	{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN" },
@@ -268,7 +268,7 @@ const char *Hardware_Type_Desc(int hType)
 	{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 	{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
 	{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
-	{ HTYPE_DenkoviSmartdenIPInOut, "Denkovi Smartden IP In with LAN interface" },
+	{ HTYPE_RESERVED_FOR_YOU_2, "" },
 	{ HTYPE_USBtinGateway, "USBtin Can Gateway" },
 	{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
 	{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
@@ -3602,8 +3602,6 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_Comm5SMTCP:
 	case HTYPE_CurrentCostMeterLAN:
 	case HTYPE_NefitEastLAN:
-	case HTYPE_DenkoviSmartdenLan:
-	case HTYPE_DenkoviSmartdenIPInOut:
 	case HTYPE_DenkoviDevices:
 	case HTYPE_DenkoviTCPDevices:
 	case HTYPE_Ec3kMeterTCP:
