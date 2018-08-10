@@ -108,8 +108,6 @@
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
 #include "../hardware/RAVEn.h"
-#include "../hardware/DenkoviSmartdenLan.h"
-#include "../hardware/DenkoviSmartdenIPInOut.h"
 #include "../hardware/DenkoviDevices.h"
 #include "../hardware/DenkoviUSBDevices.h"
 #include "../hardware/DenkoviTCPDevices.h"
@@ -857,14 +855,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Sterbox:
 		//LAN
 		pHardware = new CSterbox(ID, Address, Port, Username, Password);
-		break;
-	case HTYPE_DenkoviSmartdenLan:
-		//LAN
-		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password, Mode1);
-		break;
-	case HTYPE_DenkoviSmartdenIPInOut:
-		//LAN
-		pHardware = new CDenkoviSmartdenIPInOut(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_DenkoviDevices:
 		//LAN
