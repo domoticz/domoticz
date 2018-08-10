@@ -37,6 +37,14 @@
 #include <time.h>
 #endif
 
+#if defined(__FreeBSD__) 
+// Check if NetBSD / OpenBSD or DragonFly need that at well?
+#include <pthread_np.h>
+#ifndef PTHREAD_MAX_MAMELEN_NP
+#define PTHREAD_MAX_NAMELEN_NP 10 	// Arbitrary
+#endif
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -1121,7 +1129,7 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	strncpy(name_trunc, name, sizeof(name_trunc));
 	name_trunc[sizeof(name_trunc)-1] = '\0';
 	return pthread_setname_np(thread, name_trunc);
-#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || defined(__FreeBSD__)
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
 #elif defined(__NetBSD__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
@@ -1133,6 +1141,12 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	strncpy(name_trunc, name, sizeof(name_trunc));
 	name_trunc[sizeof(name_trunc)-1] = '\0';
 	pthread_setname_np(thread, name_trunc);
+	return 0;
+#elif defined(__FreeBSD__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	pthread_set_name_np(thread, name_trunc);
 	return 0;
 #endif
 }
