@@ -1121,14 +1121,14 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	strncpy(name_trunc, name, sizeof(name_trunc));
 	name_trunc[sizeof(name_trunc)-1] = '\0';
 	return pthread_setname_np(thread, name_trunc);
-#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || defined(__FreeBSD__)
 	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
 #elif defined(__NetBSD__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
 	name_trunc[sizeof(name_trunc)-1] = '\0';
 	return pthread_setname_np(thread, name_trunc);
-#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
 	name_trunc[sizeof(name_trunc)-1] = '\0';
