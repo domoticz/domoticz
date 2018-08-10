@@ -35,19 +35,20 @@ bool CPVOutputInput::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPVOutputInput::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CPVOutputInput::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "PVOutputInput");
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CPVOutputInput::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -58,12 +59,10 @@ bool CPVOutputInput::StopHardware()
 void CPVOutputInput::Do_Work()
 {
 	int LastMinute=-1;
-	int sec_counter = 0;
 	_log.Log(LOG_STATUS,"PVOutput (Input): Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		sec_counter++;
 
 		time_t atime=mytime(NULL);
 		m_LastHeartbeat = atime;

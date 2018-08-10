@@ -5,13 +5,13 @@
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
+#include "../main/Noncopyable.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
 #include <boost/asio.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 #include "pinger/icmp_header.h"
 #include "pinger/ipv4_header.h"
@@ -19,7 +19,7 @@
 #include <iostream>
 
 class pinger
-	: private boost::noncopyable
+	: private domoticz::noncopyable
 {
 public:
 	pinger(boost::asio::io_service& io_service, const char* destination, const int iPingTimeoutms)
@@ -124,7 +124,7 @@ private:
 		{
 			// DD 2 possible 'invalid' replies that will be discarded are:
 			// Type 8: Echo request, happens when we ping ourselves (localhost)
-			// Type 3: Destination host unreachable. 
+			// Type 3: Destination host unreachable.
 			start_receive();
 		}
 	}
@@ -173,7 +173,8 @@ bool CPinger::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPinger::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CPinger::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Pinger");
 	_log.Log(LOG_STATUS, "Pinger: Started");
 
 	return true;
@@ -215,21 +216,21 @@ bool CPinger::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size() > 0)
+	if (!result.empty())
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d,'%q','%q',%d)",
 		m_HwdID, Name.c_str(), IPAddress.c_str(), Timeout);
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -243,14 +244,14 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 
 bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)",
@@ -269,7 +270,7 @@ bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::strin
 
 void CPinger::RemoveNode(const int ID)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
@@ -285,7 +286,7 @@ void CPinger::RemoveNode(const int ID)
 
 void CPinger::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
@@ -300,7 +301,7 @@ void CPinger::ReloadNodes()
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)",
 		m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -382,7 +383,7 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 
 void CPinger::DoPingHosts()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	std::vector<PingNode>::const_iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 	{
@@ -392,6 +393,7 @@ void CPinger::DoPingHosts()
 		{
 			//m_iThreadsRunning++;
 			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, *itt));
+			SetThreadName(t.native_handle(), "PingerWorker");
 			t.join();
 		}
 	}
@@ -465,7 +467,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)",
 				iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "PanasonicTV.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -79,7 +80,7 @@ Possible Commands:
 
 */
 
-class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
+class CPanasonicNode //: public std::enable_shared_from_this<CPanasonicNode>
 {
 	class CPanasonicStatus
 	{
@@ -89,7 +90,7 @@ class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
 		_eNotificationTypes	NotificationType();
 		std::string		StatusText() { return Media_Player_States(m_nStatus); };
 		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
-		void			Status(std::string pStatus) { m_sStatus = pStatus; };
+		void			Status(const std::string &pStatus) { m_sStatus = pStatus; };
 		void			LastOK(time_t pLastOK) { m_tLastOK = pLastOK; };
 		std::string		LastOK() { std::string sRetVal;  tm ltime; localtime_r(&m_tLastOK, &ltime); char szLastUpdate[40]; sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec); sRetVal = szLastUpdate; return sRetVal; };
 		void			Clear();
@@ -99,7 +100,7 @@ class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
 		bool			UpdateRequired(CPanasonicStatus&);
 		bool			OnOffRequired(CPanasonicStatus&);
 		bool			IsOn() { return (m_nStatus != MSTAT_OFF); };
-		void			Volume(int pVolume) { m_VolumeLevel = pVolume;};
+		void			Volume(int pVolume) { m_VolumeLevel = pVolume; };
 		void			Muted(bool pMuted) { m_Muted = pMuted; };
 	private:
 		_eMediaStatus	m_nStatus;
@@ -127,7 +128,7 @@ public:
 	std::string		m_Name;
 
 	bool			m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 protected:
 	bool			m_Busy;
 	bool			m_Stoppable;
@@ -136,9 +137,9 @@ private:
 	bool			handleConnect(boost::asio::ip::tcp::socket&, boost::asio::ip::tcp::endpoint, boost::system::error_code&);
 	std::string		handleWriteAndRead(std::string);
 	int				handleMessage(std::string);
-	std::string		buildXMLStringRendCtl(std::string, std::string);
-	std::string		buildXMLStringRendCtl(std::string, std::string, std::string);
-	std::string		buildXMLStringNetCtl(std::string);
+	std::string		buildXMLStringRendCtl(const std::string &, const std::string &);
+	std::string		buildXMLStringRendCtl(const std::string &, const std::string &, const std::string &);
+	std::string		buildXMLStringNetCtl(const std::string &);
 
 	int				m_HwdID;
 	char			m_szDevID[40];
@@ -199,8 +200,9 @@ void CPanasonicNode::StopThread()
 bool CPanasonicNode::StartThread()
 {
 	StopThread();
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPanasonicNode::Do_Work, this)));
-	return (m_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&CPanasonicNode::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "PanasonicNode");
+	return (m_thread != nullptr);
 }
 
 std::string	CPanasonicNode::CPanasonicStatus::LogMessage()
@@ -307,7 +309,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	if (m_CurrentStatus.OnOffRequired(m_PreviousStatus) || forceupdate)
 	{
 		result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, m_szDevID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			m_sql.HandleOnOffAction(m_CurrentStatus.IsOn(), result[0][0], result[0][1]);
 		}
@@ -466,7 +468,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 		iPosBegin = pMessage.find(begin, iPosBegin);
 		if (iPosBegin == std::string::npos)
 			break;
-		iPosEnd = pMessage.find(end, iPosBegin+1);
+		iPosEnd = pMessage.find(end, iPosBegin + 1);
 		if (iPosEnd != std::string::npos)
 		{
 			std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
@@ -482,12 +484,12 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	return -1;
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command)
 {
 	return buildXMLStringRendCtl(action, command, "");
 }
 
-std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command, std::string value)
+std::string CPanasonicNode::buildXMLStringRendCtl(const std::string &action, const std::string &command, const std::string &value)
 {
 	std::string head, body;
 	int size;
@@ -515,7 +517,7 @@ std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::strin
 
 }
 
-std::string CPanasonicNode::buildXMLStringNetCtl(std::string command)
+std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 {
 	std::string head, body;
 	int size;
@@ -755,7 +757,7 @@ void CPanasonicNode::SetExecuteCommand(const std::string &command)
 	_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) SetExecuteCommand called with: '%s.", m_Name.c_str(), command.c_str());
 }
 
-std::vector<boost::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
+std::vector<std::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
 
 CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
@@ -786,7 +788,8 @@ bool CPanasonic::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPanasonic::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CPanasonic::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Panasonic");
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Started");
 
 	return true;
@@ -822,11 +825,11 @@ void CPanasonic::Do_Work()
 	{
 		if (scounter++ >= (m_iPollInterval * 2))
 		{
-			boost::lock_guard<boost::mutex> l(m_mutex);
+			std::lock_guard<std::mutex> l(m_mutex);
 
 			scounter = 0;
 			bool bWorkToDo = false;
-			std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+			std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 			{
 				if (!(*itt)->IsBusy())
@@ -872,7 +875,7 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
-	std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_DevID == DevID)
@@ -900,12 +903,12 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 			case gswitch_sSetVolume:
 				(*itt)->SendCommand("setvolume", iParam);
 				return true;
-			//case gswitch_sPlayPlaylist:
-			//	(*itt)->SendCommand("playlist", iParam);
-			//	return true;
-			//case gswitch_sExecute:
-			//	(*itt)->SendCommand("execute", iParam);
-			//	return true;
+				//case gswitch_sPlayPlaylist:
+				//	(*itt)->SendCommand("playlist", iParam);
+				//	return true;
+				//case gswitch_sExecute:
+				//	(*itt)->SendCommand("execute", iParam);
+				//	return true;
 			default:
 				return true;
 			}
@@ -922,12 +925,12 @@ void CPanasonic::AddNode(const std::string &Name, const std::string &IPAddress, 
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()>0)
+	if (!result.empty())
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()<1)
+	if (result.empty())
 		return;
 
 	int ID = atoi(result[0][0].c_str());
@@ -947,7 +950,7 @@ bool CPanasonic::UpdateNode(const int ID, const std::string &Name, const std::st
 
 	//Check if exists
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, ID);
-	if (result.size()<1)
+	if (result.empty())
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)", Name.c_str(), IPAddress.c_str(), Port, m_HwdID, ID);
@@ -975,7 +978,7 @@ void CPanasonic::RemoveNode(const int ID)
 
 void CPanasonic::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
@@ -992,26 +995,24 @@ void CPanasonic::ReloadNodes()
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
-		boost::lock_guard<boost::mutex> l(m_mutex);
+		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
 		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-			boost::shared_ptr<CPanasonicNode>	pNode = (boost::shared_ptr<CPanasonicNode>) new CPanasonicNode(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			std::shared_ptr<CPanasonicNode>	pNode = (std::shared_ptr<CPanasonicNode>) new CPanasonicNode(m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each Panasonic TV
-		for (std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		for (std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
 			(*itt)->StartThread();
 		}
 		sleep_milliseconds(100);
-		//_log.Log(LOG_NORM, "Panasonic Plugin: Starting I/O service thread.");
-		//boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
 	}
 }
 
@@ -1019,14 +1020,14 @@ void CPanasonic::UnloadNodes()
 {
 	int iRetryCounter = 0;
 
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
 	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
 	{
-		std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+		std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			(*itt)->StopThread();
@@ -1045,7 +1046,7 @@ void CPanasonic::UnloadNodes()
 
 void CPanasonic::SendCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)
@@ -1061,7 +1062,7 @@ void CPanasonic::SendCommand(const int ID, const std::string &command)
 
 bool CPanasonic::SetExecuteCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
+	std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)
@@ -1098,7 +1099,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

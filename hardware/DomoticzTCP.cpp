@@ -5,6 +5,11 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/WebServerHelper.h"
+#include "../webserver/proxyclient.h"
+
+#ifdef WIN32
+#define SHUT_RDWR SD_BOTH
+#endif
 
 #define RETRY_DELAY 30
 
@@ -18,12 +23,12 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	info = NULL;
+	m_bIsStarted = false;
+	m_retrycntr = RETRY_DELAY;
 #ifndef NOCLOUD
 	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	b_ProxyConnected = false;
 #endif
-	m_bIsStarted = false;
-	m_retrycntr = RETRY_DELAY;
 }
 
 DomoticzTCP::~DomoticzTCP(void)
@@ -115,9 +120,10 @@ bool DomoticzTCP::StartHardwareTCP()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&DomoticzTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&DomoticzTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DomoticzTCP");
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool DomoticzTCP::StopHardware()
@@ -146,18 +152,17 @@ bool DomoticzTCP::StopHardwareTCP()
 			//Don't throw from a Stop command
 		}
 	}
-	else {
-		try {
-			if (m_thread)
-			{
-				m_stoprequested = true;
-				m_thread->join();
-			}
-		}
-		catch (...)
+	try {
+		if (m_thread)
 		{
-			//Don't throw from a Stop command
+			m_stoprequested = true;
+			m_thread->join();
+			m_thread.reset();
 		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
 	}
 	m_bIsStarted = false;
 	return true;
@@ -211,11 +216,10 @@ void DomoticzTCP::disconnectTCP()
 	m_stoprequested = true;
 	if (m_socket != INVALID_SOCKET)
 	{
+		shutdown(m_socket, SHUT_RDWR);
 		closesocket(m_socket);	//will terminate the thread
 		m_socket = INVALID_SOCKET;
-		sleep_seconds(1);
 	}
-	//m_thread-> join();
 }
 
 void DomoticzTCP::Do_Work()
@@ -270,7 +274,7 @@ void DomoticzTCP::Do_Work()
 			}
 			else
 			{
-				boost::lock_guard<boost::mutex> l(readQueueMutex);
+				std::lock_guard<std::mutex> l(readQueueMutex);
 				onRFXMessage((const unsigned char *)&buf, bread);
 			}
 		}
@@ -353,7 +357,7 @@ bool DomoticzTCP::StartHardwareProxy()
 
 bool DomoticzTCP::ConnectInternalProxy()
 {
-	boost::shared_ptr<http::server::CProxyClient> proxy;
+	std::shared_ptr<http::server::CProxyClient> proxy;
 	const int version = 1;
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
 	// this means that we connect connect twice to the same server
@@ -380,7 +384,7 @@ bool DomoticzTCP::StopHardwareProxy()
 
 void DomoticzTCP::DisconnectProxy()
 {
-	boost::shared_ptr<http::server::CProxyClient> proxy;
+	std::shared_ptr<http::server::CProxyClient> proxy;
 
 	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
@@ -398,7 +402,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 {
 	/* send data to slave */
 	if (isConnectedProxy()) {
-		boost::shared_ptr<http::server::CProxyClient> proxy = m_webservers.GetProxyForMaster(this);
+		std::shared_ptr<http::server::CProxyClient> proxy = m_webservers.GetProxyForMaster(this);
 		if (proxy) {
 			proxy->WriteMasterData(token, data, size);
 		}
@@ -408,7 +412,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 void DomoticzTCP::FromProxy(const unsigned char *data, size_t datalen)
 {
 	/* data received from slave */
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	onRFXMessage(data, datalen);
 }
 

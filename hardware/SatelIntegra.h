@@ -3,7 +3,6 @@
 // implememtation for Security System : https://www.satel.pl/en/cat/2#cat15
 // by Fantom (szczukot@poczta.onet.pl)
 
-#include <map>
 #include "DomoticzHardware.h"
 
 class SatelIntegra : public CDomoticzHardwareBase
@@ -11,42 +10,10 @@ class SatelIntegra : public CDomoticzHardwareBase
 public:
 	SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval);
 	virtual ~SatelIntegra();
-
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
-
-	int m_modelIndex;
-	bool m_data32;
-	sockaddr_in m_addr;
-	int m_socket;
-	const unsigned short m_IPPort;
-	const std::string m_IPAddress;
-	int m_pollInterval;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
-	std::map<unsigned int, const char*> errorCodes;
-	// filled by 0x7F command
-	unsigned char m_newData[7];
-
-	// password to Integra
-	unsigned char m_userCode[8];
-
-	//TODO maybe create dynamic array ?
-	bool m_zonesLastState[256];
-	bool m_outputsLastState[256];
-	bool m_isOutputSwitch[256];
-	bool m_isTemperature[256];
-	bool m_isPartitions[32];
-	bool m_armLastState[32];
-
-	// thread-safe for read and write
-	boost::mutex m_mutex;
-
-	bool m_alarmLast;
-
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 
 	bool CheckAddress();
@@ -98,4 +65,33 @@ private:
 
 	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength);
 	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2 = -1);
+private:
+	int m_modelIndex;
+	bool m_data32;
+	sockaddr_in m_addr;
+	int m_socket;
+	const unsigned short m_IPPort;
+	const std::string m_IPAddress;
+	int m_pollInterval;
+	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
+	std::map<unsigned int, const char*> errorCodes;
+	// filled by 0x7F command
+	unsigned char m_newData[7];
+
+	// password to Integra
+	unsigned char m_userCode[8];
+
+	//TODO maybe create dynamic array ?
+	bool m_zonesLastState[256];
+	bool m_outputsLastState[256];
+	bool m_isOutputSwitch[256];
+	bool m_isTemperature[256];
+	bool m_isPartitions[32];
+	bool m_armLastState[32];
+
+	// thread-safe for read and write
+	std::mutex m_mutex;
+
+	bool m_alarmLast;
 };

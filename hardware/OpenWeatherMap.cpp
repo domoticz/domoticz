@@ -73,20 +73,21 @@ COpenWeatherMap::~COpenWeatherMap(void)
 
 bool COpenWeatherMap::StartHardware()
 {
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWeatherMap::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&COpenWeatherMap::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "OpenWeatherMap");
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "OpenWeatherMap: Started");
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool COpenWeatherMap::StopHardware()
 {
-	m_stoprequested = true;
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
+		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
 	return true;
@@ -189,13 +190,12 @@ void COpenWeatherMap::GetMeterDetails()
 		return;
 	}
 
-	float temp =- 999.9f;
-	int humidity = 0;
-	int barometric = 0;
-	int barometric_forecast = baroForecastNoInfo;
-
 	if (!root["main"].empty())
 	{
+		float temp = -999.9f;
+		int humidity = 0;
+		int barometric = 0;
+		int barometric_forecast = baroForecastNoInfo;
 		if (!root["main"]["temp"].empty())
 		{
 			temp = root["main"]["temp"].asFloat();

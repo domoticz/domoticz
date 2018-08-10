@@ -3,6 +3,7 @@
 #define CSOCKET_H
 
 #include <string>
+#include <cmath>
 
 #ifdef WIN32
 	#include <winsock2.h>
@@ -15,20 +16,20 @@
 //#include <stdio.h>
 #include <string>
 
-class csocket 
+class csocket
 {
 public:
 
-    enum SocketState 
+    enum SocketState
     {
         CLOSED,
-        CONNECTED,          
+        CONNECTED,
         ERRORED,
     };
 
 
     csocket();
-    ~csocket(); 
+    virtual ~csocket();
 
     static int      resolveHost( const std::string& szRemoteHostName, struct sockaddr_in& sa );
     int             connect( const char* remoteHost, unsigned int remotePort );

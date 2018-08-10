@@ -12,7 +12,6 @@
 #include "../main/WebServer.h"
 
 #include <sstream>
-#include <map>
 
 #define RETRY_DELAY 30
 
@@ -163,8 +162,9 @@ bool OnkyoAVTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&OnkyoAVTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&OnkyoAVTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "OnkyoAVTCP");
+	return (m_thread != nullptr);
 }
 
 bool OnkyoAVTCP::StopHardware()
@@ -174,6 +174,7 @@ bool OnkyoAVTCP::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -241,7 +242,7 @@ void OnkyoAVTCP::Do_Work()
 
 void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 
@@ -284,7 +285,7 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string message = "";
 
 	if (packettype == pTypeGeneralSwitch) {
-		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
+		const _tGeneralSwitch *xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int ID = xcmd->id;
 		int level = xcmd->level;
 		char buf[9];
@@ -461,7 +462,7 @@ void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)
 	std::vector<std::vector<std::string> > result;
 	std::string options_str;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, ID);
-	if (result.size() == 0) {
+	if (result.empty()) {
 		if (!options && switch_types[ID].options) {
 			options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions(switch_types[ID].options, false));
 			options = options_str.c_str();
@@ -479,8 +480,6 @@ void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)
 std::string OnkyoAVTCP::BuildSelectorOptions(const std::string & names, const std::string & ids)
 {
 	std::map<std::string, std::string> optionsMap;
-
-	std::vector<std::string>::iterator n_itt, id_itt;
 	optionsMap.insert(std::pair<std::string, std::string>("LevelOffHidden", "true"));
 	optionsMap.insert(std::pair<std::string, std::string>("SelectorStyle", "1"));
 	optionsMap.insert(std::pair<std::string, std::string>("LevelNames", names));

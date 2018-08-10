@@ -6,7 +6,7 @@
 #include <fstream>
 #include <map>
 
-enum _eLogLevel
+enum _eLogLevel : uint32_t
 {
 	LOG_NORM = 0x0000001,
 	LOG_STATUS = 0x0000002,
@@ -15,7 +15,7 @@ enum _eLogLevel
 	//
 	LOG_ALL = 0xFFFFFFF //Used by web interface to retrieve all log types
 };
-enum _eDebugLevel
+enum _eDebugLevel : uint32_t
 {
 	DEBUG_NORM = 0x0000001,
 	DEBUG_HARDWARE = 0x0000002,
@@ -85,7 +85,7 @@ private:
 	uint32_t m_log_flags;
 	uint32_t m_debug_flags;
 
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 	std::ofstream m_outputfile;
 	std::map<_eLogLevel, std::deque<_tLogLineStruct> > m_lastlog;
 	std::deque<_tLogLineStruct> m_notification_log;

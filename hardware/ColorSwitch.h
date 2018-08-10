@@ -38,12 +38,12 @@ struct _tColor {
 	uint8_t ww;    // Range:0..255, Warm white level (also used as level for monochrome white)
 
 	_tColor();
-	explicit _tColor(Json::Value json);
+	explicit _tColor(const Json::Value &json);
 	explicit _tColor(const std::string &sRaw); //explicit to avoid unintentional conversion of string to _tColor
 	explicit _tColor(const uint8_t ir, const uint8_t ig, const uint8_t ib, const uint8_t icw, const uint8_t iww, ColorMode imode);
 	explicit _tColor(uint8_t x, ColorMode imode);
 	std::string getrgbwwhex() const;
-	void fromJSON(Json::Value root);
+	void fromJSON(const Json::Value &root);
 	void fromString(const std::string &s);
 	std::string toJSONString() const;
 	Json::Value toJSONValue() const;
@@ -61,6 +61,20 @@ struct _tColorSwitch {
 	uint8_t command;
 	uint32_t value;  // Value of command
 	_tColor color;   // Color
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar & cereal::make_nvp("len", len);
+		ar & cereal::make_nvp("type", type);
+		ar & cereal::make_nvp("subtype", subtype);
+		ar & cereal::make_nvp("id", id);
+		ar & cereal::make_nvp("dunit", dunit);
+		ar & cereal::make_nvp("command", command);
+		ar & cereal::make_nvp("value", value);
+		ar & cereal::make_nvp("color", color);
+	}
+
 	_tColorSwitch()
 	{
 		id = 1;

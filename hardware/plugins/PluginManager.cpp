@@ -65,7 +65,7 @@ namespace Plugins {
     // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 #endif // ENABLE_PYTHON
 
-	boost::mutex PluginMutex;	// controls accessto the message queue
+	std::mutex PluginMutex;	// controls accessto the message queue
 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
@@ -78,7 +78,6 @@ namespace Plugins {
 		m_bAllPluginsStarted = false;
 		m_iPollInterval = 10;
 		m_InitialPythonThread = NULL;
-		m_thread = NULL;
 	}
 
 	CPluginSystem::~CPluginSystem(void)
@@ -88,7 +87,7 @@ namespace Plugins {
 	bool CPluginSystem::StartPluginSystem()
 	{
 		// Flush the message queue (should already be empty)
-		boost::lock_guard<boost::mutex> l(PluginMutex);
+		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
 			PluginMessageQueue.pop();
@@ -105,7 +104,8 @@ namespace Plugins {
 		// Pull UI elements from plugins and create manifest map in memory
 		BuildManifest();
 
-		m_thread = new boost::thread(boost::bind(&CPluginSystem::Do_Work, this));
+		m_thread = std::make_shared<std::thread>(&CPluginSystem::Do_Work, this);
+		SetThreadName(m_thread->native_handle(), "PluginMgr");
 
 		szPyVersion = Py_GetVersion();
 
@@ -139,6 +139,13 @@ namespace Plugins {
 			}
 
 			Py_Initialize();
+
+			// Initialise threads. Python 3.7+ does this inside Py_Initialize so done here for compatibility
+			if (!PyEval_ThreadsInitialized())
+			{
+				PyEval_InitThreads();
+			}
+
 			m_InitialPythonThread = PyEval_SaveThread();
 
 			m_bEnabled = true;
@@ -199,7 +206,7 @@ namespace Plugins {
 								if (!bFound && (line.find("<plugin") != std::string::npos))
 									bFound = true;
 								if (bFound)
-									sXML += line + "\n";
+									sXML += line + '\n';
 								if (line.find("</plugin>") != std::string::npos)
 									break;
 							}
@@ -222,7 +229,7 @@ namespace Plugins {
 		CPlugin*	pPlugin = NULL;
 		if (m_bEnabled)
 		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
+			std::lock_guard<std::mutex> l(PluginMutex);
 			pPlugin = new CPlugin(HwdID, Name, PluginKey);
 			m_pPlugins.insert(std::pair<int, CPlugin*>(HwdID, pPlugin));
 		}
@@ -230,14 +237,14 @@ namespace Plugins {
 		{
 			_log.Log(LOG_STATUS, "PluginSystem: '%s' Registration ignored, Plugins are not enabled.", Name.c_str());
 		}
-		return (CDomoticzHardwareBase*)pPlugin;
+		return reinterpret_cast<CDomoticzHardwareBase*>(pPlugin);
 	}
 
 	void CPluginSystem::DeregisterPlugin(const int HwdID)
 	{
 		if (m_pPlugins.count(HwdID))
 		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
+			std::lock_guard<std::mutex> l(PluginMutex);
 			m_pPlugins.erase(HwdID);
 		}
 	}
@@ -254,15 +261,16 @@ namespace Plugins {
 		// Create initial IO Service thread
 		ios.reset();
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+		SetThreadName(bt.native_handle(), "PluginMgr_IO");
 
 		while (!m_stoprequested)
 		{
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
 			{
 				bool bIos_required = false;
-				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
 				{
-					CPlugin*	pPlugin = (CPlugin*)itt->second;
+					CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
 					if (pPlugin && pPlugin->IoThreadRequired())
 					{
 						bIos_required = true;
@@ -275,6 +283,7 @@ namespace Plugins {
 					ios.reset();
 					_log.Log(LOG_NORM, "PluginSystem: Restarting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+					SetThreadName(bt.native_handle(), "PluginMgr_IO");
 				}
 			}
 
@@ -288,7 +297,7 @@ namespace Plugins {
 				// Cycle once through the queue looking for the 1st message that is ready to process
 				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
+					std::lock_guard<std::mutex> l(PluginMutex);
 					CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
 					PluginMessageQueue.pop();
 					if (FrontMessage->m_When <= Now)
@@ -309,7 +318,7 @@ namespace Plugins {
 						const CPlugin* pPlugin = Message->Plugin();
 						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
 						{
-							_log.Log(LOG_NORM, "(" + pPlugin->Name + ") Processing '" + std::string(Message->Name()) + "' message");
+							_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") Processing '" + std::string(Message->Name()) + "' message");
 						}
 						Message->Process();
 					}
@@ -319,7 +328,13 @@ namespace Plugins {
 					}
 				}
 				// Free the memory for the message
-				if (Message) delete Message;
+				if (Message)
+				{
+					CPlugin* pPlugin = (CPlugin*)Message->Plugin();
+					pPlugin->RestoreThread();
+					delete Message;
+					pPlugin->ReleaseThread();
+				}
 			}
 			sleep_milliseconds(50);
 		}
@@ -335,18 +350,18 @@ namespace Plugins {
 		{
 			m_stoprequested = true;
 			m_thread->join();
-			m_thread = NULL;
+			m_thread.reset();
 		}
 
 		// Hardware should already be stopped so just flush the queue (should already be empty)
-		boost::lock_guard<boost::mutex> l(PluginMutex);
+		std::lock_guard<std::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
 			CPluginMessageBase* Message = PluginMessageQueue.front();
 			const CPlugin* pPlugin = Message->Plugin();
 			if (pPlugin)
 			{
-				_log.Log(LOG_NORM, "(" + pPlugin->Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
+				_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
 			}
 			PluginMessageQueue.pop();
 		}
@@ -368,11 +383,11 @@ namespace Plugins {
 	void CPluginSystem::LoadSettings()
 	{
 		//	Add command to message queue for every plugin
-		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
 		{
 			if (itt->second)
 			{
-				CPlugin*	pPlugin = (CPlugin*)itt->second;
+				CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
 				pPlugin->MessagePlugin(new SettingsDirective(pPlugin));
 			}
 			else
@@ -386,7 +401,7 @@ namespace Plugins {
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT HardwareID,Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
 			std::string sHwdID = sd[0];
@@ -394,7 +409,7 @@ namespace Plugins {
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
 			if (pHardware != NULL)
 			{
-				std::vector<std::string> sd = result[0];
+				//std::vector<std::string> sd = result[0];
 				_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
 				Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
 				pPlugin->DeviceModified(atoi(Unit.c_str()));
@@ -411,7 +426,7 @@ namespace http {
 			int		iPluginCnt = root.size();
 			Plugins::CPluginSystem Plugins;
 			std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-			for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+			for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
 			{
 				TiXmlDocument	XmlDoc;
 				XmlDoc.Parse(it_type->second.c_str());
@@ -516,7 +531,7 @@ namespace http {
 			{
 				std::string	sKey = "key=\"" + pPlugin->m_PluginKey + "\"";
 				std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
 				{
 					if (it_type->second.find(sKey) != std::string::npos)
 					{

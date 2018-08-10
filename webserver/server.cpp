@@ -306,18 +306,18 @@ std::string ssl_server::get_passphrase() const {
 }
 #endif
 
-boost::shared_ptr<server_base> server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
+std::shared_ptr<server_base> server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
 #ifdef WWW_ENABLE_SSL
 		if (settings.is_secure()) {
 			return create(dynamic_cast<ssl_server_settings const &>(settings), user_request_handler);
 		}
 #endif
-		return boost::shared_ptr<server_base>(new server(settings, user_request_handler));
+		return std::shared_ptr<server_base>(new server(settings, user_request_handler));
 	}
 
 #ifdef WWW_ENABLE_SSL
-boost::shared_ptr<server_base> server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
-		return boost::shared_ptr<server_base>(new ssl_server(ssl_settings, user_request_handler));
+std::shared_ptr<server_base> server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
+		return std::shared_ptr<server_base>(new ssl_server(ssl_settings, user_request_handler));
 	}
 #endif
 

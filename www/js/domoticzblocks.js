@@ -1123,11 +1123,11 @@ Blockly.Blocks['logic_weekday'].DAYS =
 	["Sunday", '1']];
 
 Blockly.Blocks['logic_notification_priority'].PRIORITY =
-	[["-2 (Prowl/NMA: Very Low, Pushover: N/A)", '-2'],
-	["-1 (Prowl/NMA: Moderate, Pushover:Quiet)", '-1'],
+	[["-2 (Prowl: Very Low, Pushover: N/A)", '-2'],
+	["-1 (Prowl: Moderate, Pushover:Quiet)", '-1'],
 	["0 (All: Normal)", '0'],
 	["1 (All: High)", '1'],
-	["2 (Prowl/NMA: Emergency, Pushover: confirm)", '2']];
+	["2 (Prowl: Emergency, Pushover: confirm)", '2']];
 
 Blockly.Blocks['logic_notification_priority'].SOUND =
 	[["Pushover (default)", 'pushover'],
@@ -1161,7 +1161,6 @@ Blockly.Blocks['logic_notification_priority'].SUBSYSTEM =
 	["http", 'http'],
 	["kodi", 'kodi'],
 	["lms", 'lms'],
-	["nma", 'nma'],
 	["prowl", 'prowl'],
 	["pushalot", 'pushalot'],
 	["pushbullet", 'pushbullet'],

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include "../webserver/cWebem.h"
 #include "../webserver/request.hpp"
 #include "../webserver/session_store.hpp"
@@ -18,7 +17,7 @@ namespace http {
 	namespace server {
 		class cWebem;
 		struct _tWebUserPassword;
-class CWebServer : public session_store, public boost::enable_shared_from_this<CWebServer>
+class CWebServer : public session_store, public std::enable_shared_from_this<CWebServer>
 {
 	typedef boost::function< void(WebEmSession & session, const request& req, Json::Value &root) > webserver_response_function;
 public:
@@ -97,10 +96,10 @@ public:
 		const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
-	const WebEmStoredSession GetSession(const std::string & sessionId);
-	void StoreSession(const WebEmStoredSession & session);
-	void RemoveSession(const std::string & sessionId);
-	void CleanSessions();
+	const WebEmStoredSession GetSession(const std::string & sessionId) override;
+	void StoreSession(const WebEmStoredSession & session) override;
+	void RemoveSession(const std::string & sessionId) override;
+	void CleanSessions() override;
 	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
 	std::string PluginHardwareDesc(int HwdID);
 
@@ -276,7 +275,7 @@ private:
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root);
-	
+
 	void Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
@@ -376,7 +375,7 @@ private:
 #ifdef WITH_TELLDUSCORE
     void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
 #endif
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	std::map < std::string, webserver_response_function > m_webcommands;
 	std::map < std::string, webserver_response_function > m_webrtypes;

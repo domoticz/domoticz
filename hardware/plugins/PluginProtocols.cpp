@@ -7,21 +7,11 @@
 
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
-
 #include "../main/Helper.h"
-#include "DelayedLink.h"
-
 #include "../main/Logger.h"
 #include "../webserver/Base64.h"
-
-#include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/lock_guard.hpp>
-
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
-
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 
 namespace Plugins {
 
@@ -555,7 +545,7 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 				{
 					auth += m_Password;
 				}
-				std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+				std::string encodedAuth = base64_encode(auth);
 				sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
 			}
 
@@ -650,7 +640,7 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 		if (!pLength && pData && PyUnicode_Check(pData))
 		{
 			Py_ssize_t iLength = PyUnicode_GetLength(pData);
-			sHttp += "Content-Length: " + SSTR(iLength) + "\r\n";
+			sHttp += "Content-Length: " + std::to_string(iLength) + "\r\n";
 		}
 
 		sHttp += "\r\n";

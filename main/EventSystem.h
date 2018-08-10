@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <boost/thread/shared_mutex.hpp>
 
 extern "C" {
 #ifdef WITH_EXTERNAL_LUA
@@ -184,10 +184,10 @@ private:
 	boost::shared_mutex m_uservariablesMutex;
 	boost::shared_mutex m_scenesgroupsMutex;
 	boost::shared_mutex m_eventtriggerMutex;
-	boost::mutex m_measurementStatesMutex;
-	boost::mutex luaMutex;
+	std::mutex m_measurementStatesMutex;
+	std::mutex luaMutex;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread, m_eventqueuethread;
+	std::shared_ptr<std::thread> m_thread, m_eventqueuethread;
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;
@@ -217,7 +217,7 @@ private:
 	static int l_domoticz_print(lua_State* lua_state);
 	void OpenURL(const std::string &URL);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
-	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
+	bool ScheduleEvent(int deviceID, const std::string &Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	lua_State *CreateBlocklyLuaState();
 

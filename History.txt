@@ -1,4 +1,11 @@
-Version 3.xxx (May xxth 2018)
+Version 4.xxxx (July xxth 2018)
+- Implemented: OpenZWave, controller options for RetryTimeout, AssumeAwake and PerformReturnRoutes can now be set
+- Implemented: OpenZWave, support for Seismic Intensity sensor
+- Implemented: InfluxDB Data push, support for Username/Password
+- Fixed: Philips Hue, should work correctly now again
+- Updated: Dzvents (version 2.4.7, See dzVents/documentation/history.md)
+
+Version 4.9700 (June 23th 2018)
 - Implemented: Blockly, now possible to directly add/update Text devices
 - Implemented: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Camera: support for HTTPS url's
@@ -21,6 +28,7 @@ Version 3.xxx (May xxth 2018)
 - Implemented: Language "Bosnian" (Big thanks to "Vedran")
 - Implemented: Language "Catalan" (Big thanks to "delfisastre")
 - Implemented: Logitech Media Server: Added option to remove unused nodes
+- Implemented: RFXtrx Lucci Fan DC implemented
 - Implemented: MQTT Push message on scene/group switch event
 - Implemented: MySensors: handling of I_INCLUSION_MODE message.
 - Implemented: MySensors: support for SmartSleep option (gateway 2.x)
@@ -37,6 +45,7 @@ Version 3.xxx (May xxth 2018)
 - Implemented: Webserver: automatically reload SSL certificates and DH params3
 - Implemented: Xiaomi Aqara Cube
 - Implemented: ZWave node ID to log
+- Removed: NMA Notification system (the service has stopped)
 - Updated: Dzvents (version 2.4.6, See dzVents/documentation/history.md)
 - Updated: OenZWave driver and configuration files
 - Updated: Translation files

@@ -12,21 +12,16 @@
 #include "fastcgi.hpp"
 #include <fstream>
 #include <sstream>
-#include <string>
-#include <boost/lexical_cast.hpp>
-#include <boost/scoped_array.hpp>
 #ifdef WIN32
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/date.hpp>
 #endif
-#include <time.h>
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "request.hpp"
 #include "cWebem.h"
 #include "GZipHelper.h"
 
-// remove
 #include "../main/Logger.h"
 
 #define ZIPREADBUFFERSIZE (8192)

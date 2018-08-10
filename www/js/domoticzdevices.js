@@ -1162,7 +1162,7 @@ function Sensor(item) {
         var sensorType = this.type.replace(/\s/g, '');
 
         if (sensorType === 'General') {
-            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
             this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
         }
@@ -1203,7 +1203,7 @@ function TemperatureSensor(item) {
         this.parent.constructor(item);
         this.image = "images/temp48.png";
         this.status = $.t('Temp') + ': ' + this.data;
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/TemperatureLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 TemperatureSensor.inheritsFrom(VariableSensor);
@@ -1234,7 +1234,7 @@ function Switch(item) {
         } else {
             this.image = (this.status == "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.showStatus = (Device.showSwitchValues == true);
         this.data = '';
     }
@@ -1253,7 +1253,7 @@ BinarySwitch.inheritsFrom(Switch);
 function Alert(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/TextLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.NotifyLink = "";
         this.status = this.data;
         this.data = "";
@@ -1349,7 +1349,7 @@ function Contact(item) {
         }
         this.data = '';
         this.smallStatus = this.status;
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Contact.inheritsFrom(BinarySensor);
@@ -1378,7 +1378,7 @@ function Current(item) {
                 this.smallStatus = this.data;
                 break;
             case "Usage":
-                this.LogLink = this.onClick = "ShowUsageLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                 break;
             case "General":
                 switch (this.subtype) {
@@ -1387,7 +1387,7 @@ function Current(item) {
                         this.smallStatus = this.data;
                         break;
                     case "Voltage":
-                        this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + escape(this.name) + "', '" + this.switchTypeVal + "', 'VoltageGeneral');";
+                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                         this.smallStatus = this.data;
                         break;
                     default:
@@ -1408,7 +1408,7 @@ function Custom(item) {
         if (arguments.length != 0) {
         this.parent.constructor(item);
                 this.image = "images/Custom.png";
-                this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "'," + this.index + ",'" + escape(this.name) + "','" + this.sensorunit + "','" + this.subtype + "');";
+                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
                 this.data = '';
         }
 }
@@ -1439,7 +1439,7 @@ function Door(item) {
         }
         this.data = '';
         this.NotifyLink = this.onClick = "";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Door.inheritsFrom(BinarySwitch);
@@ -1452,7 +1452,7 @@ function DoorContact(item) {
         }
         this.imagetext = "";
         this.NotifyLink = this.onClick = "";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = '';
     }
 }
@@ -1471,7 +1471,7 @@ function DuskSensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = (item.Status == 'On') ? "images/uvdark.png" : this.image = "images/uvsunny.png";
-        this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = '';
     }
 }
@@ -1497,7 +1497,7 @@ function Hardware(item) {
         this.parent.constructor(item);
 
         if (this.subtype === 'General') {
-            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
             this.LogLink = this.onClick = "Show" + this.subtype + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
         }
@@ -1516,7 +1516,7 @@ function Humidity(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/moisture48.png";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/TemperatureLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         if (typeof item.Humidity != 'undefined') {
             this.data = this.smallStatus = item.Humidity + '%';
             this.status = $.t('Humidity') + ': ' + item.Humidity + '%';
@@ -1561,7 +1561,7 @@ function Motion(item) {
         if (item.CustomImage == 0) {
             this.image = (this.status == "On") ? "images/" + item.TypeImg + "48-on.png" : "images/" + item.TypeImg + "48-off.png";
         }
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = '';
         this.smallStatus = this.status;
     }
@@ -1594,7 +1594,7 @@ Pushoff.inheritsFrom(BinarySwitch);
 function Radiation(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "'," + this.index + ",'" + this.name + "', '" + this.switchTypeVal + "', 'Radiation');";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Radiation.inheritsFrom(WeatherSensor);
@@ -1655,7 +1655,7 @@ function Smoke(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = ((item.Status == "Panic") || (item.Status == "On")) ? "images/smoke48on.png" : this.image = "images/smoke48off.png";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = '';
     }
 }
@@ -1691,7 +1691,7 @@ Text.inheritsFrom(Sensor);
 function Visibility(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "ShowGeneralGraph('#" + Device.contentTag + "','" + Device.backFunction + "'," + this.index + ",'" + this.name + "', '" + this.switchTypeVal + "', '" + this.subtype + "');";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Visibility.inheritsFrom(WeatherSensor);

@@ -1,10 +1,9 @@
 #include "stdafx.h"
 #include "RFXNames.h"
 #include "RFXtrx.h"
-#include "../hardware/hardwaretypes.h"
 #include "../hardware/EvohomeBase.h"
+#include "../hardware/hardwaretypes.h"
 #include "Helper.h"
-#include <boost/algorithm/string.hpp>
 #include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
@@ -171,7 +170,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_WINDDELEN, "Winddelen" },
 		{ HTYPE_TE923, "TE923 USB Compatible Weather Station" },
 		{ HTYPE_Rego6XX, "Rego 6XX USB/serial interface" },
-		{ HTYPE_RazberryZWave, "Razberry Z-Wave via LAN interface (Deprecated)" },
+		{ HTYPE_FreeToUse, "Can be used for a feature hardware class" },
 		{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 		{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE, "1-Wire (System)" },
@@ -607,6 +606,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting1, sTypeEnergenie5, "Energenie 5-gang" },
 		{ pTypeLighting1, sTypeGDR2, "COCO GDR2" },
 		{ pTypeLighting1, sTypeHQ, "HQ COCO-20" },
+		{ pTypeLighting1, sTypeOase, "Oase Inscenio" },
 
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
@@ -655,6 +655,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
 		{ pTypeBlinds, sTypeBlindsT12, "Confexx" },
 		{ pTypeBlinds, sTypeBlindsT13, "Screenline" },
+		{ pTypeBlinds, sTypeBlindsT14, "Hualite" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -771,6 +772,11 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeFan, sTypeSiemensSF01 , "Siemens SF01" },
 		{ pTypeFan, sTypeItho , "Itho CVE RFT" },
 		{ pTypeFan, sTypeLucciAir, "Lucci Air" },
+		{ pTypeFan, sTypeSeavTXS4, "SEAV TXS4" },
+		{ pTypeFan, sTypeWestinghouse, "Westinghouse" },
+		{ pTypeFan, sTypeLucciAirDC, "Lucci Air DC" },
+		{ pTypeFan, sTypeCasafan, "Casafan" },
+		{ pTypeFan, sTypeFT1211R, "FT1211R" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -993,10 +999,9 @@ const char *ZWave_Thermostat_Fan_Modes[] =
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode)
 {
 	int ii = 0;
-	std::vector<std::string>::const_iterator itt;
-	for (itt = Modes.begin(); itt != Modes.end(); ++itt)
+	for (const auto & itt : Modes)
 	{
-		if (*itt == sMode)
+		if (itt == sMode)
 			return ii;
 		ii++;
 	}
@@ -1071,6 +1076,7 @@ void GetLightStatus(
 		case sTypeEnergenie5:
 		case sTypeGDR2:
 		case sTypeHQ:
+		case sTypeOase:
 			bHaveGroupCmd = true;
 			switch (nValue)
 			{
@@ -2048,6 +2054,31 @@ void GetLightStatus(
 			}
 		}
 		break;
+		case sTypeLucciAirDC:
+		{
+			switch (nValue)
+			{
+			case fan_LucciDCPower:
+				lstatus = "pow";
+				break;
+			case fan_LucciDCPlus:
+				lstatus = "plus";
+				break;
+			case fan_LucciDCMin:
+				lstatus = "min";
+				break;
+			case fan_LucciDCLight:
+				lstatus = "light";
+				break;
+			case fan_LucciDCReverse:
+				lstatus = "rev";
+				break;
+			case fan_LucciDCNaturalflow:
+				lstatus = "nat";
+				break;
+			}
+		}
+		break;
 		}
 		break;
 	}
@@ -2064,14 +2095,16 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch statuses...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
-		std::vector<std::string>::iterator itt;
+		StringSplit(sOptions, "|", strarray);
 		int i = 0;
 		std::stringstream ss;
-		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
-			ss.clear(); ss.str(""); ss << i;
+		for (const auto & itt : strarray)
+		{
+			ss.clear();
+			ss.str("");
+			ss << i;
 			std::string level(ss.str());
-			std::string levelName = *itt;
+			std::string levelName = itt;
 			//_log.Log(LOG_STATUS, "DEBUG : Get selector status '%s' for level %s", levelName.c_str(), level.c_str());
 			statuses.insert(std::pair<std::string, std::string>(level.c_str(), levelName.c_str()));
 			i += 10;
@@ -2089,11 +2122,12 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
-		std::vector<std::string>::iterator itt;
+		StringSplit(sOptions, "|", strarray);
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
-			if (*itt == levelName) {
+		for (const auto & itt : strarray)
+		{
+			if (itt == levelName)
+			{
 				level = i;
 				break;
 			}
@@ -2112,12 +2146,13 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level action...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
-		std::vector<std::string>::iterator itt;
+		StringSplit(sOptions, "|", strarray);
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
-			if (i == level) {
-				return *itt;
+		for (const auto & itt : strarray)
+		{
+			if (i == level)
+			{
+				return itt;
 			}
 			i += 10;
 		}
@@ -3429,6 +3464,22 @@ bool GetLightCommand(
 			}
 		}
 		break;
+		case sTypeLucciAirDC:
+		{
+			if (switchcmd == "pow")
+				cmd = fan_LucciDCPower;
+			else if (switchcmd == "plus")
+				cmd = fan_LucciDCPlus;
+			else if (switchcmd == "min")
+				cmd = fan_LucciDCMin;
+			else if (switchcmd == "light")
+				cmd = fan_LucciDCLight;
+			else if (switchcmd == "rev")
+				cmd = fan_LucciDCReverse;
+			else if (switchcmd == "nat")
+				cmd = fan_LucciDCNaturalflow;
+		}
+		break;
 		}
 		return true;
 	}
@@ -3526,7 +3577,6 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_RFXLAN:
 	case HTYPE_P1SmartMeterLAN:
 	case HTYPE_YouLess:
-	case HTYPE_RazberryZWave:
 	case HTYPE_OpenThermGatewayTCP:
 	case HTYPE_LimitlessLights:
 	case HTYPE_SolarEdgeTCP:

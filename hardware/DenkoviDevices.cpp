@@ -65,7 +65,8 @@ bool CDenkoviDevices::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviDevices::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CDenkoviDevices::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DenkoviDevices");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	switch (m_iModel) {
@@ -91,16 +92,16 @@ bool CDenkoviDevices::StartHardware()
 		_log.Log(LOG_STATUS, "SmartDEN Notifier: Started");
 		break;
 	}
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CDenkoviDevices::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -150,7 +151,7 @@ void CDenkoviDevices::Do_Work()
 	}
 }
 
-bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const _tGeneralSwitch *pSen = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
@@ -159,19 +160,15 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 	case DDEV_SmartDEN_Notifier: {
 		_log.Log(LOG_ERROR, "SmartDEN Notifier: This board does not have outputs! ");
 		return false;
-		break;
 	}
 	case DDEV_SmartDEN_Logger: {
 		_log.Log(LOG_ERROR, "SmartDEN Logger: This board does not have outputs! ");
 		return false;
-		break;
 	}
 	case DDEV_SmartDEN_IP_32_In: {
 		_log.Log(LOG_ERROR, "SmartDEN IP 32 In: This board does not have outputs! ");
 		return false;
-		break;
 	}
-
 	case DDEV_SmartDEN_IP_Maxi: {
 		int ioType = pSen->id;
 		if ((ioType != DIOType_AO) && (ioType != DIOType_Relay))
@@ -215,9 +212,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 			return false;
 		}
 		return true;
-		break;
 	}
-
 	case DDEV_DAEnet_IP4: {
 		int ioType = pSen->id;
 		if ((ioType != DIOType_DO) && (ioType != DIOType_PWM))
@@ -264,7 +259,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 		int ioType = pSen->id;
 		if (ioType != DIOType_Relay)
 		{
-			if(m_iModel == DDEV_SmartDEN_IP_Watchdog)
+			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
 				_log.Log(LOG_ERROR, "SmartDEN IP Watchdog: Not a valid Relay switch.");
 			else
 				_log.Log(LOG_ERROR, "SmartDEN IP 16 Relays: Not a valid Relay switch.");
@@ -318,7 +313,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 	return false;
 }
 
-int CDenkoviDevices::DenkoviCheckForIO(std::string tmpstr, std::string tmpIoType) {
+int CDenkoviDevices::DenkoviCheckForIO(std::string tmpstr, const std::string &tmpIoType) {
 	int pos1;
 	int Idx = -1;
 	std::string ioType = "<" + tmpIoType;
@@ -333,7 +328,7 @@ int CDenkoviDevices::DenkoviCheckForIO(std::string tmpstr, std::string tmpIoType
 	return Idx;
 }
 
-int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, std::string tmpParameter) {
+int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, const std::string &tmpParameter) {
 	int pos1;
 	int lValue = -1;
 	std::string parameter = "<" + tmpParameter + ">";
@@ -348,7 +343,7 @@ int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, std::string tmpP
 	return lValue;
 }
 
-std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, std::string tmpParameter) {
+std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter) {
 	int pos1;
 	std::string sMeasure = "";
 	std::string parameter = "<" + tmpParameter + ">";
@@ -364,7 +359,7 @@ std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, std::str
 	return sMeasure;
 }
 
-float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, std::string tmpParameter) {
+float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, const std::string &tmpParameter) {
 	int pos1;
 	float value = NAN;
 	std::string parameter = "<" + tmpParameter + ">";
@@ -479,8 +474,8 @@ void CDenkoviDevices::GetMeterDetails()
 	}
 	size_t ii;
 	std::string tmpstr;
-	int tmpState;
-	int tmpValue;
+	int tmpState = 0;
+	int tmpValue = 0;
 	float tmpTiValue = NAN;
 	std::string tmpMeasure;
 	std::string tmpName;
@@ -500,7 +495,7 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
 				name = tmpName;
 				continue;
 			}
@@ -641,7 +636,7 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr,DAE_VALUE_DEF)) != -1))
+			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "Digital Input " + std::to_string(Idx) + " (" + name + ")";
 				SendGeneralSwitch(DIOType_DI, Idx, 255, (tmpValue == 1) ? true : false, 100, name);
@@ -755,7 +750,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				name = "Analog Output " + std::to_string(Idx) + " (" + name + ")";
 				double val = (100 / 1023) * tmpValue;
-				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (int)val, name);
+				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)val, name);
 				Idx = -1;
 				bHaveAnalogOutput = false;
 				continue;
@@ -838,7 +833,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHavePWM && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "PWM " + std::to_string(Idx) + " (" + name + ")";
-				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, tmpValue, name);
+				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)tmpValue, name);
 				Idx = -1;
 				bHavePWM = false;
 				continue;

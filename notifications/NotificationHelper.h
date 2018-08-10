@@ -2,7 +2,6 @@
 #include "NotificationBase.h"
 #include "../webserver/cWebem.h"
 
-#include <vector>
 #include <string>
 
 #define NOTIFYALL std::string("")
@@ -46,7 +45,7 @@ public:
 		const std::string &Sound,
 		const bool bFromNotification);
 	void LoadConfig();
-	void ConfigFromGetvars(const request& req, const bool save);
+	void ConfigFromGetvars(const http::server::request& req, const bool save);
 	bool IsInConfig(const std::string &Key);
 
 	//notification functions
@@ -93,7 +92,7 @@ public:
 		const std::string &ID,
 		const std::string &sName,
 		const unsigned char unit,
-		const unsigned char cType, 
+		const unsigned char cType,
 		const unsigned char cSubType,
 		const std::string &sValue);
 	bool CheckAndHandleNotification(
@@ -180,8 +179,8 @@ private:
 		);
 
 	std::string ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue);
-	bool ApplyRule(std::string rule, bool equal, bool less);
-	boost::mutex m_mutex;
+	bool ApplyRule(const std::string &rule, const bool equal, const bool less);
+	std::mutex m_mutex;
 	std::map<uint64_t, std::vector<_tNotification> > m_notifications;
 	int m_NotificationSensorInterval;
 	int m_NotificationSwitchInterval;

@@ -510,7 +510,6 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\RAVEn.h" />
-    <ClInclude Include="..\hardware\Razberry.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
     <ClInclude Include="..\hardware\RelayNet.h" />
     <ClInclude Include="..\hardware\RFLinkBase.h" />
@@ -574,6 +573,7 @@
     <ClInclude Include="..\main\LuaCommon.h" />
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
+    <ClInclude Include="..\main\Noncopyable.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
     <ClInclude Include="..\main\WebServerHelper.h" />
@@ -607,7 +607,6 @@
     <ClInclude Include="..\notifications\NotificationHTTP.h" />
     <ClInclude Include="..\notifications\NotificationKodi.h" />
     <ClInclude Include="..\notifications\NotificationLogitechMediaServer.h" />
-    <ClInclude Include="..\notifications\NotificationNma.h" />
     <ClInclude Include="..\notifications\NotificationProwl.h" />
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
@@ -803,7 +802,6 @@
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\RAVEn.cpp" />
-    <ClCompile Include="..\hardware\Razberry.cpp" />
     <ClCompile Include="..\hardware\RelayNet.cpp" />
     <ClCompile Include="..\hardware\RFLinkBase.cpp" />
     <ClCompile Include="..\hardware\RFLinkSerial.cpp" />
@@ -956,7 +954,6 @@
     <ClCompile Include="..\notifications\NotificationHTTP.cpp" />
     <ClCompile Include="..\notifications\NotificationKodi.cpp" />
     <ClCompile Include="..\notifications\NotificationLogitechMediaServer.cpp" />
-    <ClCompile Include="..\notifications\NotificationNma.cpp" />
     <ClCompile Include="..\notifications\NotificationProwl.cpp" />
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />

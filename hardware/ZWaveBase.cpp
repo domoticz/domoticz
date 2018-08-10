@@ -3,7 +3,6 @@
 #include "ZWaveCommands.h"
 
 #include <sstream>      // std::stringstream
-#include <vector>
 #include <ctype.h>
 #include <iomanip>
 
@@ -53,18 +52,18 @@ bool ZWaveBase::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ZWaveBase::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&ZWaveBase::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "ZWaveBase");
+	return (m_thread != nullptr);
 }
 
 bool ZWaveBase::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
-		if (m_thread!=NULL)
-			m_thread->join();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted=false;
 	return true;
@@ -171,7 +170,7 @@ bool ZWaveBase::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
 		m_HwdID, homeID, nodeID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::string ProductDescription = result[0][0];
 	return (
@@ -229,7 +228,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT ID, SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
-		if (result.size() > 0) //Already in the system, but make sure SubType is correct
+		if (!result.empty()) //Already in the system, but make sure SubType is correct
 		{
 			unsigned sTypeOld = atoi(result[0][1].c_str());
 			std::string sID = result[0][0];
@@ -278,7 +277,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
-		if (result.size() > 0)
+		if (!result.empty())
 			return; //Already in the system
 
 		//Send as pTypeGeneralSwitch/sSwitchGeneralSwitch
@@ -850,7 +849,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 
 bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	const _tZWaveDevice* pDevice=NULL;
 
@@ -916,7 +915,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				if ((cmnd== gswitch_sOff)||(cmnd== gswitch_sGroupOff))
 					svalue=0;
-				else 
+				else
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}
@@ -1068,7 +1067,6 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				int ivalue = pLed->value;
 				if (ivalue > 99)
 					ivalue = 99; //99 is fully on
-				svalue = ivalue;
 				if (pLed->color.mode == ColorModeWhite)
 				{
 					instanceID = 3;//red

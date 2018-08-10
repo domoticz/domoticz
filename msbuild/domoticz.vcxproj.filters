@@ -78,9 +78,6 @@
     <Filter Include="Devices\ZWave">
       <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\ZWave\Razberry-ZWave">
-      <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\LimitlessLed">
       <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
     </Filter>
@@ -1465,9 +1462,6 @@
     <ClInclude Include="..\smtpclient\SMTPClient.h">
       <Filter>SMTP</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Razberry.h">
-      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\DavisLoggerSerial.h">
       <Filter>Devices\Davis</Filter>
     </ClInclude>
@@ -1664,9 +1658,6 @@
       <Filter>Notifications</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationEmail.h">
-      <Filter>Notifications</Filter>
-    </ClInclude>
-    <ClInclude Include="..\notifications\NotificationNma.h">
       <Filter>Notifications</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationProwl.h">
@@ -2113,6 +2104,9 @@
     <ClInclude Include="..\zip\minizip_crypt.h">
       <Filter>zip\Base</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\Noncopyable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2231,9 +2225,6 @@
     </ClCompile>
     <ClCompile Include="..\smtpclient\SMTPClient.cpp">
       <Filter>SMTP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Razberry.cpp">
-      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp">
       <Filter>Devices\Davis</Filter>
@@ -2407,9 +2398,6 @@
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationEmail.cpp">
-      <Filter>Notifications</Filter>
-    </ClCompile>
-    <ClCompile Include="..\notifications\NotificationNma.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationProwl.cpp">

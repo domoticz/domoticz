@@ -1,13 +1,11 @@
 #pragma once
 
-#include <vector>
 #include <string>
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
-#include <map>
 
 #define timer_resolution_hz 25
 
@@ -74,11 +72,6 @@ struct _tTaskItem
 	_tColor _Color;
 	std::string _relatedEvent;
 	timeval _DelayTimeBegin;
-
-	_tTaskItem()
-	{
-
-	}
 
 	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger)
 	{
@@ -207,7 +200,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &eventName)
+	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &/*eventName*/)
 	{
 		return GetHTTPPage(DelayTime, URL, "", HTTPClient::HTTP_METHOD_GET, "", "");
 	}
@@ -292,11 +285,12 @@ public:
 	CSQLHelper(void);
 	~CSQLHelper(void);
 
-	bool OpenDatabase();
 	void SetDatabaseName(const std::string &DBName);
 
-	bool BackupDatabase(const std::string &OutputFile);
+	bool OpenDatabase();
+	void CloseDatabase();
 
+	bool BackupDatabase(const std::string &OutputFile);
 	bool RestoreDatabase(const std::string &dbase);
 
 	//Returns DeviceRowID
@@ -305,7 +299,7 @@ public:
 	uint64_t UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction=true);
 	uint64_t UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction = true);
 	uint64_t UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction = true);
-	
+
 	bool DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType);
 
 	uint64_t InsertDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char* sValue, const std::string &devname, const unsigned char signallevel = 12, const unsigned char batterylevel = 255, const int used = 0);
@@ -431,7 +425,7 @@ public:
 	bool		m_bLogEventScriptTrigger;
 	bool		m_bDisableDzVentsSystem;
 private:
-	boost::mutex	m_sqlQueryMutex;
+	std::mutex		m_sqlQueryMutex;
 	sqlite3			*m_dbase;
 	std::string		m_dbase_name;
 	unsigned char	m_sensortimeoutcounter;
@@ -442,8 +436,8 @@ private:
 	bool			m_bPreviousAcceptNewHardware;
 
 	std::vector<_tTaskItem> m_background_task_queue;
-	boost::shared_ptr<boost::thread> m_background_task_thread;
-	boost::mutex m_background_task_mutex;
+	std::shared_ptr<std::thread> m_background_task_thread;
+	std::mutex m_background_task_mutex;
 	bool m_stoprequested;
 	bool StartThread();
 	void Do_Work();
@@ -458,12 +452,12 @@ private:
 	uint64_t UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction);
 
 	bool UpdateCalendarMeter(
-		const int HardwareID, 
-		const char* DeviceID, 
-		const unsigned char unit, 
-		const unsigned char devType, 
-		const unsigned char subType, 
-		const bool shortLog, 
+		const int HardwareID,
+		const char* DeviceID,
+		const unsigned char unit,
+		const unsigned char devType,
+		const unsigned char subType,
+		const bool shortLog,
 		const long long MeterValue,
 		const long long MeterUsage,
 		const char* date);

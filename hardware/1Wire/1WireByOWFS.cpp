@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "1WireByOWFS.h"
 #include "../../main/mainworker.h"
+#include "../main/Logger.h"
 
 #include <fstream>
 #include <algorithm>
@@ -153,21 +154,21 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
       {
          if (unit<0 || unit>1)
             return;
-         writeData(device,std::string("PIO.").append(1,'A'+unit),value?"yes":"no");
+         writeData(device,std::string("PIO.").append(1,'A'+(char)unit),value?"yes":"no");
          break;
       }
    case _8_channel_addressable_switch:
       {
          if (unit<0 || unit>7)
             return;
-         writeData(device,std::string("PIO.").append(1,'0'+unit),value?"yes":"no");
+         writeData(device,std::string("PIO.").append(1,'0'+(char)unit),value?"yes":"no");
          break;
       }
    case _4k_EEPROM_with_PIO:
       {
          if (unit<0 || unit>1)
             return;
-         writeData(device,std::string("PIO.").append(1,'0'+unit),value?"yes":"no");
+         writeData(device,std::string("PIO.").append(1,'0'+(char)unit),value?"yes":"no");
          break;
       }
    case microlan_coupler:
@@ -238,21 +239,21 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
       {
          if (unit<0 || unit>1)
             return false;
-         fileName.append("/sensed.").append(1,'A'+unit);
+         fileName.append("/sensed.").append(1,'A'+(char)unit);
          break;
       }
    case _8_channel_addressable_switch:
       {
          if (unit<0 || unit>7)
             return false;
-         fileName.append("/sensed.").append(1,'0'+unit);
+         fileName.append("/sensed.").append(1,'0'+(char)unit);
          break;
       }
    case _4k_EEPROM_with_PIO:
       {
          if (unit<0 || unit>1)
             return false;
-         fileName.append("/sensed.").append(1,'0'+unit);
+         fileName.append("/sensed.").append(1,'0'+(char)unit);
          break;
       }
    case microlan_coupler:
@@ -302,9 +303,9 @@ unsigned int C1WireByOWFS::GetNbChannels(const _t1WireDevice& device) const
 unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) const
 {
    // Depending on OWFS version, file can be "counter" or "counters". So try both.
-   std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+unit));
+   std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+(char)unit));
    if (readValue.empty())
-      readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+unit));
+      readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+(char)unit));
    if (readValue.empty())
 	   return 0;
    return (unsigned long)atol(readValue.c_str());

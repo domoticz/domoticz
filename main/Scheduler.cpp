@@ -34,7 +34,8 @@ CScheduler::~CScheduler(void)
 
 void CScheduler::StartScheduler()
 {
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CScheduler::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CScheduler::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Scheduler");
 }
 
 void CScheduler::StopScheduler()
@@ -43,25 +44,22 @@ void CScheduler::StopScheduler()
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 }
 
 std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	std::vector<tScheduleItem> ret;
-
-	std::vector<tScheduleItem>::iterator itt;
-	for (itt = m_scheduleitems.begin(); itt != m_scheduleitems.end(); ++itt)
-	{
-		ret.push_back(*itt);
-	}
+	for (const auto & itt : m_scheduleitems)
+		ret.push_back(itt);
 	return ret;
 }
 
 void CScheduler::ReloadSchedules()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	m_scheduleitems.clear();
 
 	std::vector<std::vector<std::string> > result;
@@ -78,12 +76,11 @@ void CScheduler::ReloadSchedules()
 		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : result)
 		{
-			std::vector<std::string> sd = *itt;
+			std::vector<std::string> sd = itt;
 
 			bool bDUsed = (atoi(sd[7].c_str()) != 0);
 
@@ -96,14 +93,8 @@ void CScheduler::ReloadSchedules()
 				titem.bIsThermostat = false;
 
 				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
-
-				{
-					std::stringstream s_str(sd[0]);
-					s_str >> titem.RowID; }
-				{
-					std::stringstream s_str(sd[14]);
-					s_str >> titem.TimerID; }
-
+				titem.RowID = std::stoull(sd[0]);
+				titem.TimerID= std::stoull(sd[14]);
 				titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
 				titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
 				titem.startTime = 0;
@@ -184,12 +175,11 @@ void CScheduler::ReloadSchedules()
 		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : result)
 		{
-			std::vector<std::string> sd = *itt;
+			std::vector<std::string> sd = itt;
 
 			tScheduleItem titem;
 
@@ -277,12 +267,11 @@ void CScheduler::ReloadSchedules()
 		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
 		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto & itt : result)
 		{
-			std::vector<std::string> sd = *itt;
+			std::vector<std::string> sd = itt;
 
 			tScheduleItem titem;
 
@@ -365,8 +354,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 	bool bReloadSchedules = false;
 
 	{	//needed private scope for the lock
-		boost::lock_guard<boost::mutex> l(m_mutex);
-		int hour, min, sec;
+		std::lock_guard<std::mutex> l(m_mutex);
 
 		time_t temptime;
 		time_t atime = mytime(NULL);
@@ -379,9 +367,9 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		for(unsigned int a = 0; a < sizeof(allSchedules)/sizeof(allSchedules[0]); a = a + 1)
 		{
 			//std::cout << allSchedules[a].c_str() << ' ';
-			hour = atoi(allSchedules[a].substr(0, 2).c_str());
-			min = atoi(allSchedules[a].substr(3, 2).c_str());
-			sec = atoi(allSchedules[a].substr(6, 2).c_str());
+			int hour = atoi(allSchedules[a].substr(0, 2).c_str());
+			int min = atoi(allSchedules[a].substr(3, 2).c_str());
+			int sec = atoi(allSchedules[a].substr(6, 2).c_str());
 
 			constructTime(temptime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
 			if ((*allTimes[a] != temptime) && (temptime != 0))
@@ -736,45 +724,44 @@ void CScheduler::Do_Work()
 
 void CScheduler::CheckSchedules()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	time_t atime = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
-	std::vector<tScheduleItem>::iterator itt;
-	for (itt = m_scheduleitems.begin(); itt != m_scheduleitems.end(); ++itt)
+	for (auto & itt : m_scheduleitems)
 	{
-		if ((itt->bEnabled) && (atime > itt->startTime))
+		if ((itt.bEnabled) && (atime > itt.startTime))
 		{
 			//check if we are on a valid day
 			bool bOkToFire = false;
-			if (itt->timerType == TTYPE_FIXEDDATETIME)
+			if (itt.timerType == TTYPE_FIXEDDATETIME)
 			{
 				bOkToFire = true;
 			}
-			else if (itt->timerType == TTYPE_DAYSODD)
+			else if (itt.timerType == TTYPE_DAYSODD)
 			{
 				bOkToFire = (ltime.tm_mday % 2 != 0);
 			}
-			else if (itt->timerType == TTYPE_DAYSEVEN)
+			else if (itt.timerType == TTYPE_DAYSEVEN)
 			{
 				bOkToFire = (ltime.tm_mday % 2 == 0);
 			}
 			else
 			{
-				if (itt->Days & 0x80)
+				if (itt.Days & 0x80)
 				{
 					//everyday
 					bOkToFire = true;
 				}
-				else if (itt->Days & 0x100)
+				else if (itt.Days & 0x100)
 				{
 					//weekdays
 					if ((ltime.tm_wday > 0) && (ltime.tm_wday < 6))
 						bOkToFire = true;
 				}
-				else if (itt->Days & 0x200)
+				else if (itt.Days & 0x200)
 				{
 					//weekends
 					if ((ltime.tm_wday == 0) || (ltime.tm_wday == 6))
@@ -783,28 +770,28 @@ void CScheduler::CheckSchedules()
 				else
 				{
 					//custom days
-					if ((itt->Days & 0x01) && (ltime.tm_wday == 1))
+					if ((itt.Days & 0x01) && (ltime.tm_wday == 1))
 						bOkToFire = true;//Monday
-					if ((itt->Days & 0x02) && (ltime.tm_wday == 2))
+					if ((itt.Days & 0x02) && (ltime.tm_wday == 2))
 						bOkToFire = true;//Tuesday
-					if ((itt->Days & 0x04) && (ltime.tm_wday == 3))
+					if ((itt.Days & 0x04) && (ltime.tm_wday == 3))
 						bOkToFire = true;//Wednesday
-					if ((itt->Days & 0x08) && (ltime.tm_wday == 4))
+					if ((itt.Days & 0x08) && (ltime.tm_wday == 4))
 						bOkToFire = true;//Thursday
-					if ((itt->Days & 0x10) && (ltime.tm_wday == 5))
+					if ((itt.Days & 0x10) && (ltime.tm_wday == 5))
 						bOkToFire = true;//Friday
-					if ((itt->Days & 0x20) && (ltime.tm_wday == 6))
+					if ((itt.Days & 0x20) && (ltime.tm_wday == 6))
 						bOkToFire = true;//Saturday
-					if ((itt->Days & 0x40) && (ltime.tm_wday == 0))
+					if ((itt.Days & 0x40) && (ltime.tm_wday == 0))
 						bOkToFire = true;//Sunday
 				}
 				if (bOkToFire)
 				{
-					if ((itt->timerType == TTYPE_WEEKSODD) ||
-						(itt->timerType == TTYPE_WEEKSEVEN))
+					if ((itt.timerType == TTYPE_WEEKSODD) ||
+						(itt.timerType == TTYPE_WEEKSEVEN))
 					{
 						struct tm timeinfo;
-						localtime_r(&itt->startTime, &timeinfo);
+						localtime_r(&itt.startTime, &timeinfo);
 
 						boost::gregorian::date d = boost::gregorian::date(
 							timeinfo.tm_year + 1900,
@@ -812,7 +799,7 @@ void CScheduler::CheckSchedules()
 							timeinfo.tm_mday);
 						int w = d.week_number();
 
-						if (itt->timerType == TTYPE_WEEKSODD)
+						if (itt.timerType == TTYPE_WEEKSODD)
 							bOkToFire = (w % 2 != 0);
 						else
 							bOkToFire = (w % 2 == 0);
@@ -824,16 +811,16 @@ void CScheduler::CheckSchedules()
 				char ltimeBuf[30];
 				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
 
-				if (itt->bIsScene == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
-				else if (itt->bIsThermostat == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+				if (itt.bIsScene == true)
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s", itt.DeviceName.c_str(), Timer_Type_Desc(itt.timerType), itt.RowID, ltimeBuf);
+				else if (itt.bIsThermostat == true)
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s", itt.DeviceName.c_str(), Timer_Type_Desc(itt.timerType), itt.RowID, ltimeBuf);
 				else
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s", itt.DeviceName.c_str(), Timer_Type_Desc(itt.timerType), itt.RowID, ltimeBuf);
 				std::string switchcmd = "";
-				if (itt->timerCmd == TCMD_ON)
+				if (itt.timerCmd == TCMD_ON)
 					switchcmd = "On";
-				else if (itt->timerCmd == TCMD_OFF)
+				else if (itt.timerCmd == TCMD_OFF)
 					switchcmd = "Off";
 				if (switchcmd == "")
 				{
@@ -841,31 +828,31 @@ void CScheduler::CheckSchedules()
 				}
 				else
 				{
-					if (itt->bIsScene == true)
+					if (itt.bIsScene == true)
 					{
 /*
 						if (
-							(itt->timerType == TTYPE_BEFORESUNRISE) ||
-							(itt->timerType == TTYPE_AFTERSUNRISE) ||
-							(itt->timerType == TTYPE_BEFORESUNSET) ||
-							(itt->timerType == TTYPE_AFTERSUNSET)
+							(itt.timerType == TTYPE_BEFORESUNRISE) ||
+							(itt.timerType == TTYPE_AFTERSUNRISE) ||
+							(itt.timerType == TTYPE_BEFORESUNSET) ||
+							(itt.timerType == TTYPE_AFTERSUNSET)
 							)
 						{
 
 						}
 */
-						if (!m_mainworker.SwitchScene(itt->RowID, switchcmd))
+						if (!m_mainworker.SwitchScene(itt.RowID, switchcmd))
 						{
-							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s", itt->RowID, ltimeBuf);
+							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
 						}
 					}
-					else if (itt->bIsThermostat == true)
+					else if (itt.bIsThermostat == true)
 					{
 						std::stringstream sstr;
-						sstr << itt->RowID;
-						if (!m_mainworker.SetSetPoint(sstr.str(), itt->Temperature))
+						sstr << itt.RowID;
+						if (!m_mainworker.SetSetPoint(sstr.str(), itt.Temperature))
 						{
-							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s", itt->RowID, ltimeBuf);
+							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
 						}
 					}
 					else
@@ -873,8 +860,8 @@ void CScheduler::CheckSchedules()
 						//Get SwitchType
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
-							itt->RowID);
-						if (result.size() > 0)
+							itt.RowID);
+						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
 
@@ -891,53 +878,53 @@ void CScheduler::CheckSchedules()
 							int ilevel = maxDimLevel;
 							if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 							{
-								if (itt->timerCmd == TCMD_ON)
+								if (itt.timerCmd == TCMD_ON)
 								{
 									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0f)*itt->Level;
+									float fLevel = (maxDimLevel / 100.0f)*itt.Level;
 									if (fLevel > 100)
 										fLevel = 100;
 									ilevel = int(fLevel);
 								}
-								else if (itt->timerCmd == TCMD_OFF)
+								else if (itt.timerCmd == TCMD_OFF)
 									ilevel = 0;
 							}
 							else if ((switchtype == STYPE_Dimmer) && (maxDimLevel != 0))
 							{
-								if (itt->timerCmd == TCMD_ON)
+								if (itt.timerCmd == TCMD_ON)
 								{
 									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0f)*itt->Level;
+									float fLevel = (maxDimLevel / 100.0f)*itt.Level;
 									if (fLevel > 100)
 										fLevel = 100;
 									ilevel = int(fLevel);
 								}
 							} else if (switchtype == STYPE_Selector) {
-								if (itt->timerCmd == TCMD_ON) {
+								if (itt.timerCmd == TCMD_ON) {
 									switchcmd = "Set Level";
-									ilevel = itt->Level;
-								} else if (itt->timerCmd == TCMD_OFF) {
+									ilevel = itt.Level;
+								} else if (itt.timerCmd == TCMD_OFF) {
 									ilevel = 0; // force level to a valid value for Selector
 								}
 							}
-							if (!m_mainworker.SwitchLight(itt->RowID, switchcmd, ilevel, itt->Color, false, 0))
+							if (!m_mainworker.SwitchLight(itt.RowID, switchcmd, ilevel, itt.Color, false, 0))
 							{
-								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %" PRIu64 ", Time: %s", itt->RowID, ltimeBuf);
+								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %" PRIu64 ", Time: %s", itt.RowID, ltimeBuf);
 							}
 						}
 					}
 				}
 			}
-			if (!AdjustScheduleItem(&*itt, true))
+			if (!AdjustScheduleItem(&itt, true))
 			{
 				//something is wrong, probably no sunset/rise
-				if (itt->timerType != TTYPE_FIXEDDATETIME)
+				if (itt.timerType != TTYPE_FIXEDDATETIME)
 				{
-					itt->startTime += atime + (24 * 3600);
+					itt.startTime += atime + (24 * 3600);
 				}
 				else {
 					//Disable timer
-					itt->bEnabled = false;
+					itt.bEnabled = false;
 				}
 			}
 		}
@@ -963,7 +950,7 @@ void CScheduler::DeleteExpiredTimers()
 		szDate,
 		szTime
 		);
-	if (result.size() > 0) {
+	if (!result.empty()) {
 		m_sql.safe_query("DELETE FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 			TTYPE_FIXEDDATETIME,
 			szDate,
@@ -980,7 +967,7 @@ void CScheduler::DeleteExpiredTimers()
 		szDate,
 		szTime
 		);
-	if (result.size() > 0) {
+	if (!result.empty()) {
 		m_sql.safe_query("DELETE FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 			TTYPE_FIXEDDATETIME,
 			szDate,
@@ -1058,10 +1045,9 @@ namespace http {
 			if (tot_result.size() > 0)
 			{
 				int ii = 0;
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = tot_result.begin(); itt != tot_result.end(); ++itt)
+				for (const auto & itt : tot_result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					int iTimerIdx = atoi(sd[0].c_str());
 					bool bActive = atoi(sd[1].c_str()) != 0;
@@ -1150,13 +1136,12 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Color, Days, UseRandomness, MDay, Month, Occurence FROM Timers WHERE (DeviceRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					unsigned char iLevel = atoi(sd[6].c_str());
 					if (iLevel == 0)
@@ -1527,13 +1512,12 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence FROM SetpointTimers WHERE (DeviceRowID=%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					int iTimerType = atoi(sd[4].c_str());
 					std::string sdate = sd[2];
@@ -1851,13 +1835,12 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto & itt : result)
 				{
-					std::vector<std::string> sd = *itt;
+					std::vector<std::string> sd = itt;
 
 					unsigned char iLevel = atoi(sd[6].c_str());
 					if (iLevel == 0)

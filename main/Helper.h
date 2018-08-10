@@ -9,8 +9,7 @@ enum _eTimeFormat
 };
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
-uint64_t strtoui64(std::string str);
-uint64_t hexstrtoui64(std::string str);
+uint64_t hexstrtoui64(const std::string &str);
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
@@ -58,8 +57,8 @@ bool IsLightOrSwitch(const int devType, const int subType);
 int MStoBeaufort(const float ms);
 
 struct dirent;
-bool dirent_is_directory(std::string dir, struct dirent *ent);
-bool dirent_is_file(std::string dir, struct dirent *ent);
+bool dirent_is_directory(const std::string &dir, struct dirent *ent);
+bool dirent_is_file(const std::string &dir, struct dirent *ent);
 void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles);
 
 std::string GenerateUserAgent();
@@ -76,3 +75,5 @@ bool IsArgumentSecure(const std::string &arg);
 uint32_t SystemUptime();
 int GenerateRandomNumber(const int range);
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files);
+
+int SetThreadName(std::thread::native_handle_type thread, const char *name);

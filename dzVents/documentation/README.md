@@ -217,14 +217,14 @@ Since you can define multiple on-triggers in your script, it is not always clear
  - **isScene**:  <sup>2.4.0</sup>. returns `true` if the item is a Scene object.
  - **isGroup**:  <sup>2.4.0</sup>. returns `true` if the item is a Group object.
  - **isTimer**: <sup>2.4.0</sup>.  returns `true` if the item is a Timer object.
- - **isSecurty**: <sup>2.4.0</sup>.  returns `true` if the item is a Security object.
+ - **isSecurity**: <sup>2.4.0</sup>.  returns `true` if the item is a Security object.
  - **isHTTPResponse**: <sup>2.4.0</sup>.  returns `true` if the item is an HTTPResponse object.
  - **trigger**: <sup>2.4.0</sup>.  *string*. the timer rule, the security state or the http response callback string that actually triggered your script. E.g. if you have multiple timer rules can inspect `trigger` which exact timer rule was fired.
 
 #### 3. (domoticz, item, **triggerInfo**)
 **Note**: as of version 2.4.0, `triggerInfo` has become more or less obsolete and is left in here for backward compatibility. All information is now available on the `item` parameter (second parameter of the execute function, see point 2 above).
 
-`trifferInfo` holds information about what triggered the script. The object has two attributes:
+`triggerInfo` holds information about what triggered the script. The object has two attributes:
 
  1. **type**:  the type of the the event that triggered the execute function, either:
       - domoticz.EVENT_TYPE_TIMER,
@@ -430,8 +430,14 @@ There are several options for time triggers. It is important to know that Domoti
            'on mon,tue',                -- on Mondays and Tuesdays
            'every hour on sat',         -- you guessed it correctly
            'at sunset',                 -- uses sunset/sunrise info from Domoticz
-           'at sunrise',
+           'at sunrise',           
+           'at civiltwilightstart',     -- uses civil twilight start/end info from Domoticz
+           'at civiltwilightend',
            'at sunset on sat,sun',
+           'xx minutes before civiltwilightstart',
+           'xx minutes after civiltwilightstart',
+           'xx minutes before civiltwilightend',
+           'xx minutes after civiltwilightend',
            'xx minutes before sunset',
            'xx minutes after sunset',
            'xx minutes before sunrise',
@@ -440,6 +446,8 @@ There are several options for time triggers. It is important to know that Domoti
                                         -- aa/bb can be sunrise/sunset
                                         -- aa/bb can be 'xx minutes before/after
                                            sunrise/sunset'
+           'at civildaytime',           -- between civil twilight start and civil twilight end
+           'at civilnighttime',         -- between civil twilight end and civil twilight start
            'at nighttime',              -- between sunset and sunrise
            'at daytime',                -- between sunrise and sunset
            'at daytime on mon,tue',     -- between sunrise and sunset
@@ -516,11 +524,15 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
-    - **isDayTime**
-    - **isNightTime**
+    - **isDayTime**: *Boolean*
+    - **isNightTime**: *Boolean*
+    - **isCivilDayTime**: *Boolean*. <sup>2.4.7</sup>
+    - **isCivilNightTime**: *Boolean*. <sup>2.4.7</sup>
     - **isToday**: *Boolean*. Indicates if the device was updated today
     - **sunriseInMinutes**: *Number*. Number of minutes since midnight when the sun will rise.
     - **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
+    - **civTwilightStartInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
+    - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
    - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
    - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
@@ -1941,6 +1953,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+
+##[2.4.7]
+- Added support for civil twilight in rules
 
 ##[2.4.6]
 - Added Youless device

@@ -60,8 +60,9 @@ bool FritzboxTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&FritzboxTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&FritzboxTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "FritzboxTCP");
+	return (m_thread != nullptr);
 }
 
 bool FritzboxTCP::StopHardware()
@@ -71,6 +72,7 @@ bool FritzboxTCP::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -134,11 +136,11 @@ void FritzboxTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"Fritzbox: TCP/IP Worker stopped...");
-} 
+}
 
 void FritzboxTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 
@@ -217,10 +219,10 @@ void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
 	double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
+	uint8_t level = (uint8_t)(rlevel);
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);

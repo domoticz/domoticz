@@ -64,7 +64,7 @@ m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
-	
+
 	m_stoprequested=false;
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
@@ -99,17 +99,21 @@ bool RFXComSerial::StartHardware()
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "RFXComSerial");
 
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 
 }
 
 bool RFXComSerial::StopHardware()
 {
 	m_stoprequested=true;
-	if (m_thread!=NULL)
+	if (m_thread)
+	{
 		m_thread->join();
+		m_thread.reset();
+	}
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
     sleep_milliseconds(10);
 	if (m_serial.isOpen())
@@ -163,7 +167,7 @@ void RFXComSerial::Do_Work()
 
 	}
 	_log.Log(LOG_STATUS,"RFXCOM: Serial Worker stopped...");
-} 
+}
 
 
 bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
@@ -224,7 +228,6 @@ bool RFXComSerial::UpgradeFirmware()
 	m_FirmwareUploadPercentage = 0;
 	m_bStartFirmwareUpload = false;
 	std::map<unsigned long, std::string> firmwareBuffer;
-	std::map<unsigned long, std::string>::const_iterator itt;
 	int icntr = 0;
 	if (!Read_Firmware_File(m_szFirmwareFile.c_str(), firmwareBuffer))
 	{
@@ -307,14 +310,14 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "RFXCOM: Bootloader, Start programming...";
 	_log.Log(LOG_STATUS, m_szUploadMessage);
-	for (itt = firmwareBuffer.begin(); itt != firmwareBuffer.end(); ++itt)
+	for (auto itt : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
 		{
 			m_LastHeartbeat = mytime(NULL);
 		}
-		unsigned long Address = itt->first;
+		unsigned long Address = itt.first;
 		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
@@ -336,8 +339,8 @@ bool RFXComSerial::UpgradeFirmware()
 			bcmd[2] = Address & 0xFF;
 			bcmd[3] = (Address & 0xFF00) >> 8;
 			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
-			memcpy(bcmd + 5, itt->second.c_str(), itt->second.size());
-			bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 20);
+			memcpy(bcmd + 5, itt.second.c_str(), itt.second.size());
+			bool ret = Write_TX_PKT(bcmd, 5 + itt.second.size(), 20);
 			if (!ret)
 			{
 				m_szUploadMessage = "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!";
@@ -519,7 +522,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 				_log.Log(LOG_ERROR, m_szUploadMessage);
 				return false;
 			}
-			
+
 		}
 		//
 		chksum = ~chksum + 1;
@@ -556,13 +559,13 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			}
 			break;
 		case 2:
-			//Extended Segment Address Record 
+			//Extended Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 2 not supported!";
 			_log.Log(LOG_ERROR, m_szUploadMessage);
 			infile.close();
 			return false;
 		case 3:
-			//Start Segment Address Record 
+			//Start Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 3 not supported!";
 			_log.Log(LOG_ERROR, m_szUploadMessage);
 			infile.close();
@@ -576,7 +579,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 				infile.close();
 				return false;
 			}
-			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5]; 
+			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5];
 			break;
 		case 5:
 			//Start Linear Address Record
@@ -766,7 +769,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 
 void RFXComSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		if (!m_bInBootloaderMode)
@@ -875,7 +878,7 @@ namespace http {
 
 			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, [Type] FROM Hardware WHERE (ID='%q')",
 				idx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			unsigned char Mode1 = atoi(result[0][0].c_str());
@@ -911,7 +914,7 @@ namespace http {
 				Response.IRESPONSE.HIDEKIenabled = (request::findValue(&req, "HidekiUPM") == "on") ? 1 : 0;
 				Response.IRESPONSE.LACROSSEenabled = (request::findValue(&req, "LaCrosse") == "on") ? 1 : 0;
 				Response.IRESPONSE.LEGRANDenabled = (request::findValue(&req, "Legrand") == "on") ? 1 : 0;
-				Response.IRESPONSE.PROGUARDenabled = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
+				Response.IRESPONSE.MSG4Reserved5 = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
 				Response.IRESPONSE.BLINDST0enabled = (request::findValue(&req, "BlindT0") == "on") ? 1 : 0;
 				Response.IRESPONSE.BLINDST1enabled = (request::findValue(&req, "BlindT1T2T3T4") == "on") ? 1 : 0;
 				Response.IRESPONSE.AEenabled = (request::findValue(&req, "AEBlyss") == "on") ? 1 : 0;
@@ -927,7 +930,7 @@ namespace http {
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 				if (pHardware)
 				{
-					CRFXBase *pBase = (CRFXBase *)pHardware;
+					CRFXBase *pBase = reinterpret_cast<CRFXBase *>(pHardware);
 					pBase->SetRFXCOMHardwaremodes(Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 				}
 			}

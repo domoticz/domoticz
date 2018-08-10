@@ -256,9 +256,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
 		function confirmDecorator(fn, message) {
 			return function() {
+			    var args = arguments;
+
                 bootbox.confirm(message, function(result) {
                     if (result) {
-                        fn();
+                        fn.apply(null, args);
                     }
                 });
 			};
@@ -590,22 +592,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controllerUrl: 'app/DeviceLightEdit.js',
 				controllerAs: 'vm'
 			})).
-			when('/Devices/:id/LightLog', angularAMD.route({
-				templateUrl: 'views/log/device_light_log.html',
-				controller: 'DeviceLightLogController',
-				controllerUrl: 'app/log/LightLog.js',
-				controllerAs: 'vm'
-			})).
-			when('/Devices/:id/TextLog', angularAMD.route({
-				templateUrl: 'views/log/scene_log.html',
-				controller: 'DeviceTextLogController',
-				controllerUrl: 'app/log/TextLog.js',
-				controllerAs: 'vm'
-			})).
-			when('/Devices/:id/TemperatureLog', angularAMD.route({
-				templateUrl: 'views/log/device_temperature_log.html',
-				controller: 'DeviceTemperatureLogController',
-				controllerUrl: 'app/log/TemperatureLog.js',
+			when('/Devices/:id/Log', angularAMD.route({
+				templateUrl: 'views/log/device_log.html',
+				controller: 'DeviceLogController',
+				controllerUrl: 'app/log/DeviceLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({

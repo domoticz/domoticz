@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CLimitLess : public CDomoticzHardwareBase
 {
@@ -14,7 +13,7 @@ public:
 	};
 	CLimitLess(const int ID, const int LedType, const int BridgeType, const std::string &IPAddress, const unsigned short usIPPort);
 	~CLimitLess(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	bool AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname);
 	bool GetV6BridgeID();
@@ -23,6 +22,11 @@ private:
 	void Send_V6_RGBW_On(const uint8_t dunit, const long delay);
 	void Send_V4V5_RGBW_On(const uint8_t dunit, const long delay);
 	bool IsDataAvailable(const SOCKET sock);
+	void Init();
+	bool StartHardware() override;
+	bool StopHardware() override;
+	void Do_Work();
+private:
 	_eLimitlessBridgeType m_BridgeType;
 	unsigned char m_LEDType;
 
@@ -37,11 +41,6 @@ private:
 	sockaddr_in m_stRemoteDestAddr;
 
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
-
-	void Init();
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
+	std::shared_ptr<std::thread> m_thread;
 };
 

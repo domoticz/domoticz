@@ -32,16 +32,12 @@ Source: http://wiringpi.com
 
 class CGpio : public CDomoticzHardwareBase
 {
-
 public:
 	explicit CGpio(const int ID, const int debounce, const int period, const int pollinterval);
 	~CGpio();
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-	static std::vector<CGpioPin> GetPinList();
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	static CGpioPin* GetPPinById(int id);
-	uint32_t m_period;
-	uint32_t m_debounce;
-	uint32_t m_pollinterval;
+	static std::vector<CGpioPin> GetPinList();
 private:
 	int GPIORead(int pin, const char* param);
 	int GPIOReadFd(int fd);
@@ -50,8 +46,8 @@ private:
 	int waitForInterrupt(int fd, const int mS);
 	int SetSchedPriority(const int s, const int pri, const int x);
 	bool InitPins();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	//bool CreateDomoticzDevices();
 	void InterruptHandler();
 	void Poller();
@@ -59,9 +55,12 @@ private:
 	void UpdateStartup();
 	void UpdateSwitch(const int gpioId, const bool value);
 	void GetSchedPriority(int *scheduler, int *priority);
-
-	boost::mutex m_pins_mutex;
-	boost::shared_ptr<boost::thread> m_thread, m_thread_poller, m_thread_updatestartup;
+private:
+	uint32_t m_period;
+	uint32_t m_debounce;
+	uint32_t m_pollinterval;
+	std::mutex m_pins_mutex;
+	std::shared_ptr<std::thread> m_thread, m_thread_poller, m_thread_updatestartup;
 	static std::vector<CGpioPin> pins;
 	volatile bool m_stoprequested;
 	volatile int pinPass;

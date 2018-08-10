@@ -133,10 +133,11 @@ bool SatelIntegra::StartHardware()
 		return false;
 	}
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SatelIntegra::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&SatelIntegra::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "SatelIntegra");
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool SatelIntegra::StopHardware()
@@ -146,10 +147,11 @@ bool SatelIntegra::StopHardware()
 #endif
 
 	m_stoprequested = true;
-	
+
 	if (m_thread)
 	{
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	DestroySocket();
@@ -914,7 +916,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			{
 				id = id - 1024;
 				if (cmnd == gswitch_sOn)
-				{ 
+				{
 					id++;
 				}
 				cmnd = gswitch_sOn;
@@ -1002,7 +1004,7 @@ void SatelIntegra::UpdateZoneName(const int Idx, const unsigned char* name, cons
 	}
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=1)", m_HwdID, szTmp);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign zone name from Integra
 #ifdef DEBUG_SatelIntegra
@@ -1025,7 +1027,7 @@ void SatelIntegra::UpdateTempName(const int Idx, const unsigned char* name, cons
 	shortName = ISO2UTF8(shortName);
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=0)", m_HwdID, szTmp);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign zone name from Integra
 #ifdef DEBUG_SatelIntegra
@@ -1054,7 +1056,7 @@ void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, co
 	shortName = ISO2UTF8(shortName);
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=1)", m_HwdID, szTmp);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign output name from Integra
 #ifdef DEBUG_SatelIntegra
@@ -1071,7 +1073,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 
 	// Alarm
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Name=='Alarm') AND (Unit=2)", m_HwdID);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign name for Alarm
 #ifdef DEBUG_SatelIntegra
@@ -1088,7 +1090,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 			char szTmp[10];
 			sprintf(szTmp, "%08X", (int)i+1);
 			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Arm %d partition') AND (Unit=2)", m_HwdID, szTmp, i+1);
-			if (result.size() < 1)
+			if (result.empty())
 			{
 				//Assign name for Arm
 #ifdef DEBUG_SatelIntegra
@@ -1132,7 +1134,7 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 
 int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2)
 {
-	boost::lock_guard<boost::mutex> lock(m_mutex);
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	if (!ConnectToIntegra())
 	{
@@ -1179,7 +1181,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 	// remove special chars
 	int offset = 0;
-	for (int i = 0; i < ret; i++) 
+	for (int i = 0; i < ret; i++)
 	{
 		buffer[i] = buffer[i + offset];
 		if (buffer[i] == 0xFE && buffer[i + 1] == 0xF0)
@@ -1194,8 +1196,8 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	{
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ret - 2] == 0xFE) // check prefix and sufix
 		{
-			if ( (buffer[2] != 0xEF) 
-		 	  && ((ret - 6) != expectedLength1) 
+			if ( (buffer[2] != 0xEF)
+		 	  && ((ret - 6) != expectedLength1)
 			  && ((ret - 6) != expectedLength2))
 			{
 				_log.Log(LOG_ERROR, "Satel Integra: bad data length received");

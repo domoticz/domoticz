@@ -32,11 +32,12 @@ CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::st
 CLogger::CLogger(void)
 {
 	m_bInSequenceMode = false;
+	m_bEnableLogThreadIDs = false;
 	m_bEnableLogTimestamps = true;
 	m_bEnableErrorsToNotificationSystem = false;
 	m_LastLogNotificationsSend = 0;
-	SetLogFlags(LOG_NORM | LOG_STATUS | LOG_ERROR);
-	SetDebugFlags(DEBUG_NORM);
+	m_log_flags = LOG_NORM | LOG_STATUS | LOG_ERROR;
+	m_debug_flags = DEBUG_NORM;
 }
 
 CLogger::~CLogger(void)
@@ -53,10 +54,9 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = flags.begin(); itt != flags.end(); ++itt)
+	for (const auto & itt : flags)
 	{
-		std::string wflag = *itt;
+		std::string wflag = itt;
 		stdstring_trim(wflag);
 		if (wflag.empty())
 			continue;
@@ -91,10 +91,9 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 
 	uint32_t iFlags = 0;
 
-	std::vector<std::string>::const_iterator itt;
-	for (itt = flags.begin(); itt != flags.end(); ++itt)
+	for (const auto & itt : flags)
 	{
-		std::string wflag = *itt;
+		std::string wflag = itt;
 		stdstring_trim(wflag);
 		if (wflag.empty())
 			continue;
@@ -129,7 +128,7 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 
 void CLogger::SetOutputFile(const char *OutputFile)
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	if (m_outputfile.is_open())
 		m_outputfile.close();
 
@@ -214,7 +213,7 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 
 	{
 		// Locked region to allow multiple threads to print at the same time
-		boost::unique_lock< boost::mutex > lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 
 		if ((level & LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
 		{
@@ -341,7 +340,7 @@ bool compareLogByTime(const CLogger::_tLogLineStruct &a, CLogger::_tLogLineStruc
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, const time_t lastlogtime)
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
 
 	if (level != LOG_ALL)
@@ -349,24 +348,21 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 		if (m_lastlog.find(level) == m_lastlog.end())
 			return mlist;
 
-		std::deque<_tLogLineStruct>::const_iterator itt;
-		for (itt = m_lastlog[level].begin(); itt != m_lastlog[level].end(); ++itt)
+		for (const auto & itt : m_lastlog[level])
 		{
-			if ((*itt).logtime > lastlogtime) {
-				mlist.push_back(*itt);
+			if (itt.logtime > lastlogtime) {
+				mlist.push_back(itt);
 			}
 		};
 	}
 	else
 	{
-		std::map<_eLogLevel, std::deque<_tLogLineStruct> >::const_iterator itt;
-		for (itt = m_lastlog.begin(); itt != m_lastlog.end(); ++itt)
+		for (const auto & itt : m_lastlog)
 		{
-			std::deque<_tLogLineStruct>::const_iterator itt2;
-			for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+			for (const auto & itt2 : itt.second)
 			{
-				if ((*itt2).logtime > lastlogtime) {
-					mlist.push_back(*itt2);
+				if (itt2.logtime > lastlogtime) {
+					mlist.push_back(itt2);
 				}
 			};
 		}
@@ -378,19 +374,16 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 
 void CLogger::ClearLog()
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	m_lastlog.clear();
 }
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
-	std::deque<_tLogLineStruct>::const_iterator itt;
-	for (itt = m_notification_log.begin(); itt != m_notification_log.end(); ++itt)
-	{
-		mlist.push_back(*itt);
-	};
+	for (const auto & itt : m_notification_log)
+		mlist.push_back(itt);
 	m_notification_log.clear();
 	if (!mlist.empty())
 		m_LastLogNotificationsSend = mytime(NULL);

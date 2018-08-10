@@ -53,8 +53,9 @@ bool MQTT::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MQTT::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MQTT");
+	return (m_thread != nullptr);
 }
 
 void MQTT::StopMQTT()
@@ -600,7 +601,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		return;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", m_HwdID, DeviceRowIdx);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		std::vector<std::string> sd = result[0];
 		std::string did = sd[0];
@@ -634,11 +635,10 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
-		std::map<std::string, std::string>::const_iterator ittOptions;
-		for (ittOptions = options.begin(); ittOptions != options.end(); ++ittOptions)
+		for (const auto & ittOptions : options)
 		{
-			std::string optionName = ittOptions->first.c_str();
-			std::string optionValue = ittOptions->second.c_str();
+			std::string optionName = ittOptions.first;
+			std::string optionValue = ittOptions.second;
 			root[optionName] = optionValue;
 		}
 
@@ -661,13 +661,12 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		std::vector<std::string> strarray;
 		StringSplit(svalue, ";", strarray);
 
-		std::vector<std::string>::const_iterator itt;
 		int sIndex = 1;
-		for (itt = strarray.begin(); itt != strarray.end(); ++itt)
+		for (const auto & itt : strarray)
 		{
 			std::stringstream szQuery;
 			szQuery << "svalue" << sIndex;
-			root[szQuery.str()] = *itt;
+			root[szQuery.str()] = itt;
 			sIndex++;
 		}
 		std::string message =  root.toStyledString();
@@ -705,14 +704,14 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 
 	unsigned char nValue = atoi(sd[4].c_str());
 	unsigned char scenetype = atoi(sd[5].c_str());
-	int iProtected = atoi(sd[7].c_str());
+	//int iProtected = atoi(sd[7].c_str());
 
-	//std::string onaction = base64_encode((const unsigned char*)sd[8].c_str(), sd[8].size());
-	//std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
+	//std::string onaction = base64_encode((sd[8]);
+	//std::string offaction = base64_encode(sd[9]);
 
 	Json::Value root;
 
-	root["idx"] = sd[0];
+	root["idx"] = atoi(sd[0].c_str());
 	root["Name"] = sName;
 	//root["Description"] = sd[10];
 	//root["Favorite"] = atoi(sd[3].c_str());
@@ -738,13 +737,15 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 	else
 		root["Status"] = "Mixed";
 	root["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
+/*
 	uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 	//root["UsedByCamera"] = (camIDX != 0) ? true : false;
 	if (camIDX != 0) {
 		std::stringstream scidx;
 		scidx << camIDX;
-		//root["CameraIdx"] = scidx.str();
+		//root["CameraIdx"] = std::to_string(camIDX);
 	}
+*/
 	std::string message = root.toStyledString();
 	if (m_publish_topics & PT_out)
 	{

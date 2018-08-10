@@ -1,14 +1,13 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CAtagOne : public CDomoticzHardwareBase
 {
 public:
 	CAtagOne(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
 	~CAtagOne(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void SetSetpoint(const int idx, const float temp);
 private:
 	void SetPauseStatus(const bool bIsPause);
@@ -18,7 +17,13 @@ private:
 	bool Login();
 	void Logout();
 	std::string GetRequestVerificationToken(const std::string &url);
-
+	void Init();
+	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
+	bool StartHardware() override;
+	bool StopHardware() override;
+	void Do_Work();
+	void GetMeterDetails();
+private:
 	std::string m_UserName;
 	std::string m_Password;
 
@@ -28,15 +33,8 @@ private:
 
 	int m_OutsideTemperatureIdx;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	int m_LastMinute;
-
-	void Init();
-	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
-	bool StartHardware();
-	bool StopHardware();
-	void Do_Work();
-	void GetMeterDetails();
 };
 

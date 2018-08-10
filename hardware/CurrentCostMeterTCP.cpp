@@ -56,13 +56,14 @@ bool CurrentCostMeterTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CurrentCostMeterTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&CurrentCostMeterTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "CurrentCostMeterTCP");
+	return (m_thread != nullptr);
 }
 
 bool CurrentCostMeterTCP::isConnected()
-{ 
-	return (m_socket != INVALID_SOCKET); 
+{
+	return (m_socket != INVALID_SOCKET);
 }
 
 bool CurrentCostMeterTCP::StopHardware()
@@ -166,15 +167,15 @@ void CurrentCostMeterTCP::Do_Work()
 			}
 			else
 			{
-				boost::lock_guard<boost::mutex> l(readQueueMutex);
+				std::lock_guard<std::mutex> l(readQueueMutex);
 				ParseData(data, bread);
 			}
 		}
 	}
 	_log.Log(LOG_STATUS,"CurrentCost Smart Meter: TCP/IP Worker stopped...");
-} 
+}
 
-void CurrentCostMeterTCP::write(const char *data, size_t size)
+void CurrentCostMeterTCP::write(const char* /*data*/, size_t /*size*/)
 {
 }
 

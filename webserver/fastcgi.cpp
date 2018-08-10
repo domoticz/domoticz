@@ -2,8 +2,6 @@
 #include "fastcgi.hpp"
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
-
 #include "../httpclient/UrlEncode.h"
 #include "../main/Helper.h"
 

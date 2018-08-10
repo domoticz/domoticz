@@ -56,20 +56,21 @@ bool KMTronicTCP::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronicTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&KMTronicTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "KMTronicTCP");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "KMTronic: Started");
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool KMTronicTCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -89,7 +90,7 @@ void KMTronicTCP::Do_Work()
 		}
 
 		int iPollInterval = KMTRONIC_POLL_INTERVAL;
-		
+
 		if (m_bIsTempDevice)
 			iPollInterval = 30;
 
@@ -99,7 +100,7 @@ void KMTronicTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");
-} 
+}
 
 bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
@@ -256,17 +257,13 @@ void KMTronicTCP::ParseTemps(const std::string &sResult)
 	size_t ii;
 	std::string tmpstr;
 	std::string name;
-	int pos1;
-
 	int Idx = 1;
-
-	bool bHaveTemperature = false;
 
 	for (ii = 1; ii < results.size(); ii++)
 	{
 		tmpstr = stdstring_trim(results[ii]);
 
-
+		int pos1;
 		pos1 = tmpstr.find("<name>");
 		if (pos1 != std::string::npos)
 		{

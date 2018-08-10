@@ -128,8 +128,6 @@ m_reconnect(false)
 	m_bOutputLog = false;
 	m_bDoRestart = false;
 	m_bIsStarted = false;
-	m_username = username;
-	m_password = password;
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_poll_inputs = pollInputs;
@@ -178,10 +176,11 @@ bool RelayNet::StartHardware()
 
 	if (m_input_count || m_relay_count)
 	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RelayNet::Do_Work, this)));
+		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
+		SetThreadName(m_thread->native_handle(), "RelayNet");
 	}
 
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		bOk = true;
 		m_bIsStarted=true;
@@ -206,6 +205,7 @@ bool RelayNet::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -709,7 +709,7 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 			sLogin << m_username << ":" << m_password;
 
 			/* Generate UnEncrypted base64 Basic Authorization for username/password and add result to ExtraHeaders */
-			sAccessToken = base64_encode((const unsigned char *)(sLogin.str().c_str()), strlen(sLogin.str().c_str()));
+			sAccessToken = base64_encode(sLogin.str());
 			ExtraHeaders.push_back("Authorization: Basic " + sAccessToken);
 
 			/* Send URL to relay module and check return status */
@@ -760,7 +760,7 @@ void RelayNet::OnDisconnect()
 
 void RelayNet::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_stoprequested)
 	{
