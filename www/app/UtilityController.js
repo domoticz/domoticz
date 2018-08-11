@@ -161,7 +161,7 @@ define(['app'], function (app) {
 			$("#dialog-editmeterdevice").dialog("open");
 		}
 
-		EditEnergyDevice = function (idx, name, description, switchtype, devoptions) {
+		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -171,9 +171,9 @@ define(['app'], function (app) {
 			$("#dialog-editenergydevice #devicedescription").val(unescape(description));
 			$("#dialog-editenergydevice #combometertype").val(switchtype);
 
-			$('#dialog-editenergydevice input:radio[name=devoptions][value="' + devoptions + '"]').attr('checked', true);
-			$('#dialog-editenergydevice input:radio[name=devoptions][value="' + devoptions + '"]').prop('checked', true);
-			$('#dialog-editenergydevice input:radio[name=devoptions][value="' + devoptions + '"]').trigger('change');
+			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').attr('checked', true);
+			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').prop('checked', true);
+			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').trigger('change');
 			$("#dialog-editenergydevice").i18n();
 			$("#dialog-editenergydevice").dialog("open");
 		}
@@ -823,9 +823,9 @@ define(['app'], function (app) {
 								xhtm += '<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									if ((item.Type == "Energy") || (item.SubType == "kWh")) {
-										if (item.Options == "") { item.Options = "0" }
+										if (item.EnergyMeterMode == "") { item.EnergyMeterMode = "0" }
 										xhtm += '<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', '
-										xhtm += item.SwitchTypeVal + ',' + item.Options + ');" data-i18n="Edit">Edit</a> ';
+										xhtm += item.SwitchTypeVal + ',' + item.EnergyMeterMode + ');" data-i18n="Edit">Edit</a> ';
 									} else {
 										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 									}
@@ -1325,7 +1325,7 @@ define(['app'], function (app) {
 						url: "json.htm?type=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
-						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&devoptions=' + $("#dialog-editenergydevice input:radio[name=devoptions]:checked").val() +
+						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&EnergyMeterMode=' + $("#dialog-editenergydevice input:radio[name=EnergyMeterMode]:checked").val() +
 						'&used=true',
 						async: false,
 						dataType: 'json',
