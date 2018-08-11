@@ -56,6 +56,7 @@ namespace Plugins {
 		std::string			m_IP;
 	public:
 		CPluginTransportIP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransport(HwdID, pConnection), m_IP(Address) { m_Port = Port; };
+		virtual bool		AsyncDisconnect() { return IsConnected() || IsConnecting(); };
 	};
 
 	class CPluginTransportTCP : public CPluginTransportIP, std::enable_shared_from_this<CPluginTransportTCP>
@@ -71,7 +72,6 @@ namespace Plugins {
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>& pMessage);
 		virtual	bool		handleDisconnect();
-		virtual bool		AsyncDisconnect() { return IsConnected() || IsConnecting(); };
 		virtual bool		ThreadPoolRequired() { return true; };
 		boost::asio::ip::tcp::socket& Socket() { return *m_Socket; };
 		~CPluginTransportTCP();
