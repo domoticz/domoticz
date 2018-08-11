@@ -77,3 +77,8 @@ int GenerateRandomNumber(const int range);
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files);
 
 int SetThreadName(std::thread::native_handle_type thread, const char *name);
+
+#if defined(__linux__)
+	bool IsWSL(void); //Detects if running under Windows Subsystem for Linux (WSL)
+#endif
+
