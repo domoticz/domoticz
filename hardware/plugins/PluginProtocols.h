@@ -36,6 +36,9 @@ namespace Plugins {
 
 	class CPluginProtocolJSON : CPluginProtocol
 	{
+	private:
+		PyObject * JSONtoPython(Json::Value * pJSON);
+	public:
 		virtual void	ProcessInbound(const ReadEvent* Message);
 	};
 
