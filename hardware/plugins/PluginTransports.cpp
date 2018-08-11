@@ -876,7 +876,9 @@ namespace Plugins {
 			m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
 			if (e)
 			{
-#ifndef WIN32
+#ifdef WIN32
+				if (e.value() != 10009)		// Windows can report 10009, The file handle supplied is not valid
+#else
 				if (e.value() != boost::asio::error::not_connected)		// Linux always reports error 107, Windows does not
 #endif
 					_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
