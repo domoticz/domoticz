@@ -192,11 +192,9 @@ bool CPinger::StopHardware()
 			m_thread.reset();
 
 			//Make sure all our background workers are stopped
-			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter < 15))
+			while (m_iThreadsRunning > 0)
 			{
-				sleep_milliseconds(500);
-				iRetryCounter++;
+				sleep_milliseconds(150);
 			}
 		}
 	}

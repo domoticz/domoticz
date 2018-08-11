@@ -634,6 +634,7 @@
     <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
+    <ClInclude Include="..\main\SignalHandler.h" />
     <ClInclude Include="..\main\SQLHelper.h" />
     <ClInclude Include="..\main\Helper.h" />
     <ClInclude Include="..\hardware\RFXComSerial.h" />
@@ -857,6 +858,7 @@
     <ClCompile Include="..\main\LuaCommon.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
+    <ClCompile Include="..\main\SignalHandler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
     <ClCompile Include="..\json\json_reader.cpp" />

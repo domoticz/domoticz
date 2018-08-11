@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 129
+#define DB_VERSION 130
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2570,6 +2570,27 @@ bool CSQLHelper::OpenDatabase()
 
 			query("DROP TABLE tmp_Floorplans;");
 		}
+		if (dbversion < 130)
+		{
+			//Patch for energymeters to store calculated or device energy usage in options map
+			result = safe_query("SELECT ID, Options FROM DeviceStatus WHERE (Type=%d) AND (SubType=%d)", pTypeGeneral, sTypeKwh);
+			if (!result.empty())
+			{
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					std::string idx = sd[0];
+					std::string EnergyMeterMode = sd[1];
+					if (EnergyMeterMode == "1")
+					{
+						std::stringstream sstridx(idx);
+						uint64_t ullidx;
+						sstridx >> ullidx;
+						m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions("EnergyMeterMode:"+EnergyMeterMode, false));
+					}
+				}
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -4184,6 +4205,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		std::stringstream s_str(result[0][0]);
 		s_str >> ulID;
 		std::string sOption = result[0][7];
+		auto options = BuildDeviceOptions(sOption);
 		devname = result[0][1];
 		bDeviceUsed = atoi(result[0][2].c_str()) != 0;
 		_eSwitchType stype = (_eSwitchType)atoi(result[0][3].c_str());
@@ -4194,7 +4216,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		localtime_r(&now, &ltime);
 		//Commit: If Option 1: energy is computed as usage*time
 		//Default is option 0, read from device
-		if (sOption == "1" && devType == pTypeGeneral && subType == sTypeKwh)
+		if (options["EnergyMeterMode"] == "1" && devType == pTypeGeneral && subType == sTypeKwh)
 		{
 			std::vector<std::string> parts;
 			struct tm ntime;

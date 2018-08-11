@@ -868,15 +868,9 @@ namespace Plugins {
 			// loop on plugin to finish startup
 			while (m_bIsStarting)
 			{
-				int scounter = 0;
-				int timeout = 30;
-				while (m_bIsStarting && (scounter++ < timeout*10))
+				while (m_bIsStarting)
 				{
 					sleep_milliseconds(100);
-				}
-				if (m_bIsStarting)
-				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after %d seconds", m_Name.c_str(), timeout);
 				}
 			}
 
@@ -910,19 +904,7 @@ namespace Plugins {
 			// loop on stop to be processed
 			while (m_bIsStarted)
 			{
-				int scounter = 0;
-				int timeout = 30;
-				while (m_bIsStarted && (scounter++ < timeout*10))
-				{
-					sleep_milliseconds(100);
-				}
-				if (m_bIsStarted)
-				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after %d seconds, flushing event queue...", m_Name.c_str(), timeout);
-
-					ClearMessageQueue();
-					m_bIsStarted = false;
-				}
+				sleep_milliseconds(100);
 			}
 
 			_log.Log(LOG_STATUS, "(%s) Stopping threads.", m_Name.c_str());
