@@ -29,10 +29,17 @@ namespace Plugins {
 			m_Name = __func__;
 			m_When = time(0);
 		};
+		virtual void ProcessLocked() = 0;
 	public:
 		virtual const char* Name() { return m_Name.c_str(); };
 		virtual const CPlugin*	Plugin() { return m_pPlugin; };
-		virtual void Process() = 0;
+		virtual void Process()
+		{
+			std::lock_guard<std::mutex> l(PythonMutex);
+			m_pPlugin->RestoreThread();
+			ProcessLocked();
+			m_pPlugin->ReleaseThread();
+		};
 	};
 
 	// Handles lifecycle management of the Python Connection object
@@ -56,8 +63,10 @@ namespace Plugins {
 		InitializeMessage(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) { m_Name = __func__; };
 		virtual void Process()
 		{
+			std::lock_guard<std::mutex> l(PythonMutex);
 			m_pPlugin->Initialise();
 		};
+		virtual void ProcessLocked() {};
 	};
 
 	// Base callback message class
@@ -69,13 +78,6 @@ namespace Plugins {
 	public:
 		CCallbackBase(CPlugin* pPlugin, const std::string &Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
 		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
-		void Process()
-		{
-			std::lock_guard<std::mutex> l(PythonMutex);
-			m_pPlugin->RestoreThread();
-			ProcessLocked();
-			m_pPlugin->ReleaseThread();
-		};
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 	};
 
@@ -456,13 +458,6 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		virtual void ProcessLocked() = 0;
 	public:
 		CEventBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
-		virtual void Process()
-		{
-			std::lock_guard<std::mutex> l(PythonMutex);
-			m_pPlugin->RestoreThread();
-			ProcessLocked();
-			m_pPlugin->ReleaseThread();
-		}
 	};
 
 	class ReadEvent : public CEventBase, public CHasConnection

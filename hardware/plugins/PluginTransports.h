@@ -43,6 +43,7 @@ namespace Plugins {
 		bool				IsConnecting() { return m_bConnecting; };
 		bool				IsConnected() { return m_bConnected; };
 		time_t				LastSeen() { return m_tLastSeen; };
+		virtual bool		AsyncDisconnect() { return false; };
 		virtual bool		ThreadPoolRequired() { return false; };
 		long				TotalBytes() { return m_iTotalBytes; };
 		virtual void		VerifyConnection();
@@ -70,6 +71,7 @@ namespace Plugins {
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>& pMessage);
 		virtual	bool		handleDisconnect();
+		virtual bool		AsyncDisconnect() { return IsConnected() || IsConnecting(); };
 		virtual bool		ThreadPoolRequired() { return true; };
 		boost::asio::ip::tcp::socket& Socket() { return *m_Socket; };
 		~CPluginTransportTCP();

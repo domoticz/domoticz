@@ -1001,8 +1001,6 @@ namespace Plugins {
 	{
 		m_bIsStarted = false;
 
-		std::lock_guard<std::mutex> l(PythonMutex);
-
 		try
 		{
 			PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
@@ -1500,8 +1498,8 @@ Error:
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
 			}
 
-			// If transport is not connected there won't be a Disconnect Event so tidy it up here
-			if (!pConnection->pTransport->IsConnected() && !pConnection->pTransport->IsConnecting())
+			// If transport is not going to disconnect asynchronously tidy it up here
+			if (!pConnection->pTransport->AsyncDisconnect())
 			{
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
@@ -1659,6 +1657,7 @@ Error:
 					{
 						LogPythonException(sHandler);
 					}
+					Py_XDECREF(pReturnValue);
 				}
 				else if (m_bDebug & PDM_QUEUE) _log.Log(LOG_NORM, "(%s) Message handler '%s' not callable, ignored.", m_Name.c_str(), sHandler.c_str());
 			}
