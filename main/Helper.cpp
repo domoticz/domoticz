@@ -39,6 +39,12 @@
 #include <time.h>
 #endif
 
+// Includes for IsWSL()
+#if defined(__linux__) || defined(__linux) || defined(linux)
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
