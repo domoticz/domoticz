@@ -83,6 +83,7 @@ void CWinddelen::GetMeterDetails()
 	char szURL[200];
 
 	sprintf(szURL, "http://backend.windcentrale.nl/windcentrale/productie?id=%d", m_usMillID);
+	//sprintf(szURL, "https://zep-api.windcentrale.nl/production/%d/live", m_usMillID);
 
 	if (!HTTPClient::GETSingleLine(szURL,sResult))
 	{
