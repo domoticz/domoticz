@@ -23,6 +23,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include <condition_variable>
 
 #define RFX_SETID3(ID,id1,id2,id3) {id1=ID>>16&0xFF;id2=ID>>8&0xFF;id3=ID&0xFF;}
 #define RFX_GETID3(id1,id2,id3) ((id1<<16)|(id2<<8)|id3)
@@ -36,7 +37,6 @@ class CEvohomeDataType
 	friend class CEvohomeScript;
 	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
-
 public:
 	//uint24_t may occasionally be defined but is not portable etc.
 	struct uint24_t {
@@ -194,7 +194,7 @@ public:
 	CEvohomeDateTime(const unsigned char* msg, unsigned char nOfs){Decode(msg,nOfs);}
 	~CEvohomeDateTime(){}
 
-	template <class T> CEvohomeDateTime& operator = (const T &in){year=in.year;month=in.month;day=in.day;hrs=in.hrs;mins=in.mins;return *this;}
+	template <class T> CEvohomeDateTime& operator = (const T &in){year=in->year;month=in->month;day=in->day;hrs=in->hrs;mins=in->mins;return *this;}
 
 	template <class T> static unsigned char DecodeTime(T &out, const unsigned char* msg, unsigned char nOfs)
 	{
@@ -229,10 +229,10 @@ public:
 
 	template <class T> static std::string GetISODate(const T &in)
 	{
-		if(in.year==0xFFFF)
+		if(in->year==0xFFFF)
 			return "";
 		char szTmp[256];
-		sprintf(szTmp,std::string("%d-%02d-%02d").append((in.hrs!=0xFF)?"T%02d:%02d:00":"T00:00:00").c_str(),in.year,in.month,in.day,in.hrs,in.mins);
+		sprintf(szTmp,std::string("%d-%02d-%02d").append((in->hrs!=0xFF)?"T%02d:%02d:00":"T00:00:00").c_str(),in->year,in->month,in->day,in->hrs,in->mins);
 		return szTmp;
 	}
 
@@ -540,27 +540,27 @@ private:
 	std::vector <zoneModeType> m_ZoneOverrideLocal;
 
 	uint8_t m_nZoneCount;
-	boost::mutex m_mtxZoneCount;
+	std::mutex m_mtxZoneCount;
 
 	uint8_t m_nControllerMode;
-	boost::mutex m_mtxControllerMode;
+	std::mutex m_mtxControllerMode;
 
 	std::string m_szControllerName;
-	boost::mutex m_mtxControllerName;
+	std::mutex m_mtxControllerName;
 
 	std::vector <std::string> m_ZoneNames;
-	boost::mutex m_mtxZoneName;
+	std::mutex m_mtxZoneName;
 
 	unsigned int m_nDevID;//controller ID
-	boost::mutex m_mtxControllerID;
+	std::mutex m_mtxControllerID;
 
 	unsigned int m_nMyID;//gateway ID
-	boost::mutex m_mtxGatewayID;
+	std::mutex m_mtxGatewayID;
 
 	unsigned int m_nBindID;//device ID of bound device
 	unsigned char m_nBindIDType;//what type of device to bind
-	boost::mutex m_mtxBindNotify;
-	boost::condition_variable m_cndBindNotify;
+	std::mutex m_mtxBindNotify;
+	std::condition_variable m_cndBindNotify;
 
 	unsigned int m_MaxDeviceID;
 

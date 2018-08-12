@@ -1,30 +1,26 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <deque>
-#include <iosfwd>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
 class Yeelight : public CDomoticzHardwareBase
 {
 public:
-	Yeelight(const int ID);
+	explicit Yeelight(const int ID);
 	~Yeelight(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-	void InsertUpdateSwitch(const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue);
-
-public:
-	//signals
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()> sDisconnected;
-
+	void InsertUpdateSwitch(
+		const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue,
+		const std::string &yeelightSat, const std::string &yeelightRGB, const std::string &yeelightCT, const std::string &yeelightColorMode);
 private:
-	bool StartHardware();
-	bool StopHardware();
-protected:
-	bool m_bDoRestart;
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
-	boost::shared_ptr<boost::thread> m_thread;
+private:
+	bool m_bDoRestart;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 
 	class udp_server

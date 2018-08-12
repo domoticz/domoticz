@@ -10,6 +10,28 @@
 
 #define KMTRONIC_POLL_INTERVAL 10
 
+
+#ifdef _DEBUG
+	//#define DEBUG_KMTrinicR
+#endif
+
+#ifdef DEBUG_KMTrinicR
+std::string ReadFile(std::string filename)
+{
+	std::string sResult = "";
+	std::ifstream is;
+	is.open(filename, std::ios::in | std::ios::binary);
+	if (is.is_open())
+	{
+		sResult.append((std::istreambuf_iterator<char>(is)),
+			(std::istreambuf_iterator<char>()));
+		is.close();
+	}
+	return sResult;
+}
+#endif
+
+
 KMTronicTCP::KMTronicTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
 m_szIPAddress(IPAddress),
 m_Username(CURLEncode::URLEncode(username)),
@@ -18,6 +40,8 @@ m_Password(CURLEncode::URLEncode(password))
 	m_HwdID=ID;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
+	m_bCheckedForTempDevice = false;
+	m_bIsTempDevice = false;
 }
 
 KMTronicTCP::~KMTronicTCP(void)
@@ -32,20 +56,21 @@ bool KMTronicTCP::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronicTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&KMTronicTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "KMTronicTCP");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "KMTronic: Started");
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool KMTronicTCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -64,16 +89,23 @@ void KMTronicTCP::Do_Work()
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (sec_counter % KMTRONIC_POLL_INTERVAL == 0)
+		int iPollInterval = KMTRONIC_POLL_INTERVAL;
+
+		if (m_bIsTempDevice)
+			iPollInterval = 30;
+
+		if (sec_counter % iPollInterval == 0)
 		{
 			GetMeterDetails();
 		}
 	}
 	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");
-} 
+}
 
 bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	if (m_bIsTempDevice)
+		return false;
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
@@ -124,9 +156,8 @@ bool KMTronicTCP::WriteInt(const unsigned char *data, const size_t len, const bo
 	return true;
 }
 
-void KMTronicTCP::GetMeterDetails()
+std::string KMTronicTCP::GenerateURL(const bool bIsTempDevice)
 {
-	std::string sResult;
 	std::stringstream szURL;
 
 	if (m_Password.empty())
@@ -138,21 +169,58 @@ void KMTronicTCP::GetMeterDetails()
 		szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
 	}
 
-	szURL << "/relays.cgi";
+	if (!bIsTempDevice)
+		szURL << "/relays.cgi";
+	else
+		szURL << "/status.xml";
 
-	if (!HTTPClient::GET(szURL.str(), sResult))
+	return szURL.str();
+}
+
+void KMTronicTCP::GetMeterDetails()
+{
+	std::string sResult;
+#ifndef DEBUG_KMTrinicR
+	std::string szURL = GenerateURL(m_bIsTempDevice);
+
+	if (!HTTPClient::GET(szURL, sResult))
 	{
-		_log.Log(LOG_ERROR, "KMTronic: Error connecting to: %s", m_szIPAddress.c_str());
-		return;
+		if (!m_bCheckedForTempDevice)
+		{
+			m_bCheckedForTempDevice = true;
+
+			szURL = GenerateURL(true);
+			if (HTTPClient::GET(szURL, sResult))
+			{
+				m_bIsTempDevice = true;
+			}
+		}
+		if (sResult.empty())
+		{
+			_log.Log(LOG_ERROR, "KMTronic: Error connecting to: %s", m_szIPAddress.c_str());
+			return;
+		}
 	}
+#else
+	sResult = ReadFile("E:\\kmtronic_temp_status.xml");
+	m_bIsTempDevice = (sResult.find("</temp>") != std::string::npos);
+#endif
+	if (!m_bIsTempDevice)
+		ParseRelays(sResult);
+	else
+		ParseTemps(sResult);
+}
+
+void KMTronicTCP::ParseRelays(const std::string &sResult)
+{
 	std::vector<std::string> results;
 	StringSplit(sResult, "\r\n", results);
-	if (results.size()<8)
+	if (results.size() < 8)
 	{
 		_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
 		return;
 	}
-	size_t ii,jj;
+	size_t ii, jj;
 	std::string tmpstr;
 	for (ii = 1; ii < results.size(); ii++)
 	{
@@ -176,3 +244,49 @@ void KMTronicTCP::GetMeterDetails()
 	}
 	_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
 }
+
+void KMTronicTCP::ParseTemps(const std::string &sResult)
+{
+	std::vector<std::string> results;
+	StringSplit(sResult, "\r\n", results);
+	if (results.size() < 8)
+	{
+		_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+		return;
+	}
+	size_t ii;
+	std::string tmpstr;
+	std::string name;
+	int Idx = 1;
+
+	for (ii = 1; ii < results.size(); ii++)
+	{
+		tmpstr = stdstring_trim(results[ii]);
+
+		int pos1;
+		pos1 = tmpstr.find("<name>");
+		if (pos1 != std::string::npos)
+		{
+			tmpstr = tmpstr.substr(pos1 + strlen("<name>"));
+			pos1 = tmpstr.find("</name>");
+			if (pos1 != std::string::npos)
+			{
+				name = tmpstr.substr(0, pos1);
+				continue;
+			}
+		}
+		pos1 = tmpstr.find("<temp>");
+		if (pos1 != std::string::npos)
+		{
+			tmpstr = tmpstr.substr(pos1 + strlen("<temp>"));
+			pos1 = tmpstr.find("</temp>");
+			if (pos1 != std::string::npos)
+			{
+				float temp = (float)atof(tmpstr.substr(0, pos1).c_str());
+				SendTempSensor(Idx++, 255, temp, name);
+				continue;
+			}
+		}
+	}
+}
+

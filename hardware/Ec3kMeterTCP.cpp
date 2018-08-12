@@ -68,8 +68,9 @@ bool Ec3kMeterTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Ec3kMeterTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&Ec3kMeterTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Ec3kMeterTCP");
+	return (m_thread != nullptr);
 }
 
 bool Ec3kMeterTCP::StopHardware()
@@ -79,6 +80,7 @@ bool Ec3kMeterTCP::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -141,11 +143,11 @@ void Ec3kMeterTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"Ec3kMeter: TCP/IP Worker stopped...");
-} 
+}
 
 void Ec3kMeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 
@@ -177,7 +179,7 @@ void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
 		_log.Log(LOG_ERROR, "Ec3kMeter: %s", error.message().c_str());
 }
 
-bool Ec3kMeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool Ec3kMeterTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	if (!mIsConnected)
 	{
@@ -255,7 +257,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 	int id;
 	ssId >> id;
 
-	// update only when the update interval has elapsed 
+	// update only when the update interval has elapsed
 	if (m_limiter->update(id))
 	{
 		int ws = data[WS].asInt();
@@ -275,7 +277,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 		std::stringstream sensorNameWMaxSS;
 		sensorNameWMaxSS << "EC3K meter " << std::hex << id << " maximum";
 		const std::string sensorNameWMax = sensorNameWMaxSS.str();
-		SendWattMeter(id, 2, 255, w_max, sensorNameWMax);
+		SendWattMeter((uint8_t)id, 2, 255, w_max, sensorNameWMax);
 
 		// TODO: send times + reset_count?
 	}

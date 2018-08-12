@@ -128,8 +128,6 @@ m_reconnect(false)
 	m_bOutputLog = false;
 	m_bDoRestart = false;
 	m_bIsStarted = false;
-	m_username = username;
-	m_password = password;
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_poll_inputs = pollInputs;
@@ -178,10 +176,11 @@ bool RelayNet::StartHardware()
 
 	if (m_input_count || m_relay_count)
 	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RelayNet::Do_Work, this)));
+		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
+		SetThreadName(m_thread->native_handle(), "RelayNet");
 	}
 
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		bOk = true;
 		m_bIsStarted=true;
@@ -206,6 +205,7 @@ bool RelayNet::StopHardware()
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
@@ -354,10 +354,7 @@ void RelayNet::SetupDevices()
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Relay%i", m_szIPAddress.c_str(), relayNumber);
 
-				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d, '%q', %d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Relay");
+				m_sql.InsertDevice(m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, STYPE_OnOff, 0, " ", "Relay");
 			}
 		}
 	}
@@ -372,10 +369,7 @@ void RelayNet::SetupDevices()
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Input%i", m_szIPAddress.c_str(), inputNumber);
 
-				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, 100+inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input");
+				m_sql.InsertDevice(m_HwdID, szIdx, 100 + inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), 0, " ", "Input");
 			}
 		}
 	}
@@ -715,7 +709,7 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 			sLogin << m_username << ":" << m_password;
 
 			/* Generate UnEncrypted base64 Basic Authorization for username/password and add result to ExtraHeaders */
-			sAccessToken = base64_encode((const unsigned char *)(sLogin.str().c_str()), strlen(sLogin.str().c_str()));
+			sAccessToken = base64_encode(sLogin.str());
 			ExtraHeaders.push_back("Authorization: Basic " + sAccessToken);
 
 			/* Send URL to relay module and check return status */
@@ -766,7 +760,7 @@ void RelayNet::OnDisconnect()
 
 void RelayNet::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 
 	if (!m_stoprequested)
 	{

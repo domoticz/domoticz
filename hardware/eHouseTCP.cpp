@@ -43,6 +43,9 @@ h l O nr
 */
 ////////////////////////////////////////////////////////////////////////////////
 
+//Giz: To the author of this class!, Please, name start all class members with 'm_' and make all function parameters 'const' where possible
+//booleans are booleans, not unsigned char
+
 //#define DEBUG_eHouse 1
 #include "stdafx.h"
 #include "eHouse/globals.h"
@@ -232,18 +235,16 @@ void eHouseTCP::eHType(int devtype, char *dta)
 //////////////////////////////////////////////////////////////////////////////////////
 //Device Discovery - Update database fields (DeviceStatus) + Plans for each controller
 ///////////////////////////////////////////////////////////////////////////////////////
-int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int subtype, int swtype, int code,
-	int nr, char signal, int nValue, const char  *sValue, const char * Name, const char * SignalName,
-	bool on_off, int battery)
+int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const uint8_t type, const uint8_t subtype, int swtype, int code,
+	int nr, const uint8_t signal, int nValue, const char  *sValue, const char * Name, const char * SignalName,
+	bool /*on_off*/, const uint8_t battery)
 {
 	char IDX[20];
 	char state[5] = "";
-	int i;
+	uint64_t i;
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);  //index calculated adrh,adrl,signalcode,i/o nr
 	if ((type == pTypeLighting2)) // || (type==pTypeTEMP))
 		sprintf(IDX, "%X%02X%02X%02X", devh, devl, code, nr);    //exception bug in Domoticz??
-	int lastlevel = 0;
-	int nvalue = 0;
 	std::string devname = "";
 	std::vector<std::vector<std::string> > result;
 	//if name contains '@' - ignore i/o - do not add to DB (unused)
@@ -263,20 +264,15 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 		m_HwdID, IDX, devl);
 
-	if (result.size() < 1)
+	if (result.empty())
 	{
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name,     Used, SwitchType ) "
-			"VALUES ('%d',      '%q',       '%d','%d',  '%d',   '%d',       '%d',           '%d',   '%q', '%q',     1, %d)",
-			m_HwdID, IDX, devl, type, subtype, signal, battery, nValue, sValue, devname.c_str(), swtype);
+		i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-			m_HwdID, IDX, devl);
 		//add Plan for each controllers
-		if (result.size() > 0)
+		if (i > 0)
 		{
-			i = atoi(result[0][0].c_str());
 			result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)", i);
-			if (result.size() < 1)
+			if (result.empty())
 			{
 				m_sql.safe_query("INSERT INTO DeviceToPlansMap (DeviceRowID, DevSceneType, PlanID) VALUES ('%d', '%d', '%d')",
 					i, 0, PlanID);
@@ -291,7 +287,7 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 //Programs for controllers - add Option field (combobox) - upto 10
-void eHouseTCP::UpdatePGM(int adrh, int adrl, int devtype, const char *names, int idx)
+void eHouseTCP::UpdatePGM(int /*adrh*/, int /*adrl*/, int /*devtype*/, const char *names, int idx)
 {
 	if (idx < 0) return;
 	std::string Names = ISO2UTF8(std::string(names));
@@ -299,7 +295,7 @@ void eHouseTCP::UpdatePGM(int adrh, int adrl, int devtype, const char *names, in
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Add Controllers To 'Plans' DB
-int eHouseTCP::UpdateSQLPlan(int devh, int devl, int devtype, const char * Name)
+int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const char * Name)
 {
 	int i = 0;
 	std::string devname = "";
@@ -310,7 +306,7 @@ int eHouseTCP::UpdateSQLPlan(int devh, int devl, int devtype, const char * Name)
 	result = m_sql.safe_query("SELECT ID FROM Plans WHERE (Name=='%q') ", devname.c_str());
 
 
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')", devname.c_str());
 	}
@@ -324,7 +320,7 @@ int eHouseTCP::UpdateSQLPlan(int devh, int devl, int devtype, const char * Name)
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Update eHouse Controllers status in DeviceStatus Database
-void eHouseTCP::UpdateSQLStatus(int devh, int devl, int devtype, int code, int nr, char signal, int nValue, const char  *sValue, int battery)
+void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, int nr, char /*signal*/, int nValue, const char  *sValue, int /*battery*/)
 {
 	char IDX[20];
 	char state[5] = "";
@@ -335,7 +331,6 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int devtype, int code, int n
 	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);
 	int lastlevel = 0;
-	int nvalue = 0;
 	int _state;
 	std::vector<std::vector<std::string> > result;
 
@@ -376,7 +371,7 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int devtype, int code, int n
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const int AutoDiscovery, const int EnableAlarms, const int EnablePro, const int opta, const int optb) :
+eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const unsigned char AutoDiscovery, const unsigned char EnableAlarms, const unsigned char EnablePro, const int opta, const int optb) :
 	m_modelIndex(-1),
 	m_data32(false),
 	m_socket(INVALID_SOCKET),
@@ -405,7 +400,6 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	UDP_terminate_listener = 0; //terminate udp listener service
 	eHEStatusReceived = 0;      //Ethernet eHouse status received flag (count of status from reset this flag)
 	eHWiFiStatusReceived = 0;   //eHouse WiFi status received flag (count of status from reset this flag)
-	LOG(LOG_STATUS, "[eHouse] Create");
 	VccRef = 0;
 	AdcRefMax = 0;
 	CalcCalibration = 0;
@@ -418,13 +412,16 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	eHOptA = opta;
 	eHOptB = optb;
 	EhouseInitTcpClient();					//init multithreaded event sender
-	if (IPPort > 0) EHOUSE_TCP_PORT = IPPort;
+	if (IPPort > 0) {
+		EHOUSE_TCP_PORT = IPPort;
+	}
 	ViaTCP = 0;
 	if ((eHOptA & OPTA_CLR_DB))
 	{
 		//For Test of Auto Discovery Clean DeviceStatus & DeviceToPlansMap
 		//Clear altered database
-		LOG(LOG_STATUS, "Clearing Device Databases");
+		//VERY DANGEROUS !
+		_log.Debug(DEBUG_HARDWARE, "Clearing Device Databases");
 		m_sql.safe_query("DELETE FROM \"DeviceToPlansMap\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"DeviceStatus\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"Plans\" WHERE (ID>1)");
@@ -446,18 +443,18 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	}
 	if (eHEnableAutoDiscovery)
 	{
-		LOG(LOG_STATUS, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
 	}
 	if (eHEnableAlarmInputs)
 	{
-		LOG(LOG_STATUS, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
 	}
 	if (eHEnableProDiscovery)
 	{
-		LOG(LOG_STATUS, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
 	}
 
-	LOG(LOG_STATUS, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
+	_log.Debug(DEBUG_HARDWARE, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
 	int len = userCode.length();
 	if (len > 6) len = 6;
 	userCode.copy(PassWord, len);
@@ -471,13 +468,13 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		//return false;
 	}
 
-	LOG(LOG_STATUS, "eHouse UDP/TCP: Create instance");
+	_log.Debug(DEBUG_HARDWARE, "eHouse UDP/TCP: Create instance");
 	EventsCountInQueue = 0;
 	m_HwdID = ID;
 	HwID = m_HwdID;
 	memset(m_newData, 0, sizeof(m_newData));
-	AddrL = SrvAddrL;
-	AddrH = SrvAddrH;
+	m_AddrL = SrvAddrL;
+	m_AddrH = SrvAddrH;
 	int i;
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 	{
@@ -491,12 +488,12 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		memset(EvQ[i], 0, sizeof(struct EventQueueT));
 	}
 
-	eHPROaloc(0, AddrH, AddrL);
+	eHPROaloc(0, m_AddrH, m_AddrL);
 	unsigned char ev[10] = "";
 	if ((SrvAddrU == 192) && (SrvAddrM == 168))	//local network LAN IP 192.168.x.y
 	{
-		ev[0] = AddrH;
-		ev[1] = AddrL;
+		ev[0] = m_AddrH;
+		ev[1] = m_AddrL;
 	}
 	else										//Via Internet, Intranet, ETC
 	{
@@ -513,7 +510,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 //////////////////////////////////////////////////////////////////////
 eHouseTCP::~eHouseTCP()
 {
-	LOG(LOG_STATUS, "eHouse: Destroy instance");
+	_log.Debug(DEBUG_HARDWARE, "eHouse: Destroy instance");
 }
 /////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StartHardware()
@@ -524,7 +521,7 @@ bool eHouseTCP::StartHardware()
 #endif
 
 #ifdef DEBUG_eHouse
-	LOG(LOG_STATUS, "eHouse: Start Hardware");
+	_log.Debug(DEBUG_HARDWARE, "eHouse: Start Hardware");
 #endif
 
 #ifdef UDP_USE_THREAD
@@ -532,10 +529,11 @@ bool eHouseTCP::StartHardware()
 #else
 
 #endif
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&eHouseTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&eHouseTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "eHouseTCP");
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 ////////////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StopHardware()
@@ -555,6 +553,7 @@ bool eHouseTCP::StopHardware()
 	if (m_thread)
 	{
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	//        DestroySocket();
@@ -564,8 +563,6 @@ bool eHouseTCP::StopHardware()
 ///////////////////////////////////////////////////////////////////////////////////
 int eHouseTCP::ConnectTCP(unsigned int IP)
 {
-	char opt = 0;
-	unsigned long iMode = 0;
 	unsigned char challange[30];
 #ifndef WIN32
 	struct timeval timeout;
@@ -587,7 +584,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		saddr.sin_addr.s_addr = IP;
 	else
 		saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
-	saddr.sin_port = htons(EHOUSE_TCP_PORT);
+	saddr.sin_port = htons((u_short)EHOUSE_TCP_PORT);
 	memset(&server, 0, sizeof(server));               //clear server structure
 	memset(&challange, 0, sizeof(challange));         //clear buffer
 	char line[20];
@@ -596,16 +593,18 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	TCPSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (TCPSocket < 0)       //Check if socket was created
 	{
-		_log.Log(LOG_STATUS, "[TCP Client Status] Could not create socket");
+		closesocket(TCPSocket);
+		_log.Log(LOG_ERROR, "[TCP Client Status] Could not create socket");
 		return -1;                              //!!!! Counldn't Create Socket
 	}
 	server.sin_addr.s_addr = m_addr.sin_addr.s_addr;
 	server.sin_family = AF_INET;                    //tcp v4
-	server.sin_port = htons(EHOUSE_TCP_PORT);       //assign eHouse Port
+	server.sin_port = htons((u_short)EHOUSE_TCP_PORT);       //assign eHouse Port
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
 	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{
-		_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
+		closesocket(TCPSocket);
+		_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
 		return -1;                              //!!!! Counldn't Create Socket
 	}
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Authorizing");
@@ -614,7 +613,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	{
 		if ((status < 0) || (!(iter--)))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
 			closesocket(TCPSocket);
 			return -1;                              //!!!! Counldn't Create Socket
 		}
@@ -632,17 +631,17 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	else
 	{
+		closesocket(TCPSocket);
 		TerminateUDP();
 		return -1;
 	}
-	//_log.Log(LOG_STATUS, "[TCP Cli Status] Sending ch-re");
 	status = 0;
 	iter = 5;
 	while ((status = send(TCPSocket, (char *)&challange, 13, 0)) != 13)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error sending chalange to: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error sending chalange to: %s", line);
 			closesocket(TCPSocket);
 			return -1;                              //!!!! Counldn't Create Socket
 		}
@@ -666,7 +665,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
-			_log.Log(LOG_STATUS, "[TCP Cli Status] error query: %s", line);
+			_log.Log(LOG_ERROR, "[TCP Cli Status] error query: %s", line);
 			closesocket(TCPSocket);
 			return -1;
 		}
@@ -759,7 +758,7 @@ bool eHouseTCP::CheckAddress()
 		}
 	}
 	if (ViaTCP)
-		TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);
+		m_TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);
 	return true;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -768,7 +767,7 @@ void eHouseTCP::DestroySocket()
 	if (m_socket != INVALID_SOCKET)
 	{
 #ifdef DEBUG_eHouse
-		LOG(LOG_STATUS, "eHouse: destroy socket");
+		_log.Debug(DEBUG_HARDWARE, "eHouse: destroy socket");
 #endif
 		try
 		{
@@ -785,9 +784,9 @@ void eHouseTCP::DestroySocket()
 // Get ERM Programs Scenes, Measurement-regulation
 int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 {
-	int devh = ID >> 24;
-	int devl = (ID >> 16) & 0xff;
-	int code = (ID >> 8) & 0xff;
+	uint8_t devh = ID >> 24;
+	uint8_t devl = (ID >> 16) & 0xff;
+	uint8_t code = (ID >> 8) & 0xff;
 	int i;
 	int lv = level / 10;
 	lv += 1;
@@ -813,7 +812,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				}
 				if (Lev == lv)
 				{
-					LOG(LOG_STATUS, "[EX] Execute pgm %d", i);
+					_log.Debug(DEBUG_HARDWARE, "[EX] Execute pgm %d", i);
 					ev[2] = 2;//exec program/scene
 					ev[3] = (unsigned char)i;
 					AddToLocalEvent(ev, 0);
@@ -830,7 +829,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				}
 				if (Lev == lv)
 				{
-					LOG(LOG_STATUS, "[EX] Execute ADC pgm %d", i);
+					_log.Debug(DEBUG_HARDWARE, "[EX] Execute ADC pgm %d", i);
 					ev[2] = 97;//exec ADC program/scene
 					ev[3] = (unsigned char)i;
 					AddToLocalEvent(ev, 0);
@@ -848,9 +847,9 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 //Get RoomManager Programs (Scenes)
 int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 {
-	int devh = ID >> 24;
-	int devl = (ID >> 16) & 0xff;
-	int code = (ID >> 8) & 0xff;
+	uint8_t devh = ID >> 24;
+	uint8_t devl = (ID >> 16) & 0xff;
+	uint8_t code = (ID >> 8) & 0xff;
 	int i;
 	int lv = level / 10;
 	lv += 1;
@@ -912,7 +911,7 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 
 ////////////////////////////////////////////////////////////////////////////////
 //Create eHouse events
-bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 
 	const tRBUF *output = reinterpret_cast<const tRBUF*>(pdata);
@@ -930,11 +929,11 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	memset(proev, 0, sizeof(proev));
 	if ((output->ICMND.packettype == pTypeGeneralSwitch) && (output->ICMND.subtype == sSwitchTypeSelector))
 	{
-		//LOG(LOG_STATUS, "SW - Type Selector\r\n");
+		//_log.Debug(DEBUG_HARDWARE, "SW - Type Selector\r\n");
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
 		int32_t ID = xcmd->id;
 		int level = xcmd->level;
-		int id = getrealERMpgm(ID, level);
+		//int id = getrealERMpgm(ID, level); //Giz: id was already declared removed this call
 		id = getrealRMpgm(ID, level);
 	}
 
@@ -962,10 +961,10 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			unsigned int adcvalue = (int)(1023.0 * ((temp + 50.0) / 330.0));  //mcp9700 10mv/c offset -50
 			adcvalue -= 2;
-			ev[5] = adcvalue >> 8;      //arg3
+			ev[5] =(uint8_t)( adcvalue >> 8);      //arg3
 			ev[6] = adcvalue & 0xff;    //arg4
 			adcvalue += 4;
-			ev[7] = adcvalue >> 8;      //arg5
+			ev[7] = (uint8_t)(adcvalue >> 8);      //arg5
 			ev[8] = adcvalue & 0xff;    //arg6
 			AddToLocalEvent(ev, 0);
 			sprintf(tmp, "%.1f", temp);
@@ -977,10 +976,10 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 			unsigned int adcvalue = (int)round(temp);
 			ev[3] = 0;	//nr ==0
 			ev[4] = 3;	//set value
-			ev[5] = adcvalue / 10;
+			ev[5] = (uint8_t)(adcvalue / 10);
 			ev[6] = adcvalue % 10;
 			adcvalue += 5;
-			ev[7] = adcvalue / 10;
+			ev[7] = (uint8_t)(adcvalue / 10);
 			ev[8] = adcvalue % 10;
 			AuraDev[AddrL - 1]->ServerTempSet = temp;
 			AddToLocalEvent(ev, 0);
@@ -991,33 +990,35 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 
 
-	if ((output->ICMND.packettype == pTypeLimitlessLights) && (output->LIGHTING2.subtype == sTypeLimitlessRGBW))
+	if ((output->ICMND.packettype == pTypeColorSwitch) && (output->LIGHTING2.subtype == sTypeColor_RGB_W))
 	{
-		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch *>(pdata);
 		id = pLed->id;
 		cmd = pLed->command;
-		int red, green, blue;
-		if (cmd == Limitless_SetRGBColour)
+		if (cmd == Color_SetColor)
 		{
-			float cHue = (360.0f / 255.0f) * float(pLed->value);//hue given was in range of 0-255
-			hue2rgb(cHue, red, green, blue);
-			AddrH = id >> 24;              //address high
-			AddrL = (id >> 16) & 0xff;     //address low
-			gettype(AddrH, AddrL);
-			eHCMD = (id >> 8) & 0xff;     //ehouse visual code
-			nr = id & 0xff;              // i/o  nr
-			//Compose eHouse Event
-			ev[0] = AddrH;
-			ev[1] = AddrL;
-			ev[2] = 4;					//SET DIMMER
-			ev[3] = nr;					//starting channel
-			red = (red * 255) / 100;
-			green = (green * 255) / 100;
-			blue = (blue * 255) / 100;
-			ev[4] = (unsigned char)red;
-			ev[5] = (unsigned char)green;
-			ev[6] = (unsigned char)blue;
-			AddToLocalEvent(ev, 0);
+			if (pLed->color.mode == ColorModeRGB)
+			{
+				AddrH = id >> 24;              //address high
+				AddrL = (id >> 16) & 0xff;     //address low
+				gettype(AddrH, AddrL);
+				eHCMD = (id >> 8) & 0xff;     //ehouse visual code
+				nr = id & 0xff;              // i/o  nr
+				//Compose eHouse Event
+				ev[0] = AddrH;
+				ev[1] = AddrL;
+				ev[2] = 4;					//SET DIMMER
+				ev[3] = nr;					//starting channel
+				ev[4] = (uint8_t)(pLed->color.r * pLed->value / 100);
+				ev[5] = (uint8_t)(pLed->color.g * pLed->value / 100);
+				ev[6] = (uint8_t)(pLed->color.b * pLed->value / 100);
+				AddToLocalEvent(ev, 0);
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "eHouse TCP: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				return false;
+			}
 		}
 		return true;
 	}
@@ -1055,11 +1056,11 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT nValue, sValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 						m_HwdID, IDX, AddrL);
-					if (result.size() > 0)
+					if (!result.empty())
 					{
 						int nvalue = atoi(result[0][0].c_str());
 						int svalue = atoi(result[0][1].c_str());
-						int lastLevel = atoi(result[0][2].c_str());
+						//int lastLevel = atoi(result[0][2].c_str());
 						if (nvalue == 0)
 						{
 							proev[4] = ev[4] = 2;
@@ -1077,14 +1078,14 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 								if (svalue < output->LIGHTING2.level)
 								{
 									proev[4] = ev[4] = 2;
-									ev[5] = output->LIGHTING2.level - svalue;
+									ev[5] = (uint8_t)(output->LIGHTING2.level - svalue);
 									ev[5] *= 2;
 									proev[6] = ev[5];
 								}
 								else
 								{
 									proev[4] = ev[4] = 1;
-									ev[5] = svalue - output->LIGHTING2.level;
+									ev[5] = (uint8_t)(svalue - output->LIGHTING2.level);
 									ev[5] *= 2;
 									proev[6] = ev[5];
 								}

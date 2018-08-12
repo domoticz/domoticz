@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../DomoticzHardware.h"
+#include "../hardwaretypes.h"
 #include "../../notifications/NotificationBase.h"
 
 #ifndef byte
@@ -15,6 +16,20 @@ namespace Plugins {
 	class CPluginNotifier;
 	class CPluginTransport;
 
+	enum PluginDebugMask
+	{
+		PDM_NONE = 0,
+		// 1 is mapped to PDM_ALL in code for backwards compatibility
+		PDM_PYTHON = 2,
+		PDM_PLUGIN = 4,
+		PDM_DEVICE = 8,
+		PDM_CONNECTION = 16,
+		PDM_IMAGE = 32,
+		PDM_MESSAGE = 64,
+		PDM_QUEUE = 128,
+		PDM_ALL = 65535
+	};
+
 	class CPlugin : public CDomoticzHardwareBase
 	{
 	private:
@@ -28,14 +43,15 @@ namespace Plugins {
 
 		CPluginNotifier*	m_Notifier;
 
-		boost::mutex	m_TransportsMutex;
+		std::mutex	m_TransportsMutex;
 		std::vector<CPluginTransport*>	m_Transports;
 
-		boost::shared_ptr<boost::thread> m_thread;
+		std::shared_ptr<std::thread> m_thread;
 
-		bool StartHardware();
+		bool StartHardware() override;
 		void Do_Work();
-		bool StopHardware();
+		bool StopHardware() override;
+		void ClearMessageQueue();
 
 		void LogPythonException();
 		void LogPythonException(const std::string &);
@@ -44,7 +60,6 @@ namespace Plugins {
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		~CPlugin(void);
 
-		bool	IoThreadRequired();
 		int		PollInterval(int Interval = -1);
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
@@ -61,15 +76,25 @@ namespace Plugins {
 		void	ConnectionDisconnect(CDirectiveBase*);
 		void	DisconnectEvent(CEventBase*);
 		void	Callback(std::string sHandler, void* pParams);
+		void	RestoreThread();
+		void	ReleaseThread();
 		void	Stop();
 
 		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
 
-		bool	WriteToHardware(const char *pdata, const unsigned char length);
+		bool	WriteToHardware(const char *pdata, const unsigned char length) override;
 		void	Restart();
-		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
+		void	SendCommand(const int Unit, const std::string &command, const int level, const _tColor color);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
-			
+
+		void	onDeviceAdded(int Unit);
+		void	onDeviceModified(int Unit);
+		void	onDeviceRemoved(int Unit);
+		void	MessagePlugin(CPluginMessageBase *pMessage);
+		void	DeviceAdded(int Unit);
+		void	DeviceModified(int Unit);
+		void	DeviceRemoved(int Unit);
+
 		bool	HasNodeFailed(const int Unit);
 
 		std::string			m_PluginKey;
@@ -79,8 +104,10 @@ namespace Plugins {
 		void*				m_ImageDict;
 		void*				m_SettingsDict;
 		std::string			m_HomeFolder;
-		bool				m_bDebug;
+		PluginDebugMask		m_bDebug;
 		bool				m_stoprequested;
+		bool				m_bIsStarting;
+		bool				m_bTracing;
 	};
 
 	class CPluginNotifier : public CNotificationBase

@@ -5,7 +5,7 @@ return {
 	name = 'RGB(W) device adapter',
 
 	matches = function (device, adapterManager)
-		local res = device.deviceType == 'Lighting Limitless/Applamp'
+		local res = device.deviceType == 'Color Switch'
 		adapterManager.addDummyMethod(device, 'setKelvin')
 		adapterManager.addDummyMethod(device, 'setWhiteMode')
 		adapterManager.addDummyMethod(device, 'increaseBrightness')
@@ -23,7 +23,7 @@ return {
 			function device.setKelvin(kelvin)
 				local url
 				url = domoticz.settings['Domoticz url'] ..
-						'/json.htm?type=command&param=setkelvinlevel&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
+						'/json.htm?param=setkelvinlevel&type=command&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
 				return domoticz.openURL(url)
 			end
 		end
@@ -31,28 +31,28 @@ return {
 		function device.setWhiteMode()
 			local url
 			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=whitelight&idx=' .. device.id
+					'/json.htm?param=whitelight&type=command&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
 		function device.increaseBrightness()
 			local url
 			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=brightnessup&idx=' .. device.id
+					'/json.htm?param=brightnessup&type=command&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
 		function device.decreaseBrightness()
 			local url
 			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=brightnessdown&idx=' .. device.id
+					'/json.htm?param=brightnessdown&type=command&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
 		function device.setNightMode()
 			local url
 			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=nightlight&idx=' .. device.id
+					'/json.htm?param=nightlight&type=command&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
@@ -62,7 +62,7 @@ return {
 			end
 			local url
 			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=discomodenum' .. tonumber(modeNum) .. '&idx=' .. device.id
+					'/json.htm?param=discomodenum' .. tonumber(modeNum) .. '&type=command&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
@@ -79,7 +79,7 @@ return {
 
 			local h, s, b, isWhite = domoticz.utils.rgbToHSB(tonumber(r), tonumber(g), tonumber(b))
 			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=setcolbrightnessvalue&idx=' ..
+					'/json.htm?param=setcolbrightnessvalue&type=command&idx=' ..
 					device.id ..
 					'&hue=' .. tostring(h) ..
 					'&brightness=' .. tostring(b) ..

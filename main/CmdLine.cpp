@@ -7,23 +7,23 @@
    http://www.smalleranimals.com
 
    This software is provided 'as-is', without any express
-   or implied warranty.  In no event will the authors be 
+   or implied warranty.  In no event will the authors be
    held liable for any damages arising from the use of this software.
 
-   Permission is granted to anyone to use this software 
-   for any purpose, including commercial applications, and 
-   to alter it and redistribute it freely, subject to the 
+   Permission is granted to anyone to use this software
+   for any purpose, including commercial applications, and
+   to alter it and redistribute it freely, subject to the
    following restrictions:
 
-     1. The origin of this software must not be misrepresented; 
-   you must not claim that you wrote the original software. 
-   If you use this software in a product, an acknowledgment 
+	 1. The origin of this software must not be misrepresented;
+   you must not claim that you wrote the original software.
+   If you use this software in a product, an acknowledgment
    in the product documentation would be appreciated but is not required.
-   
-     2. Altered source versions must be plainly marked as such, 
+
+	 2. Altered source versions must be plainly marked as such,
    and must not be misrepresented as being the original software.
-   
-     3. This notice may not be removed or altered from any source 
+
+	 3. This notice may not be removed or altered from any source
    distribution.
 
    See SACmds.h for more info.
@@ -43,65 +43,65 @@
 ------------------------------------------------------*/
 int CCmdLine::SplitLine(int argc, char **argv)
 {
-   clear();
+	clear();
 
-   std::string curParam; // current argv[x]
+	std::string curParam; // current argv[x]
 
-   // skip the exe name (start with i = 1)
-   for (int i = 1; i < argc; i++)
-   {
-      // if it's a switch, start a new CCmdLine
-      if (IsSwitch(argv[i]))
-      {
-         curParam = argv[i];
+	// skip the exe name (start with i = 1)
+	for (int i = 1; i < argc; i++)
+	{
+		// if it's a switch, start a new CCmdLine
+		if (IsSwitch(argv[i]))
+		{
+			curParam = argv[i];
 
-         std::string arg;
+			std::string arg;
 
-         // look at next input string to see if it's a switch or an argument
-         if (i + 1 < argc)
-         {
-            if (!IsSwitch(argv[i + 1]))
-            {
-               // it's an argument, not a switch
-               arg = argv[i + 1];
+			// look at next input string to see if it's a switch or an argument
+			if (i + 1 < argc)
+			{
+				if (!IsSwitch(argv[i + 1]))
+				{
+					// it's an argument, not a switch
+					arg = argv[i + 1];
 
-               // skip to next
-               i++;
-            }
-            else
-            {
-               arg = "";
-            }
-         }
+					// skip to next
+					i++;
+				}
+				else
+				{
+					arg = "";
+				}
+			}
 
-         // add it
-         CCmdParam cmd;
-         cmd.m_strings.push_back(arg);
+			// add it
+			CCmdParam cmd;
+			cmd.m_strings.push_back(arg);
 
-         // add the CCmdParam to 'this'
-         insert(CCmdLine::value_type(curParam, cmd));
-      }
-      else
-      {
-         // it's not a new switch, so it must be more stuff for the last switch
+			// add the CCmdParam to 'this'
+			insert(CCmdLine::value_type(curParam, cmd));
+		}
+		else
+		{
+			// it's not a new switch, so it must be more stuff for the last switch
 
-         // ...let's add it
- 	      CCmdLine::iterator theIterator;
+			// ...let's add it
+			CCmdLine::iterator theIterator;
 
-         // get an iterator for the current param
-         theIterator = find(curParam);
-	      if (theIterator!=end())
-         {
-            (*theIterator).second.m_strings.push_back(argv[i]);
-         }
-         else
-         {
-            // ??
-         }
-      }
-   }
+			// get an iterator for the current param
+			theIterator = find(curParam);
+			if (theIterator != end())
+			{
+				(*theIterator).second.m_strings.push_back(argv[i]);
+			}
+			else
+			{
+				// ??
+			}
+		}
+	}
 
-   return size();
+	return static_cast<int>(size());
 }
 
 /*------------------------------------------------------
@@ -117,27 +117,23 @@ int CCmdLine::SplitLine(int argc, char **argv)
 
 bool CCmdLine::IsSwitch(const char *pParam)
 {
-   if (pParam==NULL)
-      return false;
+	if (pParam == NULL)
+		return false;
 
-   // switches must non-empty
-   // must have at least one character after the '-'
-   int len = strlen(pParam);
-   if (len <= 1)
-   {
-      return false;
-   }
+	// switches must non-empty
+	// must have at least one character after the '-'
+	if (strlen(pParam) <= 1)
+	{
+		return false;
+	}
 
-   if (pParam[0]=='-')
-   {
-      // allow negative numbers as arguments.
-      // ie., don't count them as switches
-      return (!isdigit(pParam[1]));
-   }
-   else
-   {
-      return false;
-   }
+	if (pParam[0] == '-')
+	{
+		// allow negative numbers as arguments.
+		// ie., don't count them as switches
+		return (!isdigit(pParam[1]));
+	}
+	return false;
 }
 
 /*------------------------------------------------------
@@ -155,9 +151,7 @@ bool CCmdLine::IsSwitch(const char *pParam)
 
 bool CCmdLine::HasSwitch(const char *pSwitch)
 {
-	CCmdLine::iterator theIterator;
-	theIterator = find(pSwitch);
-	return (theIterator!=end());
+	return (find(pSwitch) != end());
 }
 
 /*------------------------------------------------------
@@ -169,7 +163,7 @@ bool CCmdLine::HasSwitch(const char *pSwitch)
    provide.
 
    example :
-  
+
    command line is : app.exe -a p1 p2 p3 -b p4 -c -d p5
 
    call                                      return
@@ -183,31 +177,31 @@ bool CCmdLine::HasSwitch(const char *pSwitch)
 
 std::string CCmdLine::GetSafeArgument(const char *pSwitch, int iIdx, const char *pDefault)
 {
-   std::string sRet;
-   
-   if (pDefault!=NULL)
-      sRet = pDefault;
+	std::string sRet;
 
-   try
-   {
-      sRet = GetArgument(pSwitch, iIdx);
-   }
-   catch (...)
-   {
-   }
+	if (pDefault != NULL)
+		sRet = pDefault;
 
-   return sRet;
+	try
+	{
+		sRet = GetArgument(pSwitch, iIdx);
+	}
+	catch (...)
+	{
+	}
+
+	return sRet;
 }
 
 /*------------------------------------------------------
 
    std::string CCmdLine::GetArgument(const char *pSwitch, int iIdx)
 
-   fetch a argument associated with a switch. throws an exception 
+   fetch a argument associated with a switch. throws an exception
    of (int)0, if the parameter at index iIdx is not found.
 
    example :
-  
+
    command line is : app.exe -a p1 p2 p3 -b p4 -c -d p5
 
    call                             return
@@ -219,23 +213,21 @@ std::string CCmdLine::GetSafeArgument(const char *pSwitch, int iIdx, const char 
 
 std::string CCmdLine::GetArgument(const char *pSwitch, int iIdx)
 {
-   if (HasSwitch(pSwitch))
-   {
-	   CCmdLine::iterator theIterator;
+	if (HasSwitch(pSwitch))
+	{
+		CCmdLine::iterator theIterator = find(pSwitch);
+		if (theIterator != end())
+		{
+			if (static_cast<int>((*theIterator).second.m_strings.size()) > iIdx)
+			{
+				return (*theIterator).second.m_strings[iIdx];
+			}
+		}
+	}
 
-      theIterator = find(pSwitch);
-	   if (theIterator!=end())
-      {
-         if ((int)(*theIterator).second.m_strings.size() > iIdx)
-         {
-            return (*theIterator).second.m_strings[iIdx];
-         }
-      }
-   }
+	throw (int)0;
 
-   throw (int)0;
-
-   return "";
+	return "";
 }
 
 /*------------------------------------------------------
@@ -249,18 +241,16 @@ std::string CCmdLine::GetArgument(const char *pSwitch, int iIdx)
 
 int CCmdLine::GetArgumentCount(const char *pSwitch)
 {
-   int iArgumentCount = -1;
+	int iArgumentCount = -1;
 
-   if (HasSwitch(pSwitch))
-   {
-	   CCmdLine::iterator theIterator;
+	if (HasSwitch(pSwitch))
+	{
+		CCmdLine::iterator theIterator = find(pSwitch);
+		if (theIterator != end())
+		{
+			iArgumentCount = static_cast<int>((*theIterator).second.m_strings.size());
+		}
+	}
 
-      theIterator = find(pSwitch);
-	   if (theIterator!=end())
-      {
-         iArgumentCount = (*theIterator).second.m_strings.size();
-      }
-   }
-
-   return iArgumentCount;
+	return iArgumentCount;
 }

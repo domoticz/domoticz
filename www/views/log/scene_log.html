@@ -1,0 +1,27 @@
+<div class="container">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+
+    <br />
+    <h2>{{ ::'Name'|translate }}: {{ ::vm.pageName }}</h2>
+
+    <entity-log-table log="vm.log"></entity-log-table>
+
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td></td>
+            <td align="right">
+                <button class="btnstyle3"
+                        ng-click="vm.clearLog()"
+                        ng-disabled="!vm.log.length">
+                    {{ ::'Clear' | translate }}
+                </button>
+            </td>
+        </tr>
+    </table>
+</div>

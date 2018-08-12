@@ -209,7 +209,7 @@
 							</div>
 							<div class="row-fluid">
 								<div class="span6">
-									<div id="SoftwareUpdates">
+									<div id="SoftwareUpdates" ng-show="config.UseUpdate">
 										<h2><span data-i18n="SoftwareUpdates"></span>:</h2>
 										<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
 											<tr>
@@ -235,6 +235,21 @@
 											</tr>
 										</table>
 									</div>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="RemoteProxyIPs">Remote Proxy IPs</span>:</h2>
+									<table class="display" id="webproxytable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="IP Address"></span>: </label></td>
+										<td>
+											<input type="input" id="WebRemoteProxyIPs" name="WebRemoteProxyIPs" style="width: 300px; padding: .2em"/><br>
+											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.1;192.168.0.12)
+										</td>
+									</tr>
+									</table>
 									<br>
 								</div>
 							</div>
@@ -381,24 +396,11 @@
 									<br>
 								</div>
 								<div class="span6">
-									<h2><span data-i18n="NMA (Android)"></span>:</h2>
-									<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-										<td><input type="checkbox" id="NMAEnabled" name="NMAEnabled"/><label for="NMAEnabled"/></td>
-									</tr>
-									<tr>
-										<td align="right"><label for="NMAAPI"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="NMAAPI" name="NMAAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('nma')">Test</button></td>
-									</tr>
-									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.notifymyandroid.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
-									<br>
 								</div>
 							</div>
 							<div class="row-fluid">
 								<div class="span6">
-									<h2><span data-i18n="Pushbullet"></span>:</h2>
+									<h2>Pushbullet (iOS/Android/Windows):</h2>
 									<table class="display" id="pushbullettable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
@@ -413,7 +415,7 @@
 									<br>
 								</div>
 								<div class="span6">
-									<h2>Pushsafer (iOS/Android/Windows10) + <span data-i18n="ImageURL"></span>:</h2>
+									<h2>Pushsafer (iOS/Android/Windows) + <span data-i18n="ImageURL"></span>:</h2>
 									<table class="display" id="pushsafertable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
@@ -1084,36 +1086,6 @@
 								</div>
 							</div>
 							<br>
-							<div class="row-fluid" style="display:none;">
-								<div class="span12">
-									<div id="LogDebug">
-										<h2><span data-i18n="Log "></span>Log:</h2>
-										<table class="display" id="LogFilterTable" border="0" cellpadding="0" cellspacing="0">
-										<tr>
-											<td align="right" style="width:60px"><label><span data-i18n="LogFilter"></span>Filter: </label></td>
-											<td><input type="input" id="LogFilter" name="LogFilter" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
-										</tr>
-										<tr>
-											<td align="right" style="width:60px"><label><span data-i18n="LogFileName"></span>File Name: </label></td>
-											<td><input type="input" id="LogFileName" name="LogFileName" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
-										</tr>
-										<tr>
-											<td align="right" style="width:60px"><label><span data-i18n="LogLevel">Level</span>: </label></td>
-											<td><select id="LogLevel" name="LogLevel" style="width:120px" class="combobox ui-corner-all">
-												<option data-i18n="Error" value="0">Error</option>
-												<option data-i18n="Status" value="1">Status</option>
-												<option data-i18n="Normal" value="2">Normal</option>
-												<option data-i18n="Trace" value="3">Trace</option>
-												<option data-i18n="ErrorVerbose"  value="4">ErrorVerbose</option>
-												<option data-i18n="StatusVerbose" value="5">StatusVerbose</option>
-												<option data-i18n="NormalVerbose" value="6">NormalVerbose</option>
-												<option data-i18n="TraceVerbose"  value="7">TraceVerbose</option>
-											</select></td>
-										</tr>
-										</table>
-									</div>
-								</div>
-							</div>
 							<!-- <br> -->
 							<div class="row-fluid">
 								<div class="span12">

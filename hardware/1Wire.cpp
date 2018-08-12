@@ -73,13 +73,13 @@ bool C1Wire::StartHardware()
 	m_system->PrepareDevices();
 
 	// Start worker thread
-	if (0 != m_sensorThreadPeriod)
-	{
-		m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
+	if (m_sensorThreadPeriod != 0) {
+		m_threadSensors = std::make_shared<std::thread>(&C1Wire::SensorThread, this);
+		SetThreadName(m_threadSensors->native_handle(), "1WireSensors");
 	}
-	if (0 != m_switchThreadPeriod)
-	{
-		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
+	if (m_switchThreadPeriod != 0) {
+		m_threadSwitches = std::make_shared<std::thread>(&C1Wire::SwitchThread, this);
+		SetThreadName(m_threadSwitches->native_handle(), "1WireSwitches");
 	}
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -93,12 +93,14 @@ bool C1Wire::StopHardware()
 	{
 		m_stoprequested = true;
 		m_threadSensors->join();
+		m_threadSensors.reset();
 	}
 
 	if (m_threadSwitches)
 	{
 		m_stoprequested = true;
 		m_threadSwitches->join();
+		m_threadSwitches.reset();
 	}
 
 	m_bIsStarted=false;
@@ -277,7 +279,7 @@ void C1Wire::SwitchThread()
 }
 
 
-bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
+bool C1Wire::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen= reinterpret_cast<const tRBUF*>(pdata);
 
@@ -304,16 +306,15 @@ void C1Wire::BuildSensorList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "1-Wire: Searching sensors");
-#endif
+
+	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching sensors");
+
 	m_sensors.clear();
 	m_system->GetDevices(devices);
 
-	std::vector<_t1WireDevice>::const_iterator device;
-	for (device=devices.begin(); device!=devices.end(); ++device)
+	for (const auto & device : devices)
 	{
-		switch((*device).family)
+		switch(device.family)
 		{
 		case high_precision_digital_thermometer:
 		case Thermachron:
@@ -325,9 +326,8 @@ void C1Wire::BuildSensorList() {
 		case _4k_ram_with_counter:
 		case quad_ad_converter:
 		case smart_battery_monitor:
-			m_sensors.insert(*device);
+			m_sensors.insert(device);
 			break;
-
 		default:
 			break;
 		}
@@ -341,16 +341,15 @@ void C1Wire::BuildSwitchList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "1-Wire: Searching switches");
-#endif
+
+	_log.Debug(DEBUG_HARDWARE, "1-Wire: Searching switches");
+
 	m_switches.clear();
 	m_system->GetDevices(devices);
 
-	std::vector<_t1WireDevice>::const_iterator device;
-	for (device=devices.begin(); device!=devices.end(); ++device)
+	for (const auto & device : devices)
 	{
-		switch((*device).family)
+		switch(device.family)
 		{
 		case Addresable_Switch:
 		case microlan_coupler:
@@ -360,9 +359,8 @@ void C1Wire::BuildSwitchList() {
 		case dual_channel_addressable_switch:
 		case _4k_EEPROM_with_PIO:
 		case digital_potentiometer:
-			m_switches.insert(*device);
+			m_switches.insert(device);
 			break;
-
 		default:
 			break;
 		}
@@ -378,10 +376,9 @@ void C1Wire::PollSwitches()
 		return;
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
-	std::set<_t1WireDevice>::const_iterator itt;
-	for (itt=m_switches.begin(); itt!=m_switches.end() && !m_stoprequested; ++itt)
+	for (const auto & itt : m_switches)
 	{
-		const _t1WireDevice& device=*itt;
+		const _t1WireDevice& device=itt;
 
 		// Manage families specificities
 		switch(device.family)
@@ -502,7 +499,7 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId, const float 
 	SendTempHumSensor(lID, 255, temperature, round(humidity), "TempHum");
 }
 
-void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const bool state)
+void C1Wire::ReportLightState(const std::string& deviceId, const uint8_t unit, const bool state)
 {
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);
@@ -519,7 +516,7 @@ void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const un
 	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1]+unit, 255, (const float)counter/1000.0f, "Counter");
 }
 
-void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const int voltage)
+void C1Wire::ReportVoltage(const std::string& /*deviceId*/, const int unit, const int voltage)
 {
 	if (voltage == -1000.0)
 		return;
@@ -531,7 +528,7 @@ void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const in
 	tsen.RFXSENSOR.packettype=pTypeRFXSensor;
 	tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
 	tsen.RFXSENSOR.rssi=12;
-	tsen.RFXSENSOR.id=unit+1;
+	tsen.RFXSENSOR.id=(uint8_t)(unit+1);
 
 	tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
 	tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));

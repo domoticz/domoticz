@@ -22,6 +22,7 @@
    3. This notice may not be removed or altered from any source distribution.
 
    René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+   Extended by GizMoCuz
 
    Usages:
 	   #include "base64.h"
@@ -30,7 +31,7 @@
 	   int main() {
 	   const std::string s = "ADP GmbH\nAnalyse Design & Programmierung\nGesellschaft mit beschränkter Haftung" ;
 
-	   std::string encoded = base64_encode(reinterpret_cast<const unsigned char*>(s.c_str()), s.length());
+	   std::string encoded = base64_encode(s);
 	   std::string decoded = base64_decode(encoded);
 
 	   std::cout << "encoded: " << encoded << std::endl;
@@ -95,6 +96,10 @@ std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_
 
   return ret;
 
+}
+
+std::string base64_encode(std::string const& s) {
+	return base64_encode((unsigned char const*)s.c_str(), (unsigned int)s.size());
 }
 
 std::string base64_decode(std::string const& encoded_string) {

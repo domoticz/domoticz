@@ -8,33 +8,24 @@
 			<td><input type="text" id="floorplanname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 		<tr>
-			<td colspan="2">
-				<table class="display" id="imagetable" border="0" cellpadding="0" cellspacing="0" width="100%">
-					<thead>
-							<tr valign="middle">
-								<th align="middle">www/images/floorplans</th>
-							</tr>
-					</thead>
-				</table>
-			</td>
-		</tr>
-		<tr>
-			<td style="width:25%"><label for="imagename" data-i18n="Image file">Image file</label>:</td>
-			<td><input type="text" id="imagename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
-		<tr>
 			<td style="width:25%"><label for="scalefactor" data-i18n="Icon Scale">Icon Scale</label>:</td>
 			<td><input type="text" id="scalefactor" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr id="imagerow">
+			<td style="width:25%"><label for="imagefile" data-i18n="Image file">Image file</label>:</td>
+			<td><input type="file" file="file" id="imagefile" name="imagefile" accept=".jpg, .jpeg, .png"/></td>
 		</tr>
 	</table>
 </div>
 <div id="floorplaneditmain" style="display:none;">
 	<br>
+	<h2 data-i18n="Floorplan">Floorplan</h2><br>
 	<table class="display" id="floorplantable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 			<tr valign="middle">
+				<th width="60" align="center"></th>
 				<th align="left" data-i18n="Name">Name</th>
-				<th align="left" width="60%" data-i18n="Image">Image</th>
+				<th align="center" width="100" data-i18n="Plans">Plans</th>
 				<th align="left" width="100" data-i18n="Icon Scale">Icon Scale</th>
 				<th width="60" align="center" data-i18n="Order">Order</th>
 			</tr>

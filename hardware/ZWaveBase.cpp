@@ -3,7 +3,6 @@
 #include "ZWaveCommands.h"
 
 #include <sstream>      // std::stringstream
-#include <vector>
 #include <ctype.h>
 #include <iomanip>
 
@@ -53,18 +52,18 @@ bool ZWaveBase::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ZWaveBase::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&ZWaveBase::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "ZWaveBase");
+	return (m_thread != nullptr);
 }
 
 bool ZWaveBase::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
 		m_stoprequested = true;
-		if (m_thread!=NULL)
-			m_thread->join();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted=false;
 	return true;
@@ -171,7 +170,7 @@ bool ZWaveBase::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
 		m_HwdID, homeID, nodeID);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::string ProductDescription = result[0][0];
 	return (
@@ -202,6 +201,9 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		unsigned char ID2 = 0;
 		unsigned char ID3 = 0;
 		unsigned char ID4 = 0;
+		// TODO: For devices of type ZDTYPE_SWITCH_COLOR the supported color channels is reported in response to command SWITCH_COLOR_SUPPORTED_GET
+		// This is already done by OpenZWave::Color class and used internally by the class, the information is needed here.
+		unsigned SubType = (pDevice->devType == ZDTYPE_SWITCH_RGBW)?sTypeColor_RGB_W_Z:sTypeColor_RGB_CW_WW_Z;
 
 		//make device ID
 		ID1 = 0;
@@ -224,15 +226,25 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
-		if (result.size() > 0)
-			return; //Already in the system
+		result = m_sql.safe_query("SELECT ID, SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
+		if (!result.empty()) //Already in the system, but make sure SubType is correct
+		{
+			unsigned sTypeOld = atoi(result[0][1].c_str());
+			std::string sID = result[0][0];
+			if (sTypeOld != SubType)
+			{
+				_log.Log(LOG_STATUS, "ZWave: Updating SubType of light '%s' from %u to %u", szID, sTypeOld, SubType);
+				m_sql.UpdateDeviceValue("SubType", (int)SubType, sID);
+			}
+			return;
+		}
 
-		//Send as LimitlessLight
-		_tLimitlessLights lcmd;
+		//Send as ColorSwitch
+		_tColorSwitch lcmd;
 		lcmd.id = lID;
-		lcmd.command = Limitless_LedOff;
+		lcmd.command = Color_LedOff;
+		lcmd.subtype=SubType;
 		lcmd.value = 0;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, pDevice->label.c_str(), BatLevel);
 
@@ -265,7 +277,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
-		if (result.size() > 0)
+		if (!result.empty())
 			return; //Already in the system
 
 		//Send as pTypeGeneralSwitch/sSwitchGeneralSwitch
@@ -410,17 +422,17 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		std::string ID = szID;
 		unsigned char unitcode = 1;
 
-		//Send as LimitlessLight
-		_tLimitlessLights lcmd;
+		//Send as ColorSwitch
+		_tColorSwitch lcmd;
 		lcmd.id = lID;
 
 		// Get device level to set
 		int level = pDevice->intvalue;
 
 		if (level == 0)
-			lcmd.command = Limitless_LedOff;
+			lcmd.command = Color_LedOff;
 		else
-			lcmd.command = Limitless_LedOn;
+			lcmd.command = Color_LedOn;
 		lcmd.value = 0;
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, BatLevel);
 	}
@@ -837,7 +849,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 
 bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	const _tZWaveDevice* pDevice=NULL;
 
@@ -903,7 +915,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				if ((cmnd== gswitch_sOff)||(cmnd== gswitch_sGroupOff))
 					svalue=0;
-				else 
+				else
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}
@@ -999,9 +1011,9 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
-	else if (packettype == pTypeLimitlessLights)
+	else if (packettype == pTypeColorSwitch)
 	{
-		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch *>(pdata);
 		unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
@@ -1013,19 +1025,19 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		if (pDevice)
 		{
 			int svalue = 0;
-			if (pLed->command == Limitless_LedOff)
+			if (pLed->command == Color_LedOff)
 			{
 				instanceID = 2;
 				svalue = 0;
 				return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 			}
-			else if (pLed->command == Limitless_LedOn)
+			else if (pLed->command == Color_LedOn)
 			{
 				instanceID = 2;
 				svalue = 255;
 				return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 			}
-			else if (pLed->command == Limitless_SetBrightnessLevel)
+			else if (pLed->command == Color_SetBrightnessLevel)
 			{
 				instanceID = 2;
 				int ivalue = pLed->value;
@@ -1034,7 +1046,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				svalue = ivalue;
 				return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 			}
-			else if (pLed->command == Limitless_SetColorToWhite)
+			else if (pLed->command == Color_SetColorToWhite)
 			{
 				instanceID = 3;//red
 				if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0))
@@ -1050,26 +1062,67 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					return false;
 				return true;
 			}
-			else if (pLed->command == Limitless_SetRGBColour)
+			else if (pLed->command == Color_SetColor)
 			{
-				int red, green, blue;
-				float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-				hue2rgb(cHue, red, green, blue);
+				int ivalue = pLed->value;
+				if (ivalue > 99)
+					ivalue = 99; //99 is fully on
+				if (pLed->color.mode == ColorModeWhite)
+				{
+					instanceID = 3;//red
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0))
+						return false;
+					instanceID = 4;//green
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0))
+						return false;
+					instanceID = 5;//blue
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0))
+						return false;
+					instanceID = 6;//white
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, 100))
+						return false;
+				}
+				else if (pLed->color.mode == ColorModeRGB)
+				{
+					instanceID = 6;//white
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0))
+						return false;
 
-				instanceID = 6;//white
-				if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0))
+					instanceID = 3;//red
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, pLed->color.r))
+						return false;
+					instanceID = 4;//green
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, pLed->color.g))
+						return false;
+					instanceID = 5;//blue
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, pLed->color.b))
+						return false;
+					_log.Log( LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", pLed->color.r, pLed->color.g, pLed->color.b);
+				}
+				else if (pLed->color.mode == ColorModeCustom)
+				{
+					instanceID = 3;//red
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, pLed->color.r))
+						return false;
+					instanceID = 4;//green
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, pLed->color.g))
+						return false;
+					instanceID = 5;//blue
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, pLed->color.b))
+						return false;
+					instanceID = 6;//white
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, pLed->color.ww))
+						return false;
+					_log.Log( LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", pLed->color.r, pLed->color.g, pLed->color.b);
+				}
+				else
+				{
+					_log.Log(LOG_STATUS, "ZWave: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 					return false;
-
-				instanceID = 3;//red
-				if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, red))
+				}
+				instanceID = 2;//brightness
+				if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, ivalue))
 					return false;
-				instanceID = 4;//green
-				if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, green))
-					return false;
-				instanceID = 5;//blue
-				if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, blue))
-					return false;
-				_log.Log( LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
 				return true;
 			}
 		}
@@ -1080,19 +1133,19 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				std::stringstream sstr;
 				int svalue = 0;
-				if (pLed->command == Limitless_LedOff)
+				if (pLed->command == Color_LedOff)
 				{
 					instanceID = 1;
 					svalue = 0;
 					return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 				}
-				else if (pLed->command == Limitless_LedOn)
+				else if (pLed->command == Color_LedOn)
 				{
 					instanceID = 1;
 					svalue = 255;
 					return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 				}
-				else if (pLed->command == Limitless_SetBrightnessLevel)
+				else if (pLed->command == Color_SetBrightnessLevel)
 				{
 					instanceID = 1;
 					int ivalue = pLed->value;
@@ -1101,7 +1154,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					svalue = ivalue;
 					return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 				}
-				else if (pLed->command == Limitless_SetColorToWhite)
+				else if (pLed->command == Color_SetColorToWhite)
 				{
 					int Brightness = 100;
 					int wWhite = round((255.0f / 100.0f)*float(Brightness));
@@ -1112,18 +1165,48 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					instanceID = 1;
 					return SwitchColor(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, sstr.str());
 				}
-				else if (pLed->command == Limitless_SetRGBColour)
+				else if (pLed->command == Color_SetColor)
 				{
-					int red, green, blue;
-					float cHue = (360.0f / 255.0f)*float(pLed->value & 0xFFFF);//hue given was in range of 0-255
+					int red = 0, green = 0, blue = 0, wWhite = 0, cWhite = 0;
 
-					int Brightness = 100;
-
-					int dMax = round((255.0f / 100.0f)*float(Brightness));
-					hue2rgb(cHue, red, green, blue, dMax);
 					instanceID = 1;
-					int wWhite = (pLed->value >> 16);
-					int cWhite = 0;// (pLed->value >> 16);
+					int ivalue = pLed->value;
+					if (ivalue > 99)
+						ivalue = 99; //99 is fully on
+					svalue = ivalue;
+					if (!SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue))
+						return false;
+
+					if (pLed->color.mode == ColorModeWhite)
+					{
+						wWhite = round(255);
+					}
+					else if (pLed->color.mode == ColorModeTemp)
+					{
+						wWhite = round(pLed->color.t);
+						cWhite = round(255-pLed->color.t);
+					}
+					else if (pLed->color.mode == ColorModeRGB)
+					{
+						red    = round(pLed->color.r);
+						green  = round(pLed->color.g);
+						blue   = round(pLed->color.b);
+					}
+					else if (pLed->color.mode == ColorModeCustom)
+					{
+						red    = round(pLed->color.r);
+						green  = round(pLed->color.g);
+						blue   = round(pLed->color.b);
+						wWhite = round(pLed->color.ww);
+						cWhite = round(pLed->color.cw);
+					}
+					else
+					{
+						_log.Log(LOG_STATUS, "ZWave: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+						return false;
+					}
+
+					instanceID = 1;
 					sstr << "#"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
@@ -1136,7 +1219,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					if (!SwitchColor(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, sColor))
 						return false;
 
-					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
+					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d, wWhite:%03d, cWhite:%03d", red, green, blue, wWhite, cWhite);
 					return true;
 				}
 			}

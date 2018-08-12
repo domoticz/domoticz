@@ -24,18 +24,16 @@
 
 #include "EvohomeBase.h"
 
-
 class CEvohomeScript : public CEvohomeBase
 {
 public:
 	explicit CEvohomeScript(const int ID);
 	~CEvohomeScript(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void RunScript(const char *pdata, const unsigned char length);
 };
 

@@ -74,7 +74,7 @@ bool CNotificationSMS::SendMessageImplementation(
 		<< "&text=" << Text;
 
 	std::vector<std::string> ExtraHeaders;
-	bRet |= HTTPClient::POST("https://api.clickatell.com/http/sendmsg", sPostData.str(), ExtraHeaders, sResult);
+	bRet |= HTTPClient::POST("https://platform.clickatell.com/messages/http/send", sPostData.str(), ExtraHeaders, sResult);
 	if (sResult.find("ERR:") != std::string::npos)
 	{
 		//We have an error

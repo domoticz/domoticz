@@ -1,15 +1,13 @@
 #pragma once
 #include "WebServer.h"
 #ifndef NOCLOUD
-#include "../webserver/proxyclient.h"
 #include "../hardware/DomoticzTCP.h"
 #endif
 #include "../tcpserver/TCPServer.h"
-#include <vector>
 
 namespace http {
 	namespace server {
-
+		class CProxyManager;
 		class CWebServerHelper {
 		public:
 			CWebServerHelper();
@@ -24,10 +22,11 @@ namespace http {
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();
-			boost::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
+			std::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
 			void RemoveMaster(DomoticzTCP *master);
 #endif
-			void SetAuthenticationMethod(int amethod);
+			void SetWebCompressionMode(const _eWebCompressionMode gzmode);
+			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
 			void ClearUserPasswords();
@@ -50,17 +49,17 @@ namespace http {
 			void ReloadCustomSwitchIcons();
 			std::string our_listener_port;
 		private:
-			boost::shared_ptr<CWebServer> plainServer_;
+			std::shared_ptr<CWebServer> plainServer_;
 #ifdef WWW_ENABLE_SSL
-			boost::shared_ptr<CWebServer> secureServer_;
+			std::shared_ptr<CWebServer> secureServer_;
 #endif
 			tcp::server::CTCPServer *m_pDomServ;
-			std::vector<boost::shared_ptr<CWebServer> > serverCollection;
+			std::vector<std::shared_ptr<CWebServer> > serverCollection;
 
 			std::string our_serverpath;
 
 #ifndef NOCLOUD
-			std::vector<boost::shared_ptr<CProxyManager> > proxymanagerCollection;
+			std::vector<std::shared_ptr<CProxyManager> > proxymanagerCollection;
 			int GetNrMyDomoticzThreads();
 
 #endif

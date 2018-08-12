@@ -10,7 +10,7 @@
 # Author: Dnpwwo, 2017
 #
 """
-<plugin key="UdpDiscover" name="UDP Discovery Example" author="dnpwwo" version="2.1.0">
+<plugin key="UdpDiscover" name="UDP Discovery Example" author="dnpwwo" version="2.2.0">
     <params>
         <param field="Mode1" label="Discovery Type" width="275px">
             <options>
@@ -24,11 +24,15 @@
                 <option label="False" value="False"  default="true" />
             </options>
         </param>
-        <param field="Mode6" label="Debug" width="75px">
+        <param field="Mode6" label="Debug" width="150px">
             <options>
-                <option label="True" value="Debug"/>
-                <option label="File Only" value="File" />
-                <option label="False" value="Normal"  default="true" />
+                <option label="None" value="0"  default="true" />
+                <option label="Python Only" value="2"/>
+                <option label="Basic Debugging" value="62"/>
+                <option label="Basic+Messages" value="126"/>
+                <option label="Connections Only" value="16"/>
+                <option label="Connections+Queue" value="144"/>
+                <option label="All" value="-1"/>
             </options>
         </param>
     </params>
@@ -43,8 +47,8 @@ class BasePlugin:
         return
 
     def onStart(self):
-        if Parameters["Mode6"] == "Debug":
-            Domoticz.Debugging(1)
+        if Parameters["Mode6"] != "0":
+            Domoticz.Debugging(int(Parameters["Mode6"]))
             DumpConfigToLog()
 
         if Parameters["Mode6"] != "Normal":
@@ -60,11 +64,6 @@ class BasePlugin:
             Domoticz.Log("onMessage called from: "+Connection.Address+":"+Connection.Port+" with data: "+strData)
             Domoticz.Debug("Connection detail: : "+str(Connection))
 
-            if Parameters["Mode6"] != "Normal":
-                logFile = open(Parameters["HomeFolder"]+Parameters["Key"]+".log",'a')
-                logFile.write(Connection.Name+" ("+Connection.Address+"): "+strData+"\n")
-                logFile.close()
-                
             if (Parameters["Mode2"] == "True"):
                 existingDevice = 0
                 existingName = (Parameters["Name"]+" - "+Connection.Address)

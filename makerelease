@@ -1,12 +1,20 @@
 #!/bin/sh
 
-# We use sourceforge to stash our beta/release archives
-# To be able to upload, you need to install sshpass (sudo apt-get install sshpass)
-# and after installation (first time) ssh to sourceforge so the key is accepted
-# ssh USERNAME@web.sourceforge.net
+me=`basename "$0"`
+for pid in $(pidof -x $me); do
+    if [ $pid != $$ ]; then
+        echo "[$(date)] : Process $me is already running with PID $pid"
+        exit 1
+    fi
+done
 
-SVN_UPLOAD_USER="USERNAME"
-SVN_UPLOAD_PASSWORD="PASSWORD"
+#cd ~/dev-domoticz
+
+# To be able to upload, you need one time to login to the upload server
+# ssh -l USERNAME upload.domoticz.com
+
+UPLOAD_USER="USERNAME"
+UPLOAD_PASSWORD="PASSWORD"
 
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
@@ -44,7 +52,7 @@ then
 	echo "Compilation failed!...";
 	exit 1
 fi
-echo "Success, making beta...";
+echo "Success, making release...";
 
 cp -f appversion.h ${version_file}
 cp -f History.txt ${history_file}
@@ -77,11 +85,11 @@ then
 fi
 
 #################################
-echo "Uploading to SourceForge...";
-sshpass -p ${SVN_UPLOAD_PASSWORD} scp ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} ${SVN_UPLOAD_USER}@web.sourceforge.net:/home/project-web/domoticz/htdocs
+echo "Uploading to Cloud...";
+sshpass -p ${UPLOAD_PASSWORD} scp -o User=${UPLOAD_USER} ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} 146.185.159.228:/home/uploads@domoticz.com/release
 if [ $? -ne 0 ]
 then
-        echo "Error uploading to SourceForge!...";
+        echo "Error uploading to Cloud!...";
         exit 1
 fi
 #################################
@@ -91,4 +99,5 @@ rm -f ${version_file}
 rm -f ${history_file}
 
 echo "Done!...";
+cat appversion.h
 exit 0;

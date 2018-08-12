@@ -1,0 +1,351 @@
+<div id="deviceTimers" class="container js-device-timers">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+
+    <p>
+    <h2>{{ ::'Name'|translate }}: {{::vm.itemName}}</h2>
+    </p>
+    <br>
+    <timesun></timesun>
+    <br>
+
+    <timers-table
+            ng-if="::vm.isLoaded"
+            timer-settings="vm.timerSettings"
+            timers="vm.timers"
+            selected-timer-idx="vm.selectedTimerIdx"
+            level-options="::vm.levelOptions"
+            is-setpoint-timers="::vm.isSetpointTimers">
+    </timers-table>
+
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <button id="timerupdate"
+                        class="btnstyle3"
+                        ng-click="vm.updateTimer(vm.selectedTimerIdx)"
+                        ng-disabled="!vm.selectedTimerIdx">
+                    {{:: 'Update' | translate }}
+                </button>
+                &nbsp;&nbsp;
+                <button id="timerdelete"
+                        class="btnstyle3"
+                        ng-click="vm.deleteTimer(vm.selectedTimerIdx)"
+                        ng-disabled="!vm.selectedTimerIdx">
+                    {{:: 'Delete' | translate }}
+                </button>
+            </td>
+            <td align="right">
+                <button class="btnstyle3" ng-click="vm.clearTimers()">{{:: 'Clear' | translate }}</button>
+            </td>
+        </tr>
+    </table>
+    <br>
+
+    <timer-form
+            ng-if="::vm.isLoaded"
+            timer-settings="vm.timerSettings"
+            level-options="::vm.levelOptions"
+            color-settings-type="::vm.colorSettingsType"
+            is-command-selection-disabled="::vm.isCommandSelectionDisabled"
+            is-setpoint-timers="::vm.isSetpointTimers">
+    </timer-form>
+
+    <br>
+    <button class="btnstyle3" ng-click="vm.addTimer()">{{:: 'Add' | translate }}</button>
+</div>
+
+<script type="text/ng-template" id="views/timers/timersTable.html">
+    <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+        <tr>
+            <th width="40" align="center"></th>
+            <th width="150" align="center"></th>
+            <th width="80" align="center"></th>
+            <th width="60" align="center"></th>
+            <th width="60" align="center"></th>
+            <th width="140" align="center"></th>
+            <th align="left"></th>
+        </tr>
+        </thead>
+    </table>
+</script>
+
+<script type="text/ng-template" id="views/timers/timerForm.html">
+    <table class="display settings-form" id="timerparamstable">
+        <tr>
+            <td>
+                <label for="enabled">{{:: 'Enabled' | translate }}:</label>
+            </td>
+            <td>
+                <input type="checkbox" id="enabled" ng-model="vm.timerSettings.active">
+                <label for="enabled"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="combotype">{{:: 'Type' | translate }}:</label>
+            </td>
+            <td>
+                <select id="combotype"
+                        style="width:180px"
+                        class="combobox ui-corner-all"
+                        ng-model="vm.timerSettings.timertype"
+                        ng-options="item.value as item.label for item in ::vm.typeOptions">
+                </select>
+            </td>
+        </tr>
+        <tr ng-show="vm.isDateVisible()">
+            <td>
+                <label for="sdate">{{:: 'Date' | translate }}:</label>
+            </td>
+            <td>
+                <input id="sdate"
+                       type="text"
+                       style="width: 100px; padding: .2em;"
+                       class="text ui-widget-content ui-corner-all"
+                       ng-model="vm.timerSettings.date">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="combotimehour">{{:: 'Time' | translate }}:</label>
+            </td>
+            <td>
+                <select id="combotimehour" style="width:50px" class="combobox ui-corner-all"
+                        ng-model="vm.timerSettings.hour"
+                        ng-options="item.value as item.label for item in ::vm.hourOptions">
+                </select>
+                :
+                <select id="combotimemin" style="width:50px" class="combobox ui-corner-all"
+                        ng-model="vm.timerSettings.min"
+                        ng-options="item.value as item.label for item in ::vm.minuteOptions">
+                </select>
+
+                <span>{{:: '(hour/minute)' | translate }}</span>
+            </td>
+        </tr>
+        <tr ng-hide="::vm.isSetpointTimers">
+            <td>
+                <label for="randomness">{{:: 'Randomness' | translate }}:</label>
+            </td>
+            <td>
+                <input id="randomness" type="checkbox" ng-model="vm.timerSettings.randomness">
+                <label for="randomness"></label>
+            </td>
+        </tr>
+        <tr ng-hide="::vm.isSetpointTimers || vm.isCommandSelectionDisabled">
+            <td>
+                <label for="combocommand">{{:: 'Command' | translate }}:</label>
+            </td>
+            <td>
+                <select id="combocommand"
+                        class="combobox ui-corner-all"
+                        style="width:90px"
+                        ng-disabled="vm.isCommandSelectionDisabled" ng-model="vm.timerSettings.command"
+                        ng-options="item.value as item.label for item in ::vm.commandOptions">
+                </select>
+            </td>
+        </tr>
+        <tr ng-show="::vm.isSetpointTimers">
+            <td>
+                <label for="tvalue">{{:: 'Value' | translate }}:</label>
+            </td>
+            <td>
+                <input type="text" id="tvalue" style="width: 60px; padding: .2em;"
+                       class="text ui-widget-content ui-corner-all"
+                       ng-model="vm.timerSettings.tvalue">
+            </td>
+        </tr>
+        <tr ng-show="vm.isLevelVisible()">
+            <td>
+                <label for="combolevel">
+                    <span ng-show="::!vm.isSelector">{{:: 'Level' | translate }}</span>
+                    <span ng-show="::vm.isSelector">{{:: 'Level name' | translate }}</span>:
+                </label>
+            </td>
+            <td>
+                <select id="combolevel" style="min-width:70px" class="combobox ui-corner-all"
+                        ng-model="vm.timerSettings.level"
+                        ng-options="item.value as item.label for item in vm.levelOptions">
+                </select>
+            </td>
+        </tr>
+        <tr id="TimersLedColor" ng-show="::vm.isColorSettingsAvailable" class="ng-hide">
+            <td align="right">
+                <label>{{:: 'Color' | translate }}:</label>
+            </td>
+            <td>
+                <table id="ledtable2" class="display" border="0" cellpadding="0" cellspacing="0">
+                    <tr id="ColorMode">
+                        <td style="padding-left:0px">
+                            <a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48"
+                                    width="48"></a>
+                            <a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected"
+                                    height="48" width="48"></a>
+                            <a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected"
+                                    height="48" width="48"></a>
+                        </td>
+                    </tr>
+                    <!--<tr id="LedColor2">
+                        <td>-->
+                    <!--<table class="display" id="ledtable3" border="0" cellpadding="0" cellspacing="0">-->
+                    <tr>
+                        <td align="left" style="width:200px;padding-left:0px">
+                            <input type="text" id="popup_picker" data-wheelcolorpicker="" data-wcp-layout="block"
+                                   data-wcp-sliders="wvkl"/>
+                        </td>
+                    </tr>
+                    <!--</table>-->
+                    <!--</td>
+                </tr>-->
+                </table>
+            </td>
+        </tr>
+        <tr ng-show="vm.isDayScheduleVisible()">
+            <td></td>
+        </tr>
+        <tr ng-show="vm.isDayScheduleVisible()">
+            <td>
+                <label>{{:: 'When' | translate }}:</label>
+            </td>
+            <td>
+                <input id="when_1" type="radio" name="when" value="Everyday" ng-model="vm.week.type">&nbsp;
+                <label for="when_1">{{:: 'Everyday' | translate }}</label>
+                <br>
+                <br>
+                <input id="when_2" type="radio" name="when" value="Weekdays" ng-model="vm.week.type">&nbsp;
+                <label for="when_2">{{:: 'Weekdays' | translate }}</label>
+                <br>
+                <br>
+                <input id="when_3" type="radio" name="when" value="Weekends" ng-model="vm.week.type">&nbsp;
+                <label for="when_3">{{:: 'Weekends' | translate }}</label>
+                <br>
+                <br>
+                <input id="when_4" type="radio" name="when" value="SelectedDays" ng-model="vm.week.type">&nbsp;
+                <label for="when_4">{{:: 'Selected Days' | translate }}</label>
+                <br>
+                <br>
+            </td>
+        </tr>
+        <tr ng-show="vm.isDayScheduleVisible()">
+            <td></td>
+        </tr>
+        <tr ng-show="vm.isDayScheduleVisible()">
+            <td>
+                <label>{{:: 'Days' | translate }}:</label>
+            </td>
+            <td>
+                <input type="checkbox" id="ChkMon"
+                       ng-disabled="!vm.isDaySelectonAvailable()"
+                       ng-model="vm.week.days.mon"/>&nbsp;
+                <label for="ChkMon">{{:: 'Monday' | translate }}</label>
+                <br/>
+                <input type="checkbox" id="ChkTue"
+                       ng-disabled="!vm.isDaySelectonAvailable()"
+                       ng-model="vm.week.days.tue"/>&nbsp;
+                <label for="ChkTue">{{:: 'Tuesday' | translate }}</label>
+                <br/>
+                <input type="checkbox" id="ChkWed"
+                       ng-disabled="!vm.isDaySelectonAvailable()"
+                       ng-model="vm.week.days.wed"/>&nbsp;
+                <label for="ChkWed">{{:: 'Wednesday' | translate }}</label>
+                <br/>
+                <input type="checkbox" id="ChkThu"
+                       ng-disabled="!vm.isDaySelectonAvailable()"
+                       ng-model="vm.week.days.thu"/>&nbsp;
+                <label for="ChkThu">{{:: 'Thursday' | translate }}</label>
+                <br/>
+                <input type="checkbox" id="ChkFri"
+                       ng-disabled="!vm.isDaySelectonAvailable()"
+                       ng-model="vm.week.days.fri"/>&nbsp;
+                <label for="ChkFri">{{:: 'Friday' | translate }}</label>
+                <br/>
+                <input type="checkbox" id="ChkSat"
+                       ng-disabled="!vm.isDaySelectonAvailable()"
+                       ng-model="vm.week.days.sat"/>&nbsp;
+                <label for="ChkSat">{{:: 'Saturday' | translate }}</label>
+                <br/>
+                <input type="checkbox" id="ChkSun"
+                       ng-disabled="!vm.isDaySelectonAvailable()"
+                       ng-model="vm.week.days.sun"/>&nbsp;
+                <label for="ChkSun">{{:: 'Sunday' | translate }}</label>
+            </td>
+        </tr>
+        <tr ng-show="vm.isRDaysVisible()">
+            <td></td>
+        </tr>
+        <tr ng-show="vm.isRDaysVisible()">
+            <td>
+                <label for="days">{{:: 'Day' | translate }}:</label>
+            </td>
+            <td>
+                <select id="days"
+                        class="combobox ui-corner-all"
+                        style="width:50px"
+                        ng-model="vm.timerSettings.mday"
+                        ng-options="item.value as item.label for item in ::vm.dayOptions">
+                </select>
+            </td>
+        </tr>
+        <tr ng-show="vm.isROccurenceVisible()">
+            <td></td>
+        </tr>
+        <tr ng-show="vm.isROccurenceVisible()">
+            <td>
+                <label for="occurence">{{:: 'Day' | translate }}:</label>
+            </td>
+            <td>
+                <select id="occurence"
+                        class="combobox ui-corner-all"
+                        style="width:90px"
+                        ng-model="vm.timerSettings.occurence"
+                        ng-options="item.value as item.label for item in ::vm.occurenceOptions">
+                </select>
+
+                <select id="weekdays"
+                        class="combobox ui-corner-all"
+                        style="width:100px"
+                        ng-model="vm.timerSettings.weekday"
+                        ng-options="item.value as item.label for item in ::vm.weekdayOptions">
+                </select>
+            </td>
+        </tr>
+        <tr ng-show="vm.isRMonthsVisible()">
+            <td></td>
+        </tr>
+        <tr ng-show="vm.isRMonthsVisible()">
+            <td>
+                <label for="months">{{:: 'Month' | translate }}:</label>
+            </td>
+            <td>
+                <select id="months"
+                        class="combobox ui-corner-all"
+                        style="width:90px"
+                        ng-model="vm.timerSettings.month"
+                        ng-options="item.value as item.label for item in ::vm.monthOptions">
+                </select>
+            </td>
+        </tr>
+    </table>
+</script>

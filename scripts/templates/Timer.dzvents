@@ -29,6 +29,8 @@ return {
 										 -- sunrise/sunset'
 			'at nighttime',              -- between sunset and sunrise
 			'at daytime',                -- between sunrise and sunset
+			'at civildaytime',           -- between civil twilight start and civil twilight end
+			'at civilnighttime',         -- between civil twilight end and civil twilight start
 			'at daytime on mon,tue',     -- between sunrise and sunset
 										 --	only on monday and tuesday
 

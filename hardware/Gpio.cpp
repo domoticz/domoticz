@@ -79,7 +79,7 @@ Connection information:
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
 
-boost::shared_ptr<boost::thread> m_thread_interrupt[GPIO_PIN_MAX + 1];
+std::shared_ptr<std::thread> m_thread_interrupt[GPIO_PIN_MAX + 1];
 
 /*
  * Direct GPIO implementation, inspired by other hardware implementations such as PiFace and EnOcean
@@ -93,7 +93,7 @@ CGpio::CGpio(const int ID, const int debounce, const int period, const int polli
 	m_pollinterval = pollinterval;
 
 	//Prepare a generic packet info for LIGHTING1 packet, so we do not have to do it for every packet
-	IOPinStatusPacket.LIGHTING1.packetlength = sizeof(IOPinStatusPacket.LIGHTING1) -1;
+	IOPinStatusPacket.LIGHTING1.packetlength = sizeof(IOPinStatusPacket.LIGHTING1) - 1;
 	IOPinStatusPacket.LIGHTING1.housecode = 0;
 	IOPinStatusPacket.LIGHTING1.packettype = pTypeLighting1;
 	IOPinStatusPacket.LIGHTING1.subtype = sTypeIMPULS;
@@ -122,7 +122,7 @@ void CGpio::InterruptHandler()
 	GetSchedPriority(&sched, &priority);
 	SetSchedPriority(SCHED_RR, (sched == SCHED_RR ? priority : 1), (sched == SCHED_RR));
 
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 		if (it->GetPin() == pinPass)
 		{
 			if ((fd = it->GetReadValueFd()) == -1)
@@ -137,8 +137,8 @@ void CGpio::InterruptHandler()
 	pin = pinPass;
 	pinPass = -1;
 
-	if (ioctl (fd, FIONREAD, &count) != -1)
-		for (int i = 0 ; i < count ; i++) // Clear any initial pending interrupt
+	if (ioctl(fd, FIONREAD, &count) != -1)
+		for (int i = 0; i < count; i++) // Clear any initial pending interrupt
 			bRead = read(fd, &c, 1); // Catch value to suppress compiler unused warning
 
 	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d started (TID: %d)", pin, (pid_t)syscall(SYS_gettid));
@@ -195,7 +195,7 @@ int CGpio::waitForInterrupt(int fd, const int mS)
 	struct pollfd polls;
 
 	if (fd == -1)
-    	return -2;
+		return -2;
 
 	// Setup poll structure
 	polls.fd = fd;
@@ -228,7 +228,7 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 
 	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
 
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (it->GetPin() == pin)
 		{
@@ -240,8 +240,8 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 
 bool CGpio::StartHardware()
 {
-	m_stoprequested=false;
-//	_log.Log(LOG_NORM,"GPIO: Starting hardware (debounce: %d ms, period: %d ms, poll interval: %d sec)", m_debounce, m_period, m_pollinterval);
+	m_stoprequested = false;
+	//	_log.Log(LOG_NORM,"GPIO: Starting hardware (debounce: %d ms, period: %d ms, poll interval: %d sec)", m_debounce, m_period, m_pollinterval);
 
 	_log.Log(LOG_STATUS, "GPIO: This hardware is deprecated. Please transfer to the new SysFS hardware type!");
 
@@ -250,13 +250,17 @@ bool CGpio::StartHardware()
 		/* Disabled for now, devices should be added manually (this was the old behaviour, which we'll follow for now). Keep code for possible future usage.
 		 if (!CreateDomoticzDevices())
 		 {
-		 	_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
-		 	m_stoprequested=true;
+			_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
+			m_stoprequested=true;
 		 }*/
-	 	m_thread_updatestartup = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::UpdateStartup, this)));
+		m_thread_updatestartup = std::make_shared<std::thread>(&CGpio::UpdateStartup, this);
+		SetThreadName(m_thread_updatestartup->native_handle(), "GPIO_UpdStartup");
 
 		if (m_pollinterval > 0)
-			m_thread_poller = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
+		{
+			m_thread_poller = std::make_shared<std::thread>(&CGpio::Poller, this);
+			SetThreadName(m_thread_poller->native_handle(), "GPIO_Poller");
+		}
 	}
 	else
 	{
@@ -266,7 +270,7 @@ bool CGpio::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CGpio::StopHardware()
@@ -274,24 +278,33 @@ bool CGpio::StopHardware()
 	m_stoprequested = true;
 
 	if (m_thread_poller != NULL)
-		m_thread_poller->join();
-
-	if (m_thread_updatestartup != NULL)
-		m_thread_updatestartup->join();
-
-	boost::mutex::scoped_lock lock(m_pins_mutex);
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
-		if (m_thread_interrupt[it->GetPin()] != NULL)
-			m_thread_interrupt[it->GetPin()]->join();
+		m_thread_poller->join();
+		m_thread_poller.reset();
 	}
 
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	if (m_thread_updatestartup != NULL)
+	{
+		m_thread_updatestartup->join();
+		m_thread_updatestartup.reset();
+	}
+
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
+	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	{
+		if (m_thread_interrupt[it->GetPin()] != NULL)
+		{
+			m_thread_interrupt[it->GetPin()]->join();
+			m_thread_interrupt[it->GetPin()].reset();
+		}
+	}
+
+	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 		if (it->GetReadValueFd() != -1)
 			close(it->GetReadValueFd());
 
 	pins.clear();
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	StopHeartbeatThread();
 	_log.Log(LOG_NORM, "GPIO: Hardware stopped");
 	return true;
@@ -301,19 +314,19 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	int pin = pSen->LIGHTING1.unitcode;
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	{
+		if (it->GetPin() == pin && !it->GetIsInput())
 		{
-			if (it->GetPin() == pin && !it->GetIsInput())
-			{
-				unsigned char packettype = pSen->ICMND.packettype;
+			unsigned char packettype = pSen->ICMND.packettype;
 
-				if (packettype == pTypeLighting1)
-				{
-					GPIOWrite(pin, (pSen->LIGHTING1.cmnd == light1_sOn));
-					return true;
-				}
+			if (packettype == pTypeLighting1)
+			{
+				GPIOWrite(pin, (pSen->LIGHTING1.cmnd == light1_sOn));
+				return true;
 			}
 		}
+	}
 	return false;
 }
 
@@ -323,7 +336,7 @@ void CGpio::UpdateStartup()
 	//  No need for delayed startup and force update when no masters are able to connect.
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		for (int i = 0; i < DELAYED_STARTUP_SEC; ++i)
 		{
@@ -364,7 +377,7 @@ void CGpio::Poller()
 bool CGpio::CreateDomoticzDevices()
 {
 	std::vector<std::vector<std::string> > result;
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		bool createNewDevice = false;
@@ -373,7 +386,7 @@ bool CGpio::CreateDomoticzDevices()
 			createNewDevice = true;
 		else
 		{
-			if (result.size() > 0) // input found
+			if (!result.empty()) // input found
 			{
 				std::vector<std::string> sd = result[0];
 				bool bIsInput = (atoi(sd[2].c_str()) == 0);
@@ -411,7 +424,7 @@ std::vector<CGpioPin> CGpio::GetPinList()
 /* static */
 CGpioPin* CGpio::GetPPinById(int id)
 {
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 		if (it->GetPin() == id)
 			return &(*it);
 	return NULL;
@@ -419,8 +432,8 @@ CGpioPin* CGpio::GetPPinById(int id)
 
 void CGpio::UpdateDeviceStates(bool forceUpdate)
 {
-	boost::mutex::scoped_lock lock(m_pins_mutex);
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
+	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (it->GetIsInput())
 		{
@@ -470,7 +483,7 @@ bool CGpio::InitPins()
 	char szIdx[10];
 	char label[12];
 	std::vector<std::vector<std::string> > result;
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	pins.clear();
 
 	for (int gpio_pin = GPIO_PIN_MIN; gpio_pin <= GPIO_PIN_MAX; gpio_pin++)
@@ -482,11 +495,11 @@ bool CGpio::InitPins()
 		{
 			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID, gpio_pin);
-			if (result.size() > 0)
+			if (!result.empty())
 				db_state = atoi(result[0][0].c_str());
 
 			snprintf(label, sizeof(label), "GPIO pin %d", gpio_pin);
-			pins.push_back(CGpioPin(gpio_pin, label, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"),	GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), -1, db_state));
+			pins.push_back(CGpioPin(gpio_pin, label, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"), GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), -1, db_state));
 			//_log.Log(LOG_NORM, "GPIO: Pin %d added (value: %d, direction: %d, edge: %d, active_low: %d, db_state: %d)",
 			//	gpio_pin, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"), GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), db_state);
 			close(fd);
@@ -500,7 +513,8 @@ bool CGpio::InitPins()
 			if (fd != -1)
 			{
 				pinPass = gpio_pin;
-				m_thread_interrupt[gpio_pin] = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::InterruptHandler, this)));
+				m_thread_interrupt[gpio_pin] = std::make_shared<std::thread>(&CGpio::InterruptHandler, this);
+				SetThreadName(m_thread_interrupt[gpio_pin]->native_handle(), "GPIO_Interrupt");
 				while (pinPass != -1)
 					sleep_milliseconds(1);
 			}
@@ -606,9 +620,9 @@ int CGpio::SetSchedPriority(const int s, const int pri, const int x)
 	}
 	else
 	{
-		if (pri + x > sched_get_priority_max (s))
+		if (pri + x > sched_get_priority_max(s))
 			sched.sched_priority = sched_get_priority_max(s);
-		else if (pri + x < sched_get_priority_min (s))
+		else if (pri + x < sched_get_priority_min(s))
 			sched.sched_priority = sched_get_priority_min(s);
 		else
 			sched.sched_priority = pri + x;

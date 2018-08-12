@@ -544,7 +544,7 @@ local testRGB = function(name)
 		["maxDimLevel"] = 100,
 		["state"] = "On",
 		["deviceSubType"] = "RGB";
-		["deviceType"] = "Lighting Limitless/Applamp";
+		["deviceType"] = "Color Switch";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
 		["hardwareName"] = "dummy";
 		["hardwareTypeValue"] = 15;
@@ -568,7 +568,7 @@ local testRGBW = function(name)
 		["state"] = "On",
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "RGBW";
-		["deviceType"] = "Lighting Limitless/Applamp";
+		["deviceType"] = "Color Switch";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
 		["hardwareName"] = "dummy";
 		["hardwareTypeValue"] = 15;
@@ -625,6 +625,8 @@ local testSelectorSwitch = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 	})
+
+	dz.logDevice(dev)
 
 	res = res and expectEql('Off',  dev.levelNames[1])
 	res = res and expectEql('Level1', dev.levelNames[2])

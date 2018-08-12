@@ -8,7 +8,7 @@
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
-typedef enum {
+enum _eP1MatchType {
 	ID=0,
 	EXCLMARK,
 	STD,
@@ -16,7 +16,7 @@ typedef enum {
 	GAS,
 	LINE17,
 	LINE18
-} MatchType;
+};
 
 #define P1SMID		"/"		// Smart Meter ID. Used to detect start of telegram.
 #define P1VER		"1-3:0.2.8"	// P1 version
@@ -37,7 +37,7 @@ typedef enum {
 #define P1MBTYPE	"0-n:24.1.0"	// M-Bus device type
 #define P1EOT		"!"		// End of telegram.
 
-typedef enum {
+enum _eP1Type {
 	P1TYPE_SMID=0,
 	P1TYPE_END,
 	P1TYPE_VERSION,
@@ -54,18 +54,18 @@ typedef enum {
 	P1TYPE_GASUSAGEDSMR4,
 	P1TYPE_GASTIMESTAMP,
 	P1TYPE_GASUSAGE
-} P1Type;
+};
 
-typedef struct _tMatch {
-	MatchType matchtype;
-	P1Type type;
+typedef struct {
+	_eP1MatchType matchtype;
+	_eP1Type type;
 	const char* key;
 	const char* topic;
 	int start;
 	int width;
-} Match;
+} P1Match;
 
-Match matchlist[] = {
+P1Match matchlist[] = {
 	{ID,		P1TYPE_SMID,			P1SMID,		"",			 0,  0},
 	{EXCLMARK,	P1TYPE_END,			P1EOT,		"",			 0,  0},
 	{STD,		P1TYPE_VERSION,			P1VER,		"version",		10,  2},
@@ -154,11 +154,11 @@ bool P1MeterBase::MatchLine()
 		return true; //null value (startup)
 	uint8_t i;
 	uint8_t found=0;
-	Match *t;
+	P1Match *t;
 	char value[20]="";
 	std::string vString;
 
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(i=0;(i<sizeof(matchlist)/sizeof(P1Match))&(!found);i++)
 	{
 		t = &matchlist[i];
 		switch(t->matchtype)
@@ -240,7 +240,7 @@ bool P1MeterBase::MatchLine()
 					else if (atime>=m_gasoktime){
 						struct tm ltime;
 						localtime_r(&atime, &ltime);
-						char myts[16];
+						char myts[80];
 						sprintf(myts,"%02d%02d%02d%02d%02d%02dW",ltime.tm_year%100,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 						if (ltime.tm_isdst)
 						myts[12]='S';

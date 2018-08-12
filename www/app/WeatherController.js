@@ -556,10 +556,10 @@ define(['app'], function (app) {
 							return ShowWindLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
 						}
 						else if (typeof item.Visibility != 'undefined') {
-							return ShowGeneralGraph('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name), item.SwitchTypeVal, 'Visibility');
+							return $location.path('/Devices/' + item.idx + '/Log');
 						}
 						else if (typeof item.Radiation != 'undefined') {
-							return ShowGeneralGraph('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name), item.SwitchTypeVal, 'Radiation');
+                            return $location.path('/Devices/' + item.idx + '/Log');
 						}
 					};
 
@@ -575,12 +575,6 @@ define(['app'], function (app) {
 						} else {
 							return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description));
 						}
-					};
-
-					ctrl.ShowNotifications = function () {
-						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
-						$('#weathertophtm').hide();
-						return ShowNotifications(item.idx, escape(item.Name), '#weathercontent', 'ShowWeathers');
 					};
 
 					ctrl.ShowForecast = function () {

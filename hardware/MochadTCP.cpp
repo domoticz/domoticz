@@ -11,30 +11,30 @@
 
 #define RETRY_DELAY 30
 
-typedef enum { 
-	ID=0, 
-	STD, 
-	LINE17, 
-	LINE18, 
-	EXCLMARK 
-} MatchType;
+enum _eMochadMatchType {
+	ID=0,
+	STD,
+	LINE17,
+	LINE18,
+	EXCLMARK
+};
 
-typedef enum {
+enum _eMochadType {
 	MOCHAD_STATUS=0,
 	MOCHAD_UNIT,
 	MOCHAD_ACTION,
 	MOCHAD_RFSEC
-} MochadType;
+};
 
-typedef struct _tMatch {
-	MatchType matchtype;
-	MochadType type;
+typedef struct {
+	_eMochadMatchType matchtype;
+	_eMochadType type;
 	const char* key;
 	int start;
 	int width;
-} Match;
+} MochadMatch;
 
-static Match matchlist[] = {
+static MochadMatch matchlist[] = {
 	{STD,	MOCHAD_STATUS,	"House ",	6, 255},
 	{STD,	MOCHAD_UNIT,	"Tx PL HouseUnit: ",	17, 9},
 	{STD,	MOCHAD_UNIT,	"Rx PL HouseUnit: ",	17, 9},
@@ -100,8 +100,9 @@ bool MochadTCP::StartHardware()
 //	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MochadTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&MochadTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MochadTCP");
+	return (m_thread != nullptr);
 }
 
 bool MochadTCP::StopHardware()
@@ -138,7 +139,7 @@ void MochadTCP::OnDisconnect()
 
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 
@@ -178,7 +179,7 @@ void MochadTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
-} 
+}
 
 void MochadTCP::OnError(const std::exception e)
 {
@@ -239,13 +240,13 @@ void MochadTCP::MatchLine()
 	uint8_t i;
 	int j,k;
 	uint8_t found=0;
-	Match t;
+	MochadMatch t;
 	char value[20]="";
 	std::string vString;
 
 
 
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(i=0;(i<sizeof(matchlist)/sizeof(MochadMatch))&(!found);i++)
 	{
 		t = matchlist[i];
 		switch(t.matchtype)
@@ -255,14 +256,14 @@ void MochadTCP::MatchLine()
 				m_linecount=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case STD:
 			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE17:
@@ -270,7 +271,7 @@ void MochadTCP::MatchLine()
 				m_linecount = 17;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE18:
@@ -283,7 +284,7 @@ void MochadTCP::MatchLine()
 				m_exclmarkfound=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		default:
@@ -303,7 +304,7 @@ void MochadTCP::MatchLine()
 		if (!(':'==  m_mochadbuffer[j++])) goto onError;
 		if (!(' '==  m_mochadbuffer[j++])) goto onError;
 		while ('1' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9') {
-			m_mochad.LIGHTING1.unitcode = m_mochadbuffer[j++] - '0'; 
+			m_mochad.LIGHTING1.unitcode = m_mochadbuffer[j++] - '0';
 			if ('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9') {
 				m_mochad.LIGHTING1.unitcode = m_mochad.LIGHTING1.unitcode*10 + m_mochadbuffer[j++] - '0';
 			}
@@ -321,7 +322,7 @@ void MochadTCP::MatchLine()
 		currentHouse = m_mochadbuffer[j++]-'A';
 		if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9')) goto onError;
 		currentUnit = m_mochadbuffer[j++] - '0';
-		if (('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9')) 
+		if (('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9'))
 			currentUnit = currentUnit*10 + m_mochadbuffer[j++] - '0';
 		selected[currentHouse][currentUnit] = 1;
 		if (!(' '==  m_mochadbuffer[j++])) return;
@@ -347,8 +348,8 @@ checkFunc:
 		else goto onError;
 		for (k=1;k<=16;k++) {
 			if (selected[currentHouse][k] >0) {
-				m_mochad.LIGHTING1.housecode = currentHouse+'A'; 
-				m_mochad.LIGHTING1.unitcode = k; 
+				m_mochad.LIGHTING1.housecode = currentHouse+'A';
+				m_mochad.LIGHTING1.unitcode = k;
 				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
 				selected[currentHouse][k] = 0;
 			}

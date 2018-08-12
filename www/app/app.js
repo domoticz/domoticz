@@ -10,6 +10,27 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	isOnline = false;
 	dashboardType = 1;
 
+	function notifyMe(title, body) {
+		if (typeof Notification == "undefined") {
+			console.log("Notification: " + title + ": " + body);
+			console.log('Desktop notifications not available in your browser. Try Chromium.');
+			return;
+		}
+
+		if (Notification.permission !== "granted")
+			Notification.requestPermission();
+		else {
+			var notification = new Notification(title, {
+				//icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
+				body: body,
+			});
+
+			notification.onclick = function () {
+				window.open("http://stackoverflow.com/a/13328397/1269037");
+			};
+		}
+	}
+
 	app.factory('permissions', function ($rootScope) {
 		var permissionList;
 		return {
@@ -169,165 +190,379 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		};
 	});
-		function notifyMe(title, body) {
-            if (typeof Notification == "undefined") {
-                console.log("Notification: " + title + ": " + body);
-				console.log('Desktop notifications not available in your browser. Try Chromium.');
-				return;
-			}
-
-			if (Notification.permission !== "granted")
-				Notification.requestPermission();
-			else {
-				var notification = new Notification(title, {
-					//icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
-					body: body,
-				});
-
-				notification.onclick = function () {
-					window.open("http://stackoverflow.com/a/13328397/1269037");
-				};
+	app.directive('backButton', function ($window) {
+		return {
+			restrict: 'A',
+			link: function (scope, element, attrs) {
+				element.on('click', function() {
+					scope.$apply(function () {
+						$window.history.back();
+					});
+				})
 			}
 		}
+	});
+	app.filter('translate', function() {
+		return function(input) {
+			return $.t(input);
+		}
+	});
+	app.constant('dataTableDefaultSettings', {
+		"sDom": '<"H"lfrC>t<"F"ip>',
+		"aaSorting": [[0, "desc"]],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": true,
+		"bJQueryUI": true,
+		lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+		pageLength: 25,
+		pagingType: 'full_numbers',
+		select: {
+			className: 'row_selected',
+			style: 'single'
+		},
+		language: $.DataTableLanguage
+	});
 
-		app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
-			return {
-				initialised: false,
-				getJson: function (url, callback_fn) {
-					if (!callback_fn) {
-						callback_fn = function (data) {
-							$rootScope.$broadcast('jsonupdate', data);
-						};
-					}
-					var use_http = !(url.substr(0, 9) == "json.htm?");
-                    if (use_http) {
-                        var loc = window.location, http_uri;
-                        if (loc.protocol === "https:") {
-                            http_uri = "https:";
-                        } else {
-                            http_uri = "http:";
+	app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
+		return {
+			sendRequest: sendRequest,
+			sendCommand: sendCommand
+		};
+
+		function sendRequest(data) {
+			return $http.get('json.htm', {
+				params: data
+			}).then(function (response) {
+				return response.data;
+			});
+		}
+
+		function sendCommand(command, data) {
+			var commandParams = { type: 'command', param: command };
+			return sendRequest(Object.assign({}, commandParams, data))
+				.then(function (response) {
+					return response && response.status !== 'OK'
+						? $q.reject(response)
+						: response;
+				});
+		}
+	}]);
+
+	app.factory('utils', function () {
+		return {
+            confirmDecorator: confirmDecorator
+		};
+
+		function confirmDecorator(fn, message) {
+			return function() {
+			    var args = arguments;
+
+                bootbox.confirm(message, function(result) {
+                    if (result) {
+                        fn.apply(null, args);
+                    }
+                });
+			};
+		}
+    });
+
+	app.factory('Device', function () {
+        return function Device(rawData) {
+        	var device = Object.assign({}, rawData);
+
+            device.isDimmer = function() {
+                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(this.SwitchType);
+            };
+
+            device.isSelector = function() {
+                return this.SwitchType === "Selector";
+            };
+
+            device.isLED = function() {
+                return (this.SubType.indexOf("RGB") >= 0 || this.SubType.indexOf("WW") >= 0);
+            };
+
+            device.getLevels = function() {
+                return this.LevelNames ? b64DecodeUnicode(this.LevelNames).split('|') : [];
+            };
+
+            device.getLevelActions = function() {
+                return this.LevelActions ? b64DecodeUnicode(this.LevelActions).split('|') : [];
+			};
+
+            device.getSelectorLevelOptions = function () {
+                return this.getLevels()
+                    .slice(1)
+                    .map(function (levelName, index) {
+                        return {
+                            label: levelName,
+                            value: (index + 1) * 10
                         }
-                        http_uri += "//" + loc.host;
-                        http_uri += loc.pathname;
-						// get via json get
-                        url = http_uri + url;
-						$http({
-							url: url,
-						}).then(function successCallback(response) {
-							callback_fn();
-				        });               
+                    });
+            };
+
+            device.getDimmerLevelOptions = function (step) {
+                var options = [];
+                var step = step || 5;
+
+                for (var i = step; i <= 100; i+=step) {
+                    options.push({
+                        label: i + '%',
+                        value: i
+                    });
+                }
+
+                return options;
+            };
+
+            return device;
+        };
+    });
+
+	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun, Device) {
+		return {
+			getDeviceInfo: getDeviceInfo,
+            updateDeviceInfo: updateDeviceInfo,
+            removeDevice: removeDevice,
+            disableDevice: disableDevice
+		};
+
+		function getDeviceInfo(deviceIdx) {
+			return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
+				.then(function (data) {
+                    dzTimeAndSun.updateData(data);
+
+					return data && data.result && data.result.length === 1
+						? new Device(data.result[0])
+						: $q.reject(data);
+				});
+		}
+
+		function updateDeviceInfo(deviceIdx, data) {
+			return domoticzApi.sendRequest(Object.assign({}, data, {
+				idx: deviceIdx
+			}));
+		}
+
+		function removeDevice(deviceIdx) {
+            return domoticzApi.sendRequest({
+                idx: deviceIdx,
+                type: 'setused',
+                used: false,
+                RemoveSubDevices: true
+            });
+        }
+
+        function disableDevice(deviceIdx) {
+            return domoticzApi.sendCommand('setunused', {
+                idx: deviceIdx,
+            });
+        }
+	});
+
+    app.factory('deviceLightApi', function ($q, domoticzApi, permissions) {
+        return {
+            switchOff: createSwitchCommand('Off'),
+            switchOn: createSwitchCommand('On'),
+            setColor: setColor,
+            brightnessUp: createCommand('brightnessup'),
+            brightnessDown: createCommand('brightnessdown'),
+            nightLight: createCommand('nightlight'),
+            fullLight: createCommand('fulllight'),
+            whiteLight: createCommand('whitelight'),
+            colorWarmer: createCommand('warmer'),
+            colorColder: createCommand('cooler'),
+            discoUp: createCommand('discoup'),
+            discoDown: createCommand('discodown'),
+            discoMode: createCommand('discomode'),
+            speedUp: createCommand('speedup'),
+            speedDown: createCommand('speeddown'),
+            speedMin: createCommand('speedmin'),
+            speedMax: createCommand('speedmax')
+        };
+
+        function createCommand(command) {
+            return function(deviceIdx) {
+                return checkPersmissions().then(function () {
+                    return domoticzApi.sendCommand(command, {
+                        idx: deviceIdx
+                    });
+                });
+            }
+        }
+
+        function createSwitchCommand(command) {
+            return function (deviceIdx) {
+                return checkPersmissions().then(function () {
+                    return domoticzApi.sendCommand('switchlight', {
+                        idx: deviceIdx,
+                        switchcmd: command
+                    });
+                });
+            }
+        }
+
+        function setColor(deviceIdx, color, brightness) {
+            return checkPersmissions().then(function () {
+                return domoticzApi.sendCommand('setcolbrightnessvalue', {
+                    idx: deviceIdx,
+                    color: color,
+                    brightness: brightness
+                });
+            });
+        }
+
+        function checkPersmissions() {
+            if (permissions.hasPermission('Viewer')) {
+                var message = $.t('You do not have permission to do that!');
+                HideNotify();
+                ShowNotify(message, 2500, true);
+                return $q.reject(message);
+            } else {
+                return $q.resolve();
+            }
+        }
+    });
+
+	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
+		return {
+			initialised: false,
+			getJson: function (url, callback_fn) {
+				if (!callback_fn) {
+					callback_fn = function (data) {
+						$rootScope.$broadcast('jsonupdate', data);
+					};
+				}
+				var use_http = !(url.substr(0, 9) == "json.htm?");
+				if (use_http) {
+					var loc = window.location, http_uri;
+					if (loc.protocol === "https:") {
+						http_uri = "https:";
+					} else {
+						http_uri = "http:";
+					}
+					http_uri += "//" + loc.host;
+					http_uri += loc.pathname;
+					// get via json get
+					url = http_uri + url;
+					$http({
+						url: url,
+					}).then(function successCallback(response) {
+						callback_fn();
+					});
+				}
+				else {
+					var settings = {
+						url: url,
+						success: callback_fn
+					};
+					settings.context = settings;
+					return this.SendAsync(settings);
+				}
+			},
+			Init: function () {
+				if (this.initialised) {
+					return;
+				}
+				var self = this;
+				var loc = window.location, ws_uri;
+				if (loc.protocol === "https:") {
+					ws_uri = "wss:";
+				} else {
+					ws_uri = "ws:";
+				}
+				ws_uri += "//" + loc.host;
+				ws_uri += loc.pathname + "json";
+				this.websocket = $websocket.$new({
+					url: ws_uri,
+					protocols: ["domoticz"],
+					lazy: false,
+					reconnect: true,
+					reconnectInterval: 2000,
+					enqueue: true
+				});
+				this.websocket.callbackqueue = [];
+				this.websocket.$on('$open', function () {
+					console.log("websocket opened");
+				});
+				this.websocket.$on('$close', function () {
+					console.log("websocket closed");
+				});
+				this.websocket.$on('$error', function () {
+					console.log("websocket error");
+				});
+				this.websocket.$on('$message', function (msg) {
+					if (typeof msg == "string") {
+						msg = JSON.parse(msg);
+					}
+					switch (msg.event) {
+						case "notification":
+							notifyMe(msg.Subject, msg.Text);
+							return;
+					}
+					var requestid = msg.requestid;
+					if (requestid >= 0) {
+						var callback_obj = this.callbackqueue[requestid];
+						var settings = callback_obj.settings;
+						var data = msg.data || msg;
+						if (typeof data == "string") {
+							data = JSON.parse(data);
+						}
+						callback_obj.defer_object.resolveWith(settings.context, [settings.success, data]);
 					}
 					else {
-						var settings = {
-							url: url,
-							success: callback_fn
-						};
-                        settings.context = settings;
-						return this.SendAsync(settings);
+						var data = msg.data || msg;
+						if (typeof data == "string") {
+							data = JSON.parse(data);
+						}
+						//alert("req_id: " + requestid + "\ndata: " + msg.data + ", msg: " + msg + "\n, data: " + JSON.stringify(data));
+						var send = {
+							title: "Devices", // msg.title
+							item: (typeof data.result != 'undefined') ? data.result[0] : null,
+							ServerTime: data.ServerTime,
+							Sunrise: data.Sunrise,
+							Sunset: data.Sunset
+						}
+						$rootScope.$broadcast('jsonupdate', send);
 					}
-				},
-				Init: function () {
-					if (this.initialised) {
-						return;
-                    }
-                    var self = this;
-					var loc = window.location, ws_uri;
-					if (loc.protocol === "https:") {
-						ws_uri = "wss:";
-					} else {
-						ws_uri = "ws:";
+					if (!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress
+						$rootScope.$digest();
 					}
-					ws_uri += "//" + loc.host;
-					ws_uri += loc.pathname + "json";
-					this.websocket = $websocket.$new({
-						url: ws_uri,
-						protocols: ["domoticz"],
-						lazy: false,
-						reconnect: true,
-						reconnectInterval: 2000,
-						enqueue: true
-					});
-					this.websocket.callbackqueue = [];
-					this.websocket.$on('$open', function () {
-						console.log("websocket opened");
-					});
-					this.websocket.$on('$close', function () {
-						console.log("websocket closed");
-                    });
-                    this.websocket.$on('$error', function () {
-                        console.log("websocket error");
-                    });
-					this.websocket.$on('$message', function (msg) {
-						if (typeof msg == "string") {
-							msg = JSON.parse(msg);
-						}
-						switch (msg.event) {
-							case "notification":
-								notifyMe(msg.Subject, msg.Text);
-								return;
-						}
-                        var requestid = msg.requestid;
-                        if (requestid >= 0) {
-							var callback_obj = this.callbackqueue[requestid];
-							var settings = callback_obj.settings;
-							var data = msg.data || msg;
-							if (typeof data == "string") {
-								data = JSON.parse(data);
-							}
-							callback_obj.defer_object.resolveWith(settings.context, [settings.success, data]);
-						}
-						else {
-							var data = msg.data || msg;
-							if (typeof data == "string") {
-								data = JSON.parse(data);
-							}
-							//alert("req_id: " + requestid + "\ndata: " + msg.data + ", msg: " + msg + "\n, data: " + JSON.stringify(data));
-							var send = {
-								title: "Devices", // msg.title
-								item: (typeof data.result != 'undefined') ? data.result[0] : null,
-								ServerTime: data.ServerTime,
-								Sunrise: data.Sunrise,
-								Sunset: data.Sunset
-							}
-							$rootScope.$broadcast('jsonupdate', send);
-						}
-						if (!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress
-							$rootScope.$digest();
-						}
-					});
-					this.initialised = true;
-				},
-				Close: function () {
-					if (!this.initialised) {
-						return;
-					}
-					this.websocket.$close();
-					this.initialised = false;
-				},
-				Send: function (data) {
-					this.Init();
-					this.websocket.$$send(data);
-					//this.websocket.$emit('message', data);
-				},
-				SendLoginInfo: function (sessionid) {
-					this.Send(new Blob["2", sessionid]);
-				},
-				/* mimic ajax call */
-				SendAsync: function (settings) {
-					this.Init();
-					var defer_object = new $.Deferred();
-					defer_object.done(function (fn, json) {
-						fn.call(this, json);
-					});
-					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
-					var requestid = this.websocket.callbackqueue.length - 1;
-					var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
-                    var content = JSON.stringify(requestobj);
-					this.Send(requestobj);
-					return defer_object.promise();
+				});
+				this.initialised = true;
+			},
+			Close: function () {
+				if (!this.initialised) {
+					return;
 				}
+				this.websocket.$close();
+				this.initialised = false;
+			},
+			Send: function (data) {
+				this.Init();
+				this.websocket.$$send(data);
+				//this.websocket.$emit('message', data);
+			},
+			SendLoginInfo: function (sessionid) {
+				this.Send(new Blob["2", sessionid]);
+			},
+			/* mimic ajax call */
+			SendAsync: function (settings) {
+				this.Init();
+				var defer_object = new $.Deferred();
+				defer_object.done(function (fn, json) {
+					fn.call(this, json);
+				});
+				this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
+				var requestid = this.websocket.callbackqueue.length - 1;
+				var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
+				var content = JSON.stringify(requestobj);
+				this.Send(requestobj);
+				return defer_object.promise();
 			}
-		}]);
+		}
+	}]);
 	app.config(function ($routeProvider, $locationProvider) {
 		$locationProvider.hashPrefix('');
 		$routeProvider.
@@ -338,6 +573,36 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Devices', angularAMD.route({
 				templateUrl: 'views/devices.html',
 				controller: 'DevicesController'
+			})).
+			when('/Devices/:id/Timers', angularAMD.route({
+				templateUrl: 'views/timers.html',
+				controller: 'DeviceTimersController',
+				controllerUrl: 'app/timers/DeviceTimersController.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/Notifications', angularAMD.route({
+				templateUrl: 'views/notifications.html',
+				controller: 'DeviceNotificationsController',
+				controllerUrl: 'app/notifications/DeviceNotifications.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/LightEdit', angularAMD.route({
+				templateUrl: 'views/device_light_edit.html',
+				controller: 'DeviceLightEditController',
+				controllerUrl: 'app/DeviceLightEdit.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/Log', angularAMD.route({
+				templateUrl: 'views/log/device_log.html',
+				controller: 'DeviceLogController',
+				controllerUrl: 'app/log/DeviceLog.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({
+				templateUrl: 'views/log/device_temperature_report.html',
+				controller: 'DeviceTemperatureReportController',
+				controllerUrl: 'app/log/TemperatureReport.js',
+				controllerAs: 'vm'
 			})).
 			when('/DPFibaro', angularAMD.route({
 				templateUrl: 'views/dpfibaro.html',
@@ -453,6 +718,18 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Scenes', angularAMD.route({
 				templateUrl: 'views/scenes.html',
 				controller: 'ScenesController'
+			})).
+			when('/Scenes/:id/Log', angularAMD.route({
+				templateUrl: 'views/log/scene_log.html',
+				controller: 'SceneLogController',
+				controllerUrl: 'app/log/SceneLog.js',
+				controllerAs: 'vm'
+			})).
+			when('/Scenes/:id/Timers', angularAMD.route({
+				templateUrl: 'views/timers.html',
+				controller: 'SceneTimersController',
+				controllerUrl: 'app/timers/SceneTimersController.js',
+				controllerAs: 'vm'
 			})).
 			when('/Setup', angularAMD.route({
 				templateUrl: 'views/setup.html',
@@ -575,8 +852,51 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		});
 	}]);
 
+	app.factory('dzTimeAndSun', function($rootScope) {
+		var currentData = {};
+		init();
 
-	app.run(function ($rootScope, $location, $window, $route, $http, permissions) {
+		return {
+            getCurrentData: getCurrentData,
+			updateData: updateData
+		};
+
+        function init() {
+            $rootScope.$on('jsonupdate', function (event, data) {
+                if (typeof data.ServerTime !== 'undefined') {
+                    currentData.serverTime = data.ServerTime;
+                }
+                if (typeof data.Sunrise !== 'undefined') {
+                    currentData.sunrise = data.Sunrise;
+                }
+                if (typeof data.Sunset !== 'undefined') {
+                    currentData.sunset = data.Sunset;
+                }
+            });
+        }
+
+		function getCurrentData() {
+			return currentData;
+		}
+
+		function updateData(data) {
+			Object.assign(currentData, {
+				sunrise: data.Sunrise,
+				sunset: data.Sunset,
+				serverTime: data.ServerTime
+			});
+		}
+	});
+
+    app.component('timesun', {
+        templateUrl: 'timesuntemplate',
+        controller: function (dzTimeAndSun) {
+        	this.isMobile = $.myglobals.ismobile;
+            this.data = dzTimeAndSun.getCurrentData();
+        }
+    });
+
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1
@@ -601,6 +921,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
+			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
 				$.myglobals.windscale = parseFloat($rootScope.config.WindScale);
@@ -642,11 +963,14 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			WindSign: "km/h",
 			language: "en",
 			HaveUpdate: false,
+			UseUpdate: true,
 			appversion: 0,
 			apphash: 0,
 			appdate: 0,
+			pythonversion: "",
 			versiontooltip: "",
-			ShowUpdatedEffect: true
+			ShowUpdatedEffect: true,
+			DateFormat: "yy-mm-dd"
 		};
 
 		$rootScope.GetGlobalConfig = function () {
@@ -749,25 +1073,29 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 
 		$rootScope.GetGlobalConfig();
-
 		$.ajax({
 			url: "json.htm?type=command&param=getversion",
 			async: false,
 			dataType: 'json',
 			success: function (data) {
-				isOnline = true;
+			    isOnline = true;
 				if (data.status == "OK") {
-					$rootScope.config.appversion = data.version;
+				    $rootScope.config.appversion = data.version;
 					$rootScope.config.apphash = data.hash;
 					$rootScope.config.appdate = data.build_time;
 					$rootScope.config.dzventsversion = data.dzvents_version;
+					$rootScope.config.pythonversion = data.python_version;
+					$rootScope.config.isproxied = data.isproxied;
 					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 					$("#appversion").text("V" + data.version);
-					if (data.SystemName != "windows") {
-						$rootScope.config.HaveUpdate = data.HaveUpdate;
-					}
-					$rootScope.config.isproxied = data.isproxied;
-					if (data.HaveUpdate == true) {
+					//if (data.SystemName != "windows") {
+					    $rootScope.config.HaveUpdate = data.HaveUpdate;
+					    $rootScope.config.UseUpdate = data.UseUpdate;
+					//}
+					//else {
+					//    $rootScope.config.UseUpdate = false;
+					//}
+					if ((data.HaveUpdate == true) && (data.UseUpdate)) {
 						ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
 					}
 				}
@@ -854,27 +1182,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			*/
 			/* end ajax override */
 
-		app.directive('timesun', function () {
-			return {
-				templateUrl: 'timesuntemplate',
-				controller: ['$scope', function ($scope) {
-					var self = $scope;
-					$scope.data = {};
-					$scope.$on('jsonupdate', function (event, data) {
-						if (typeof data.ServerTime !== 'undefined') {
-							self.data.ServerTime = data.ServerTime;
-						}
-						if (typeof data.Sunrise !== 'undefined') {
-							self.data.Sunrise = data.Sunrise;
-						}
-						if (typeof data.Sunset !== 'undefined') {
-							self.data.Sunset = data.Sunset;
-						}
-					});
-				}
-				]
-			};
-		});
+		// TODO: use <timesun /> component instead
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {
 			var month = ServerTime.split(' ')[0];
 			ServerTime = ServerTime.replace(month, $.t(month));
@@ -900,6 +1208,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				}).then(function successCallback(response) {
 					var data = response.data;
 					if (typeof data.Sunrise != 'undefined') {
+                        dzTimeAndSun.updateData(response.data);
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
 				});

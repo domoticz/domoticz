@@ -26,13 +26,14 @@ History :
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
 
-#include <time.h>
-#include <string>
 #include <algorithm>
-#include <iostream>
-#include <cstdlib>
 #include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <cstdlib>
 #include <ctime>
+#include <iostream>
+#include <string>
+#include <time.h>
 
 #define USBTIN_BAUD_RATE         115200
 #define USBTIN_PARITY            boost::asio::serial_port_base::parity::none
@@ -68,8 +69,6 @@ History :
 #define	Multibloc_V8	0x01
 #define FreeCan			0x02
 
-using namespace std;
-
 USBtin::USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode) :
 m_szSerialPort(devname)
 {
@@ -96,8 +95,9 @@ bool USBtin::StartHardware()
 	m_stoprequested = false;
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&USBtin::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "USBtin");
+	return (m_thread != nullptr);
 }
 
 void USBtin::Restart()
@@ -109,8 +109,12 @@ void USBtin::Restart()
 
 bool USBtin::StopHardware()
 {
-	m_stoprequested = true; //Trigg to stop in while loop
-	if (m_thread) m_thread->join();
+	if (m_thread)
+	{
+		m_stoprequested = true;
+		m_thread->join();
+		m_thread.reset();
+	}
 	sleep_milliseconds(10);
 	terminate();
 	m_bIsStarted = false;
@@ -122,16 +126,16 @@ void USBtin::Do_Work()
 	int m_V8secCounterBase = 0;
 	int msec_counter = 0;
 	m_EtapeInitCan = 0;
-	
-	while (!m_stoprequested) 
+
+	while (!m_stoprequested)
 	{
 		sleep_milliseconds(TIME_200ms);
-		
+
 		if (m_stoprequested){
 			m_EtapeInitCan = 0;
 			break;
 		}
-		
+
 		msec_counter++;
 		if (msec_counter == 5)
 		{
@@ -141,7 +145,7 @@ void USBtin::Do_Work()
 			if (m_V8secCounterBase % 12 == 0) {
 				m_LastHeartbeat = mytime(NULL);
 			}
-			
+
 			if (isOpen()) //Serial port open, we can initiate the Can BUS :
 			{
 				switch(m_EtapeInitCan){
@@ -169,29 +173,29 @@ void USBtin::Do_Work()
 						//_log.Log(LOG_STATUS, "USBtin: BusCantType value: %d ",Bus_CANType);
 						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ) _log.Log(LOG_STATUS, "USBtin: MultiblocV8 is Selected !");
 						if( (Bus_CANType&FreeCan) == FreeCan )  _log.Log(LOG_STATUS, "USBtin: FreeCAN is Selected !");
-						
+
 						if( Bus_CANType == 0 ) _log.Log(LOG_ERROR, "USBtin: WARNING: No Can management Selected !");
 						m_EtapeInitCan++;
 						break;
 					case 5 : //openning can port :
 						//Activate the good CAN Layer :
-						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ 
+						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){
 							ManageThreadV8(true);
 							switch_id_base = m_V8switch_id_base;
 						}
 						OpenCanPort();
 						m_EtapeInitCan++;
 						break;
-					
+
 					case 6 ://All is good !
 						//here nothing to do, the CAN is ok and run....
 						break;
-						
-					
+
+
 				}
 			}
 		}
-			
+
 		if (!isOpen()) //serial not open
 		{
 			if (m_USBtinRetrycntr==0)
@@ -206,9 +210,9 @@ void USBtin::Do_Work()
 				m_USBtinBuffer[m_USBtinBufferpos] = 0;
 				OpenSerialDevice();
 			}
-		}		
+		}
 	}
-	
+
 	CloseCanPort(); //for security
 	_log.Log(LOG_STATUS, "USBtin: Can Gateway stopped, goodbye !");
 }
@@ -236,20 +240,20 @@ bool USBtin::OpenSerialDevice()
 		_log.Log(LOG_ERROR, "USBtin: Error opening serial port!!!");
 		return false;
 	}
-	
+
 	m_bIsStarted = true;
 	m_USBtinBufferpos = 0;
 	memset(&m_USBtinBuffer,0,sizeof(m_USBtinBuffer));
-	setReadCallback(boost::bind(&USBtin::readCallback, this, _1, _2));	
-	
+	setReadCallback(boost::bind(&USBtin::readCallback, this, _1, _2));
+
 	sOnConnected(this);
-	
+
 	return true;
 }
 
 void USBtin::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 	if (len > sizeof(m_USBtinBuffer)){
@@ -288,7 +292,7 @@ void USBtin::ParseData(const char *pData, int Len)
 			if( m_USBtinBuffer[0] == USBTIN_HARDWARE_VERSION ){
 				strncpy(value, (char*)&(m_USBtinBuffer[1]), 4);
 				_log.Log(LOG_STATUS,"USBtin: Hardware Version: %s", value);
-				
+
 			}
 			else if( m_USBtinBuffer[0] == USBTIN_FIRMWARE_VERSION ){
 				strncpy(value, (char*)&(m_USBtinBuffer[1]), 4);
@@ -305,44 +309,44 @@ void USBtin::ParseData(const char *pData, int Len)
 				strncpy(value, (char*)&(m_USBtinBuffer[1]), 8); //take the "Extended ID" CAN parts and paste it in the char table
 				int IDhexNumber;
 				sscanf(value, "%x", &IDhexNumber); //IDhexNumber now contains the the digital value of the Ext ID
-				
+
 				memset(&value[0], 0, sizeof(value));
-				
+
 				strncpy(value, (char*)&(m_USBtinBuffer[9]), 1); //read the DLC (lenght of message)
 				int DLChexNumber;
 				sscanf(value, "%x", &DLChexNumber);
-				
+
 				memset(&value[0], 0, sizeof(value));
-									
+
 				unsigned int Buffer_Octets[8]; //buffer of 8 bytes(max in the frame)
 				char i=0;
 				for(i=0;i<8;i++){ //Reset of 8 bytes
 					Buffer_Octets[i]=0;
 				}
 				unsigned int ValData;
-				
+
 				if( DLChexNumber > 0 ){ //bytes presents
 					for(i=0;i<=DLChexNumber;i++){
 						ValData = 0;
-						
+
 						strncpy(value, (char*)&(m_USBtinBuffer[10+(2*i)]), 2); //to fill the Buffer of 8 bytes
 						sscanf(value, "%x", &ValData);
-						
+
 						Buffer_Octets[i]=ValData;
 						memset(&value[0], 0, sizeof(value));
 					}
 				}
-				
+
 				if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ //multibloc V8 Management !
 					Traitement_MultiblocV8(IDhexNumber,DLChexNumber,Buffer_Octets);
 					//So in debug mode we can check good reception after treatment :
 					if( m_BOOL_USBtinDebug == true) _log.Log(LOG_NORM,"USBtin: Traitement trame multiblocV8 : #%s#",m_USBtinBuffer);
 				}
-				
+
 				if( Bus_CANType == 0 ){ //No management !
 					if( m_BOOL_USBtinDebug == true) _log.Log(LOG_NORM,"USBtin: Frame receive not managed: #%s#",m_USBtinBuffer);
 				}
-				
+
 			}
 			else if( m_USBtinBuffer[0] == USBTIN_NOR_TRAME_RECEIVE ){ // Receive Normale Frame (ie: ID is not extended)
 				//_log.Log(LOG_NORM,"USBtin: Normale Frame receive : #%s#",m_buffer);
@@ -361,7 +365,7 @@ void USBtin::ParseData(const char *pData, int Len)
 		else{
 			m_USBtinBufferpos++;
 		}
-	
+
 		ii++;
 	}
 }
@@ -385,7 +389,7 @@ void USBtin::GetHWVersion()
 	std::string data("V");
 	writeFrame(data);
 	sleep_milliseconds(TIME_200ms);
-	
+
 }
 void USBtin::GetSerialNumber()
 {

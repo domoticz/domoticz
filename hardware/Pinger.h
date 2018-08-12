@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 
 #include <string>
-#include <vector>
 
 class CPinger : public CDomoticzHardwareBase
 {
@@ -18,7 +17,7 @@ class CPinger : public CDomoticzHardwareBase
 public:
 	CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms);
 	~CPinger(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Timeout);
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Timeout);
 	void RemoveNode(const int ID);
@@ -27,22 +26,19 @@ public:
 	void Restart();
 private:
 	void Do_Work();
-
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void DoPingHosts();
-
 	void Do_Ping_Worker(const PingNode &Node);
 	void UpdateNodeStatus(const PingNode &Node, const bool bPingOK);
-
 	void ReloadNodes();
-
+private:
 	int m_iThreadsRunning;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::vector<PingNode> m_nodes;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 };
 
