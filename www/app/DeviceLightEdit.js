@@ -337,7 +337,6 @@ define(['app'], function (app) {
             function orderRenderer(level) {
                 var images = [];
 
-				console.log(level);
                 if (level < (vm.ngModelCtrl.$modelValue.length - 1)) {
                     images.push('<img src="images/down.png" class="lcursor js-order-down" width="16" height="16"></img>');
                 } else {
