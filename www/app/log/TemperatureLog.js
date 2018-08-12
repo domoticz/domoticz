@@ -39,7 +39,7 @@ define(['app', 'log/factories'], function (app) {
                     chart = $element
                         .highcharts({
                             chart: {
-                                type: 'spline',
+                                type: getChartType(),
                                 zoomType: 'x',
                                 resetZoomButton: {
                                     position: {
@@ -121,7 +121,26 @@ define(['app', 'log/factories'], function (app) {
                                             }
                                         }
                                     }
-                                }
+                                },
+								line: {
+									lineWidth: 3,
+									states: {
+										hover: {
+											lineWidth: 3
+										}
+									},
+									marker: {
+										enabled: false,
+										states: {
+											hover: {
+												enabled: true,
+												symbol: 'circle',
+												radius: 5,
+												lineWidth: 1
+											}
+										}
+									}
+								}
                             },
                             title: {
                                 text: getChartTitle()
@@ -159,12 +178,16 @@ define(['app', 'log/factories'], function (app) {
                         })
                         .then(function (data) {
                             if (typeof data.result != 'undefined') {
-                                AddDataToTempChart(data, chart, vm.range === 'day' ? 1 : 0);
+                                AddDataToTempChart(data, chart, vm.range === 'day' ? 1 : 0, (vm.deviceType === 'Thermostat'));
                                 chart.redraw();
                             }
-
                             chart.yAxis[1].visibility = vm.range !== 'day';
                         });
+                }
+                
+                function getChartType() {
+					if (vm.deviceType === 'Thermostat') return 'line';
+					return 'spline';
                 }
 
                 function getChartTitle() {

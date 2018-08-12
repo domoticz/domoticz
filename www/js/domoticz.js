@@ -1256,7 +1256,7 @@ function TranslateStatusShort(status) {
 	}
 }
 
-function AddDataToTempChart(data, chart, isday) {
+function AddDataToTempChart(data, chart, isday, isthermostat) {
 	var datatablete = [];
 	var datatabletm = [];
 	var datatableta = [];
@@ -1531,6 +1531,7 @@ function AddDataToTempChart(data, chart, isday) {
 				name: $.t('Temperature'),
 				color: 'yellow',
 				yAxis: 0,
+				step: (isthermostat) ? 'left' : null,
 				tooltip: {
 					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
 					valueDecimals: 1
