@@ -8,11 +8,8 @@
       <Item value="1" label="LED on when switch is on"/>
       <Item value="2" label="LED is disabled"/>
     </Value>
-    <Value genre="config" index="2" value="0" label="Automatically turn channel 1 off after interval" units="seconds" size="2" min="0" max="32767" type="short">
-      <Help>Automatically turn channel 1 off after this many seconds. 0 is disabled</Help>
-    </Value>
-    <Value genre="config" index="3" value="0" label="Automatically turn channel 2 off after interval" units="seconds" size="2" min="0" max="32767" type="short">
-      <Help>Automatically turn channel 2 off after this many seconds. 0 is disabled</Help>
+    <Value genre="config" index="2" value="0" label="Automatically turn switch off after interval" units="seconds" size="2" min="0" max="32767" type="short">
+      <Help>Automatically turn the switch off after this many seconds. 0 is disabled</Help>
     </Value>
   </CommandClass>
 
