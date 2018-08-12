@@ -960,6 +960,12 @@ namespace Plugins {
 
 	void CPluginProtocolMQTT::ProcessInbound(const ReadEvent * Message)
 	{
+		if (m_bErrored)
+		{
+			_log.Log(LOG_ERROR, "(%s) MQTT protocol errored, discarding additional data.", __func__);
+			return;
+		}
+
 		byte loop = 0;
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
@@ -968,6 +974,7 @@ namespace Plugins {
 
 			byte		header = *it++;
 			byte		bResponseType = header & 0xF0;
+			byte		flags = header & 0x0F;
 			PyObject*	pMqttDict = PyDict_New();
 			PyObject*	pObj = NULL;
 			uint16_t	iPacketIdentifier = 0;
@@ -1001,6 +1008,12 @@ namespace Plugins {
 			case MQTT_CONNACK:
 			{
 				AddStringToDict(pMqttDict, "Verb", std::string("CONNACK"));
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
 				if (iRemainingLength == 2) // check length is correct
 				{
 					switch (*it++)
@@ -1031,8 +1044,8 @@ namespace Plugins {
 				}
 				else
 				{
-					AddIntToDict(pMqttDict, "Status", -1);
-					AddStringToDict(pMqttDict, "Description", std::string("Invalid message length"));
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			}
@@ -1042,6 +1055,12 @@ namespace Plugins {
 				iPacketIdentifier = (*it++ << 8) + *it++;
 				AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
 				if (iRemainingLength >= 3) // check length is acceptable
 				{
 					PyObject* pResponsesList = PyList_New(0);
@@ -1081,45 +1100,84 @@ namespace Plugins {
 				}
 				else
 				{
-					AddIntToDict(pMqttDict, "Status", -1);
-					AddStringToDict(pMqttDict, "Description", std::string("Invalid message length"));
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			}
 			case MQTT_PUBACK:
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBACK"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			case MQTT_PUBREC:
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBREC"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
+				}
 				break;
 			case MQTT_PUBCOMP:
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBCOMP"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			case MQTT_PUBLISH:
 			{
 				// Fixed Header
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBLISH"));
-				AddIntToDict(pMqttDict, "DUP", ((header & 0x08) >> 3));
-				long	iQoS = (header & 0x06) >> 1;
+				AddIntToDict(pMqttDict, "DUP", ((flags & 0x08) >> 3));
+				long	iQoS = (flags & 0x06) >> 1;
 				AddIntToDict(pMqttDict, "QoS", (int) iQoS);
-				PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(header & 0x01));
+				PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(flags & 0x01));
 				// Variable Header
 				int		topicLen = (*it++ << 8) + *it++;
+				if (topicLen+2+(iQoS?2:0) > iRemainingLength)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u' (iQoS:%u, topicLen:%u)", __func__, iRemainingLength, bResponseType>>4, iQoS, topicLen);
+					m_bErrored = true;
+					break;
+				}
 				std::string	sTopic((char const*)&*it, topicLen);
 				AddStringToDict(pMqttDict, "Topic", sTopic);
 				it += topicLen;
@@ -1136,25 +1194,52 @@ namespace Plugins {
 			}
 			case MQTT_UNSUBACK:
 				AddStringToDict(pMqttDict, "Verb", std::string("UNSUBACK"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
+				}
 				break;
 			case MQTT_PINGRESP:
 				AddStringToDict(pMqttDict, "Verb", std::string("PINGRESP"));
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength != 0) // check length is correct
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
+				}
 				break;
 			default:
-				_log.Log(LOG_ERROR, "(%s) MQTT response invalid '%d' is unknown.", __func__, bResponseType);
-				m_sRetainedData.erase(m_sRetainedData.begin(),pktend);
-				continue;
+				_log.Log(LOG_ERROR, "(%s) MQTT data invalid: packet type '%d' is unknown.", __func__, bResponseType);
+				m_bErrored = true;
 			}
 
-			Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict));
+			if (!m_bErrored) Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict));
 
 			m_sRetainedData.erase(m_sRetainedData.begin(),pktend);
-		} while (m_sRetainedData.size() > 0);
+		} while (!m_bErrored && m_sRetainedData.size() > 0);
+
+		if (m_bErrored)
+		{
+			_log.Log(LOG_ERROR, "(%s) MQTT protocol violation, sending DisconnectedEvent to Connection.", __func__);
+			Message->m_pPlugin->MessagePlugin(new DisconnectedEvent(Message->m_pPlugin, Message->m_pConnection));
+		}
 	}
 
 	std::vector<byte> CPluginProtocolMQTT::ProcessOutbound(const WriteDirective * WriteMessage)
