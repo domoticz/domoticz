@@ -67,8 +67,12 @@ static bool printRegInfo(siginfo_t * info, ucontext_t * ucontext)
 	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP]);
 #elif defined(REG_EIP) //x86
 	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_EIP]);
-#else // arm
+#elif defined(__aarch64__) //arm64 (aarch64 according to gnu)
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.regs[30]);
+#elif defined(__arm__) //arm32
 	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.arm_lr);
+#else // unknown
+	_log.Log(LOG_ERROR, "siginfo address=%p", info->si_addr);
 #endif
 }
 
