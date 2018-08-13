@@ -1256,7 +1256,7 @@ function TranslateStatusShort(status) {
 	}
 }
 
-function AddDataToTempChart(data, chart, isday) {
+function AddDataToTempChart(data, chart, isday, isthermostat) {
 	var datatablete = [];
 	var datatabletm = [];
 	var datatableta = [];
@@ -1531,6 +1531,7 @@ function AddDataToTempChart(data, chart, isday) {
 				name: $.t('Temperature'),
 				color: 'yellow',
 				yAxis: 0,
+				step: (isthermostat) ? 'left' : null,
 				tooltip: {
 					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
 					valueDecimals: 1
@@ -1964,7 +1965,7 @@ function AddDataToCurrentChart(data, chart, switchtype, isday) {
 				}, false);
 				chart.addSeries({
 					id: 'current3max',
-					name: 'Current_L3_Min',
+					name: 'Current_L3_Max',
 					color: 'rgba(112,146,190,0.8)',
 					yAxis: 0,
 					tooltip: {
@@ -2092,7 +2093,7 @@ function AddDataToCurrentChart(data, chart, switchtype, isday) {
 				}, false);
 				chart.addSeries({
 					id: 'current3max',
-					name: $.t('Usage') + ' L3_Min',
+					name: $.t('Usage') + ' L3_Max',
 					color: 'rgba(112,146,190,0.8)',
 					yAxis: 0,
 					tooltip: {

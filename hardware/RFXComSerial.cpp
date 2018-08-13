@@ -100,6 +100,7 @@ bool RFXComSerial::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "RFXComSerial");
 
 	return (m_thread != nullptr);
 

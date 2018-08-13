@@ -52,6 +52,7 @@ bool BleBox::StartHardware()
 
 	LoadNodes();
 	m_thread = std::make_shared<std::thread>(&BleBox::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "BleBox");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -1189,7 +1190,9 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
 		if (itt == m_devices.end())
 		{
-			searchingThreads.push_back(std::make_shared<std::thread>(&BleBox::AddNode, this, "unknown", IPAddress));
+			auto thread = std::make_shared<std::thread>(&BleBox::AddNode, this, "unknown", IPAddress);
+			SetThreadName(thread->native_handle(), "BleBox_Search");
+			searchingThreads.push_back(thread);
 		}
 	}
 

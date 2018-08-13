@@ -66,6 +66,7 @@ bool Meteostick::StopHardware()
 void Meteostick::StartPollerThread()
 {
 	m_thread = std::make_shared<std::thread>(&Meteostick::Do_PollWork, this);
+	SetThreadName(m_thread->native_handle(), "Meteostick");
 }
 
 void Meteostick::StopPollerThread()

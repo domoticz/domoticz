@@ -37,6 +37,7 @@ CRtl433::~CRtl433()
 bool CRtl433::StartHardware()
 {
 	m_thread = std::make_shared<std::thread>(&CRtl433::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Rtl433");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
@@ -194,6 +195,8 @@ void CRtl433::Do_Work()
 				bool hasdepth = false;
 				float wind_str;
 				bool haswind_str = false;
+				float wind_gst;
+				bool haswind_gst = false;
 				int wind_dir;
 				bool haswind_dir = false;
 				// attempt parsing field values
@@ -278,16 +281,38 @@ void CRtl433::Do_Work()
 					hasdepth = true;
 				}
 
-				if (!data["windstrength"].empty())
+				if (!data["windstrength"].empty() || !data["wind_speed"].empty())
 				{
-					wind_str = (float)atof(data["windstrength"].c_str());
+					//Based on current knowledge it's not possible to have both windstrength and wind_speed at the same time.
+					if (!data["windstrength"].empty())
+					{
+						wind_str = (float)atof(data["windstrength"].c_str());
+					}
+					else if (!data["wind_speed"].empty())
+					{
+						wind_str = (float)atof(data["wind_speed"].c_str());
+					}
 					haswind_str = true;
 				}
 
-				if (!data["winddirection"].empty())
+				if (!data["winddirection"].empty() || !data["wind_direction"].empty())
 				{
-					wind_dir = atoi(data["winddirection"].c_str());
+					//Based on current knowledge it's not possible to have both winddirection and wind_direction at the same time.
+					if (!data["winddirection"].empty())
+					{
+						wind_dir = atoi(data["winddirection"].c_str());
+					}
+					else if (!data["wind_direction"].empty())
+					{
+						wind_dir = atoi(data["wind_direction"].c_str());
+					}
 					haswind_dir = true;
+				}
+
+				if (!data["wind_gust"].empty())
+				{
+					wind_gst = (float)atof(data["wind_gust"].c_str());
+					haswind_gst = true;
 				}
 
 				std::string model = data["model"];
@@ -332,7 +357,7 @@ void CRtl433::Do_Work()
 						model);
 					bHaveSend = true;
 				}
-				else if (haswind_str && haswind_dir && hastempC)
+				else if (haswind_str && haswind_dir && !haswind_gst && hastempC)
 				{
 					SendWind(sensoridx,
 						batterylevel,
@@ -345,13 +370,39 @@ void CRtl433::Do_Work()
 						model);
 					bHaveSend = true;
 				}
-				else if (haswind_str && haswind_dir && !hastempC)
+				else if (haswind_str && haswind_dir && !haswind_gst && !hastempC)
 				{
 					SendWind(sensoridx,
 						batterylevel,
 						wind_dir,
 						wind_str,
 						0,
+						0,
+						0,
+						false,
+						model);
+					bHaveSend = true;
+				}
+				else if (haswind_str && haswind_gst && haswind_dir && hastempC)
+				{
+					SendWind(sensoridx,
+						batterylevel,
+						wind_dir,
+						wind_str,
+						wind_gst,
+						tempC,
+						0,
+						true,
+						model);
+					bHaveSend = true;
+				}
+				else if (haswind_str && haswind_gst && haswind_dir && !hastempC)
+				{
+					SendWind(sensoridx,
+						batterylevel,
+						wind_dir,
+						wind_str,
+						wind_gst,
 						0,
 						0,
 						false,

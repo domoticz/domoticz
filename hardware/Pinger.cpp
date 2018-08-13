@@ -174,6 +174,7 @@ bool CPinger::StartHardware()
 	//Start worker thread
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CPinger::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Pinger");
 	_log.Log(LOG_STATUS, "Pinger: Started");
 
 	return true;
@@ -191,11 +192,9 @@ bool CPinger::StopHardware()
 			m_thread.reset();
 
 			//Make sure all our background workers are stopped
-			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter < 15))
+			while (m_iThreadsRunning > 0)
 			{
-				sleep_milliseconds(500);
-				iRetryCounter++;
+				sleep_milliseconds(150);
 			}
 		}
 	}
@@ -392,6 +391,7 @@ void CPinger::DoPingHosts()
 		{
 			//m_iThreadsRunning++;
 			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, *itt));
+			SetThreadName(t.native_handle(), "PingerWorker");
 			t.join();
 		}
 	}

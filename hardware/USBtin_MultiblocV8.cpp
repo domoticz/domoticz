@@ -200,6 +200,7 @@ bool USBtin_MultiblocV8::StartThread()
 	m_V8minCounterBase = (60*5);
 	m_V8minCounter1 = (3600*6);
 	m_thread = std::make_shared<std::thread>(&USBtin_MultiblocV8::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "USBtinMbV8");
 	_log.Log(LOG_STATUS,"MultiblocV8: thread started");
 	return (m_thread != nullptr);
 }

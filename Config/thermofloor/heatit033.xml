@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Heatit Z-Wave Z-TRM2 -->
+<!-- Heatit Z-Wave thermostat Z-TRM2 TF 033 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
 	<CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE">

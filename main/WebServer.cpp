@@ -673,6 +673,8 @@ namespace http {
 			//Start normal worker thread
 			m_bDoStop = false;
 			m_thread = std::make_shared<std::thread>(&CWebServer::Do_Work, this);
+			std::string server_name = "WebServer_" + settings.listening_port;
+			SetThreadName(m_thread->native_handle(), server_name.c_str());
 			return (m_thread != nullptr);
 		}
 
@@ -10320,7 +10322,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
-							root["result"][ii]["Options"] = sOptions;  //for alternate Energy Reading
+							root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"];  //for alternate Energy Reading
 						}
 					}
 					else if (dType == pTypeAirQuality)
@@ -12373,6 +12375,7 @@ namespace http {
 
 			std::string sOptions = base64_decode(request::findValue(&req, "options"));
 			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
+			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
 
 			char szTmp[200];
 
@@ -12587,6 +12590,16 @@ namespace http {
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')",
 					faddjmulti2, idx.c_str());
 			}
+			if (!EnergyMeterMode.empty())
+			{
+				auto options = m_sql.GetDeviceOptions(idx);
+				options["EnergyMeterMode"] = EnergyMeterMode;
+				std::stringstream sstridx(idx);
+				uint64_t ullidx;
+				sstridx >> ullidx;
+				m_sql.SetDeviceOptions(ullidx, options);
+			}
+
 			if (!devoptions.empty())
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID == '%q')", devoptions.c_str(), idx.c_str());

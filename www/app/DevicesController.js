@@ -305,17 +305,17 @@ define(['app'], function (app) {
 								(item.Type.indexOf("ASA") == 0) ||
 								(item.Type.indexOf("Blinds") == 0)
 							) {
-								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/LightLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
+								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if (['Temp', 'Thermostat', 'Humidity'].includes(item.Type)) {
-								itemSubIcons += '&nbsp;<a href="#Devices/'+item.idx+'/TemperatureLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
+								itemSubIcons += '&nbsp;<a href="#Devices/'+item.idx+'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if ([
 								'Voltage', 'Current', 'Pressure', 'Custom Sensor',
 								'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
 								'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage'
 							].includes(item.SubType) || item.Type === 'Usage') {
-								var graphLogLink = '#/Devices/' + item.idx + '/GraphLog';
+								var graphLogLink = '#/Devices/' + item.idx + '/Log';
 								itemSubIcons += '&nbsp;<a href="' + graphLogLink + '"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if (typeof item.Counter != 'undefined') {
@@ -351,7 +351,7 @@ define(['app'], function (app) {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 							}
 							else if ((item.SubType == "Text") || (item.SubType == "Alert")) {
-                                var logLink = '#/Devices/' + item.idx + '/TextLog';
+                                var logLink = '#/Devices/' + item.idx + '/Log';
 								itemSubIcons += '&nbsp;<a href="' + logLink + '"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else {

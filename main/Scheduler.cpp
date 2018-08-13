@@ -35,6 +35,7 @@ CScheduler::~CScheduler(void)
 void CScheduler::StartScheduler()
 {
 	m_thread = std::make_shared<std::thread>(&CScheduler::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Scheduler");
 }
 
 void CScheduler::StopScheduler()

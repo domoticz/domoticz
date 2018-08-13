@@ -66,6 +66,7 @@ void OTGWSerial::readCallback(const char *data, size_t len)
 void OTGWSerial::StartPollerThread()
 {
 	m_thread = std::make_shared<std::thread>(&OTGWSerial::Do_PollWork, this);
+	SetThreadName(m_thread->native_handle(), "OTGWSerial");
 }
 
 void OTGWSerial::StopPollerThread()

@@ -314,6 +314,7 @@ main/LuaHandler.cpp
 main/mainworker.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
+main/SignalHandler.cpp
 main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp

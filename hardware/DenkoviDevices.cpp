@@ -102,7 +102,7 @@ bool CDenkoviDevices::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDenkoviDevices::Do_Work, this);
-	//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviDevices::Do_Work, this)));
+	SetThreadName(m_thread->native_handle(), "DenkoviDevices");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	switch (m_iModel) {

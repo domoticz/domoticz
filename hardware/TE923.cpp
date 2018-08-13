@@ -38,6 +38,7 @@ bool CTE923::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTE923::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "TE923");
 	m_bIsStarted=true;
 	sOnConnected(this);
 

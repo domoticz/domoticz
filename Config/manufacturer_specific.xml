@@ -175,6 +175,9 @@
 		<Product type="0103" id="008c" name="ZW140 Dual Nano Switch" config="aeotec/zw140.xml"/>
 		<Product type="0203" id="008c" name="ZW140 Dual Nano Switch" config="aeotec/zw140.xml"/>
 		<Product type="1d03" id="008c" name="ZW140 Dual Nano Switch" config="aeotec/zw140.xml"/>
+		<Product type="0003" id="008d" name="ZW141 Nano Shutter" config="aeotec/zw141.xml"/>
+		<Product type="0103" id="008d" name="ZW141 Nano Shutter" config="aeotec/zw141.xml"/>
+		<Product type="0203" id="008d" name="ZW141 Nano Shutter" config="aeotec/zw141.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0371" name="Aeotec">
 		<Product type="0003" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
@@ -693,6 +696,7 @@
 		<Product type="4447" id="3035" name="HS-WS200+ Wall Switch" config="homeseer/hs-ws200plus.xml"/>
 		<Product type="4447" id="3036" name="HS-WD200+ Wall Dimmer" config="homeseer/hs-wd200plus.xml"/>
 		<Product type="201"  id="9"    name="HS-MS100+ Motion Sensor" config="homeseer/hs-ms100plus.xml"/>
+		<Product type="201"  id="a"    name="HS-LS100+ Leak Sensor" config="homeseer/hs-ls100plus.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0030" name="HomeSeer Tech">
 	</Manufacturer>
@@ -735,15 +739,20 @@
 		<Product type="0001" id="0001" name="RAone SmartDimmer Wall Dimmer Module"/>
 	</Manufacturer>
 	<Manufacturer id="0312" name="Inovelli">
-		<Product type="1e00" id="1e00" name="NZW30S On/Off Switch(scene)" config="inovelli/nzw30.xml"/>
-		<Product type="1e01" id="1e01" name="NZW30 On/Off Switch" config="inovelli/nzw30.xml"/>
-		<Product type="1e02" id="1e02" name="NZW30T On/Off Toggle(scene)" config="inovelli/nzw30.xml"/>
-		<Product type="1f00" id="1f00" name="NZW31S Dimmer(scene)" config="inovelli/nzw31.xml"/>
-		<Product type="1f01" id="1f01" name="NZW31 Dimmer" config="inovelli/nzw31.xml"/>
-		<Product type="1f02" id="1f02" name="NZW31T Dimmer(scene)" config="inovelli/nzw31.xml"/>
-		<Product type="b211" id="241c" name="NZW36 Smart Plug-In Module (1 Channel)" config="inovelli/simple_module.xml"/>
-		<Product type="b221" id="251c" name="NZW37 Smart Plug-In Module (2 Channel)" config="inovelli/simple_module.xml"/>
-		<Product type="b212" id="271c" name="NZW39 Smart Plug (Dimmer)" config="inovelli/simple_module.xml"/>
+		<Product type="1e01" id="1e01" name="NZW30 Smart Switch" config="inovelli/nzw30.xml"/>
+		<Product type="1e00" id="1e00" name="NZW30 Smart Switch (w/Scene)" config="inovelli/nzw30.xml"/>
+		<Product type="1e02" id="1e02" name="NZW30 Smart Toggle Switch (w/Scene)" config="inovelli/nzw30.xml"/>
+		<Product type="1f01" id="1f01" name="NZW31 Smart Dimmer" config="inovelli/nzw31.xml"/>
+		<Product type="1f00" id="1f00" name="NZW31 Smart Dimmer (w/Scene)" config="inovelli/nzw31.xml"/>
+		<Product type="1f02" id="1f02" name="NZW31 Smart Toggle Dimmer (w/Scene)" config="inovelli/nzw31.xml"/>
+		<Product type="b211" id="241c" name="NZW36 1-Channel Smart Plug-In Module" config="inovelli/simple_module.xml"/>
+		<Product type="2400" id="2400" name="NZW36 1-Channel Smart Plug (w/Scene)" config="inovelli/nzw36.xml"/>
+		<Product type="b221" id="251c" name="NZW37 2-Channel Smart Plug" config="inovelli/simple_module.xml"/>
+		<Product type="2500" id="2500" name="NZW37 2-Channel Smart Plug (w/Scene)" config="inovelli/nzw37.xml"/>
+		<Product type="b212" id="271c" name="NZW39 Smart Plug Dimmer" config="inovelli/simple_module.xml"/>
+		<Product type="2700" id="2700" name="NZW39 Smart Plug Dimmer (w/Scene)" config="inovelli/nzw39.xml"/>
+		<Product type="6000" id="6000" name="NZW96 1-Channel Outdoor Smart Plug" config="inovelli/nzw96.xml"/>
+		<Product type="6100" id="6100" name="NZW97 2-Channel Outdoor Smart Plug" config="inovelli/nzw97.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0006" name="Intel">
 	</Manufacturer>
@@ -835,6 +844,7 @@
 		<Product type="5457" id="3033" name="WT00Z-1 3-Way Wall Accessory Switch" config="linear/WT00Z-1.xml"/>
 		<Product type="5442" id="5431" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
 		<Product type="5442" id="5436" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
+		<Product type="5442" id="5437" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
 		<Product type="5744" id="3530" name="WD500Z5-1 Wall Mounted Dimmer" config="linear/WD500Z5-1.xml" />
 	</Manufacturer>
 	<Manufacturer id="015e" name="Locstar">
@@ -872,6 +882,7 @@
 		<Product type="0801" id="3102" name="MH8-FC-EU Thermostat" config="mcohome/mh8fceu.xml"/>
 		<Product type="0802" id="3102" name="MH8-FC4-EU Thermostat" config="mcohome/mh8fceu.xml"/>
 		<Product type="0905" id="0201" name="MH9-CO2-WD CO2 Monitor" config="mcohome/mh9co2.xml"/>
+		<Product type="a800" id="1352" name="A8-9 Multi-sensor" config="mcohome/a8-9.xml"/>
 		<!--US-->
 		<Product type="5102" id="0103" name="Touch Panel Switch MH-S513" config="mcohome/mhs513.xml"/>
 	</Manufacturer>
@@ -994,6 +1005,7 @@
 		<Product type="0004" id="0004" name="009402 10-Year Smoke Detector" config="popp/009402.xml"/>
 		<Product type="0004" id="0011" name="Popp Z-Rain Rain Sensor" config="popp/700168.xml"/>
 		<Product type="0005" id="0001" name="012501 Strike Lock Control" config="popp/012501.xml"/>
+		<Product type="0005" id="0002" name="700045 Universal Keypad" config="popp/700045.xml"/>
 		<Product type="0100" id="0101" name="009303 Battery Wall Controller" config="popp/009303.xml" />
 		<Product type="0100" id="0103" name="Popp KFOB-C Remote Control" config="zwave.me/ZME_KFOB-S.xml" />
 		<Product type="0100" id="0201" name="Smoke Detector and Siren" config="popp/smoke-detector.xml" />
@@ -1054,6 +1066,7 @@
 		<!--<Product type="0007" id="0052" name="ZMNHTDx Smart meter S1 S2 S3" config="qubino/ZMNHTDxS3.xml"/>-->
 		<Product type="0007" id="0052" name="ZMNHTDx Smart meter S4 S5 S6" config="qubino/ZMNHTDx.xml"/>
 		<Product type="0007" id="0053" name="ZMNHZDx Weather Station" config="qubino/ZMNHZDx.xml"/>
+		<Product type="0007" id="0054" name="ZMNHXDx 3-phase Smart Meter" config="qubino/ZMNHXDx.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0130" name="Quby">
 		<Product type="0001" id="0001" name="Energy Management System"/>
@@ -1155,7 +1168,7 @@
 	</Manufacturer>
 	<Manufacturer id="019b" name="ThermoFloor AS">
 		<Product type="0001" id="0001" name="Heatit Thermostat TF 021" config="thermofloor/heatit021.xml"/>
-		<Product type="0003" id="0202" name="Heatit Thermostat Z-TRM2" config="thermofloor/heatitztrm2.xml"/>
+		<Product type="0003" id="0202" name="Heatit Thermostat TF 033" config="thermofloor/heatit033.xml"/>
 	</Manufacturer>
 	<Manufacturer id="008b" name="Trane">
 		<Product type="5452" id="5431" name="Model TZEMT400AB32MAA" config="trane/TZEMT400AB32MAA.xml"/>
@@ -1180,8 +1193,11 @@
 	<Manufacturer id="010a" name="Vitrum">
 		<Product type="1100" id="4900" name="Vitrum I EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
 		<Product type="1100" id="4a00" name="Vitrum II EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
+		<Product type="1100" id="4b00" name="Vitrum III EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
 		<Product type="1200" id="5100" name="Vitrum I EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
 		<Product type="1200" id="5200" name="Vitrum II EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="1200" id="5300" name="Vitrum III EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="1200" id="5400" name="Vitrum IV EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
 		<Product type="1300" id="5A00" name="Vitrum II EU Roller Blind Control" config="vitrum/vitrumBS.xml"/>
 		<Product type="2100" id="8a00" name="Vitrum II BS Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
 		<Product type="2200" id="9100" name="Vitrum I BS Wireless On-off" config="vitrum/vitrumBS.xml"/>

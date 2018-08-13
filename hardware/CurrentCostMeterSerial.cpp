@@ -34,6 +34,7 @@ bool CurrentCostMeterSerial::StartHardware()
 {
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CurrentCostMeterSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "CurrentCostMeterSerial");
 
 	//Try to open the Serial Port
 	try

@@ -47,6 +47,7 @@ bool CDavisLoggerSerial::StartHardware()
 	m_stoprequested = false;
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDavisLoggerSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DavisLoggerSerial");
 
 	return (m_thread != nullptr);
 

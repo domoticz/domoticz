@@ -201,6 +201,7 @@ bool CPanasonicNode::StartThread()
 {
 	StopThread();
 	m_thread = std::make_shared<std::thread>(&CPanasonicNode::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "PanasonicNode");
 	return (m_thread != nullptr);
 }
 
@@ -788,6 +789,7 @@ bool CPanasonic::StartHardware()
 	//Start worker thread
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CPanasonic::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Panasonic");
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Started");
 
 	return true;
@@ -1016,14 +1018,12 @@ void CPanasonic::ReloadNodes()
 
 void CPanasonic::UnloadNodes()
 {
-	int iRetryCounter = 0;
-
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
+	while (((!m_pNodes.empty()) || (!m_ios.stopped())))
 	{
 		std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
@@ -1036,8 +1036,7 @@ void CPanasonic::UnloadNodes()
 				break;
 			}
 		}
-		iRetryCounter++;
-		sleep_milliseconds(500);
+		sleep_milliseconds(150);
 	}
 	m_pNodes.clear();
 }

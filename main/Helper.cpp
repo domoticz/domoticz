@@ -5,9 +5,11 @@
 #include <direct.h>
 #else
 #include <dirent.h>
+#include <unistd.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <fstream>
 #include <math.h>
 #include <algorithm>
@@ -1082,3 +1084,96 @@ int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> 
 	closedir(dir);
 	return 0;
 }
+
+#ifdef WIN32
+// From https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+typedef struct tagTHREADNAME_INFO
+{
+	DWORD dwType; // Must be 0x1000.
+	LPCSTR szName; // Pointer to name (in user addr space).
+	DWORD dwThreadID; // Thread ID (-1=caller thread).
+	DWORD dwFlags; // Reserved for future use, must be zero.
+} THREADNAME_INFO;
+#pragma pack(pop)
+int SetThreadName(std::thread::native_handle_type thread, const char* threadName) {
+	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = threadName;
+	info.dwThreadID = dwThreadID;
+	info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable: 6320 6322)
+	__try{
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER){
+	}
+#pragma warning(pop)
+	return 0;
+}
+#else
+// Based on https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+int SetThreadName(std::thread::native_handle_type thread, const char *name)
+{
+#if defined(__linux__) || defined(__linux) || defined(linux)
+	char name_trunc[16];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	return pthread_setname_np(thread, name_trunc);
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+#elif defined(__NetBSD__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	return pthread_setname_np(thread, name_trunc);
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	pthread_setname_np(thread, name_trunc);
+	return 0;
+#endif
+}
+#endif
+
+#if defined(__linux__)
+bool IsWSL(void)
+{
+	// Detect WSL according to https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
+	bool is_wsl = false;
+
+	char buf[1024];
+
+	int status_fd = open("/proc/sys/kernel/osrelease", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	ssize_t num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	status_fd = open("/proc/version", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	return is_wsl;
+}
+#endif

@@ -7,6 +7,7 @@
 #define HTTP_SSLSERVER_HPP
 
 #include <boost/asio.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <string>
 #include "../main/Noncopyable.h"
 #include "connection_manager.hpp"
@@ -68,6 +69,9 @@ protected:
 private:
 	/// Handle a request to stop the server.
 	void handle_stop();
+
+	boost::asio::steady_timer m_heartbeat_timer;
+	void heart_beat(const boost::system::error_code& error);
 };
 
 class server : public server_base {

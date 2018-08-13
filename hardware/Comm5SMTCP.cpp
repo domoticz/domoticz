@@ -55,6 +55,7 @@ bool Comm5SMTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Comm5SMTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Comm5SMTCP");
 
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: Started");
 

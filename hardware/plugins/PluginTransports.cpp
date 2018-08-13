@@ -62,12 +62,6 @@ namespace Plugins {
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
 				//
 				m_Resolver.async_resolve(query, boost::bind(&CPluginTransportTCP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
-				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
-				{
-					ios.reset();
-					if (pPlugin->m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-				}
 			}
 		}
 		catch (std::exception& e)
@@ -84,6 +78,7 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
 		if (!err)
@@ -106,6 +101,7 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
 		pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
@@ -116,12 +112,6 @@ namespace Plugins {
 			m_tLastSeen = time(0);
 			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 				boost::bind(&CPluginTransportTCP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
-			{
-				ios.reset();
-				if (pPlugin->m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-			}
 		}
 		else
 		{
@@ -151,14 +141,6 @@ namespace Plugins {
 				//
 				boost::asio::ip::tcp::socket*	pSocket = new boost::asio::ip::tcp::socket(ios);
 				m_Acceptor->async_accept((boost::asio::ip::tcp::socket&)*pSocket, boost::bind(&CPluginTransportTCP::handleAsyncAccept, this, pSocket, boost::asio::placeholders::error));
-
-				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
-				{
-					ios.reset();
-					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
-						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-				}
 			}
 		}
 		catch (std::exception& e)
@@ -174,6 +156,7 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleAsyncAccept(boost::asio::ip::tcp::socket* pSocket, const boost::system::error_code& err)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		m_tLastSeen = time(0);
 
 		if (!err)
@@ -239,6 +222,7 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!e)
 		{
@@ -353,6 +337,7 @@ namespace Plugins {
 
 	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
 		if (!err)
@@ -378,13 +363,6 @@ namespace Plugins {
 				m_tLastSeen = time(0);
 				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 					boost::bind(&CPluginTransportTCP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
-				{
-					ios.reset();
-					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
-						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-				}
 			}
 			catch (boost::system::system_error se)
 			{
@@ -428,6 +406,7 @@ namespace Plugins {
 
 	void CPluginTransportTCPSecure::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!e)
 		{
@@ -522,14 +501,6 @@ namespace Plugins {
 												boost::asio::placeholders::error,
 												boost::asio::placeholders::bytes_transferred));
 
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
-			{
-				ios.reset();
-				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-			}
-
 			m_bConnected = true;
 		}
 		catch (std::exception& e)
@@ -547,6 +518,7 @@ namespace Plugins {
 
 	void CPluginTransportUDP::handleRead(const boost::system::error_code& ec, std::size_t bytes_transferred)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!ec)
 		{
@@ -709,6 +681,7 @@ namespace Plugins {
 		}
 		else
 		{
+			std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 		}
@@ -741,14 +714,6 @@ namespace Plugins {
 						boost::asio::placeholders::error,
 						boost::asio::placeholders::bytes_transferred));
 			}
-
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
-			{
-				ios.reset();
-				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-			}
 		}
 		catch (std::exception& e)
 		{
@@ -763,6 +728,7 @@ namespace Plugins {
 
 	void CPluginTransportICMP::handleTimeout(const boost::system::error_code& ec)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
 		if (!ec)  // Timeout, no response
@@ -788,6 +754,7 @@ namespace Plugins {
 
 	void CPluginTransportICMP::handleRead(const boost::system::error_code & ec, std::size_t bytes_transferred)
 	{
+		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
 		if (!ec)
@@ -909,7 +876,9 @@ namespace Plugins {
 			m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
 			if (e)
 			{
-#ifndef WIN32
+#ifdef WIN32
+				if (e.value() != 10009)		// Windows can report 10009, The file handle supplied is not valid
+#else
 				if (e.value() != boost::asio::error::not_connected)		// Linux always reports error 107, Windows does not
 #endif
 					_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
@@ -990,6 +959,7 @@ namespace Plugins {
 	{
 		if (bytes_transferred)
 		{
+			std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, (const unsigned char*)data));
 

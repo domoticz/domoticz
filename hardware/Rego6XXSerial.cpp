@@ -138,6 +138,7 @@ bool CRego6XXSerial::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRego6XXSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Rego6XXSerial");
 
 	return (m_thread != nullptr);
 }

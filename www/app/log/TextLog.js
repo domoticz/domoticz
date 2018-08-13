@@ -1,20 +1,19 @@
 define(['app', 'log/components'], function (app) {
-    app.controller('DeviceTextLogController', function ($routeParams, domoticzApi, deviceApi, permissions) {
+
+    app.component('deviceTextLog', {
+        bindings: {
+            deviceIdx: '<'
+        },
+        templateUrl: '/views/log/device_text_log.html',
+        controller: DeviceTextLogController,
+        controllerAs: 'vm',
+    });
+
+    function DeviceTextLogController($routeParams, domoticzApi, deviceApi, permissions) {
         var vm = this;
 
         vm.clearLog = clearLog;
-
-        init();
-
-        function init() {
-            vm.deviceIdx = $routeParams.id;
-
-            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
-                vm.pageName = device.Name;
-            });
-
-            refreshLog();
-        }
+        vm.$onInit = refreshLog;
 
         function refreshLog() {
             domoticzApi.sendRequest({
@@ -49,5 +48,5 @@ define(['app', 'log/components'], function (app) {
                     });
             });
         }
-    });
+    }
 });

@@ -759,6 +759,7 @@ namespace http {
 		{
 			_first = first;
 			m_thread = std::make_shared<std::thread>(&CProxyManager::StartThread, shared_from_this());
+			SetThreadName(m_thread->native_handle(), "ProxyManager");
 			return 1;
 		}
 

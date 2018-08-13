@@ -222,6 +222,7 @@ MainWorker::MainWorker()
 	m_bIgnoreUsernamePassword = false;
 
 	time_t atime = mytime(NULL);
+	m_LastHeartbeat = atime;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 	m_ScheduleLastMinute = ltime.tm_min;
@@ -1207,7 +1208,9 @@ bool MainWorker::StartThread()
 	}
 
 	m_thread = std::make_shared<std::thread>(&MainWorker::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MainWorker");
 	m_rxMessageThread = std::make_shared<std::thread>(&MainWorker::Do_Work_On_Rx_Messages, this);
+	SetThreadName(m_rxMessageThread->native_handle(), "MainWorkerRxMsg");
 	return (m_thread != nullptr) && (m_rxMessageThread != NULL);
 }
 
@@ -1518,6 +1521,7 @@ void MainWorker::ParseRFXLogFile()
 void MainWorker::Do_Work()
 {
 	int second_counter = 0;
+	int heartbeat_counter = 0;
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
@@ -1697,8 +1701,10 @@ void MainWorker::Do_Work()
 				HandleAutomaticBackups();
 			}
 		}
-		if (ltime.tm_sec % 30 == 0)
+		if (heartbeat_counter++ > 12)
 		{
+			heartbeat_counter = 0;
+			m_LastHeartbeat = mytime(NULL);
 			HeartbeatCheck();
 		}
 	}
@@ -12813,23 +12819,23 @@ void MainWorker::HandleLogNotifications()
 	m_sql.AddTaskItem(_tTaskItem::SendEmail(1, sTopic, sstr.str()));
 }
 
-void MainWorker::HeartbeatUpdate(const std::string &component)
+void MainWorker::HeartbeatUpdate(const std::string &component, bool critical /*= true*/)
 {
 	std::lock_guard<std::mutex> l(m_heartbeatmutex);
 	time_t now = time(0);
-	std::map<std::string, time_t >::iterator itt = m_componentheartbeats.find(component);
+	auto itt = m_componentheartbeats.find(component);
 	if (itt != m_componentheartbeats.end()) {
-		itt->second = now;
+		itt->second.first = now;
 	}
 	else {
-		m_componentheartbeats[component] = now;
+		m_componentheartbeats[component] = std::make_pair(now, critical);
 	}
 }
 
 void MainWorker::HeartbeatRemove(const std::string &component)
 {
 	std::lock_guard<std::mutex> l(m_heartbeatmutex);
-	std::map<std::string, time_t >::iterator itt = m_componentheartbeats.find(component);
+	auto itt = m_componentheartbeats.find(component);
 	if (itt != m_componentheartbeats.end()) {
 		m_componentheartbeats.erase(itt);
 	}
@@ -12847,10 +12853,20 @@ void MainWorker::HeartbeatCheck()
 
 	for (const auto & itt : m_componentheartbeats)
 	{
-		double dif = difftime(now, itt.second);
-		if (dif > 60)
+		double diff = difftime(now, itt.second.first);
+		if (diff > 60)
 		{
-			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", itt.first.c_str());
+			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
+			if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
+			{
+#ifndef _DEBUG
+#ifdef WIN32
+				abort();
+#else
+				raise(SIGUSR1);
+#endif
+#endif
+			}
 		}
 	}
 

@@ -63,6 +63,7 @@ bool Comm5Serial::StartHardware()
 {
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&Comm5Serial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Comm5Serial");
 
 	//Try to open the Serial Port
 	try

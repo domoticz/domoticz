@@ -918,6 +918,7 @@ bool CKodi::StartHardware()
 	//Start worker thread
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CKodi::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Kodi");
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
 	return true;
@@ -964,6 +965,7 @@ void CKodi::Do_Work()
 				{
 					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
 					boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+					SetThreadName(tAsync->native_handle(), "KodiNode");
 					m_ios.stop();
 				}
 				if ((*itt)->IsOn()) bWorkToDo = true;
@@ -976,6 +978,7 @@ void CKodi::Do_Work()
 				// need to worry about locking or concurrency issues when processing messages
 				_log.Log(LOG_NORM, "Kodi: Restarting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
+				SetThreadName(bt.native_handle(), "KodiIO");
 			}
 		}
 		sleep_milliseconds(500);
@@ -1153,23 +1156,23 @@ void CKodi::ReloadNodes()
 		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
 			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+			SetThreadName(tAsync->native_handle(), "KodiNode");
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
+		SetThreadName(bt.native_handle(), "KodiIO");
 	}
 }
 
 void CKodi::UnloadNodes()
 {
-	int iRetryCounter = 0;
-
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
+	while (((!m_pNodes.empty()) || (!m_ios.stopped())))
 	{
 		std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
@@ -1182,8 +1185,7 @@ void CKodi::UnloadNodes()
 				break;
 			}
 		}
-		iRetryCounter++;
-		sleep_milliseconds(500);
+		sleep_milliseconds(150);
 	}
 	m_pNodes.clear();
 }

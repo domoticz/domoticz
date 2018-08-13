@@ -182,6 +182,7 @@ bool CEvohomeRadio::StartHardware()
 	m_bDoRestart = false;
 	m_retrycntr = EVOHOME_RETRY_DELAY; //will force reconnect first thing
 	m_thread = std::make_shared<std::thread>(&CEvohomeRadio::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "EvohomeRadio");
 	m_bIsStarted = true;
 
 	return (m_thread != nullptr);
