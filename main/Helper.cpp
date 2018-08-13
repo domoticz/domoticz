@@ -41,7 +41,7 @@
 // Check if NetBSD / OpenBSD or DragonFly need that at well?
 #include <pthread_np.h>
 #ifndef PTHREAD_MAX_MAMELEN_NP
-#define PTHREAD_MAX_NAMELEN_NP 10 	// Arbitrary
+#define PTHREAD_MAX_NAMELEN_NP 32 	// Arbitrary
 #endif
 #endif
 
