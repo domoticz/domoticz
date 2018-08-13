@@ -514,10 +514,12 @@ static void heartbeat_check()
 	if (diff > 60)
 	{
 		_log.Log(LOG_ERROR, "mainworker seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
+#ifndef _DEBUG
 #ifdef WIN32
 		abort();
 #else
 		raise(SIGUSR1);
+#endif
 #endif
 	}
 
@@ -525,10 +527,12 @@ static void heartbeat_check()
 	if (diff > 60)
 	{
 		_log.Log(LOG_ERROR, "main thread seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
+#ifndef _DEBUG
 #ifdef WIN32
 		abort();
 #else
 		raise(SIGUSR1);
+#endif
 #endif
 	}
 }
