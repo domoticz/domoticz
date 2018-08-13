@@ -730,14 +730,14 @@ void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const uint8_t 
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel)
+void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float CustomValue, const std::string &defaultname, const std::string &defaultLabel)
 {
 
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCustom;
 	gDevice.id = ChildID;
 	gDevice.intval1 = (NodeID << 8) | ChildID;
-	gDevice.floatval1 = Dust;
+	gDevice.floatval1 = CustomValue;
 
 	char szTmp[9];
 	sprintf(szTmp, "%08X", gDevice.intval1);
@@ -911,6 +911,17 @@ void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t
 	gDevice.intval2 = aValue;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
+
+void CDomoticzHardwareBase::SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname)
+{
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeFan;
+	gDevice.id = 1;
+	gDevice.intval1 = Idx;
+	gDevice.intval2 = FanSpeed;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
+}
+
 
 int CDomoticzHardwareBase::CalculateBaroForecast(const double pressure)
 {

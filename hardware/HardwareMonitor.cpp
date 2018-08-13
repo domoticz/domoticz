@@ -225,16 +225,6 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
-void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypeFan;
-	gDevice.id = 1;
-	gDevice.intval1 = static_cast<int>(Idx);
-	gDevice.intval2 = FanSpeed;
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 void CHardwareMonitor::GetInternalTemperature()
 {
 	int returncode = 0;
@@ -355,7 +345,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1200;
 		int fanspeed = atoi(devValue.c_str());
-		SendFanSensor(doffset + dindex, fanspeed, devName);
+		SendFanSensor(doffset + dindex, 255, fanspeed, devName);
 	}
 	else if (qType == "Voltage")
 	{
