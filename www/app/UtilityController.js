@@ -335,7 +335,7 @@ define(['app'], function (app) {
 									status = "";
 									bigtext = item.Data;
 								}
-								else if (item.Type == "Fan") {
+								else if (item.SubType == "Fan") {
 									status = "";
 									bigtext = item.Data;
 								}
@@ -571,7 +571,7 @@ define(['app'], function (app) {
 							else if (item.SubType == "Percentage") {
 								xhtm += item.Data;
 							}
-							else if (item.Type == "Fan") {
+							else if (item.SubType == "Fan") {
 								xhtm += item.Data;
 							}
 							else if (item.SubType == "Soil Moisture") {
@@ -789,7 +789,7 @@ define(['app'], function (app) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
-							else if (item.Type == "Fan") {
+							else if (item.SubType == "Fan") {
 								xhtm += '<a class="btnsmall" onclick="ShowFanLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';

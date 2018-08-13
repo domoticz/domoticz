@@ -5477,7 +5477,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			title: {
 				text: 'RPM'
 			},
-			min: 0,
+			allowDecimals: false,
 			minorGridLineWidth: 0,
 			alternateGridColor: null
 		},
@@ -5582,7 +5582,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			title: {
 				text: 'RPM'
 			},
-			min: 0,
+			allowDecimals: false,
 			minorGridLineWidth: 0,
 			alternateGridColor: null
 		},
@@ -5696,7 +5696,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			title: {
 				text: 'RPM'
 			},
-			min: 0,
+			allowDecimals: false,
 			minorGridLineWidth: 0,
 			alternateGridColor: null
 		},

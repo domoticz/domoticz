@@ -1449,6 +1449,7 @@ define(['app'], function (app) {
 									(item.SubType == "A/D") ||
 									(item.SubType == "Thermostat Mode") ||
 									(item.SubType == "Thermostat Fan Mode") ||
+									(item.SubType == "Fan") ||
 									(item.SubType == "Smartwares") ||
 									(item.SubType == "Waterflow") ||
 									(item.SubType == "Sound Level") ||
@@ -1490,7 +1491,7 @@ define(['app'], function (app) {
 											(item.Type == "Weight") ||
 											(item.Type == "Usage") ||
 											(item.SubType == "Percentage") ||
-											(item.Type == "Fan") ||
+											(item.SubType == "Fan") ||
 											(item.SubType == "Soil Moisture") ||
 											(item.SubType == "Leaf Wetness") ||
 											(item.SubType == "Voltage") ||
@@ -1606,7 +1607,7 @@ define(['app'], function (app) {
 											status = "";
 											bigtext = item.Data;
 										}
-										else if (item.Type == "Fan") {
+										else if (item.SubType == "Fan") {
 											status = "";
 											bigtext = item.Data;
 										}
@@ -3156,9 +3157,6 @@ define(['app'], function (app) {
 							htmlcontent += '</section>';
 						}
 
-
-
-
 						//security devices
 						jj = 0;
 						bHaveAddedDivider = false;
@@ -3437,6 +3435,7 @@ define(['app'], function (app) {
 									(item.SubType == "A/D") ||
 									(item.SubType == "Thermostat Mode") ||
 									(item.SubType == "Thermostat Fan Mode") ||
+									(item.SubType == "Fan") ||
 									(item.SubType == "Smartwares") ||
 									(item.SubType == "Waterflow") ||
 									(item.SubType == "Sound Level") ||
@@ -3511,7 +3510,7 @@ define(['app'], function (app) {
 									else if (item.SubType == "Custom Sensor") {
 										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/' + item.Image + '48_On.png" height="16" width="16"></a>' + " " + item.Name;
 									}
-									else if (item.Type == "Fan") {
+									else if (item.SubType == "Fan") {
 										vname = '<img src="images/next.png" class="fanicon" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
 									}
 									else if (item.Type == "Lux") {
@@ -3574,7 +3573,7 @@ define(['app'], function (app) {
 										(item.Type == "Weight") ||
 										(item.Type == "Usage") ||
 										(item.SubType == "Percentage") ||
-										(item.Type == "Fan") ||
+										(item.SubType == "Fan") ||
 										(item.SubType == "Soil Moisture") ||
 										(item.SubType == "Leaf Wetness") ||
 										(item.SubType == "Voltage") ||
@@ -3708,7 +3707,7 @@ define(['app'], function (app) {
 										(item.Type == "Weight") ||
 										(item.Type == "Usage") ||
 										(item.SubType == "Percentage") ||
-										(item.Type == "Fan") ||
+										(item.SubType == "Fan") ||
 										(item.SubType == "Soil Moisture") ||
 										(item.SubType == "Leaf Wetness") ||
 										(item.SubType == "Voltage") ||
@@ -3800,7 +3799,7 @@ define(['app'], function (app) {
 										imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Percentage48.png" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = "";
 									}
-									else if (item.Type == "Fan") {
+									else if (item.SubType == "Fan") {
 										imagehtml += 'Fan48_On.png" class="lcursor fanicon" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 										statushtml = "";
 									}
