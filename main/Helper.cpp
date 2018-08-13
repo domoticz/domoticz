@@ -1,11 +1,15 @@
 #include "stdafx.h"
 #include "Helper.h"
+#include "Logger.h"
 #ifdef WIN32
 #include "dirent_windows.h"
 #include <direct.h>
 #else
 #include <dirent.h>
 #include <unistd.h>
+#endif
+#if !defined(WIN32)
+#include <sys/ptrace.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1125,6 +1129,7 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	return pthread_setname_np(thread, name_trunc);
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+	return 0;
 #elif defined(__NetBSD__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
@@ -1136,6 +1141,117 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	name_trunc[sizeof(name_trunc)-1] = '\0';
 	pthread_setname_np(thread, name_trunc);
 	return 0;
+#endif
+}
+#endif
+
+#if !defined(PTRACE_ATTACH) && defined(PT_ATTACH)
+#  define PTRACE_ATTACH PT_ATTACH
+#endif
+#if !defined(PTRACE_DETACH) && defined(PT_DETACH)
+#  define PTRACE_DETACH PT_DETACH
+#endif
+
+#define _PTRACE(_x, _y) ptrace(_x, _y, NULL, 0)
+
+#if !defined(WIN32)
+bool IsDebuggerPresent(void)
+{
+#if defined(__linux__)
+	// Linux implementation: Search for 'TracerPid:' in /proc/self/status
+	char buf[4096];
+
+	const int status_fd = ::open("/proc/self/status", O_RDONLY);
+	if (status_fd == -1)
+		return false;
+
+	const ssize_t num_read = ::read(status_fd, buf, sizeof(buf) - 1);
+	if (num_read <= 0)
+		return false;
+
+	buf[num_read] = '\0';
+	constexpr char tracerPidString[] = "TracerPid:";
+	const auto tracer_pid_ptr = ::strstr(buf, tracerPidString);
+	if (!tracer_pid_ptr)
+		return false;
+
+	for (const char* characterPtr = tracer_pid_ptr + sizeof(tracerPidString) - 1; characterPtr <= buf + num_read; ++characterPtr)
+	{
+		if (::isspace(*characterPtr))
+			continue;
+		else
+			return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
+	}
+
+	return false;
+#else
+	// MacOSx / BSD: Try to attach as suggested in https://stackoverflow.com/questions/3596781/how-to-detect-if-the-current-process-is-being-run-by-gdb
+	int pid;
+
+	int from_child[2] = {-1, -1};
+
+	if (pipe(from_child) < 0) {
+		_log.Log(LOG_ERROR, "IsDebuggerPresent failed: Error opening internal pipe: %d", errno);
+		return -1;
+	}
+
+	pid = fork();
+	if (pid == -1) {
+		_log.Log(LOG_ERROR, "IsDebuggerPresent failed: Error forking: %s", errno);
+		return -1;
+	}
+
+	/* Child */
+	if (pid == 0) {
+		uint8_t ret = 0;
+		int ppid = getppid();
+
+		/* Close parent's side */
+		close(from_child[0]);
+
+		if (_PTRACE(PTRACE_ATTACH, ppid) == 0) {
+			/* Wait for the parent to stop */
+			waitpid(ppid, NULL, 0);
+
+			/* Tell the parent what happened */
+			write(from_child[1], &ret, sizeof(ret));
+
+			/* Detach */
+			_PTRACE(PTRACE_DETACH, ppid);
+			exit(0);
+		}
+
+		ret = 1;
+		/* Tell the parent what happened */
+		write(from_child[1], &ret, sizeof(ret));
+
+		exit(0);
+	/* Parent */
+	} else {
+		uint8_t ret = -1;
+
+		/*
+		 *  The child writes a 1 if pattach failed else 0.
+		 *
+		 *  This read may be interrupted by pattach,
+		 *  which is why we need the loop.
+		 */
+		while ((read(from_child[0], &ret, sizeof(ret)) < 0) && (errno == EINTR));
+
+		/* Ret not updated */
+		if (ret < 0) {
+			_log.Log(LOG_ERROR, "IsDebuggerPresent check failed: Error getting status from child: %d", errno);
+		}
+
+		/* Close the pipes here, to avoid races with pattach (if we did it above) */
+		close(from_child[1]);
+		close(from_child[0]);
+
+		/* Collect the status of the child */
+		waitpid(pid, NULL, 0);
+
+		return ret==1;
+	}
 #endif
 }
 #endif
