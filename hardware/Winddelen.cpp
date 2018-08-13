@@ -99,6 +99,8 @@ bool CWinddelen::StopHardware()
 
 void CWinddelen::Do_Work()
 {
+	_log.Log(LOG_STATUS, "Winddelen: Worker started...");
+
 	int sec_counter = WINDDELEN_POLL_INTERVAL - 2;
 
 	while (!m_stoprequested)
