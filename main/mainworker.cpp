@@ -12440,18 +12440,16 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 
 bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 {
-	//Get Scene details
 	std::vector<std::vector<std::string> > result;
 	int nValue = (switchcmd == "On") ? 1 : 0;
 
-	//first set actual scene status
 	std::string Name = "Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
 	std::string onaction = "";
 	std::string offaction = "";
 	std::string status = "";
 
-	//Get Scene Name
+	//Get Scene details
 	result = m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction, nValue FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
 	if (!result.empty())
 	{
@@ -12462,12 +12460,14 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 		offaction = sds[3];
 		status = sds[4];
 
-		//when asking for Toggle, just switch to the opposite value
-		if (switchcmd == "Toggle") {
-			nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
-			switchcmd = (nValue == 1 ? "On" : "Off");
+		if (scenetype == SGTYPE_GROUP)
+		{
+			//when asking for Toggle, just switch to the opposite value
+			if (switchcmd == "Toggle") {
+				nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
+				switchcmd = (nValue == 1 ? "On" : "Off");
+			}
 		}
-
 		m_sql.HandleOnOffAction((nValue == 1), onaction, offaction);
 	}
 
@@ -12669,6 +12669,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 					std::stringstream s_str(sd[0]);
 					s_str >> ID;
 					int scenetype = atoi(sd[2].c_str());
+					int rnValue = nValue;
 
 					if ((scenetype == SGTYPE_SCENE) && (!sCode.empty()))
 					{
@@ -12676,6 +12677,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 						int iCode = atoi(sCode.c_str());
 						if (iCode != nValue)
 							continue;
+						rnValue = 1; //A Scene can only be activated (On)
 					}
 
 					std::string lstatus = "";
@@ -12684,7 +12686,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 					bool bHaveGroupCmd = false;
 					int maxDimLevel = 0;
 
-					GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					GetLightStatus(dType, dSubType, STYPE_OnOff, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 					std::string switchcmd = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 
 					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(0.2f, ID, switchcmd, "SceneTrigger"));
