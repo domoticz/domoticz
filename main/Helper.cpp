@@ -39,6 +39,14 @@
 #include <time.h>
 #endif
 
+#if defined(__FreeBSD__) 
+// Check if OpenBSD or DragonFly need that at well?
+#include <pthread_np.h>
+#ifndef PTHREAD_MAX_MAMELEN_NP
+#define PTHREAD_MAX_NAMELEN_NP 32 	// Arbitrary
+#endif
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -1129,12 +1137,18 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
 	name_trunc[sizeof(name_trunc)-1] = '\0';
-	return pthread_setname_np(thread, name_trunc);
-#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+	return pthread_setname_np(thread, "%s", (void *)name_trunc);
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
 	name_trunc[sizeof(name_trunc)-1] = '\0';
 	pthread_setname_np(thread, name_trunc);
+	return 0;
+#elif defined(__FreeBSD__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	pthread_set_name_np(thread, name_trunc);
 	return 0;
 #endif
 }
