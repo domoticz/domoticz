@@ -276,7 +276,7 @@ const char *Hardware_Type_Desc(int hType)
 	{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
 	{ HTYPE_Honeywell, "Honeywell Thermostat" },
 	{ HTYPE_Tado, "Tado Thermostat" },
-	{ HTYPE_DenkoviDevices, "Denkovi Modules with LAN/WiFi (HTTP) Interface" },
+	{ HTYPE_DenkoviHTTPDevices, "Denkovi Modules with LAN (HTTP) Interface" },
 	{ HTYPE_DenkoviUSBDevices, "Denkovi Modules with USB Interface" },
 	{ HTYPE_DenkoviTCPDevices, "Denkovi Modules with LAN/WiFi (TCP) Interface" },
 	{ 0, NULL, NULL }
@@ -3602,7 +3602,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_Comm5SMTCP:
 	case HTYPE_CurrentCostMeterLAN:
 	case HTYPE_NefitEastLAN:
-	case HTYPE_DenkoviDevices:
+	case HTYPE_DenkoviHTTPDevices:
 	case HTYPE_DenkoviTCPDevices:
 	case HTYPE_Ec3kMeterTCP:
 	case HTYPE_MultiFun:
