@@ -857,7 +857,7 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CSterbox(ID, Address, Port, Username, Password);
 		break;
-	case HTYPE_DenkoviDevices:
+	case HTYPE_DenkoviHTTPDevices:
 		//LAN
 		pHardware = new CDenkoviDevices(ID, Address, Port, Password, Mode1, Mode2);
 		break;
