@@ -1145,15 +1145,6 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 }
 #endif
 
-#if !defined(PTRACE_ATTACH) && defined(PT_ATTACH)
-#  define PTRACE_ATTACH PT_ATTACH
-#endif
-#if !defined(PTRACE_DETACH) && defined(PT_DETACH)
-#  define PTRACE_DETACH PT_DETACH
-#endif
-
-#define _PTRACE(_x, _y) ptrace(_x, _y, NULL, 0)
-
 #if !defined(WIN32)
 bool IsDebuggerPresent(void)
 {
@@ -1185,73 +1176,12 @@ bool IsDebuggerPresent(void)
 
 	return false;
 #else
-	// MacOSx / BSD: Try to attach as suggested in https://stackoverflow.com/questions/3596781/how-to-detect-if-the-current-process-is-being-run-by-gdb
-	int pid;
-
-	int from_child[2] = {-1, -1};
-
-	if (pipe(from_child) < 0) {
-		_log.Log(LOG_ERROR, "IsDebuggerPresent failed: Error opening internal pipe: %d", errno);
-		return -1;
-	}
-
-	pid = fork();
-	if (pid == -1) {
-		_log.Log(LOG_ERROR, "IsDebuggerPresent failed: Error forking: %s", errno);
-		return -1;
-	}
-
-	/* Child */
-	if (pid == 0) {
-		uint8_t ret = 0;
-		int ppid = getppid();
-
-		/* Close parent's side */
-		close(from_child[0]);
-
-		if (_PTRACE(PTRACE_ATTACH, ppid) == 0) {
-			/* Wait for the parent to stop */
-			waitpid(ppid, NULL, 0);
-
-			/* Tell the parent what happened */
-			write(from_child[1], &ret, sizeof(ret));
-
-			/* Detach */
-			_PTRACE(PTRACE_DETACH, ppid);
-			exit(0);
-		}
-
-		ret = 1;
-		/* Tell the parent what happened */
-		write(from_child[1], &ret, sizeof(ret));
-
-		exit(0);
-	/* Parent */
-	} else {
-		uint8_t ret = -1;
-
-		/*
-		 *  The child writes a 1 if pattach failed else 0.
-		 *
-		 *  This read may be interrupted by pattach,
-		 *  which is why we need the loop.
-		 */
-		while ((read(from_child[0], &ret, sizeof(ret)) < 0) && (errno == EINTR));
-
-		/* Ret not updated */
-		if (ret < 0) {
-			_log.Log(LOG_ERROR, "IsDebuggerPresent check failed: Error getting status from child: %d", errno);
-		}
-
-		/* Close the pipes here, to avoid races with pattach (if we did it above) */
-		close(from_child[1]);
-		close(from_child[0]);
-
-		/* Collect the status of the child */
-		waitpid(pid, NULL, 0);
-
-		return ret==1;
-	}
+	// MacOS X / BSD: TODO
+#	ifdef _DEBUG
+	return true;
+#	else
+	return false;
+#	endif
 #endif
 }
 #endif
