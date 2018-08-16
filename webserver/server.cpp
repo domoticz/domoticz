@@ -136,7 +136,7 @@ void server_base::heart_beat(const boost::system::error_code& error)
 		m_mainworker.HeartbeatUpdate(std::string("WebServer:") + settings_.listening_port);
 
 		// Schedule next heartbeat
-		m_heartbeat_timer.expires_after(std::chrono::seconds(4));
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(4));
 		m_heartbeat_timer.async_wait(boost::bind(&server_base::heart_beat, this, boost::asio::placeholders::error));
 	}
 }
