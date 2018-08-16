@@ -764,9 +764,8 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 		return;
 	}
 
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
-
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
 	if (result.empty())
 	{
 		// New Hardware -> Create the corresponding devices Selector
