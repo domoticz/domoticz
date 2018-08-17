@@ -516,7 +516,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Already in the system
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
-			bool tIsOn = (nvalue != 0);
 			unsigned sTypeOld = atoi(result[0][3].c_str());
 			std::string sID = result[0][4];
 			if (sTypeOld != sType)
@@ -559,17 +558,14 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			cmd = Color_SetColor;
 		}
 
-		//if (tstate.on != tIsOn) //light was switched, send on or off
-		{
-			//Send as ColorSwitch
-			_tColorSwitch lcmd;
-			lcmd.id = NodeID;
-			lcmd.command = cmd;
-			lcmd.value = tstate.level;
-			lcmd.color = color;
-			lcmd.subtype = sType;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
-		}
+		//Send as ColorSwitch
+		_tColorSwitch lcmd;
+		lcmd.id = NodeID;
+		lcmd.command = cmd;
+		lcmd.value = tstate.level;
+		lcmd.color = color;
+		lcmd.subtype = sType;
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 
 		if (result.empty())
 		{
@@ -624,7 +620,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		unsigned char unitcode = 1;
 		int cmd = (tstate.on ? light2_sOn : light2_sOff);
 		int level = 0;
-		bool tIsOn = !(tstate.on);
 
 		if (LType == HLTYPE_NORMAL)
 			tstate.on ? level = 15 : level = 0;
@@ -654,31 +649,27 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Already in the system
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
-			tIsOn = (nvalue != 0);
-		}
-
-		if (tstate.on != tIsOn) //light was switched, send on or off
-		{
-			tRBUF lcmd;
-			memset(&lcmd, 0, sizeof(RBUF));
-			lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-			lcmd.LIGHTING2.packettype = pTypeLighting2;
-			lcmd.LIGHTING2.subtype = sTypeAC;
-			lcmd.LIGHTING2.seqnbr = 1;
-			lcmd.LIGHTING2.id1 = 0;
-			lcmd.LIGHTING2.id2 = 0;
-			lcmd.LIGHTING2.id3 = NodeID >> 8;
-			lcmd.LIGHTING2.id4 = NodeID;
-			lcmd.LIGHTING2.unitcode = unitcode;
-			lcmd.LIGHTING2.cmnd = cmd;
-			lcmd.LIGHTING2.level = level;
-			lcmd.LIGHTING2.filler = 0;
-			lcmd.LIGHTING2.rssi = 12;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
 		}
 
 		if (tstate.on && (level != 15))
-				cmd = light2_sSetLevel;
+			cmd = light2_sSetLevel;
+
+		tRBUF lcmd;
+		memset(&lcmd, 0, sizeof(RBUF));
+		lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+		lcmd.LIGHTING2.packettype = pTypeLighting2;
+		lcmd.LIGHTING2.subtype = sTypeAC;
+		lcmd.LIGHTING2.seqnbr = 1;
+		lcmd.LIGHTING2.id1 = 0;
+		lcmd.LIGHTING2.id2 = 0;
+		lcmd.LIGHTING2.id3 = NodeID >> 8;
+		lcmd.LIGHTING2.id4 = NodeID;
+		lcmd.LIGHTING2.unitcode = unitcode;
+		lcmd.LIGHTING2.cmnd = cmd;
+		lcmd.LIGHTING2.level = level;
+		lcmd.LIGHTING2.filler = 0;
+		lcmd.LIGHTING2.rssi = 12;
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
 
 		if (result.empty())
 		{
