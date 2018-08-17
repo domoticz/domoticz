@@ -2420,8 +2420,8 @@ void eHouseTCP::Do_Work()
 
 		//opt = 0;	setsockopt(eHouseUDPSocket, SOL_SOCKET, SO_LINGER, &opt, sizeof(int));
 #ifndef WIN32
-		setsockopt(eHouseUDPSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
-		setsockopt(eHouseUDPSocket, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
+		setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
+		setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
 #else
 		opt = 100;	setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&opt, sizeof(opt));
 		opt = 100;	setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_SNDTIMEO, (char *)&opt, sizeof(opt));
@@ -3185,10 +3185,10 @@ void eHouseTCP::Do_Work()
 		break;
 	}
 #ifndef WIN32
-	if (eHouseUDPSocket >= 0)
-		ressock = close(eHouseUDPSocket);
-	if (TCPSocket >= 0)
-		ressock = close(TCPSocket);
+	if (m_eHouseUDPSocket >= 0)
+		ressock = close(m_eHouseUDPSocket);
+	if (m_TCPSocket >= 0)
+		ressock = close(m_TCPSocket);
 #else
 	if (m_eHouseUDPSocket >= 0)
 		ressock = closesocket(m_eHouseUDPSocket);
