@@ -196,7 +196,6 @@ void eHouseTCP::performTCPClientThreads()
 		}
 }
 ////////////////////////////////////////////////////////////////////////////////
-
 #ifndef EHOUSE_TCP_CLIENT_THREAD
 void eHouseTCP::EhouseSubmitData(int SocketIndex)
 #else
@@ -213,13 +212,15 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 	TcpClientCon    *ClientCon = &m_TC[SocketIndex];
 	//      unsigned char iters=5;
   //ReTRYSubmission:
+
 #ifndef WIN32
 	struct timeval timeout;
-	timeout.tv_sec = EHOUSE_TCP_CLIENT_TIMEOUT;    //Timeout for socket set in globals.h
-	timeout.tv_usec = EHOUSE_TCP_CLIENT_TIMEOUT_US;
+	timeout.tv_sec = m_EHOUSE_TCP_CLIENT_TIMEOUT;    //Timeout for socket set in globals.h
+	timeout.tv_usec = m_EHOUSE_TCP_CLIENT_TIMEOUT_US;
 #else
 	int timeout = 20000;
 #endif
+
 	struct sockaddr_in server;
 	char line[20];
 	unsigned char challange[255];
@@ -365,8 +366,9 @@ if (!(iter--)) eHTerminate(SocketIndex)                   //To many retries so C
 		if (status < 0) eHTerminate(SocketIndex)
 	}
 	if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Termination Sent OK", SocketIndex);
+
 #ifdef USE_GOTO
-	// Terminate connection and initialize TCP Client Socket for next operations
+// Terminate connection and initialize TCP Client Socket for next operations
 	terminate :      //Could be replace by KillSocket function and return uncomment definition USE_GOTO
 #else
 	KillSocket(SocketIndex);
