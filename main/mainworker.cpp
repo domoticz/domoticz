@@ -108,9 +108,9 @@
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
 #include "../hardware/RAVEn.h"
-#include "../hardware/DenkoviSmartdenLan.h"
-#include "../hardware/DenkoviSmartdenIPInOut.h"
 #include "../hardware/DenkoviDevices.h"
+#include "../hardware/DenkoviUSBDevices.h"
+#include "../hardware/DenkoviTCPDevices.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
@@ -158,9 +158,9 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-	//#define PARSE_RFXCOM_DEVICE_LOG
-	//#define DEBUG_DOWNLOAD
-	//#define DEBUG_RXQUEUE
+//#define PARSE_RFXCOM_DEVICE_LOG
+//#define DEBUG_DOWNLOAD
+//#define DEBUG_RXQUEUE
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -532,7 +532,7 @@ bool MainWorker::GetSunSettings()
 	asttwend = szRiseSet;
 
 	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
-	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3)+ ";" + daylength.substr(0, daylength.size() - 3); //make a short version
+	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3) + ";" + daylength.substr(0, daylength.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
 		m_DayLength = daylength;
@@ -545,7 +545,7 @@ bool MainWorker::GetSunSettings()
 		StringSplit(m_LastSunriseSet, ";", strarray);
 		m_SunRiseSetMins.clear();
 
-		for(const auto & it : strarray)
+		for (const auto & it : strarray)
 		{
 			StringSplit(it, ":", hourMinItem);
 			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
@@ -576,8 +576,8 @@ bool MainWorker::GetSunSettings()
 		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
 		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
 
-		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
-		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
+									// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
+									// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
 	return true;
 }
@@ -857,17 +857,17 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CSterbox(ID, Address, Port, Username, Password);
 		break;
-	case HTYPE_DenkoviSmartdenLan:
-		//LAN
-		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password, Mode1);
-		break;
-	case HTYPE_DenkoviSmartdenIPInOut:
-		//LAN
-		pHardware = new CDenkoviSmartdenIPInOut(ID, Address, Port, Password, Mode1);
-		break;
-	case HTYPE_DenkoviDevices:
+	case HTYPE_DenkoviHTTPDevices:
 		//LAN
 		pHardware = new CDenkoviDevices(ID, Address, Port, Password, Mode1, Mode2);
+		break;
+	case HTYPE_DenkoviUSBDevices:
+		//USB
+		pHardware = new CDenkoviUSBDevices(ID, SerialPort, Mode1);
+		break;
+	case HTYPE_DenkoviTCPDevices:
+		//LAN
+		pHardware = new CDenkoviTCPDevices(ID, Address, Port, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_HEOS:
 		//HEOS by DENON
@@ -1633,7 +1633,7 @@ void MainWorker::Do_Work()
 
 				tzset(); //this because localtime_r/localtime_s does not update for DST
 
-				//check for 5 minute schedule
+						 //check for 5 minute schedule
 				if (ltime.tm_min % m_sql.m_ShortLogInterval == 0)
 				{
 					m_sql.ScheduleShortlog();
@@ -2061,7 +2061,7 @@ void MainWorker::Do_Work_On_Rx_Messages()
 		if (!hasPopped) {
 			// Timeout occurred : queue is empty
 #ifdef DEBUG_RXQUEUE
-				//_log.Log(LOG_STATUS, "RxQueue: the queue has been empty for five seconds");
+			//_log.Log(LOG_STATUS, "RxQueue: the queue has been empty for five seconds");
 #endif
 			continue;
 		}
@@ -2137,7 +2137,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 
 	const_cast<CDomoticzHardwareBase *>(pHardware)->SetHeartbeatReceived();
 
-	uint64_t DeviceRowIdx = (uint64_t )-1;
+	uint64_t DeviceRowIdx = (uint64_t)-1;
 	std::string DeviceName = "";
 	tcp::server::CTCPClient *pClient2Ignore = NULL;
 
@@ -3659,14 +3659,14 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 		return;
 	}
 	/*
-		AddjValue=0.0f;
-		AddjMulti=1.0f;
-		m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-		Humidity+=int(AddjValue);
-		if (Humidity>100)
-			Humidity=100;
-		if (Humidity<0)
-			Humidity=0;
+	AddjValue=0.0f;
+	AddjMulti=1.0f;
+	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	Humidity+=int(AddjValue);
+	if (Humidity>100)
+	Humidity=100;
+	if (Humidity<0)
+	Humidity=0;
 	*/
 	sprintf(szTmp, "%.1f;%d;%d", temp, Humidity, HumidityStatus);
 	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
@@ -6559,7 +6559,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
 
-	//Get Device details
+									 //Get Device details
 	std::vector<std::vector<std::string> > result;
 	if (pEvo->type == pTypeEvohomeZone && pEvo->zone > 12) //Allow for additional Zone Temp devices which require DeviceID
 	{
@@ -10660,7 +10660,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		StringSplit(sValue, ";", results);
 		if (results.size() < 6)
 			return false; //invalid data
-		//Return usage or delivery
+						  //Return usage or delivery
 		long usagecurrent = atol(results[4].c_str());
 		long delivcurrent = atol(results[5].c_str());
 		std::stringstream ssvalue;
@@ -10736,7 +10736,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		}
 		//if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 		//{
-			//WaterDivider = float(tValue);
+		//WaterDivider = float(tValue);
 		//}
 
 		//get value of today
@@ -10791,9 +10791,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 				sprintf(szTmp, "%llu", total_real);
 				break;
 				/*
-							default:
-								strcpy(szTmp, "?");
-								break;
+				default:
+				strcpy(szTmp, "?");
+				break;
 				*/
 			}
 		}
@@ -10873,15 +10873,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 	// If dimlevel is 0 or no dimlevel, turn switch off
 	if (level <= 0 && switchcmd == "Set Level")
-		switchcmd="Off";
+		switchcmd = "Off";
 
 	//when level is invalid or command is "On", replace level with "LastLevel"
-	if (switchcmd=="On" || level < 0)
+	if (switchcmd == "On" || level < 0)
 	{
 		//Get LastLevel
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
-		"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
+			"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
 		if (result.size() == 1)
 		{
 			level = atoi(result[0][0].c_str());
@@ -10889,7 +10889,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
 	}
 	// TODO: Something smarter if level is not valid?
-	level =std::max(level,0);
+	level = std::max(level, 0);
 
 	//
 	//	For plugins all the specific logic below is irrelevent
@@ -11606,25 +11606,25 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	{
 		_log.Log(LOG_ERROR, "Thermostat 4 not implemented yet!");
 		/*
-					tRBUF lcmd;
-					lcmd.THERMOSTAT4.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
-					lcmd.THERMOSTAT4.packettype = dType;
-					lcmd.THERMOSTAT4.subtype = dSubType;
-					lcmd.THERMOSTAT4.unitcode1 = ID2;
-					lcmd.THERMOSTAT4.unitcode2 = ID3;
-					lcmd.THERMOSTAT4.unitcode3 = ID4;
-					lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-					if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
-						return false;
-					level = 15;
-					lcmd.THERMOSTAT4.filler = 0;
-					lcmd.THERMOSTAT4.rssi = 12;
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
-						return false;
-					if (!IsTesting) {
-						//send to internal for now (later we use the ACK)
-						PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
-					}
+		tRBUF lcmd;
+		lcmd.THERMOSTAT4.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
+		lcmd.THERMOSTAT4.packettype = dType;
+		lcmd.THERMOSTAT4.subtype = dSubType;
+		lcmd.THERMOSTAT4.unitcode1 = ID2;
+		lcmd.THERMOSTAT4.unitcode2 = ID3;
+		lcmd.THERMOSTAT4.unitcode3 = ID4;
+		lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
+		return false;
+		level = 15;
+		lcmd.THERMOSTAT4.filler = 0;
+		lcmd.THERMOSTAT4.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
+		return false;
+		if (!IsTesting) {
+		//send to internal for now (later we use the ACK)
+		PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
 		*/
 		return true;
 	}
@@ -11826,7 +11826,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	tsen.type = pTypeEvohome;
 	tsen.subtype = sTypeEvohome;
 	RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3)
-	tsen.action = (action == "1") ? 1 : 0;
+		tsen.action = (action == "1") ? 1 : 0;
 	tsen.status = nStatus;
 
 	tsen.mode = until.empty() ? CEvohomeBase::cmPerm : CEvohomeBase::cmTmp;
@@ -11951,9 +11951,9 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		tsen.type = dType;
 		tsen.subtype = dSubType;
 		RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3)
-		tsen.zone = Unit;//controller is 0 so let our zones start from 1...
+			tsen.zone = Unit;//controller is 0 so let our zones start from 1...
 		tsen.updatetype = CEvohomeBase::updSetPoint;//setpoint
-		tsen.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue*100.0f);
+		tsen.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue * 100.0f);
 		tsen.mode = nEvoMode;
 		if (nEvoMode == CEvohomeBase::zmTmp)
 			CEvohomeDateTime::DecodeISODate(tsen, until.c_str());
