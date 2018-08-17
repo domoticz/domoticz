@@ -589,8 +589,8 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 200000;	//100ms for delay
-	if (eHEnableProDiscovery) timeout.tv_sec = 10;
-	if (eHEnableAutoDiscovery) timeout.tv_sec = 30;
+	if (m_eHEnableProDiscovery) timeout.tv_sec = 10;
+	if (m_eHEnableAutoDiscovery) timeout.tv_sec = 30;
 #else
 	unsigned int	timeout = 200;	//ms for TCPIP
 	if (m_eHEnableProDiscovery)	timeout = 10000;
