@@ -246,7 +246,7 @@ uint32_t GoodweAPI::hash(const std::string &str)
 	return (uint32_t)hash;
 }
 
-bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, std::string &outputValue, const std::string errorString)
+bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, std::string &outputValue, const std::string &errorString)
 {
 	if (inputValue.empty()) {
  		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString.c_str());
@@ -256,7 +256,7 @@ bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, std::string &out
 	return true;
 }
 
-bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, float &outputValue, const std::string errorString)
+bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, float &outputValue, const std::string &errorString)
 {
 	if (inputValue.empty()) {
 		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString.c_str());
@@ -269,7 +269,7 @@ bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, float &outputVal
 	return true;
 }
 
-bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, int &outputValue, const std::string errorString)
+bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, int &outputValue, const std::string &errorString)
 {
 	if (inputValue.empty()) {
 		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString.c_str());
@@ -282,7 +282,7 @@ bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, int &outputValue
 	return true;
 }
 
-std::string getStatusString(int status)
+std::string getStatusString(const int status)
 {
 	switch(status) {
 	case STATUS_WAITING: return "Waiting for the Sun";
