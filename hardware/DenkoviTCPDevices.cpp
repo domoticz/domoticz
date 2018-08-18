@@ -119,7 +119,7 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 	}
 	case DDEV_WIFI_16R_Modbus: {
 		copyBuffer(pData, (uint8_t *)&pResp[receivedDataLength], length);
-		receivedDataLength += length;
+		receivedDataLength += (uint16_t)length;
 
 		if (m_Cmd == DAE_READ_COILS_CMD && receivedDataLength >= READ_COILS_CMD_LENGTH) {
 			receivedDataLength = 0;

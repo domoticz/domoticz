@@ -757,16 +757,14 @@ uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(std::string tmpstr, const int &aiN
 	return b;
 }
 
-
-
 float CDenkoviDevices::DAEnetIP2CalculateAi(int adc, const int &valType) {
 	if (valType == DAENETIP2_AI_TEMPERATURE) {
-		return (10000 * ((1.2*204.8)*adc / (120 * 1024) + 0) / 100);
+		return static_cast<float>(10000 * ((1.2*204.8)*adc / (120 * 1024) + 0) / 100);
 	}
 	else if (valType == DAENETIP2_AI_VOLTAGE) {
-		return (10000 * ((1.2*0.377)*adc / (4.7 * 1024) + 0) / 100);
+		return static_cast<float>(10000 * ((1.2*0.377)*adc / (4.7 * 1024) + 0) / 100);
 	}
-	return 0;
+	return 0.0f;
 }
 
 void CDenkoviDevices::GetMeterDetails()
@@ -960,7 +958,7 @@ void CDenkoviDevices::GetMeterDetails()
 		return;
 	}
 
-	size_t ii;
+	int ii;
 	std::string tmpstr;
 	int tmpState;
 	int tmpValue;
@@ -977,7 +975,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveAnalogInput = false;
 		bool bHaveTemperatureInput = false;
 		bool bHaveRelay = false;
-		for (ii = 1; ii < results.size(); ii++)
+		for (ii = 1; ii < (int)results.size(); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1043,7 +1041,7 @@ void CDenkoviDevices::GetMeterDetails()
 				name = "Temperature Input (" + name + ")";
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure);
-				tmpTiValue = atof(tmpMeasure.c_str());
+				tmpTiValue = static_cast<float>(atof(tmpMeasure.c_str()));
 				if (tmpMeasure.find("F") != std::string::npos)
 					tmpTiValue = (float)ConvertToCelsius((double)tmpTiValue);
 				SendTempSensor(Idx, 255, tmpTiValue, name);
@@ -1175,7 +1173,7 @@ void CDenkoviDevices::GetMeterDetails()
 	}
 	case DDEV_SmartDEN_IP_16_Relays: {//has only relays
 		bool bHaveRelays = false;
-		for (ii = 1; ii < results.size(); ii++)
+		for (ii = 1; ii < (int)results.size(); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1204,7 +1202,7 @@ void CDenkoviDevices::GetMeterDetails()
 	}
 	case DDEV_SmartDEN_IP_Watchdog: {//has only relays
 		bool bHaveRelays = false;
-		for (ii = 1; ii < results.size(); ii++)
+		for (ii = 1; ii < (int)results.size(); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1235,7 +1233,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveDigitalInput = false;
 		bool bHaveAnalogInput = false;
 		bool bHaveTemperatureInput = false;
-		for (ii = 1; ii < results.size(); ii++)
+		for (ii = 1; ii < (int)results.size(); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1297,7 +1295,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveDigitalInput = false;
 		bool bHaveAnalogInput = false;
 		bool bHaveTemperatureInput = false;
-		for (ii = 1; ii < results.size(); ii++)
+		for (ii = 1; ii < (int)results.size(); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1369,7 +1367,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveAnalogOutput = false;
 		bool bHaveAnalogInput = false;
 		bool bHaveRelay = false;
-		for (ii = 1; ii < results.size(); ii++)
+		for (ii = 1; ii < (int)results.size(); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1425,7 +1423,7 @@ void CDenkoviDevices::GetMeterDetails()
 				else {
 					name = "Analog Input " + std::to_string(Idx) + " (" + name + ")";
 					if (vMeasure.size() == 2) {
-						tmpTiValue = atof(vMeasure[0].c_str());
+						tmpTiValue = static_cast<float>(atof(vMeasure[0].c_str()));
 						if (vMeasure[1] == "degF")
 							tmpTiValue = (float)ConvertToCelsius((double)tmpTiValue);
 						SendTempSensor(Idx, 255, tmpTiValue, name);
@@ -1464,7 +1462,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveDigitalOutput = false;
 		bool bHaveAnalogInput = false;
 		bool bHavePWM = false;
-		for (ii = 1; ii < results.size(); ii++)
+		for (ii = 1; ii < (int)results.size(); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
