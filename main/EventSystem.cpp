@@ -1254,11 +1254,12 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	if (m_eventtrigger.size() > 0)
 	{
 		time_t atime = mytime(NULL) + static_cast<int>(fDelayTime);
-		std::vector<_tEventTrigger>::iterator itt;
-		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
+		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
-			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later queued items
-				itt = m_eventtrigger.erase(itt) - 1;
+			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later or equal queued items
+			{
+				m_eventtrigger.erase(itt--);
+			}
 		}
 	}
 	_tEventTrigger item;
