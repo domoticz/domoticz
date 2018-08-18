@@ -277,6 +277,7 @@ define(['app'], function (app) {
 							if ((item.Type == "Group") || (item.Type == "Scene")) {
 								itemSubIcons += '&nbsp;<img src="images/empty16.png">';
 								itemSubIcons += '<img src="images/rename.png" title="' + $.t('Rename Device') + '" onclick="RenameDevice(' + item.idx + ',\'' + item.Type + '\',\'' + escape(item.Name) + '\')">';
+								itemSubIcons += '&nbsp;<a href="#/Scenes/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else {
 								if (item.Used != 0) {
@@ -308,7 +309,7 @@ define(['app'], function (app) {
 								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if ((/Temp|Thermostat|Humidity/i).test(item.Type)) {
-								itemSubIcons += '&nbsp;<a href="#Devices/'+item.idx+'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
+								itemSubIcons += '&nbsp;<a href="#Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if ([
 								'Voltage', 'Current', 'Pressure', 'Custom Sensor',
