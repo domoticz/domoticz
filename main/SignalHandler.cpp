@@ -36,31 +36,6 @@ extern bool g_bRunAsDaemon;
 extern time_t m_LastHeartbeat;
 
 #if defined(__linux__)
-static int IsDebuggerPresent(void)
-{
-	char buf[1024];
-	int debugger_present = 0;
-
-	int status_fd = open("/proc/self/status", O_RDONLY);
-	if (status_fd == -1)
-		return 0;
-
-	ssize_t num_read = read(status_fd, buf, sizeof(buf)-1);
-
-	if (num_read > 0)
-	{
-		static const char TracerPid[] = "TracerPid:";
-		char *tracer_pid;
-
-		buf[num_read] = 0;
-		tracer_pid    = strstr(buf, TracerPid);
-		if (tracer_pid)
-			debugger_present = !!atoi(tracer_pid + sizeof(TracerPid) - 1);
-	}
-
-	return debugger_present;
-}
-
 static bool printRegInfo(siginfo_t * info, ucontext_t * ucontext)
 {
 #if defined(REG_RIP) //x86_64
@@ -514,26 +489,28 @@ static void heartbeat_check()
 	if (diff > 60)
 	{
 		_log.Log(LOG_ERROR, "mainworker seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
-#ifndef _DEBUG
+		if (!IsDebuggerPresent())
+		{
 #ifdef WIN32
-		abort();
+			abort();
 #else
-		raise(SIGUSR1);
+			raise(SIGUSR1);
 #endif
-#endif
+		}
 	}
 
 	diff = difftime(now, m_LastHeartbeat);
 	if (diff > 60)
 	{
 		_log.Log(LOG_ERROR, "main thread seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
-#ifndef _DEBUG
+		if (!IsDebuggerPresent())
+		{
 #ifdef WIN32
-		abort();
+			abort();
 #else
-		raise(SIGUSR1);
+			raise(SIGUSR1);
 #endif
-#endif
+		}
 	}
 }
 

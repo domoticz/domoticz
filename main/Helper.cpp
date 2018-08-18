@@ -1,11 +1,15 @@
 #include "stdafx.h"
 #include "Helper.h"
+#include "Logger.h"
 #ifdef WIN32
 #include "dirent_windows.h"
 #include <direct.h>
 #else
 #include <dirent.h>
 #include <unistd.h>
+#endif
+#if !defined(WIN32)
+#include <sys/ptrace.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1133,6 +1137,7 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	return pthread_setname_np(thread, name_trunc);
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+	return 0;
 #elif defined(__NetBSD__)
 	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
 	strncpy(name_trunc, name, sizeof(name_trunc));
@@ -1150,6 +1155,47 @@ int SetThreadName(std::thread::native_handle_type thread, const char *name)
 	name_trunc[sizeof(name_trunc)-1] = '\0';
 	pthread_set_name_np(thread, name_trunc);
 	return 0;
+#endif
+}
+#endif
+
+#if !defined(WIN32)
+bool IsDebuggerPresent(void)
+{
+#if defined(__linux__)
+	// Linux implementation: Search for 'TracerPid:' in /proc/self/status
+	char buf[4096];
+
+	const int status_fd = ::open("/proc/self/status", O_RDONLY);
+	if (status_fd == -1)
+		return false;
+
+	const ssize_t num_read = ::read(status_fd, buf, sizeof(buf) - 1);
+	if (num_read <= 0)
+		return false;
+
+	buf[num_read] = '\0';
+	constexpr char tracerPidString[] = "TracerPid:";
+	const auto tracer_pid_ptr = ::strstr(buf, tracerPidString);
+	if (!tracer_pid_ptr)
+		return false;
+
+	for (const char* characterPtr = tracer_pid_ptr + sizeof(tracerPidString) - 1; characterPtr <= buf + num_read; ++characterPtr)
+	{
+		if (::isspace(*characterPtr))
+			continue;
+		else
+			return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
+	}
+
+	return false;
+#else
+	// MacOS X / BSD: TODO
+#	ifdef _DEBUG
+	return true;
+#	else
+	return false;
+#	endif
 #endif
 }
 #endif

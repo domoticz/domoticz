@@ -12861,13 +12861,14 @@ void MainWorker::HeartbeatCheck()
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
 			if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
 			{
-#ifndef _DEBUG
+				if (!IsDebuggerPresent())
+				{
 #ifdef WIN32
-				abort();
+					abort();
 #else
-				raise(SIGUSR1);
+					raise(SIGUSR1);
 #endif
-#endif
+				}
 			}
 		}
 	}
