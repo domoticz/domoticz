@@ -307,7 +307,7 @@ define(['app'], function (app) {
 							) {
 								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
-							else if (['Temp', 'Thermostat', 'Humidity'].includes(item.Type)) {
+							else if ((/Temp|Thermostat|Humidity/i).test(item.Type)) {
 								itemSubIcons += '&nbsp;<a href="#Devices/'+item.idx+'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if ([
