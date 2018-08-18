@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 130
+#define DB_VERSION 131
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -74,25 +74,6 @@ const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
 "BEGIN\n"
 "	UPDATE DeviceStatus SET [Order] = (SELECT MAX([Order]) FROM DeviceStatus)+1 WHERE DeviceStatus.ID = NEW.ID;\n"
-"END;\n";
-
-const char *sqlCreateEventActions =
-"CREATE TABLE IF NOT EXISTS [EventActions] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[ConditionID] INTEGER NOT NULL, "
-"[ActionType] INTEGER NOT NULL, "
-"[DeviceRowID] INTEGER DEFAULT 0, "
-"[Param1] VARCHAR(120), "
-"[Param2] VARCHAR(120), "
-"[Param3] VARCHAR(120), "
-"[Param4] VARCHAR(120), "
-"[Param5] VARCHAR(120), "
-"[Order] INTEGER BIGINT(10) default 0);";
-
-const char *sqlCreateEventActionsTrigger =
-"CREATE TRIGGER IF NOT EXISTS eventactionsstatusupdate AFTER INSERT ON EventActions\n"
-"BEGIN\n"
-"  UPDATE EventActions SET [Order] = (SELECT MAX([Order]) FROM EventActions)+1 WHERE EventActions.ID = NEW.ID;\n"
 "END;\n";
 
 const char *sqlCreateLightingLog =
@@ -712,8 +693,6 @@ bool CSQLHelper::OpenDatabase()
 	//create database (if not exists)
 	query(sqlCreateDeviceStatus);
 	query(sqlCreateDeviceStatusTrigger);
-	query(sqlCreateEventActions);
-	query(sqlCreateEventActionsTrigger);
 	query(sqlCreateLightingLog);
 	query(sqlCreateSceneLog);
 	query(sqlCreatePreferences);
@@ -2585,6 +2564,10 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
+		}
+		if (dbversion < 131)
+		{
+			query("DROP TABLE IF EXISTS [EventActions]");
 		}
 	}
 	else if (bNewInstall)
