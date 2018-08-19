@@ -26,6 +26,8 @@
 
 #include "SignalHandler.h"
 
+#define Heartbeat_Timeout 300 //5 minutes
+
 extern MainWorker m_mainworker;
 
 extern std::string logfile;
@@ -486,7 +488,7 @@ static void heartbeat_check()
 	mytime(&now);
 
 	double diff = difftime(now, m_mainworker.m_LastHeartbeat);
-	if (diff > 60)
+	if (diff > Heartbeat_Timeout)
 	{
 		_log.Log(LOG_ERROR, "mainworker seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
 		if (!IsDebuggerPresent())
@@ -500,7 +502,7 @@ static void heartbeat_check()
 	}
 
 	diff = difftime(now, m_LastHeartbeat);
-	if (diff > 60)
+	if (diff > Heartbeat_Timeout)
 	{
 		_log.Log(LOG_ERROR, "main thread seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
 		if (!IsDebuggerPresent())
