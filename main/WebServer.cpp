@@ -16814,7 +16814,7 @@ namespace http {
 									root["result"][ii]["sx"] = sx;
 									char szTmp[1024];
 									sprintf(szTmp, "%.1f %.1f %.1f", sm, se, sx);
-									_log.Log(LOG_STATUS, szTmp);
+									_log.Log(LOG_STATUS, "%s", szTmp);
 
 								}
 								ii++;
