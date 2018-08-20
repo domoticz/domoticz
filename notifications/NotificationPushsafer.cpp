@@ -56,8 +56,6 @@ bool CNotificationPushsafer::SendMessageImplementation(
 		std::string PS_u = splitresults[8];
 		std::string PS_ut = splitresults[9];
 		std::string PS_l = splitresults[10];
-		// The domoticz priority parameter is passed with the pr parameter of pushsafer
-		std::string PS_pr = Priority;
 		std::string PS_re = splitresults[11];
 		std::string PS_ex = splitresults[12];
 		std::string PS_a = splitresults[13];
@@ -89,17 +87,17 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			{
 				std::string base64ImageString(camimage.begin(), camimage.end());
 				base64ImageString = base64_encode(base64ImageString);
-				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << PS_pr << "&re=" << PS_re << "&ex=" << PS_ex << "&a=" << PS_a;
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority << "&re=" << PS_re << "&ex=" << PS_ex << "&a=" << PS_a;
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
-				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << PS_pr << "&re=" << PS_re << "&ex=" << PS_ex << "&a=" << PS_a;
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority << "&re=" << PS_re << "&ex=" << PS_ex << "&a=" << PS_a;
 			}
 		}
 		else
 		{
-			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << PS_pr << "&re=" << PS_re << "&ex=" << PS_ex << "&a=" << PS_a;
+			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority << "&re=" << PS_re << "&ex=" << PS_ex << "&a=" << PS_a;
 		}
 	}
 	else
