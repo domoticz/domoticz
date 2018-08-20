@@ -42,9 +42,9 @@ bool CNotificationPushsafer::SendMessageImplementation(
 
 	std::vector<std::string> splitresults;
 	StringSplit(CURLEncode::URLDecode(Text), "|", splitresults);
-	if (splitresults.size() == 15)
+	if (splitresults.size() >= 11)
 	{
-		// [0] privatekey | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live | [11] priority | [12] retry | [13] expire | [14] answer
+		// [0] private or alias key | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live | [11] priority | [12] retry | [13] expire | [14] answer
 		std::string PS_k = splitresults[0];
 		std::string PS_d = splitresults[1];
 		std::string PS_i = splitresults[2];
