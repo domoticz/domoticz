@@ -44,7 +44,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 	StringSplit(CURLEncode::URLDecode(Text), "|", splitresults);
 	if (splitresults.size() >= 11)
 	{
-		// [0] private or alias key | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live | [11] priority | [12] retry | [13] expire | [14] answer
+		// [0] private or alias key | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live | [11] retry | [12] expire | [13] answer
 		std::string PS_k = splitresults[0];
 		std::string PS_d = splitresults[1];
 		std::string PS_i = splitresults[2];
@@ -56,10 +56,11 @@ bool CNotificationPushsafer::SendMessageImplementation(
 		std::string PS_u = splitresults[8];
 		std::string PS_ut = splitresults[9];
 		std::string PS_l = splitresults[10];
-		std::string PS_pr = splitresults[11];
-		std::string PS_re = splitresults[12];
-		std::string PS_ex = splitresults[13];
-		std::string PS_a = splitresults[14];
+		// The domoticz priority parameter is passed with the pr parameter of pushsafer
+		std::string PS_pr = Priority;
+		std::string PS_re = splitresults[11];
+		std::string PS_ex = splitresults[12];
+		std::string PS_a = splitresults[13];
 
 		if (PS_k.length() >= 15)
 		{
