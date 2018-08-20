@@ -92,7 +92,7 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 	//boost::lock_guard<boost::mutex> l(readQueueMutex);
 
 	if (!m_bEnableReceive) {
-		readingNow = false;
+		m_readingNow = false;
 		return; //receiving not enabled
 	}
 	uint8_t tmp = (unsigned char)data[0];
@@ -119,8 +119,8 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 		} 
 		break;
 	}
-	updateIo = false;
-	readingNow = false;
+	m_updateIo = false;
+	m_readingNow = false;
 }
 
 
@@ -165,7 +165,7 @@ void CDenkoviUSBDevices::Do_Work()
 		sleep_milliseconds(40);
 		if (msec_counter++ >= 100) {
 			msec_counter = 0;
-			if (readingNow == false && updateIo == false)
+			if (m_readingNow == false && m_updateIo == false)
 				GetMeterDetails();
 		}
 	}
@@ -179,7 +179,7 @@ void CDenkoviUSBDevices::Do_Work()
 
 bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	updateIo = true;
+	m_updateIo = true;
 	const _tGeneralSwitch *pSen = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 	if (m_bIsStarted == false)
 		return false;
@@ -213,7 +213,7 @@ bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char 
 
 void CDenkoviUSBDevices::GetMeterDetails()
 {
-	readingNow = true;
+	m_readingNow = true;
 	std::string sResult, sResult2;
 	std::stringstream szURL, szURL2;
 
