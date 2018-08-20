@@ -23,10 +23,11 @@ bool CNotificationPushsafer::SendMessageImplementation(
 	const std::string &Name,
 	const std::string &Subject,
 	const std::string &Text,
-	const int Priority,
 	const std::string &ExtraData,
+	const int Priority,
 	const std::string &Sound,
 	const bool bFromNotification)
+	
 {
 	//send message to Pushsafer
 	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
