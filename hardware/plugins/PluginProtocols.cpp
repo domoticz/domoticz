@@ -163,32 +163,32 @@ namespace Plugins {
 				{
 					PyObject*	pObj = JSONtoPython(&pRef);
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
-						_log.Log(LOG_ERROR, "(%s) failed to add item '%d', to list for object.", __func__, Index - 1);
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for object.", __func__, Index - 1);
 				}
 				else if (it->isUInt())
 				{
 					PyObject*	pObj = Py_BuildValue("I", it->asUInt());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
-						_log.Log(LOG_ERROR, "(%s) failed to add item '%d', to list for unsigned integer.", __func__, Index - 1);
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for unsigned integer.", __func__, Index - 1);
 				}
 				else if (it->isInt())
 				{
 					PyObject*	pObj = Py_BuildValue("i", it->asInt());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
-						_log.Log(LOG_ERROR, "(%s) failed to add item '%d', to list for integer.", __func__, Index - 1);
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for integer.", __func__, Index - 1);
 				}
 				else if (it->isDouble())
 				{
 					PyObject*	pObj = Py_BuildValue("d", it->asDouble());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
-						_log.Log(LOG_ERROR, "(%s) failed to add item '%d', to list for double.", __func__, Index - 1);
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for double.", __func__, Index - 1);
 				}
 				else if (it->isConvertibleTo(Json::stringValue))
 				{
 					std::string	sString = it->asString();
 					PyObject*	pObj = Py_BuildValue("s#", sString.c_str(), sString.length());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
-						_log.Log(LOG_ERROR, "(%s) failed to add item '%d', to list for string.", __func__, Index - 1);
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for string.", __func__, Index - 1);
 				}
 				else
 					_log.Log(LOG_ERROR, "(%s) failed to process entry.", __func__);
@@ -1044,7 +1044,7 @@ namespace Plugins {
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
 					m_bErrored = true;
 				}
 				break;
@@ -1100,7 +1100,7 @@ namespace Plugins {
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
 					m_bErrored = true;
 				}
 				break;
@@ -1120,7 +1120,7 @@ namespace Plugins {
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
 					m_bErrored = true;
 				}
 				break;
@@ -1139,7 +1139,7 @@ namespace Plugins {
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
 					m_bErrored = true;
 				}
 				break;
@@ -1158,7 +1158,7 @@ namespace Plugins {
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
 					m_bErrored = true;
 				}
 				break;
@@ -1174,7 +1174,7 @@ namespace Plugins {
 				int		topicLen = (*it++ << 8) + *it++;
 				if (topicLen+2+(iQoS?2:0) > iRemainingLength)
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u' (iQoS:%u, topicLen:%u)", __func__, iRemainingLength, bResponseType>>4, iQoS, topicLen);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u' (iQoS:%ld, topicLen:%d)", __func__, iRemainingLength, bResponseType>>4, iQoS, topicLen);
 					m_bErrored = true;
 					break;
 				}
@@ -1207,7 +1207,7 @@ namespace Plugins {
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
 					m_bErrored = true;
 				}
 				break;
@@ -1221,7 +1221,7 @@ namespace Plugins {
 				}
 				if (iRemainingLength != 0) // check length is correct
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %u for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
 					m_bErrored = true;
 				}
 				break;
