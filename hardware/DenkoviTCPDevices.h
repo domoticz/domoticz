@@ -19,8 +19,8 @@ enum _eDenkoviTCPDevice
 #define DMODBUS_WRITE_MULTIPLE_REGISTERS		16
 
 struct _sDenkoviTCPModbusRequest {
-	uint8_t trId[2] = {0,0};//transaction ID
-	uint8_t prId[2] = {0,0};//protocol ID
+	uint8_t trId[2] = { 0,0 };//transaction ID
+	uint8_t prId[2] = { 0,0 };//protocol ID
 	uint8_t length[2] = { 0,6 };//message length
 	uint8_t unitId = 1;//unit ID
 	uint8_t fc = 1;//function code
@@ -54,6 +54,8 @@ private:
 	uint16_t ByteSwap(uint16_t in);
 	void SwapRequestBytes();
 	void SwapResponseBytes();
+	void ConvertResponse(const uint8_t * pData, const size_t length);
+	void CreateRequest(uint8_t * pData, size_t length);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
@@ -68,8 +70,10 @@ private:
 	bool m_bReadingNow = false;
 	bool m_bUpdateIo = false;
 	bool m_bFirstTime = true;
-	_sDenkoviTCPModbusRequest *m_pReq;
-	_sDenkoviTCPModbusResponse *m_pResp;
+	_sDenkoviTCPModbusRequest m_pReq;
+	_sDenkoviTCPModbusResponse m_pResp;
+	uint8_t m_respBuff[110];
+	uint8_t m_reqBuff[110];
 	uint16_t m_uiReceivedDataLength = 0;
 	uint16_t m_uiTransactionCounter = 0;
 
