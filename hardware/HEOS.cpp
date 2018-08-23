@@ -591,16 +591,6 @@ bool CHEOS::StartHardware()
 bool CHEOS::StopHardware()
 {
 	m_stoprequested = true;
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
 	try {
 		if (m_thread)
 		{
@@ -611,6 +601,16 @@ bool CHEOS::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
+	}
+	if (isConnected())
+	{
+		try {
+			disconnect();
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
 	}
 
 	m_bIsStarted = false;

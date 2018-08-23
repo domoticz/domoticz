@@ -108,6 +108,17 @@ bool MochadTCP::StartHardware()
 bool MochadTCP::StopHardware()
 {
 	m_stoprequested = true;
+	try {
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
 	if (isConnected())
 	{
 		try {

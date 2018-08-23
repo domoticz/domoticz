@@ -195,11 +195,6 @@ bool RelayNet::StopHardware()
 {
 	m_stoprequested = true;
 
-	if (isConnected())
-	{
-		disconnect();
-	}
-
 	try
 	{
 		if (m_thread)
@@ -210,6 +205,10 @@ bool RelayNet::StopHardware()
 	}
 	catch (...)
 	{
+	}
+	if (isConnected())
+	{
+		disconnect();
 	}
 
 	m_bIsStarted = false;
