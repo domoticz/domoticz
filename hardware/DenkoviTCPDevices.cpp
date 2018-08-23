@@ -60,13 +60,10 @@ bool CDenkoviTCPDevices::StartHardware()
 	m_stoprequested = false;
 	m_bIsStarted = true;
 	m_uiTransactionCounter = 0;
-	m_pReq = new _sDenkoviTCPModbusRequest;
-	m_pResp = new _sDenkoviTCPModbusResponse; 
 	m_uiReceivedDataLength = 0;
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDenkoviTCPDevices::Do_Work, this);
-	//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviTCPDevices::Do_Work, this)));
 	m_bIsStarted = true;
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:
@@ -79,16 +76,41 @@ bool CDenkoviTCPDevices::StartHardware()
 	return (m_thread != NULL);
 }
 
+void CDenkoviTCPDevices::ConvertResponse(const uint8_t * pData, const size_t length)
+{
+	m_pResp.trId[0] = pData[0];
+	m_pResp.trId[1] = pData[1];
+	m_pResp.prId[0] = pData[2];
+	m_pResp.prId[1] = pData[3];
+	m_pResp.length[0] = pData[4];
+	m_pResp.length[1] = pData[5];
+	m_pResp.unitId = pData[6];
+	m_pResp.fc = pData[7];
+	m_pResp.dataLength = pData[8];
+	for (uint8_t ii = 9; ii < length; ii++)
+		m_pResp.data[ii - 9] = pData[ii];
+}
+
+void CDenkoviTCPDevices::CreateRequest(uint8_t * pData, size_t length)
+{
+	pData[0] = m_pReq.trId[0];
+	pData[1] = m_pReq.trId[1];
+	pData[2] = m_pReq.prId[0];
+	pData[3] = m_pReq.prId[1];
+	pData[4] = m_pReq.length[0];
+	pData[5] = m_pReq.length[1];
+	pData[6] = m_pReq.unitId;
+	pData[7] = m_pReq.fc;
+	pData[8] = m_pReq.address[0];
+	pData[9] = m_pReq.address[1];
+	for (uint8_t ii = 10; ii < length; ii++)
+		pData[ii] = m_pReq.data[ii - 10];
+}
+ 
 void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 {
 	std::lock_guard<std::mutex> l(readQueueMutex);
-	//boost::lock_guard<boost::mutex> l(readQueueMutex);
-
-	/*if (!m_bEnableReceive) {
-		m_bReadingNow = false;
-		return; //receiving not enabled
-	}*/
-
+	
 	switch (m_iModel) {
 	case DDEV_WIFI_16R: {
 		if (m_Cmd == DAE_WIFI16_ASK_CMD) {
@@ -112,42 +134,43 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 		break;
 	}
 	case DDEV_WIFI_16R_Modbus: {
-		memcpy((uint8_t *)pData, (uint8_t *)&m_pResp[m_uiReceivedDataLength], length);
+		memcpy((uint8_t *)&m_respBuff[m_uiReceivedDataLength], (uint8_t *)pData, length);
 		m_uiReceivedDataLength += (uint16_t)length;
 
 		if (m_Cmd == DAE_READ_COILS_CMD && m_uiReceivedDataLength >= READ_COILS_CMD_LENGTH) {
+			ConvertResponse((uint8_t *)m_respBuff, m_uiReceivedDataLength);
 			m_uiReceivedDataLength = 0;
-			if (m_pReq->trId[0] != m_pResp->trId[0] || m_pReq->trId[1] != m_pResp->trId[1]) {
+			if (m_pReq.trId[0] != m_pResp.trId[0] || m_pReq.trId[1] != m_pResp.trId[1]) {
 				_log.Log(LOG_ERROR, "WiFi 16 Relays-TCP Modbus: Wrong Transaction ID.");
 				break;
 			}
-			if (m_pResp->length[0] != 0 || m_pResp->length[1] != 5) {
+			if (m_pResp.length[0] != 0 || m_pResp.length[1] != 5) {
 				_log.Log(LOG_ERROR, "WiFi 16 Relays-TCP Modbus: Wrong Length of Response.");
 				break;
 			}
 			uint8_t firstEight, secondEight;
-			firstEight = (uint8_t)m_pResp->data[0];
-			secondEight = (uint8_t)m_pResp->data[1];
+			firstEight = (uint8_t)m_pResp.data[0];
+			secondEight = (uint8_t)m_pResp.data[1];
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				SendGeneralSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii-1)) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(ii));
+				SendGeneralSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii - 1)) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(ii));
 			}
 			for (uint8_t ii = 1; ii < 9; ii++) {
 				SendGeneralSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, (((secondEight >> (ii - 1)) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(8 + ii));
 			}
 		}
 		else if (m_Cmd == DAE_WRITE_COIL_CMD && m_uiReceivedDataLength >= WRITE_SINGLE_COIL_CMD_LENGTH) {
-			memcpy((uint8_t *)pData, (uint8_t *)&m_pResp[m_uiReceivedDataLength], length);
+			ConvertResponse((uint8_t *)m_respBuff, m_uiReceivedDataLength);
 			m_uiReceivedDataLength = 0;
-			if (m_pReq->trId[0] != m_pResp->trId[0] || m_pReq->trId[1] != m_pResp->trId[1]) {
+			if (m_pReq.trId[0] != m_pResp.trId[0] || m_pReq.trId[1] != m_pResp.trId[1]) {
 				_log.Log(LOG_ERROR, "WiFi 16 Relays-TCP Modbus: Wrong Transaction ID.");
 				break;
 			}
-			if (m_pResp->length[0] != 0 || m_pResp->length[1] != 6) {
+			if (m_pResp.length[0] != 0 || m_pResp.length[1] != 6) {
 				_log.Log(LOG_ERROR, "WiFi 16 Relays-TCP Modbus: Wrong Data Received.");
 				break;
 			}
 		}
-		break; 
+		break;
 	}
 	}
 	m_bUpdateIo = false;
@@ -287,31 +310,32 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 		if (io > 16)
 			return false;
 
-		m_pReq->prId[0] = 0;
-		m_pReq->prId[1] = 0;
-		//m_pReq->trId = ByteSwap(m_pReq->trId);
+		m_pReq.prId[0] = 0;
+		m_pReq.prId[1] = 0;
+		//m_pReq.trId = ByteSwap(m_pReq.trId);
 		m_uiTransactionCounter++;
-		m_pReq->trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
-		m_pReq->trId[1] = (uint8_t)(m_uiTransactionCounter);
-		m_pReq->unitId = m_slaveId;
-		m_pReq->address[0] = 0;
-		m_pReq->address[1] = io - 1;
-		m_pReq->fc = DMODBUS_WRITE_SINGLE_COIL;
-		m_pReq->length[0] = 0;
-		m_pReq->length[1] = 6;
+		m_pReq.trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
+		m_pReq.trId[1] = (uint8_t)(m_uiTransactionCounter);
+		m_pReq.unitId = m_slaveId;
+		m_pReq.address[0] = 0;
+		m_pReq.address[1] = io - 1;
+		m_pReq.fc = DMODBUS_WRITE_SINGLE_COIL;
+		m_pReq.length[0] = 0;
+		m_pReq.length[1] = 6;
 		if (pSen->cmnd == light2_sOff)
-			m_pReq->data[0] = 0x00;
+			m_pReq.data[0] = 0x00;
 		else
-			m_pReq->data[0] = 0xFF;
-		m_pReq->data[1] = 0x00;
-		size_t dataLength = m_pReq->length[1] + 6;
+			m_pReq.data[0] = 0xFF;
+		m_pReq.data[1] = 0x00;
+		size_t dataLength = m_pReq.length[1] + 6;
 		//SwapRequestBytes();
+		CreateRequest(m_reqBuff,dataLength);
 		m_Cmd = DAE_WRITE_COIL_CMD;
 		write("");
 		write("");
 		write("");
 		write("");
-		write((uint8_t*)m_pReq, dataLength);
+		write(m_reqBuff, dataLength);
 		return true;
 	}
 	}
@@ -321,7 +345,8 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 }
 
 uint16_t CDenkoviTCPDevices::ByteSwap(uint16_t in)
-{	uint16_t out;
+{
+	uint16_t out;
 	uint8_t *indata = (uint8_t *)&in;
 	uint8_t *outdata = (uint8_t *)&out;
 	outdata[0] = indata[1];
@@ -332,26 +357,26 @@ uint16_t CDenkoviTCPDevices::ByteSwap(uint16_t in)
 void CDenkoviTCPDevices::SwapRequestBytes()
 {
 	/*uint16_t tmpVar;
-	tmpVar = ((m_pReq->trId & 0x00ff) << 8) | ((m_pReq->trId & 0xff00) >> 8);
-	m_pReq->trId = tmpVar;
-	tmpVar = ((m_pReq->length & 0x00ff) << 8) | ((m_pReq->length & 0xff00) >> 8);
-	m_pReq->length = tmpVar;
-	tmpVar = ((m_pReq->address & 0x00ff) << 8) | ((m_pReq->address & 0xff00) >> 8);
-	m_pReq->address = tmpVar;*/
-	//m_pReq->length = ByteSwap(m_pReq->length);
-	//m_pReq->trId = ByteSwap(m_pReq->trId);
-	//m_pReq->address = ByteSwap(m_pReq->address);
+	tmpVar = ((m_pReq.trId & 0x00ff) << 8) | ((m_pReq.trId & 0xff00) >> 8);
+	m_pReq.trId = tmpVar;
+	tmpVar = ((m_pReq.length & 0x00ff) << 8) | ((m_pReq.length & 0xff00) >> 8);
+	m_pReq.length = tmpVar;
+	tmpVar = ((m_pReq.address & 0x00ff) << 8) | ((m_pReq.address & 0xff00) >> 8);
+	m_pReq.address = tmpVar;*/
+	//m_pReq.length = ByteSwap(m_pReq.length);
+	//m_pReq.trId = ByteSwap(m_pReq.trId);
+	//m_pReq.address = ByteSwap(m_pReq.address);
 }
 
 void CDenkoviTCPDevices::SwapResponseBytes()
 {
 	/*uint16_t tmpVar;
-	tmpVar = ((m_pResp->trId & 0x00ff) << 8) | ((m_pResp->trId & 0xff00) >> 8);
-	m_pResp->trId = tmpVar;
-	tmpVar = ((m_pResp->length & 0x00ff) << 8) | ((m_pResp->length & 0xff00) >> 8);
-	m_pResp->length = tmpVar;*/
-	//m_pResp->trId = ByteSwap(m_pResp->trId);
-	//m_pResp->length = ByteSwap(m_pResp->length);
+	tmpVar = ((m_pResp.trId & 0x00ff) << 8) | ((m_pResp.trId & 0xff00) >> 8);
+	m_pResp.trId = tmpVar;
+	tmpVar = ((m_pResp.length & 0x00ff) << 8) | ((m_pResp.length & 0xff00) >> 8);
+	m_pResp.length = tmpVar;*/
+	//m_pResp.trId = ByteSwap(m_pResp.trId);
+	//m_pResp.length = ByteSwap(m_pResp.length);
 }
 
 void CDenkoviTCPDevices::GetMeterDetails()
@@ -364,26 +389,26 @@ void CDenkoviTCPDevices::GetMeterDetails()
 	}
 	case DDEV_WIFI_16R_Modbus: {
 		m_Cmd = DAE_READ_COILS_CMD;
-		m_pReq->prId[0] = 0;
-		m_pReq->prId[1] = 0;
+		m_pReq.prId[0] = 0;
+		m_pReq.prId[1] = 0;
 		m_uiTransactionCounter++;
-		m_pReq->trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
-		m_pReq->trId[1] = (uint8_t)(m_uiTransactionCounter);
-		m_pReq->address[0] = 0;
-		m_pReq->address[1] = 0;
-		m_pReq->fc = DMODBUS_READ_COILS;
-		m_pReq->length[0] = 0;
-		m_pReq->length[1] = 6;
-		m_pReq->unitId = m_slaveId;
-		m_pReq->data[0] = 0;
-		m_pReq->data[1] = 16;
-		size_t dataLength = m_pReq->length[1] + 6;
-		//SwapRequestBytes();
+		m_pReq.trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
+		m_pReq.trId[1] = (uint8_t)(m_uiTransactionCounter);
+		m_pReq.address[0] = 0;
+		m_pReq.address[1] = 0;
+		m_pReq.fc = DMODBUS_READ_COILS;
+		m_pReq.length[0] = 0;
+		m_pReq.length[1] = 6;
+		m_pReq.unitId = m_slaveId;
+		m_pReq.data[0] = 0;
+		m_pReq.data[1] = 16;
+		size_t dataLength = m_pReq.length[1] + 6;
+		CreateRequest(m_reqBuff, dataLength);
 		write("");
 		write("");
 		write("");
 		write("");
-		write((uint8_t*)m_pReq, dataLength);
+		write(m_reqBuff, dataLength);//dataLength
 		break;
 	}
 	}
