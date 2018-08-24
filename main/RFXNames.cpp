@@ -628,7 +628,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeLighting5, sTypeTRC02_2, "TRC02_2 (RGB)" },
 	{ pTypeLighting5, sTypeAoke, "Aoke" },
 	{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
-	{ pTypeLighting5, sTypeLivoloAppliance, "Livolo" },
+	{ pTypeLighting5, sTypeLivolo1to10, "Livolo 1 to 10" },
 	{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
 	{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
 	{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
@@ -658,6 +658,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeBlinds, sTypeBlindsT12, "Confexx" },
 	{ pTypeBlinds, sTypeBlindsT13, "Screenline" },
 	{ pTypeBlinds, sTypeBlindsT14, "Hualite" },
+	{ pTypeBlinds, sTypeBlindsT15, "RFU" },
+	{ pTypeBlinds, sTypeBlindsT16, "Zemismart" },
 
 	{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 	{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -779,6 +781,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeFan, sTypeLucciAirDC, "Lucci Air DC" },
 	{ pTypeFan, sTypeCasafan, "Casafan" },
 	{ pTypeFan, sTypeFT1211R, "FT1211R" },
+	{ pTypeFan, sTypeFalmec, "Falmec" },
+	{ pTypeFan, sTypeLucciAirDCII, "Lucci Air DC II" },
 
 	{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -1296,7 +1300,7 @@ void GetLightStatus(
 				break;
 			}
 			break;
-		case sTypeLivoloAppliance:
+		case sTypeLivolo1to10:
 			bHaveGroupCmd = true;
 			switch (nValue)
 			{
@@ -3647,7 +3651,7 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
 		if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid; }
 		if (subtype == sTypeLightwaveRF) { subtype = sSwitchTypeLightwaveRF; devid = "00" + devid; }
-		if (subtype == sTypeLivoloAppliance) { subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid; }
+		if (subtype == sTypeLivolo1to10) { subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid; }
 		if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest;
 	}
 	else if (dtype == pTypeLighting6) {

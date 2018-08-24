@@ -5054,7 +5054,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 	char szTmp[100];
 	unsigned char devType = pTypeLighting5;
 	unsigned char subType = pResponse->LIGHTING5.subtype;
-	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W) && (subType != sTypeKangtai))
+	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivolo1to10) && (subType != sTypeRGB432W) && (subType != sTypeKangtai))
 		sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	else
 		sprintf(szTmp, "%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
@@ -5287,7 +5287,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			}
 			break;
-		case sTypeLivoloAppliance:
+		case sTypeLivolo1to10:
 			WriteMessage("subtype       = Livolo On/Off module");
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
@@ -5715,6 +5715,12 @@ void MainWorker::decode_Fan(const int HwdID, const _eHardwareTypes HwdType, cons
 			break;
 		case sTypeFT1211R:
 			WriteMessage("subtype       = FT1211R");
+			break;
+		case sTypeFalmec:
+			WriteMessage("subtype       = Falmec");
+			break;
+		case sTypeLucciAirDCII:
+			WriteMessage("subtype       = Lucci Air DC II");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
@@ -6258,6 +6264,12 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeBlindsT14:
 			WriteMessage("subtype       = Hualite");
+			break;
+		case sTypeBlindsT15:
+			WriteMessage("subtype       = RFU");
+			break;
+		case sTypeBlindsT16:
+			WriteMessage("subtype       = Zemismart");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
@@ -11460,7 +11472,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			(dSubType == sTypeBlindsT8) ||
 			(dSubType == sTypeBlindsT12) ||
 			(dSubType == sTypeBlindsT13) ||
-			(dSubType == sTypeBlindsT14)
+			(dSubType == sTypeBlindsT14) ||
+			(dSubType == sTypeBlindsT15) ||
+			(dSubType == sTypeBlindsT16)
 			)
 		{
 			lcmd.BLINDS1.unitcode = Unit;
