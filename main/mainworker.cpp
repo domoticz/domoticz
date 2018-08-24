@@ -2541,23 +2541,29 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				WriteMessage("Firmware type     = ", false);
 				switch (FWType)
 				{
-				case 0:
+				case FWtyperec:
 					strcpy(szTmp, "Type1 RX");
 					break;
-				case 1:
+				case FWtype1:
 					strcpy(szTmp, "Type1");
 					break;
-				case 2:
+				case FWtype2:
 					strcpy(szTmp, "Type2");
 					break;
-				case 3:
+				case FWtypeExt:
 					strcpy(szTmp, "Ext");
 					break;
-				case 4:
+				case FWtypeExt2:
 					strcpy(szTmp, "Ext2");
 					break;
-				case 5:
+				case FWtypePro1:
 					strcpy(szTmp, "Pro1");
+					break;
+				case FWtypePro2:
+					strcpy(szTmp, "Pro2");
+					break;
+				case FWtypeProXL1:
+					strcpy(szTmp, "Pro XL1");
 					break;
 				default:
 					strcpy(szTmp, "?");
