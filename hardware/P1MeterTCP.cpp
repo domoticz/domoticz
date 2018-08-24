@@ -115,8 +115,13 @@ void P1MeterTCP::disconnect()
 	m_stoprequested=true;
 	if (m_socket==INVALID_SOCKET)
 		return;
-	closesocket(m_socket);	//will terminate the thread
+	closesocket(m_socket);
 	m_socket=INVALID_SOCKET;
+	sleep_seconds(1);
+	if (m_thread)
+	{
+		m_thread->join();
+	}
 }
 
 

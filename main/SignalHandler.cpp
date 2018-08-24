@@ -41,13 +41,13 @@ extern time_t m_LastHeartbeat;
 static bool printRegInfo(siginfo_t * info, ucontext_t * ucontext)
 {
 #if defined(REG_RIP) //x86_64
-	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP]);
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, (void*)((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP]);
 #elif defined(REG_EIP) //x86
-	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_EIP]);
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, (void*)((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_EIP]);
 #elif defined(__aarch64__) //arm64 (aarch64 according to gnu)
-	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.regs[30]);
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, (void*)((ucontext_t *)ucontext)->uc_mcontext.regs[30]);
 #elif defined(__arm__) //arm32
-	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, ((ucontext_t *)ucontext)->uc_mcontext.arm_lr);
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, (void*)((ucontext_t *)ucontext)->uc_mcontext.arm_lr);
 #else // unknown
 	_log.Log(LOG_ERROR, "siginfo address=%p", info->si_addr);
 #endif
@@ -275,7 +275,7 @@ static bool dumpstack_gdb(bool printAllThreads) {
 				if (!foundThread)
 				{
 					if (!printAllThreads) _log.Log(LOG_ERROR, "Did not find stack frame for thread %s, printing full gdb output:\n", thread_buf);
-					else _log.Log(LOG_ERROR, "Stack frame for all threads:\n", thread_buf);
+					else _log.Log(LOG_ERROR, "Stack frame for all threads:\n");
 					rewind(f);
 					while ((read = getline(&line, &len, f)) != -1) {
 						if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
@@ -423,7 +423,7 @@ void signal_handler(int sig_num
 		tid = syscall(__NR_gettid);
 #endif
 		if (fatal_handling) {
-			_log.Log(LOG_ERROR, "Domoticz(pid:%d, tid:%d('%s')) received fatal signal %d (%s) while backtracing", getpid(), tid, thread_name, sig_num
+			_log.Log(LOG_ERROR, "Domoticz(pid:%d, tid:%ld('%s')) received fatal signal %d (%s) while backtracing", getpid(), tid, thread_name, sig_num
 #ifndef WIN32
 				, strsignal(sig_num));
 #else
@@ -450,7 +450,7 @@ void signal_handler(int sig_num
 #ifndef WIN32
 		fatal_handling_thread = pthread_self();
 #endif
-		_log.Log(LOG_ERROR, "Domoticz(pid:%d, tid:%d('%s')) received fatal signal %d (%s)", getpid(), tid, thread_name, sig_num
+		_log.Log(LOG_ERROR, "Domoticz(pid:%d, tid:%ld('%s')) received fatal signal %d (%s)", getpid(), tid, thread_name, sig_num
 #ifndef WIN32
 			, strsignal(sig_num));
 #else

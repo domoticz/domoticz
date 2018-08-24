@@ -68,13 +68,16 @@ Authors:
 #define BMEx8x_CtrlMeas				0xF4
 #define BMEx8x_Config				0xF5
 
+#define BMEx8x_Control_Hum			0xF2
 #define BMEx8x_Hum_MSB				0xFD
 #define BMEx8x_Hum_LSB				0xFE
 
+//Oversample setting - page 27
 #define BMEx8x_OverSampling_Temp	2
-#define BMEx8x_OverSampling_hum		3
+#define BMEx8x_OverSampling_Hum		2
+#define BMEx8x_OverSampling_Pres	2
 #define BMEx8x_OverSampling_Mode	1
-#define BMEx8x_OverSampling_Control	BMEx8x_OverSampling_Temp<<5 | BMEx8x_OverSampling_hum<<2 | BMEx8x_OverSampling_Mode
+#define BMEx8x_OverSampling_Control	BMEx8x_OverSampling_Temp<<5 | BMEx8x_OverSampling_Pres<<2 | BMEx8x_OverSampling_Mode
 
 
 const unsigned char BMPx8x_OverSampling = 3;
@@ -578,6 +581,31 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 		return rc;
 	}
 	//note that the return data is contained in the array pointed to by devValues (passed by-ref)
+	return 0;
+#endif
+}
+
+int I2C::WriteCmdAddr(const int fd, const uint8_t CmdAddr, const uint8_t devAction)
+{
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
+	int rc;
+	struct i2c_rdwr_ioctl_data messagebuffer;
+	uint8_t datatosend[2];
+	struct i2c_msg bme_write_reg[1] = {
+		{ BMEx8x_I2CADDR, 0, 2, datatosend }
+	};
+	datatosend[0] = CmdAddr;
+	datatosend[1] = devAction;
+	//Build a register write command
+	//Requires one complete message containing a reg address and command
+	messagebuffer.msgs = bme_write_reg;           //load the 'write__reg' message into the buffer
+	messagebuffer.nmsgs = 1;                  //One message/action
+	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
+	if (rc < 0) {
+		return rc;
+	}
 	return 0;
 #endif
 }
@@ -1313,11 +1341,15 @@ uint8_t getUChar(uint8_t *data, int index)
 
 bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidity)
 {
+	//Oversample setting for humidity register - page 26
+	WriteCmdAddr(fd, BMEx8x_Control_Hum, BMEx8x_OverSampling_Hum);
+	
 	if (WriteCmd(fd, BMEx8x_OverSampling_Control) != 0) {
 		_log.Log(LOG_ERROR, "%s: Error Writing to I2C register", szI2CTypeNames[m_dev_type]);
 		return false;
 	}
 
+	//Read blocks of calibration data from EEPROM
 	uint8_t cal1[24] = { 0 };
 	uint8_t cal2[1] = { 0 };
 	uint8_t cal3[7] = { 0 };
@@ -1362,6 +1394,11 @@ bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidit
 	dig_H5 = dig_H5 | (getUChar(cal3, 4) >> 4 & 0x0F);
 
 	int8_t dig_H6 = getChar(cal3, 6);
+
+	// Wait in ms(Datasheet Appendix B : Measurement time and current calculation)
+	double wait_time = 1.25 + (2.3 * BMEx8x_OverSampling_Temp) + ((2.3 * BMEx8x_OverSampling_Pres) + 0.575) + ((2.3 * BMEx8x_OverSampling_Hum) + 0.575);
+	int wait_time_ms = (int)rint(wait_time) + 1;
+	sleep_milliseconds(wait_time_ms);
 
 	// Read temperature/pressure/humidity
 	uint8_t data[8] = { 0 };

@@ -761,7 +761,7 @@ namespace Plugins {
 					Py_XDECREF(pFuncBytes);
 				}
 				if (FileName.length())
-					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%'s, function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
+					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
 				else
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
 			}

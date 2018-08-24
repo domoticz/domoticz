@@ -359,19 +359,13 @@ define(['app'], function (app) {
 								itemSubIcons += '&nbsp;<img src="images/empty16.png">';
 							}
 							var ID = item.ID;
-							
-							//GizMoCuz: This is unnecessary as the HEX value (node_id) is part of the ID
-/*
 							if (typeof(item.HardwareTypeVal) != 'undefined' && item.HardwareTypeVal == 21) {
-								var ZWID = item.ID.substr(-4, 2);
-								if (ZWID == '00') {
-								ZWID = item.ID.substr(-2, 2);
+								if (item.ID.substr(-4, 2) == '00') {
+									ID = item.ID.substr(1,item.ID.length-2) + '<span class="ui-state-default">' + item.ID.substr(-2, 2) + '</span>';
+								} else {
+									ID = item.ID.substr(1,item.ID.length-4) + '<span class="ui-state-default">' + item.ID.substr(-4, 2) + '</span>' + item.ID.substr(-2, 2);
 								}
-								ZWID = '0x' + ZWID;
-								var ZWIDdec =  ("00" + parseInt(ZWID)).slice(-3);
-								item.HardwareName = item.HardwareName + " " + ZWIDdec + ' (' + ZWID + ')';
 							}
-*/							
 							if (item.Type == "Lighting 1") {
 								ID = String.fromCharCode(item.ID);
 							}

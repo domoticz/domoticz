@@ -173,11 +173,14 @@ void SolarMaxTCP::disconnect()
 	m_stoprequested = true;
 	if (m_socket != INVALID_SOCKET)
 	{
-		closesocket(m_socket);	//will terminate the thread
+		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
 		sleep_seconds(1);
 	}
-	//m_thread-> join();
+	if (m_thread)
+	{
+		m_thread->join();
+	}
 }
 
 void SolarMaxTCP::Do_Work()
