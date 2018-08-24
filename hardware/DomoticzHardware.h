@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <boost/signals2.hpp>
 #include "../main/RFXNames.h"
 
@@ -24,8 +25,8 @@ public:
 
 	void SetHeartbeatReceived();
 
-	time_t m_LastHeartbeat = { 0 };
-	time_t m_LastHeartbeatReceive = { 0 };
+	std::atomic<time_t> m_LastHeartbeat = { 0 };
+	std::atomic<time_t> m_LastHeartbeatReceive = { 0 };
 
 	int m_HwdID = { 0 }; //must be uniquely assigned
 	bool m_bSkipReceiveCheck = { false };
@@ -101,7 +102,7 @@ protected:
 	//Barometric calculation (only for 1 sensor per hardware device!)
 	int CalculateBaroForecast(const double pressure);
 
-	bool m_bIsStarted = { false };
+	std::atomic<bool> m_bIsStarted = { false };
 
 private:
     void Do_Heartbeat_Work();

@@ -696,8 +696,8 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			sstr << revision << "." << build;
 			m_Version = sstr.str();
 
-			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
-			mytime(&m_LastHeartbeat);  // keep heartbeat happy
+			m_LastHeartbeatReceive = mytime(NULL);  // keep heartbeat happy
+			m_LastHeartbeat = mytime(NULL);  // keep heartbeat happy
 			m_LastReceivedTime = m_LastHeartbeat;
 
 			m_bTXokay = true; // variable to indicate an OK was received
@@ -705,8 +705,8 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		}
 		if (Name_ID.find("PONG") != std::string::npos) {
 			//_log.Log(LOG_STATUS, "RFLink: PONG received!...");
-			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
-			mytime(&m_LastHeartbeat);  // keep heartbeat happy
+			m_LastHeartbeatReceive = mytime(NULL);  // keep heartbeat happy
+			m_LastHeartbeat = mytime(NULL);  // keep heartbeat happy
 			m_LastReceivedTime = m_LastHeartbeat;
 
 			m_bTXokay = true; // variable to indicate an OK was received
@@ -714,8 +714,8 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		}
 		if (Name_ID.find("OK") != std::string::npos) {
 			//_log.Log(LOG_STATUS, "RFLink: OK received!...");
-			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
-			mytime(&m_LastHeartbeat);  // keep heartbeat happy
+			m_LastHeartbeatReceive = mytime(NULL);  // keep heartbeat happy
+			m_LastHeartbeat = mytime(NULL);  // keep heartbeat happy
 			m_LastReceivedTime = m_LastHeartbeat;
 
 			m_bTXokay = true; // variable to indicate an OK was received
@@ -733,8 +733,8 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (results[3].find("ID=") == std::string::npos)
 		return false; //??
 
-	mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
-	mytime(&m_LastHeartbeat);  // keep heartbeat happy
+	m_LastHeartbeatReceive = mytime(NULL);  // keep heartbeat happy
+	m_LastHeartbeat = mytime(NULL);  // keep heartbeat happy
 	//_log.Log(LOG_STATUS, "RFLink: t1=%d t2=%d", m_LastHeartbeat, m_LastHeartbeatReceive);
 	m_LastReceivedTime = m_LastHeartbeat;
 

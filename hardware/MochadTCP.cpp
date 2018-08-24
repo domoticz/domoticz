@@ -156,7 +156,7 @@ void MochadTCP::Do_Work()
 
 
 		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (bFirstTime)
 		{

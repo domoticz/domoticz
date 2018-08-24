@@ -474,7 +474,7 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 		return; //Not found
 
 	int intValue;
-	mytime(&m_LastHeartbeatReceive);
+	m_LastHeartbeatReceive = mytime(NULL);
 	_tMySensorNode *pNode = &ittNode->second;
 
 	for (auto & itt : pNode->m_childs)

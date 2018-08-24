@@ -382,7 +382,7 @@ private:
 	void Do_Work();
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
-	bool m_bDoStop;
+	std::atomic<bool> m_bDoStop;
 	std::string m_server_alias;
 };
 

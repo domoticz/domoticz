@@ -215,7 +215,7 @@ void CTeleinfoSerial::MatchLine()
 		_log.Log(LOG_NORM,"(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", m_Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
 		#endif
 		ProcessTeleinfo(teleinfo);
-		mytime(&m_LastHeartbeat);// keep heartbeat happy
+		m_LastHeartbeat = mytime(NULL);// keep heartbeat happy
 	}
 }
 

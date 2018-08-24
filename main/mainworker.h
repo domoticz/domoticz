@@ -170,7 +170,7 @@ private:
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
 #endif
-	volatile bool m_stoprequested;
+	std::atomic<bool> m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 
@@ -194,7 +194,7 @@ private:
 	unsigned char get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
-	volatile bool m_stopRxMessageThread;
+	std::atomic<bool> m_stopRxMessageThread;
 	volatile unsigned long m_rxMessageIdx;
 	std::shared_ptr<std::thread> m_rxMessageThread;
 	void Do_Work_On_Rx_Messages();

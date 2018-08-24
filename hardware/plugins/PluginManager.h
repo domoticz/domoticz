@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
@@ -11,17 +12,17 @@ namespace Plugins {
 	class CPluginSystem
 	{
 	private:
-		bool	m_bEnabled;
-		bool	m_bAllPluginsStarted;
-		int		m_iPollInterval;
+		bool				m_bEnabled;
+		std::atomic<bool>	m_bAllPluginsStarted;
+		int					m_iPollInterval;
 
-		void*	m_InitialPythonThread;
+		void* 				m_InitialPythonThread;
 
 		static	std::map<int, CDomoticzHardwareBase*>	m_pPlugins;
 		static	std::map<std::string, std::string>		m_PluginXml;
 
 		std::shared_ptr<std::thread> m_thread;
-		volatile bool m_stoprequested;
+		std::atomic<bool> m_stoprequested;
 		std::mutex m_mutex;
 
 		void Do_Work();

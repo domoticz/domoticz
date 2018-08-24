@@ -211,7 +211,7 @@ void CToonThermostat::Do_Work()
 		m_poll_counter--;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (m_poll_counter<=0)
 		{

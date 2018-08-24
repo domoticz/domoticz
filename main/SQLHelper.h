@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <string>
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
@@ -438,7 +439,7 @@ private:
 	std::vector<_tTaskItem> m_background_task_queue;
 	std::shared_ptr<std::thread> m_background_task_thread;
 	std::mutex m_background_task_mutex;
-	bool m_stoprequested;
+	std::atomic<bool> m_stoprequested;
 	bool StartThread();
 	void Do_Work();
 
