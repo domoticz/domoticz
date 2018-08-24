@@ -12,7 +12,6 @@
 #include <iostream>
 
 #define round(a) ( int ) ( a + .5 )
-#define DEBUG_LOGGING (m_Port[0] == '-')
 
 /*
 
@@ -263,8 +262,6 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 	m_iPollIntSec = PollIntervalsec;
 	m_iMissedPongs = 0;
 
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Created.", m_Name.c_str());
-
 	std::vector<std::vector<std::string> > result2;
 	result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, m_szDevID);
 	if (result2.size() == 1)
@@ -279,7 +276,6 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 CPanasonicNode::~CPanasonicNode(void)
 {
 	StopThread();
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Destroyed.", m_Name.c_str());
 }
 
 void CPanasonicNode::UpdateStatus(bool forceupdate)
@@ -335,25 +331,23 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 			socket.connect(endpoint, ec);
 			if (!ec)
 			{
-				if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected to '%s:%s'.", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
+				_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Connected to '%s:%s'.", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
 				return true;
 			}
 			else
 			{
-				if (DEBUG_LOGGING)
-					if ((
-						(ec.value() != 113) &&
-						(ec.value() != 111) &&
-						(ec.value() != 10060) &&
-						(ec.value() != 10061) &&
-						(ec.value() != 10064) //&&
-						//(ec.value() != 10061)
-						)
-						) // Connection failed due to no response, no route or active refusal
-					{
-						_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
-					}
-				return false;
+				if ((
+					(ec.value() != 113) &&
+					(ec.value() != 111) &&
+					(ec.value() != 10060) &&
+					(ec.value() != 10061) &&
+					(ec.value() != 10064) //&&
+					//(ec.value() != 10061)
+					)
+					) // Connection failed due to no response, no route or active refusal
+				{
+					_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+				}
 			}
 		}
 	}
@@ -371,7 +365,7 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 {
 
-	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Handling message: '%s'.", m_Name.c_str(), pMessageToSend.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Handling message: '%s'.", m_Name.c_str(), pMessageToSend.c_str());
 	boost::asio::io_service io_service;
 	// Get a list of endpoints corresponding to the server name.
 	boost::asio::ip::tcp::resolver resolver(io_service);
@@ -388,7 +382,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 		socket.close();
 		if (handleConnect(socket, *iter, error))
 		{
-			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected.", m_Name.c_str());
+			_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Connected.", m_Name.c_str());
 			break;
 		}
 		else
@@ -396,19 +390,19 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	}
 	if (error)
 	{
-		if (DEBUG_LOGGING) _log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Error trying to connect.", m_Name.c_str());
+		_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Error trying to connect.", m_Name.c_str());
 		socket.close();
 		return "ERROR";
 	}
 
 	boost::array<char, 512> _Buffer;
 	size_t request_length = std::strlen(pMessageToSend.c_str());
-	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping write.", m_Name.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Attemping write.", m_Name.c_str());
 
 	try
 	{
 		boost::asio::write(socket, boost::asio::buffer(pMessageToSend.c_str(), request_length));
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping read.", m_Name.c_str());
+		_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Attemping read.", m_Name.c_str());
 		size_t reply_length = boost::asio::read(socket, boost::asio::buffer(_Buffer, request_length));
 		//_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Error code: (%i).'.", m_Name.c_str(),error);
 		socket.close();
@@ -443,7 +437,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	iPosBegin = pMessage.find(ResponseOK);
 	if (iPosBegin != std::string::npos)
 	{
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Last command response OK", m_Name.c_str());
+		_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Last command response OK", m_Name.c_str());
 	}
 
 	iPosBegin = 0;
@@ -454,7 +448,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	{
 		if (!m_PowerOnSupported)
 		{
-			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) TV Supports Powering on by Network", m_Name.c_str());
+			_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) TV Supports Powering on by Network", m_Name.c_str());
 			m_PowerOnSupported = true;
 		}
 	}
@@ -548,7 +542,7 @@ std::string CPanasonicNode::buildXMLStringNetCtl(const std::string &command)
 void CPanasonicNode::Do_Work()
 {
 	m_Busy = true;
-	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Entering work loop.", m_Name.c_str());
+	_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) started.", m_Name.c_str());
 	int	iPollCount = 9;
 
 	while (!m_stoprequested)
@@ -596,7 +590,7 @@ void CPanasonicNode::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Exiting work loop.", m_Name.c_str());
+	_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Stopped.", m_Name.c_str());
 	m_Busy = false;
 }
 
@@ -702,7 +696,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 			sPanasonicCall = buildXMLStringNetCtl("POWER-ONOFF");
 		else
 		{
-			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Can't use command: '%s'.", m_Name.c_str(), command.c_str());
+			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Can't use command: '%s'.", m_Name.c_str(), command.c_str());
 			// Workaround to get the plugin to reset device status, otherwise the UI goes out of sync with plugin
 			m_CurrentStatus.Clear();
 			m_CurrentStatus.Status(MSTAT_UNKNOWN);
@@ -710,12 +704,12 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		}
 	}
 	else
-		_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Unknown command: '%s'.", m_Name.c_str(), command.c_str());
+		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'.", m_Name.c_str(), command.c_str());
 
 	if (sPanasonicCall.length())
 	{
 		if (handleWriteAndRead(sPanasonicCall) != "ERROR")
-			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 		//else
 		//	_log.Log(LOG_NORM, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	}
@@ -733,9 +727,9 @@ void CPanasonicNode::SendCommand(const std::string &command, const int iValue)
 	if (sPanasonicCall.length())
 	{
 		if (handleWriteAndRead(sPanasonicCall) != "ERROR")
-			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 		else
-			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	}
 
 }
@@ -744,11 +738,11 @@ bool CPanasonicNode::SendShutdown()
 {
 	std::string sPanasonicCall = buildXMLStringNetCtl("POWER-ONOFF");
 	if (handleWriteAndRead(sPanasonicCall) != "ERROR") {
-		_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+		_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 		return true;
 	}
 	else
-		_log.Log(LOG_NORM, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	return false;
 }
 
@@ -834,7 +828,7 @@ void CPanasonic::Do_Work()
 			{
 				if (!(*itt)->IsBusy())
 				{
-					_log.Log(LOG_NORM, "Panasonic Plugin: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
+					_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
 					(*itt)->StartThread();
 				}
 				if ((*itt)->IsOn()) bWorkToDo = true;
@@ -1009,7 +1003,7 @@ void CPanasonic::ReloadNodes()
 		// start the threads to control each Panasonic TV
 		for (std::vector<std::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
-			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
+			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
 			(*itt)->StartThread();
 		}
 		sleep_milliseconds(100);
@@ -1031,7 +1025,7 @@ void CPanasonic::UnloadNodes()
 			(*itt)->StopThread();
 			if (!(*itt)->IsBusy())
 			{
-				_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Removing device.", (*itt)->m_Name.c_str());
+				_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Removing device.", (*itt)->m_Name.c_str());
 				m_pNodes.erase(itt);
 				break;
 			}

@@ -191,7 +191,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		std::string	sMessage;
 		std::stringstream ssMessage;
 
-		_log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
+		_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
 		bool bRet = jReader.parse(pMessage, root);
 		if ((!bRet) || (!root.isObject()))
 		{
