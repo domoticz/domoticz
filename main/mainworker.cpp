@@ -2513,6 +2513,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 			}
 			int FWType = 0;
 			int FWVersion = 0;
+			int NoiseLevel = 0;
 			if (mlen > 13)
 			{
 				FWType = pResponse->IRESPONSE.msg10;
@@ -2558,6 +2559,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 					break;
 				case FWtypePro1:
 					strcpy(szTmp, "Pro1");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
 					break;
 				case FWtypePro2:
 					strcpy(szTmp, "Pro2");
@@ -2581,7 +2583,9 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 
 				if (FWType == FWtypePro1)
 				{
-					pMyHardware->m_NoiseLevel = pResponse->IRESPONSE.msg11;
+					pMyHardware->m_NoiseLevel = NoiseLevel;
+					sprintf(szTmp, "Noise Level: %d dB", pMyHardware->m_NoiseLevel);
+					WriteMessage(szTmp);
 				}
 			}
 
