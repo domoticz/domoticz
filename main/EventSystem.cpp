@@ -3191,7 +3191,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		else
 			dayTimeBool = true; // Sun above horizon in the space of 24 hours
 	}
-	else if ((minutesSinceMidnight > sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
+	else if ((minutesSinceMidnight >= sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
 		dayTimeBool = true;
 	}
 	else {
@@ -3200,7 +3200,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 	bool civilDaytTime = false;
 	bool civilNightTime = false;
-    if ((minutesSinceMidnight > sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
+    if ((minutesSinceMidnight >= sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
         civilDaytTime = true;
     }
     else {
