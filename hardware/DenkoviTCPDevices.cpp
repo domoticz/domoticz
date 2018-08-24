@@ -76,7 +76,7 @@ bool CDenkoviTCPDevices::StartHardware()
 	return (m_thread != NULL);
 }
 
-void CDenkoviTCPDevices::ConvertResponse(const uint8_t * pData, const size_t length)
+void CDenkoviTCPDevices::ConvertResponse(const std::string pData, const size_t length)
 {
 	m_pResp.trId[0] = pData[0];
 	m_pResp.trId[1] = pData[1];
@@ -89,6 +89,7 @@ void CDenkoviTCPDevices::ConvertResponse(const uint8_t * pData, const size_t len
 	m_pResp.dataLength = pData[8];
 	for (uint8_t ii = 9; ii < length; ii++)
 		m_pResp.data[ii - 9] = pData[ii];
+
 }
 
 void CDenkoviTCPDevices::CreateRequest(uint8_t * pData, size_t length)
@@ -105,12 +106,13 @@ void CDenkoviTCPDevices::CreateRequest(uint8_t * pData, size_t length)
 	pData[9] = m_pReq.address[1];
 	for (uint8_t ii = 10; ii < length; ii++)
 		pData[ii] = m_pReq.data[ii - 10];
+
 }
  
 void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 {
 	std::lock_guard<std::mutex> l(readQueueMutex);
-	
+
 	switch (m_iModel) {
 	case DDEV_WIFI_16R: {
 		if (m_Cmd == DAE_WIFI16_ASK_CMD) {
@@ -134,11 +136,12 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 		break;
 	}
 	case DDEV_WIFI_16R_Modbus: {
-		memcpy((uint8_t *)&m_respBuff[m_uiReceivedDataLength], (uint8_t *)pData, length);
+		m_respBuff.append((const char * )pData, length);
 		m_uiReceivedDataLength += (uint16_t)length;
 
 		if (m_Cmd == DAE_READ_COILS_CMD && m_uiReceivedDataLength >= READ_COILS_CMD_LENGTH) {
-			ConvertResponse((uint8_t *)m_respBuff, m_uiReceivedDataLength);
+			ConvertResponse(m_respBuff, m_uiReceivedDataLength);
+			m_respBuff.clear();
 			m_uiReceivedDataLength = 0;
 			if (m_pReq.trId[0] != m_pResp.trId[0] || m_pReq.trId[1] != m_pResp.trId[1]) {
 				_log.Log(LOG_ERROR, "WiFi 16 Relays-TCP Modbus: Wrong Transaction ID.");
@@ -159,7 +162,8 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 			}
 		}
 		else if (m_Cmd == DAE_WRITE_COIL_CMD && m_uiReceivedDataLength >= WRITE_SINGLE_COIL_CMD_LENGTH) {
-			ConvertResponse((uint8_t *)m_respBuff, m_uiReceivedDataLength);
+			ConvertResponse(m_respBuff, m_uiReceivedDataLength);
+			m_respBuff.clear();
 			m_uiReceivedDataLength = 0;
 			if (m_pReq.trId[0] != m_pResp.trId[0] || m_pReq.trId[1] != m_pResp.trId[1]) {
 				_log.Log(LOG_ERROR, "WiFi 16 Relays-TCP Modbus: Wrong Transaction ID.");
@@ -312,7 +316,6 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 
 		m_pReq.prId[0] = 0;
 		m_pReq.prId[1] = 0;
-		//m_pReq.trId = ByteSwap(m_pReq.trId);
 		m_uiTransactionCounter++;
 		m_pReq.trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
 		m_pReq.trId[1] = (uint8_t)(m_uiTransactionCounter);
@@ -328,7 +331,6 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 			m_pReq.data[0] = 0xFF;
 		m_pReq.data[1] = 0x00;
 		size_t dataLength = m_pReq.length[1] + 6;
-		//SwapRequestBytes();
 		CreateRequest(m_reqBuff,dataLength);
 		m_Cmd = DAE_WRITE_COIL_CMD;
 		write("");
@@ -352,31 +354,6 @@ uint16_t CDenkoviTCPDevices::ByteSwap(uint16_t in)
 	outdata[0] = indata[1];
 	outdata[1] = indata[0];
 	return out;
-}
-
-void CDenkoviTCPDevices::SwapRequestBytes()
-{
-	/*uint16_t tmpVar;
-	tmpVar = ((m_pReq.trId & 0x00ff) << 8) | ((m_pReq.trId & 0xff00) >> 8);
-	m_pReq.trId = tmpVar;
-	tmpVar = ((m_pReq.length & 0x00ff) << 8) | ((m_pReq.length & 0xff00) >> 8);
-	m_pReq.length = tmpVar;
-	tmpVar = ((m_pReq.address & 0x00ff) << 8) | ((m_pReq.address & 0xff00) >> 8);
-	m_pReq.address = tmpVar;*/
-	//m_pReq.length = ByteSwap(m_pReq.length);
-	//m_pReq.trId = ByteSwap(m_pReq.trId);
-	//m_pReq.address = ByteSwap(m_pReq.address);
-}
-
-void CDenkoviTCPDevices::SwapResponseBytes()
-{
-	/*uint16_t tmpVar;
-	tmpVar = ((m_pResp.trId & 0x00ff) << 8) | ((m_pResp.trId & 0xff00) >> 8);
-	m_pResp.trId = tmpVar;
-	tmpVar = ((m_pResp.length & 0x00ff) << 8) | ((m_pResp.length & 0xff00) >> 8);
-	m_pResp.length = tmpVar;*/
-	//m_pResp.trId = ByteSwap(m_pResp.trId);
-	//m_pResp.length = ByteSwap(m_pResp.length);
 }
 
 void CDenkoviTCPDevices::GetMeterDetails()
@@ -408,7 +385,7 @@ void CDenkoviTCPDevices::GetMeterDetails()
 		write("");
 		write("");
 		write("");
-		write(m_reqBuff, dataLength);//dataLength
+		write(m_reqBuff, dataLength);
 		break;
 	}
 	}
