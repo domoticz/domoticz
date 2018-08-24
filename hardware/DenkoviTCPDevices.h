@@ -7,8 +7,7 @@
 enum _eDenkoviTCPDevice
 {
 	DDEV_WIFI_16R = 0,						//0
-	DDEV_WIFI_16R_Modbus,						//1
-	DDEV_DAEnet_IP401
+	DDEV_WIFI_16R_Modbus					//1
 };
 
 #define DMODBUS_READ_COILS						1
@@ -52,9 +51,7 @@ private:
 	void GetMeterDetails();
 	void readCallBack(const char * data, size_t len);
 	uint16_t ByteSwap(uint16_t in);
-	void SwapRequestBytes();
-	void SwapResponseBytes();
-	void ConvertResponse(const uint8_t * pData, const size_t length);
+	void ConvertResponse(const std::string pData, const size_t length);
 	void CreateRequest(uint8_t * pData, size_t length);
 private:
 	std::string m_szIPAddress;
@@ -64,7 +61,6 @@ private:
 	int m_slaveId;
 	volatile bool m_stoprequested;
 	int m_iModel;
-	//boost::shared_ptr<boost::thread> m_thread;
 	std::shared_ptr<std::thread> m_thread;
 	int m_Cmd;
 	bool m_bReadingNow = false;
@@ -72,8 +68,8 @@ private:
 	bool m_bFirstTime = true;
 	_sDenkoviTCPModbusRequest m_pReq;
 	_sDenkoviTCPModbusResponse m_pResp;
-	uint8_t m_respBuff[110];
-	uint8_t m_reqBuff[110];
+	std::string m_respBuff;
+	uint8_t m_reqBuff[100];
 	uint16_t m_uiReceivedDataLength = 0;
 	uint16_t m_uiTransactionCounter = 0;
 
