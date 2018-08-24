@@ -164,8 +164,13 @@ void CTeleinfoSerial::MatchLine()
 	#endif
 
 	// Is the line we got worth analysing any further?
-	if ((strlen((const char*)&line)<4) || (line[0] == 0x0a))
+	if ((strlen(line)<4) || (line[0] == 0x0a))
+	{
+		#ifdef DEBUG_TeleinfoSerial
+		_log.Log(LOG_NORM,"Frame #%s# ignored, too short or irrelevant", line);
+		#endif
 		return;
+	}
 
 	// Extract the elements, return if not enough and line is invalid
 	StringSplit(line, " ", splitresults);
