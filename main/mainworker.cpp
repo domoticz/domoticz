@@ -2578,6 +2578,11 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				std::stringstream sstr;
 				sstr << szTmp << "/" << FWVersion;
 				pMyHardware->m_Version = sstr.str();
+
+				if (FWType == FWtypePro1)
+				{
+					pMyHardware->m_NoiseLevel = pResponse->IRESPONSE.msg11;
+				}
 			}
 
 

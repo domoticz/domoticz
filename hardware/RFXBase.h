@@ -14,6 +14,7 @@ public:
 	CRFXBase();
     ~CRFXBase();
 	std::string m_Version;
+	uint8_t m_NoiseLevel;
 	bool SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
 	void SendResetCommand();
 private:

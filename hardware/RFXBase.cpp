@@ -7,6 +7,7 @@
 
 CRFXBase::CRFXBase()
 {
+	m_NoiseLevel = 0;
 }
 
 CRFXBase::~CRFXBase()

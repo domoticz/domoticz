@@ -11358,6 +11358,7 @@ namespace http {
 								root["result"][ii]["version"] = pMyHardware->m_Version;
 							else
 								root["result"][ii]["version"] = sd[11];
+							root["result"][ii]["noiselvl"] = pMyHardware->m_NoiseLevel;
 						}
 						else if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP) || (pHardware->HwdType == HTYPE_MySensorsMQTT))
 						{
