@@ -23,7 +23,6 @@ public:
 	virtual void on_message(const struct mosquitto_message *message) override;
 	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
 
-	void OnMQTTMessage(char *topicName, int topicLen,  void *pMessage);
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
 	bool m_bDoReconnect;
