@@ -752,6 +752,7 @@ int main(int argc, char**argv)
 				_log.Log(LOG_ERROR, "Please specify an output log file");
 				return 1;
 			}
+			logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
 		}
 		if (cmdLine.HasSwitch("-approot"))
 		{
@@ -765,6 +766,9 @@ int main(int argc, char**argv)
 				szStartupFolder = szroot;
 		}
 	}
+
+	if (!logfile.empty())
+		_log.SetOutputFile(logfile.c_str());
 
 	if (szStartupFolder.empty())
 	{
@@ -1186,14 +1190,6 @@ int main(int argc, char**argv)
 	}
 	m_StartTime = time(NULL);
 
-	if (!bUseConfigFile) {
-		if (cmdLine.HasSwitch("-log"))
-		{
-			logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
-		}
-	}
-	if (!logfile.empty())
-		_log.SetOutputFile(logfile.c_str());
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
