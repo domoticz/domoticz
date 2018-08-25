@@ -1,6 +1,3 @@
-[2.4.8]
-- Fixed difference between domoticz.time object and trigger
-
 [2.4.7]
 - Added support for civil twilight in rules
 

@@ -1954,9 +1954,6 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # Change log
 
-##[2.4.8]
-- Fixed difference between domoticz.time object and trigger
-
 ##[2.4.7]
 - Added support for civil twilight in rules
 
