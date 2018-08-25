@@ -170,7 +170,7 @@ const char *Hardware_Type_Desc(int hType)
 	{ HTYPE_WINDDELEN, "Winddelen" },
 	{ HTYPE_TE923, "TE923 USB Compatible Weather Station" },
 	{ HTYPE_Rego6XX, "Rego 6XX USB/serial interface" },
-	{ HTYPE_FreeToUse, "Can be used for a feature hardware class" },
+	{ HTYPE_TTN_MQTT, "The Things Network (MQTT/CayenneLPP) with LAN interface" },
 	{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 	{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 	{ HTYPE_1WIRE, "1-Wire (System)" },
@@ -3613,6 +3613,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_ZIBLUETCP:
 	case HTYPE_OnkyoAVTCP:
 	case HTYPE_eHouseTCP:
+	case HTYPE_TTN_MQTT:
 		return true;
 	default:
 		return false;

@@ -137,6 +137,8 @@
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EcoCompteur.h"
 #include "../hardware/Honeywell.h"
+#include "../hardware/TTNMQTT.h"
+
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -1064,6 +1066,10 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_EcoCompteur:
 		pHardware = new CEcoCompteur(ID, Address, Port);
+		break;
+	case HTYPE_TTN_MQTT:
+		//LAN
+		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Filename);
 		break;
 	}
 

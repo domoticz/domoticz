@@ -858,14 +858,14 @@ void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryL
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const uint8_t RssiLevel)
+void CDomoticzHardwareBase::SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const int RssiLevel)
 {
 	_tGeneralSwitch gSwitch;
 	gSwitch.id = NodeID;
 	gSwitch.unitcode = ChildID;
 	gSwitch.cmnd = SwitchState;
 	gSwitch.level = Level;
-	gSwitch.rssi = RssiLevel;
+	gSwitch.rssi = (uint8_t)RssiLevel;
 	sDecodeRXMessage(this, (const unsigned char *)&gSwitch, defaultname.c_str(), BatteryLevel);
 }
 

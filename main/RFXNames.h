@@ -106,7 +106,7 @@ enum _eHardwareTypes {
 	HTYPE_YouLess,				//6
 	HTYPE_TE923,				//7
 	HTYPE_Rego6XX,				//8
-	HTYPE_FreeToUse,			//9
+	HTYPE_TTN_MQTT,				//9
 	HTYPE_DavisVantage,			//10
 	HTYPE_VOLCRAFTCO20,			//11
 	HTYPE_1WIRE,				//12

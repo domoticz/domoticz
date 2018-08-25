@@ -340,6 +340,7 @@ hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
+hardware/cayenne_lpp/CayenneLPP_Dec.cpp
 hardware/ColorSwitch.cpp
 hardware/Comm5Serial.cpp
 hardware/Comm5SMTCP.cpp
@@ -458,6 +459,7 @@ hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
+hardware/TTNMQTT.cpp
 hardware/USBtin.cpp
 hardware/USBtin_MultiblocV8.cpp
 hardware/VolcraftCO20.cpp

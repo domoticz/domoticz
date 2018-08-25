@@ -6133,7 +6133,13 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divmysensorsmqtt").show();
 			}
 			else if (text.indexOf("MQTT") >= 0) {
-				$("#hardwarecontent #divmqtt").show();
+			    $("#hardwarecontent #divmqtt").show();
+			    if (text.indexOf("The Things Network (MQTT") >= 0) {
+			        $("#hardwarecontent #divmqtt #mqtt_publish").hide();
+			    }
+			    else {
+			        $("#hardwarecontent #divmqtt #mqtt_publish").show();
+			    }
 			}
 		}
 
