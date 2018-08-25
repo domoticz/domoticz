@@ -49,7 +49,6 @@ protected:
 	void StopMQTT();
 	void Do_Work();
 	virtual void SendHeartbeat();
-	void OnData(const unsigned char *pData, size_t length);
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
