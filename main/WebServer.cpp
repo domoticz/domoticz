@@ -2905,11 +2905,7 @@ namespace http {
 			int devType = atoi(dtype.c_str());
 			int subType = atoi(dsubtype.c_str());
 
-			std::stringstream sstr;
-
-			uint64_t ulIdx;
-			sstr << idx;
-			sstr >> ulIdx;
+			uint64_t ulIdx = std::stoull(idx);;
 
 			int invalue = atoi(nvalue.c_str());
 
@@ -3137,26 +3133,12 @@ namespace http {
 						EnergyDivider = float(tValue);
 					}
 
-					unsigned long long powerusage1;
-					unsigned long long powerusage2;
-					unsigned long long powerdeliv1;
-					unsigned long long powerdeliv2;
-					unsigned long long usagecurrent;
-					unsigned long long delivcurrent;
-
-					std::stringstream s_powerusage1(splitresults[0]);
-					std::stringstream s_powerusage2(splitresults[1]);
-					std::stringstream s_powerdeliv1(splitresults[2]);
-					std::stringstream s_powerdeliv2(splitresults[3]);
-					std::stringstream s_usagecurrent(splitresults[4]);
-					std::stringstream s_delivcurrent(splitresults[5]);
-
-					s_powerusage1 >> powerusage1;
-					s_powerusage2 >> powerusage2;
-					s_powerdeliv1 >> powerdeliv1;
-					s_powerdeliv2 >> powerdeliv2;
-					s_usagecurrent >> usagecurrent;
-					s_delivcurrent >> delivcurrent;
+					unsigned long long powerusage1 = std::stoull(splitresults[0]);
+					unsigned long long powerusage2 = std::stoull(splitresults[1]);
+					unsigned long long powerdeliv1 = std::stoull(splitresults[2]);
+					unsigned long long powerdeliv2 = std::stoull(splitresults[3]);
+					unsigned long long usagecurrent = std::stoull(splitresults[4]);
+					unsigned long long delivcurrent = std::stoull(splitresults[5]);
 
 					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -6725,10 +6707,7 @@ namespace http {
 				{
 					return;
 				}
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
+				uint64_t ID = std::stoull(idx);
 				_tColor color;
 
 				std::string json = request::findValue(&req, "color");
@@ -6850,13 +6829,9 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
+				uint64_t ID = std::stoull(idx);
 
 				std::string kelvin = request::findValue(&req, "kelvin");
-
 				double ival = atof(kelvin.c_str());
 				ival = std::max(ival, 0.0);
 				ival = std::min(ival, 100.0);
@@ -6877,11 +6852,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0);
 			}
 			else if (cparam == "brightnessdown")
@@ -6896,11 +6867,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0);
 			}
 			else if (cparam == "discomode")
@@ -6915,11 +6882,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0);
 			}
 			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size() == 13)
@@ -6934,11 +6897,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
 				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0);
@@ -6955,11 +6914,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0);
 			}
 			else if (cparam == "discodown")
@@ -6974,11 +6929,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speedup")
@@ -6993,11 +6944,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speeduplong")
@@ -7013,11 +6960,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speeddown")
@@ -7032,12 +6975,7 @@ namespace http {
 					return;
 				}
 
-				//TODO: Simplify with string to uint64 helper here and everywhere..
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speedmin")
@@ -7052,11 +6990,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speedmax")
@@ -7071,11 +7005,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0);
 			}
 			else if (cparam == "warmer")
@@ -7090,11 +7020,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0);
 			}
 			else if (cparam == "cooler")
@@ -7109,11 +7035,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0);
 			}
 			else if (cparam == "fulllight")
@@ -7128,11 +7050,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0);
 			}
 			else if (cparam == "nightlight")
@@ -7147,11 +7065,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0);
 			}
 			else if (cparam == "whitelight")
@@ -7166,11 +7080,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::stoull(idx);
 				//TODO: Change to color with mode=ColorModeWhite and level=100?
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0);
 			}
@@ -9896,12 +9806,10 @@ namespace http {
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::stoull(sd2[0]);
+							unsigned long long total_max = std::stoull(sd2[1]);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd2[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd2[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 
@@ -9937,9 +9845,7 @@ namespace http {
 						if (splitresults.size() < 2)
 							continue;
 
-						unsigned long long total_actual;
-						std::stringstream s_stra(splitresults[0]);
-						s_stra >> total_actual;
+						unsigned long long total_actual = std::stoull(splitresults[0]);
 						musage = 0;
 						switch (metertype)
 						{
@@ -9964,9 +9870,7 @@ namespace http {
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 
-						unsigned long long acounter;
-						std::stringstream s_str3(sValue);
-						s_str3 >> acounter;
+						unsigned long long acounter = std::stoull(sValue);
 						musage = 0;
 						switch (metertype)
 						{
@@ -10043,26 +9947,12 @@ namespace http {
 								EnergyDivider = float(tValue);
 							}
 
-							unsigned long long powerusage1;
-							unsigned long long powerusage2;
-							unsigned long long powerdeliv1;
-							unsigned long long powerdeliv2;
-							unsigned long long usagecurrent;
-							unsigned long long delivcurrent;
-
-							std::stringstream s_powerusage1(splitresults[0]);
-							std::stringstream s_powerusage2(splitresults[1]);
-							std::stringstream s_powerdeliv1(splitresults[2]);
-							std::stringstream s_powerdeliv2(splitresults[3]);
-							std::stringstream s_usagecurrent(splitresults[4]);
-							std::stringstream s_delivcurrent(splitresults[5]);
-
-							s_powerusage1 >> powerusage1;
-							s_powerusage2 >> powerusage2;
-							s_powerdeliv1 >> powerdeliv1;
-							s_powerdeliv2 >> powerdeliv2;
-							s_usagecurrent >> usagecurrent;
-							s_delivcurrent >> delivcurrent;
+							unsigned long long powerusage1 = std::stoull(splitresults[0]);
+							unsigned long long powerusage2 = std::stoull(splitresults[1]);
+							unsigned long long powerdeliv1 = std::stoull(splitresults[2]);
+							unsigned long long powerdeliv2 = std::stoull(splitresults[3]);
+							unsigned long long usagecurrent = std::stoull(splitresults[4]);
+							unsigned long long delivcurrent = std::stoull(splitresults[5]);
 
 							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -10109,17 +9999,11 @@ namespace http {
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
-								unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
-
-								std::stringstream s_str1(sd2[0]);
-								s_str1 >> total_min_usage_1;
-								std::stringstream s_str2(sd2[1]);
-								s_str2 >> total_min_deliv_1;
-								std::stringstream s_str3(sd2[2]);
-								s_str3 >> total_min_usage_2;
-								std::stringstream s_str4(sd2[3]);
-								s_str4 >> total_min_deliv_2;
+								unsigned long long total_min_usage_1 = std::stoull(sd2[0]);
+								unsigned long long total_min_deliv_1 = std::stoull(sd2[1]);
+								unsigned long long total_min_usage_2 = std::stoull(sd2[2]);
+								unsigned long long total_min_deliv_2 = std::stoull(sd2[3]);
+								unsigned long long total_real_usage, total_real_deliv;
 
 								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
 								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
@@ -10786,12 +10670,10 @@ namespace http {
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min, total_max, total_real;
+								unsigned long long total_min = std::stoull(sd2[0]);
+								unsigned long long total_max = std::stoull(sd2[1]);
+								unsigned long long total_real;
 
-								std::stringstream s_str1(sd2[0]);
-								s_str1 >> total_min;
-								std::stringstream s_str2(sd2[1]);
-								s_str2 >> total_max;
 								total_real = total_max - total_min;
 								sprintf(szTmp, "%llu", total_real);
 							}
@@ -10975,9 +10857,7 @@ namespace http {
 			m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
-			std::stringstream sstridx(idx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::stoull(idx);
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -11019,9 +10899,7 @@ namespace http {
 				offaction.c_str(),
 				idx.c_str()
 			);
-			std::stringstream sstridx(idx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::stoull(idx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -11594,10 +11472,7 @@ namespace http {
 							int maxDimLevel = 0;
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
-						std::stringstream sstr;
-						uint64_t dID;
-						sstr << sID;
-						sstr >> dID;
+						uint64_t dID = std::stoull(sID);
 						root["result"][ii]["idx"] = dID;
 						root["result"][ii]["name"] = sd[0];
 						root["result"][ii]["code"] = sCode;
@@ -11941,9 +11816,7 @@ namespace http {
 			root["title"] = "RenameDevice";
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			std::stringstream sstridx(sidx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_DEVICE);
 
 #ifdef ENABLE_PYTHON
@@ -11972,9 +11845,7 @@ namespace http {
 			root["title"] = "RenameScene";
 
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			std::stringstream sstridx(sidx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::stoull(sidx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -12116,9 +11987,7 @@ namespace http {
 				(name.empty())
 				)
 				return;
-			uint64_t idx = 0;
-			std::stringstream s_str(sidx);
-			s_str >> idx;
+			uint64_t idx = std::stoull(sidx);
 
 			m_sql.safe_query("UPDATE MobileDevices SET Name='%q', Active=%d WHERE (ID==%" PRIu64 ")",
 				name.c_str(), (enabled == "true") ? 1 : 0, idx);
@@ -12155,8 +12024,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string> > result;
@@ -12271,8 +12139,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
 			if (notifications.size() > 0)
@@ -12595,9 +12462,7 @@ namespace http {
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
 				options["EnergyMeterMode"] = EnergyMeterMode;
-				std::stringstream sstridx(idx);
-				uint64_t ullidx;
-				sstridx >> ullidx;
+				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, options);
 			}
 
@@ -12623,9 +12488,7 @@ namespace http {
 			// Save device options
 			if (!sOptions.empty())
 			{
-				std::stringstream sstridx(idx);
-				uint64_t ullidx;
-				sstridx >> ullidx;
+				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
@@ -13043,8 +12906,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string> > result;
 			//First get Device Type/SubType
@@ -13167,8 +13029,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string> > result;
 
@@ -13197,8 +13058,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 			std::vector<std::vector<std::string> > result;
 
@@ -13227,8 +13087,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::stoull(request::findValue(&req, "idx"));
 			}
 
 			std::vector<std::vector<std::string> > result;
@@ -13503,16 +13362,10 @@ namespace http {
 
 								if (nMeterType == 0)
 								{
-									long long actUsage1, actUsage2, actDeliv1, actDeliv2;
-									std::stringstream s_str1(sd[0]);
-									s_str1 >> actUsage1;
-									std::stringstream s_str2(sd[4]);
-									s_str2 >> actUsage2;
-									std::stringstream s_str3(sd[1]);
-									s_str3 >> actDeliv1;
-									std::stringstream s_str4(sd[5]);
-									s_str4 >> actDeliv2;
-
+									long long actUsage1 = std::stoll(sd[0]);
+									long long actUsage2 = std::stoll(sd[4]);
+									long long actDeliv1 = std::stoll(sd[1]);
+									long long actDeliv2 = std::stoll(sd[5]);
 									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
 									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
 
@@ -13602,14 +13455,10 @@ namespace http {
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												std::stringstream s_str1(sd[0]);
-												s_str1 >> firstUsage1;
-												std::stringstream s_str2(sd[1]);
-												s_str2 >> firstDeliv1;
-												std::stringstream s_str3(sd[2]);
-												s_str3 >> firstUsage2;
-												std::stringstream s_str4(sd[3]);
-												s_str4 >> firstDeliv2;
+												firstUsage1 = std::stoll(sd[0]);
+												firstDeliv1 = std::stoll(sd[1]);
+												firstUsage2 = std::stoll(sd[2]);
+												firstDeliv2 = std::stoll(sd[3]);
 												lastDay = ntime.tm_mday;
 											}
 										}
@@ -13979,12 +13828,8 @@ namespace http {
 						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::stringstream s_str1(result[0][0]);
-							long long minValue;
-							s_str1 >> minValue;
-							std::stringstream s_str2(result[0][1]);
-							long long maxValue;
-							s_str2 >> maxValue;
+							long long minValue = std::stoll(result[0][0]);
+							long long maxValue = std::stoll(result[0][1]);
 							if ((minValue == 0) && (maxValue == 0))
 							{
 								bHaveUsage = false;
@@ -14072,9 +13917,7 @@ namespace http {
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
 									}
-									std::stringstream s_str1(sd[0]);
-									long long actValue;
-									s_str1 >> actValue;
+									long long actValue = std::stoll(sd[0]);
 
 									if (actValue >= ulLastValue)
 										ulLastValue = actValue;
@@ -14093,9 +13936,7 @@ namespace http {
 
 								if (method == 1)
 								{
-									std::stringstream s_str1(sd[1]);
-									long long actValue;
-									s_str1 >> actValue;
+									long long actValue = std::stoll(sd[1]);
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
@@ -14191,9 +14032,7 @@ namespace http {
 								{
 									//bars / hour
 
-									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
-									s_str1 >> actValue;
+									unsigned long long actValue = std::stoull(sd[0]);
 
 									std::string actDateTimeHour = sd[1].substr(0, 13);
 									if (actDateTimeHour != LastDateTime)
@@ -14261,9 +14100,7 @@ namespace http {
 								else
 								{
 									//realtime graph
-									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
-									s_str1 >> actValue;
+									unsigned long long actValue = std::stoull(sd[0]);
 
 									std::string stime = sd[1];
 									struct tm ntime;
@@ -14865,31 +14702,21 @@ namespace http {
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
+							unsigned long long total_min_usage_1 = std::stoull(sd[0]);
+							unsigned long long total_max_usage_1 = std::stoull(sd[1]);
+							unsigned long long total_min_usage_2 = std::stoull(sd[4]);
+							unsigned long long total_max_usage_2 = std::stoull(sd[5]);
+							unsigned long long total_real_usage_1, total_real_usage_2;
+							unsigned long long total_min_deliv_1 = std::stoull(sd[2]);
+							unsigned long long total_max_deliv_1 = std::stoull(sd[3]);
+							unsigned long long total_min_deliv_2 = std::stoull(sd[6]);
+							unsigned long long total_max_deliv_2 = std::stoull(sd[7]);
+							unsigned long long total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max_usage_1;
-							std::stringstream s_str3(sd[4]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd[5]);
-							s_str4 >> total_max_usage_2;
-
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
-
-							std::stringstream s_str5(sd[2]);
-							s_str5 >> total_min_deliv_1;
-							std::stringstream s_str6(sd[3]);
-							s_str6 >> total_max_deliv_1;
-							std::stringstream s_str7(sd[6]);
-							s_str7 >> total_min_deliv_2;
-							std::stringstream s_str8(sd[7]);
-							s_str8 >> total_max_deliv_2;
 
 							total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
 							total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
@@ -14931,12 +14758,10 @@ namespace http {
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::stoull(sd[0]);
+							unsigned long long total_max = std::stoull(sd[1]);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 							std::string szValue = szTmp;
@@ -16238,29 +16063,19 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
-
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max_usage_1;
-							std::stringstream s_str3(sd[4]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd[5]);
-							s_str4 >> total_max_usage_2;
+							unsigned long long total_min_usage_1 = std::stoull(sd[0]);
+							unsigned long long total_max_usage_1 = std::stoull(sd[1]);
+							unsigned long long total_min_usage_2 = std::stoull(sd[4]);
+							unsigned long long total_max_usage_2 = std::stoull(sd[5]);
+							unsigned long long total_real_usage_1, total_real_usage_2;
+							unsigned long long total_min_deliv_1 = std::stoull(sd[2]);
+							unsigned long long total_max_deliv_1 = std::stoull(sd[3]);
+							unsigned long long total_min_deliv_2 = std::stoull(sd[6]);
+							unsigned long long total_max_deliv_2 = std::stoull(sd[7]);
+							unsigned long long total_real_deliv_1, total_real_deliv_2;
 
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
-
-							std::stringstream s_str5(sd[2]);
-							s_str5 >> total_min_deliv_1;
-							std::stringstream s_str6(sd[3]);
-							s_str6 >> total_max_deliv_1;
-							std::stringstream s_str7(sd[6]);
-							s_str7 >> total_min_deliv_2;
-							std::stringstream s_str8(sd[7]);
-							s_str8 >> total_max_deliv_2;
 
 							total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
 							total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
@@ -16427,12 +16242,10 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::stoull(sd[0]);
+							unsigned long long total_max = std::stoull(sd[1]);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 
@@ -17098,29 +16911,20 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max_usage_1;
-							std::stringstream s_str3(sd[4]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd[5]);
-							s_str4 >> total_max_usage_2;
+							unsigned long long total_min_usage_1 = std::stoull(sd[0]);
+							unsigned long long total_max_usage_1 = std::stoull(sd[1]);
+							unsigned long long total_min_usage_2 = std::stoull(sd[4]);
+							unsigned long long total_max_usage_2 = std::stoull(sd[5]);
+							unsigned long long total_real_usage;
+
+							unsigned long long total_min_deliv_1 = std::stoull(sd[2]);
+							unsigned long long total_max_deliv_1 = std::stoull(sd[3]);
+							unsigned long long total_min_deliv_2 = std::stoull(sd[6]);
+							unsigned long long total_max_deliv_2 = std::stoull(sd[7]);
+							unsigned long long total_real_deliv;
 
 							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
-
-							std::stringstream s_str5(sd[2]);
-							s_str5 >> total_min_deliv_1;
-							std::stringstream s_str6(sd[3]);
-							s_str6 >> total_max_deliv_1;
-							std::stringstream s_str7(sd[6]);
-							s_str7 >> total_min_deliv_2;
-							std::stringstream s_str8(sd[7]);
-							s_str8 >> total_max_deliv_2;
-
 							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
 
 							if (total_real_deliv != 0)
@@ -17151,12 +16955,10 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::stoull(sd[0]);
+							unsigned long long total_max = std::stoull(sd[1]);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 
