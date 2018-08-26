@@ -10,6 +10,7 @@
 #include <mosquittopp.h>
 #endif
 #endif
+#include "../main/BaroForecastCalculator.h"
 
 namespace Json
 {
@@ -34,11 +35,6 @@ public:
 	bool m_bDoReconnect;
 	bool m_IsConnected;
 	boost::signals2::signal<void()>	sDisconnected;
-private:
-	bool ConnectInt();
-	bool ConnectIntEx();
-	Json::Value GetSensorWithChannel(const Json::Value &root, const std::string &stype, const int sChannel);
-	void FlasgSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel);
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
@@ -54,5 +50,11 @@ protected:
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
+private:
+	bool ConnectInt();
+	bool ConnectIntEx();
+	Json::Value GetSensorWithChannel(const Json::Value &root, const std::string &stype, const int sChannel);
+	void FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel);
+	std::map<std::string, CBaroForecastCalculator> m_forecast_calculators;
 };
 

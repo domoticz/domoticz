@@ -2125,6 +2125,9 @@
     <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP.h">
       <Filter>Devices\The Things Network\CayenneLPP</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\BaroForecastCalculator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2894,6 +2897,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.cpp">
       <Filter>Devices\The Things Network\CayenneLPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\BaroForecastCalculator.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

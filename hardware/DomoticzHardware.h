@@ -97,24 +97,11 @@ protected:
 	int m_iHBCounter = { 0 };
 	std::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
-
-	//Barometric calculation (only for 1 sensor per hardware device!)
-	int CalculateBaroForecast(const double pressure);
-
 	bool m_bIsStarted = { false };
-
 private:
     void Do_Heartbeat_Work();
 
 	volatile bool m_stopHeartbeatrequested = { false };
 	std::shared_ptr<std::thread> m_Heartbeatthread = { nullptr };
-
-	int m_baro_minuteCount = { 0 };
-    double m_pressureSamples[9][6];
-    double m_pressureAvg[9];
-	double m_dP_dt = { 0 };
-	int m_last_forecast = { 0x07 }; //unknown
-	time_t m_BaroCalcLastTime = { 0 };
-
 };
 

@@ -318,7 +318,7 @@ Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const std::s
 	return ret;
 }
 
-void CTTNMQTT::FlasgSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel)
+void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const int sChannel)
 {
 	for (auto itt = root.begin(); itt != root.end(); ++itt)
 	{
@@ -444,18 +444,10 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				if (bHaveBaro)
 				{
 					baro = vBaro["value"].asFloat();
-
-					if (baro <= 980)
-						nforecast = wsbaroforcast_heavy_rain;
-					else if (baro <= 995)
-					{
-						if (temp > 1)
-							nforecast = wsbaroforcast_rain;
-						else
-							nforecast = wsbaroforcast_snow;
-					}
-					else if (baro >= 1029)
-						nforecast = wsbaroforcast_sunny;
+					if (bHaveTemp)
+						nforecast = m_forecast_calculators[DeviceName].CalculateBaroForecast(temp, baro);
+					else
+						nforecast = m_forecast_calculators[DeviceName].CalculateBaroForecast(baro);
 				}
 				if (bHaveTemp && bHaveHumidity && bHaveBaro)
 				{
@@ -469,7 +461,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				{
 					SendTempBaroSensor(DeviceID, BatteryLevel, temp, baro, DeviceName);
 				}
-				else {
+				else
+				{
 					if (bHaveTemp)
 					{
 						SendTempSensor(DeviceID, BatteryLevel, temp, DeviceName, rssi);
@@ -480,15 +473,15 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					}
 					if (bHaveBaro)
 					{
-						SendBaroSensor(DeviceID, 1, BatteryLevel, baro, CalculateBaroForecast(baro), DeviceName);
+						SendBaroSensor(DeviceID, 1, BatteryLevel, baro, nforecast, DeviceName);
 					}
 				}
 				if (bHaveTemp)
-					FlasgSensorWithChannelUsed(payload, "temp", channel);
+					FlagSensorWithChannelUsed(payload, "temp", channel);
 				if (bHaveHumidity)
-					FlasgSensorWithChannelUsed(payload, "humidity", channel);
+					FlagSensorWithChannelUsed(payload, "humidity", channel);
 				if (bHaveBaro)
-					FlasgSensorWithChannelUsed(payload, "baro", channel);
+					FlagSensorWithChannelUsed(payload, "baro", channel);
 			}
 			else if (type == "gps")
 			{

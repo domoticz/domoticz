@@ -515,33 +515,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 
 	if (bHaveTemp && bHaveHum && bHaveBaro)
 	{
-		int nforecast = CalculateBaroForecast(baro);
-		if (temp < 0)
-		{
-			if (
-				(nforecast == wsbaroforcast_rain) ||
-				(nforecast == wsbaroforcast_heavy_rain)
-				)
-			{
-				nforecast = wsbaroforcast_snow;
-			}
-		}
-		if (nforecast == wsbaroforcast_unknown)
-		{
-			nforecast = wsbaroforcast_some_clouds;
-			float pressure = baro;
-			if (pressure <= 980)
-				nforecast = wsbaroforcast_heavy_rain;
-			else if (pressure <= 995)
-			{
-				if (temp > 1)
-					nforecast = wsbaroforcast_rain;
-				else
-					nforecast = wsbaroforcast_snow;
-			}
-			else if (pressure >= 1029)
-				nforecast = wsbaroforcast_sunny;
-		}
+		int nforecast = m_forecast_calculators[ID].CalculateBaroForecast(temp, baro);
 		SendTempHumBaroSensorFloat(ID, batValue, temp, hum, baro, nforecast, name, rssiLevel);
 	}
 	else if (bHaveTemp && bHaveHum)

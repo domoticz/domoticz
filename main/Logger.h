@@ -4,7 +4,6 @@
 #include <list>
 #include <string>
 #include <fstream>
-#include <map>
 
 enum _eLogLevel : uint32_t
 {

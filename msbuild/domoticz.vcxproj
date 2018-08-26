@@ -553,6 +553,7 @@
     <ClInclude Include="..\httpclient\HTTPClient.h" />
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />
+    <ClInclude Include="..\main\BaroForecastCalculator.h" />
     <ClInclude Include="..\main\Camera.h" />
     <ClInclude Include="..\main\CmdLine.h" />
     <ClInclude Include="..\hardware\ColorSwitch.h" />
@@ -844,6 +845,7 @@
     <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
+    <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
     <ClCompile Include="..\main\CmdLine.cpp" />
