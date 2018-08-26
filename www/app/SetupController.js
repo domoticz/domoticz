@@ -413,9 +413,7 @@ define(['app'], function (app) {
 						$scope.OldAdminUser=data.WebUserName;
 						$("#webtable #WebUserName").val(data.WebUserName);
 					}
-					if (typeof data.WebPassword != 'undefined') {
-						$("#webtable #WebPassword").val(data.WebPassword);
-					}
+					$("#webtable #WebPassword").val(md5.createHash("bogus"));
 					if (typeof data.SecPassword != 'undefined') {
 						$("#sectable #SecPassword").val(data.SecPassword);
 					}
@@ -683,6 +681,10 @@ define(['app'], function (app) {
 			
 			var adminuser = $("#webtable #WebUserName").val();
 			var adminpwd = $("#webtable #WebPassword").val();
+			if (adminpwd == md5.createHash("bogus")) {
+				$("#webtable #WebPassword").val("");
+				adminpwd = "";
+			}
 			if ((adminuser!="")&&($scope.OldAdminUser!=adminuser)) {
 				if (adminpwd=="") {
 					ShowNotify($.t('Please enter a Admin password!'), 2000, true);

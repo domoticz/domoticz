@@ -12742,10 +12742,10 @@ namespace http {
 				{
 					root["WebUserName"] = base64_decode(sValue);
 				}
-				else if (Key == "WebPassword")
-				{
-					root["WebPassword"] = "";// sValue;
-				}
+				//else if (Key == "WebPassword")
+				//{
+				//	root["WebPassword"] = sValue;
+				//}
 				else if (Key == "SecPassword")
 				{
 					root["SecPassword"] = sValue;
