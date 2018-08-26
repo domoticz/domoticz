@@ -7,6 +7,10 @@ project(domoticz)
 SET(DOMO_MIN_LIBBOOST_VERSION 106000)
 ##
 
+## required max. OpenSSL version
+SET(DOMO_MAX_OPENSSL_VERSION 1.0.2)
+##
+
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}
@@ -559,6 +563,10 @@ if(NOT OPENSSL_FOUND)
     target_link_libraries(domoticz ${MD_LIBRARY})
   endif(MD_LIBRARY)
 else()
+  if(OPENSSL_VERSION VERSION_GREATER DOMO_MAX_OPENSSL_VERSION)
+   message(FATAL_ERROR "Found OpenSSL version ${OPENSSL_VERSION}, ${DOMO_MAX_OPENSSL_VERSION} or older required")
+  endif(OPENSSL_VERSION VERSION_GREATER DOMO_MAX_OPENSSL_VERSION)
+
   message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
   add_definitions(-DWWW_ENABLE_SSL)
   include_directories(${OPENSSL_INCLUDE_DIR})
