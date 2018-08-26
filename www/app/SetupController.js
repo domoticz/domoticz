@@ -1,6 +1,5 @@
 define(['app'], function (app) {
-	app.controller('SetupController', ['$scope', '$rootScope', '$window', '$location', '$http', '$interval', function ($scope, $rootScope, $window, $location, $http, $interval) {
-
+	app.controller('SetupController', ['$scope', '$rootScope', '$window', '$location', '$http', '$interval', 'md5', function ($scope, $rootScope, $window, $location, $http, $interval, md5) {
 		googleMapsCallback = function () {
 			$("#dialog-findlatlong").dialog("open");
 		};
@@ -411,6 +410,7 @@ define(['app'], function (app) {
 						$("#mobilemodetable #combosmobiletype").val(data.MobileType);
 					}
 					if (typeof data.WebUserName != 'undefined') {
+						$scope.OldAdminUser=data.WebUserName;
 						$("#webtable #WebUserName").val(data.WebUserName);
 					}
 					if (typeof data.WebPassword != 'undefined') {
@@ -680,6 +680,19 @@ define(['app'], function (app) {
 				ShowNotify($.t('Invalid Location Settings...'), 2000, true);
 				return;
 			}
+			
+			var adminuser = $("#webtable #WebUserName").val();
+			var adminpwd = $("#webtable #WebPassword").val();
+			if ((adminuser!="")&&($scope.OldAdminUser!=adminuser)) {
+				if (adminpwd=="") {
+					ShowNotify($.t('Please enter a Admin password!'), 2000, true);
+					return;
+				}
+			}
+			if (adminpwd!="") {
+				$("#webtable #WebPassword").val(md5.createHash(adminpwd));
+			}
+						
 
 			var secpanel = $("#sectable #SecPassword").val();
 			var switchprotection = $("#protectiontable #ProtectionPassword").val();

@@ -7630,38 +7630,46 @@ namespace http {
 			std::string sCM113DisplayType = request::findValue(&req, "CM113DisplayType");
 			m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(sCM113DisplayType.c_str()));
 
-			std::string WebUserName = request::findValue(&req, "WebUserName");
-			std::string WebPassword = request::findValue(&req, "WebPassword");
-			std::string WebLocalNetworks = request::findValue(&req, "WebLocalNetworks");
-			std::string WebRemoteProxyIPs = request::findValue(&req, "WebRemoteProxyIPs");
-			WebUserName = CURLEncode::URLDecode(WebUserName);
-			WebPassword = CURLEncode::URLDecode(WebPassword);
-			WebLocalNetworks = CURLEncode::URLDecode(WebLocalNetworks);
-			WebRemoteProxyIPs = CURLEncode::URLDecode(WebRemoteProxyIPs);
+			std::string WebUserName = base64_encode(CURLEncode::URLDecode(request::findValue(&req, "WebUserName")));
+			std::string WebPassword = CURLEncode::URLDecode(request::findValue(&req, "WebPassword"));
 
-			if ((WebUserName.empty()) || (WebPassword.empty()))
+			//Get old username/password
+			std::string sOldWebLogin;
+			std::string sOldWebPassword;
+			m_sql.GetPreferencesVar("WebUserName", sOldWebLogin);
+			m_sql.GetPreferencesVar("WebPassword", sOldWebPassword);
+
+			bool bHaveAdminUserPasswordChange = false;
+
+			if ((WebUserName == sOldWebLogin) && (WebPassword.empty()))
 			{
+				//All is OK, no changes
+			}
+			else if (WebUserName.empty() || WebPassword.empty())
+			{
+				//If no Admin User/Password is specified, we clear them
+				if ((!sOldWebLogin.empty()) || (!sOldWebPassword.empty()))
+					bHaveAdminUserPasswordChange = true;
 				WebUserName = "";
 				WebPassword = "";
 			}
-			WebUserName = base64_encode(WebUserName);
-			if (WebPassword.size() != 32)
-			{
-				WebPassword = GenerateMD5Hash(WebPassword);
+			else {
+				if ((WebUserName != sOldWebLogin) || (WebPassword != sOldWebPassword))
+				{
+					bHaveAdminUserPasswordChange = true;
+				}
 			}
 
-			// Invalid sessions of WebUser when his username or password has been changed
-			int nUnusedValue = 0;
-			std::string sOldWebLogin;
-			std::string sOldWebPassword;
-			if (((m_sql.GetPreferencesVar("WebUserName", nUnusedValue, sOldWebLogin)) && (sOldWebLogin != WebUserName))
-				|| ((m_sql.GetPreferencesVar("WebPassword", nUnusedValue, sOldWebPassword)) && (sOldWebPassword != WebPassword)))
+			// Invalid sessions of WebUser when the username or password has been changed
+			if (bHaveAdminUserPasswordChange)
 			{
 				RemoveUsersSessions(sOldWebLogin, session);
+				m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
+				m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
 			}
 
-			m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
-			m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
+			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
+			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks.c_str());
 			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs.c_str());
 
@@ -12736,7 +12744,7 @@ namespace http {
 				}
 				else if (Key == "WebPassword")
 				{
-					root["WebPassword"] = sValue;
+					root["WebPassword"] = "";// sValue;
 				}
 				else if (Key == "SecPassword")
 				{
