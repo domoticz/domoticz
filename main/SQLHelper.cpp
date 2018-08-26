@@ -5590,7 +5590,7 @@ void CSQLHelper::UpdateMeter()
 				sValue = szTmp;
 			}
 
-			long long MeterValue = (!sValue.empty()) ? std::stoll(sValue) : 0;
+			long long MeterValue = std::stoll(sValue);
 			long long MeterUsage = std::stoll(susage);
 
 			//insert record
