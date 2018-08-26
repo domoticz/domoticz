@@ -1124,8 +1124,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			if (idx == 0)
 				return;
@@ -1500,8 +1499,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			if (idx == 0)
 				return;
@@ -1822,8 +1820,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			if (idx == 0)
 				return;
