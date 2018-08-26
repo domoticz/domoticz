@@ -135,7 +135,6 @@ bool S0MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 void S0MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData((const unsigned char*)pData,length);
 }
 

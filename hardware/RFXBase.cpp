@@ -202,6 +202,7 @@ bool CRFXBase::SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned 
 
 void CRFXBase::SendResetCommand()
 {
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	m_bEnableReceive = false;
 	m_rxbufferpos = 0;
 	//Send Reset

@@ -1005,7 +1005,6 @@ bool CEnOceanESP2::OpenSerialDevice()
 
 void CEnOceanESP2::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	size_t ii = 0;
 	while (ii < len)
 	{

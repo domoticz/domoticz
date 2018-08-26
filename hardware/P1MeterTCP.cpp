@@ -130,7 +130,6 @@ void P1MeterTCP::OnDisconnect()
 
 void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData((const unsigned char*)pData, length, m_bDisableCRC, m_ratelimit);
 }
 

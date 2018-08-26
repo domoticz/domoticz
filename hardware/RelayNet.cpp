@@ -760,8 +760,6 @@ void RelayNet::OnDisconnect()
 
 void RelayNet::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-
 	if (!m_stoprequested)
 	{
 		ParseData(pData, length);

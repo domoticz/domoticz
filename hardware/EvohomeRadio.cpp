@@ -1633,7 +1633,7 @@ void CEvohomeRadio::PopSendQueue(const CEvohomeMsg &msg)
 
 void CEvohomeRadio::Send()
 {
-	std::lock_guard<std::mutex> rl(readQueueMutex);//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
+	//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
 	if (m_nBufPtr > 0)
 		return;
 	std::lock_guard<std::mutex> sl(m_mtxSend);

@@ -197,7 +197,6 @@ bool MySensorsSerial::OpenSerialDevice()
 
 void MySensorsSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

@@ -317,8 +317,6 @@ bool CRego6XXSerial::OpenSerialDevice()
 
 void CRego6XXSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 

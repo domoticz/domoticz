@@ -140,7 +140,6 @@ void FritzboxTCP::Do_Work()
 
 void FritzboxTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 

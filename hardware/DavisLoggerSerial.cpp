@@ -169,7 +169,6 @@ void CDavisLoggerSerial::Do_Work()
 
 void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		//_log.Log(LOG_NORM,"Davis: received %ld bytes",len);

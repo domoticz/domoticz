@@ -47,4 +47,5 @@ private:
 
 	volatile bool m_bWriting;
 	volatile bool m_stoprequested;
+	std::mutex readQueueMutex;
 };

@@ -172,7 +172,6 @@ void CurrentCostMeterTCP::Do_Work()
 			}
 			else
 			{
-				std::lock_guard<std::mutex> l(readQueueMutex);
 				ParseData(data, bread);
 			}
 		}
