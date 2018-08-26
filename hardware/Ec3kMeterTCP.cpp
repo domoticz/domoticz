@@ -260,7 +260,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 	// update only when the update interval has elapsed
 	if (m_limiter->update(id))
 	{
-		int ws = data[WS].asInt();
+		float ws = data[WS].asFloat();
 		float w_current = data[W_CURRENT].asFloat();
 		float w_max = data[W_MAX].asFloat();
 		//int s_time_on = data[TIME_ON].asInt();
