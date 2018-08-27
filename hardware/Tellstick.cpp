@@ -238,8 +238,7 @@ bool CTellstick::StopHardware()
     m_bIsStarted = false;
     m_cond.notify_all();
     lock.unlock();
-    if (m_thread.joinable()) //TODO: Why do we only join the thread if it's joinable?
-        m_thread.join();
+    m_thread.join();
     return true;
 }
 
