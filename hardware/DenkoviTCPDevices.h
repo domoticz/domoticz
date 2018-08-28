@@ -50,7 +50,6 @@ private:
 	void Do_Work();
 	void GetMeterDetails();
 	void readCallBack(const char * data, size_t len);
-	uint16_t ByteSwap(uint16_t in);
 	void ConvertResponse(const std::string pData, const size_t length);
 	void CreateRequest(uint8_t * pData, size_t length);
 private:
