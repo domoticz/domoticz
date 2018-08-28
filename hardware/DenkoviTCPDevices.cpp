@@ -346,16 +346,6 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 	return false;
 }
 
-uint16_t CDenkoviTCPDevices::ByteSwap(uint16_t in)
-{
-	uint16_t out;
-	uint8_t *indata = (uint8_t *)&in;
-	uint8_t *outdata = (uint8_t *)&out;
-	outdata[0] = indata[1];
-	outdata[1] = indata[0];
-	return out;
-}
-
 void CDenkoviTCPDevices::GetMeterDetails()
 {
 	switch (m_iModel) {
