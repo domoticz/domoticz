@@ -278,7 +278,7 @@ const char *Hardware_Type_Desc(int hType)
 	{ HTYPE_Tado, "Tado Thermostat" },
 	{ HTYPE_DenkoviHTTPDevices, "Denkovi Modules with LAN (HTTP) Interface" },
 	{ HTYPE_DenkoviUSBDevices, "Denkovi Modules with USB Interface" },
-	{ HTYPE_DenkoviTCPDevices, "Denkovi Modules with LAN/WiFi (TCP) Interface" },
+	{ HTYPE_DenkoviTCPDevices, "Denkovi Modules with LAN (TCP) Interface" },
 	{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1(Table, hType);

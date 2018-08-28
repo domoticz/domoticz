@@ -7,8 +7,7 @@
 enum _eDenkoviUSBDevice
 {
 	DDEV_USB_16R = 0,						//0
-	DDEV_USB_16R_Modbus,						//1
-	DDEV_DAEnet_IP40
+	DDEV_USB_16R_Modbus						//1
 };
 
 class CDenkoviUSBDevices : public CDomoticzHardwareBase, AsyncSerial
@@ -31,10 +30,9 @@ private:
 	volatile bool m_stoprequested;
 	int m_iModel;
 	std::shared_ptr<std::thread> m_thread;
-	//boost::shared_ptr<boost::thread> m_thread;
 	int m_Cmd;
-	bool readingNow = false;
-	bool updateIo = false;
+	bool m_readingNow = false;
+	bool m_updateIo = false;
 
 protected:
 	void OnData(const unsigned char *pData, size_t length);

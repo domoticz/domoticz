@@ -429,11 +429,11 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode1 = pollinterval;
-					if (text.indexOf("Modules with LAN/WiFi (HTTP)") >= 0)
+					if (text.indexOf("Modules with LAN (HTTP)") >= 0)
 						Mode2 = $("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices option:selected").val();
-					//else if (text.indexOf("Modules with LAN/WiFi (TCP)") >= 0)
+					//else if (text.indexOf("Modules with LAN (TCP)") >= 0)
 					//	Mode2 = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
-					else if (text.indexOf("Modules with LAN/WiFi (TCP)") >= 0) {
+					else if (text.indexOf("Modules with LAN (TCP)") >= 0) {
 						Mode2 = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
 						Mode3 = $("#hardwarecontent #divmodeldenkovitcpdevices #denkovislaveid").val();
 						if(Mode2 == "1"){
@@ -1561,9 +1561,9 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode1 = pollinterval;
-					if (text.indexOf("Modules with LAN/WiFi (HTTP)") >= 0)
+					if (text.indexOf("Modules with LAN (HTTP)") >= 0)
 						Mode2 = $("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices option:selected").val();
-					else if (text.indexOf("Modules with LAN/WiFi (TCP)") >= 0) {
+					else if (text.indexOf("Modules with LAN (TCP)") >= 0) {
 						Mode2 = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
 						Mode3 = $("#hardwarecontent #divmodeldenkovitcpdevices #denkovislaveid").val();
 						if(Mode2 == "1"){
@@ -5465,9 +5465,9 @@ define(['app'], function (app) {
 							}
 							else if (data["Type"].indexOf("Denkovi") >= 0) {
 								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);		
-								if (data["Type"].indexOf("Modules with LAN/WiFi (HTTP)") >= 0)								
+								if (data["Type"].indexOf("Modules with LAN (HTTP)") >= 0)								
 									$("#hardwarecontent #divmodeldenkovidevices #combomodeldenkovidevices").val(data["Mode2"]);
-								else if (data["Type"].indexOf("Modules with LAN/WiFi (TCP)") >= 0) {							
+								else if (data["Type"].indexOf("Modules with LAN (TCP)") >= 0) {							
 									$("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices").val(data["Mode2"]);
 									if(data["Mode2"] == "1"){
 										$("#hardwarecontent #hardwareparamsmodeldenkovitcpdevices #lbldenkovislaveid").show();
@@ -5920,9 +5920,9 @@ define(['app'], function (app) {
 				else if (text.indexOf("Denkovi") >= 0) {
 					$("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(10000);
-					if (text.indexOf("Modules with LAN/WiFi (HTTP)") >= 0)
+					if (text.indexOf("Modules with LAN (HTTP)") >= 0)
 						$("#hardwarecontent #divmodeldenkovidevices").show();
-					else if (text.indexOf("Modules with LAN/WiFi (TCP)") >= 0) {
+					else if (text.indexOf("Modules with LAN (TCP)") >= 0) {
 						$("#hardwarecontent #divlogin").hide();
 						$("#hardwarecontent #divmodeldenkovitcpdevices").show();
 						var board = $("#hardwarecontent #divmodeldenkovitcpdevices #combomodeldenkovitcpdevices option:selected").val();
