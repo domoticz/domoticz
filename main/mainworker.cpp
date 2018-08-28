@@ -3007,9 +3007,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID;
-			std::stringstream s_str(result[0][0]);
-			s_str >> ulID;
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
 
 			//Get Counter from one Hour ago
 			time_t now = mytime(NULL);
@@ -5866,9 +5864,7 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 			HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID;
-			std::stringstream s_str(result[0][0]);
-			s_str >> ulID;
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
 
 			//store light level
 			m_sql.safe_query(
@@ -5887,9 +5883,7 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 			HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
-			uint64_t ulID;
-			std::stringstream s_str(result[0][0]);
-			s_str >> ulID;
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
 
 			//store color in database
 			m_sql.safe_query(
@@ -10734,15 +10728,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		if (!result2.empty())
 		{
 			std::vector<std::string> sd2 = result2[0];
-
-			unsigned long long total_min_gas, total_real_gas;
-			unsigned long long gasactual;
-
-			std::stringstream s_str1(sd2[0]);
-			s_str1 >> total_min_gas;
-			std::stringstream s_str2(sValue);
-			s_str2 >> gasactual;
-			total_real_gas = gasactual - total_min_gas;
+			unsigned long long total_min_gas = std::strtoull(sd2[0].c_str(), nullptr, 10);
+			unsigned long long gasactual = std::strtoull(sValue.c_str(), nullptr, 10);
+			unsigned long long total_real_gas = gasactual - total_min_gas;
 			float musage = float(total_real_gas) / GasDivider;
 			sprintf(szTmp, "%.03f", musage);
 		}
@@ -10796,13 +10784,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		{
 			std::vector<std::string> sd2 = result2[0];
 
-			unsigned long long total_min, total_max, total_real;
-
-			std::stringstream s_str1(sd2[0]);
-			s_str1 >> total_min;
-			std::stringstream s_str2(sd2[1]);
-			s_str2 >> total_max;
-			total_real = total_max - total_min;
+			unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
+			unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
+			unsigned long long total_real = total_real = total_max - total_min;
 			sprintf(szTmp, "%llu", total_real);
 
 			float musage = 0;
@@ -11876,9 +11860,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay)
 {
-	uint64_t ID;
-	std::stringstream s_str(idx);
-	s_str >> ID;
+	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 	int ilevel = -1;
 	if (level != "")
 		ilevel = atoi(level.c_str());
@@ -12417,9 +12399,7 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 
 bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcmd)
 {
-	uint64_t ID;
-	std::stringstream s_str(idx);
-	s_str >> ID;
+	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 
 	return SwitchScene(ID, switchcmd);
 }
@@ -12455,10 +12435,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID;
-				std::stringstream sstr;
-				sstr << sID;
-				sstr >> aID;
+				uint64_t aID = std::strtoull(sID.c_str(), nullptr, 10);
 				if (aID == DevRowIdx)
 				{
 					if ((SceneType == SGTYPE_GROUP) || (sCode.empty()))
@@ -12583,10 +12560,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 			_eSwitchType switchtype = (_eSwitchType)atoi(sd2[5].c_str());
 
 			//Check if this device will not activate a scene
-			uint64_t dID;
-			std::stringstream sdID;
-			sdID << sd[0];
-			sdID >> dID;
+			uint64_t dID = std::strtoull(sd[0].c_str(), nullptr, 10);
 			if (DoesDeviceActiveAScene(dID, cmd))
 			{
 				_log.Log(LOG_ERROR, "Skipping sensor '%s' because this triggers another scene!", DeviceName.c_str());
@@ -12694,15 +12668,10 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID;
-				std::stringstream sstr;
-				sstr << sID;
-				sstr >> aID;
+				uint64_t aID = std::strtoull(sID.c_str(), nullptr, 10);
 				if (aID == DevRowIdx)
 				{
-					uint64_t ID;
-					std::stringstream s_str(sd[0]);
-					s_str >> ID;
+					uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
 					int scenetype = atoi(sd[2].c_str());
 					int rnValue = nValue;
 
@@ -12755,9 +12724,7 @@ void MainWorker::LoadSharedUsers()
 				for (const auto & itt2 : result2)
 				{
 					std::vector<std::string> sd2 = itt2;
-					uint64_t ID;
-					std::stringstream s_str(sd2[0]);
-					s_str >> ID;
+					uint64_t ID = std::strtoull(sd2[0].c_str(), nullptr, 10);
 					suser.Devices.push_back(ID);
 				}
 			}
