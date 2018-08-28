@@ -3,7 +3,6 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
-//#include <iostream>
 
 #define SLEEP_MILLISECONDS 200
 #define RETRY_DELAY_SECONDS 30
@@ -39,7 +38,6 @@ bool P1MeterTCP::StartHardware()
 bool P1MeterTCP::StopHardware()
 {
 	m_stoprequested = true;
-	m_bIsStarted = false;
 	if (isConnected())
 	{
 		try {
@@ -62,6 +60,7 @@ bool P1MeterTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
+	m_bIsStarted = false;
 	return true;
 }
 
