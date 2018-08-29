@@ -3742,7 +3742,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
-			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "6.4", devname);
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
 		}
 		break;
 		case sTypeSolarRadiation:		//Solar Radiation
