@@ -3,59 +3,30 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
-#include <iostream>
 
-#define RETRY_DELAY 30
+#define SLEEP_MILLISECONDS 200
+#define RETRY_DELAY_SECONDS 30
+#define HEARTBEAT_SECONDS 12
 
 P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit):
-m_szIPAddress(IPAddress)
+m_szIPAddress(IPAddress),
+m_usIPPort(usIPPort)
 {
-	m_HwdID=ID;
-	m_socket=INVALID_SOCKET;
-	m_stoprequested=false;
-	m_usIPPort=usIPPort;
-	m_retrycntr = RETRY_DELAY;
+	m_HwdID = ID;
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
+	m_stoprequested = false;
 }
 
 P1MeterTCP::~P1MeterTCP(void)
 {
 }
 
+
 bool P1MeterTCP::StartHardware()
 {
-	m_stoprequested=false;
-
-	memset(&m_addr,0,sizeof(sockaddr_in));
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(m_usIPPort);
-
-	unsigned long ip;
-	ip=inet_addr(m_szIPAddress.c_str());
-
-	// if we have a error in the ip, it means we have entered a string
-	if(ip!=INADDR_NONE)
-	{
-		m_addr.sin_addr.s_addr=ip;
-	}
-	else
-	{
-		// change Hostname in serveraddr
-		hostent *he=gethostbyname(m_szIPAddress.c_str());
-		if(he==NULL)
-		{
-			return false;
-		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
-		}
-	}
-
-	//force connect the next first time
-	m_retrycntr=RETRY_DELAY;
-	m_bIsStarted=true;
+	m_stoprequested = false;
+	m_bIsStarted = true;
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&P1MeterTCP::Do_Work, this);
@@ -63,132 +34,135 @@ bool P1MeterTCP::StartHardware()
 	return (m_thread != nullptr);
 }
 
+
 bool P1MeterTCP::StopHardware()
 {
+	m_stoprequested = true;
 	if (isConnected())
 	{
 		try {
 			disconnect();
-		} catch(...)
+			close();
+		}
+		catch(...)
 		{
 			//Don't throw from a Stop command
 		}
 	}
-	m_bIsStarted=false;
+	try {
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
+	m_bIsStarted = false;
 	return true;
-}
-
-bool P1MeterTCP::ConnectInternal()
-{
-	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (m_socket == INVALID_SOCKET)
-	{
-		_log.Log(LOG_ERROR,"P1 Smart Meter: could not create a TCP/IP socket!");
-		return false;
-	}
-
-	// connect to the server
-	int nRet;
-	nRet = connect(m_socket,(const sockaddr*)&m_addr, sizeof(m_addr));
-	if (nRet == SOCKET_ERROR)
-	{
-		closesocket(m_socket);
-		m_socket=INVALID_SOCKET;
-		_log.Log(LOG_ERROR,"P1 Smart Meter: could not connect to: %s:%d",m_szIPAddress.c_str(),m_usIPPort);
-		return false;
-	}
-
-	_log.Log(LOG_STATUS,"P1 Smart Meter: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-
-	if (m_bDisableCRC) {
-		_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
-	}
-
-	Init();
-
-	sOnConnected(this);
-	return true;
-}
-
-void P1MeterTCP::disconnect()
-{
-	m_stoprequested=true;
-	if (m_socket==INVALID_SOCKET)
-		return;
-	closesocket(m_socket);
-	m_socket=INVALID_SOCKET;
-	sleep_seconds(1);
-	if (m_thread)
-	{
-		m_thread->join();
-	}
 }
 
 
 void P1MeterTCP::Do_Work()
 {
-	int sec_counter = 0;
+	int heartbeat_counter = 0;
+	int retry_counter = 0;
 	while (!m_stoprequested)
 	{
-		if (
-			(m_socket == INVALID_SOCKET)&&
-			(!m_stoprequested)
-			)
+		if (mIsConnected)
 		{
-			sleep_seconds(1);
-			sec_counter++;
-
-			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat=mytime(NULL);
-			}
-
-			m_retrycntr++;
-			if (m_retrycntr>=RETRY_DELAY)
-			{
-				m_retrycntr=0;
-				if (!ConnectInternal())
-				{
-					_log.Log(LOG_STATUS,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
-					continue;
-				}
-			}
+			update();
 		}
 		else
 		{
-			unsigned char data[1028];
-			int bread=recv(m_socket,(char*)&data,sizeof(data),0);
-			if (m_stoprequested)
-				break;
-			m_LastHeartbeat=mytime(NULL);
-			if ((bread==0)||(bread<0)) {
-				_log.Log(LOG_ERROR,"P1 Smart Meter: TCP/IP connection closed!");
-				closesocket(m_socket);
-				m_socket=INVALID_SOCKET;
-				if (!m_stoprequested)
-				{
-					_log.Log(LOG_STATUS,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
-					m_retrycntr=0;
-					continue;
-				}
-			}
-			else
+			if ((retry_counter % (RETRY_DELAY_SECONDS * 1000 / SLEEP_MILLISECONDS)) == 0)
 			{
-				std::lock_guard<std::mutex> l(readQueueMutex);
-				ParseData((const unsigned char*)&data, bread, m_bDisableCRC, m_ratelimit);
+				_log.Log(LOG_STATUS, "P1MeterTCP: attempt connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+				connect(m_szIPAddress, m_usIPPort);
+				update();
 			}
+			else if ((retry_counter % (RETRY_DELAY_SECONDS * 1000 / SLEEP_MILLISECONDS)) <= (1000 / SLEEP_MILLISECONDS))
+			{
+				// allow for up to 1 second connect time
+				update();
+			}
+			retry_counter++;
+		}
+
+		sleep_milliseconds(SLEEP_MILLISECONDS);
+		heartbeat_counter++;
+		if ((heartbeat_counter % (HEARTBEAT_SECONDS * 1000 / SLEEP_MILLISECONDS)) == 0)
+		{
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
-	_log.Log(LOG_STATUS,"P1 Smart Meter: TCP/IP Worker stopped...");
+	_log.Log(LOG_STATUS, "P1MeterTCP: TCP/IP Worker stopped...");
 }
 
-void P1MeterTCP::write(const char *data, size_t size)
-{
-}
 
 bool P1MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (!isConnected())
-		return false;
-	write(pdata,length);
-	return true;
+	// read only device - just return true or false depending on connection status
+	return isConnected();
 }
+
+
+void P1MeterTCP::OnConnect()
+{
+	// reset all values and buffers - they may contain invalid data
+	Init();
+	_log.Log(LOG_STATUS, "P1MeterTCP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+
+	if (m_bDisableCRC)
+	{
+		_log.Log(LOG_STATUS, "P1 Smart Meter: CRC validation disabled through hardware control");
+	}
+}
+
+
+void P1MeterTCP::OnDisconnect()
+{
+	_log.Log(LOG_STATUS, "P1MeterTCP: disconnected");
+}
+
+
+void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
+{
+	std::lock_guard<std::mutex> l(readQueueMutex);
+	ParseData((const unsigned char*)pData, length, m_bDisableCRC, m_ratelimit);
+}
+
+
+void P1MeterTCP::OnError(const std::exception e)
+{
+	_log.Log(LOG_ERROR, "P1MeterTCP: Error: %s", e.what());
+}
+
+
+void P1MeterTCP::OnError(const boost::system::error_code& error)
+{
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_ERROR, "P1MeterTCP: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "P1MeterTCP: Connection reset!");
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "P1MeterTCP: %s", error.message().c_str());
+	}
+}
+
