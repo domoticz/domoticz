@@ -531,7 +531,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 
 === Looping through the collections: iterators ===
 
-The domoticz object has these collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. In order to make iterating over these collections easier, dzVents has three iterator methods so you no longer need to use the <code>pair()</code> or <code>ipairs()</code> function:
+The domoticz object has these collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. You cannot use the <code>pairs()</code> or <code>ipairs()</code> functions. Therefore dzVents has three iterator methods:
 
 # '''find(function)''': Returns the item in the collection for which <code>function</code> returns true. When no item is found <code>find</code> returns nil.
 # '''forEach(function)''': Executes function once per array element. The function receives the item in the collection (device or variable). If the function returns ''false'', the loop is aborted.
