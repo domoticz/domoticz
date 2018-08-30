@@ -280,7 +280,7 @@ void DomoticzTCP::Do_Work()
 			else
 			{
 				std::lock_guard<std::mutex> l(readQueueMutex);
-				onInternalMessage((const unsigned char *)&buf, bread);
+				onInternalMessage((const unsigned char *)&buf, bread, false); // Do not check validity, this might be non RFX-message
 			}
 		}
 
