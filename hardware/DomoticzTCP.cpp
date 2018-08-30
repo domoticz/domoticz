@@ -26,7 +26,6 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 	m_usIPPort(usIPPort)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_bIsStarted = false;
 	m_retrycntr = RETRY_DELAY;
 
@@ -55,17 +54,22 @@ DomoticzTCP::~DomoticzTCP(void)
 
 bool DomoticzTCP::StartHardware()
 {
+	m_stoprequested = false;
 #ifndef NOCLOUD
 	b_useProxy = IsMyDomoticzAPIKey(m_szIPAddress);
 	if (b_useProxy) {
+		// don't create worker thread
 		return StartHardwareProxy();
 	}
-	else {
-		return StartHardwareTCP();
-	}
-#else
-	return StartHardwareTCP();
 #endif
+	StartHardwareTCP();
+	m_bIsStarted = true;
+
+	//Start worker thread
+	m_thread = std::make_shared<std::thread>(&DomoticzTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DomoticzTCP");
+
+	return (m_thread != nullptr);
 }
 
 
@@ -75,12 +79,8 @@ bool DomoticzTCP::StopHardware()
 	if (b_useProxy) {
 		return StopHardwareProxy();
 	}
-	else {
-		return StopHardwareTCP();
-	}
-#else
-	return StopHardwareTCP();
 #endif
+	return StopHardwareTCP(); // will reset the worker thread
 }
 
 
@@ -154,21 +154,14 @@ bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
 			writeProxy(pdata, length);
 			return true;
 		}
+		return false;
 	}
-	else {
-		if (isConnectedTCP())
-		{
-			writeTCP(pdata, length);
-			return true;
-		}
-	}
-#else
+#endif
 	if (isConnectedTCP())
 	{
 		writeTCP(pdata, length);
 		return true;
 	}
-#endif
 	return false;
 }
 
@@ -179,12 +172,8 @@ bool DomoticzTCP::isConnected()
 	if (b_useProxy) {
 		return isConnectedProxy();
 	}
-	else {
-		return isConnectedTCP();
-	}
-#else
-	return isConnectedTCP();
 #endif
+	return isConnectedTCP();
 }
 
 
@@ -238,11 +227,6 @@ bool DomoticzTCP::StartHardwareTCP()
 
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&DomoticzTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "DomoticzTCP");
-
-	return (m_thread != nullptr);
 }
 
 
