@@ -37,7 +37,7 @@ private:
 	bool StartHardwareProxy();
 	void writeProxy(const char *data, size_t size);
 	bool isConnectedProxy();
-	bool IsValidAPIKey(const std::string &IPAddress);
+	bool IsMyDomoticzAPIKey(const std::string &IPAddress);
 	bool StopHardwareProxy();
 	std::string GetToken();
 #endif
