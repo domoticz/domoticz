@@ -2,9 +2,6 @@
 
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
-#if defined WIN32
-#include "ws2tcpip.h"
-#endif
 
 class DomoticzTCP : public CDomoticzHardwareBase, ASyncTCP
 {
@@ -12,7 +9,6 @@ public:
 	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
 	~DomoticzTCP(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	boost::signals2::signal<void()>	sDisconnected;
 
 #ifndef NOCLOUD
 	void SetConnected(bool connected);
@@ -39,11 +35,22 @@ private:
 	std::string GetToken();
 #endif
 
+protected:
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
+
+public:
+	boost::signals2::signal<void()>	sDisconnected;
+
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_username;
 	std::string m_password;
+	bool m_bIsAuthenticated;
 
 	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
@@ -54,10 +61,4 @@ private:
 	bool b_useProxy;
 #endif
 
-protected:
-	void OnConnect() override;
-	void OnDisconnect() override;
-	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const std::exception e) override;
-	void OnError(const boost::system::error_code& error) override;
 };
