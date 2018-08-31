@@ -65,18 +65,12 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			_apikey = PS_k;
 		}
 
-		if (PS_m.length() >= 1)
-		{
-		}
-		else
+		if (PS_m.empty())
 		{
 			PS_m = Text;
 		}
-
-		if (PS_t.length() >= 1)
-		{
-		}
-		else
+		
+		if (PS_t.empty())
 		{
 			PS_t = cSubject;
 		}
