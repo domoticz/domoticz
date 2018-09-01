@@ -127,7 +127,6 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
     pimpl->open=true; //Port is now open
 }
 
-//TODO: Remove this function!
 void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rate,
 	boost::asio::serial_port_base::parity /*opt_parity*/,
 	boost::asio::serial_port_base::character_size /*opt_csize*/,
