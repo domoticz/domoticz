@@ -204,7 +204,7 @@ void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 	}
 
 	std::lock_guard<std::mutex> l(readQueueMutex);
-	onInternalMessage((const unsigned char *)&buf, bread, false); // Do not check validity, this might be non RFX-message
+	onInternalMessage((const unsigned char *)pData, length, false); // Do not check validity, this might be non RFX-message
 }
 
 
