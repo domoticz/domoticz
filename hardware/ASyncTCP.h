@@ -12,12 +12,12 @@ typedef std::shared_ptr<class ASyncTCP> ASyncTCPRef;
 
 class ASyncTCP
 {
-public:
+protected:
 	ASyncTCP();
 	virtual ~ASyncTCP(void);
 
 	void connect(const std::string &ip, unsigned short port);
-	void connect(boost::asio::ip::tcp::endpoint& endpoint);
+	//void connect(boost::asio::ip::tcp::endpoint& endpoint);
 	void disconnect();
 	bool isConnected() { return mIsConnected; };
 
@@ -25,16 +25,12 @@ public:
 	void write(const uint8_t *pData, size_t length);
 
 	void update();
-protected:
+//protected:
 	void read();
 	void close();
 	//bool set_tcp_keepalive();
 
 	// callbacks
-	void handle_connect(const boost::system::error_code& error);
-	void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
-	void write_end(const boost::system::error_code& error);
-	void do_close();
 
 	void do_reconnect(const boost::system::error_code& error);
 
@@ -61,4 +57,16 @@ protected:
 
 	boost::asio::deadline_timer		mReconnectTimer;
 
+private:
+	void connect(boost::asio::ip::tcp::endpoint& endpoint);
+
+	// Callbacks, executed from the io_service
+	void handle_connect(const boost::system::error_code& error);
+	void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
+	void write_end(const boost::system::error_code& error);
+	void do_close();
+	void do_write(const std::string &msg);
+
+	std::shared_ptr<std::thread> m_tcpthread;
+	boost::asio::io_service::work m_tcpwork; // Create some work to keep IO Service alive
 };

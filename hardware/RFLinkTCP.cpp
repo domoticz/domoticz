@@ -83,6 +83,8 @@ void CRFLinkTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 0;
+	_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -102,52 +104,22 @@ void CRFLinkTCP::Do_Work()
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
 				m_bDoRestart = true;
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
 			}
 			else
 				write("10;PING;\n");
 		}
 
-		if (bFirstTime)
+		if ((m_bDoRestart) && (sec_counter % 30 == 0))
 		{
-			bFirstTime=false;
-			if (mIsConnected)
-			{
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
-			}
 			_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
-				connect(m_szIPAddress, m_usIPPort);
+			try {
+				disconnect();
 			}
-			update();
+			catch (...)
+			{
+				//Don't throw from a Stop command
+			}
+			connect(m_szIPAddress, m_usIPPort);
 		}
 	}
 	_log.Log(LOG_STATUS,"RFLink: TCP/IP Worker stopped...");
