@@ -412,7 +412,9 @@ void I2C::MCP23017_Init()
 			unit = atoi(sd[0].c_str());
 			nvalue = atoi(sd[1].c_str());
 
-			nvalue ^= 1;
+			if (m_invert_data == true) {
+				nvalue ^= 1;
+			}
 			//prepare new value by combinating current value, mask and new value
 			if (nvalue==1) {
 				GPIO_reg |= (0x01 << unit);
