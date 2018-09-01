@@ -37,7 +37,8 @@ static inline bool startsWith(const std::string &haystack, const std::string &ne
 }
 
 Comm5TCP::Comm5TCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	ASyncTCP("Comm5TCP"),
+	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
@@ -96,27 +97,18 @@ void Comm5TCP::OnDisconnect()
 
 void Comm5TCP::Do_Work()
 {
-	bool bFirstTime = true;
-	int count = 0;
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
 	while (!m_stoprequested)
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!mIsConnected)
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sleep_seconds(1);
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			sleep_milliseconds(40);
-			update();
-			if (count++ >= 100) {
-				count = 0;
-				querySensorState();
-			}
+		if (sec_counter % 4 == 0) {
+			querySensorState();
 		}
 	}
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: TCP/IP Worker stopped...");
@@ -191,7 +183,7 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	unsigned char packettype = pSen->ICMND.packettype;
 	//unsigned char subtype = pSen->ICMND.subtype;
 
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 
 	if (packettype == pTypeLighting2 && pSen->LIGHTING2.id3 == 0)

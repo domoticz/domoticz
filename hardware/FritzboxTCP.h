@@ -11,7 +11,6 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool isConnected() { return mIsConnected; };
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname);
@@ -28,7 +27,7 @@ private:
 	int m_retrycntr;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
+	unsigned char m_buffer[1024];
 	int m_bufferpos;
 	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;

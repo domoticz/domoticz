@@ -15,7 +15,7 @@ struct hostent;
 #define RECONNECT_TIME 30
 
 // TODO: Delete default constructor and require thread name to be set
-ASyncTCP::ASyncTCP()
+ASyncTCP::ASyncTCP(const std::string thread_name)
 	: mIsConnected(false), mIsClosing(false),
 	mSocket(mIos), mReconnectTimer(mIos),
 	mDoReconnect(true), mIsReconnecting(false),
@@ -26,12 +26,13 @@ ASyncTCP::ASyncTCP()
 
 	//Start IO Service worker thread
 	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
-	SetThreadName(m_tcpthread->native_handle(), "ASyncTCP");
+	SetThreadName(m_tcpthread->native_handle(), thread_name.c_str());
 }
 
 ASyncTCP::~ASyncTCP(void)
 {
 	disconnect();
+
 	// tell the IO service to stop
 	mIos.stop();
 	try {
@@ -45,14 +46,6 @@ ASyncTCP::~ASyncTCP(void)
 	{
 		//Don't throw from a Stop command
 	}
-}
-
-void ASyncTCP::update()
-{
-	if (mIsClosing)
-		return;
-	// calls the poll() function to process network messages
-	//mIos.poll();
 }
 
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
@@ -99,12 +92,6 @@ void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
 
 	mEndPoint = endpoint;
 
-	// restart IO service if it has been stopped
-	if (mIos.stopped()) {
-		_log.Log(LOG_ERROR, "ASyncTCP::connect: IO service stopped!");
-		//mIos.reset();
-	}
-
 	// try to connect, then call handle_connect
 	mSocket.async_connect(endpoint,
         boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
@@ -114,9 +101,6 @@ void ASyncTCP::disconnect()
 {
 	// tell socket to close the connection
 	close();
-
-	// tell the IO service to stop
-	//mIos.stop();
 
 	mIsConnected = false;
 	mIsClosing = false;
@@ -130,6 +114,27 @@ void ASyncTCP::close()
 	mIos.post(boost::bind(&ASyncTCP::do_close, this));
 }
 
+void ASyncTCP::read()
+{
+	if (!mIsConnected) return;
+	if (mIsClosing) return;
+
+	mSocket.async_read_some(boost::asio::buffer(m_readbuffer, sizeof(m_readbuffer)),
+		boost::bind(&ASyncTCP::handle_read,
+			this,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+}
+
+void ASyncTCP::write(const uint8_t *pData, size_t length)
+{
+	write(std::string((const char*)pData, length));
+}
+
+void ASyncTCP::write(const std::string &msg)
+{
+	mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+}
 
 // callbacks
 
@@ -176,23 +181,11 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 	}
 }
 
-void ASyncTCP::read()
-{
-	if (!mIsConnected) return;
-	if (mIsClosing) return;
-
-	mSocket.async_read_some(boost::asio::buffer(m_buffer, sizeof(m_buffer)),
-		boost::bind(&ASyncTCP::handle_read,
-			this,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
-}
-
 void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 {
 	if (!error)
 	{
-		OnData(m_buffer,bytes_transferred);
+		OnData(m_readbuffer,bytes_transferred);
 		//Read next
 		//This gives some work to the io_service before it is started
 		mIos.post(boost::bind(&ASyncTCP::read, this));
@@ -253,16 +246,6 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 	}
 }
 
-void ASyncTCP::write(const uint8_t *pData, size_t length)
-{
-	write(std::string((const char*)pData, length));
-}
-
-void ASyncTCP::write(const std::string &msg)
-{
-	mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
-}
-
 void ASyncTCP::do_close()
 {
 	if(mIsClosing) return;
@@ -295,8 +278,6 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 void ASyncTCP::do_write(const std::string &msg)
 {
 	if(!mIsConnected) return;
-
-	//write((const uint8_t*)msg.c_str(), msg.size());
 
 	if (!mIsClosing)
 	{

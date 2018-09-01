@@ -10,7 +10,8 @@
 #define RETRY_DELAY 30
 
 RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	ASyncTCP("RFXComTCP"),
+	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
@@ -50,16 +51,12 @@ bool RFXComTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (isConnected())
+	try {
+		disconnect();
+	}
+	catch (...)
 	{
-		try {
-			disconnect();
-			close();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		//Don't throw from a Stop command
 	}
 
 	m_bIsStarted = false;
@@ -81,23 +78,16 @@ void RFXComTCP::OnDisconnect()
 
 void RFXComTCP::Do_Work()
 {
-	bool bFirstTime = true;
+	m_rxbufferpos = 0;
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
 	while (!m_stoprequested)
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!mIsConnected)
-			{
-				m_rxbufferpos = 0;
-				connect(m_szIPAddress, m_usIPPort);
-			}
-		}
-		else
-		{
-			sleep_milliseconds(40);
-			update();
+		sleep_seconds(1);
+		sec_counter++;
+
+		if (sec_counter  % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	_log.Log(LOG_STATUS,"RFXCOM: TCP/IP Worker stopped...");
@@ -139,7 +129,7 @@ void RFXComTCP::OnError(const boost::system::error_code& error)
 
 bool RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 	write((const unsigned char*)pdata, length);
 	return true;

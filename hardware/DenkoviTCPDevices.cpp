@@ -27,6 +27,7 @@ enum _eDaeTcpState
 
 
 CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int pollInterval, const int model, const int slaveId) :
+	ASyncTCP("DenkoviTCP"),
 	m_szIPAddress(IPAddress),
 	m_pollInterval(pollInterval)
 {
@@ -64,6 +65,7 @@ bool CDenkoviTCPDevices::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDenkoviTCPDevices::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "DenkoviTCP");
 	m_bIsStarted = true;
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:
@@ -232,31 +234,20 @@ bool CDenkoviTCPDevices::StopHardware()
 
 void CDenkoviTCPDevices::Do_Work()
 {
-	int poll_interval = m_pollInterval / 100;
-	int poll_counter = poll_interval - 2;
-
-	int msec_counter = 0;
-
+	int poll_interval = m_pollInterval / 500;
+	int halfsec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
 	while (!m_stoprequested)
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (m_bFirstTime)
-		{
-			m_bFirstTime = false;
-			if (!mIsConnected)
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sleep_milliseconds(500);
+		halfsec_counter++;
+
+		if (halfsec_counter % 24 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			sleep_milliseconds(100);
-			update();
-			if (msec_counter++ >= poll_interval) {
-				msec_counter = 0;
-				if (m_bReadingNow == false && m_bUpdateIo == false)
-					GetMeterDetails();
-			}
+		if (halfsec_counter % poll_interval == 0) {
+			if (m_bReadingNow == false && m_bUpdateIo == false)
+				GetMeterDetails();
 		}
 	}
 

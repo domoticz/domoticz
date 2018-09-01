@@ -8,7 +8,6 @@ class CRFLinkTCP: public CRFLinkBase, ASyncTCP
 public:
 	CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~CRFLinkTCP(void);
-	bool isConnected(){ return mIsConnected; };
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;

@@ -6,6 +6,7 @@
 #include "../main/localtime_r.h"
 
 CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
+	ASyncTCP("RFLinkTCP"),
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
@@ -47,15 +48,11 @@ bool CRFLinkTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (isConnected())
+	try {
+		disconnect();
+	} catch(...)
 	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		//Don't throw from a Stop command
 	}
 
 	m_bIsStarted=false;
@@ -75,8 +72,8 @@ void CRFLinkTCP::OnConnect()
 
 void CRFLinkTCP::OnDisconnect()
 {
+	// Note: No need to set m_bDoRestart = true here, the connection is automatically reinited by ASyncTCP
 	_log.Log(LOG_STATUS,"RFLink: disconnected");
-	m_bDoRestart = true;
 }
 
 void CRFLinkTCP::Do_Work()
@@ -90,12 +87,12 @@ void CRFLinkTCP::Do_Work()
 		sleep_seconds(1);
 		sec_counter++;
 
-		time_t atime = mytime(NULL);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat= atime;
+			m_LastHeartbeat = mytime(NULL);
 		}
-		if ((sec_counter % 20 == 0) && (mIsConnected))
+		if ((sec_counter % 20 == 0) && (isConnected()))
 		{
+			time_t atime = mytime(NULL);
 			//Send ping (keep alive)
 			if (atime - m_LastReceivedTime > 30)
 			{
@@ -103,6 +100,7 @@ void CRFLinkTCP::Do_Work()
 				_log.Log(LOG_ERROR, "RFLink: Nothing received for more than 30 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
+				//TODO: Add method to ASyncTCP to schedule a reconnect
 				m_bDoRestart = true;
 			}
 			else
@@ -160,7 +158,7 @@ void CRFLinkTCP::OnError(const boost::system::error_code& error)
 
 bool CRFLinkTCP::WriteInt(const std::string &sendString)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

@@ -50,11 +50,11 @@ static MochadMatch matchlist[] = {
 //end
 
 MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
-m_szIPAddress(IPAddress)
+	ASyncTCP("MochadTCP"),
+	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
-	m_bDoRestart = false;
 	m_usIPPort=usIPPort;
 	m_linecount=0;
 	m_exclmarkfound=0;
@@ -93,7 +93,6 @@ MochadTCP::~MochadTCP(void)
 bool MochadTCP::StartHardware()
 {
 	m_stoprequested=false;
-	m_bDoRestart = false;
 
 	//force connect the next first time
 //	m_retrycntr=RETRY_DELAY;
@@ -119,14 +118,11 @@ bool MochadTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (isConnected())
+	try {
+		disconnect();
+	} catch(...)
 	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		//Don't throw from a Stop command
 	}
 	m_bIsStarted=false;
 	return true;
@@ -137,7 +133,6 @@ void MochadTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
-	m_bDoRestart = false;
 
 	sOnConnected(this);
 }
@@ -145,7 +140,6 @@ void MochadTCP::OnConnect()
 void MochadTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS, "Mochad: disconnected");
-	m_bDoRestart = true;
 }
 
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
@@ -155,36 +149,16 @@ void MochadTCP::OnData(const unsigned char *pData, size_t length)
 
 void MochadTCP::Do_Work()
 {
-	bool bFirstTime = true;
-
+	_log.Log(LOG_STATUS, "Mochad: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
 	while (!m_stoprequested)
 	{
+		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
-		}
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!mIsConnected)
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
-		}
-		else
-		{
-			if ((m_bDoRestart) && (ltime.tm_sec % 30 == 0))
-			{
-				_log.Log(LOG_STATUS, "Mochad: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				connect(m_szIPAddress, m_usIPPort);
-			}
-			sleep_milliseconds(40);
-			update();
+		if (sec_counter  % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
@@ -221,7 +195,7 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	//RBUF *m_mochad = (RBUF *)pdata;
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 	if (pdata[1] == pTypeInterfaceControl && pdata[2] == sTypeInterfaceCommand && pdata[4] == cmdSTATUS) {
 		sprintf (s_buffer,"ST\n");

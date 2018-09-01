@@ -35,6 +35,7 @@ static inline bool startsWith(const std::string &haystack, const std::string &ne
 }
 
 Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
+	ASyncTCP("Comm5SMTCP"),
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
@@ -89,27 +90,18 @@ void Comm5SMTCP::OnDisconnect()
 
 void Comm5SMTCP::Do_Work()
 {
-	bool bFirstTime = true;
-	int count = 0;
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
 	while (!m_stoprequested)
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!mIsConnected)
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sleep_seconds(1);
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			sleep_milliseconds(40);
-			update();
-			if (count++ >= 100) {
-				count = 0;
-				querySensorState();
-			}
+		if (sec_counter % 4 == 0) {
+			querySensorState();
 		}
 	}
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: TCP/IP Worker stopped...");

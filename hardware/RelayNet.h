@@ -14,7 +14,6 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool isConnected() { return mIsConnected; };
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -46,7 +45,6 @@ private:
 	sockaddr_in 						m_addr;
 	bool								m_poll_inputs;
 	bool								m_poll_relays;
-	bool								m_reconnect;
 	bool								m_bDoRestart;
 	bool								m_setup_devices;
 	int									m_skip_relay_update;

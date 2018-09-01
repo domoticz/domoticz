@@ -8,10 +8,10 @@
 #define RETRY_DELAY 30
 
 OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6):
+	ASyncTCP("OTGWTCP"),
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
@@ -25,7 +25,6 @@ OTGWTCP::~OTGWTCP(void)
 bool OTGWTCP::StartHardware()
 {
 	m_stoprequested=false;
-	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
@@ -51,15 +50,11 @@ bool OTGWTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (isConnected())
+	try {
+		disconnect();
+	} catch(...)
 	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		//Don't throw from a Stop command
 	}
 
 	m_bIsStarted=false;
@@ -69,7 +64,6 @@ bool OTGWTCP::StopHardware()
 void OTGWTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS,"OTGW: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
 	sOnConnected(this);
@@ -83,8 +77,8 @@ void OTGWTCP::OnDisconnect()
 
 void OTGWTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 25;
+	connect(m_szIPAddress,m_usIPPort);
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -94,36 +88,18 @@ void OTGWTCP::Do_Work()
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (bFirstTime)
+		if (isConnected())
 		{
-			bFirstTime=false;
-			connect(m_szIPAddress,m_usIPPort);
-			if (mIsConnected)
+			if ((sec_counter % 28 == 0) && (m_bRequestVersion))
 			{
+				m_bRequestVersion = false;
+				GetVersion();
+			}
+			else if (sec_counter % 30 == 0)//updates every 30 seconds
+			{
+				SendOutsideTemperature();
+				SendTime();
 				GetGatewayDetails();
-			}
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
-			if (mIsConnected)
-			{
-				if ((sec_counter % 28 == 0) && (m_bRequestVersion))
-				{
-					m_bRequestVersion = false;
-					GetVersion();
-				}
-				else if (sec_counter % 30 == 0)//updates every 30 seconds
-				{
-					bFirstTime=false;
-					SendOutsideTemperature();
-					SendTime();
-					GetGatewayDetails();
-				}
 			}
 		}
 	}
@@ -165,7 +141,7 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 
 bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}
