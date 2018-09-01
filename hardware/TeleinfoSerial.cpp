@@ -119,8 +119,8 @@ bool CTeleinfoSerial::StartHardware()
 
 bool CTeleinfoSerial::StopHardware()
 {
-	terminate();
 	StopHeartbeatThread();
+	terminate();
 	m_bIsStarted = false;
 	return true;
 }

@@ -238,8 +238,11 @@ bool CTellstick::StopHardware()
     m_bIsStarted = false;
     m_cond.notify_all();
     lock.unlock();
-    if (m_thread.joinable())
-        m_thread.join();
+    if (m_thread)
+	{
+		m_thread->join();
+		m_thread.reset();
+	}
     return true;
 }
 

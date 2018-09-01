@@ -43,16 +43,6 @@ bool S0MeterTCP::StartHardware()
 bool S0MeterTCP::StopHardware()
 {
 	m_stoprequested=true;
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
 	try {
 		if (m_thread)
 		{
@@ -63,6 +53,16 @@ bool S0MeterTCP::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
+	}
+	if (isConnected())
+	{
+		try {
+			disconnect();
+			close();
+		} catch(...)
+		{
+			//Don't throw from a Stop command
+		}
 	}
 
 	m_bIsStarted=false;

@@ -142,16 +142,6 @@ bool DomoticzTCP::StopHardware()
 
 bool DomoticzTCP::StopHardwareTCP()
 {
-	if (isConnected())
-	{
-		try {
-			disconnectTCP();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
 	try {
 		if (m_thread)
 		{
@@ -163,6 +153,16 @@ bool DomoticzTCP::StopHardwareTCP()
 	catch (...)
 	{
 		//Don't throw from a Stop command
+	}
+	if (isConnected())
+	{
+		try {
+			disconnectTCP();
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
 	}
 	m_bIsStarted = false;
 	return true;
@@ -213,17 +213,11 @@ bool DomoticzTCP::ConnectInternal()
 
 void DomoticzTCP::disconnectTCP()
 {
-	m_stoprequested = true;
 	if (m_socket != INVALID_SOCKET)
 	{
 		shutdown(m_socket, SHUT_RDWR);
 		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
-		sleep_seconds(1);
-	}
-	if (m_thread)
-	{
-		m_thread->join();
 	}
 }
 
