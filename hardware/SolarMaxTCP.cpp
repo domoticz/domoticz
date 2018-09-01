@@ -241,7 +241,6 @@ void SolarMaxTCP::Do_Work()
 				}
 				else
 				{
-					std::lock_guard<std::mutex> l(readQueueMutex);
 					ParseData((const unsigned char *)&buf, bread);
 				}
 			}

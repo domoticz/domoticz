@@ -147,7 +147,6 @@ void Ec3kMeterTCP::Do_Work()
 
 void Ec3kMeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 

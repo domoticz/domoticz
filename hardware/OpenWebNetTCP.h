@@ -94,4 +94,5 @@ private:
 	volatile uint32_t mask_request_status;
 	int m_heartbeatcntr;
 	csocket* m_pStatusSocket;
+	std::mutex readQueueMutex;
 };

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "RFXBase.h"
 #if defined WIN32
 #include "ws2tcpip.h"
 #endif
 
-class DomoticzTCP : public CDomoticzHardwareBase
+class DomoticzTCP : public CRFXBase
 {
 public:
 	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);

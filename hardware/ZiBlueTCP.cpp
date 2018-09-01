@@ -159,7 +159,6 @@ void CZiBlueTCP::Do_Work()
 
 void CZiBlueTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData((const char*)pData,length);
 }
 

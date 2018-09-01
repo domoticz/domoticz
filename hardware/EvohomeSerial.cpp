@@ -74,7 +74,6 @@ bool CEvohomeSerial::OpenSerialDevice()
 
 void CEvohomeSerial::ReadCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		//_log.Log(LOG_NORM,"evohome: received %ld bytes",len);

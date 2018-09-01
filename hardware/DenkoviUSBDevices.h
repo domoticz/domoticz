@@ -35,6 +35,5 @@ private:
 	bool m_updateIo = false;
 
 protected:
-	void OnData(const unsigned char *pData, size_t length);
 	void OnError(const std::exception e);
 };

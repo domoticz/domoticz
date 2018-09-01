@@ -251,7 +251,6 @@ MySensorsBase::~MySensorsBase(void)
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string> > result, result2;

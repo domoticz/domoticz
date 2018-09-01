@@ -33,7 +33,6 @@ public:
 	std::string m_Name;
 	_eHardwareTypes HwdType;
 	unsigned char m_SeqNr = { 0 };
-	unsigned char m_rxbufferpos = { 0 };
 	bool m_bEnableReceive = { false };
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
@@ -42,7 +41,6 @@ public:
 protected:
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
-	bool onRFXMessage(const unsigned char *pBuffer, const size_t Len);
 
     //Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
@@ -95,8 +93,6 @@ protected:
 	void SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname);
 
 	int m_iHBCounter = { 0 };
-	std::mutex readQueueMutex;
-	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
 	bool m_bIsStarted = { false };
 private:
     void Do_Heartbeat_Work();

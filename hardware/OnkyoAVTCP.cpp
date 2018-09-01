@@ -242,7 +242,6 @@ void OnkyoAVTCP::Do_Work()
 
 void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 
