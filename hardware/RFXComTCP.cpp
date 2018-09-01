@@ -39,16 +39,22 @@ bool RFXComTCP::StartHardware()
 bool RFXComTCP::StopHardware()
 {
 	m_stoprequested = true;
+	try {
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
 	if (isConnected())
 	{
 		try {
 			disconnect();
 			close();
-			if (m_thread)
-			{
-				m_thread->join();
-				m_thread.reset();
-			}
 		}
 		catch (...)
 		{

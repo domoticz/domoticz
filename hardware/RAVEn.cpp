@@ -63,7 +63,6 @@ bool RAVEn::StopHardware()
 
 void RAVEn::readCallback(const char *indata, size_t inlen)
 {
-    std::lock_guard<std::mutex> l(readQueueMutex);
     if (!m_bEnableReceive)
         return; //receiving not enabled
 

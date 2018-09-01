@@ -1759,8 +1759,7 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 		(pHardware->HwdType != HTYPE_RFXLAN)
 		)
 	{
-		//clear buffer, and enable receive
-		pHardware->m_rxbufferpos = 0;
+		//enable receive
 		pHardware->m_bEnableReceive = true;
 		return;
 	}

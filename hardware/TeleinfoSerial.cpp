@@ -119,8 +119,8 @@ bool CTeleinfoSerial::StartHardware()
 
 bool CTeleinfoSerial::StopHardware()
 {
-	terminate();
 	StopHeartbeatThread();
+	terminate();
 	m_bIsStarted = false;
 	return true;
 }
@@ -134,7 +134,6 @@ bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char len
 
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
 	{
 		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", m_Name.c_str());

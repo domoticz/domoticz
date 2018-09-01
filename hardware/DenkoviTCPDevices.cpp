@@ -111,8 +111,6 @@ void CDenkoviTCPDevices::CreateRequest(uint8_t * pData, size_t length)
  
 void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-
 	switch (m_iModel) {
 	case DDEV_WIFI_16R: {
 		if (m_Cmd == DAE_WIFI16_ASK_CMD) {
@@ -247,7 +245,6 @@ void CDenkoviTCPDevices::Do_Work()
 			m_bFirstTime = false;
 			if (!mIsConnected)
 			{
-				m_rxbufferpos = 0;
 				connect(m_szIPAddress, m_usIPPort);
 			}
 		}

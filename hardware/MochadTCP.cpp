@@ -108,6 +108,17 @@ bool MochadTCP::StartHardware()
 bool MochadTCP::StopHardware()
 {
 	m_stoprequested = true;
+	try {
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
 	if (isConnected())
 	{
 		try {
@@ -139,7 +150,6 @@ void MochadTCP::OnDisconnect()
 
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 
@@ -163,7 +173,6 @@ void MochadTCP::Do_Work()
 			bFirstTime = false;
 			if (!mIsConnected)
 			{
-				m_rxbufferpos = 0;
 				connect(m_szIPAddress, m_usIPPort);
 			}
 		}

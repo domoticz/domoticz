@@ -122,7 +122,6 @@ void CEvohomeTCP::Do_Work()
 
 void CEvohomeTCP::OnData(const unsigned char *pData, size_t length)
 {
-    std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		//_log.Log(LOG_NORM,"evohome: received %ld bytes",len);

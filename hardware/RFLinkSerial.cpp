@@ -193,7 +193,6 @@ bool CRFLinkSerial::OpenSerialDevice()
 
 void CRFLinkSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(data, len);
 }
 

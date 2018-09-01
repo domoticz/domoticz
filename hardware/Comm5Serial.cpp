@@ -172,8 +172,6 @@ void Comm5Serial::enableNotificationResponseHandler(const std::string & /*mframe
 
 void Comm5Serial::readCallBack(const char * data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
@@ -324,12 +322,6 @@ void Comm5Serial::enableNotifications()
 	//                  id    op   on/off  mask
 	std::string data("\x04\x02\x01\xFF");
 	writeFrame(data);
-}
-
-void Comm5Serial::OnData(const unsigned char *pData, size_t length)
-{
-	std::lock_guard<std::mutex> l(readQueueMutex);
-	ParseData(pData, length);
 }
 
 void Comm5Serial::OnError(const std::exception e)

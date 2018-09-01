@@ -88,9 +88,6 @@ bool CDenkoviUSBDevices::StartHardware()
 
 void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-	//boost::lock_guard<boost::mutex> l(readQueueMutex);
-
 	if (!m_bEnableReceive) {
 		m_readingNow = false;
 		return; //receiving not enabled
@@ -121,18 +118,6 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 	}
 	m_updateIo = false;
 	m_readingNow = false;
-}
-
-
-void CDenkoviUSBDevices::OnData(const unsigned char *pData, size_t length)
-{
-	std::lock_guard<std::mutex> l(readQueueMutex);
-	//boost::lock_guard<boost::mutex> l(readQueueMutex);
-	uint8_t firstEight, secondEight;
-	if (length == 2) {
-		firstEight = (unsigned char)pData[0];
-		secondEight = (unsigned char)pData[1];
-	}
 }
 
 void CDenkoviUSBDevices::OnError(const std::exception e)

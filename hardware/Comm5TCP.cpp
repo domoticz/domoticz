@@ -55,7 +55,6 @@ bool Comm5TCP::StartHardware()
 
 	//force connect the next first time
 	m_bIsStarted = true;
-	m_rxbufferpos = 0;
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Comm5TCP::Do_Work, this);
@@ -107,7 +106,6 @@ void Comm5TCP::Do_Work()
 			bFirstTime = false;
 			if (!mIsConnected)
 			{
-				m_rxbufferpos = 0;
 				connect(m_szIPAddress, m_usIPPort);
 			}
 		}
@@ -216,7 +214,6 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 void Comm5TCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

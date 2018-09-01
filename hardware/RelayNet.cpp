@@ -195,11 +195,6 @@ bool RelayNet::StopHardware()
 {
 	m_stoprequested = true;
 
-	if (isConnected())
-	{
-		disconnect();
-	}
-
 	try
 	{
 		if (m_thread)
@@ -210,6 +205,10 @@ bool RelayNet::StopHardware()
 	}
 	catch (...)
 	{
+	}
+	if (isConnected())
+	{
+		disconnect();
 	}
 
 	m_bIsStarted = false;
@@ -760,8 +759,6 @@ void RelayNet::OnDisconnect()
 
 void RelayNet::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-
 	if (!m_stoprequested)
 	{
 		ParseData(pData, length);

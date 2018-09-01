@@ -38,17 +38,6 @@ bool P1MeterTCP::StartHardware()
 bool P1MeterTCP::StopHardware()
 {
 	m_stoprequested = true;
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		}
-		catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
 	try {
 		if (m_thread)
 		{
@@ -59,6 +48,17 @@ bool P1MeterTCP::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
+	}
+	if (isConnected())
+	{
+		try {
+			disconnect();
+			close();
+		}
+		catch(...)
+		{
+			//Don't throw from a Stop command
+		}
 	}
 	m_bIsStarted = false;
 	return true;
@@ -130,7 +130,6 @@ void P1MeterTCP::OnDisconnect()
 
 void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData((const unsigned char*)pData, length, m_bDisableCRC, m_ratelimit);
 }
 

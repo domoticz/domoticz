@@ -68,6 +68,12 @@ bool CurrentCostMeterTCP::isConnected()
 
 bool CurrentCostMeterTCP::StopHardware()
 {
+	m_stoprequested=true;
+	if (m_thread)
+	{
+		m_thread->join();
+		m_thread.reset();
+	}
 	if (isConnected())
 	{
 		try {
@@ -111,16 +117,10 @@ bool CurrentCostMeterTCP::ConnectInternal()
 
 void CurrentCostMeterTCP::disconnect()
 {
-	m_stoprequested=true;
 	if (m_socket==INVALID_SOCKET)
 		return;
 	closesocket(m_socket);
 	m_socket=INVALID_SOCKET;
-	sleep_seconds(1);
-	if (m_thread)
-	{
-		m_thread->join();
-	}
 }
 
 
@@ -172,7 +172,6 @@ void CurrentCostMeterTCP::Do_Work()
 			}
 			else
 			{
-				std::lock_guard<std::mutex> l(readQueueMutex);
 				ParseData(data, bread);
 			}
 		}

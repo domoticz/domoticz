@@ -2,8 +2,9 @@
 
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
+#include "RFXBase.h"
 
-class DomoticzTCP : public CDomoticzHardwareBase, ASyncTCP
+class DomoticzTCP : public CRFXBase, ASyncTCP
 {
 public:
 	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);

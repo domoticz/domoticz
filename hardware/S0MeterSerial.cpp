@@ -108,8 +108,8 @@ bool S0MeterSerial::StartHardware()
 bool S0MeterSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	terminate();
 	StopHeartbeatThread();
+	terminate();
 	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
 	return true;
 }
@@ -117,7 +117,6 @@ bool S0MeterSerial::StopHardware()
 
 void S0MeterSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

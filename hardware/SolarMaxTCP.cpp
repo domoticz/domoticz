@@ -104,24 +104,23 @@ bool SolarMaxTCP::StartHardware()
 
 bool SolarMaxTCP::StopHardware()
 {
+	m_stoprequested = true;
+	try {
+		if (m_thread)
+		{
+			
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
 	if (isConnected())
 	{
 		try {
 			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-	else {
-		try {
-			if (m_thread)
-			{
-				m_stoprequested = true;
-				m_thread->join();
-				m_thread.reset();
-			}
 		}
 		catch (...)
 		{
@@ -170,16 +169,10 @@ bool SolarMaxTCP::ConnectInternal()
 
 void SolarMaxTCP::disconnect()
 {
-	m_stoprequested = true;
 	if (m_socket != INVALID_SOCKET)
 	{
 		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
-		sleep_seconds(1);
-	}
-	if (m_thread)
-	{
-		m_thread->join();
 	}
 }
 
@@ -241,7 +234,6 @@ void SolarMaxTCP::Do_Work()
 				}
 				else
 				{
-					std::lock_guard<std::mutex> l(readQueueMutex);
 					ParseData((const unsigned char *)&buf, bread);
 				}
 			}

@@ -146,7 +146,6 @@ bool KMTronic433::OpenSerialDevice()
 
 void KMTronic433::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

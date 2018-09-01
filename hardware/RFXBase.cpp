@@ -14,7 +14,7 @@ CRFXBase::~CRFXBase()
 {
 }
 
-bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len)
+bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len, const bool checkValid/* = true*/)
 {
 	if (!m_bEnableReceive)
 		return true; //receiving not enabled
@@ -39,7 +39,7 @@ bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len)
 		}
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
-			if (CheckValidRFXData((uint8_t*)&m_rxbuffer))
+			if (!checkValid || CheckValidRFXData((uint8_t*)&m_rxbuffer))
 				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, -1);
 			else
 				_log.Log(LOG_ERROR, "RFXCOM: Invalid data received!....");
@@ -202,6 +202,7 @@ bool CRFXBase::SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned 
 
 void CRFXBase::SendResetCommand()
 {
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	m_bEnableReceive = false;
 	m_rxbufferpos = 0;
 	//Send Reset

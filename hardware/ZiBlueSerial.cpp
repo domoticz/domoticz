@@ -150,7 +150,6 @@ bool CZiBlueSerial::OpenSerialDevice()
 
 void CZiBlueSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(data, len);
 }
 
