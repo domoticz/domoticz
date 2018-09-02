@@ -23,13 +23,13 @@ protected:
 	bool m_bDoRestart;
 
 	void Do_Work();
-	void OnConnect() override;
-	void OnDisconnect() override;
-	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const std::exception e) override;
-	void OnError(const boost::system::error_code& error) override;
+
+	void OnConnect();
+	void OnDisconnect();
+	void OnData(const unsigned char *pData, size_t length);
+	void OnErrorStd(const std::exception e);
+	void OnErrorBoost(const boost::system::error_code& error);
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

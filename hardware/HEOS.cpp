@@ -23,7 +23,6 @@ CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short us
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetSettings(PollIntervalsec, PingTimeoutms);
@@ -511,9 +510,8 @@ void CHEOS::Do_Work()
 	int sec_counter = 25;
 	m_lastUpdate = 25;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		m_lastUpdate++;
 
@@ -555,6 +553,7 @@ void CHEOS::Do_Work()
 			}
 		}
 	}
+	terminate();
 
 	_log.Log(LOG_STATUS, "HEOS by DENON: Worker stopped...");
 
@@ -575,12 +574,19 @@ _eNotificationTypes	CHEOS::NotificationType(_eMediaStatus nStatus)
 
 bool CHEOS::StartHardware()
 {
-	m_stoprequested = false;
 	m_bDoRestart = false;
 
 	//force connect the next first time
 	m_retrycntr = RETRY_DELAY;
 	m_bIsStarted = true;
+
+	setCallbacks(
+		boost::bind(&CHEOS::OnConnect, this),
+		boost::bind(&CHEOS::OnDisconnect, this),
+		boost::bind(&CHEOS::OnData, this, _1, _2),
+		boost::bind(&CHEOS::OnErrorStd, this, _1),
+		boost::bind(&CHEOS::OnErrorBoost, this, _1)
+	);
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHEOS::Do_Work, this);
@@ -590,29 +596,12 @@ bool CHEOS::StartHardware()
 
 bool CHEOS::StopHardware()
 {
-	m_stoprequested = true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -636,12 +625,12 @@ void CHEOS::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void CHEOS::OnError(const std::exception e)
+void CHEOS::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "HEOS by DENON: Error: %s", e.what());
 }
 
-void CHEOS::OnError(const boost::system::error_code& error)
+void CHEOS::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

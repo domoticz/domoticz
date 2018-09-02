@@ -134,7 +134,6 @@ m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_pPartialPkt = NULL;
@@ -154,12 +153,19 @@ OnkyoAVTCP::~OnkyoAVTCP(void)
 
 bool OnkyoAVTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
+
+	setCallbacks(
+		boost::bind(&OnkyoAVTCP::OnConnect, this),
+		boost::bind(&OnkyoAVTCP::OnDisconnect, this),
+		boost::bind(&OnkyoAVTCP::OnData, this, _1, _2),
+		boost::bind(&OnkyoAVTCP::OnErrorStd, this, _1),
+		boost::bind(&OnkyoAVTCP::OnErrorBoost, this, _1)
+	);
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&OnkyoAVTCP::Do_Work, this);
@@ -169,28 +175,12 @@ bool OnkyoAVTCP::StartHardware()
 
 bool OnkyoAVTCP::StopHardware()
 {
-	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -214,9 +204,8 @@ void OnkyoAVTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
@@ -237,6 +226,8 @@ void OnkyoAVTCP::Do_Work()
 			update();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"OnkyoAVTCP: TCP/IP Worker stopped...");
 }
 
@@ -245,12 +236,12 @@ void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void OnkyoAVTCP::OnError(const std::exception e)
+void OnkyoAVTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"OnkyoAVTCP: Error: %s",e.what());
 }
 
-void OnkyoAVTCP::OnError(const boost::system::error_code& error)
+void OnkyoAVTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

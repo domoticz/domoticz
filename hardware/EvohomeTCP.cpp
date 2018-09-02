@@ -13,11 +13,10 @@ CEvohomeRadio(ID, UserContID), m_szIPAddress(IPAddress), m_usIPPort(usIPPort)
 
 bool CEvohomeTCP::StopHardware()
 {
-	m_stoprequested=true;
-
 	try {
 		if (m_thread)
 		{
+			RequestStop();
 			m_thread->join();
 			m_thread.reset();
 		}
@@ -26,17 +25,6 @@ bool CEvohomeTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	if(m_bDebug && m_pEvoLog)
 	{
@@ -71,9 +59,8 @@ void CEvohomeTCP::Do_Work()
 	bool bFirstTime = true;
 	int sec_counter = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		time_t atime = mytime(NULL);
@@ -84,6 +71,15 @@ void CEvohomeTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
+
+			setCallbacks(
+				boost::bind(&CEvohomeTCP::OnConnect, this),
+				boost::bind(&CEvohomeTCP::OnDisconnect, this),
+				boost::bind(&CEvohomeTCP::OnData, this, _1, _2),
+				boost::bind(&CEvohomeTCP::OnErrorStd, this, _1),
+				boost::bind(&CEvohomeTCP::OnErrorBoost, this, _1)
+			);
+
 			if (mIsConnected)
 			{
 				try {
@@ -117,6 +113,8 @@ void CEvohomeTCP::Do_Work()
             Idle_Work();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"evohome TCP/IP: TCP/IP Worker stopped...");
 }
 
@@ -138,12 +136,12 @@ void CEvohomeTCP::Do_Send(std::string str)
     write(str);
 }
 
-void CEvohomeTCP::OnError(const std::exception e)
+void CEvohomeTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"evohome TCP/IP: Error: %s",e.what());
 }
 
-void CEvohomeTCP::OnError(const boost::system::error_code& error)
+void CEvohomeTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

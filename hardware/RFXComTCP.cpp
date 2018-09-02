@@ -13,7 +13,6 @@ RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned 
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_bReceiverStarted = false;
 }
@@ -24,12 +23,20 @@ RFXComTCP::~RFXComTCP(void)
 
 bool RFXComTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
 	m_bIsStarted=true;
 	m_rxbufferpos=0;
+
+	setCallbacks(
+		boost::bind(&RFXComTCP::OnConnect, this),
+		boost::bind(&RFXComTCP::OnDisconnect, this),
+		boost::bind(&RFXComTCP::OnData, this, _1, _2),
+		boost::bind(&RFXComTCP::OnErrorStd, this, _1),
+		boost::bind(&RFXComTCP::OnErrorBoost, this, _1)
+	);
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&RFXComTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "RFXComTCP");
@@ -38,30 +45,12 @@ bool RFXComTCP::StartHardware()
 
 bool RFXComTCP::StopHardware()
 {
-	m_stoprequested = true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -82,7 +71,7 @@ void RFXComTCP::OnDisconnect()
 void RFXComTCP::Do_Work()
 {
 	bool bFirstTime = true;
-	while (!m_stoprequested)
+	while (!IsStopRequested(40))
 	{
 		m_LastHeartbeat = mytime(NULL);
 		if (bFirstTime)
@@ -96,10 +85,11 @@ void RFXComTCP::Do_Work()
 		}
 		else
 		{
-			sleep_milliseconds(40);
 			update();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"RFXCOM: TCP/IP Worker stopped...");
 }
 
@@ -109,12 +99,12 @@ void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 	onInternalMessage(pData, length);
 }
 
-void RFXComTCP::OnError(const std::exception e)
+void RFXComTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "RFXCOM: Error: %s", e.what());
 }
 
-void RFXComTCP::OnError(const boost::system::error_code& error)
+void RFXComTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

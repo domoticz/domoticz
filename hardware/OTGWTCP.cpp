@@ -12,7 +12,6 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
@@ -24,12 +23,19 @@ OTGWTCP::~OTGWTCP(void)
 
 bool OTGWTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
+
+	setCallbacks(
+		boost::bind(&OTGWTCP::OnConnect, this),
+		boost::bind(&OTGWTCP::OnDisconnect, this),
+		boost::bind(&OTGWTCP::OnData, this, _1, _2),
+		boost::bind(&OTGWTCP::OnErrorStd, this, _1),
+		boost::bind(&OTGWTCP::OnErrorBoost, this, _1)
+	);
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
@@ -39,29 +45,12 @@ bool OTGWTCP::StartHardware()
 
 bool OTGWTCP::StopHardware()
 {
-	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -85,9 +74,8 @@ void OTGWTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 25;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -127,6 +115,8 @@ void OTGWTCP::Do_Work()
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
 }
 
@@ -135,12 +125,12 @@ void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void OTGWTCP::OnError(const std::exception e)
+void OTGWTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"OTGW: Error: %s",e.what());
 }
 
-void OTGWTCP::OnError(const boost::system::error_code& error)
+void OTGWTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

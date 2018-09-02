@@ -40,7 +40,6 @@ m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_bufferpos = 0;
@@ -52,12 +51,19 @@ FritzboxTCP::~FritzboxTCP(void)
 
 bool FritzboxTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
+
+	setCallbacks(
+		boost::bind(&FritzboxTCP::OnConnect, this),
+		boost::bind(&FritzboxTCP::OnDisconnect, this),
+		boost::bind(&FritzboxTCP::OnData, this, _1, _2),
+		boost::bind(&FritzboxTCP::OnErrorStd, this, _1),
+		boost::bind(&FritzboxTCP::OnErrorBoost, this, _1)
+	);
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&FritzboxTCP::Do_Work, this);
@@ -67,28 +73,12 @@ bool FritzboxTCP::StartHardware()
 
 bool FritzboxTCP::StopHardware()
 {
-	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -112,9 +102,8 @@ void FritzboxTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
@@ -135,6 +124,8 @@ void FritzboxTCP::Do_Work()
 			update();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"Fritzbox: TCP/IP Worker stopped...");
 }
 
@@ -143,12 +134,12 @@ void FritzboxTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void FritzboxTCP::OnError(const std::exception e)
+void FritzboxTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"Fritzbox: Error: %s",e.what());
 }
 
-void FritzboxTCP::OnError(const boost::system::error_code& error)
+void FritzboxTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

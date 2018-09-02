@@ -8,14 +8,13 @@
 #define RETRY_DELAY_SECONDS 30
 #define HEARTBEAT_SECONDS 12
 
-P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit):
-m_szIPAddress(IPAddress),
-m_usIPPort(usIPPort)
+P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit) :
+	m_szIPAddress(IPAddress),
+	m_usIPPort(usIPPort)
 {
 	m_HwdID = ID;
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
-	m_stoprequested = false;
 }
 
 P1MeterTCP::~P1MeterTCP(void)
@@ -25,8 +24,15 @@ P1MeterTCP::~P1MeterTCP(void)
 
 bool P1MeterTCP::StartHardware()
 {
-	m_stoprequested = false;
 	m_bIsStarted = true;
+
+	setCallbacks(
+		boost::bind(&P1MeterTCP::OnConnect, this),
+		boost::bind(&P1MeterTCP::OnDisconnect, this),
+		boost::bind(&P1MeterTCP::OnData, this, _1, _2),
+		boost::bind(&P1MeterTCP::OnErrorStd, this, _1),
+		boost::bind(&P1MeterTCP::OnErrorBoost, this, _1)
+	);
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&P1MeterTCP::Do_Work, this);
@@ -37,28 +43,11 @@ bool P1MeterTCP::StartHardware()
 
 bool P1MeterTCP::StopHardware()
 {
-	m_stoprequested = true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
-	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		}
-		catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -69,7 +58,7 @@ void P1MeterTCP::Do_Work()
 {
 	int heartbeat_counter = 0;
 	int retry_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(SLEEP_MILLISECONDS))
 	{
 		if (mIsConnected)
 		{
@@ -91,13 +80,14 @@ void P1MeterTCP::Do_Work()
 			retry_counter++;
 		}
 
-		sleep_milliseconds(SLEEP_MILLISECONDS);
 		heartbeat_counter++;
 		if ((heartbeat_counter % (HEARTBEAT_SECONDS * 1000 / SLEEP_MILLISECONDS)) == 0)
 		{
 			m_LastHeartbeat = mytime(NULL);
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "P1MeterTCP: TCP/IP Worker stopped...");
 }
 
@@ -134,13 +124,13 @@ void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
 }
 
 
-void P1MeterTCP::OnError(const std::exception e)
+void P1MeterTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "P1MeterTCP: Error: %s", e.what());
 }
 
 
-void P1MeterTCP::OnError(const boost::system::error_code& error)
+void P1MeterTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

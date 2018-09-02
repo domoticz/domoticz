@@ -12,7 +12,6 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = S0METER_RETRY_DELAY;
 	InitBase();
@@ -24,7 +23,6 @@ S0MeterTCP::~S0MeterTCP(void)
 
 bool S0MeterTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bDoRestart=false;
 
 	//force connect the next first time
@@ -34,6 +32,14 @@ bool S0MeterTCP::StartHardware()
 	m_bufferpos = 0;
 	ReloadLastTotals();
 
+	setCallbacks(
+		boost::bind(&S0MeterTCP::OnConnect, this),
+		boost::bind(&S0MeterTCP::OnDisconnect, this),
+		boost::bind(&S0MeterTCP::OnData, this, _1, _2),
+		boost::bind(&S0MeterTCP::OnErrorStd, this, _1),
+		boost::bind(&S0MeterTCP::OnErrorBoost, this, _1)
+	);
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&S0MeterTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "S0MeterTCP");
@@ -42,29 +48,12 @@ bool S0MeterTCP::StartHardware()
 
 bool S0MeterTCP::StopHardware()
 {
-	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -88,9 +77,8 @@ void S0MeterTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		time_t atime = mytime(NULL);
@@ -125,6 +113,8 @@ void S0MeterTCP::Do_Work()
 			update();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"S0 Meter: TCP/IP Worker stopped...");
 }
 
@@ -138,12 +128,12 @@ void S0MeterTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData((const unsigned char*)pData,length);
 }
 
-void S0MeterTCP::OnError(const std::exception e)
+void S0MeterTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"S0 Meter: Error: %s",e.what());
 }
 
-void S0MeterTCP::OnError(const boost::system::error_code& error)
+void S0MeterTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

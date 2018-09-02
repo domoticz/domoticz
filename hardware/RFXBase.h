@@ -26,7 +26,6 @@ private:
 	static bool CheckValidRFXData(const uint8_t *pData);
 	void SendCommand(const unsigned char Cmd);
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	bool m_bReceiverStarted;
 };
 

@@ -58,7 +58,6 @@ private:
 	std::string m_Password;
 	int m_pollInterval;
 	int m_slaveId;
-	volatile bool m_stoprequested;
 	int m_iModel;
 	std::shared_ptr<std::thread> m_thread;
 	int m_Cmd;
@@ -71,11 +70,10 @@ private:
 	uint8_t m_reqBuff[100];
 	uint16_t m_uiReceivedDataLength = 0;
 	uint16_t m_uiTransactionCounter = 0;
-
 protected:
 	void OnConnect();
 	void OnDisconnect();
 	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+	void OnErrorStd(const std::exception e);
+	void OnErrorBoost(const boost::system::error_code& error);
 };

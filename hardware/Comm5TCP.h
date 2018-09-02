@@ -14,17 +14,15 @@ public: // signals
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
-	bool Connect();
 protected:
-	void OnConnect() override;
-	void OnDisconnect() override;
-	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const std::exception e) override;
-	void OnError(const boost::system::error_code& error) override;
+	void OnConnect();
+	void OnDisconnect();
+	void OnData(const unsigned char *pData, size_t length);
+	void OnErrorStd(const std::exception e);
+	void OnErrorBoost(const boost::system::error_code& error);
 
 	void Do_Work();
 	void ParseData(const unsigned char *data, const size_t len);
-
 
 	void queryRelayState();
 	void querySensorState();
@@ -44,6 +42,5 @@ private:
 	bool m_bReceiverStarted;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

@@ -12,7 +12,6 @@ MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const uns
 	m_szIPAddress(IPAddress),
 	m_usIPPort(usIPPort),
 	m_retrycntr(RETRY_DELAY),
-	m_stoprequested(false),
 	m_bDoRestart(false)
 {
 	m_HwdID = ID;
@@ -28,12 +27,19 @@ bool MySensorsTCP::StartHardware()
 
 	LoadDevicesFromDatabase();
 
-	m_stoprequested = false;
 	m_bDoRestart = false;
 
 	//force connect the next first time
 	m_retrycntr = RETRY_DELAY;
 	m_bIsStarted = true;
+
+	setCallbacks(
+		boost::bind(&MySensorsTCP::OnConnect, this),
+		boost::bind(&MySensorsTCP::OnDisconnect, this),
+		boost::bind(&MySensorsTCP::OnData, this, _1, _2),
+		boost::bind(&MySensorsTCP::OnErrorStd, this, _1),
+		boost::bind(&MySensorsTCP::OnErrorBoost, this, _1)
+	);
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MySensorsTCP::Do_Work, this);
@@ -44,30 +50,13 @@ bool MySensorsTCP::StartHardware()
 
 bool MySensorsTCP::StopHardware()
 {
-	m_stoprequested = true;
 	StopSendQueue();
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -89,17 +78,14 @@ void MySensorsTCP::OnConnect()
 void MySensorsTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS, "MySensors: disconnected");
-	if (!m_stoprequested)
-		m_bDoRestart = true;
 }
 
 void MySensorsTCP::Do_Work()
 {
 	bool bFirstTime = true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -132,6 +118,8 @@ void MySensorsTCP::Do_Work()
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "MySensors: TCP/IP Worker stopped...");
 }
 
@@ -140,12 +128,12 @@ void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void MySensorsTCP::OnError(const std::exception e)
+void MySensorsTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "MySensors: %s", e.what());
 }
 
-void MySensorsTCP::OnError(const boost::system::error_code& error)
+void MySensorsTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

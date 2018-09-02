@@ -32,17 +32,16 @@ private:
 	void KeepConnectionAlive();
 
 	/* ASyncTCP required methodes */
-	void OnConnect() override;
-	void OnDisconnect() override;
-	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const std::exception e) override;
-	void OnError(const boost::system::error_code& error) override;
+	void OnConnect();
+	void OnDisconnect();
+	void OnData(const unsigned char *pData, size_t length);
+	void OnErrorStd(const std::exception e);
+	void OnErrorBoost(const boost::system::error_code& error);
 private:
 	std::string 						m_szIPAddress;
 	unsigned short 						m_usIPPort;
 	std::string 						m_username;
 	std::string 						m_password;
-	volatile bool 						m_stoprequested;
 	sockaddr_in 						m_addr;
 	bool								m_poll_inputs;
 	bool								m_poll_relays;

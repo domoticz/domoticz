@@ -12,7 +12,6 @@ CZiBlueTCP::CZiBlueTCP(const int ID, const std::string &IPAddress, const unsigne
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = ZiBlue_RETRY_DELAY;
 }
@@ -23,12 +22,19 @@ CZiBlueTCP::~CZiBlueTCP(void)
 
 bool CZiBlueTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=ZiBlue_RETRY_DELAY;
 	m_bIsStarted=true;
+
+	setCallbacks(
+		boost::bind(&CZiBlueTCP::OnConnect, this),
+		boost::bind(&CZiBlueTCP::OnDisconnect, this),
+		boost::bind(&CZiBlueTCP::OnData, this, _1, _2),
+		boost::bind(&CZiBlueTCP::OnErrorStd, this, _1),
+		boost::bind(&CZiBlueTCP::OnErrorBoost, this, _1)
+	);
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CZiBlueTCP::Do_Work, this);
@@ -38,29 +44,12 @@ bool CZiBlueTCP::StartHardware()
 
 bool CZiBlueTCP::StopHardware()
 {
-	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -86,9 +75,8 @@ void CZiBlueTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		time_t atime = mytime(NULL);
@@ -154,6 +142,8 @@ void CZiBlueTCP::Do_Work()
 			update();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"ZiBlue: TCP/IP Worker stopped...");
 }
 
@@ -162,12 +152,12 @@ void CZiBlueTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData((const char*)pData,length);
 }
 
-void CZiBlueTCP::OnError(const std::exception e)
+void CZiBlueTCP::OnErrorStd(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"ZiBlue: Error: %s",e.what());
 }
 
-void CZiBlueTCP::OnError(const boost::system::error_code& error)
+void CZiBlueTCP::OnErrorBoost(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
