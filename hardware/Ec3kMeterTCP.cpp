@@ -248,7 +248,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 	// update only when the update interval has elapsed
 	if (m_limiter->update(id))
 	{
-		int ws = data[WS].asInt();
+		double ws = data[WS].asDouble();
 		float w_current = data[W_CURRENT].asFloat();
 		float w_max = data[W_MAX].asFloat();
 		//int s_time_on = data[TIME_ON].asInt();
@@ -260,7 +260,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 		std::stringstream sensorNameKwhSS;
 		sensorNameKwhSS << "EC3K meter " << std::hex << id << " Usage";
 		const std::string sensorNameKwh = sensorNameKwhSS.str();
-		SendKwhMeter(id, 1, 255, w_current, (double)ws / 3600 / 1000, sensorNameKwh);
+		SendKwhMeter(id, 1, 255, w_current, ((ws / 3600.0) / 1000.0), sensorNameKwh);
 
 		std::stringstream sensorNameWMaxSS;
 		sensorNameWMaxSS << "EC3K meter " << std::hex << id << " maximum";

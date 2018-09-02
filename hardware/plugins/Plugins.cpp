@@ -671,10 +671,9 @@ namespace Plugins {
 				if (PyObject_HasAttrString(pExcept, "text"))
 				{
 					PyObject*		pString = PyObject_GetAttrString(pValue, "text");
-					PyBytesObject*	pBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pString);
-					_log.Log(LOG_ERROR, "(%s) Error Line '%s'", m_Name.c_str(), pBytes->ob_sval);
+					std::string		sUTF = PyUnicode_AsUTF8(pString);
+					_log.Log(LOG_ERROR, "(%s) Error Line '%s'", m_Name.c_str(), sUTF.c_str());
 					Py_XDECREF(pString);
-					Py_XDECREF(pBytes);
 				}
 				else
 				{
