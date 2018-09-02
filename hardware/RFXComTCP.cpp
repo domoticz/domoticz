@@ -29,14 +29,6 @@ bool RFXComTCP::StartHardware()
 	m_bIsStarted=true;
 	m_rxbufferpos=0;
 
-	setCallbacks(
-		boost::bind(&RFXComTCP::OnConnect, this),
-		boost::bind(&RFXComTCP::OnDisconnect, this),
-		boost::bind(&RFXComTCP::OnData, this, _1, _2),
-		boost::bind(&RFXComTCP::OnErrorStd, this, _1),
-		boost::bind(&RFXComTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&RFXComTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "RFXComTCP");
@@ -77,7 +69,7 @@ void RFXComTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime = false;
-			if (!mIsConnected)
+			if (!isConnected())
 			{
 				m_rxbufferpos = 0;
 				connect(m_szIPAddress, m_usIPPort);
@@ -99,12 +91,12 @@ void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 	onInternalMessage(pData, length);
 }
 
-void RFXComTCP::OnErrorStd(const std::exception e)
+void RFXComTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "RFXCOM: Error: %s", e.what());
 }
 
-void RFXComTCP::OnErrorBoost(const boost::system::error_code& error)
+void RFXComTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -129,7 +121,7 @@ void RFXComTCP::OnErrorBoost(const boost::system::error_code& error)
 
 bool RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 	write((const unsigned char*)pdata, length);
 	return true;

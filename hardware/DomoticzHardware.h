@@ -5,8 +5,6 @@
 #include "../main/StoppableTask.h"
 
 //Base class with functions all notification systems should have
-#define RX_BUFFER_SIZE 100
-
 class CDomoticzHardwareBase : public StoppableTask
 {
 	friend class MainWorker;

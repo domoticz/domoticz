@@ -15,11 +15,12 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 protected:
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnErrorStd(const std::exception e);
-	void OnErrorBoost(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
+
 	void Do_Work();
 	void ParseData(const unsigned char *data, const size_t len);
 	void querySensorState();

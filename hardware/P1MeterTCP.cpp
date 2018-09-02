@@ -26,14 +26,6 @@ bool P1MeterTCP::StartHardware()
 {
 	m_bIsStarted = true;
 
-	setCallbacks(
-		boost::bind(&P1MeterTCP::OnConnect, this),
-		boost::bind(&P1MeterTCP::OnDisconnect, this),
-		boost::bind(&P1MeterTCP::OnData, this, _1, _2),
-		boost::bind(&P1MeterTCP::OnErrorStd, this, _1),
-		boost::bind(&P1MeterTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&P1MeterTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "P1MeterTCP");
@@ -60,7 +52,7 @@ void P1MeterTCP::Do_Work()
 	int retry_counter = 0;
 	while (!IsStopRequested(SLEEP_MILLISECONDS))
 	{
-		if (mIsConnected)
+		if (isConnected())
 		{
 			update();
 		}
@@ -124,13 +116,13 @@ void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
 }
 
 
-void P1MeterTCP::OnErrorStd(const std::exception e)
+void P1MeterTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "P1MeterTCP: Error: %s", e.what());
 }
 
 
-void P1MeterTCP::OnErrorBoost(const boost::system::error_code& error)
+void P1MeterTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

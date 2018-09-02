@@ -71,9 +71,9 @@ private:
 	uint16_t m_uiReceivedDataLength = 0;
 	uint16_t m_uiTransactionCounter = 0;
 protected:
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnErrorStd(const std::exception e);
-	void OnErrorBoost(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 };

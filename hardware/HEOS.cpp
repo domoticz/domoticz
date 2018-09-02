@@ -531,7 +531,7 @@ void CHEOS::Do_Work()
 				connect(m_IP, m_usIPPort);
 			}
 			update();
-			if (mIsConnected)
+			if (isConnected())
 			{
 				if (!bCheckedForPlayers)
 				{
@@ -580,14 +580,6 @@ bool CHEOS::StartHardware()
 	m_retrycntr = RETRY_DELAY;
 	m_bIsStarted = true;
 
-	setCallbacks(
-		boost::bind(&CHEOS::OnConnect, this),
-		boost::bind(&CHEOS::OnDisconnect, this),
-		boost::bind(&CHEOS::OnData, this, _1, _2),
-		boost::bind(&CHEOS::OnErrorStd, this, _1),
-		boost::bind(&CHEOS::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHEOS::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "HEOS");
@@ -625,12 +617,12 @@ void CHEOS::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void CHEOS::OnErrorStd(const std::exception e)
+void CHEOS::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "HEOS by DENON: Error: %s", e.what());
 }
 
-void CHEOS::OnErrorBoost(const boost::system::error_code& error)
+void CHEOS::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -684,7 +676,7 @@ void CHEOS::ParseData(const unsigned char *pData, int Len)
 /*
 bool CHEOS::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}
@@ -698,7 +690,7 @@ bool CHEOS::WriteInt(const std::string &sendStr)
 	std::stringstream ssSend;
 	std::string	sSend;
 
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

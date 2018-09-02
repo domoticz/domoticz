@@ -159,14 +159,6 @@ bool OnkyoAVTCP::StartHardware()
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
-	setCallbacks(
-		boost::bind(&OnkyoAVTCP::OnConnect, this),
-		boost::bind(&OnkyoAVTCP::OnDisconnect, this),
-		boost::bind(&OnkyoAVTCP::OnData, this, _1, _2),
-		boost::bind(&OnkyoAVTCP::OnErrorStd, this, _1),
-		boost::bind(&OnkyoAVTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&OnkyoAVTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "OnkyoAVTCP");
@@ -236,12 +228,12 @@ void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void OnkyoAVTCP::OnErrorStd(const std::exception e)
+void OnkyoAVTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"OnkyoAVTCP: Error: %s",e.what());
 }
 
-void OnkyoAVTCP::OnErrorBoost(const boost::system::error_code& error)
+void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -266,7 +258,7 @@ void OnkyoAVTCP::OnErrorBoost(const boost::system::error_code& error)
 
 bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (!mIsConnected || !pdata)
+	if (!isConnected() || !pdata)
 	{
 		return false;
 	}
@@ -324,7 +316,7 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 bool OnkyoAVTCP::SendPacket(const char *pdata)
 {
-	if (!mIsConnected || !pdata)
+	if (!isConnected() || !pdata)
 	{
 		return false;
 	}

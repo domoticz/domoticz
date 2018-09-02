@@ -28,14 +28,6 @@ bool CZiBlueTCP::StartHardware()
 	m_retrycntr=ZiBlue_RETRY_DELAY;
 	m_bIsStarted=true;
 
-	setCallbacks(
-		boost::bind(&CZiBlueTCP::OnConnect, this),
-		boost::bind(&CZiBlueTCP::OnDisconnect, this),
-		boost::bind(&CZiBlueTCP::OnData, this, _1, _2),
-		boost::bind(&CZiBlueTCP::OnErrorStd, this, _1),
-		boost::bind(&CZiBlueTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CZiBlueTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "ZiBlueTCP");
@@ -84,7 +76,7 @@ void CZiBlueTCP::Do_Work()
 			m_LastHeartbeat= atime;
 		}
 /*
-		if ((sec_counter % 20 == 0) && (mIsConnected))
+		if ((sec_counter % 20 == 0) && (isConnected()))
 		{
 			//Send ping (keep alive)
 			if (atime - m_LastReceivedTime > 30)
@@ -110,16 +102,9 @@ void CZiBlueTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
-			if (mIsConnected)
+			if (isConnected())
 			{
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 			}
 			_log.Log(LOG_STATUS, "ZiBlue: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
@@ -129,14 +114,7 @@ void CZiBlueTCP::Do_Work()
 			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
 				_log.Log(LOG_STATUS, "ZiBlue: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 				connect(m_szIPAddress, m_usIPPort);
 			}
 			update();
@@ -152,12 +130,12 @@ void CZiBlueTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData((const char*)pData,length);
 }
 
-void CZiBlueTCP::OnErrorStd(const std::exception e)
+void CZiBlueTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"ZiBlue: Error: %s",e.what());
 }
 
-void CZiBlueTCP::OnErrorBoost(const boost::system::error_code& error)
+void CZiBlueTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -182,7 +160,7 @@ void CZiBlueTCP::OnErrorBoost(const boost::system::error_code& error)
 
 bool CZiBlueTCP::WriteInt(const std::string &sendString)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}
@@ -192,7 +170,7 @@ bool CZiBlueTCP::WriteInt(const std::string &sendString)
 
 bool CZiBlueTCP::WriteInt(const uint8_t *pData, const size_t length)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

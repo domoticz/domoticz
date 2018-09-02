@@ -97,14 +97,6 @@ bool MochadTCP::StartHardware()
 //	m_retrycntr=RETRY_DELAY;
 //	m_bIsStarted=true;
 
-	setCallbacks(
-		boost::bind(&MochadTCP::OnConnect, this),
-		boost::bind(&MochadTCP::OnDisconnect, this),
-		boost::bind(&MochadTCP::OnData, this, _1, _2),
-		boost::bind(&MochadTCP::OnErrorStd, this, _1),
-		boost::bind(&MochadTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MochadTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "MochadTCP");
@@ -162,7 +154,7 @@ void MochadTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime = false;
-			if (!mIsConnected)
+			if (!isConnected())
 			{
 				connect(m_szIPAddress, m_usIPPort);
 			}
@@ -182,12 +174,12 @@ void MochadTCP::Do_Work()
 	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
 }
 
-void MochadTCP::OnErrorStd(const std::exception e)
+void MochadTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "Mochad: Error: %s", e.what());
 }
 
-void MochadTCP::OnErrorBoost(const boost::system::error_code& error)
+void MochadTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -213,7 +205,7 @@ void MochadTCP::OnErrorBoost(const boost::system::error_code& error)
 bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	//RBUF *m_mochad = (RBUF *)pdata;
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 	if (pdata[1] == pTypeInterfaceControl && pdata[2] == sTypeInterfaceCommand && pdata[4] == cmdSTATUS) {
 		sprintf (s_buffer,"ST\n");

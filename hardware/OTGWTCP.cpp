@@ -29,14 +29,6 @@ bool OTGWTCP::StartHardware()
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
-	setCallbacks(
-		boost::bind(&OTGWTCP::OnConnect, this),
-		boost::bind(&OTGWTCP::OnDisconnect, this),
-		boost::bind(&OTGWTCP::OnData, this, _1, _2),
-		boost::bind(&OTGWTCP::OnErrorStd, this, _1),
-		boost::bind(&OTGWTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "OTGWTCP");
@@ -86,7 +78,7 @@ void OTGWTCP::Do_Work()
 		{
 			bFirstTime=false;
 			connect(m_szIPAddress,m_usIPPort);
-			if (mIsConnected)
+			if (isConnected())
 			{
 				GetGatewayDetails();
 			}
@@ -98,7 +90,7 @@ void OTGWTCP::Do_Work()
 				connect(m_szIPAddress,m_usIPPort);
 			}
 			update();
-			if (mIsConnected)
+			if (isConnected())
 			{
 				if ((sec_counter % 28 == 0) && (m_bRequestVersion))
 				{
@@ -125,12 +117,12 @@ void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void OTGWTCP::OnErrorStd(const std::exception e)
+void OTGWTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"OTGW: Error: %s",e.what());
 }
 
-void OTGWTCP::OnErrorBoost(const boost::system::error_code& error)
+void OTGWTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -155,7 +147,7 @@ void OTGWTCP::OnErrorBoost(const boost::system::error_code& error)
 
 bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

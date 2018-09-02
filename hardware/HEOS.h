@@ -26,18 +26,17 @@ public:
 	void SendCommand(const std::string&, const int iValue);
 private:
 	void SendCommand(const std::string&);
-	bool isConnected() { return mIsConnected; };
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool WriteInt(const std::string &sendStr);
 	void Do_Work();
 
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnErrorStd(const std::exception e);
-	void OnErrorBoost(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();

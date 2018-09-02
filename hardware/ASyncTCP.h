@@ -20,8 +20,8 @@ public:
 
 	void connect(const std::string &ip, unsigned short port);
 	void connect(boost::asio::ip::tcp::endpoint& endpoint);
-	void disconnect();
 	bool isConnected() { return mIsConnected; };
+	void disconnect(const bool silent = true);
 	void terminate(const bool silent = true);
 
 	void write(const std::string &msg);
@@ -30,23 +30,13 @@ public:
 	void update();
 
 	void SetReconnectDelay(int Delay = 30); //0 disabled retry
-
-	/// Read complete callback
-	boost::function<void()> callback_connect;
-	boost::function<void()> callback_disconnect;
-	boost::function<void(const unsigned char *pData, size_t length)> callback_data;
-	boost::function<void(const std::exception e)> callback_error_std;
-	boost::function<void(const boost::system::error_code& error)> callback_error_boost;
 protected:
-	void setCallbacks(
-		const boost::function<void()>&cb_connect,
-		const boost::function<void()>&cb_disconnect,
-		const boost::function<void(const unsigned char *pData, size_t length)>&cb_data,
-		const boost::function<void(const std::exception e)>&cb_error_std,
-		const boost::function<void(const boost::system::error_code& error)>&cb_error_boost
-	);
-	void clearCallbacks();
-
+	virtual void OnConnect() = 0;
+	virtual void OnDisconnect() = 0;
+	virtual void OnData(const unsigned char *pData, size_t length) = 0;
+	virtual void OnError(const std::exception e) = 0;
+	virtual void OnError(const boost::system::error_code& error) = 0;
+private:
 	void read();
 	void close();
 
@@ -59,22 +49,21 @@ protected:
 	void do_close();
 
 	void do_reconnect(const boost::system::error_code& error);
-private:
 	void OnErrorInt(const boost::system::error_code& error);
 	void StartReconnect();
 	int m_reconnect_delay;
-protected:
 	bool							mIsConnected;
 	bool							mIsClosing;
 	bool							mDoReconnect;
 	bool							mIsReconnecting;
+	bool							mAllowCallbacks;
 
 	boost::asio::ip::tcp::endpoint	mEndPoint;
 
 	boost::asio::io_service			mIos;
 	boost::asio::ip::tcp::socket	mSocket;
 
-	unsigned char m_buffer[1024];
+	unsigned char m_rx_buffer[1024];
 
 	boost::asio::deadline_timer		mReconnectTimer;
 

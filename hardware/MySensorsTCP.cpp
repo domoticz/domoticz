@@ -33,14 +33,6 @@ bool MySensorsTCP::StartHardware()
 	m_retrycntr = RETRY_DELAY;
 	m_bIsStarted = true;
 
-	setCallbacks(
-		boost::bind(&MySensorsTCP::OnConnect, this),
-		boost::bind(&MySensorsTCP::OnDisconnect, this),
-		boost::bind(&MySensorsTCP::OnData, this, _1, _2),
-		boost::bind(&MySensorsTCP::OnErrorStd, this, _1),
-		boost::bind(&MySensorsTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MySensorsTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "MySensorsTCP");
@@ -128,12 +120,12 @@ void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void MySensorsTCP::OnErrorStd(const std::exception e)
+void MySensorsTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "MySensors: %s", e.what());
 }
 
-void MySensorsTCP::OnErrorBoost(const boost::system::error_code& error)
+void MySensorsTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -158,7 +150,7 @@ void MySensorsTCP::OnErrorBoost(const boost::system::error_code& error)
 
 void MySensorsTCP::WriteInt(const std::string &sendStr)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return;
 	}

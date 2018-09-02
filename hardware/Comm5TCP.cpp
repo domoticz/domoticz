@@ -54,14 +54,6 @@ bool Comm5TCP::StartHardware()
 	//force connect the next first time
 	m_bIsStarted = true;
 
-	setCallbacks(
-		boost::bind(&Comm5TCP::OnConnect, this),
-		boost::bind(&Comm5TCP::OnDisconnect, this),
-		boost::bind(&Comm5TCP::OnData, this, _1, _2),
-		boost::bind(&Comm5TCP::OnErrorStd, this, _1),
-		boost::bind(&Comm5TCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Comm5TCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "Comm5TCP");
@@ -110,7 +102,7 @@ void Comm5TCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime = false;
-			if (!mIsConnected)
+			if (!isConnected())
 			{
 				connect(m_szIPAddress, m_usIPPort);
 			}
@@ -198,7 +190,7 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	unsigned char packettype = pSen->ICMND.packettype;
 	//unsigned char subtype = pSen->ICMND.subtype;
 
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 
 	if (packettype == pTypeLighting2 && pSen->LIGHTING2.id3 == 0)
@@ -224,12 +216,12 @@ void Comm5TCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void Comm5TCP::OnErrorStd(const std::exception e)
+void Comm5TCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "Comm5 MA-5XXX: Error: %s", e.what());
 }
 
-void Comm5TCP::OnErrorBoost(const boost::system::error_code& error)
+void Comm5TCP::OnError(const boost::system::error_code& error)
 {
 	switch (error.value())
 	{

@@ -60,14 +60,6 @@ bool CDenkoviTCPDevices::StartHardware()
 	m_uiTransactionCounter = 0;
 	m_uiReceivedDataLength = 0;
 
-	setCallbacks(
-		boost::bind(&CDenkoviTCPDevices::OnConnect, this),
-		boost::bind(&CDenkoviTCPDevices::OnDisconnect, this),
-		boost::bind(&CDenkoviTCPDevices::OnData, this, _1, _2),
-		boost::bind(&CDenkoviTCPDevices::OnErrorStd, this, _1),
-		boost::bind(&CDenkoviTCPDevices::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDenkoviTCPDevices::Do_Work, this);
 	m_bIsStarted = true;
@@ -201,7 +193,7 @@ void CDenkoviTCPDevices::OnDisconnect() {
 	}
 }
 
-void CDenkoviTCPDevices::OnErrorStd(const std::exception e)
+void CDenkoviTCPDevices::OnError(const std::exception e)
 {
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:
@@ -213,7 +205,7 @@ void CDenkoviTCPDevices::OnErrorStd(const std::exception e)
 	}
 }
 
-void CDenkoviTCPDevices::OnErrorBoost(const boost::system::error_code& error) {
+void CDenkoviTCPDevices::OnError(const boost::system::error_code& error) {
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-VCP: Error occured.");
@@ -249,7 +241,7 @@ void CDenkoviTCPDevices::Do_Work()
 		if (m_bFirstTime)
 		{
 			m_bFirstTime = false;
-			if (!mIsConnected)
+			if (!isConnected())
 			{
 				connect(m_szIPAddress, m_usIPPort);
 			}

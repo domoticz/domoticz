@@ -14,7 +14,6 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool isConnected() { return mIsConnected; };
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -32,11 +31,11 @@ private:
 	void KeepConnectionAlive();
 
 	/* ASyncTCP required methodes */
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnErrorStd(const std::exception e);
-	void OnErrorBoost(const boost::system::error_code& error);
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 private:
 	std::string 						m_szIPAddress;
 	unsigned short 						m_usIPPort;

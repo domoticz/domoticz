@@ -170,14 +170,6 @@ bool RelayNet::StartHardware()
 	m_bDoRestart = false;
 	m_retrycntr = RETRY_DELAY; //force connect the next first time
 
-	setCallbacks(
-		boost::bind(&RelayNet::OnConnect, this),
-		boost::bind(&RelayNet::OnDisconnect, this),
-		boost::bind(&RelayNet::OnData, this, _1, _2),
-		boost::bind(&RelayNet::OnErrorStd, this, _1),
-		boost::bind(&RelayNet::OnErrorBoost, this, _1)
-	);
-
 	if (m_input_count || m_relay_count)
 	{
 		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
@@ -751,14 +743,14 @@ void RelayNet::OnData(const unsigned char *pData, size_t length)
 
 //===========================================================================
 
-void RelayNet::OnErrorStd(const std::exception e)
+void RelayNet::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR, "RelayNet: Error: %s", e.what());
 }
 
 //===========================================================================
 
-void RelayNet::OnErrorBoost(const boost::system::error_code& error)
+void RelayNet::OnError(const boost::system::error_code& error)
 {
 	if ((error == boost::asio::error::address_in_use) ||
 		(error == boost::asio::error::connection_refused) ||

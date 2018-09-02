@@ -34,19 +34,19 @@ class Ec3kMeterTCP : public CDomoticzHardwareBase, ASyncTCP
 public:
 	Ec3kMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~Ec3kMeterTCP(void);
-	bool isConnected(){ return mIsConnected; };
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnErrorStd(const std::exception e);
-	void OnErrorBoost(const boost::system::error_code& error);
 	void ParseData(const unsigned char *pData, int Len);
+
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 private:
 	int m_retrycntr;
 	Ec3kLimiter *m_limiter;

@@ -25,14 +25,6 @@ bool CRFLinkTCP::StartHardware()
 	m_retrycntr = RFLINK_RETRY_DELAY;
 	m_bIsStarted=true;
 
-	setCallbacks(
-		boost::bind(&CRFLinkTCP::OnConnect, this),
-		boost::bind(&CRFLinkTCP::OnDisconnect, this),
-		boost::bind(&CRFLinkTCP::OnData, this, _1, _2),
-		boost::bind(&CRFLinkTCP::OnErrorStd, this, _1),
-		boost::bind(&CRFLinkTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRFLinkTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "RFLinkTCP");
@@ -80,7 +72,7 @@ void CRFLinkTCP::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat= atime;
 		}
-		if ((sec_counter % 20 == 0) && (mIsConnected))
+		if ((sec_counter % 20 == 0) && (isConnected()))
 		{
 			//Send ping (keep alive)
 			if (atime - m_LastReceivedTime > 30)
@@ -90,14 +82,7 @@ void CRFLinkTCP::Do_Work()
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
 				m_bDoRestart = true;
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 			}
 			else
 				write("10;PING;\n");
@@ -106,16 +91,9 @@ void CRFLinkTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
-			if (mIsConnected)
+			if (isConnected())
 			{
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 			}
 			_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
@@ -125,14 +103,7 @@ void CRFLinkTCP::Do_Work()
 			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
 				_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 				connect(m_szIPAddress, m_usIPPort);
 			}
 			update();
@@ -148,12 +119,12 @@ void CRFLinkTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData((const char*)pData,length);
 }
 
-void CRFLinkTCP::OnErrorStd(const std::exception e)
+void CRFLinkTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"RFLink: Error: %s",e.what());
 }
 
-void CRFLinkTCP::OnErrorBoost(const boost::system::error_code& error)
+void CRFLinkTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -178,7 +149,7 @@ void CRFLinkTCP::OnErrorBoost(const boost::system::error_code& error)
 
 bool CRFLinkTCP::WriteInt(const std::string &sendString)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

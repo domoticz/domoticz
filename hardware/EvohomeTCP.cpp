@@ -72,24 +72,9 @@ void CEvohomeTCP::Do_Work()
 		{
 			bFirstTime=false;
 
-			setCallbacks(
-				boost::bind(&CEvohomeTCP::OnConnect, this),
-				boost::bind(&CEvohomeTCP::OnDisconnect, this),
-				boost::bind(&CEvohomeTCP::OnData, this, _1, _2),
-				boost::bind(&CEvohomeTCP::OnErrorStd, this, _1),
-				boost::bind(&CEvohomeTCP::OnErrorBoost, this, _1)
-			);
-
-			if (mIsConnected)
+			if (isConnected())
 			{
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 			}
 			_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
@@ -99,14 +84,7 @@ void CEvohomeTCP::Do_Work()
 			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
 				_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 				connect(m_szIPAddress, m_usIPPort);
 			}
             update();
@@ -136,12 +114,12 @@ void CEvohomeTCP::Do_Send(std::string str)
     write(str);
 }
 
-void CEvohomeTCP::OnErrorStd(const std::exception e)
+void CEvohomeTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"evohome TCP/IP: Error: %s",e.what());
 }
 
-void CEvohomeTCP::OnErrorBoost(const boost::system::error_code& error)
+void CEvohomeTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||

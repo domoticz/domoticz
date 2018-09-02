@@ -65,14 +65,6 @@ bool Ec3kMeterTCP::StartHardware()
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
-	setCallbacks(
-		boost::bind(&Ec3kMeterTCP::OnConnect, this),
-		boost::bind(&Ec3kMeterTCP::OnDisconnect, this),
-		boost::bind(&Ec3kMeterTCP::OnData, this, _1, _2),
-		boost::bind(&Ec3kMeterTCP::OnErrorStd, this, _1),
-		boost::bind(&Ec3kMeterTCP::OnErrorBoost, this, _1)
-	);
-
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Ec3kMeterTCP::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "Ec3kMeterTCP");
@@ -147,12 +139,12 @@ void Ec3kMeterTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData,length);
 }
 
-void Ec3kMeterTCP::OnErrorStd(const std::exception e)
+void Ec3kMeterTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"Ec3kMeter: Error: %s",e.what());
 }
 
-void Ec3kMeterTCP::OnErrorBoost(const boost::system::error_code& error)
+void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
 {
 	if (
 		(error == boost::asio::error::address_in_use) ||
@@ -177,7 +169,7 @@ void Ec3kMeterTCP::OnErrorBoost(const boost::system::error_code& error)
 
 bool Ec3kMeterTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}
