@@ -44,10 +44,10 @@
 #define RESET_COUNT "reset_counter"
 
 Ec3kMeterTCP::Ec3kMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	ASyncTCP("Ec3kMeterTCP"),
+	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
@@ -61,7 +61,6 @@ Ec3kMeterTCP::~Ec3kMeterTCP(void)
 bool Ec3kMeterTCP::StartHardware()
 {
 	m_stoprequested=false;
-	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
@@ -87,14 +86,11 @@ bool Ec3kMeterTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (isConnected())
+	try {
+		disconnect();
+	} catch(...)
 	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		//Don't throw from a Stop command
 	}
 
 	m_bIsStarted=false;
@@ -104,7 +100,6 @@ bool Ec3kMeterTCP::StopHardware()
 void Ec3kMeterTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS,"Ec3kMeter: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 
 	sOnConnected(this);
@@ -117,29 +112,15 @@ void Ec3kMeterTCP::OnDisconnect()
 
 void Ec3kMeterTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 0;
+	connect(m_szIPAddress,m_usIPPort);
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
-		}
-
-		if (bFirstTime)
-		{
-			bFirstTime=false;
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	_log.Log(LOG_STATUS,"Ec3kMeter: TCP/IP Worker stopped...");
@@ -180,11 +161,7 @@ void Ec3kMeterTCP::OnError(const boost::system::error_code& error)
 
 bool Ec3kMeterTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
-	if (!mIsConnected)
-	{
-		return false;
-	}
-	return true;
+	return isConnected();
 }
 
 

@@ -12,7 +12,6 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 	bool SendPacket(const char *pdata);
 private:
-	bool isConnected() { return mIsConnected; };
 	bool SendPacket(const char *pCmd, const char *pArg);
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -35,7 +34,6 @@ private:
 	int m_PPktLen;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
 };

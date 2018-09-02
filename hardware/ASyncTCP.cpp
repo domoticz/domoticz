@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
+#include "../main/Helper.h"                // for SetThreadName
 #include "../main/Logger.h"                // for CLogger, _log, _eLogLevel:...
 struct hostent;
 
@@ -11,34 +12,40 @@ struct hostent;
 	#include <unistd.h> //gethostbyname
 #endif
 
-/*
-#ifdef WIN32
-	#include <Mstcpip.h>
-#elif defined(__FreeBSD__)
-	#include <netinet/tcp.h>
-#endif
-*/
-
 #define RECONNECT_TIME 30
 
-ASyncTCP::ASyncTCP()
+// TODO: Delete default constructor and require thread name to be set
+ASyncTCP::ASyncTCP(const std::string thread_name)
 	: mIsConnected(false), mIsClosing(false),
 	mSocket(mIos), mReconnectTimer(mIos),
-	mDoReconnect(true), mIsReconnecting(false)
+	mDoReconnect(true), mIsReconnecting(false),
+	m_tcpwork(mIos)
 {
+	// Reset IO Service
+	mIos.reset();
+
+	//Start IO Service worker thread
+	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
+	SetThreadName(m_tcpthread->native_handle(), thread_name.c_str());
 }
 
 ASyncTCP::~ASyncTCP(void)
 {
 	disconnect();
-}
 
-void ASyncTCP::update()
-{
-	if (mIsClosing)
-		return;
-	// calls the poll() function to process network messages
-	mIos.poll();
+	// tell the IO service to stop
+	mIos.stop();
+	try {
+		if (m_tcpthread)
+		{
+			m_tcpthread->join();
+			m_tcpthread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
 }
 
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
@@ -85,12 +92,6 @@ void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
 
 	mEndPoint = endpoint;
 
-	// restart IO service if it has been stopped
-	if (mIos.stopped()) {
-		_log.Log(LOG_STATUS, "ASyncTCP::connect: reset IO service");
-		mIos.reset();
-	}
-
 	// try to connect, then call handle_connect
 	mSocket.async_connect(endpoint,
         boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
@@ -100,9 +101,6 @@ void ASyncTCP::disconnect()
 {
 	// tell socket to close the connection
 	close();
-
-	// tell the IO service to stop
-	mIos.stop();
 
 	mIsConnected = false;
 	mIsClosing = false;
@@ -116,70 +114,27 @@ void ASyncTCP::close()
 	mIos.post(boost::bind(&ASyncTCP::do_close, this));
 }
 
-/*
-bool ASyncTCP::set_tcp_keepalive()
+void ASyncTCP::read()
 {
-	int keep_alive_timeout = 10;
+	if (!mIsConnected) return;
+	if (mIsClosing) return;
 
-#ifdef __OSX__
-	int native_fd = socket->native();
-	int timeout = *keep_alive_timeout;
-	int intvl = 1;
-	int on = 1;
-
-	// Set the timeout before the first keep alive message
-	int ret_sokeepalive = setsockopt(native_fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&on, sizeof(int));
-	int ret_tcpkeepalive = setsockopt(native_fd, IPPROTO_TCP, TCP_KEEPALIVE, (void*)&timeout, sizeof(int));
-	int ret_tcpkeepintvl = setsockopt(native_fd, IPPROTO_TCP, TCP_CONNECTIONTIMEOUT, (void*)&intvl, sizeof(int));
-
-	if (ret_sokeepalive || ret_tcpkeepalive || ret_tcpkeepintvl)
-	{
-		string message("Failed to enable keep alive on TCP client socket!");
-		Logger::error(message, port, host);
-		return false;
-	}
-#elif defined(WIN32)
-	// Partially supported on windows
-	struct tcp_keepalive keepalive_options;
-	keepalive_options.onoff = 1;
-	keepalive_options.keepalivetime = keep_alive_timeout * 1000;
-	keepalive_options.keepaliveinterval = 2000;
-
-	BOOL keepalive_val = true;
-	SOCKET native = mSocket.native();
-	DWORD bytes_returned;
-
-	int ret_keepalive = setsockopt(native, SOL_SOCKET, SO_KEEPALIVE, (const char *)&keepalive_val, sizeof(keepalive_val));
-	int ret_iotcl = WSAIoctl(native, SIO_KEEPALIVE_VALS, (LPVOID)& keepalive_options, (DWORD) sizeof(keepalive_options), NULL, 0,
-		(LPDWORD)& bytes_returned, NULL, NULL);
-
-	if (ret_keepalive || ret_iotcl)
-	{
-		_log.Log(LOG_ERROR, "Failed to set keep alive timeout on TCP client socket!");
-		return false;
-	}
-#else
-	// For *n*x systems
-	int native_fd = mSocket.native();
-	int timeout = keep_alive_timeout;
-	int intvl = 1;
-	int probes = 10;
-	int on = 1;
-
-	int ret_keepalive = setsockopt(native_fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&on, sizeof(int));
-	int ret_keepidle = setsockopt(native_fd, SOL_TCP, TCP_KEEPIDLE, (void*)&timeout, sizeof(int));
-	int ret_keepintvl = setsockopt(native_fd, SOL_TCP, TCP_KEEPINTVL, (void*)&intvl, sizeof(int));
-	int ret_keepinit = setsockopt(native_fd, SOL_TCP, TCP_KEEPCNT, (void*)&probes, sizeof(int));
-
-	if (ret_keepalive || ret_keepidle || ret_keepintvl || ret_keepinit)
-	{
-		_log.Log(LOG_ERROR, "Failed to set keep alive timeout on TCP client socket!");
-		return false;
-	}
-#endif
-	return true;
+	mSocket.async_read_some(boost::asio::buffer(m_readbuffer, sizeof(m_readbuffer)),
+		boost::bind(&ASyncTCP::handle_read,
+			this,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
 }
-*/
+
+void ASyncTCP::write(const uint8_t *pData, size_t length)
+{
+	write(std::string((const char*)pData, length));
+}
+
+void ASyncTCP::write(const std::string &msg)
+{
+	mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+}
 
 // callbacks
 
@@ -226,23 +181,11 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 	}
 }
 
-void ASyncTCP::read()
-{
-	if (!mIsConnected) return;
-	if (mIsClosing) return;
-
-	mSocket.async_read_some(boost::asio::buffer(m_buffer, sizeof(m_buffer)),
-		boost::bind(&ASyncTCP::handle_read,
-			this,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
-}
-
 void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 {
 	if (!error)
 	{
-		OnData(m_buffer,bytes_transferred);
+		OnData(m_readbuffer,bytes_transferred);
 		//Read next
 		//This gives some work to the io_service before it is started
 		mIos.post(boost::bind(&ASyncTCP::read, this));
@@ -303,23 +246,6 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 	}
 }
 
-void ASyncTCP::write(const uint8_t *pData, size_t length)
-{
-	if(!mIsConnected) return;
-
-	if (!mIsClosing)
-	{
-		boost::asio::async_write(mSocket,
-			boost::asio::buffer(pData,length),
-			boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
-	}
-}
-
-void ASyncTCP::write(const std::string &msg)
-{
-	write((const uint8_t*)msg.c_str(), msg.size());
-}
-
 void ASyncTCP::do_close()
 {
 	if(mIsClosing) return;
@@ -347,6 +273,18 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 	mSocket.async_connect(mEndPoint,
         boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
 	mIsReconnecting = false;
+}
+
+void ASyncTCP::do_write(const std::string &msg)
+{
+	if(!mIsConnected) return;
+
+	if (!mIsClosing)
+	{
+		boost::asio::async_write(mSocket,
+			boost::asio::buffer(msg.c_str(), msg.size()),
+			boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
+	}
 }
 
 void ASyncTCP::OnErrorInt(const boost::system::error_code& error)

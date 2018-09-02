@@ -64,7 +64,6 @@ private:
 	int m_Cmd;
 	bool m_bReadingNow = false;
 	bool m_bUpdateIo = false;
-	bool m_bFirstTime = true;
 	_sDenkoviTCPModbusRequest m_pReq;
 	_sDenkoviTCPModbusResponse m_pResp;
 	std::string m_respBuff;

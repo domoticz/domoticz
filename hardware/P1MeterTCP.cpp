@@ -4,13 +4,10 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 
-#define SLEEP_MILLISECONDS 200
-#define RETRY_DELAY_SECONDS 30
-#define HEARTBEAT_SECONDS 12
-
 P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit):
-m_szIPAddress(IPAddress),
-m_usIPPort(usIPPort)
+	ASyncTCP("P1MeterTCP"),
+	m_szIPAddress(IPAddress),
+	m_usIPPort(usIPPort)
 {
 	m_HwdID = ID;
 	m_bDisableCRC = disable_crc;
@@ -49,16 +46,12 @@ bool P1MeterTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (isConnected())
+	try {
+		disconnect();
+	}
+	catch(...)
 	{
-		try {
-			disconnect();
-			close();
-		}
-		catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		//Don't throw from a Stop command
 	}
 	m_bIsStarted = false;
 	return true;
@@ -67,34 +60,15 @@ bool P1MeterTCP::StopHardware()
 
 void P1MeterTCP::Do_Work()
 {
-	int heartbeat_counter = 0;
-	int retry_counter = 0;
+	int sec_counter = 0;
+	_log.Log(LOG_STATUS, "P1MeterTCP: attempt connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress, m_usIPPort);
 	while (!m_stoprequested)
 	{
-		if (mIsConnected)
-		{
-			update();
-		}
-		else
-		{
-			if ((retry_counter % (RETRY_DELAY_SECONDS * 1000 / SLEEP_MILLISECONDS)) == 0)
-			{
-				_log.Log(LOG_STATUS, "P1MeterTCP: attempt connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				connect(m_szIPAddress, m_usIPPort);
-				update();
-			}
-			else if ((retry_counter % (RETRY_DELAY_SECONDS * 1000 / SLEEP_MILLISECONDS)) <= (1000 / SLEEP_MILLISECONDS))
-			{
-				// allow for up to 1 second connect time
-				update();
-			}
-			retry_counter++;
-		}
+		sleep_seconds(1);
+		sec_counter++;
 
-		sleep_milliseconds(SLEEP_MILLISECONDS);
-		heartbeat_counter++;
-		if ((heartbeat_counter % (HEARTBEAT_SECONDS * 1000 / SLEEP_MILLISECONDS)) == 0)
-		{
+		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
 	}

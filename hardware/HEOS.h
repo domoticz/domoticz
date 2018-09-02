@@ -26,7 +26,6 @@ public:
 	void SendCommand(const std::string&, const int iValue);
 private:
 	void SendCommand(const std::string&);
-	bool isConnected() { return mIsConnected; };
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -61,7 +60,6 @@ private:
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
 	std::shared_ptr<std::thread> m_thread;

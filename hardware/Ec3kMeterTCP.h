@@ -34,7 +34,6 @@ class Ec3kMeterTCP : public CDomoticzHardwareBase, ASyncTCP
 public:
 	Ec3kMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~Ec3kMeterTCP(void);
-	bool isConnected(){ return mIsConnected; };
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
@@ -52,7 +51,6 @@ private:
 	Ec3kLimiter *m_limiter;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 
 	std::shared_ptr<std::thread> m_thread;
 	volatile bool m_stoprequested;
