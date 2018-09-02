@@ -86,8 +86,7 @@ void CZiBlueTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			time_t atime = mytime(NULL);
-			m_LastHeartbeat = atime;
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	_log.Log(LOG_STATUS,"ZiBlue: TCP/IP Worker stopped...");

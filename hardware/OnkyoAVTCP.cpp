@@ -215,7 +215,7 @@ void OnkyoAVTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	_log.Log(LOG_STATUS,"OnkyoAVTCP: TCP/IP Worker stopped...");
