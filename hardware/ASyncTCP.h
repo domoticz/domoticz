@@ -10,8 +10,6 @@
 
 namespace boost { namespace system { class error_code; } }
 
-typedef std::shared_ptr<class ASyncTCP> ASyncTCPRef;
-
 class ASyncTCP
 {
 public:
