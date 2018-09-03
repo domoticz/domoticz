@@ -230,30 +230,19 @@ bool CDenkoviTCPDevices::StopHardware()
 
 void CDenkoviTCPDevices::Do_Work()
 {
-	int poll_interval = m_pollInterval / 100;
-	int poll_counter = poll_interval - 2;
-
-	int msec_counter = 0;
-
-	while (!IsStopRequested(100))
+	int poll_interval = m_pollInterval / 500;
+	int halfsec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(500))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (m_bFirstTime)
-		{
-			m_bFirstTime = false;
-			if (!isConnected())
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		halfsec_counter++;
+
+		if (halfsec_counter % 24 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			update();
-			if (msec_counter++ >= poll_interval) {
-				msec_counter = 0;
-				if (m_bReadingNow == false && m_bUpdateIo == false)
-					GetMeterDetails();
-			}
+		if (halfsec_counter % poll_interval == 0) {
+			if (m_bReadingNow == false && m_bUpdateIo == false)
+				GetMeterDetails();
 		}
 	}
 	terminate();
