@@ -653,43 +653,44 @@ bool XiaomiGateway::StartHardware()
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Password, Address FROM Hardware WHERE Type=%d AND ID=%d AND Enabled=1", HTYPE_XiaomiGateway, m_HwdID);
-	//result = m_sql.safe_query("SELECT Password, Address, ID, Enabled FROM Hardware WHERE Type=%d AND Enabled=1", HTYPE_XiaomiGateway);
+
+	if (result.empty())
+		return false;
+
+	m_GatewayPassword = result[0][0].c_str();
+	m_GatewayIp = result[0][1].c_str();
+
+	m_GatewayRgbR = 255;
+	m_GatewayRgbG = 255;
+	m_GatewayRgbB = 255;
+	m_GatewayBrightnessInt = 100;
+	//m_GatewayPrefix = "f0b4";
+	//check for presence of Xiaomi user variable to enable message output
+	m_OutputMessage = false;
+	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiMessage')");
 	if (!result.empty()) {
-		m_GatewayPassword = result[0][0].c_str();
-		m_GatewayIp = result[0][1].c_str();
-
-		m_GatewayRgbR = 255;
-		m_GatewayRgbG = 255;
-		m_GatewayRgbB = 255;
-		m_GatewayBrightnessInt = 100;
-		//m_GatewayPrefix = "f0b4";
-		//check for presence of Xiaomi user variable to enable message output
-		m_OutputMessage = false;
-		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiMessage')");
-		if (!result.empty()) {
-			m_OutputMessage = true;
-		}
-		//check for presence of Xiaomi user variable to enable additional voltage devices
-		m_IncludeVoltage = false;
-		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiVoltage')");
-		if (!result.empty()) {
-			m_IncludeVoltage = true;
-		}
-		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Delaying worker startup...", m_HwdID);
-		sleep_seconds(5);
-
-		XiaomiGatewayTokenManager::GetInstance();
-
-		AddGatewayToList();
-
-		if( m_ListenPort9898 )
-		{
-			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Selected as main Gateway", m_HwdID);
-		}
-
-		//Start worker thread
-		m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
+		m_OutputMessage = true;
 	}
+	//check for presence of Xiaomi user variable to enable additional voltage devices
+	m_IncludeVoltage = false;
+	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiVoltage')");
+	if (!result.empty()) {
+		m_IncludeVoltage = true;
+	}
+	_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Delaying worker startup...", m_HwdID);
+	sleep_seconds(5);
+
+	XiaomiGatewayTokenManager::GetInstance();
+
+	AddGatewayToList();
+
+	if( m_ListenPort9898 )
+	{
+		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Selected as main Gateway", m_HwdID);
+	}
+
+	//Start worker thread
+	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
 
 	return (m_thread != nullptr);
 }
