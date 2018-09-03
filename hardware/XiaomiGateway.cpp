@@ -12,6 +12,7 @@
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <regex>
 
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
@@ -744,9 +745,70 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 	catch (std::exception& e) {
-		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address: %s", m_HwdID, e.what());
+		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address (using boost asio): %s", m_HwdID, e.what());
 	}
 
+	// try finding local ip using ifconfig or ipconfig in case boost asio did not work
+	if (m_LocalIp == "") {
+		std::string ifconfigOrIpconfig;
+		try {
+			// get network ip range to search for from Xiaomi gateway
+			std::string GatewayNetwork;
+			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): IP of gateway: %s", m_HwdID, m_GatewayIp.c_str());	
+			
+			// pattern to match first 3 octets of Xiaomi gateway
+			std::regex pattern("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
+			std::smatch match;
+  
+			if (std::regex_search(m_GatewayIp, match, pattern)){
+        		GatewayNetwork = match[1];
+				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): gateway network section: %s", m_HwdID, GatewayNetwork.c_str());
+			}
+			else {
+				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): cannot determine gateway network section from Xiaomi gateway ip address", m_HwdID);
+			}
+	
+			// get output from ifconfig (Linux) or ipconfig (Windows)
+			std::string ifconfigStr;
+			const int max_buffer = 256;
+			char buffer[max_buffer];
+			// compiler specific as popen/pclose does not exist on Windows
+			// may work on Windows, but not well tested
+			#ifdef _WIN32
+				FILE * stream = _popen("ipconfig", "r");
+				if (stream) {
+  					while (!feof(stream))
+    					if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
+    						_pclose(stream);
+    			}
+				ifconfigOrIpconfig = "ipconfig";
+			#else
+				FILE * stream = popen("ifconfig", "r");
+				if (stream) {
+					while (!feof(stream))
+						if (fgets(buffer, max_buffer, stream) != NULL) ifconfigStr.append(buffer);
+							pclose(stream);
+				}
+				ifconfigOrIpconfig = "ifconfig";
+			#endif
+
+			// regex pattern to match ip address in ifconfig or ipconfig output
+			// searches for an ip starting with same network section (first 3 octets) as the Xiaomi gateway
+			// with <ip> being a valid ip, pattern will match "inet <ip>", "inet addr:<ip>", "inet: <ip>", "inet addr <ip>" etc
+			pattern = ("[inet|inet:][ ]*[addr|addr:]*[ ]*(?="+ GatewayNetwork + ")(\\d{1,3}(\\.\\d{1,3}){3})");
+			if (std::regex_search(ifconfigStr, match, pattern)){
+				m_LocalIp = match[1];
+				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Using %s for Domoticz local IP address (parsed from %s).", m_HwdID, m_LocalIp.c_str(), ifconfigOrIpconfig.c_str());
+			}
+			else {
+				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local Domoticz IP address (parsing %s).", m_HwdID, ifconfigOrIpconfig.c_str());
+			}
+		}
+		catch (std::exception& e) {
+			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address (parsing %s): %s", m_HwdID, ifconfigOrIpconfig.c_str(), e.what());
+		}
+	}
+	
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
 	boost::thread bt;
 	if (m_ListenPort9898) {
