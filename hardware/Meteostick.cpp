@@ -31,7 +31,6 @@ Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned 
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
-	m_stoprequested = false;
 	m_state = MSTATE_INIT;
 	m_bufferpos = 0;
 	for (int ii = 0; ii < MAX_IDS; ii++)
@@ -51,32 +50,23 @@ Meteostick::~Meteostick()
 bool Meteostick::StartHardware()
 {
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
-	StartPollerThread();
+
+	m_thread = std::make_shared<std::thread>(&Meteostick::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Meteostick");
+
 	return true;
 }
 
 bool Meteostick::StopHardware()
 {
-	m_bIsStarted = false;
-	terminate();
-	StopPollerThread();
-	return true;
-}
-
-void Meteostick::StartPollerThread()
-{
-	m_thread = std::make_shared<std::thread>(&Meteostick::Do_PollWork, this);
-	SetThreadName(m_thread->native_handle(), "Meteostick");
-}
-
-void Meteostick::StopPollerThread()
-{
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
+	m_bIsStarted = false;
+	return true;
 }
 
 bool Meteostick::OpenSerialDevice()
@@ -124,12 +114,11 @@ bool Meteostick::OpenSerialDevice()
 }
 
 
-void Meteostick::Do_PollWork()
+void Meteostick::Do_Work()
 {
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -150,6 +139,8 @@ void Meteostick::Do_PollWork()
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "Meteostick: Worker stopped...");
 }
 

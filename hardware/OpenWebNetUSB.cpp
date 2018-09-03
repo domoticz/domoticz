@@ -28,7 +28,6 @@ License: Public domain
 COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_szSerialPort = devname;
 	m_iBaudRate = baud_rate;
 	m_retrycntr = RETRY_DELAY - 2;
@@ -52,30 +51,27 @@ bool COpenWebNetUSB::StartHardware()
 	return (m_thread != nullptr);
 }
 
-void COpenWebNetUSB::Do_Work()
-{
-	while (!m_stoprequested)
-	{
-		sleep_seconds(OPENWEBNET_HEARTBEAT_DELAY);
-		m_LastHeartbeat = mytime(NULL);
-	}
-	_log.Log(LOG_STATUS, "COpenWebNetUSB: Heartbeat worker stopped...");
-}
-
-
 bool COpenWebNetUSB::StopHardware()
 {
-	m_stoprequested = true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-	sleep_milliseconds(10);
-	terminate();
 	m_bIsStarted = false;
 	return true;
+}
+
+void COpenWebNetUSB::Do_Work()
+{
+	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY))
+	{
+		m_LastHeartbeat = mytime(NULL);
+	}
+	terminate();
+
+	_log.Log(LOG_STATUS, "COpenWebNetUSB: Heartbeat worker stopped...");
 }
 
 /**

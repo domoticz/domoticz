@@ -24,10 +24,8 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
-	void StartPollerThread();
-	void StopPollerThread();
 	bool OpenSerialDevice();
-	void Do_PollWork();
+	void Do_Work();
 
 	void readCallback(const char *data, size_t len);
 
@@ -48,7 +46,6 @@ private:
 	_eMState m_state;
 	std::shared_ptr<std::thread> m_thread;
 	int m_retrycntr;
-	bool m_stoprequested;
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
 };

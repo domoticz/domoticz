@@ -256,7 +256,6 @@ void CDenkoviTCPDevices::Do_Work()
 			}
 		}
 	}
-
 	terminate();
 
 	switch (m_iModel) {

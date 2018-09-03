@@ -101,16 +101,17 @@ bool S0MeterSerial::StartHardware()
 		ParseData((const unsigned char*)dline.c_str(), dline.size());
 	}
 #endif
+	_log.Log(LOG_STATUS, "S0 Meter: Worker started...");
 
 	return true;
 }
 
 bool S0MeterSerial::StopHardware()
 {
+	terminate();
 	m_bIsStarted=false;
 	StopHeartbeatThread();
-	terminate();
-	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
+	_log.Log(LOG_STATUS, "S0 Meter: Worker stopped...");
 	return true;
 }
 

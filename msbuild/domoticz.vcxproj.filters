@@ -456,12 +456,6 @@
     <Filter Include="Devices\Teleinfo">
       <UniqueIdentifier>{b6226872-73d2-4b12-8eba-80be3ad6835f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Teleinfo\TeleinfoBase">
-      <UniqueIdentifier>{9b098c6e-b49d-aaaa-b9a2-5904c1d92edd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Teleinfo\TeleinfoSerial">
-      <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="IFTTT">
       <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
     </Filter>
@@ -1501,12 +1495,6 @@
     <ClInclude Include="..\hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\TeleinfoSerial.h">
-      <Filter>Devices\Teleinfo\TeleinfoSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\TeleinfoBase.h">
-      <Filter>Devices\Teleinfo\TeleinfoBase</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\ZWaveBase.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
@@ -2137,6 +2125,12 @@
     <ClInclude Include="..\main\StoppableTask.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoSerial.h">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoBase.h">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2279,12 +2273,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\TeleinfoBase.cpp">
-      <Filter>Devices\Teleinfo\TeleinfoBase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\TeleinfoSerial.cpp">
-      <Filter>Devices\Teleinfo\TeleinfoSerial</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
@@ -2909,6 +2897,12 @@
     </ClCompile>
     <ClCompile Include="..\main\Logger.cpp">
       <Filter>Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoSerial.cpp">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoBase.cpp">
+      <Filter>Devices\Teleinfo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

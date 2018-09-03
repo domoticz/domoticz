@@ -19,7 +19,6 @@ private:
 	bool WriteInt(const unsigned char *pData, const unsigned char Len) override;
 	int m_retrycntr;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
     void readCallback(const char *data, size_t len);
 };
 

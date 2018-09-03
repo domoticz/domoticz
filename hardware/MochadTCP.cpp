@@ -140,7 +140,7 @@ void MochadTCP::Do_Work()
 {
 	bool bFirstTime = true;
 
-	while (!IsStopRequested(40))
+	while (!IsStopRequested(500))
 	{
 
 		time_t atime = mytime(NULL);

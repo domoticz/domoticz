@@ -70,7 +70,6 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string &UserContID)
 	for (int i = 0; i < 2; i++)
 		m_bStartup[i] = true;
 
-	m_stoprequested = false;
 	m_nBufPtr = 0;
 	m_nSendFail = 0;
 	m_nZoneCount = 0;

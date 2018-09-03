@@ -120,6 +120,9 @@ bool RFXComSerial::StopHardware()
 void RFXComSerial::Do_Work()
 {
 	int sec_counter = 0;
+
+	_log.Log(LOG_STATUS, "RFXCOM: Worker started...");
+
 	while (IsStopRequested(1000) == false)
 	{
 		sec_counter++;
@@ -157,7 +160,7 @@ void RFXComSerial::Do_Work()
 	}
 	terminate(); //Close serial port (if open)
 
-	_log.Log(LOG_STATUS, "RFXCOM: Serial Worker stopped...");
+	_log.Log(LOG_STATUS, "RFXCOM: Worker stopped...");
 }
 
 

@@ -27,7 +27,6 @@ private:
 	std::string m_szSerialPort;
 	int m_baudRate;
 	int m_pollInterval;
-	volatile bool m_stoprequested;
 	int m_iModel;
 	std::shared_ptr<std::thread> m_thread;
 	int m_Cmd;

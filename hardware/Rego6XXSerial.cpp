@@ -110,7 +110,6 @@ m_szSerialPort(devname)
     m_regoType = type;
     m_errorcntr = 0;
 
-	m_stoprequested=false;
 	m_retrycntr = 0;
 	m_pollcntr = 0;
 	m_pollDelaycntr = 0;
@@ -147,13 +146,10 @@ bool CRego6XXSerial::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-    // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-    sleep_milliseconds(10);
-    terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -162,12 +158,8 @@ bool CRego6XXSerial::StopHardware()
 void CRego6XXSerial::Do_Work()
 {
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
-
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -282,7 +274,9 @@ void CRego6XXSerial::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS,"Rego6XX: Serial Worker stopped...");
+	terminate();
+
+	_log.Log(LOG_STATUS,"Rego6XX: Worker stopped...");
 }
 
 

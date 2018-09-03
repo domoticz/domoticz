@@ -25,7 +25,6 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
-	m_stoprequested=false;
 	m_retrycntr = RETRY_DELAY;
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5, Mode6);
 }
@@ -72,7 +71,7 @@ void OTGWSerial::StopPollerThread()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -118,10 +117,8 @@ void OTGWSerial::Do_PollWork()
 {
 	bool bFirstTime=true;
 	int sec_counter = 25;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -160,6 +157,8 @@ void OTGWSerial::Do_PollWork()
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"OTGW: Worker stopped...");
 }
 
