@@ -12,7 +12,6 @@
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <list>
 
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
@@ -30,7 +29,7 @@ Domoticz need to be in the same network/subnet with multicast working
 std::list<XiaomiGateway*> gatewaylist;
 std::mutex gatewaylist_mutex;
 
-XiaomiGateway * GatewayByIp( std::string ip )
+XiaomiGateway * XiaomiGateway::GatewayByIp( std::string ip )
 {
 	XiaomiGateway * ret = NULL;
 	{
@@ -48,7 +47,7 @@ XiaomiGateway * GatewayByIp( std::string ip )
 	return ret;
 }
 
-void AddGatewayToList( XiaomiGateway* gw )
+void XiaomiGateway::AddGatewayToList()
 {
 	XiaomiGateway * maingw = NULL;
 	{
@@ -65,14 +64,14 @@ void AddGatewayToList( XiaomiGateway* gw )
 		
 		if( !maingw )
 		{
-			gw->SetAsMainGateway();
+			SetAsMainGateway();
 		}
 		else
 		{
 			maingw->UnSetMainGateway();
 		}
 		
-		gatewaylist.push_back( gw );
+		gatewaylist.push_back( this );
 	}
 
 	if( maingw )
@@ -81,15 +80,15 @@ void AddGatewayToList( XiaomiGateway* gw )
 	}
 }
 
-void RemoveFromGatewayList( XiaomiGateway* gw )
+void XiaomiGateway::RemoveFromGatewayList()
 {
 	XiaomiGateway * maingw = NULL;
 	{
 		std::unique_lock<std::mutex> lock(gatewaylist_mutex);
-		gatewaylist.remove( gw );
-		if( gw->IsMainGateway() )
+		gatewaylist.remove( this );
+		if( IsMainGateway() )
 		{
-			gw->UnSetMainGateway();
+			UnSetMainGateway();
 	
 			if( gatewaylist.begin() != gatewaylist.end() )
 			{
@@ -681,7 +680,7 @@ bool XiaomiGateway::StartHardware()
 
 		XiaomiGatewayTokenManager::GetInstance();
 
-		AddGatewayToList( this );
+		AddGatewayToList();
 
 		if( m_ListenPort9898 )
 		{
@@ -718,7 +717,7 @@ bool XiaomiGateway::StopHardware()
 		//Don't throw from a Stop command
 	}
 	m_bIsStarted = false;
-	RemoveFromGatewayList( this );
+	RemoveFromGatewayList();
 	return true;
 }
 
@@ -881,7 +880,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 {
 	if (!error || error == boost::asio::error::message_size)
 	{
-		XiaomiGateway * TrueGateway =  GatewayByIp( remote_endpoint_.address().to_v4().to_string() );
+		XiaomiGateway * TrueGateway =  m_XiaomiGateway->GatewayByIp( remote_endpoint_.address().to_v4().to_string() );
 	
 		if( !TrueGateway )
 		{

@@ -2,6 +2,8 @@
 
 #include "DomoticzHardware.h"
 #include <boost/tuple/tuple.hpp>
+#include <list>
+#include <mutex>
 
 #define MAX_LOG_LINE_LENGTH (2048*3)
 
@@ -55,6 +57,10 @@ private:
 	std::string m_GatewayMusicId;
 	std::string m_GatewayVolume;
 	std::mutex m_mutex;
+	
+	XiaomiGateway * GatewayByIp( std::string ip );
+	void AddGatewayToList();
+	void RemoveFromGatewayList();
 
 	volatile bool m_stoprequested;
 
