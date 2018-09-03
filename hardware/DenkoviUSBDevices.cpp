@@ -20,6 +20,7 @@ enum _edaeUsbState
 #define DAE_IO_TYPE_RELAY		2
 
 CDenkoviUSBDevices::CDenkoviUSBDevices(const int ID, const std::string& comPort, const int model) :
+	AsyncSerial("DenkoviUSB"),
 	m_szSerialPort(comPort)
 {
 	m_HwdID = ID;
@@ -47,7 +48,7 @@ bool CDenkoviUSBDevices::StartHardware()
 {
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CDenkoviUSBDevices::Do_Work, this);
-	//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviUSBDevices::Do_Work, this)));
+	SetThreadName(m_thread->native_handle(), "DenkoviUSB");
 
 	if (m_iModel == DDEV_USB_16R)
 		m_baudRate = 9600;
@@ -57,13 +58,7 @@ bool CDenkoviUSBDevices::StartHardware()
 	{
 		open(
 			m_szSerialPort,
-			m_baudRate,
-			boost::asio::serial_port_base::parity(
-				boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8),
-			boost::asio::serial_port_base::flow_control(
-			boost::asio::serial_port_base::flow_control::none),
-			boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one)
+			m_baudRate
 		);
 	}
 	catch (boost::exception & e)

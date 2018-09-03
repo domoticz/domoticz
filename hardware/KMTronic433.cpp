@@ -18,7 +18,8 @@
 
 #define RETRY_DELAY 30
 
-KMTronic433::KMTronic433(const int ID, const std::string& devname)
+KMTronic433::KMTronic433(const int ID, const std::string& devname) :
+	AsyncSerial("KMTronic433")
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;
@@ -107,18 +108,15 @@ bool KMTronic433::OpenSerialDevice()
 	{
 		_log.Log(LOG_STATUS, "KMTronic: Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
-		openOnlyBaud(
+		open(
 			m_szSerialPort,
 			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8)
+			false // Do not set options (parity, character width, flow control, stop bits)
 			);
 #else
 		open(
 			m_szSerialPort,
-			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8)
+			m_iBaudRate
 			);
 #endif
 	}

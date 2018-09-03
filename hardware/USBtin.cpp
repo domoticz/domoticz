@@ -70,7 +70,8 @@ History :
 #define FreeCan			0x02
 
 USBtin::USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode) :
-m_szSerialPort(devname)
+	AsyncSerial("USBtin"),
+	m_szSerialPort(devname)
 {
 	m_HwdID = ID;
 	m_stoprequested=false;

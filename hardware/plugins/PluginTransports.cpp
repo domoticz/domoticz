@@ -908,7 +908,7 @@ namespace Plugins {
 		}
 	}
 
-	CPluginTransportSerial::CPluginTransportSerial(int HwdID, PyObject* pConnection, const std::string & Port, int Baud) : CPluginTransport(HwdID, pConnection), m_Baud(Baud)
+	CPluginTransportSerial::CPluginTransportSerial(int HwdID, PyObject* pConnection, const std::string & Port, int Baud) : AsyncSerial("PluginSerial"), CPluginTransport(HwdID, pConnection), m_Baud(Baud)
 	{
 		m_Port = Port;
 	}
@@ -924,11 +924,7 @@ namespace Plugins {
 			if (!isOpen())
 			{
 				m_bConnected = false;
-				open(m_Port, m_Baud,
-					boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
-					boost::asio::serial_port_base::character_size(8),
-					boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none),
-					boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
+				open(m_Port, m_Baud);
 
 				m_tLastSeen = time(0);
 				m_bConnected = isOpen();

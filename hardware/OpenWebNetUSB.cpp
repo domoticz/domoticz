@@ -25,7 +25,8 @@ License: Public domain
 #include <string>
 
 
-COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate)
+COpenWebNetUSB::COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate) :
+	AsyncSerial("OpenWebNetUSB")
 {
 	m_HwdID = ID;
 	m_stoprequested = false;
@@ -302,18 +303,15 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	{
 		_log.Log(LOG_STATUS, "COpenWebNetUSB: Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
-		openOnlyBaud(
+		open(
 			m_szSerialPort,
 			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8)
+			false // Do not set options (parity, character width, flow control, stop bits)
 			);
 #else
 		open(
 			m_szSerialPort,
-			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8)
+			m_iBaudRate
 			);
 #endif
 	}

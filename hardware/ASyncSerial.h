@@ -22,37 +22,20 @@ class AsyncSerialImpl;
 class AsyncSerial
 	: private domoticz::noncopyable
 {
-public:
-    AsyncSerial();
+protected:
+    AsyncSerial() = delete;
 
     /**
-     * Constructor. Creates and opens a serial device.
-     * \param devname serial device name, example "/dev/ttyS0" or "COM1"
-     * \param baud_rate serial baud rate
-     * \param opt_parity serial parity, default none
-     * \param opt_csize serial character size, default 8bit
-     * \param opt_flow serial flow control, default none
-     * \param opt_stop serial stop bits, default 1
-     * \throws boost::system::system_error if cannot open the
-     * serial device
+     * Constructor. Creates and a serial device.
+     * \param thread_name name of the io thread (for debugging)
      */
-    AsyncSerial(const std::string& devname, unsigned int baud_rate,
-        boost::asio::serial_port_base::parity opt_parity=
-            boost::asio::serial_port_base::parity(
-                boost::asio::serial_port_base::parity::none),
-        boost::asio::serial_port_base::character_size opt_csize=
-            boost::asio::serial_port_base::character_size(8),
-        boost::asio::serial_port_base::flow_control opt_flow=
-            boost::asio::serial_port_base::flow_control(
-                boost::asio::serial_port_base::flow_control::none),
-        boost::asio::serial_port_base::stop_bits opt_stop=
-            boost::asio::serial_port_base::stop_bits(
-                boost::asio::serial_port_base::stop_bits::one));
+    AsyncSerial(const std::string& thread_name);
 
     /**
     * Opens a serial device.
     * \param devname serial device name, example "/dev/ttyS0" or "COM1"
     * \param baud_rate serial baud rate
+    * \param set_options set serial port options, default true
     * \param opt_parity serial parity, default none
     * \param opt_csize serial character size, default 8bit
     * \param opt_flow serial flow control, default none
@@ -60,7 +43,7 @@ public:
     * \throws boost::system::system_error if cannot open the
     * serial device
     */
-    void open(const std::string& devname, unsigned int baud_rate,
+    void open(const std::string& devname, unsigned int baud_rate, bool set_options = true,
         boost::asio::serial_port_base::parity opt_parity=
             boost::asio::serial_port_base::parity(
                 boost::asio::serial_port_base::parity::none),
@@ -72,18 +55,6 @@ public:
         boost::asio::serial_port_base::stop_bits opt_stop=
             boost::asio::serial_port_base::stop_bits(
                 boost::asio::serial_port_base::stop_bits::one));
-	void openOnlyBaud(const std::string& devname, unsigned int baud_rate,
-		boost::asio::serial_port_base::parity opt_parity=
-		boost::asio::serial_port_base::parity(
-		boost::asio::serial_port_base::parity::none),
-		boost::asio::serial_port_base::character_size opt_csize=
-		boost::asio::serial_port_base::character_size(8),
-		boost::asio::serial_port_base::flow_control opt_flow=
-		boost::asio::serial_port_base::flow_control(
-		boost::asio::serial_port_base::flow_control::none),
-		boost::asio::serial_port_base::stop_bits opt_stop=
-		boost::asio::serial_port_base::stop_bits(
-		boost::asio::serial_port_base::stop_bits::one));
 
     /**
      * \return true if serial device is open
@@ -192,7 +163,6 @@ protected:
      * Once this method has been called, you have to open the port and register the read callback again.
      */
     void terminate(bool silent = true);
-
 };
 
 

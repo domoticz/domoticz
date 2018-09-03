@@ -12,8 +12,12 @@
 //Rainforest RAVEn USB ZigBee Smart Meter Adapter
 //https://rainforestautomation.com/rfa-z106-raven/
 
-RAVEn::RAVEn(const int ID, const std::string& devname)
-: device_(devname), m_wptr(m_buffer), m_currUsage(0), m_totalUsage(0)
+RAVEn::RAVEn(const int ID, const std::string& devname) :
+	AsyncSerial("RAVEn"),
+	device_(devname),
+	m_wptr(m_buffer),
+	m_currUsage(0),
+	m_totalUsage(0)
 {
     m_HwdID = ID;
 }

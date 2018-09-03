@@ -104,7 +104,8 @@ RegoRegisters g_allRegisters[] = {
 //Class Rego6XXSerial
 //
 CRego6XXSerial::CRego6XXSerial(const int ID, const std::string& devname, const int type) :
-m_szSerialPort(devname)
+	AsyncSerial("Rego6XXSerial"),
+	m_szSerialPort(devname)
 {
 	m_HwdID=ID;
     m_regoType = type;

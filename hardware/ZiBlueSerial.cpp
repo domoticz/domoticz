@@ -9,7 +9,8 @@
 #define ZiBlue_RETRY_DELAY 30
 
 CZiBlueSerial::CZiBlueSerial(const int ID, const std::string& devname) :
-m_szSerialPort(devname)
+	AsyncSerial("ZiBlueSerial"),
+	m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;

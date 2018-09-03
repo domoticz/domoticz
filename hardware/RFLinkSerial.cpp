@@ -6,7 +6,8 @@
 #include <boost/exception/diagnostic_information.hpp>
 
 CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :
-m_szSerialPort(devname)
+	AsyncSerial("RFLinkSerial"),
+	m_szSerialPort(devname)
 {
 	m_HwdID = ID;
 	m_stoprequested = false;

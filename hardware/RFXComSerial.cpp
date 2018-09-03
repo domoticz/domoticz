@@ -60,6 +60,7 @@ const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 //Class RFXComSerial
 //
 RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
+	AsyncSerial("RFXComSerial"),
 	m_szSerialPort(devname)
 {
 	m_HwdID = ID;

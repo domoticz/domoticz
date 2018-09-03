@@ -36,7 +36,8 @@ History :
 #include <iostream>
 #include <string>
 
-CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
+CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit) :
+	AsyncSerial("TeleinfoSerial")
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;
@@ -83,7 +84,7 @@ bool CTeleinfoSerial::StartHardware()
 	try
 	{
 		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", m_Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
-		open(m_szSerialPort, m_iBaudRate, m_iOptParity, m_iOptCsize);
+		open(m_szSerialPort, true, m_iBaudRate, m_iOptParity, m_iOptCsize);
 	}
 	catch (boost::exception & e)
 	{
@@ -91,7 +92,7 @@ bool CTeleinfoSerial::StartHardware()
 		_log.Log(LOG_STATUS, "Teleinfo: Serial port open failed, let's retry with CharSize:8 ...");
 
 		try {
-			open(m_szSerialPort, m_iBaudRate, m_iOptParity, boost::asio::serial_port_base::character_size(8));
+			open(m_szSerialPort, true, m_iBaudRate, m_iOptParity, boost::asio::serial_port_base::character_size(8));
 			_log.Log(LOG_STATUS, "Teleinfo: Serial port open successfully with CharSize:8 ...");
 		}
 		catch (...) {

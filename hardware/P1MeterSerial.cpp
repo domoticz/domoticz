@@ -22,25 +22,14 @@
 //Class P1MeterSerial
 //
 P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit):
-m_szSerialPort(devname)
+	AsyncSerial("P1MeterSerial"),
+	m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
 	m_stoprequested = false;
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
-}
-
-P1MeterSerial::P1MeterSerial(const std::string& devname,
-        unsigned int baud_rate,
-        boost::asio::serial_port_base::parity opt_parity,
-        boost::asio::serial_port_base::character_size opt_csize,
-        boost::asio::serial_port_base::flow_control opt_flow,
-        boost::asio::serial_port_base::stop_bits opt_stop)
-        :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop),
-		m_iBaudRate(baud_rate)
-{
-	m_stoprequested = false;
 }
 
 P1MeterSerial::~P1MeterSerial()
@@ -74,6 +63,7 @@ bool P1MeterSerial::StartHardware()
 			open(
 				m_szSerialPort,
 				m_iBaudRate,
+				true,
 				boost::asio::serial_port_base::parity(
 				boost::asio::serial_port_base::parity::even),
 				boost::asio::serial_port_base::character_size(7)
@@ -84,10 +74,7 @@ bool P1MeterSerial::StartHardware()
 			//DSMRv4
 			open(
 				m_szSerialPort,
-				m_iBaudRate,
-				boost::asio::serial_port_base::parity(
-				boost::asio::serial_port_base::parity::none),
-				boost::asio::serial_port_base::character_size(8)
+				m_iBaudRate
 				);
 			if (m_bDisableCRC) {
 				_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");

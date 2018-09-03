@@ -117,11 +117,11 @@
 //===========================================================================
 
 RelayNet::RelayNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const bool pollInputs, const bool pollRelays, const int pollInterval, const int inputCount, const int relayCount) :
-m_szIPAddress(IPAddress),
-m_username(CURLEncode::URLEncode(username)),
-m_password(CURLEncode::URLEncode(password)),
-m_stoprequested(false),
-m_reconnect(false)
+	m_szIPAddress(IPAddress),
+	m_username(CURLEncode::URLEncode(username)),
+	m_password(CURLEncode::URLEncode(password)),
+	m_stoprequested(false),
+	m_reconnect(false)
 {
 	m_stoprequested = false;
 	m_setup_devices = true;

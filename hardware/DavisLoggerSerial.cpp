@@ -25,6 +25,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
+	AsyncSerial("DavisLoggerSerial"),
 	m_szSerialPort(devname)
 {
 	m_HwdID = ID;

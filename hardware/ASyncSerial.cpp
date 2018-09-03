@@ -72,19 +72,9 @@ public:
     boost::function<void (const char*, size_t)> callback;
 };
 
-AsyncSerial::AsyncSerial(): pimpl(new AsyncSerialImpl)
+AsyncSerial::AsyncSerial(const std::string thread_name): pimpl(new AsyncSerialImpl)
 {
 
-}
-
-AsyncSerial::AsyncSerial(const std::string& devname, unsigned int baud_rate,
-        boost::asio::serial_port_base::parity opt_parity,
-        boost::asio::serial_port_base::character_size opt_csize,
-        boost::asio::serial_port_base::flow_control opt_flow,
-        boost::asio::serial_port_base::stop_bits opt_stop)
-        : pimpl(new AsyncSerialImpl)
-{
-    open(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop);
 }
 
 AsyncSerial::~AsyncSerial()
@@ -104,10 +94,13 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
     pimpl->port.open(devname);
 	try {
 		pimpl->port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
-		pimpl->port.set_option(opt_parity);
-		pimpl->port.set_option(opt_csize);
-		pimpl->port.set_option(opt_flow);
-		pimpl->port.set_option(opt_stop);
+		if (set_options)
+		{
+			pimpl->port.set_option(opt_parity);
+			pimpl->port.set_option(opt_csize);
+			pimpl->port.set_option(opt_flow);
+			pimpl->port.set_option(opt_stop);
+		}
 	}
 	catch (...)
 	{

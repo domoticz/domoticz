@@ -27,6 +27,7 @@
 //Class Meteostick
 //
 Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned int baud_rate):
+	AsyncSerial("Meteostick"),
 	m_szSerialPort(devname)
 {
 	m_HwdID=ID;
@@ -87,9 +88,7 @@ bool Meteostick::OpenSerialDevice()
 		_log.Log(LOG_STATUS, "Meteostick: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
-			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8)
+			m_iBaudRate
 			);
 	}
 	catch (boost::exception & e)

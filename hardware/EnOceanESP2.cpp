@@ -624,7 +624,8 @@ typedef struct enocean_data_structure_MDA {
 							* @}
 							*/
 
-CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int type)
+CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int type) :
+	AsyncSerial("EnOceanESP2")
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;

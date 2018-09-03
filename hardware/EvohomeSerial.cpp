@@ -8,7 +8,8 @@
 #include <boost/exception/diagnostic_information.hpp>
 
 CEvohomeSerial::CEvohomeSerial(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID) :
-CEvohomeRadio(ID, UserContID)
+	AsyncSerial("EvohomeSerial"),
+	CEvohomeRadio(ID, UserContID)
 {
     if(baudrate!=0)
 	{

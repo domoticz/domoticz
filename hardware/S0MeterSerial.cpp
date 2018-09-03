@@ -26,7 +26,8 @@
 	};
 #endif
 
-S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate)
+S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate) :
+	AsyncSerial("S0MeterSerial")
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
@@ -47,9 +48,10 @@ bool S0MeterSerial::StartHardware()
 	{
 		_log.Log(LOG_STATUS,"S0 Meter: Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
-		openOnlyBaud(
+		open(
 			m_szSerialPort,
 			m_iBaudRate,
+			false, // Do not set options (parity, character width, flow control, stop bits)
 			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even),
 			boost::asio::serial_port_base::character_size(7)
 			);
@@ -57,6 +59,7 @@ bool S0MeterSerial::StartHardware()
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
+			true,
 			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even),
 			boost::asio::serial_port_base::character_size(7)
 			);

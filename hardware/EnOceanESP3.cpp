@@ -401,7 +401,8 @@ bool CEnOceanESP3::sendFrameQueue(unsigned char frametype, unsigned char *databu
 	return true;
 }
 
-CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int type)
+CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int type) :
+	AsyncSerial("EnOceanESP3")
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;

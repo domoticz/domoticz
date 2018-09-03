@@ -12,6 +12,7 @@
 */
 
 Comm5Serial::Comm5Serial(const int ID, const std::string& devname, unsigned int baudRate /*= 115200*/) :
+	AsyncSerial("Comm5Serial"),
 	m_szSerialPort(devname),
 	m_baudRate(baudRate)
 {
@@ -70,10 +71,7 @@ bool Comm5Serial::StartHardware()
 	{
 		open(
 			m_szSerialPort,
-			m_baudRate,
-			boost::asio::serial_port_base::parity(
-			boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8)
+			m_baudRate
 			);
 	}
 	catch (boost::exception & e)

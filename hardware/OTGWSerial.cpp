@@ -20,7 +20,8 @@
 //
 //Class OTGWSerial
 //
-OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6) :
+	AsyncSerial("OTGWSerial")
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
@@ -86,9 +87,7 @@ bool OTGWSerial::OpenSerialDevice()
 		_log.Log(LOG_STATUS,"OTGW: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
-			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
-			boost::asio::serial_port_base::character_size(8)
+			m_iBaudRate
 			);
 	}
 	catch (boost::exception & e)
