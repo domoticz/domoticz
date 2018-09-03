@@ -91,10 +91,12 @@ bool COpenWebNetTCP::StartHardware()
 
 	//Start monitor thread
 	m_monitorThread = std::make_shared<std::thread>(&COpenWebNetTCP::MonitorFrames, this);
+	SetThreadName(m_monitorThread->native_handle(), "OpenWebNetTCPMF");
 
 	//Start worker thread
 	if (m_monitorThread != NULL) {
 		m_heartbeatThread = std::make_shared<std::thread>(&COpenWebNetTCP::Do_Work, this);
+		SetThreadName(m_heartbeatThread->native_handle(), "OpenWebNetTCPW");
 	}
 
 	return (m_monitorThread != NULL && m_heartbeatThread != NULL);

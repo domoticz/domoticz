@@ -75,3 +75,13 @@ bool IsArgumentSecure(const std::string &arg);
 uint32_t SystemUptime();
 int GenerateRandomNumber(const int range);
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files);
+
+int SetThreadName(std::thread::native_handle_type thread, const char *name);
+
+#if !defined(WIN32)
+	bool IsDebuggerPresent(void);
+#endif
+#if defined(__linux__)
+	bool IsWSL(void); //Detects if running under Windows Subsystem for Linux (WSL)
+#endif
+

@@ -1,5 +1,5 @@
 /***************************************************************************************************************/
-/*	2017-11-11
+/*	Recent update: 2018-08-16
 SHOP: http://eHouse.Biz/
 DIY:  http://Smart.eHouse.Pro/
 
@@ -52,11 +52,13 @@ h l O nr
 #include "eHouse/status.h"
 #include "eHouseTCP.h"
 #include "hardwaretypes.h"
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
 #include "../main/SQLHelper.h"
-
+//#include <vector>
+//#include <thread>
 #define OPTA_CLR_DB					0x1		//Clear Domoticz DBs on start (for test of device discovery - other devices will also be deleted)
 #define OPTA_FORCE_TCP				0x2		//Force TCP/IP instead of UDP for LAN connection
 #define OPTA_DEBUG					0x4		//Debug Info
@@ -74,41 +76,41 @@ void eHouseTCP::InitStructs(void)
 	int to = EHOUSE_WIFI_MAX + 1;
 	for (i = 0; i < to; i++)
 	{
-		(eHWIFIs[i]) = NULL;		//full wifi status
-		(eHWIFIPrev[i]) = NULL;		//full wifi status previous for detecting changes
-		(eHWIFIn[i]) = NULL;			//names of i/o for WiFi controllers
-		(eHWiFi[i]) = NULL;
+		(m_eHWIFIs[i]) = NULL;		//full wifi status
+		(m_eHWIFIPrev[i]) = NULL;		//full wifi status previous for detecting changes
+		(m_eHWIFIn[i]) = NULL;			//names of i/o for WiFi controllers
+		(m_eHWiFi[i]) = NULL;
 	}
-	ECMn = NULL;
-	ECM = NULL;
-	ECMPrv = NULL;					//Previous statuses for Update MSQL optimalization  (change data only updated)
-	eHouseProN = NULL;
-	eHouseProStatus = NULL;
-	eHouseProStatusPrv = NULL;
+	m_ECMn = NULL;
+	m_ECM = NULL;
+	m_ECMPrv = NULL;					//Previous statuses for Update MSQL optimalization  (change data only updated)
+	m_eHouseProN = NULL;
+	m_eHouseProStatus = NULL;
+	m_eHouseProStatusPrv = NULL;
 
 	to = ETHERNET_EHOUSE_RM_MAX + 1;
 	for (i = 0; i < to; i++)
 	{
-		(eHEn[i]) = NULL;				//names of i/o for Ethernet controllers
-		(eHERMs[i]) = NULL;  		//full ERM status decoded
-		(eHERMPrev[i]) = NULL;  	//full ERM status decoded previous for detecting changes
+		(m_eHEn[i]) = NULL;				//names of i/o for Ethernet controllers
+		(m_eHERMs[i]) = NULL;  		//full ERM status decoded
+		(m_eHERMPrev[i]) = NULL;  	//full ERM status decoded previous for detecting changes
 	}
 	to = EHOUSE1_RM_MAX + 1;
 	for (i = 0; i < to; i++)
 	{
-		(eHRMs[i]) = NULL;  		//full RM status decoded
-		(eHRMPrev[i]) = NULL;  		//full RM status decoded previous for detecting changes
-		(eHn[i]) = NULL;
+		(m_eHRMs[i]) = NULL;  		//full RM status decoded
+		(m_eHRMPrev[i]) = NULL;  		//full RM status decoded previous for detecting changes
+		(m_eHn[i]) = NULL;
 	}
 	to = EVENT_QUEUE_MAX;
 	for (i = 0; i < to; i++)
-		(EvQ[i]) = NULL;		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
+		(m_EvQ[i]) = NULL;		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
 	to = MAX_AURA_DEVS;
 	for (i = 0; i < to; i++)
 	{
-		(AuraDev[i]) = NULL;	// Aura status thermostat
-		(AuraDevPrv[i]) = NULL;			// previous for detecting changes
-		(AuraN[i]) = NULL;
+		(m_AuraDev[i]) = NULL;	// Aura status thermostat
+		(m_AuraDevPrv[i]) = NULL;			// previous for detecting changes
+		(m_AuraN[i]) = NULL;
 	}
 	//future initialzation
 #ifndef REMOVEUNUSED
@@ -148,60 +150,60 @@ int eHouseTCP::gettype(int adrh, int adrl)
 {
 	if ((adrh == 1) && (adrl == 1))
 	{
-		Dtype = EH_RS485;
-		Dsubtype = 1;
-		return Dtype;
+		m_Dtype = EH_RS485;
+		m_Dsubtype = 1;
+		return m_Dtype;
 	}
 	if ((adrh == 2) && (adrl == 1))
 	{
-		Dtype = EH_RS485;
-		Dsubtype = 2;
-		return Dtype;
+		m_Dtype = EH_RS485;
+		m_Dsubtype = 2;
+		return m_Dtype;
 	}
 	if (adrh == 55)
 	{
-		Dtype = EH_RS485;
-		Dsubtype = 3;
-		return Dtype;
+		m_Dtype = EH_RS485;
+		m_Dsubtype = 3;
+		return m_Dtype;
 	}
 	if ((adrh == 0x79) || (adrh == 0x80))
 	{
-		Dtype = EH_CANRF;
-		Dsubtype = adrl;
-		return Dtype;
+		m_Dtype = EH_CANRF;
+		m_Dsubtype = adrl;
+		return m_Dtype;
 	}
 	if (adrh == 0x81)
 	{
-		Dtype = EH_AURA;
-		Dsubtype = adrl;
-		return Dtype;
+		m_Dtype = EH_AURA;
+		m_Dsubtype = adrl;
+		return m_Dtype;
 	}
 	if (adrh == 0x82)
 	{
-		Dtype = EH_LORA;
-		Dsubtype = adrl;
-		return Dtype;
+		m_Dtype = EH_LORA;
+		m_Dsubtype = adrl;
+		return m_Dtype;
 	}
-	if (((adrl > 190) && (adrl < 201)) || (adrl == SrvAddrL))
+	if (((adrl > 190) && (adrl < 201)) || (adrl == m_SrvAddrL))
 	{
-		Dtype = EH_PRO;
-		Dsubtype = adrl;
-		return Dtype;
+		m_Dtype = EH_PRO;
+		m_Dsubtype = adrl;
+		return m_Dtype;
 	}
 	if ((adrl > 200) && (adrl < 255))
 	{
-		Dtype = EH_LAN;
-		Dsubtype = adrl;
-		return Dtype;
+		m_Dtype = EH_LAN;
+		m_Dsubtype = adrl;
+		return m_Dtype;
 	}
 	if ((adrl > 99) && (adrl < 190))
 	{
-		Dtype = EH_WIFI;
-		Dsubtype = adrl;
-		return Dtype;
+		m_Dtype = EH_WIFI;
+		m_Dsubtype = adrl;
+		return m_Dtype;
 	}
-	Dtype = EH_PRO;
-	return Dtype;
+	m_Dtype = EH_PRO;
+	return m_Dtype;
 }
 //////////////////////////////////////////////////////////////////////////////////
 // Get eHouse Controller Type
@@ -237,7 +239,7 @@ void eHouseTCP::eHType(int devtype, char *dta)
 ///////////////////////////////////////////////////////////////////////////////////////
 int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const uint8_t type, const uint8_t subtype, int swtype, int code,
 	int nr, const uint8_t signal, int nValue, const char  *sValue, const char * Name, const char * SignalName,
-	bool /*on_off*/, const uint8_t battery)
+	bool /*on_off*/, const uint8_t battery,int m_PlanID)
 {
 	char IDX[20];
 	char state[5] = "";
@@ -266,16 +268,30 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 
 	if (result.empty())
 	{
-		i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
+///GIZ		!!! Your solution NOT WORKING eg, not setting used=1 and is not sufficient We update devicestatus, and add RoomPlan for each controller
+//i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
+	m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name,     Used, SwitchType ) VALUES ('%d',      '%q',       '%d','%d',  '%d',   '%d',       '%d',           '%d',   '%q', '%q',     1, %d)",
+                                            m_HwdID,    IDX,        devl,type,subtype,  signal,     battery,      nValue, sValue,devname.c_str(), swtype);
 
-		//add Plan for each controllers
-		if (i > 0)
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",m_HwdID,                IDX,           devl );
+																		   
+//add Plan for each controllers
+	if (!result.empty())
 		{
+		i = atoi(result[0][0].c_str());
 			result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)", i);
 			if (result.empty())
 			{
-				m_sql.safe_query("INSERT INTO DeviceToPlansMap (DeviceRowID, DevSceneType, PlanID) VALUES ('%d', '%d', '%d')",
-					i, 0, PlanID);
+				//Why Can't we set PlanID Here - it was working on 2017 !!!!!!!!!!!!!!!!
+				result=m_sql.safe_query("INSERT INTO DeviceToPlansMap (DeviceRowID, DevSceneType, PlanID) VALUES ('%d', '%d', '%d')",
+					i, 0, m_PlanID);
+				/// We must set PlanID it via Update command
+				result = m_sql.safe_query("UPDATE DeviceToPlansMap SET PlanID='%d' WHERE (DeviceRowID==%d)", m_PlanID,i);
+				// For test
+				//result = m_sql.safe_query("SELECT PlanID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)", i);
+				//_log.Log(LOG_ERROR,"PlanID %d - %s\r\n", m_PlanID, result[0][0].c_str());
+
+				return		0;
 			}
 		}
 	}
@@ -287,10 +303,13 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 //Programs for controllers - add Option field (combobox) - upto 10
+//!!!!!!!!!!! Coded string for selector is not decoded on WWW display it was working on 2017
 void eHouseTCP::UpdatePGM(int /*adrh*/, int /*adrl*/, int /*devtype*/, const char *names, int idx)
 {
 	if (idx < 0) return;
-	std::string Names = ISO2UTF8(std::string(names));
+	std::string Names = ISO2UTF8
+	(std::string(names));
+	//_log.Log(LOG_ERROR, "PGM: %s", Names.c_str());
 	m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names.c_str(), false));
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -306,7 +325,7 @@ int eHouseTCP::UpdateSQLPlan(int /*devh*/, int /*devl*/, int /*devtype*/, const 
 	result = m_sql.safe_query("SELECT ID FROM Plans WHERE (Name=='%q') ", devname.c_str());
 
 
-	if (result.empty())
+if (result.empty())
 	{
 		m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')", devname.c_str());
 	}
@@ -380,43 +399,43 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_stoprequested(false),
 	m_pollInterval(pollInterval)
 {
-	eHouseUDPSocket = -1;			//UDP socket handler
-	UDP_PORT = 6789;			//Default UDP PORT
-	nr_of_ch = 0;
-	DEBUG_AURA = 0;				//Debug Aura
-	CHANGED_DEBUG = 0;
-	disablers485 = 0;
-	ProSize = 0;
-	StatusDebug = 0;			//Log status reception
-	IRPerform = 0;				//Perform InfraRed signals
-	ViaCM = 0;					//eHouse RS-485 via CommManager
-	memset(VendorCode, 0, sizeof(VendorCode));
-	eHStatusReceived = 0;		//eHouse1 status received flag
-	CloudStatusChanged = 0;							//data changed => must be updated
-	COMMANAGER_IP_HIGH = 0;		//initial addresses of different controller types
-	COMMANAGER_IP_LOW = 254;
-	INITIAL_ADDRESS_LAN = 200;
-	INITIAL_ADDRESS_WIFI = 100;
-	UDP_terminate_listener = 0; //terminate udp listener service
-	eHEStatusReceived = 0;      //Ethernet eHouse status received flag (count of status from reset this flag)
-	eHWiFiStatusReceived = 0;   //eHouse WiFi status received flag (count of status from reset this flag)
-	VccRef = 0;
-	AdcRefMax = 0;
-	CalcCalibration = 0;
-	DEBUG_TCPCLIENT = 0;
-	NoDetectTCPPack = 0;
-	StatusDebug = 0;
-	eHEnableAutoDiscovery = AutoDiscovery;
-	eHEnableAlarmInputs = EnableAlarms;
-	eHEnableProDiscovery = EnablePro;
-	eHOptA = opta;
-	eHOptB = optb;
+	m_eHouseUDPSocket = -1;			//UDP socket handler
+	m_UDP_PORT = 6789;			//Default UDP PORT
+	m_nr_of_ch = 0;
+	m_DEBUG_AURA = 0;				//Debug Aura
+	m_CHANGED_DEBUG = 0;
+	m_disablers485 = 0;
+	m_ProSize = 0;
+	m_StatusDebug = 0;			//Log status reception
+	m_IRPerform = 0;				//Perform InfraRed signals
+	m_ViaCM = 0;					//eHouse RS-485 via CommManager
+	memset(m_VendorCode, 0, sizeof(m_VendorCode));
+	m_eHStatusReceived = 0;		//eHouse1 status received flag
+	m_CloudStatusChanged = 0;							//data changed => must be updated
+	m_COMMANAGER_IP_HIGH = 0;		//initial addresses of different controller types
+	m_COMMANAGER_IP_LOW = 254;
+	m_INITIAL_ADDRESS_LAN = 200;
+	m_INITIAL_ADDRESS_WIFI = 100;
+	m_UDP_terminate_listener = 0; //terminate udp listener service
+	m_eHEStatusReceived = 0;      //Ethernet eHouse status received flag (count of status from reset this flag)
+	m_eHWiFiStatusReceived = 0;   //eHouse WiFi status received flag (count of status from reset this flag)
+	m_VccRef = 0;
+	m_AdcRefMax = 0;
+	m_CalcCalibration = 0;
+	m_DEBUG_TCPCLIENT = 0;
+	m_NoDetectTCPPack = 0;
+	m_StatusDebug = 0;
+	m_eHEnableAutoDiscovery = AutoDiscovery;
+	m_eHEnableAlarmInputs = EnableAlarms;
+	m_eHEnableProDiscovery = EnablePro;
+	m_eHOptA = opta;
+	m_eHOptB = optb;
 	EhouseInitTcpClient();					//init multithreaded event sender
 	if (IPPort > 0) {
-		EHOUSE_TCP_PORT = IPPort;
+		m_EHOUSE_TCP_PORT = IPPort;
 	}
-	ViaTCP = 0;
-	if ((eHOptA & OPTA_CLR_DB))
+	m_ViaTCP = 0;
+	if ((m_eHOptA & OPTA_CLR_DB))
 	{
 		//For Test of Auto Discovery Clean DeviceStatus & DeviceToPlansMap
 		//Clear altered database
@@ -426,42 +445,42 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		m_sql.safe_query("DELETE FROM \"DeviceStatus\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"Plans\" WHERE (ID>1)");
 	}
-	if (eHOptA & OPTA_FORCE_TCP)
+	if (m_eHOptA & OPTA_FORCE_TCP)
 	{
-		ViaTCP = 1;
+		m_ViaTCP = 1;
 	}
-	if (eHOptA & OPTA_DEBUG)
+	if (m_eHOptA & OPTA_DEBUG)
 	{
-		StatusDebug = 1;
-		DEBUG_AURA = 1;
-		CHANGED_DEBUG = 1;
-		DEBUG_TCPCLIENT = 1;
+		m_StatusDebug = 1;
+		m_DEBUG_AURA = 1;
+		m_CHANGED_DEBUG = 1;
+		m_DEBUG_TCPCLIENT = 1;
 	}
-	if (eHOptA & OPTA_DETECT_TCP_PACKETS)
+	if (m_eHOptA & OPTA_DETECT_TCP_PACKETS)
 	{
-		NoDetectTCPPack = -1;
+		m_NoDetectTCPPack = -1;
 	}
-	if (eHEnableAutoDiscovery)
+	if (m_eHEnableAutoDiscovery)
 	{
-		_log.Debug(DEBUG_HARDWARE, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Auto Discovery %d\r\n", m_eHEnableAutoDiscovery);
 	}
-	if (eHEnableAlarmInputs)
+	if (m_eHEnableAlarmInputs)
 	{
-		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable Alarm Inputs %d\r\n", m_eHEnableAlarmInputs);
 	}
-	if (eHEnableProDiscovery)
+	if (m_eHEnableProDiscovery)
 	{
-		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
+		_log.Debug(DEBUG_HARDWARE, "[eHouse] Enable PRO Discovery %d\r\n", m_eHEnableProDiscovery);
 	}
 
-	_log.Debug(DEBUG_HARDWARE, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
+	_log.Debug(DEBUG_HARDWARE, "[eHouse] Opts: %x,%x\r\n", m_eHOptA, m_eHOptB);
 	int len = userCode.length();
 	if (len > 6) len = 6;
-	userCode.copy(PassWord, len);
-	SrvAddrH = 0;
-	SrvAddrL = 200;
-	SrvAddrU = 192;
-	SrvAddrM = 168;
+	userCode.copy(m_PassWord, len);
+	m_SrvAddrH = 0;
+	m_SrvAddrL = 200;
+	m_SrvAddrU = 192;
+	m_SrvAddrM = 168;
 	InitStructs();
 	if (!CheckAddress())
 	{
@@ -469,28 +488,28 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	}
 
 	_log.Debug(DEBUG_HARDWARE, "eHouse UDP/TCP: Create instance");
-	EventsCountInQueue = 0;
+	m_EventsCountInQueue = 0;
 	m_HwdID = ID;
-	HwID = m_HwdID;
+	m_HwID = m_HwdID;
 	memset(m_newData, 0, sizeof(m_newData));
-	m_AddrL = SrvAddrL;
-	m_AddrH = SrvAddrH;
+	m_AddrL = m_SrvAddrL;
+	m_AddrH = m_SrvAddrH;
 	int i;
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 	{
-		EvQ[i] = (struct EventQueueT *) malloc(sizeof(struct EventQueueT));
+		m_EvQ[i] = (struct EventQueueT *) malloc(sizeof(struct EventQueueT));
 
-		if (EvQ[i] == NULL)
+		if (m_EvQ[i] == NULL)
 		{
 			LOG(LOG_ERROR, "Can't Alloc Events Queue Memory");
 			return;
 		}
-		memset(EvQ[i], 0, sizeof(struct EventQueueT));
+		memset(m_EvQ[i], 0, sizeof(struct EventQueueT));
 	}
 
 	eHPROaloc(0, m_AddrH, m_AddrL);
 	unsigned char ev[10] = "";
-	if ((SrvAddrU == 192) && (SrvAddrM == 168))	//local network LAN IP 192.168.x.y
+	if ((m_SrvAddrU == 192) && (m_SrvAddrM == 168))	//local network LAN IP 192.168.x.y
 	{
 		ev[0] = m_AddrH;
 		ev[1] = m_AddrL;
@@ -503,8 +522,8 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	ev[2] = 254;
 	ev[3] = 0x33;
 	int nr = -1;
-	if (eHEnableAutoDiscovery) nr = AddToLocalEvent(ev, 0);  //Init UDP broadcast of Device Names for auto Discovery
-	if (nr >= 0) EvQ[nr]->LocalEventsTimeOuts = 200u;
+	if (m_eHEnableAutoDiscovery) nr = AddToLocalEvent(ev, 0);  //Init UDP broadcast of Device Names for auto Discovery
+	if (nr >= 0) m_EvQ[nr]->LocalEventsTimeOuts = 200u;
 	m_alarmLast = false;
 }
 //////////////////////////////////////////////////////////////////////
@@ -530,8 +549,10 @@ bool eHouseTCP::StartHardware()
 
 #endif
 	m_thread = std::make_shared<std::thread>(&eHouseTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "eHouseTCP");
 	m_bIsStarted = true;
 	sOnConnected(this);
+	StartHeartbeatThread();
 	return (m_thread != nullptr);
 }
 ////////////////////////////////////////////////////////////////////////////////////
@@ -557,6 +578,7 @@ bool eHouseTCP::StopHardware()
 
 	//        DestroySocket();
 	m_bIsStarted = false;
+	StopHeartbeatThread();
 	return true;
 }
 ///////////////////////////////////////////////////////////////////////////////////
@@ -567,12 +589,12 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 200000;	//100ms for delay
-	if (eHEnableProDiscovery) timeout.tv_sec = 10;
-	if (eHEnableAutoDiscovery) timeout.tv_sec = 30;
+	if (m_eHEnableProDiscovery) timeout.tv_sec = 10;
+	if (m_eHEnableAutoDiscovery) timeout.tv_sec = 30;
 #else
 	unsigned int	timeout = 200;	//ms for TCPIP
-	if (eHEnableProDiscovery)	timeout = 10000;
-	if (eHEnableAutoDiscovery)	timeout = 20000;
+	if (m_eHEnableProDiscovery)	timeout = 10000;
+	if (m_eHEnableAutoDiscovery)	timeout = 20000;
 #endif
 
 	struct sockaddr_in server;
@@ -583,7 +605,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		saddr.sin_addr.s_addr = IP;
 	else
 		saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
-	saddr.sin_port = htons((u_short)EHOUSE_TCP_PORT);
+	saddr.sin_port = htons((u_short)m_EHOUSE_TCP_PORT);
 	memset(&server, 0, sizeof(server));               //clear server structure
 	memset(&challange, 0, sizeof(challange));         //clear buffer
 	char line[20];
@@ -598,7 +620,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	server.sin_addr.s_addr = m_addr.sin_addr.s_addr;
 	server.sin_family = AF_INET;                    //tcp v4
-	server.sin_port = htons((u_short)EHOUSE_TCP_PORT);       //assign eHouse Port
+	server.sin_port = htons((u_short)m_EHOUSE_TCP_PORT);       //assign eHouse Port
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
 	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{
@@ -619,12 +641,12 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	if (status == 6)	//challenge received from Ethernet eHouse controllers
 	{				// only Hashed password with VendorCode available for OpenSource
-		challange[6] = (challange[0] ^ PassWord[0] ^ VendorCode[0]);
-		challange[7] = (challange[1] ^ PassWord[1] ^ VendorCode[1]);
-		challange[8] = (challange[2] ^ PassWord[2] ^ VendorCode[2]);
-		challange[9] = (challange[3] ^ PassWord[3] ^ VendorCode[3]);
-		challange[10] = (challange[4] ^ PassWord[4] ^ VendorCode[4]);
-		challange[11] = (challange[5] ^ PassWord[5] ^ VendorCode[5]);
+		challange[6] = (challange[0] ^ m_PassWord[0] ^ m_VendorCode[0]);
+		challange[7] = (challange[1] ^ m_PassWord[1] ^ m_VendorCode[1]);
+		challange[8] = (challange[2] ^ m_PassWord[2] ^ m_VendorCode[2]);
+		challange[9] = (challange[3] ^ m_PassWord[3] ^ m_VendorCode[3]);
+		challange[10] = (challange[4] ^ m_PassWord[4] ^ m_VendorCode[4]);
+		challange[11] = (challange[5] ^ m_PassWord[5] ^ m_VendorCode[5]);
 		challange[12] = 13;
 		challange[13] = 0;
 	}
@@ -728,13 +750,13 @@ bool eHouseTCP::CheckAddress()
 	if (ip != INADDR_NONE)
 	{
 		m_addr.sin_addr.s_addr = ip;
-		SrvAddrU = ip & 0xff;
-		SrvAddrM = (ip >> 8) & 0xff;
-		SrvAddrL = ip >> 24;
-		SrvAddrH = (ip >> 16) & 0xff;
-		LOG(LOG_STATUS, "[eHouse PRO] IP Address: %d.%d.%d.%d\r\n", SrvAddrU, SrvAddrM, SrvAddrH, SrvAddrL);
-		if ((SrvAddrU != 192) || (SrvAddrM != 168))
-			ViaTCP = 1;
+		m_SrvAddrU = ip & 0xff;
+		m_SrvAddrM = (ip >> 8) & 0xff;
+		m_SrvAddrL = ip >> 24;
+		m_SrvAddrH = (ip >> 16) & 0xff;
+		LOG(LOG_STATUS, "[eHouse PRO] IP Address: %d.%d.%d.%d\r\n", m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
+		if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
+			m_ViaTCP = 1;
 	}
 	else
 	{
@@ -747,16 +769,16 @@ bool eHouseTCP::CheckAddress()
 		else
 		{
 			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-			SrvAddrU = ip & 0xff;
-			SrvAddrM = (ip >> 8) & 0xff;
-			SrvAddrL = ip >> 24;
-			SrvAddrH = (ip >> 16) & 0xff;
-			LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), SrvAddrU, SrvAddrM, SrvAddrH, SrvAddrL);
-			if ((SrvAddrU != 192) || (SrvAddrM != 168))
-				ViaTCP = 1;
+			m_SrvAddrU = ip & 0xff;
+			m_SrvAddrM = (ip >> 8) & 0xff;
+			m_SrvAddrL = ip >> 24;
+			m_SrvAddrH = (ip >> 16) & 0xff;
+			LOG(LOG_STATUS, "[eHouse PRO] %s =>IP Address: %d.%d.%d.%d\r\n", m_IPAddress.c_str(), m_SrvAddrU, m_SrvAddrM, m_SrvAddrH, m_SrvAddrL);
+			if ((m_SrvAddrU != 192) || (m_SrvAddrM != 168))
+				m_ViaTCP = 1;
 		}
 	}
-	if (ViaTCP)
+	if (m_ViaTCP)
 		m_TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);
 	return true;
 }
@@ -795,17 +817,17 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 	ev[0] = devh;
 	ev[1] = devl;
 	gettype(devh, devl);
-	if (Dtype != EH_LAN) return -1;
+	if (m_Dtype != EH_LAN) return -1;
 	LOG(LOG_STATUS, "LAN PGM");
-	int index = devl - INITIAL_ADDRESS_LAN;
-	if ((Dsubtype < 249))  //ERMs Only =>No PoolManager/CommManager/LevelManager
+	int index = devl - m_INITIAL_ADDRESS_LAN;
+	if ((m_Dsubtype < 249))  //ERMs Only =>No PoolManager/CommManager/LevelManager
 	{
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(eHEn[index]->Programs) / sizeof(eHEn[index]->Programs[0])); i++)
+			for (i = 0; i < (sizeof(m_eHEn[index]->Programs) / sizeof(m_eHEn[index]->Programs[0])); i++)
 			{
-				if ((strlen(eHEn[index]->Programs[i]) > 0) && (strstr(eHEn[index]->Programs[i], "@") == NULL))
+				if ((strlen(m_eHEn[index]->Programs[i]) > 0) && (strstr(m_eHEn[index]->Programs[i], "@") == NULL))
 				{
 					Lev++;
 				}
@@ -820,9 +842,9 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 			}
 			break;
 		case VISUAL_APGM:
-			for (i = 0; i < (sizeof(eHEn[index]->ADCPrograms) / sizeof(eHEn[index]->ADCPrograms[0])); i++)
+			for (i = 0; i < (sizeof(m_eHEn[index]->ADCPrograms) / sizeof(m_eHEn[index]->ADCPrograms[0])); i++)
 			{
-				if ((strlen(eHEn[index]->ADCPrograms[i]) > 0) && (strstr(eHEn[index]->ADCPrograms[i], "@") == NULL))
+				if ((strlen(m_eHEn[index]->ADCPrograms[i]) > 0) && (strstr(m_eHEn[index]->ADCPrograms[i], "@") == NULL))
 				{
 					Lev++;
 				}
@@ -858,7 +880,7 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 	ev[0] = devh;
 	ev[1] = devl;
 	gettype(devh, devl);
-	if (Dtype != EH_RS485) return -1;
+	if (m_Dtype != EH_RS485) return -1;
 	int index = devl;
 	if (devh == 1) index = 0;
 	if (devh == 2) index = STATUS_ARRAYS_SIZE;
@@ -866,9 +888,9 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 		switch (code)
 		{
 		case VISUAL_PGM:
-			for (i = 0; i < (sizeof(eHn[index]->Programs) / sizeof(eHn[index]->Programs[0])); i++)
+			for (i = 0; i < (sizeof(m_eHn[index]->Programs) / sizeof(m_eHn[index]->Programs[0])); i++)
 			{
-				if ((strlen(eHn[index]->Programs[i]) > 0) && (strstr(eHn[index]->Programs[i], "@") == NULL))
+				if ((strlen(m_eHn[index]->Programs[i]) > 0) && (strstr(m_eHn[index]->Programs[i], "@") == NULL))
 				{
 					Lev++;
 				}
@@ -932,7 +954,8 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
 		int32_t ID = xcmd->id;
 		int level = xcmd->level;
-		//int id = getrealERMpgm(ID, level); //Giz: id was already declared removed this call
+		// For both controller types ERM, RM
+		id = getrealERMpgm(ID, level);
 		id = getrealRMpgm(ID, level);
 	}
 
@@ -956,7 +979,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 
 		gettype(AddrH, AddrL);
 		sprintf(IDX, "%02X%02X%02X%02X", therm->id1, therm->id2, therm->id3, therm->id4);
-		if ((Dtype == EH_LAN) || (Dtype == EH_WIFI))
+		if ((m_Dtype == EH_LAN) || (m_Dtype == EH_WIFI))
 		{
 			unsigned int adcvalue = (int)(1023.0 * ((temp + 50.0) / 330.0));  //mcp9700 10mv/c offset -50
 			adcvalue -= 2;
@@ -967,10 +990,10 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 			ev[8] = adcvalue & 0xff;    //arg6
 			AddToLocalEvent(ev, 0);
 			sprintf(tmp, "%.1f", temp);
-			UpdateSQLStatus(AddrH, AddrL, Dtype, VISUAL_MCP9700_PRESET, nr, 100, ttemp, tmp, 100);
+			UpdateSQLStatus(AddrH, AddrL, m_Dtype, VISUAL_MCP9700_PRESET, nr, 100, ttemp, tmp, 100);
 		}
 
-		if ((Dtype == EH_AURA))
+		if ((m_Dtype == EH_AURA))
 		{
 			unsigned int adcvalue = (int)round(temp);
 			ev[3] = 0;	//nr ==0
@@ -980,7 +1003,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 			adcvalue += 5;
 			ev[7] = (uint8_t)(adcvalue / 10);
 			ev[8] = adcvalue % 10;
-			AuraDev[AddrL - 1]->ServerTempSet = temp;
+			m_AuraDev[AddrL - 1]->ServerTempSet = temp;
 			AddToLocalEvent(ev, 0);
 			sprintf(tmp, "%.1f", temp);
 			UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_PRESET, 1, 100, ttemp, tmp, 100);
@@ -1008,9 +1031,12 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 				ev[1] = AddrL;
 				ev[2] = 4;					//SET DIMMER
 				ev[3] = nr;					//starting channel
-				ev[4] = (uint8_t)(pLed->color.r * pLed->value / 100);
-				ev[5] = (uint8_t)(pLed->color.g * pLed->value / 100);
-				ev[6] = (uint8_t)(pLed->color.b * pLed->value / 100);
+
+/////////////!!!!!!! check 255
+//Scale domoticz 0..100 scale for eHouse 0-255
+				ev[4] = (uint8_t)(pLed->color.r * pLed->value * 255 / 100);
+				ev[5] = (uint8_t)(pLed->color.g * pLed->value * 255 / 100);
+				ev[6] = (uint8_t)(pLed->color.b * pLed->value * 255 / 100);
 				AddToLocalEvent(ev, 0);
 			}
 			else
@@ -1096,7 +1122,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 				}
 			//                  if (ev[4]==1) printf("\r\nopening %d\r\n",ev[5]);
 			//                  if (ev[4]==2) printf("\r\nclosing %d\r\n",ev[5]);
-			if (Dtype != EH_PRO)
+			if (m_Dtype != EH_PRO)
 			{
 				//deb((char *)&"EV: ",ev,sizeof(ev));
 				AddToLocalEvent(ev, 0);
@@ -1155,7 +1181,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 			proev[3] = ev[3] = nr + 1;
 			proev[4] = ev[4] = output->BLINDS1.unitcode;
 			//printf("ROL: %d, %d\r\n",output->LIGHTING2.level,cmd);
-			if (Dtype != EH_PRO)
+			if (m_Dtype != EH_PRO)
 			{
 				AddToLocalEvent(ev, 0);
 				//deb((char *)&"EV: ",ev,sizeof(ev));
@@ -1188,7 +1214,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 		{
 		case 0x21:
 			ev[2] = 0x21;
-			if (Dtype == EH_RS485) ev[2] = 0x01;
+			if (m_Dtype == EH_RS485) ev[2] = 0x01;
 			ev[3] = nr;
 			if (cmd == gswitch_sOn)
 			{

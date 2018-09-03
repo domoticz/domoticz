@@ -13,7 +13,6 @@ RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned 
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_bReceiverStarted = false;
 }
@@ -24,37 +23,26 @@ RFXComTCP::~RFXComTCP(void)
 
 bool RFXComTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
 	m_bIsStarted=true;
 	m_rxbufferpos=0;
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&RFXComTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "RFXComTCP");
 	return (m_thread != nullptr);
 }
 
 bool RFXComTCP::StopHardware()
 {
-	m_stoprequested = true;
-	if (isConnected())
+	if (m_thread)
 	{
-		try {
-			disconnect();
-			close();
-			if (m_thread)
-			{
-				m_thread->join();
-				m_thread.reset();
-			}
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -75,13 +63,13 @@ void RFXComTCP::OnDisconnect()
 void RFXComTCP::Do_Work()
 {
 	bool bFirstTime = true;
-	while (!m_stoprequested)
+	while (!IsStopRequested(40))
 	{
 		m_LastHeartbeat = mytime(NULL);
 		if (bFirstTime)
 		{
 			bFirstTime = false;
-			if (!mIsConnected)
+			if (!isConnected())
 			{
 				m_rxbufferpos = 0;
 				connect(m_szIPAddress, m_usIPPort);
@@ -89,10 +77,11 @@ void RFXComTCP::Do_Work()
 		}
 		else
 		{
-			sleep_milliseconds(40);
 			update();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"RFXCOM: TCP/IP Worker stopped...");
 }
 
@@ -132,7 +121,7 @@ void RFXComTCP::OnError(const boost::system::error_code& error)
 
 bool RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 	write((const unsigned char*)pdata, length);
 	return true;

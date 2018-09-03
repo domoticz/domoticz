@@ -4,6 +4,7 @@
 #include "TCPClient.h"
 #include "../main/RFXNames.h"
 #include "../main/RFXtrx.h"
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../hardware/DomoticzTCP.h"
 #include "../main/mainworker.h"
@@ -405,6 +406,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 	_log.Log(LOG_NORM, "Starting shared server on: %s:%s", listen_address.c_str(), port.c_str());
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTCPServer::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "TCPServer");
 	return (m_thread != nullptr);
 }
 

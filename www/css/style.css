@@ -1921,3 +1921,7 @@ tspan {
 	height: 300px;
 	margin-bottom: 24px;
 }
+
+#container-speed > .highcharts-container {
+    overflow: visible !important;
+}

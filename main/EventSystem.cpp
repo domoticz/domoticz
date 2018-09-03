@@ -153,7 +153,9 @@ void CEventSystem::StartEventSystem()
 
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CEventSystem::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "EventSystem");
 	m_eventqueuethread = std::make_shared<std::thread>(&CEventSystem::EventQueueThread, this);
+	SetThreadName(m_eventqueuethread->native_handle(), "EventSystemQueue");
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
@@ -1252,11 +1254,12 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	if (m_eventtrigger.size() > 0)
 	{
 		time_t atime = mytime(NULL) + static_cast<int>(fDelayTime);
-		std::vector<_tEventTrigger>::iterator itt;
-		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
+		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
-			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later queued items
-				itt = m_eventtrigger.erase(itt) - 1;
+			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later or equal queued items
+			{
+				m_eventtrigger.erase(itt--);
+			}
 		}
 	}
 	_tEventTrigger item;
@@ -3188,7 +3191,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		else
 			dayTimeBool = true; // Sun above horizon in the space of 24 hours
 	}
-	else if ((minutesSinceMidnight > sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
+	else if ((minutesSinceMidnight >= sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
 		dayTimeBool = true;
 	}
 	else {
@@ -3197,7 +3200,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 	bool civilDaytTime = false;
 	bool civilNightTime = false;
-    if ((minutesSinceMidnight > sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
+    if ((minutesSinceMidnight >= sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
         civilDaytTime = true;
     }
     else {
@@ -3268,6 +3271,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
 		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
+		SetThreadName(luaThread.native_handle(), "luaThread");
 
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
 		{

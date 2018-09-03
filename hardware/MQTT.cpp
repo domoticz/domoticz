@@ -54,6 +54,7 @@ bool MQTT::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MQTT");
 	return (m_thread != nullptr);
 }
 
@@ -154,7 +155,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
-				_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
 		}
@@ -164,7 +165,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			result = m_sql.safe_query("SELECT Name FROM Scenes WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
-				_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
 		}
@@ -174,7 +175,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			result = m_sql.safe_query("SELECT Name FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
-				_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
 		}

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+      HomeSeer HS-LS100+ Leak Sensor
+      https://products.z-wavealliance.org/products/2735
+      Manual: https://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/2735/User%20Manual%20revised%201211.pdf
+      Config capabilities: https://products.z-wavealliance.org/products/2735/configs
+    -->
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="14" genre="config" label="Basic set command" min="0" max="1" size="1" value="0">
+            <Help>Enable / disable the basic set command send to group 2</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" index="15" genre="config" label="Value for basic set command" min="0" max="1" size="1" value="0">
+            <Help>
+                Define BASIC SET VALUE to nodes associated with group 2 when flooding alarm is triggered and is canceled.
+            </Help>
+            <Item label="255 alarm is triggered, 0 alarm is canceled" value="0"/>
+            <Item label="0 alarm is triggered, 255 alarm is canceled" value="1"/>
+        </Value>
+        <Value type="byte" index="17" genre="config" label="Leak report interval" units="minutes" min="0" max="255" size="1" value="5">
+            <Help>Leak report interval, minutes. O to disable.</Help>
+        </Value>
+        <Value type="list" index="18" genre="config" label="Shock sensor" min="0" max="1" size="1" value="0">
+            <Help>
+                When the value is Disable, the product will not sends a vibration alarm after moving or shaking.
+                When the value is Enable, the product will sends a vibration alarm after moving or shaking.
+            </Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="byte" index="19" genre="config" label="Temperature report interval" units="minutes" min="0" max="255" size="1" value="0">
+            <Help>Temperature report interval, minutes. O to disable.</Help>
+        </Value>
+        <Value type="short" index="20" genre="config" label="High temperature trigger value" units="" min="-670" max="2570" size="2" value="1040">
+            <Help>
+                Set the high temperature alarm trigger value.
+                Available: -670 to 2570 (-67.0 to 257.0 F)
+                Default: 1040 (104.0 F)
+            </Help>
+        </Value>
+        <Value type="short" index="22" genre="config" label="Low temperature trigger value" units="" min="-670" max="2570" size="2" value="320">
+            <Help>
+                Set the low temperature alarm trigger value.
+                Available: -670 to 2570 (-67.0 to 257.0 F)
+                Default: 320 (32.0 F)
+            </Help>
+        </Value>
+        <Value type="list" index="24" genre="config" label="Blinking LED when alarm triggers" min="0" max="1" size="1" value="1">
+            <Help>
+                When the value is Disable, the product will not alarm when being triggered.
+                When the value is Enable, the product will alarm when being triggered.
+            </Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" index="32" genre="config" label="Low battery threshold" units="%" min="10" max="50" size="1" value="20">
+            <Help>Low battery reporting threshold, %.</Help>
+            <Item label="10" value="10"/>
+            <Item label="20" value="20"/>
+            <Item label="30" value="30"/>
+            <Item label="40" value="40"/>
+            <Item label="50" value="50"/>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Basic Set"/>
+        </Associations>
+    </CommandClass>
+</Product>

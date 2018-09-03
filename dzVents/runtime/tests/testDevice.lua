@@ -1004,8 +1004,8 @@ describe('device', function()
 			}, commandArray)
 		end)
 
-		it('should detect a onky device', function()
-			local commandArray = {}
+		it('hould detect a onky device', function()
+			commandArray = {}
 
 			domoticz.openURL = function(url)
 				return table.insert(commandArray, url)
@@ -1015,9 +1015,8 @@ describe('device', function()
 				['name'] = 'myDevice',
 				['hardwareType'] = 'Onkyo AV Receiver (LAN)',
 			})
-
 			device.onkyoEISCPCommand('mycommand')
-			assert.is_same({'http://127.0.0.1:8080/json.htm?param=onkyoeiscpcommand&type=command&idx=1&action=mycommand'}, commandArray)
+			assert.is_same({{['CustomCommand:1'] = 'mycommand'}}, commandArray)
 		end)
 
 		describe('Switch', function()

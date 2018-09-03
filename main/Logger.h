@@ -4,7 +4,6 @@
 #include <list>
 #include <string>
 #include <fstream>
-#include <map>
 
 enum _eLogLevel : uint32_t
 {
@@ -62,10 +61,17 @@ public:
 	void SetOutputFile(const char *OutputFile);
 
 	void Log(const _eLogLevel level, const std::string& sLogline);
-	void Log(const _eLogLevel level, const char* logline, ...);
+	void Log(const _eLogLevel level, const char* logline, ...)
+#ifdef __GNUC__
+		__attribute__ ((format (printf, 3, 4)))
+#endif
+	;
 	void Debug(const _eDebugLevel level, const std::string& sLogline);
-	void Debug(const _eDebugLevel level, const char* logline, ...);
-
+	void Debug(const _eDebugLevel level, const char* logline, ...)
+#ifdef __GNUC__
+		__attribute__ ((format (printf, 3, 4)))
+#endif
+	;
 	void LogSequenceStart();
 	void LogSequenceAdd(const char* logline);
 	void LogSequenceAddNoLF(const char* logline);

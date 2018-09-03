@@ -12,6 +12,7 @@
 #include "../webserver/Base64.h"
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
+#include "../json/json.h"
 
 namespace Plugins {
 
@@ -107,6 +108,115 @@ namespace Plugins {
 		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
+	static void AddBytesToDict(PyObject* pDict, const char* key, const std::string &value)
+	{
+		PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());
+		if (PyDict_SetItemString(pDict, key, pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
+		Py_DECREF(pObj);
+	}
+
+	static void AddStringToDict(PyObject* pDict, const char* key, const std::string &value)
+	{
+		PyObject*	pObj = Py_BuildValue("s#", value.c_str(), value.length());
+		if (PyDict_SetItemString(pDict, key, pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
+		Py_DECREF(pObj);
+	}
+
+	static void AddIntToDict(PyObject* pDict, const char* key, const int value)
+	{
+		PyObject*	pObj = Py_BuildValue("i", value);
+		if (PyDict_SetItemString(pDict, key, pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
+		Py_DECREF(pObj);
+	}
+
+	static void AddUIntToDict(PyObject* pDict, const char* key, const unsigned int value)
+	{
+		PyObject*	pObj = Py_BuildValue("I", value);
+		if (PyDict_SetItemString(pDict, key, pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
+		Py_DECREF(pObj);
+	}
+
+	static void AddDoubleToDict(PyObject* pDict, const char* key, const double value)
+	{
+		PyObject*	pObj = Py_BuildValue("d", value);
+		if (PyDict_SetItemString(pDict, key, pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%f' to dictionary.", __func__, key, value);
+		Py_DECREF(pObj);
+	}
+
+	PyObject*	CPluginProtocolJSON::JSONtoPython(Json::Value*	pJSON)
+	{
+		PyObject*	pRetVal = NULL;
+
+		if (pJSON->isArray())
+		{
+			pRetVal = PyList_New(pJSON->size());
+			Py_ssize_t	Index = 0;
+			for (Json::ValueIterator it = pJSON->begin(); it != pJSON->end(); ++it)
+			{
+				Json::ValueIterator::reference	pRef = *it;
+				if (it->isArray() || it->isObject())
+				{
+					PyObject*	pObj = JSONtoPython(&pRef);
+					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for object.", __func__, Index - 1);
+				}
+				else if (it->isUInt())
+				{
+					PyObject*	pObj = Py_BuildValue("I", it->asUInt());
+					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for unsigned integer.", __func__, Index - 1);
+				}
+				else if (it->isInt())
+				{
+					PyObject*	pObj = Py_BuildValue("i", it->asInt());
+					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for integer.", __func__, Index - 1);
+				}
+				else if (it->isDouble())
+				{
+					PyObject*	pObj = Py_BuildValue("d", it->asDouble());
+					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for double.", __func__, Index - 1);
+				}
+				else if (it->isConvertibleTo(Json::stringValue))
+				{
+					std::string	sString = it->asString();
+					PyObject*	pObj = Py_BuildValue("s#", sString.c_str(), sString.length());
+					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
+						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for string.", __func__, Index - 1);
+				}
+				else
+					_log.Log(LOG_ERROR, "(%s) failed to process entry.", __func__);
+			}
+		}
+		else if (pJSON->isObject())
+		{
+			pRetVal = PyDict_New();
+			for (Json::ValueIterator it = pJSON->begin(); it != pJSON->end(); ++it)
+			{
+				std::string						KeyName = it.name();
+				Json::ValueIterator::reference	pRef = *it;
+				if (it->isArray() || it->isObject())
+				{
+					PyObject*	pObj = JSONtoPython(&pRef);
+					if (!pObj || (PyDict_SetItemString(pRetVal, KeyName.c_str(), pObj) == -1))
+						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', to dictionary for object.", __func__, KeyName.c_str());
+				}
+				else if (it->isUInt()) AddUIntToDict(pRetVal, KeyName.c_str(), it->asUInt());
+				else if (it->isInt()) AddIntToDict(pRetVal, KeyName.c_str(), it->asInt());
+				else if (it->isDouble()) AddDoubleToDict(pRetVal, KeyName.c_str(), it->asDouble());
+				else if (it->isConvertibleTo(Json::stringValue)) AddStringToDict(pRetVal, KeyName.c_str(), it->asString());
+				else _log.Log(LOG_ERROR, "(%s) failed to process entry for '%s'.", __func__, KeyName.c_str());
+			}
+		}
+		return pRetVal;
+	}
+
 	void CPluginProtocolJSON::ProcessInbound(const ReadEvent* Message)
 	{
 		//
@@ -118,13 +228,25 @@ namespace Plugins {
 		std::string		sData(vData.begin(), vData.end());
 		int iPos = 1;
 		while (iPos) {
+			Json::Reader	jReader;
+			Json::Value		root;
 			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
 			if (!iPos) // no, just one or part of one
 			{
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData));
+					bool bRet = jReader.parse(sData, root);
+					if ((!bRet) || (!root.isObject()))
+					{
+						_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
+						Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData));
+					}
+					else
+					{
+						PyObject*	pMessage = JSONtoPython(&root);
+						Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMessage));
+					}
 					sData.clear();
 				}
 			}
@@ -132,7 +254,17 @@ namespace Plugins {
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sMessage));
+				bool bRet = jReader.parse(sMessage, root);
+				if ((!bRet) || (!root.isObject()))
+				{
+					_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
+					Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sMessage));
+				}
+				else
+				{
+					PyObject*	pMessage = JSONtoPython(&root);
+					Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMessage));
+				}
 			}
 		}
 
@@ -254,30 +386,6 @@ namespace Plugins {
 			*pData = pData->substr(pData->find_first_of('\n') + 1);
 		}
 	}
-
-static void AddBytesToDict(PyObject* pDict, const char* key, const std::string &value)
-{
-	PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());
-	if (PyDict_SetItemString(pDict, key, pObj) == -1)
-		_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
-	Py_DECREF(pObj);
-}
-
-static void AddStringToDict(PyObject* pDict, const char* key, const std::string &value)
-{
-	PyObject*	pObj = Py_BuildValue("s#", value.c_str(), value.length());
-	if (PyDict_SetItemString(pDict, key, pObj) == -1)
-		_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
-	Py_DECREF(pObj);
-}
-
-static void AddIntToDict(PyObject* pDict, const char* key, const int value)
-{
-	PyObject*	pObj = Py_BuildValue("i", value);
-	if (PyDict_SetItemString(pDict, key, pObj) == -1)
-		_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
-	Py_DECREF(pObj);
-}
 
 	void CPluginProtocolHTTP::ProcessInbound(const ReadEvent* Message)
 	{
@@ -852,6 +960,12 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 
 	void CPluginProtocolMQTT::ProcessInbound(const ReadEvent * Message)
 	{
+		if (m_bErrored)
+		{
+			_log.Log(LOG_ERROR, "(%s) MQTT protocol errored, discarding additional data.", __func__);
+			return;
+		}
+
 		byte loop = 0;
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
@@ -860,6 +974,7 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 
 			byte		header = *it++;
 			byte		bResponseType = header & 0xF0;
+			byte		flags = header & 0x0F;
 			PyObject*	pMqttDict = PyDict_New();
 			PyObject*	pObj = NULL;
 			uint16_t	iPacketIdentifier = 0;
@@ -893,6 +1008,12 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 			case MQTT_CONNACK:
 			{
 				AddStringToDict(pMqttDict, "Verb", std::string("CONNACK"));
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
 				if (iRemainingLength == 2) // check length is correct
 				{
 					switch (*it++)
@@ -923,8 +1044,8 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 				}
 				else
 				{
-					AddIntToDict(pMqttDict, "Status", -1);
-					AddStringToDict(pMqttDict, "Description", std::string("Invalid message length"));
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			}
@@ -934,6 +1055,12 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 				iPacketIdentifier = (*it++ << 8) + *it++;
 				AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
 				if (iRemainingLength >= 3) // check length is acceptable
 				{
 					PyObject* pResponsesList = PyList_New(0);
@@ -973,45 +1100,84 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 				}
 				else
 				{
-					AddIntToDict(pMqttDict, "Status", -1);
-					AddStringToDict(pMqttDict, "Description", std::string("Invalid message length"));
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			}
 			case MQTT_PUBACK:
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBACK"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			case MQTT_PUBREC:
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBREC"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
+				}
 				break;
 			case MQTT_PUBCOMP:
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBCOMP"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
 				}
 				break;
 			case MQTT_PUBLISH:
 			{
 				// Fixed Header
 				AddStringToDict(pMqttDict, "Verb", std::string("PUBLISH"));
-				AddIntToDict(pMqttDict, "DUP", ((header & 0x08) >> 3));
-				long	iQoS = (header & 0x06) >> 1;
+				AddIntToDict(pMqttDict, "DUP", ((flags & 0x08) >> 3));
+				long	iQoS = (flags & 0x06) >> 1;
 				AddIntToDict(pMqttDict, "QoS", (int) iQoS);
-				PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(header & 0x01));
+				PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(flags & 0x01));
 				// Variable Header
 				int		topicLen = (*it++ << 8) + *it++;
+				if (topicLen+2+(iQoS?2:0) > iRemainingLength)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u' (iQoS:%ld, topicLen:%d)", __func__, iRemainingLength, bResponseType>>4, iQoS, topicLen);
+					m_bErrored = true;
+					break;
+				}
 				std::string	sTopic((char const*)&*it, topicLen);
 				AddStringToDict(pMqttDict, "Topic", sTopic);
 				it += topicLen;
@@ -1028,25 +1194,52 @@ static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 			}
 			case MQTT_UNSUBACK:
 				AddStringToDict(pMqttDict, "Verb", std::string("UNSUBACK"));
-				if (iRemainingLength == 2)
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength == 2) // check length is correct
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
 					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
+				}
 				break;
 			case MQTT_PINGRESP:
 				AddStringToDict(pMqttDict, "Verb", std::string("PINGRESP"));
+				if (flags != 0)
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message flags %u for packet type '%u'", __func__, flags, bResponseType>>4);
+					m_bErrored = true;
+					break;
+				}
+				if (iRemainingLength != 0) // check length is correct
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT protocol violation: Invalid message length %ld for packet type '%u'", __func__, iRemainingLength, bResponseType>>4);
+					m_bErrored = true;
+				}
 				break;
 			default:
-				_log.Log(LOG_ERROR, "(%s) MQTT response invalid '%d' is unknown.", __func__, bResponseType);
-				m_sRetainedData.erase(m_sRetainedData.begin(),pktend);
-				continue;
+				_log.Log(LOG_ERROR, "(%s) MQTT data invalid: packet type '%d' is unknown.", __func__, bResponseType);
+				m_bErrored = true;
 			}
 
-			Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict));
+			if (!m_bErrored) Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict));
 
 			m_sRetainedData.erase(m_sRetainedData.begin(),pktend);
-		} while (m_sRetainedData.size() > 0);
+		} while (!m_bErrored && m_sRetainedData.size() > 0);
+
+		if (m_bErrored)
+		{
+			_log.Log(LOG_ERROR, "(%s) MQTT protocol violation, sending DisconnectedEvent to Connection.", __func__);
+			Message->m_pPlugin->MessagePlugin(new DisconnectedEvent(Message->m_pPlugin, Message->m_pConnection));
+		}
 	}
 
 	std::vector<byte> CPluginProtocolMQTT::ProcessOutbound(const WriteDirective * WriteMessage)

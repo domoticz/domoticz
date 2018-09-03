@@ -117,6 +117,7 @@ bool CLogitechMediaServer::StartHardware()
 	//Start worker thread
 	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Logitech");
 
 	return (m_thread != nullptr);
 }
@@ -133,11 +134,9 @@ bool CLogitechMediaServer::StopHardware()
 			m_thread.reset();
 
 			//Make sure all our background workers are stopped
-			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter < 15))
+			while (m_iThreadsRunning > 0)
 			{
-				sleep_milliseconds(500);
-				iRetryCounter++;
+				sleep_milliseconds(150);
 			}
 		}
 	}
@@ -350,6 +349,7 @@ void CLogitechMediaServer::Do_Work()
 					{
 						m_iThreadsRunning++;
 						boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, *itt));
+						SetThreadName(t.native_handle(), "LogitechNode");
 						t.join();
 					}
 				}

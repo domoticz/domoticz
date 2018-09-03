@@ -2,11 +2,10 @@
 
 #include <boost/signals2.hpp>
 #include "../main/RFXNames.h"
+#include "../main/StoppableTask.h"
 
 //Base class with functions all notification systems should have
-#define RX_BUFFER_SIZE 100
-
-class CDomoticzHardwareBase
+class CDomoticzHardwareBase : public StoppableTask
 {
 	friend class MainWorker;
 public:
@@ -33,7 +32,6 @@ public:
 	std::string m_Name;
 	_eHardwareTypes HwdType;
 	unsigned char m_SeqNr = { 0 };
-	unsigned char m_rxbufferpos = { 0 };
 	bool m_bEnableReceive = { false };
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
@@ -42,7 +40,6 @@ public:
 protected:
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
-	bool onRFXMessage(const unsigned char *pBuffer, const size_t Len);
 
     //Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
@@ -69,7 +66,7 @@ protected:
 	void SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname, const int RssiLevel = 12);
 	void SendSwitchIfNotExists(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
 	void SendRGBWSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int Level, const bool bIsRGBW, const std::string &defaultname);
-	void SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const uint8_t RssiLevel = 12);
+	void SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const int RssiLevel = 12);
 	void SendVoltageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
 	void SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname, const int RssiLevel = 12);
 	void SendPercentageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
@@ -90,30 +87,16 @@ protected:
 	void SendTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
 	std::string GetTextSensorText(const int NodeID, const int ChildID, bool &bExists);
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
-	void SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel);
+	void SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float CustomValue, const std::string &defaultname, const std::string &defaultLabel);
 	void SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string &defaultname);
+	void SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname);
 
 	int m_iHBCounter = { 0 };
-	std::mutex readQueueMutex;
-	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
-
-	//Barometric calculation (only for 1 sensor per hardware device!)
-	int CalculateBaroForecast(const double pressure);
-
 	bool m_bIsStarted = { false };
-
 private:
     void Do_Heartbeat_Work();
 
 	volatile bool m_stopHeartbeatrequested = { false };
 	std::shared_ptr<std::thread> m_Heartbeatthread = { nullptr };
-
-	int m_baro_minuteCount = { 0 };
-    double m_pressureSamples[9][6];
-    double m_pressureAvg[9];
-	double m_dP_dt = { 0 };
-	int m_last_forecast = { 0x07 }; //unknown
-	time_t m_BaroCalcLastTime = { 0 };
-
 };
 

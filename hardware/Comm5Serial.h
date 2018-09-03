@@ -32,7 +32,6 @@ private:
 	void enableNotificationResponseHandler(const std::string& mframe);
 	void readCallBack(const char* data, size_t len);
 protected:
-	void OnData(const unsigned char *pData, size_t length);
 	void OnError(const std::exception e);
 
 	void Do_Work();
@@ -61,6 +60,5 @@ private:
 	bool m_bReceiverStarted;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

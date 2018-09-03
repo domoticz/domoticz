@@ -53,6 +53,7 @@ bool CHoneywell::StartHardware() {
 	mLastMinute = -1;
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHoneywell::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Honeywell");
 	mIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);

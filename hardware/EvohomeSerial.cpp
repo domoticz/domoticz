@@ -24,15 +24,12 @@ CEvohomeRadio(ID, UserContID)
 
 bool CEvohomeSerial::StopHardware()
 {
-	m_stoprequested=true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-	sleep_milliseconds(10);
-	terminate();
 	m_bIsStarted=false;
 	if(m_bDebug && m_pEvoLog)
 	{
@@ -74,7 +71,6 @@ bool CEvohomeSerial::OpenSerialDevice()
 
 void CEvohomeSerial::ReadCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		//_log.Log(LOG_NORM,"evohome: received %ld bytes",len);
@@ -99,15 +95,12 @@ void CEvohomeSerial::Do_Work()
 
 	int sec_counter = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter  % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
-		if (m_stoprequested)
-			break;
 
 		if (!isOpen())
 		{
@@ -131,7 +124,9 @@ void CEvohomeSerial::Do_Work()
 			Idle_Work();
 		}
 	}
-	_log.Log(LOG_STATUS,"evohome serial: Serial Worker stopped...");
+	terminate();
+
+	_log.Log(LOG_STATUS,"Evohome: Worker stopped...");
 }
 
 void CEvohomeSerial::Do_Send(std::string str)

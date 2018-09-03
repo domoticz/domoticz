@@ -97,30 +97,30 @@ bool SolarMaxTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&SolarMaxTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "SolarMaxTCP");
 
 	return (m_thread != nullptr);
 }
 
 bool SolarMaxTCP::StopHardware()
 {
+	m_stoprequested = true;
+	try {
+		if (m_thread)
+		{
+			
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
 	if (isConnected())
 	{
 		try {
 			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-	else {
-		try {
-			if (m_thread)
-			{
-				m_stoprequested = true;
-				m_thread->join();
-				m_thread.reset();
-			}
 		}
 		catch (...)
 		{
@@ -169,14 +169,11 @@ bool SolarMaxTCP::ConnectInternal()
 
 void SolarMaxTCP::disconnect()
 {
-	m_stoprequested = true;
 	if (m_socket != INVALID_SOCKET)
 	{
-		closesocket(m_socket);	//will terminate the thread
+		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
-		sleep_seconds(1);
 	}
-	//m_thread-> join();
 }
 
 void SolarMaxTCP::Do_Work()
@@ -237,7 +234,6 @@ void SolarMaxTCP::Do_Work()
 				}
 				else
 				{
-					std::lock_guard<std::mutex> l(readQueueMutex);
 					ParseData((const unsigned char *)&buf, bread);
 				}
 			}

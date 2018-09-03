@@ -57,6 +57,7 @@ bool CurrentCostMeterTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CurrentCostMeterTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "CurrentCostMeterTCP");
 	return (m_thread != nullptr);
 }
 
@@ -67,6 +68,12 @@ bool CurrentCostMeterTCP::isConnected()
 
 bool CurrentCostMeterTCP::StopHardware()
 {
+	m_stoprequested=true;
+	if (m_thread)
+	{
+		m_thread->join();
+		m_thread.reset();
+	}
 	if (isConnected())
 	{
 		try {
@@ -110,10 +117,9 @@ bool CurrentCostMeterTCP::ConnectInternal()
 
 void CurrentCostMeterTCP::disconnect()
 {
-	m_stoprequested=true;
 	if (m_socket==INVALID_SOCKET)
 		return;
-	closesocket(m_socket);	//will terminate the thread
+	closesocket(m_socket);
 	m_socket=INVALID_SOCKET;
 }
 
@@ -166,7 +172,6 @@ void CurrentCostMeterTCP::Do_Work()
 			}
 			else
 			{
-				std::lock_guard<std::mutex> l(readQueueMutex);
 				ParseData(data, bread);
 			}
 		}

@@ -12,7 +12,6 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
@@ -24,7 +23,6 @@ OTGWTCP::~OTGWTCP(void)
 
 bool OTGWTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bDoRestart=false;
 
 	//force connect the next first time
@@ -33,34 +31,18 @@ bool OTGWTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "OTGWTCP");
 	return (m_thread != nullptr);
 }
 
 bool OTGWTCP::StopHardware()
 {
-	m_stoprequested=true;
-	if (isConnected())
+	if (m_thread)
 	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
-	{
-		//Don't throw from a Stop command
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -84,9 +66,8 @@ void OTGWTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 25;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -97,7 +78,7 @@ void OTGWTCP::Do_Work()
 		{
 			bFirstTime=false;
 			connect(m_szIPAddress,m_usIPPort);
-			if (mIsConnected)
+			if (isConnected())
 			{
 				GetGatewayDetails();
 			}
@@ -109,7 +90,7 @@ void OTGWTCP::Do_Work()
 				connect(m_szIPAddress,m_usIPPort);
 			}
 			update();
-			if (mIsConnected)
+			if (isConnected())
 			{
 				if ((sec_counter % 28 == 0) && (m_bRequestVersion))
 				{
@@ -126,12 +107,13 @@ void OTGWTCP::Do_Work()
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
 }
 
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 
@@ -165,7 +147,7 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 
 bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

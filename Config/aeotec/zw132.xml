@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Aeotec ZW132 Dual Nano Switch, base on Engineering Spec 08/23/2017
+Aeotec ZW132 Dual Nano Switch, base on Engineering Spec 03/19/2018 V2.0
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D 
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
@@ -21,6 +21,79 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 			<Item label="The last status before the power outage" value="0"/>
 			<Item label="Always on" value="1"/>
 			<Item label="Always off" value="2"/>
+		</Value>
+		<Value type="int" index="21" genre="config" label="WallSwipe IR sensor" value="80">
+			<Help>
+				Enable/disable the IR sensor of WallSwipe.
+				(LSB) Value 1.
+				Value 1 = 0, disable the IR Sensor.
+				Value 1 = 1, enable the IR Sensor.
+				Value 2 = 0, Wave Option 1 is selected.
+				Value 2 = 1, Wave Option 2 is selected.
+				Value 3 = 0, disable the scene control functionality for Left/Right wave.
+				Value 3 = 1, enable the scene control functionality for Left/Right wave
+				Value 4 = 0, disable the scene control functionality for all wave actions.
+				Value 4 = 1, enable the scene control functionality for all wave actions.
+			</Help>
+		</Value>
+		<Value type="int" index="64" genre="config" label="WallSwipe button color" value="184549375">
+			<Help>
+				Set the button color of WallSwipe.
+				Value 1= Level 1.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="65" genre="config" label="WallSwipe LED Up gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is UP.
+				Value 1= Reserved.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="66" genre="config" label="WallSwipe LED Down gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is Down.
+				Value 1= Reserved.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="67" genre="config" label="WallSwipe LED Left gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is Left.
+				Value 1= Reserved.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="68" genre="config" label="WallSwipe LED Right gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is Right.
+				Value 1= Reserved.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="69" genre="config" label="WallSwipe Night light" value="184483840">
+			<Help>
+				Set the LED indication color of WallSwipe when it is in Night light state.
+				Value 1= Reserved.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="byte" index="71" genre="config" label="WallSwipe sensitivity" value="1">
+			<Help>
+				Set the sensitivity of WallSwipe.
+			</Help>
 		</Value>
 		<Value type="list" index="80" genre="config" label="Notification report association group 1" units="" size="1" value="3">
 			<Help>To set which notification would be sent to the associated nodes in association group 1 when the state of output load is changed</Help>
@@ -207,8 +280,33 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 			<Item label="Control other nodes" value="2"/>
 			<Item label="Control the output load itself and other nodes" value="3"/>
 		</Value>
-		<Value type="list" index="251" genre="config" label="Factory reset function of Action" units="" min="0" max="1" size="1" value="1">
-			<Help>Enable/disable the factory reset function of Action</Help>
+		<Value type="list" index="144" genre="config" label="WallSwipe" units="" min="0" max="1" size="1" value="0" read_only="true">
+            <Help>Get the state of touch panel port</Help>
+            <Item label="Disconnected" value="0"/>
+            <Item label="Connected" value="1"/>
+        </Value>
+		<Value type="list" index="247" genre="config" label="S1/S2 when the Switch mode is 3-way switch" units="" min="0" max="3" size="1" value="0">
+            <Help>Set the working way for S1/S2 when the Switch mode is 3-way switch mode.</Help>
+            <Item label="S1 and S2 is a toggle switch" value="0"/>
+            <Item label="S1 is an On/Off switch" value="1"/>
+			<Item label="S2 is an On/Off switch" value="2"/>
+            <Item label="S1 and S2 are an On/Off switch" value="3"/>
+        </Value>
+		<Value type="byte" index="248" genre="config" label="Function of S1/S2" units="" value="131">
+			<Help>
+				Set the function of S1/S2.
+				Bit 0 = 0, the function of sending NIF is disabled.
+				Bit 0 = 1, the function of sending NIF is enabled.
+				Bit 1 = 0, the function of entering RF power level test mode is disabled.
+				Bit 1 = 1, the function of entering RF power level test mode is enabled.
+				Bit 2 = 0, the function of factory reset is disabled.
+				Bit 2 = 1, the function of factory reset is enabled.
+				Bit 3 to Bit 6 are reserved.
+				Bit 7 = 0, the setting for Bit 0 to Bit 2 are ineffective. Bit 7 = 1, the setting for Bit 0 to Bit 2 are effective.
+			</Help>
+		</Value>
+		<Value type="list" index="251" genre="config" label="Configuration factory reset function" units="" min="0" max="1" size="1" value="1">
+			<Help>Enable/disable the factory reset function of Action Button, external switches or WallSwipe.</Help>
 			<Item label="Disable" value="0"/>
 			<Item label="Enable" value="1"/>
 		</Value>

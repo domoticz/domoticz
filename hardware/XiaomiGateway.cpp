@@ -691,6 +691,7 @@ bool XiaomiGateway::StartHardware()
 
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
+	SetThreadName(m_thread->native_handle(), "XiaomiGateway");
 
 	return (m_thread != nullptr);
 }
@@ -750,6 +751,7 @@ void XiaomiGateway::Do_Work()
 	boost::thread bt;
 	if (m_ListenPort9898) {
 		bt = boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		SetThreadName(bt.native_handle(), "XiaomiGatewayIO");
 	}
 
 	int sec_counter = 0;

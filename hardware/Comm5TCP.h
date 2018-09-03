@@ -14,7 +14,6 @@ public: // signals
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
-	bool Connect();
 protected:
 	void OnConnect() override;
 	void OnDisconnect() override;
@@ -24,7 +23,6 @@ protected:
 
 	void Do_Work();
 	void ParseData(const unsigned char *data, const size_t len);
-
 
 	void queryRelayState();
 	void querySensorState();
@@ -44,6 +42,5 @@ private:
 	bool m_bReceiverStarted;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

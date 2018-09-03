@@ -12,7 +12,6 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = S0METER_RETRY_DELAY;
 	InitBase();
@@ -24,7 +23,6 @@ S0MeterTCP::~S0MeterTCP(void)
 
 bool S0MeterTCP::StartHardware()
 {
-	m_stoprequested=false;
 	m_bDoRestart=false;
 
 	//force connect the next first time
@@ -36,34 +34,18 @@ bool S0MeterTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&S0MeterTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "S0MeterTCP");
 	return (m_thread != nullptr);
 }
 
 bool S0MeterTCP::StopHardware()
 {
-	m_stoprequested=true;
-	if (isConnected())
+	if (m_thread)
 	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
-	{
-		//Don't throw from a Stop command
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -87,9 +69,8 @@ void S0MeterTCP::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		time_t atime = mytime(NULL);
@@ -100,16 +81,9 @@ void S0MeterTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
-			if (mIsConnected)
+			if (isConnected())
 			{
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
+				disconnect();
 			}
 			_log.Log(LOG_ERROR, "S0 Meter: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
@@ -124,6 +98,8 @@ void S0MeterTCP::Do_Work()
 			update();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"S0 Meter: TCP/IP Worker stopped...");
 }
 
@@ -134,7 +110,6 @@ bool S0MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 void S0MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData((const unsigned char*)pData,length);
 }
 
@@ -168,7 +143,7 @@ void S0MeterTCP::OnError(const boost::system::error_code& error)
 
 bool S0MeterTCP::WriteInt(const std::string &sendString)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

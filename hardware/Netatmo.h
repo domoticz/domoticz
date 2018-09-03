@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "../main/BaroForecastCalculator.h"
 
 namespace Json
 {
@@ -72,6 +73,8 @@ private:
 	std::map<std::string, int> m_RoomIDs;
 	std::map<std::string, std::string> m_ModuleNames;
 	std::map<std::string, int> m_ModuleIDs;
+
+	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
 	int GetBatteryLevel(const std::string &ModuleType, int battery_percent);
 	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_percent, const int rf_status);

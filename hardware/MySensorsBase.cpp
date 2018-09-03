@@ -251,7 +251,6 @@ MySensorsBase::~MySensorsBase(void)
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string> > result, result2;
@@ -2340,6 +2339,7 @@ bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
 	m_send_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Send_Work, this);
+	SetThreadName(m_send_thread->native_handle(), "MySensorsBase");
 	return (m_send_thread != NULL);
 }
 

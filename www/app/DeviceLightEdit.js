@@ -337,13 +337,13 @@ define(['app'], function (app) {
             function orderRenderer(level) {
                 var images = [];
 
-                if (level > 0 && level < (vm.ngModelCtrl.$modelValue.length - 1)) {
+                if (level < (vm.ngModelCtrl.$modelValue.length - 1)) {
                     images.push('<img src="images/down.png" class="lcursor js-order-down" width="16" height="16"></img>');
                 } else {
                     images.push('<img src="images/empty16.png" width="16" height="16"></img>');
                 }
 
-                if (level >= 2) {
+                if (level > 0) {
                     images.push('<img src="images/up.png" class="lcursor js-order-up" width="16" height="16"></img>');
                 }
 
@@ -358,9 +358,7 @@ define(['app'], function (app) {
                     actions.push('<img src="images/delete.png" title="' + $.t('Delete') + '" class="lcursor js-delete" width="16" height="16"></img>');
                 }
 
-                return level === 0
-                    ? ''
-                    : actions.join('&nbsp;');
+                return actions.join('&nbsp;');
             }
         }
     });

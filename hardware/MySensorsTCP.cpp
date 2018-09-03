@@ -12,7 +12,6 @@ MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const uns
 	m_szIPAddress(IPAddress),
 	m_usIPPort(usIPPort),
 	m_retrycntr(RETRY_DELAY),
-	m_stoprequested(false),
 	m_bDoRestart(false)
 {
 	m_HwdID = ID;
@@ -28,7 +27,6 @@ bool MySensorsTCP::StartHardware()
 
 	LoadDevicesFromDatabase();
 
-	m_stoprequested = false;
 	m_bDoRestart = false;
 
 	//force connect the next first time
@@ -37,36 +35,20 @@ bool MySensorsTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MySensorsTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MySensorsTCP");
 	StartSendQueue();
 	return (m_thread != nullptr);
 }
 
 bool MySensorsTCP::StopHardware()
 {
-	m_stoprequested = true;
 	StopSendQueue();
-	if (isConnected())
+	if (m_thread)
 	{
-		try {
-			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
-	{
-		//Don't throw from a Stop command
-	}
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -88,17 +70,14 @@ void MySensorsTCP::OnConnect()
 void MySensorsTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS, "MySensors: disconnected");
-	if (!m_stoprequested)
-		m_bDoRestart = true;
 }
 
 void MySensorsTCP::Do_Work()
 {
 	bool bFirstTime = true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -131,12 +110,13 @@ void MySensorsTCP::Do_Work()
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "MySensors: TCP/IP Worker stopped...");
 }
 
 void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 
@@ -170,7 +150,7 @@ void MySensorsTCP::OnError(const boost::system::error_code& error)
 
 void MySensorsTCP::WriteInt(const std::string &sendStr)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return;
 	}

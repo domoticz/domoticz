@@ -43,7 +43,6 @@ private:
 	Rego6XXStatus	m_Rego6XXValue;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	int m_retrycntr;
 	int m_pollDelaycntr;
 	unsigned int m_pollcntr;

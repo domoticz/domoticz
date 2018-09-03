@@ -14,7 +14,6 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool isConnected() { return mIsConnected; };
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -42,7 +41,6 @@ private:
 	unsigned short 						m_usIPPort;
 	std::string 						m_username;
 	std::string 						m_password;
-	volatile bool 						m_stoprequested;
 	sockaddr_in 						m_addr;
 	bool								m_poll_inputs;
 	bool								m_poll_relays;

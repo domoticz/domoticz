@@ -11,10 +11,9 @@ ZWA005 TriSensor
 				Value = 0 will disable PIR sensor from triggering until motion timeout has finished.
             </Help>
         </Value>
-		<Value type="short" index="2" genre="config" label="Motion Clear Time" units="Second" min="0" max="32767" value="240" >
+		<Value type="short" index="2" genre="config" label="Motion clear time" units="Second" min="1" max="32767" value="240" >
             <Help>
-                This parameter is configured the time to clear motion event after a motion event detected.
-				Time to motion clear, the device will send a clear event report to controller and send BASIC_SET to nodes associated in group 2 according to parameter 6.
+                This configures the clear time when your motion sensor times out and sends a no motion status.
             </Help>
         </Value>
 		<Value type="list" genre="config" instance="1" index="3" label="Motion Sensitivity" min="0" max="11" value="8" size="1">
@@ -37,7 +36,7 @@ ZWA005 TriSensor
 			<Item label="10" value="10"/>
 			<Item label="11" value="11"/>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="4" label="Binary Sensor Report Enable" min="0" max="1" value="0" size="1">
+		<Value type="list" genre="config" instance="1" index="4" label="Binary Sensor Report" min="0" max="1" value="0" size="1">
 			<Help>Enable/disable sensor binary report when motion event is detected or cleared</Help>
 			<Item label="Disable" value="0"/>
 			<Item label="Enable" value="1"/>
@@ -68,16 +67,17 @@ ZWA005 TriSensor
 				Default value: 239 (23.9 Celsius) or 750 (75.0 Fahrenheit)
             </Help>
         </Value>
-		<Value type="list" genre="config" instance="1" index="10" label="Led Blink on motion" min="0" max="1" value="1" size="1">
+		<Value type="list" genre="config" instance="1" index="10" label="LED over TriSensor" min="0" max="1" value="1" size="1">
 			<Help>
-				Configure if the Led Blink on motion event.
-				Note: This configuration is not affect inclusion, exclusion and reset.
+				Enable or Disable LED over TriSensor
+				This completely disables all LED reaction regardless of Parameter 9 - 13 settings
 			</Help>
 			<Item label="Disable" value="0"/>
 			<Item label="Enable" value="1"/>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="11" label="Led Color For Motion Event Report" min="0" max="8" value="2" size="1">
+		<Value type="list" genre="config" instance="1" index="11" label="Motion report LED" min="0" max="8" value="2" size="1">
 			<Help>
+				This setting changes the color of the LED when your TriSensor sends a motion report.
 			</Help>
 			<Item label="Disabled" value="0"/>
 			<Item label="Red" value="1"/>
@@ -89,8 +89,9 @@ ZWA005 TriSensor
 			<Item label="Purple" value="7"/>
 			<Item label="Orange" value="8"/>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="12" label="Led Color For Temperature Sensor Report" min="0" max="8" value="0" size="1">
+		<Value type="list" genre="config" instance="1" index="12" label="Temperature report LED" min="0" max="1" value="0" size="1">
 			<Help>
+				This setting changes the color of the LED when your TriSensor sends a temperature report.
 			</Help>
 			<Item label="Disabled" value="0"/>
 			<Item label="Red" value="1"/>
@@ -102,8 +103,9 @@ ZWA005 TriSensor
 			<Item label="Purple" value="7"/>
 			<Item label="Orange" value="8"/>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="13" label="Led Color For Light Sensor Report" min="0" max="8" value="0" size="1">
+		<Value type="list" genre="config" instance="1" index="13" label="Light report LED" min="0" max="8" value="0" size="1">
 			<Help>
+				This setting changes the color of the LED when your TriSensor sends a light report.
 			</Help>
 			<Item label="Disabled" value="0"/>
 			<Item label="Red" value="1"/>
@@ -115,8 +117,9 @@ ZWA005 TriSensor
 			<Item label="Purple" value="7"/>
 			<Item label="Orange" value="8"/>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="14" label="Led Color For Battery Report" min="0" max="8" value="0" size="1">
+		<Value type="list" genre="config" instance="1" index="14" label="Battery report LED" min="0" max="8" value="0" size="1">
 			<Help>
+				It is possible to change the color of what the LED blinks when your TriSensor sends a battery report.
 			</Help>
 			<Item label="Disabled" value="0"/>
 			<Item label="Red" value="1"/>
@@ -128,8 +131,9 @@ ZWA005 TriSensor
 			<Item label="Purple" value="7"/>
 			<Item label="Orange" value="8"/>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="15" label="Led Color For Wakeup Notification Report" min="0" max="8" value="0" size="1">
+		<Value type="list" genre="config" instance="1" index="15" label="Wakeup report LED" min="0" max="8" value="0" size="1">
 			<Help>
+				This setting changes the color of the LED when your TriSensor sends a wakeup report.
 			</Help>
 			<Item label="Disabled" value="0"/>
 			<Item label="Red" value="1"/>
@@ -148,10 +152,11 @@ ZWA005 TriSensor
 			<Item label="Celsius" value="0"/>
 			<Item label="Fahrenheit" value="1"/>
 		</Value>
-		<Value type="short" index="21" genre="config" label="Temperature Threshold Value to Report" units="0.1" value="20" >
+		<Value type="short" index="21" genre="config" label="Temperature Threshold reporting" units="0.1" min="0" max="250" value="20" >
             <Help>
                 Change threshold value for change in temperature to induce an automatic report for temperature sensor.
 				Scale is identical setting in Parameter No.20.
+				0-> Disable Threshold Report for Temperature Sensor.
 				Setting of value 20 can be a change of -2.0 or +2.0 (C or F depending on Parameter No.20) to induce automatic report or setting a value of 2 will be a change of 0.2(C or F).
 				Available Settings: 0 to 250.
             </Help>

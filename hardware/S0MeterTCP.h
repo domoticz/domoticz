@@ -14,8 +14,8 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool WriteInt(const std::string &sendString);
-	bool isConnected() { return mIsConnected; };
 	void Do_Work();
+
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
@@ -27,6 +27,5 @@ private:
 	unsigned short m_usIPPort;
 	bool m_bDoRestart;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

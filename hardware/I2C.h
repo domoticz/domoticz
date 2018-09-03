@@ -41,6 +41,7 @@ private:
 
 	int ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead);
 	int WriteCmd(int fd, uint8_t devAction);
+	int WriteCmdAddr(const int fd, const uint8_t CmdAddr, const uint8_t devAction);
 
 private:
 	std::shared_ptr<std::thread> m_thread;

@@ -183,7 +183,6 @@ std::string NomRefBloc[45]={
 
 USBtin_MultiblocV8::USBtin_MultiblocV8()
 {
-	m_stoprequested = false;
 	m_BOOL_DebugInMultiblocV8 = false;
 }
 
@@ -193,40 +192,34 @@ USBtin_MultiblocV8::~USBtin_MultiblocV8(){
 
 bool USBtin_MultiblocV8::StartThread()
 {
-	m_stoprequested = false;
   //Id Base for manual creation switch from domoticz...
 	m_V8switch_id_base = (type_SFSP_SWITCH<<SHIFT_TYPE_TRAME)+(1<<SHIFT_INDEX_MODULE)+(0<<SHIFT_CODAGE_MODULE)+0;
 
 	m_V8minCounterBase = (60*5);
 	m_V8minCounter1 = (3600*6);
 	m_thread = std::make_shared<std::thread>(&USBtin_MultiblocV8::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "USBtinMbV8");
 	_log.Log(LOG_STATUS,"MultiblocV8: thread started");
 	return (m_thread != nullptr);
 }
 
 void USBtin_MultiblocV8::StopThread()
 {
-	try {
-		if (m_thread)
-		{
-			m_stoprequested = true;
-			m_thread->join();
-			sleep_milliseconds(20); //wait time
-			_log.Log(LOG_STATUS,"MultiblocV8: thread stopped");
-			m_thread.reset();
-		}
-		ClearingBlocList();
-	}
-	catch (...)
+	if (m_thread)
 	{
-		_log.Log(LOG_STATUS,"MultiblocV8: thread not stopped");
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
+	ClearingBlocList();
 }
 
-void USBtin_MultiblocV8::ManageThreadV8(bool States){
-	if( States == true) StartThread();
-	else StopThread();
+void USBtin_MultiblocV8::ManageThreadV8(bool States)
+{
+	if( States == true)
+		StartThread();
+	else
+		StopThread();
 }
 
 void USBtin_MultiblocV8::ClearingBlocList(){
@@ -247,9 +240,8 @@ void USBtin_MultiblocV8::Do_Work()
 {
 	ClearingBlocList();
 	//call every 100ms.... so...
-	while( !m_stoprequested ){
-		sleep_milliseconds(TIME_100ms);
-
+	while( !IsStopRequested(TIME_100ms))
+	{
 		m_V8secCounterBase++;
 		if (m_V8secCounterBase >= 10)
 		{

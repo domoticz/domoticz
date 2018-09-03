@@ -38,7 +38,6 @@ Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	initSensorData = true;
 	m_bReceiverStarted = false;
@@ -46,15 +45,14 @@ Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigne
 
 bool Comm5SMTCP::StartHardware()
 {
-	m_stoprequested = false;
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
 	m_bIsStarted = true;
-	m_rxbufferpos = 0;
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Comm5SMTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Comm5SMTCP");
 
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: Started");
 
@@ -65,7 +63,7 @@ bool Comm5SMTCP::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -91,21 +89,19 @@ void Comm5SMTCP::Do_Work()
 {
 	bool bFirstTime = true;
 	int count = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(40))
 	{
 		m_LastHeartbeat = mytime(NULL);
 		if (bFirstTime)
 		{
 			bFirstTime = false;
-			if (!mIsConnected)
+			if (!isConnected())
 			{
-				m_rxbufferpos = 0;
 				connect(m_szIPAddress, m_usIPPort);
 			}
 		}
 		else
 		{
-			sleep_milliseconds(40);
 			update();
 			if (count++ >= 100) {
 				count = 0;
@@ -113,6 +109,8 @@ void Comm5SMTCP::Do_Work()
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: TCP/IP Worker stopped...");
 }
 
@@ -172,7 +170,6 @@ bool Comm5SMTCP::WriteToHardware(const char* /*pdata*/, const unsigned char /*le
 
 void Comm5SMTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

@@ -27,6 +27,14 @@ portions of this file.
 */
 
 /*
+SDK version 9.22
+	Falmec added
+	Fan LucciAir DCII added
+	Zemismart blinds added
+	Async port added
+	Firmware types added
+	Livolo 1-10 device changed 
+
 SDK version 9.21
 	Fan LucciAir DC added
 	Casafan added
@@ -385,6 +393,14 @@ SDK version 4.9
 #define trxType43392 0x53
 #define trxType868 0x55
 
+#define FWtyperec 0x0
+#define FWtype1 0x1
+#define FWtype2 0x2
+#define FWtypeExt 0x3
+#define FWtypeExt2 0x4
+#define FWtypePro1 0x5
+#define FWtypePro2 0x6
+#define FWtypeProXL1 0x10
 
 //433 config bits
 #define msg3_AE 0x01			//AE Blyss
@@ -560,7 +576,7 @@ SDK version 4.9
 #define sTypeAoke 0x07
 #define sTypeTRC02_2 0x08
 #define sTypeEurodomest 0x09
-#define sTypeLivoloAppliance 0x0A
+#define sTypeLivolo1to10 0x0A
 #define sTypeRGB432W 0x0B
 #define sTypeMDREMOTE107 0x0C
 #define sTypeLegrandCAD 0x0D
@@ -600,18 +616,41 @@ SDK version 4.9
 #define light5_sSpeedMin 0x8
 #define light5_sSpeedPlus 0x9
 #define light5_sModeMin 0xA
+
+//Livolo All off, used for all types
 #define light5_sLivoloAllOff 0x00
+
+//Livolo 1-3 appliance modules
 #define light5_sLivoloGang1Toggle 0x01
 #define light5_sLivoloGang2Toggle 0x02
-#define light5_sLivoloDimR1plus 0x02
 #define light5_sLivoloGang3Toggle 0x03
-#define light5_sLivoloDimR1min 0x03
-#define light5_sLivoloScene1R1 0x04
-#define light5_sLivoloScene2R1 0x05
-#define light5_sLivoloDimR2plus 0x06
-#define light5_sLivoloDimR2min 0x07
-#define light5_sLivoloScene1R2 0x08
-#define light5_sLivoloScene2R2 0x09
+
+//Livolo dimmer
+//#define light5_sLivoloToggle1 0x01
+#define light5_sLivoloBright1 0x02
+#define light5_sLivoloDim1 0x03
+
+//Livolo 1-10 appliance modules, 7 and 9 is a dimmer
+#define light5_sLivoloToggle1 0x01
+#define light5_sLivoloToggle2 0x02
+#define light5_sLivoloToggle3 0x03
+#define light5_sLivoloToggle4 0x04
+#define light5_sLivoloToggle5 0x05
+#define light5_sLivoloToggle6 0x06
+#define light5_sLivoloToggle7 0x07
+#define light5_sLivoloBright7 0x08
+#define light5_sLivoloDim7 0x09
+#define light5_sLivoloToggle8 0x0A
+#define light5_sLivoloToggle9 0x0B
+#define light5_sLivoloBright9 0x0C
+#define light5_sLivoloDim9 0x0D
+#define light5_sLivoloToggle10 0x0E
+#define light5_sLivoloScene1 0x0F
+#define light5_sLivoloScene2 0x10
+#define light5_sLivoloScene3 0x11
+#define light5_sLivoloScene4 0x12
+#define light5_sLivoloOkSet 0x13
+
 #define light5_sRGBoff 0x00
 #define light5_sRGBon 0x01
 #define light5_sRGBbright 0x02
@@ -661,6 +700,8 @@ SDK version 4.9
 #define sTypeLucciAirDC 0x5
 #define sTypeCasafan 0x6
 #define sTypeFT1211R 0x7
+#define sTypeFalmec 0x8
+#define sTypeLucciAirDCII 0x9
 
 #define fan_sTimer 0x1
 #define fan_sMin 0x2
@@ -712,6 +753,26 @@ SDK version 4.9
 #define fan_FT1211R1H 0x9
 #define fan_FT1211R4H 0xA
 #define fan_FT1211R8H 0xB
+#define fan_FalmecPower 0x1
+#define fan_FalmecSpeed1 0x2
+#define fan_FalmecSpeed2 0x3
+#define fan_FalmecSpeed3 0x4
+#define fan_FalmecSpeed4 0x5
+#define fan_FalmecTimer1 0x6
+#define fan_FalmecTimer2 0x7
+#define fan_FalmecTimer3 0x8
+#define fan_FalmecTimer4 0x9
+#define fan_FalmecLightOn 0xA
+#define fan_FalmecLightOff 0xB
+#define fan_LucciDCIIOff 0x1
+#define fan_LucciDCII1 0x2
+#define fan_LucciDCII2 0x3
+#define fan_LucciDCII3 0x4
+#define fan_LucciDCII4 0x5
+#define fan_LucciDCII5 0x6
+#define fan_LucciDCII6 0x7
+#define fan_LucciDCIILight 0x8
+#define fan_LucciDCIIReverse 0x9
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -738,6 +799,8 @@ SDK version 4.9
 #define sTypeBlindsT12 0xC	//Confexx
 #define sTypeBlindsT13 0xD	//Screenline
 #define sTypeBlindsT14 0xE	//Hualite
+#define sTypeBlindsT15 0xF	//RFU
+#define sTypeBlindsT16 0x10	//Zemismart
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
@@ -761,6 +824,8 @@ SDK version 4.9
 #define blinds_s10ChangeDirection 0x6
 #define blinds_s13anglePlus 0x4
 #define blinds_s13angleMinus 0x5
+#define blinds_s16EraseCurrentCh 0x4
+#define blinds_s16ChangeDirection 0x5
 
 //types for RFY
 #define pTypeRFY 0x1A
@@ -1063,6 +1128,45 @@ SDK version 4.9
 #define sTypeTIC 0x1
 #define sTypeCEencoder 0x2
 #define sTypeLinky 0x3
+
+//types for Async port configuration
+#define pTypeASYNCPORT 0x61
+#define sTypeASYNCconfig 0x01
+#define asyncdisable 0x0
+#define asyncreceiveP1 0x1
+#define asyncbaud110 0x0
+#define asyncbaud300 0x1
+#define asyncbaud600 0x2
+#define asyncbaud1200 0x3
+#define asyncbaud2400 0x4
+#define asyncbaud4800 0x5
+#define asyncbaud9600 0x6
+#define asyncbaud14400 0x7
+#define asyncbaud19200 0x8
+#define asyncbaud38400 0x9
+#define asyncbaud57600 0xA
+#define asyncbaud115200 0xB
+#define asyncParityNo 0x0
+#define asyncParityOdd 0x1
+#define asyncParityEven 0x2
+#define asyncDatabits7 0x7
+#define asyncDatabits8 0x8
+#define asyncStopbits1 0x1
+#define asyncStopbits2 0x2
+#define asyncPolarityNormal 0x0
+#define asyncPolarityInvers 0x1
+
+//types for Async data
+#define pTypeASYNCDATA 0x62
+#define sTypeASYNCoverrun 0xF0
+#define sTypeASYNCpacket1 0x01
+#define sTypeASYNCpacket2 0x02
+#define sTypeASYNCpacket3 0x03
+#define sTypeASYNCpacket4 0x04
+#define sTypeASYNCpacket5 0x05
+#define sTypeASYNCpacket6 0x06
+#define sTypeASYNCDpacket7 0x07
+#define sTypeASYNClast 0xF0	//mask upper nibble indicates last packet
 
 //RFXSensor
 #define pTypeRFXSensor 0x70
@@ -2354,6 +2458,29 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} LINKY;
+
+	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE cmnd;
+		BYTE baudrate;
+		BYTE parity;
+		BYTE databits;
+		BYTE stopbits;
+		BYTE polarity;
+		BYTE filler1;
+		BYTE filler2;
+	} ASYNCPORT;
+
+	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE datachar[252];
+	} ASYNCDATA;
 
 	struct {
 		BYTE	packetlength;

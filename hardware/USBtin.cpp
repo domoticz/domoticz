@@ -73,7 +73,6 @@ USBtin::USBtin(const int ID, const std::string& devname,unsigned int BusCanType,
 m_szSerialPort(devname)
 {
 	m_HwdID = ID;
-	m_stoprequested=false;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5;
 	Bus_CANType = BusCanType;
 	if( DebugMode == 0 )m_BOOL_USBtinDebug = false;
@@ -92,10 +91,10 @@ void USBtin::Init()
 
 bool USBtin::StartHardware()
 {
-	m_stoprequested = false;
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
 	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "USBtin");
 	return (m_thread != nullptr);
 }
 
@@ -110,12 +109,10 @@ bool USBtin::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-	sleep_milliseconds(10);
-	terminate();
 	m_bIsStarted = false;
 	return true;
 }
@@ -126,15 +123,8 @@ void USBtin::Do_Work()
 	int msec_counter = 0;
 	m_EtapeInitCan = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(TIME_200ms))
 	{
-		sleep_milliseconds(TIME_200ms);
-
-		if (m_stoprequested){
-			m_EtapeInitCan = 0;
-			break;
-		}
-
 		msec_counter++;
 		if (msec_counter == 5)
 		{
@@ -211,8 +201,10 @@ void USBtin::Do_Work()
 			}
 		}
 	}
-
 	CloseCanPort(); //for security
+	terminate();
+	m_EtapeInitCan = 0;
+
 	_log.Log(LOG_STATUS, "USBtin: Can Gateway stopped, goodbye !");
 }
 
@@ -252,7 +244,6 @@ bool USBtin::OpenSerialDevice()
 
 void USBtin::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 	if (len > sizeof(m_USBtinBuffer)){

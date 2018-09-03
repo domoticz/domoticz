@@ -15,7 +15,6 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 {
 	mytime(&m_LastHeartbeat);
 	mytime(&m_LastHeartbeatReceive);
-	mytime(&m_BaroCalcLastTime);
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()
@@ -35,7 +34,6 @@ bool CDomoticzHardwareBase::Start()
 
 bool CDomoticzHardwareBase::Stop()
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	return StopHardware();
 }
 
@@ -44,43 +42,11 @@ void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
 	m_bOutputLog = bEnableLog;
 }
 
-bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
-{
-	if (!m_bEnableReceive)
-		return true; //receiving not enabled
-
-	size_t ii=0;
-	while (ii<Len)
-	{
-		if (m_rxbufferpos == 0)	//1st char of a packet received
-		{
-			if (pBuffer[ii]==0) //ignore first char if 00
-				return true;
-		}
-		m_rxbuffer[m_rxbufferpos]=pBuffer[ii];
-		m_rxbufferpos++;
-		if (m_rxbufferpos>=sizeof(m_rxbuffer))
-		{
-			//something is out of sync here!!
-			//restart
-			_log.Log(LOG_ERROR,"input buffer out of sync, going to restart!....");
-			m_rxbufferpos=0;
-			return false;
-		}
-		if (m_rxbufferpos > m_rxbuffer[0])
-		{
-			sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, -1);
-			m_rxbufferpos = 0;    //set to zero to receive next message
-		}
-		ii++;
-	}
-	return true;
-}
-
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
 	m_stopHeartbeatrequested = false;
 	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
+	SetThreadName(m_Heartbeatthread->native_handle(), "Domoticz_HBWork");
 }
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
@@ -729,14 +695,14 @@ void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const uint8_t 
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel)
+void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float CustomValue, const std::string &defaultname, const std::string &defaultLabel)
 {
 
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCustom;
 	gDevice.id = ChildID;
 	gDevice.intval1 = (NodeID << 8) | ChildID;
-	gDevice.floatval1 = Dust;
+	gDevice.floatval1 = CustomValue;
 
 	char szTmp[9];
 	sprintf(szTmp, "%08X", gDevice.intval1);
@@ -857,14 +823,14 @@ void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryL
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const uint8_t RssiLevel)
+void CDomoticzHardwareBase::SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const int RssiLevel)
 {
 	_tGeneralSwitch gSwitch;
 	gSwitch.id = NodeID;
 	gSwitch.unitcode = ChildID;
 	gSwitch.cmnd = SwitchState;
 	gSwitch.level = Level;
-	gSwitch.rssi = RssiLevel;
+	gSwitch.rssi = (uint8_t)RssiLevel;
 	sDecodeRXMessage(this, (const unsigned char *)&gSwitch, defaultname.c_str(), BatteryLevel);
 }
 
@@ -911,141 +877,12 @@ void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-int CDomoticzHardwareBase::CalculateBaroForecast(const double pressure)
+void CDomoticzHardwareBase::SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname)
 {
-	//From 0 to 5 min.
-	if (m_baro_minuteCount <= 5){
-		m_pressureSamples[0][m_baro_minuteCount] = pressure;
-	}
-	//From 30 to 35 min.
-	else if ((m_baro_minuteCount >= 30) && (m_baro_minuteCount <= 35)){
-		m_pressureSamples[1][m_baro_minuteCount - 30] = pressure;
-	}
-	//From 60 to 65 min.
-	else if ((m_baro_minuteCount >= 60) && (m_baro_minuteCount <= 65)){
-		m_pressureSamples[2][m_baro_minuteCount - 60] = pressure;
-	}
-	//From 90 to 95 min.
-	else if ((m_baro_minuteCount >= 90) && (m_baro_minuteCount <= 95)){
-		m_pressureSamples[3][m_baro_minuteCount - 90] = pressure;
-	}
-	//From 120 to 125 min.
-	else if ((m_baro_minuteCount >= 120) && (m_baro_minuteCount <= 125)){
-		m_pressureSamples[4][m_baro_minuteCount - 120] = pressure;
-	}
-	//From 150 to 155 min.
-	else if ((m_baro_minuteCount >= 150) && (m_baro_minuteCount <= 155)){
-		m_pressureSamples[5][m_baro_minuteCount - 150] = pressure;
-	}
-	//From 180 to 185 min.
-	else if ((m_baro_minuteCount >= 180) && (m_baro_minuteCount <= 185)){
-		m_pressureSamples[6][m_baro_minuteCount - 180] = pressure;
-	}
-	//From 210 to 215 min.
-	else if ((m_baro_minuteCount >= 210) && (m_baro_minuteCount <= 215)){
-		m_pressureSamples[7][m_baro_minuteCount - 210] = pressure;
-	}
-	//From 240 to 245 min.
-	else if ((m_baro_minuteCount >= 240) && (m_baro_minuteCount <= 245)){
-		m_pressureSamples[8][m_baro_minuteCount - 240] = pressure;
-	}
-
-
-	if (m_baro_minuteCount == 5) {
-		// Avg pressure in first 5 min, value averaged from 0 to 5 min.
-		m_pressureAvg[0] = ((m_pressureSamples[0][0] + m_pressureSamples[0][1]
-			+ m_pressureSamples[0][2] + m_pressureSamples[0][3]
-			+ m_pressureSamples[0][4] + m_pressureSamples[0][5]) / 6);
-	}
-	else if (m_baro_minuteCount == 35) {
-		// Avg pressure in 30 min, value averaged from 0 to 5 min.
-		m_pressureAvg[1] = ((m_pressureSamples[1][0] + m_pressureSamples[1][1]
-			+ m_pressureSamples[1][2] + m_pressureSamples[1][3]
-			+ m_pressureSamples[1][4] + m_pressureSamples[1][5]) / 6);
-		double change = (m_pressureAvg[1] - m_pressureAvg[0]);
-		m_dP_dt = change / 5;
-	}
-	else if (m_baro_minuteCount == 65) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[2] = ((m_pressureSamples[2][0] + m_pressureSamples[2][1]
-			+ m_pressureSamples[2][2] + m_pressureSamples[2][3]
-			+ m_pressureSamples[2][4] + m_pressureSamples[2][5]) / 6);
-		double change = (m_pressureAvg[2] - m_pressureAvg[0]);
-		m_dP_dt = change / 10;
-	}
-	else if (m_baro_minuteCount == 95) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[3] = ((m_pressureSamples[3][0] + m_pressureSamples[3][1]
-			+ m_pressureSamples[3][2] + m_pressureSamples[3][3]
-			+ m_pressureSamples[3][4] + m_pressureSamples[3][5]) / 6);
-		double change = (m_pressureAvg[3] - m_pressureAvg[0]);
-		m_dP_dt = change / 15;
-	}
-	else if (m_baro_minuteCount == 125) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[4] = ((m_pressureSamples[4][0] + m_pressureSamples[4][1]
-			+ m_pressureSamples[4][2] + m_pressureSamples[4][3]
-			+ m_pressureSamples[4][4] + m_pressureSamples[4][5]) / 6);
-		double change = (m_pressureAvg[4] - m_pressureAvg[0]);
-		m_dP_dt = change / 20;
-	}
-	else if (m_baro_minuteCount == 155) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[5] = ((m_pressureSamples[5][0] + m_pressureSamples[5][1]
-			+ m_pressureSamples[5][2] + m_pressureSamples[5][3]
-			+ m_pressureSamples[5][4] + m_pressureSamples[5][5]) / 6);
-		double change = (m_pressureAvg[5] - m_pressureAvg[0]);
-		m_dP_dt = change / 25;
-	}
-	else if (m_baro_minuteCount == 185) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[6] = ((m_pressureSamples[6][0] + m_pressureSamples[6][1]
-			+ m_pressureSamples[6][2] + m_pressureSamples[6][3]
-			+ m_pressureSamples[6][4] + m_pressureSamples[6][5]) / 6);
-		double change = (m_pressureAvg[6] - m_pressureAvg[0]);
-		m_dP_dt = change / 30;
-	}
-	else if (m_baro_minuteCount == 215) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[7] = ((m_pressureSamples[7][0] + m_pressureSamples[7][1]
-			+ m_pressureSamples[7][2] + m_pressureSamples[7][3]
-			+ m_pressureSamples[7][4] + m_pressureSamples[7][5]) / 6);
-		double change = (m_pressureAvg[7] - m_pressureAvg[0]);
-		m_dP_dt = change / 35;
-	}
-	else if (m_baro_minuteCount == 245) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[8] = ((m_pressureSamples[8][0] + m_pressureSamples[8][1]
-			+ m_pressureSamples[8][2] + m_pressureSamples[8][3]
-			+ m_pressureSamples[8][4] + m_pressureSamples[8][5]) / 6);
-		double change = (m_pressureAvg[8] - m_pressureAvg[0]);
-		m_dP_dt = change / 40; // note this is for t = 4 hour
-
-		m_baro_minuteCount -= 30;
-		m_pressureAvg[0] = m_pressureAvg[1];
-		m_pressureAvg[1] = m_pressureAvg[2];
-		m_pressureAvg[2] = m_pressureAvg[3];
-		m_pressureAvg[3] = m_pressureAvg[4];
-		m_pressureAvg[4] = m_pressureAvg[5];
-		m_pressureAvg[5] = m_pressureAvg[6];
-		m_pressureAvg[6] = m_pressureAvg[7];
-		m_pressureAvg[7] = m_pressureAvg[8];
-	}
-
-	m_baro_minuteCount++;
-
-	if (m_baro_minuteCount < 36) //if time is less than 35 min
-		return wsbaroforcast_unknown; // Unknown, more time needed
-	else if (m_dP_dt < (-0.25))
-		return wsbaroforcast_heavy_rain; // Quickly falling LP, Thunderstorm, not stable
-	else if (m_dP_dt > 0.25)
-		return wsbaroforcast_unstable; // Quickly rising HP, not stable weather
-	else if ((m_dP_dt > (-0.25)) && (m_dP_dt < (-0.05)))
-		return wsbaroforcast_rain; // Slowly falling Low Pressure System, stable rainy weather
-	else if ((m_dP_dt > 0.05) && (m_dP_dt < 0.25))
-		return wsbaroforcast_sunny; // Slowly rising HP stable good weather
-	else if ((m_dP_dt >(-0.05)) && (m_dP_dt < 0.05))
-		return wsbaroforcast_stable; // Stable weather
-	else
-		return wsbaroforcast_unknown; // Unknown
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeFan;
+	gDevice.id = 1;
+	gDevice.intval1 = Idx;
+	gDevice.intval2 = FanSpeed;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }

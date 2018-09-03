@@ -277,6 +277,7 @@ define(['app'], function (app) {
 							if ((item.Type == "Group") || (item.Type == "Scene")) {
 								itemSubIcons += '&nbsp;<img src="images/empty16.png">';
 								itemSubIcons += '<img src="images/rename.png" title="' + $.t('Rename Device') + '" onclick="RenameDevice(' + item.idx + ',\'' + item.Type + '\',\'' + escape(item.Name) + '\')">';
+								itemSubIcons += '&nbsp;<a href="#/Scenes/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else {
 								if (item.Used != 0) {
@@ -305,17 +306,17 @@ define(['app'], function (app) {
 								(item.Type.indexOf("ASA") == 0) ||
 								(item.Type.indexOf("Blinds") == 0)
 							) {
-								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/LightLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
+								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
-							else if (['Temp', 'Thermostat', 'Humidity'].includes(item.Type)) {
-								itemSubIcons += '&nbsp;<a href="#Devices/'+item.idx+'/TemperatureLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
+							else if ((/Temp|Thermostat|Humidity/i).test(item.Type)) {
+								itemSubIcons += '&nbsp;<a href="#Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if ([
 								'Voltage', 'Current', 'Pressure', 'Custom Sensor',
 								'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
 								'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage'
 							].includes(item.SubType) || item.Type === 'Usage') {
-								var graphLogLink = '#/Devices/' + item.idx + '/GraphLog';
+								var graphLogLink = '#/Devices/' + item.idx + '/Log';
 								itemSubIcons += '&nbsp;<a href="' + graphLogLink + '"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if (typeof item.Counter != 'undefined') {
@@ -351,22 +352,20 @@ define(['app'], function (app) {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 							}
 							else if ((item.SubType == "Text") || (item.SubType == "Alert")) {
-                                var logLink = '#/Devices/' + item.idx + '/TextLog';
+                                var logLink = '#/Devices/' + item.idx + '/Log';
 								itemSubIcons += '&nbsp;<a href="' + logLink + '"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else {
 								itemSubIcons += '&nbsp;<img src="images/empty16.png">';
 							}
 							var ID = item.ID;
-              if (typeof(item.HardwareTypeVal) != 'undefined' && item.HardwareTypeVal == 21) {
-                var ZWID = item.ID.substr(-4, 2);
-                if (ZWID == '00') {
-                  ZWID = item.ID.substr(-2, 2);
-                }
-                ZWID = '0x' + ZWID;
-                var ZWIDdec =  ("00" + parseInt(ZWID)).slice(-3);
-                item.HardwareName = item.HardwareName + " " + ZWIDdec + ' (' + ZWID + ')';
-              }
+							if (typeof(item.HardwareTypeVal) != 'undefined' && item.HardwareTypeVal == 21) {
+								if (item.ID.substr(-4, 2) == '00') {
+									ID = item.ID.substr(1,item.ID.length-2) + '<span class="ui-state-default">' + item.ID.substr(-2, 2) + '</span>';
+								} else {
+									ID = item.ID.substr(1,item.ID.length-4) + '<span class="ui-state-default">' + item.ID.substr(-4, 2) + '</span>' + item.ID.substr(-2, 2);
+								}
+							}
 							if (item.Type == "Lighting 1") {
 								ID = String.fromCharCode(item.ID);
 							}

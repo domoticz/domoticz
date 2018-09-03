@@ -413,6 +413,8 @@
     <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
+    <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP.h" />
+    <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.h" />
     <ClInclude Include="..\hardware\Comm5Serial.h" />
     <ClInclude Include="..\hardware\Comm5SMTCP.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
@@ -423,9 +425,9 @@
     <ClInclude Include="..\hardware\Daikin.h" />
     <ClInclude Include="..\hardware\DarkSky.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
-    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h" />
-    <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\DenkoviDevices.h" />
+    <ClInclude Include="..\hardware\DenkoviTCPDevices.h" />
+    <ClInclude Include="..\hardware\DenkoviUSBDevices.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoCompteur.h" />
@@ -534,6 +536,7 @@
     <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
+    <ClInclude Include="..\hardware\TTNMQTT.h" />
     <ClInclude Include="..\hardware\USBtin.h" />
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
@@ -550,6 +553,7 @@
     <ClInclude Include="..\httpclient\HTTPClient.h" />
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />
+    <ClInclude Include="..\main\BaroForecastCalculator.h" />
     <ClInclude Include="..\main\Camera.h" />
     <ClInclude Include="..\main\CmdLine.h" />
     <ClInclude Include="..\hardware\ColorSwitch.h" />
@@ -574,6 +578,7 @@
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
     <ClInclude Include="..\main\Noncopyable.h" />
+    <ClInclude Include="..\main\StoppableTask.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
     <ClInclude Include="..\main\WebServerHelper.h" />
@@ -634,6 +639,7 @@
     <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
+    <ClInclude Include="..\main\SignalHandler.h" />
     <ClInclude Include="..\main\SQLHelper.h" />
     <ClInclude Include="..\main\Helper.h" />
     <ClInclude Include="..\hardware\RFXComSerial.h" />
@@ -694,6 +700,7 @@
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
+    <ClCompile Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.cpp" />
     <ClCompile Include="..\hardware\ColorSwitch.cpp" />
     <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5SMTCP.cpp" />
@@ -705,9 +712,9 @@
     <ClCompile Include="..\hardware\Daikin.cpp" />
     <ClCompile Include="..\hardware\DarkSky.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
-    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp" />
-    <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\DenkoviDevices.cpp" />
+    <ClCompile Include="..\hardware\DenkoviTCPDevices.cpp" />
+    <ClCompile Include="..\hardware\DenkoviUSBDevices.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
     <ClCompile Include="..\hardware\EcoCompteur.cpp" />
@@ -826,6 +833,7 @@
     <ClCompile Include="..\hardware\Tellstick.cpp" />
     <ClCompile Include="..\hardware\Thermosmart.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
+    <ClCompile Include="..\hardware\TTNMQTT.cpp" />
     <ClCompile Include="..\hardware\USBtin.cpp" />
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
@@ -838,6 +846,7 @@
     <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
+    <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
     <ClCompile Include="..\main\CmdLine.cpp" />
@@ -857,6 +866,7 @@
     <ClCompile Include="..\main\LuaCommon.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
+    <ClCompile Include="..\main\SignalHandler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
     <ClCompile Include="..\json\json_reader.cpp" />

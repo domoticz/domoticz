@@ -16,7 +16,6 @@ Comm5Serial::Comm5Serial(const int ID, const std::string& devname, unsigned int 
 	m_baudRate(baudRate)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	lastKnownSensorState = 0;
 	initSensorData = true;
 	reqState = Idle;
@@ -61,8 +60,8 @@ bool Comm5Serial::WriteToHardware(const char * pdata, const unsigned char /*leng
 
 bool Comm5Serial::StartHardware()
 {
-	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&Comm5Serial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Comm5Serial");
 
 	//Try to open the Serial Port
 	try
@@ -99,13 +98,10 @@ bool Comm5Serial::StartHardware()
 
 bool Comm5Serial::StopHardware()
 {
-	terminate();
-	m_stoprequested = true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
-		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-		sleep_milliseconds(10);
 		m_thread.reset();
 	}
 	m_bIsStarted = false;
@@ -121,17 +117,22 @@ void Comm5Serial::Do_Work()
 	querySensorState();
 	enableNotifications();
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Worker started...");
+
+
+	while (!IsStopRequested(100))
 	{
 		m_LastHeartbeat = mytime(NULL);
-		sleep_milliseconds(40);
-		if (msec_counter++ >= 100) {
+		if (msec_counter++ >= 40) 
+		{
+			//every 4 seconds ?
 			msec_counter = 0;
 			querySensorState();
 		}
 	}
+	terminate();
 
-	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Serial Worker stopped...");
+	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Worker stopped...");
 }
 
 void Comm5Serial::requestDigitalInputResponseHandler(const std::string & mframe)
@@ -171,8 +172,6 @@ void Comm5Serial::enableNotificationResponseHandler(const std::string & /*mframe
 
 void Comm5Serial::readCallBack(const char * data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
@@ -323,12 +322,6 @@ void Comm5Serial::enableNotifications()
 	//                  id    op   on/off  mask
 	std::string data("\x04\x02\x01\xFF");
 	writeFrame(data);
-}
-
-void Comm5Serial::OnData(const unsigned char *pData, size_t length)
-{
-	std::lock_guard<std::mutex> l(readQueueMutex);
-	ParseData(pData, length);
 }
 
 void Comm5Serial::OnError(const std::exception e)

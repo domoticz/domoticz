@@ -49,6 +49,7 @@ bool CEcoCompteur::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CEcoCompteur::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "EcoCompteur");
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
