@@ -21,7 +21,6 @@ public:
 	bool IsMainGateway(){ return m_ListenPort9898; };
 	void SetAsMainGateway(){ m_ListenPort9898 = true; };
 	void UnSetMainGateway(){ m_ListenPort9898 = false; };
-	void Restart();
 
 private:
 	bool StartHardware() override;

@@ -696,13 +696,6 @@ bool XiaomiGateway::StartHardware()
 	return (m_thread != nullptr);
 }
 
-
-void XiaomiGateway::Restart()
-{
-    StopHardware();
-    StartHardware();
-}
-
 bool XiaomiGateway::StopHardware()
 {
 	m_stoprequested = true;
