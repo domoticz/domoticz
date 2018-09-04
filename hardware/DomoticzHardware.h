@@ -12,10 +12,10 @@ public:
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();
 
-	void Start();
-	void Stop();
-	void Restart();
-	void RestartWithDelay(const long seconds);
+	bool Start();
+	bool Stop();
+	bool Restart();
+	bool RestartWithDelay(const long seconds);
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
 	virtual bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 

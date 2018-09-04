@@ -26,32 +26,38 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 	return false;
 }
 
-void CDomoticzHardwareBase::Start()
+bool CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;
 	m_bIsStarted = StartHardware();
+	return m_bIsStarted;
 }
 
-void CDomoticzHardwareBase::Stop()
+bool CDomoticzHardwareBase::Stop()
 {
 	m_bIsStarted = (!StopHardware());
+	return m_bIsStarted;
 }
 
-void CDomoticzHardwareBase::Restart()
+bool CDomoticzHardwareBase::Restart()
 {
 	if (StopHardware())
 	{
 		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
 	}
+	return false;
 }
 
-void CDomoticzHardwareBase::RestartWithDelay(const long seconds)
+bool CDomoticzHardwareBase::RestartWithDelay(const long seconds)
 {
 	if (StopHardware())
 	{
 		sleep_seconds(seconds);
 		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
 	}
+	return false;
 }
 
 void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
@@ -87,9 +93,8 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 {
 	int secCounter = 0;
 	int hbCounter = 0;
-	while (!IsStopRequested(1000))
+	while (!IsStopRequested(200))
 	{
-		sleep_milliseconds(200);
 		secCounter++;
 		if (secCounter == 5)
 		{
