@@ -2,18 +2,20 @@
 
 #include <boost/signals2.hpp>
 #include "../main/RFXNames.h"
-#include "../main/StoppableTask.h"
 
 //Base class with functions all notification systems should have
-class CDomoticzHardwareBase : public StoppableTask
+#define RX_BUFFER_SIZE 100
+
+class CDomoticzHardwareBase
 {
 	friend class MainWorker;
 public:
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();
 
-	bool Start();
-	bool Stop();
+	void Start();
+	void Stop();
+	void Restart();
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
 	virtual bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
@@ -43,6 +45,7 @@ protected:
 
     //Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
+	void StartHeartbeatThread(const char* ThreadName);
 	void StopHeartbeatThread();
 	void HandleHBCounter(const int iInterval);
 

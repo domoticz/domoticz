@@ -26,15 +26,21 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 	return false;
 }
 
-bool CDomoticzHardwareBase::Start()
+void CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;
-	return StartHardware();
+	m_bIsStarted = StartHardware();
 }
 
-bool CDomoticzHardwareBase::Stop()
+void CDomoticzHardwareBase::Stop()
 {
-	return StopHardware();
+	m_bIsStarted = (!StopHardware());
+}
+
+void CDomoticzHardwareBase::Restart()
+{
+	if (StopHardware())
+		m_bIsStarted = StartHardware();
 }
 
 void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
@@ -44,10 +50,16 @@ void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
 
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
+	StartHeartbeatThread("Domoticz_HBWork");
+}
+
+void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
+{
 	m_stopHeartbeatrequested = false;
 	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
-	SetThreadName(m_Heartbeatthread->native_handle(), "Domoticz_HBWork");
+	SetThreadName(m_Heartbeatthread->native_handle(), ThreadName);
 }
+
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
 {
