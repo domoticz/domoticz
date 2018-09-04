@@ -66,7 +66,6 @@ void CDomoticzHardwareBase::StartHeartbeatThread()
 
 void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
 {
-	m_stopHeartbeatrequested = false;
 	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
 	SetThreadName(m_Heartbeatthread->native_handle(), ThreadName);
 }
@@ -74,9 +73,9 @@ void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
 {
-	m_stopHeartbeatrequested = true;
 	if (m_Heartbeatthread)
 	{
+		RequestStop();
 		m_Heartbeatthread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
@@ -88,11 +87,9 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 {
 	int secCounter = 0;
 	int hbCounter = 0;
-	while (!m_stopHeartbeatrequested)
+	while (!IsStopRequested(1000))
 	{
 		sleep_milliseconds(200);
-		if (m_stopHeartbeatrequested)
-			break;
 		secCounter++;
 		if (secCounter == 5)
 		{
