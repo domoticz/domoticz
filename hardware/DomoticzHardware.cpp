@@ -40,7 +40,18 @@ void CDomoticzHardwareBase::Stop()
 void CDomoticzHardwareBase::Restart()
 {
 	if (StopHardware())
+	{
 		m_bIsStarted = StartHardware();
+	}
+}
+
+void CDomoticzHardwareBase::RestartWithDelay(const long seconds)
+{
+	if (StopHardware())
+	{
+		sleep_seconds(seconds);
+		m_bIsStarted = StartHardware();
+	}
 }
 
 void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
