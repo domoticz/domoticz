@@ -33,16 +33,10 @@ ASyncTCP::~ASyncTCP(void)
 
 	// tell the IO service to stop
 	mIos.stop();
-	try {
-		if (m_tcpthread)
-		{
-			m_tcpthread->join();
-			m_tcpthread.reset();
-		}
-	}
-	catch (...)
+	if (m_tcpthread)
 	{
-		//Don't throw from a Stop command
+		m_tcpthread->join();
+		m_tcpthread.reset();
 	}
 }
 
