@@ -4,8 +4,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
-#include "../main/Helper.h"                // for SetThreadName
-#include "../main/Logger.h"                // for CLogger, _log, _eLogLevel:...
 struct hostent;
 
 #ifndef WIN32
@@ -27,7 +25,6 @@ ASyncTCP::ASyncTCP()
 
 	//Start IO Service worker thread
 	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
-	SetThreadName(m_tcpthread->native_handle(), ASYNCTCP_THREAD_NAME);
 }
 
 ASyncTCP::~ASyncTCP(void)
@@ -75,8 +72,9 @@ void ASyncTCP::connect(const std::string &ip, unsigned short port)
 			}
 			else
 			{
-				//we will fail
-				_log.Log(LOG_ERROR, "TCP: Unable to resolve '%s'", fip.c_str());
+				// Failed to resolve hostname
+				if (mAllowCallbacks)
+					OnError(boost::system::errc::make_error_code(boost::system::errc::host_unreachable));
 			}
 		}
 
@@ -88,7 +86,6 @@ void ASyncTCP::connect(const std::string &ip, unsigned short port)
 	{
 		if (!mAllowCallbacks)
 			return;
-		_log.Log(LOG_ERROR, "TCP: Exception: %s", e.what());
 		OnError(e);
 	}
 }
@@ -136,7 +133,6 @@ void ASyncTCP::StartReconnect()
 	if (m_reconnect_delay != 0)
 	{
 		mIsReconnecting = true;
-		_log.Log(LOG_STATUS, "TCP: Reconnecting in %d seconds...", m_reconnect_delay);
 		// schedule a timer to reconnect after xx seconds
 		mReconnectTimer.expires_from_now(boost::posix_time::seconds(m_reconnect_delay));
 		mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
@@ -202,7 +198,6 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 
 		if (mAllowCallbacks)
 			OnError(error);
-		OnErrorInt(error);
 
 		if (!mDoReconnect)
 		{
@@ -302,7 +297,6 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 	}
 	mReconnectTimer.cancel();
 	// try to reconnect, then call handle_connect
-	_log.Log(LOG_STATUS, "TCP: Reconnecting...");
 	mSocket.async_connect(mEndPoint,
         boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
 	mIsReconnecting = false;
@@ -320,6 +314,7 @@ void ASyncTCP::do_write(const std::string &msg)
 	}
 }
 
+/*
 void ASyncTCP::OnErrorInt(const boost::system::error_code& error)
 {
 	if (
@@ -342,3 +337,4 @@ void ASyncTCP::OnErrorInt(const boost::system::error_code& error)
 	else
 		_log.Log(LOG_ERROR, "TCP: Error: %s", error.message().c_str());
 }
+*/
