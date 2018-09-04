@@ -509,12 +509,6 @@ void CLogitechMediaServer::SetSettings(const int PollIntervalsec, const int Ping
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-void CLogitechMediaServer::Restart()
-{
-	StopHardware();
-	StartHardware();
-}
-
 bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);

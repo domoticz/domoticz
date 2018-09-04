@@ -39,7 +39,6 @@ public:
 	void RemoveNode(const int ID);
 	void RemoveAllNodes();
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
-	void Restart();
 	bool SendCommand(const int ID, const std::string &command, const std::string &param = "");
 	std::vector<LMSPlaylistNode> GetPlaylists();
 	void SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration);

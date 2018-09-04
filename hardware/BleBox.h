@@ -23,7 +23,6 @@ public:
 	void RemoveNode(const int id);
 	void RemoveAllNodes();
 	void SetSettings(const int pollIntervalsec);
-	void Restart();
 	void UpdateFirmware();
 	Json::Value GetApiDeviceState(const std::string &IPAddress);
 	bool DoesNodeExists(const Json::Value &root, const std::string &node);

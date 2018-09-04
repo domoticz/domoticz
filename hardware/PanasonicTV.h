@@ -21,7 +21,6 @@ public:
 	void RemoveNode(const int ID);
 	void RemoveAllNodes();
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
-	void Restart();
 	void SendCommand(const int ID, const std::string &command);
 	bool SetExecuteCommand(const int ID, const std::string &command);
 private:
