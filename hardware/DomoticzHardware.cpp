@@ -36,7 +36,7 @@ bool CDomoticzHardwareBase::Start()
 bool CDomoticzHardwareBase::Stop()
 {
 	m_bIsStarted = (!StopHardware());
-	return m_bIsStarted;
+	return (!m_bIsStarted);
 }
 
 bool CDomoticzHardwareBase::Restart()
