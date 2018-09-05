@@ -36,10 +36,9 @@ datum;DISCONNECT;ConnectionID;dauerInSekunden;
 */
 
 FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_bufferpos = 0;
@@ -51,7 +50,6 @@ FritzboxTCP::~FritzboxTCP(void)
 
 bool FritzboxTCP::StartHardware()
 {
-	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
@@ -78,7 +76,6 @@ bool FritzboxTCP::StopHardware()
 void FritzboxTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS,"Fritzbox: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
 
@@ -92,28 +89,14 @@ void FritzboxTCP::OnDisconnect()
 
 void FritzboxTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 0;
+	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
-		}
-
-		if (bFirstTime)
-		{
-			bFirstTime=false;
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	terminate();

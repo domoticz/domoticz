@@ -87,26 +87,17 @@ void Comm5SMTCP::OnDisconnect()
 
 void Comm5SMTCP::Do_Work()
 {
-	bool bFirstTime = true;
-	int count = 0;
-	while (!IsStopRequested(40))
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!isConnected())
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			update();
-			if (count++ >= 100) {
-				count = 0;
-				querySensorState();
-			}
+		if (sec_counter % 4 == 0) {
+			querySensorState();
 		}
 	}
 	terminate();

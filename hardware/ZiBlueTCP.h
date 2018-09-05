@@ -20,7 +20,6 @@ private:
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 
 	void Do_Work();
 

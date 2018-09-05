@@ -11,7 +11,6 @@ CZiBlueTCP::CZiBlueTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = ZiBlue_RETRY_DELAY;
 }
@@ -22,7 +21,6 @@ CZiBlueTCP::~CZiBlueTCP(void)
 
 bool CZiBlueTCP::StartHardware()
 {
-	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=ZiBlue_RETRY_DELAY;
@@ -49,7 +47,6 @@ bool CZiBlueTCP::StopHardware()
 void CZiBlueTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS,"ZiBlue: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
 	m_LastReceivedTime = mytime(NULL);
@@ -60,64 +57,19 @@ void CZiBlueTCP::OnConnect()
 void CZiBlueTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS,"ZiBlue: disconnected");
-	m_bDoRestart = true;
 }
 
 void CZiBlueTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 0;
+	_log.Log(LOG_STATUS, "ZiBlue: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
-		time_t atime = mytime(NULL);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat= atime;
-		}
-/*
-		if ((sec_counter % 20 == 0) && (isConnected()))
-		{
-			//Send ping (keep alive)
-			if (atime - m_LastReceivedTime > 30)
-			{
-				//Timeout
-				_log.Log(LOG_ERROR, "ZiBlue: Nothing received for more than 30 seconds, restarting...");
-				m_retrycntr = 0;
-				m_LastReceivedTime = atime;
-				m_bDoRestart = true;
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
-			}
-			else
-				write("10;PING;\n");
-		}
-*/
-		if (bFirstTime)
-		{
-			bFirstTime=false;
-			if (isConnected())
-			{
-				disconnect();
-			}
-			_log.Log(LOG_STATUS, "ZiBlue: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				_log.Log(LOG_STATUS, "ZiBlue: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				disconnect();
-				connect(m_szIPAddress, m_usIPPort);
-			}
-			update();
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	terminate();
