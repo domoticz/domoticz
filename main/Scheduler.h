@@ -3,6 +3,7 @@
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include <string>
+#include "StoppableTask.h"
 
 struct tScheduleItem
 {
@@ -61,7 +62,7 @@ struct tScheduleItem
 	}
 };
 
-class CScheduler
+class CScheduler : public StoppableTask
 {
 public:
 	CScheduler(void);
@@ -87,7 +88,6 @@ private:
 	time_t m_tAstTwStart;
 	time_t m_tAstTwEnd;
 	std::mutex m_mutex;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::vector<tScheduleItem> m_scheduleitems;
 

@@ -30,7 +30,6 @@ CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 	if (results.size() > 1)
 		m_SBFInverter = results[1];
 	m_SBFDataPath="";
-	m_stoprequested=false;
 	Init();
 }
 
@@ -114,7 +113,7 @@ bool CSBFSpot::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -129,9 +128,8 @@ void CSBFSpot::Do_Work()
 	int LastMinute=-1;
 
 	_log.Log(LOG_STATUS,"SBFSpot: Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		time_t atime=mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);

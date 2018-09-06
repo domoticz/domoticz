@@ -28,7 +28,6 @@
 CVolcraftCO20::CVolcraftCO20(const int ID)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 }
 
 CVolcraftCO20::~CVolcraftCO20(void)
@@ -50,7 +49,7 @@ bool CVolcraftCO20::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -61,9 +60,8 @@ bool CVolcraftCO20::StopHardware()
 void CVolcraftCO20::Do_Work()
 {
 	int sec_counter=VolcraftCO20_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter%12==0)
 		{

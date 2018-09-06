@@ -623,7 +623,6 @@ CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchRowID = 0;
 	m_dbase = NULL;
-	m_stoprequested = false;
 	m_sensortimeoutcounter = 0;
 	m_bAcceptNewHardware = true;
 	m_bAllowWidgetOrdering = true;
@@ -647,7 +646,7 @@ CSQLHelper::~CSQLHelper(void)
 {
 	if (m_background_task_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_background_task_thread->join();
 		m_background_task_thread.reset();
 	}
@@ -3069,10 +3068,8 @@ void CSQLHelper::Do_Work()
 {
 	std::vector<_tTaskItem> _items2do;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(static_cast<const long>(1000.0f / timer_resolution_hz)))
 	{
-		sleep_milliseconds(static_cast<const long>(1000.0f / timer_resolution_hz));
-
 		if (m_bAcceptHardwareTimerActive)
 		{
 			m_iAcceptHardwareTimerCounter -= static_cast<float>(1. / timer_resolution_hz);

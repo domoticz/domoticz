@@ -77,7 +77,6 @@ CDenkoviDevices::CDenkoviDevices(const int ID, const std::string &IPAddress, con
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
-	m_stoprequested = false;
 	m_bOutputLog = false;
 	m_iModel = model;
 	if (m_pollInterval < 500)
@@ -147,9 +146,9 @@ bool CDenkoviDevices::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -160,9 +159,8 @@ void CDenkoviDevices::Do_Work()
 	int poll_interval = m_pollInterval / 100;
 	int poll_counter = poll_interval - 2;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(100))
 	{
-		sleep_milliseconds(100);
 		poll_counter++;
 
 		if (poll_counter % 12 * 10 == 0) { //10 steps = 1 second (10 * 100)

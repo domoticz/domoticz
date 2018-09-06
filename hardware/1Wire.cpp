@@ -21,7 +21,6 @@
 #define round(a) ( int ) ( a + .5 )
 
 C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path) :
-	m_stoprequested(false),
 	m_system(NULL),
 	m_sensorThreadPeriod(sensorThreadPeriod),
 	m_switchThreadPeriod(switchThreadPeriod),
@@ -89,16 +88,15 @@ bool C1Wire::StartHardware()
 
 bool C1Wire::StopHardware()
 {
+	RequestStop();
 	if (m_threadSensors)
 	{
-		m_stoprequested = true;
 		m_threadSensors->join();
 		m_threadSensors.reset();
 	}
 
 	if (m_threadSwitches)
 	{
-		m_stoprequested = true;
 		m_threadSwitches->join();
 		m_threadSwitches.reset();
 	}
@@ -154,7 +152,7 @@ void C1Wire::SensorThread()
 	// initial small delay
 	sleep_milliseconds(1000);
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(0))
 	{
 		if (m_sensors.size() > 2)
 		{
@@ -163,7 +161,7 @@ void C1Wire::SensorThread()
 
 		// Parse our devices
 		std::set<_t1WireDevice>::const_iterator itt;
-		for (itt=m_sensors.begin(); itt!=m_sensors.end() && !m_stoprequested; ++itt)
+		for (itt=m_sensors.begin(); itt!=m_sensors.end() && !IsStopRequested(0); ++itt)
 		{
 			const _t1WireDevice& device=*itt;
 
@@ -232,12 +230,12 @@ void C1Wire::SensorThread()
 					break;
 			}
 
-			if (!m_stoprequested && !m_bSensorFirstTime)
+			if (!IsStopRequested(0) && !m_bSensorFirstTime)
 				for (i=0;i<pollIterations;i++)
 					sleep_milliseconds(pollPeriod);
 		}
 		m_bSensorFirstTime = false;
-		if (!m_stoprequested)
+		if (!IsStopRequested(0))
 			for (i=0;i<afterIterations;i++)
 				sleep_milliseconds(pollPeriod);
 	}
@@ -259,10 +257,8 @@ void C1Wire::SwitchThread()
 
         m_bSwitchFirstTime = true;
 
-        while (!m_stoprequested)
+        while (!IsStopRequested(pollPeriod))
         {
-                sleep_milliseconds(pollPeriod);
-
                 if (0 == iteration++ % rescanIterations) // may glitch on overflow, not disastrous
                 {
                         if (m_bSwitchFirstTime)
@@ -375,7 +371,7 @@ void C1Wire::PollSwitches()
 	if (!m_system)
 		return;
 
-	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
+	// Parse our devices (have to test if IsStopRequested because it can take some time in case of big networks)
 	for (const auto & itt : m_switches)
 	{
 		const _t1WireDevice& device=itt;

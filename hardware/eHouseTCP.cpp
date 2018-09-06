@@ -396,7 +396,6 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_socket(INVALID_SOCKET),
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
-	m_stoprequested(false),
 	m_pollInterval(pollInterval)
 {
 	m_eHouseUDPSocket = -1;			//UDP socket handler
@@ -563,15 +562,11 @@ bool eHouseTCP::StopHardware()
 	LOG(LOG_STATUS, "eHouse: Stop hardware");
 	//#endif
 	TerminateUDP();
-	ssl(1);
-	m_stoprequested = true;
-	/*#ifdef WIN32
-		WSACleanup();
-	#endif
-	*/
+	sleep_seconds(1);
 
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}

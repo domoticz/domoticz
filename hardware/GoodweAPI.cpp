@@ -111,7 +111,8 @@ GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int Server
 	m_UserName(userName)
 {
 	m_HwdID=ID;
-	switch ((_eGoodweLocation)ServerLocation) {
+	switch ((_eGoodweLocation)ServerLocation)
+	{
 		case GOODWE_LOCATION_EUROPE:
 			m_Host = GOODWE_HOST_EU;
 			break;
@@ -122,8 +123,6 @@ GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int Server
 			m_Host = GOODWE_HOST_GLOBAL;
 			break;
 	}
-
-	m_stoprequested=false;
 	Init();
 }
 
@@ -150,7 +149,7 @@ bool GoodweAPI::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -162,9 +161,8 @@ void GoodweAPI::Do_Work()
 {
 	_log.Log(LOG_STATUS, "GoodweAPI Worker started, using server URL %s...", m_Host.c_str());
 	int sec_counter = 295;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

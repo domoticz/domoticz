@@ -74,7 +74,6 @@ const std::string CPiFace::ParameterCountTypeValueNames[CONFIG_NR_OF_PARAMETER_C
 
 CPiFace::CPiFace(const int ID)
 {
-    m_stoprequested=false;
     m_HwdID=ID;
     m_bIsStarted=false;
 
@@ -696,41 +695,42 @@ bool CPiFace::StartHardware()
     m_InputSample_waitcntr=(PIFACE_INPUT_PROCESS_INTERVAL)*20;
     m_CounterEdgeSample_waitcntr=(PIFACE_COUNTER_COUNTER_INTERVAL)*20;
 
-    m_stoprequested=false;
     memset(m_DetectedHardware,0,sizeof(m_DetectedHardware));
 
 #ifndef DISABLE_NEW_FUNCTIONS
     LoadConfig();
 #endif
     //Start worker thread
-    if (Init_SPI_Device(1) > 0)
-    {
-        if (Detect_PiFace_Hardware() > 0)
-        {
-            //we have hardware, so lets use it
-            for (int devId=0;  devId<4 ;devId++)
-            {
-                if (m_DetectedHardware[devId]==true)
-                    Init_Hardware(devId);
-            }
+	if (Init_SPI_Device(1) > 0)
+	{
+		if (Detect_PiFace_Hardware() > 0)
+		{
+			//we have hardware, so lets use it
+			for (int devId = 0; devId < 4; devId++)
+			{
+				if (m_DetectedHardware[devId] == true)
+					Init_Hardware(devId);
+			}
 #ifdef DISABLE_NEW_FUNCTIONS
-            LoadConfig();
+			LoadConfig();
 #endif
 
-            for (int devId=0;  devId<4 ;devId++)
-            {
-                if (m_DetectedHardware[devId]==true)
-                    GetAndSetInitialDeviceState(devId);
-            }
+			for (int devId = 0; devId < 4; devId++)
+			{
+				if (m_DetectedHardware[devId] == true)
+					GetAndSetInitialDeviceState(devId);
+			}
 
 			m_thread = std::make_shared<std::thread>(&CPiFace::Do_Work, this);
 			SetThreadName(m_thread->native_handle(), "PiFace");
 			m_queue_thread = std::make_shared<std::thread>(&CPiFace::Do_Work_Queue, this);
 			SetThreadName(m_queue_thread->native_handle(), "PiFaceQueue");
-        }
-        else m_stoprequested=true;
-    }
-    else m_stoprequested=true;
+		}
+		else
+			RequestStop();
+	}
+	else
+		RequestStop();
     m_bIsStarted=true;
     sOnConnected(this);
     return (m_thread != nullptr);
@@ -738,18 +738,17 @@ bool CPiFace::StartHardware()
 
 bool CPiFace::StopHardware()
 {
-    m_stoprequested=true;
+	RequestStop();
     if (m_thread)
     {
-        m_stoprequested = true;
         m_thread->join();
         m_thread.reset();
-        if (m_queue_thread != NULL)
-        {
-            m_queue_thread->join();
-            m_queue_thread.reset();
-        }
     }
+	if (m_queue_thread)
+	{
+		m_queue_thread->join();
+		m_queue_thread.reset();
+	}
 #ifdef HAVE_LINUX_SPI
     if (m_fd > 0) {
         close(m_fd);
@@ -814,12 +813,8 @@ void CPiFace::Do_Work()
     _log.Log(LOG_STATUS,"PiFace: Worker started...");
     int msec_counter = 0;
     int sec_counter = 0;
-    while (!m_stoprequested)
+    while (!IsStopRequested(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS))
     {
-		sleep_milliseconds(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS);
-        if (m_stoprequested)
-            break;
-
         msec_counter++;
         if (msec_counter == (1000 / PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS))
         {
@@ -860,11 +855,8 @@ void CPiFace::Do_Work()
 void CPiFace::Do_Work_Queue()
 {
     std::vector<std::string>::iterator itt;
-    while (!m_stoprequested)
+    while (!IsStopRequested(100))
     {
-		sleep_milliseconds(100);
-        if (m_stoprequested)
-            break;
         if (m_send_queue.empty())
             continue;
 

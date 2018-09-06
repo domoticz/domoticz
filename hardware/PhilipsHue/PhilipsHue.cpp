@@ -65,7 +65,6 @@ m_UserName(Username)
 	m_poll_interval = PollInterval;
 	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) != 0;
 	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) != 0;
-	m_stoprequested=false;
 
 	// Catch uninitialised Mode1 entry.
 	if (m_poll_interval < 1)
@@ -104,7 +103,7 @@ bool CPhilipsHue::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -120,10 +119,8 @@ void CPhilipsHue::Do_Work()
 
 	_log.Log(LOG_STATUS,"Philips Hue: Worker started...");
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
-
 		msec_counter++;
 		if (msec_counter == 2)
 		{

@@ -67,7 +67,6 @@ CAnnaThermostat::~CAnnaThermostat(void)
 void CAnnaThermostat::Init()
 {
 	m_ThermostatID = "";
-	m_stoprequested = false;
 }
 
 bool CAnnaThermostat::StartHardware()
@@ -85,7 +84,7 @@ bool CAnnaThermostat::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -100,9 +99,8 @@ void CAnnaThermostat::Do_Work()
 	bool bFirstTime = true;
 	_log.Log(LOG_STATUS,"AnnaThermostat: Worker started...");
 	int sec_counter = ANNA_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{

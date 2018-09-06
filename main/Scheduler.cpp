@@ -24,7 +24,6 @@ CScheduler::CScheduler(void)
 	m_tNautTwEnd = 0;
 	m_tAstTwStart = 0;
 	m_tAstTwEnd = 0;
-	m_stoprequested = false;
 	srand((int)mytime(NULL));
 }
 
@@ -42,7 +41,7 @@ void CScheduler::StopScheduler()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -699,11 +698,8 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 
 void CScheduler::Do_Work()
 {
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		//sleep 1 second
-		sleep_seconds(1);
-
 		time_t atime = mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);

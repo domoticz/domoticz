@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include <deque>
 #include "WindCalculation.h"
+#include "StoppableTask.h"
 #include "../tcpserver/TCPServer.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
@@ -14,7 +15,7 @@
 #	include "../hardware/plugins/PluginManager.h"
 #endif
 
-class MainWorker
+class MainWorker : public StoppableTask
 {
 public:
 	MainWorker();
@@ -170,7 +171,6 @@ private:
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
 #endif
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 

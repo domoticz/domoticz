@@ -20,7 +20,6 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 {
 	m_HwdID = ID;
 	m_socket = INVALID_SOCKET;
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	info = NULL;
 	m_bIsStarted = false;
@@ -81,8 +80,6 @@ bool DomoticzTCP::StartHardwareTCP()
 	struct addrinfo hints;
 	m_bIsStarted = true;
 
-	m_stoprequested = false;
-
 	memset(&m_addr, 0, sizeof(sockaddr_in6));
 	m_addr.sin6_family = AF_INET6;
 	m_addr.sin6_port = htons(m_usIPPort);
@@ -142,27 +139,11 @@ bool DomoticzTCP::StopHardware()
 
 bool DomoticzTCP::StopHardwareTCP()
 {
-	try {
-		if (m_thread)
-		{
-			m_stoprequested = true;
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
-	}
-	if (isConnected())
-	{
-		try {
-			disconnectTCP();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -225,13 +206,13 @@ void DomoticzTCP::Do_Work()
 {
 	char buf[100];
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(100))
 	{
-		if (
-			(m_socket == INVALID_SOCKET) &&
-			(!m_stoprequested)
-			)
+		if (m_socket == INVALID_SOCKET)
 		{
+			if (!IsStopRequested(900)) //+100 = 1 second
+			{
+			}
 			sleep_seconds(1);
 			sec_counter++;
 
@@ -239,8 +220,6 @@ void DomoticzTCP::Do_Work()
 				mytime(&m_LastHeartbeat);
 			}
 
-			if (m_stoprequested)
-				break;
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
 			{
@@ -258,27 +237,20 @@ void DomoticzTCP::Do_Work()
 			m_LastHeartbeat = mytime(NULL);
 
 			int bread = recv(m_socket, (char*)&buf, sizeof(buf), 0);
-			if (m_stoprequested)
+			if (IsStopRequested(10))
 				break;
 			if (bread <= 0) {
-				_log.Log(LOG_ERROR, "Domoticz: TCP/IP connection closed! %s", m_szIPAddress.c_str());
-				closesocket(m_socket);
-				m_socket = INVALID_SOCKET;
-				if (!m_stoprequested)
-				{
-					_log.Log(LOG_STATUS, "Domoticz: retrying in %d seconds...", RETRY_DELAY);
-					m_retrycntr = 0;
-					continue;
-				}
+				disconnectTCP();
+				_log.Log(LOG_ERROR, "Domoticz: TCP/IP connection closed!, retrying in %d seconds...", RETRY_DELAY);
+				m_retrycntr = 0;
+				continue;
 			}
-			else
-			{
-				std::lock_guard<std::mutex> l(readQueueMutex);
-				onInternalMessage((const unsigned char *)&buf, bread, false); // Do not check validity, this might be non RFX-message
-			}
+			std::lock_guard<std::mutex> l(readQueueMutex);
+			onInternalMessage((const unsigned char *)&buf, bread, false); // Do not check validity, this might be non RFX-message
 		}
-
 	}
+	disconnectTCP();
+
 	_log.Log(LOG_STATUS, "Domoticz: TCP/IP Worker stopped...");
 }
 

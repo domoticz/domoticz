@@ -162,7 +162,6 @@ m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	m_RemoteSocket=INVALID_SOCKET;
 	m_bSkipReceiveCheck = true;
 	m_BridgeType = (_eLimitlessBridgeType)BridgeType;
@@ -419,14 +418,9 @@ bool CLimitLess::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
-	}
-    if (m_RemoteSocket!=INVALID_SOCKET)
-	{
-		closesocket(m_RemoteSocket);
-		m_RemoteSocket=INVALID_SOCKET;
 	}
 	m_bIsStarted=false;
     return true;
@@ -437,9 +431,8 @@ void CLimitLess::Do_Work()
 	int sec_counter = 0;
 	bool bDoInit = true;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (bDoInit)
@@ -461,6 +454,12 @@ void CLimitLess::Do_Work()
 			m_LastHeartbeat=mytime(NULL);
 		}
 	}
+	if (m_RemoteSocket != INVALID_SOCKET)
+	{
+		closesocket(m_RemoteSocket);
+		m_RemoteSocket = INVALID_SOCKET;
+	}
+
 	_log.Log(LOG_STATUS,"AppLamp: Worker stopped...");
 }
 

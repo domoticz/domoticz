@@ -155,8 +155,6 @@ m_ActI2CBus(SerialPort),
 m_invert_data((bool) Mode1)
 {
 	_log.Log(LOG_STATUS, "I2C  Start HW witf ID: %d Name: %s Address: %d Port: %s Invert:%d ", ID, szI2CTypeNames[m_dev_type], m_i2c_addr, m_ActI2CBus.c_str(), m_invert_data);
-
-	m_stoprequested = false;
 	m_HwdID = ID;
 	if ( m_ActI2CBus=="" ){ // if empty option then autodetect i2c bus
 		m_ActI2CBus = "/dev/i2c-1";
@@ -173,7 +171,6 @@ I2C::~I2C()
 
 bool I2C::StartHardware()
 {
-	m_stoprequested = false;
 	if ((m_dev_type == I2CTYPE_BMP085)|| (m_dev_type == I2CTYPE_BME280))
 	{
 		m_minuteCount = 0;
@@ -196,9 +193,9 @@ bool I2C::StartHardware()
 
 bool I2C::StopHardware()
 {
-	m_stoprequested = true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -245,11 +242,8 @@ void I2C::Do_Work()
 		TSL2561_Init();
 	}
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(100))
 	{
-		sleep_milliseconds(100);
-		if (m_stoprequested)
-			break;
 		msec_counter++;
 		if (msec_counter == 10)
 		{

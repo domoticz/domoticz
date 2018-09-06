@@ -49,7 +49,6 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	m_socket(INVALID_SOCKET),
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
-	m_stoprequested(false),
 	m_pollInterval(pollInterval)
 {
 	_log.Log(LOG_STATUS, "Satel Integra: Create instance");
@@ -142,102 +141,91 @@ bool SatelIntegra::StartHardware()
 
 bool SatelIntegra::StopHardware()
 {
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: Stop hardware");
-#endif
-
-	m_stoprequested = true;
-
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-
-	DestroySocket();
-
 	m_bIsStarted = false;
 	return true;
 }
 
 void SatelIntegra::Do_Work()
 {
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: Start work");
-#endif
+	if (!GetInfo())
+		return;
 
-	if (GetInfo())
+	_log.Log(LOG_STATUS, "Satel Integra: worker started");
+
+	ReadZonesState(true);
+	ReadAlarm(true);
+	ReadArmState(true);
+	ReadTemperatures(true);
+	ReadOutputsState(true);
+
+	UpdateAlarmAndArmName();
+
+	int heartbeatInterval = 0;
+	long msec_poll_counter = 0;
+	long msec_temp_counter = 0;
+	long interval = m_pollInterval;
+	if (interval > HEARTBEAT_INTERVAL_MS)
+		interval = HEARTBEAT_INTERVAL_MS;
+
+	while (!IsStopRequested(interval))
 	{
-		ReadZonesState(true);
-		ReadAlarm(true);
-		ReadArmState(true);
-		ReadTemperatures(true);
-		ReadOutputsState(true);
+		msec_poll_counter += interval;
+		msec_temp_counter += interval;
+		heartbeatInterval += interval;
 
-		UpdateAlarmAndArmName();
-
-		int heartbeatInterval = 0;
-		long msec_poll_counter = 0;
-		long msec_temp_counter = 0;
-		long interval = m_pollInterval;
-		if (interval > HEARTBEAT_INTERVAL_MS)
-			interval = HEARTBEAT_INTERVAL_MS;
-
-		while (!m_stoprequested)
-		{
-			sleep_milliseconds(interval);
-			if (m_stoprequested)
-				break;
-			msec_poll_counter += interval;
-			msec_temp_counter += interval;
-			heartbeatInterval += interval;
-
-			if (heartbeatInterval >= HEARTBEAT_INTERVAL_MS) {
-				m_LastHeartbeat = mytime(NULL);
-				heartbeatInterval = 0;
-			}
-
-			if (msec_poll_counter >= m_pollInterval)
-			{
-				msec_poll_counter = 0;
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: fetching changed data");
-#endif
-
-				if (ReadNewData())
-				{
-					SetHeartbeatReceived();
-
-					if (m_newData[3] & 8)
-					{
-						ReadAlarm();
-					}
-					if (m_newData[2] & 4)
-					{
-						ReadArmState();
-					}
-					if (m_newData[1] & 1)
-					{
-						ReadZonesState();
-					}
-					if (m_newData[3] & 128)
-					{
-						ReadOutputsState();
-					}
-				}
-			//	ReadEvents();
-			}
-
-			if (msec_temp_counter >= SATEL_TEMP_POLL_INTERVAL_MS)
-			{
-				msec_temp_counter = 0;
-#ifdef DEBUG_SatelIntegra
-				_log.Log(LOG_STATUS, "Satel Integra: fetching temperature");
-#endif
-				ReadTemperatures();
-			}
+		if (heartbeatInterval >= HEARTBEAT_INTERVAL_MS) {
+			m_LastHeartbeat = mytime(NULL);
+			heartbeatInterval = 0;
 		}
-	}
+
+		if (msec_poll_counter >= m_pollInterval)
+		{
+			msec_poll_counter = 0;
+#ifdef DEBUG_SatelIntegra
+_log.Log(LOG_STATUS, "Satel Integra: fetching changed data");
+#endif
+
+			if (ReadNewData())
+			{
+				SetHeartbeatReceived();
+
+				if (m_newData[3] & 8)
+				{
+					ReadAlarm();
+				}
+				if (m_newData[2] & 4)
+				{
+					ReadArmState();
+				}
+				if (m_newData[1] & 1)
+				{
+					ReadZonesState();
+				}
+				if (m_newData[3] & 128)
+				{
+					ReadOutputsState();
+				}
+			}
+		//	ReadEvents();
+		}
+
+		if (msec_temp_counter >= SATEL_TEMP_POLL_INTERVAL_MS)
+		{
+			msec_temp_counter = 0;
+#ifdef DEBUG_SatelIntegra
+			_log.Log(LOG_STATUS, "Satel Integra: fetching temperature");
+#endif
+			ReadTemperatures();
+		}
+	}//while (!IsStopRequested())
+	DestroySocket();
+	_log.Log(LOG_STATUS, "Satel Integra: worker stopped");
 }
 
 bool SatelIntegra::CheckAddress()
@@ -311,14 +299,7 @@ void SatelIntegra::DestroySocket()
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: destroy socket");
 #endif
-		try
-		{
-			closesocket(m_socket);
-		}
-		catch (...)
-		{
-		}
-
+		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
 	}
 }
@@ -430,7 +411,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 		for (unsigned int index = 0; index < zonesCount; ++index)
 		{
-			if (!m_stoprequested)
+			if (!IsStopRequested(0))
 			{
 				byteNumber = index / 8;
 				bitNumber = index % 8;
@@ -497,7 +478,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 	}
 
 	for (unsigned int index = 0; index < zonesCount; ++index)
-		if ((m_isTemperature[index]) && (!m_stoprequested))
+		if ((m_isTemperature[index]) && (!IsStopRequested(0)))
 		{
 #ifdef DEBUG_SatelIntegra
 			_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d temperature", index + 1);
@@ -578,7 +559,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 
 		for (unsigned int index = 0; index < outputsCount; ++index)
 		{
-			if (!m_stoprequested)
+			if (!IsStopRequested(0))
 			{
 				byteNumber = index / 8;
 				bitNumber = index % 8;

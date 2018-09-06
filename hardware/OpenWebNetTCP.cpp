@@ -60,7 +60,6 @@ License: Public domain
 COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime) : m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	m_ownPassword = ownPassword;
 
@@ -84,7 +83,6 @@ COpenWebNetTCP::~COpenWebNetTCP(void)
 **/
 bool COpenWebNetTCP::StartHardware()
 {
-	m_stoprequested = false;
 	m_bIsStarted = true;
 	mask_request_status = 0x1; // Set scan all devices
 	LastScanTimeEnergy = LastScanTimeEnergyTot = 0;	// Force first request command
@@ -107,38 +105,23 @@ bool COpenWebNetTCP::StartHardware()
 **/
 bool COpenWebNetTCP::StopHardware()
 {
-	m_stoprequested = true;
+	RequestStop();
 
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: StopHardware");
-
-	try {
-		if (m_monitorThread)
-		{
-			m_monitorThread->join();
-			m_monitorThread.reset();
-		}
-		if (m_heartbeatThread)
-		{
-			m_heartbeatThread->join();
-			m_heartbeatThread.reset();
-		}
-	}
-	catch (...)
+	//Force socket close to stop the blocking thread?
+	if (m_pStatusSocket != NULL)
 	{
-		//Don't throw from a Stop command
+		m_pStatusSocket->close();
 	}
-
-	if (isStatusSocketConnected())
+	if (m_monitorThread)
 	{
-		try {
-			disconnect();  // disconnet socket if present
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		m_monitorThread->join();
+		m_monitorThread.reset();
 	}
-
+	if (m_heartbeatThread)
+	{
+		m_heartbeatThread->join();
+		m_heartbeatThread.reset();
+	}
 	m_bIsStarted = false;
 	return true;
 }
@@ -151,8 +134,7 @@ void COpenWebNetTCP::disconnect()
 	if (m_pStatusSocket != NULL)
 	{
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: disconnect");
-		if (m_pStatusSocket->getState() != csocket::CLOSED)
-			m_pStatusSocket->close();
+		m_pStatusSocket->close();
 		delete m_pStatusSocket;
 		m_pStatusSocket = NULL;
 	}
@@ -378,11 +360,10 @@ csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 **/
 void COpenWebNetTCP::MonitorFrames()
 {
-	while (!m_stoprequested)
+	while (!IsStopRequested(0))
 	{
 		if (!isStatusSocketConnected())
 		{
-			if (m_stoprequested) break;
 			disconnect();  // disconnet socket if present
 			time_t atime = time(NULL);
 			if ((atime%OPENWEBNET_RETRY_DELAY) == 0)
@@ -411,7 +392,8 @@ void COpenWebNetTCP::MonitorFrames()
 				memset(data, 0, OPENWEBNET_BUFFER_SIZE);
 				int bread = m_pStatusSocket->read(data, OPENWEBNET_BUFFER_SIZE, false);
 
-				if (m_stoprequested) break;
+				if (IsStopRequested(0))
+					break;
 
 				if ((bread == 0) || (bread < 0)) {
 					_log.Log(LOG_ERROR, "COpenWebNetTCP: TCP/IP monitor connection closed!");
@@ -434,9 +416,21 @@ void COpenWebNetTCP::MonitorFrames()
 					}
 				}
 			}
-			if (m_stoprequested) break;
+			else
+				sleep_milliseconds(100);
 		}
 	}
+	if (isStatusSocketConnected())
+	{
+		try {
+			disconnect();  // disconnet socket if present
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
+
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: TCP/IP monitor worker stopped...");
 }
 
@@ -1679,7 +1673,7 @@ bool COpenWebNetTCP::ParseData(char* data, int length, std::vector<bt_openwebnet
 
 void COpenWebNetTCP::Do_Work()
 {
-	while (!m_stoprequested)
+	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY*1000))
 	{
 		if (isStatusSocketConnected() && mask_request_status)
 		{
@@ -1694,8 +1688,6 @@ void COpenWebNetTCP::Do_Work()
 				_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
 			mask_request_status = 0x1; // force scan devices
 		}
-
-		sleep_seconds(OPENWEBNET_HEARTBEAT_DELAY);
 
 		if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
 		{

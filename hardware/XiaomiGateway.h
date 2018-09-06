@@ -62,8 +62,6 @@ private:
 	void AddGatewayToList();
 	void RemoveFromGatewayList();
 
-	volatile bool m_stoprequested;
-
 	class xiaomi_udp_server
 	{
 	public:

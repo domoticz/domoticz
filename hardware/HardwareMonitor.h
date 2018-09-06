@@ -21,7 +21,6 @@ private:
 	bool StopHardware() override;
 	double m_lastquerytime;
 	void Do_Work();
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	void FetchData();
 	void GetInternalTemperature();

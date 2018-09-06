@@ -17,8 +17,7 @@
 
 CInfluxPush::CInfluxPush() :
 	m_InfluxPort(8086),
-	m_bInfluxDebugActive(false),
-	m_stoprequested(false)
+	m_bInfluxDebugActive(false)
 {
 	m_bLinkActive = false;
 }
@@ -156,7 +155,6 @@ void CInfluxPush::DoInfluxPush()
 bool CInfluxPush::StartThread()
 {
 	StopThread();
-	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "InfluxPush");
 	return (m_thread != NULL);
@@ -166,7 +164,7 @@ void CInfluxPush::StopThread()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -177,7 +175,7 @@ void CInfluxPush::Do_Work()
 {
 	std::vector<_tPushItem> _items2do;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
 		sleep_milliseconds(500);
 

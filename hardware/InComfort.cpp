@@ -22,7 +22,6 @@ m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
-	m_stoprequested = false;
 
 	m_LastUpdateFrequentChangingValues = 0;
 	m_LastUpdateSlowChangingValues = 0;
@@ -46,7 +45,6 @@ CInComfort::~CInComfort(void)
 
 void CInComfort::Init()
 {
-	m_stoprequested = false;
 }
 
 bool CInComfort::StartHardware()
@@ -64,7 +62,7 @@ bool CInComfort::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -78,9 +76,8 @@ void CInComfort::Do_Work()
 {
 	int sec_counter = 0;
 	_log.Log(LOG_STATUS, "InComfort: Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			mytime(&m_LastHeartbeat);

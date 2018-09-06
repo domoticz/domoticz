@@ -69,7 +69,6 @@ void CNest::Init()
 {
 	m_AccessToken = "";
 	m_UserID = "";
-	m_stoprequested = false;
 	m_bDoLogin = true;
 }
 
@@ -88,13 +87,11 @@ bool CNest::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
     m_bIsStarted=false;
-	if (!m_bDoLogin)
-		Logout();
     return true;
 }
 
@@ -104,9 +101,8 @@ void CNest::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Nest: Worker started...");
 	int sec_counter = NEST_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
@@ -119,6 +115,7 @@ void CNest::Do_Work()
 		}
 
 	}
+	Logout();
 	_log.Log(LOG_STATUS,"Nest: Worker stopped...");
 }
 

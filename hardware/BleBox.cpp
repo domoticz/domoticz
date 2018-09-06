@@ -33,8 +33,7 @@ const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
 	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" }
 };
 
-BleBox::BleBox(const int id, const int pollIntervalsec) :
-	m_stoprequested(false)
+BleBox::BleBox(const int id, const int pollIntervalsec)
 {
 	m_HwdID = id;
 	m_RGBWisWhiteState = true;
@@ -48,8 +47,6 @@ BleBox::~BleBox()
 
 bool BleBox::StartHardware()
 {
-	m_stoprequested = false;
-
 	LoadNodes();
 	m_thread = std::make_shared<std::thread>(&BleBox::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "BleBox");
@@ -60,10 +57,9 @@ bool BleBox::StartHardware()
 
 bool BleBox::StopHardware()
 {
-	m_stoprequested = true;
-
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -76,11 +72,9 @@ void BleBox::Do_Work()
 {
 	int sec_counter = m_PollInterval - 1;
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "BleBox: Worker started...");
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -92,6 +86,7 @@ void BleBox::Do_Work()
 			GetDevicesState();
 		}
 	}
+	_log.Log(LOG_STATUS, "BleBox: Worker started...");
 }
 
 void BleBox::GetDevicesState()

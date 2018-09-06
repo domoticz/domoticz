@@ -20,7 +20,6 @@ private:
 
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;
-	bool m_stoprequested;
 	bool StartThread();
 	void StopThread();
 	void Do_Work();

@@ -197,7 +197,6 @@ namespace tcp {
 MainWorker::MainWorker()
 {
 	m_SecCountdown = -1;
-	m_stoprequested = false;
 	m_stopRxMessageThread = false;
 
 	m_bStartHardware = false;
@@ -1155,7 +1154,7 @@ bool MainWorker::Stop()
 
 		//    m_cameras.StopCameraGrabber();
 
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -1528,11 +1527,8 @@ void MainWorker::Do_Work()
 {
 	int second_counter = 0;
 	int heartbeat_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		//sleep 500 milliseconds
-		sleep_milliseconds(500);
-
 		if (m_bDoDownloadDomoticzUpdate)
 		{
 			m_bDoDownloadDomoticzUpdate = false;

@@ -161,7 +161,6 @@ int CSysfsGpio::m_sysfs_req_update;
 
 CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices, const int Debounce)
 {
-	m_stoprequested = false;
 	m_bIsStarted = false;
 	m_polling_enabled = false;
 	m_interrupts_enabled = false;
@@ -189,36 +188,19 @@ bool CSysfsGpio::StartHardware()
 
 bool CSysfsGpio::StopHardware()
 {
-	m_stoprequested = true;
+	RequestStop();
 
-	try
+	if (m_thread)
 	{
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
+		m_thread->join();
+		m_thread.reset();
 	}
-	catch (...)
+	if (m_edge_thread)
 	{
-		_log.Log(LOG_STATUS, "Sysfs GPIO: Worker - error during rundown");
+		m_edge_thread->join();
+		m_edge_thread.reset();
 	}
-
-	try
-	{
-		if (m_edge_thread)
-		{
-			m_edge_thread->join();
-			m_edge_thread.reset();
-		}
-	}
-	catch (...)
-	{
-		_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection - error during rundown");
-	}
-
 	m_bIsStarted = false;
-
 	return true;
 }
 
@@ -251,9 +233,8 @@ void CSysfsGpio::Do_Work()
 	bool bUpdateMaster = true;
 	int counter = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(GPIO_POLL_MSEC))
 	{
-		sleep_milliseconds(GPIO_POLL_MSEC);
 		counter++;
 
 		if (counter % HEARTBEAT_COUNT == 0)	/* Heartbeat maintenance */
@@ -261,13 +242,10 @@ void CSysfsGpio::Do_Work()
 			m_LastHeartbeat = mytime(NULL);
 		}
 
-		if (!m_stoprequested)
+		if (m_polling_enabled)
 		{
-			if (m_polling_enabled)
-			{
-				PollGpioInputs(false);
-				UpdateDomoticzInputs(false);
-			}
+			PollGpioInputs(false);
+			UpdateDomoticzInputs(false);
 		}
 
 		if (bUpdateMaster)
@@ -357,7 +335,7 @@ void CSysfsGpio::EdgeDetectThread()
 
 	_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection started");
 
-	while (!m_stoprequested) /* detect gpio state changes */
+	while (!IsStopRequested(0)) /* detect gpio state changes */
 	{
 		tv.tv_sec = 1;	// Set select timeout to 1 second.
 		tv.tv_usec = 0;
@@ -368,7 +346,7 @@ void CSysfsGpio::EdgeDetectThread()
 		//
 		int retval = select(m_maxfd + 1, NULL, NULL, &tmp_fds, &tv);
 
-		if (m_stoprequested)
+		if (IsStopRequested(0))
 		{
 			break;
 		}

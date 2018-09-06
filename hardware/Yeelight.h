@@ -21,7 +21,6 @@ private:
 private:
 	bool m_bDoRestart;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 
 	class udp_server
 	{

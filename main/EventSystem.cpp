@@ -125,7 +125,6 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
 
 CEventSystem::CEventSystem(void)
 {
-	m_stoprequested = false;
 	m_bEnabled = false;
 }
 
@@ -151,7 +150,6 @@ void CEventSystem::StartEventSystem()
 	Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
 
-	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CEventSystem::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "EventSystem");
 	m_eventqueuethread = std::make_shared<std::thread>(&CEventSystem::EventQueueThread, this);
@@ -161,18 +159,16 @@ void CEventSystem::StartEventSystem()
 
 void CEventSystem::StopEventSystem()
 {
+	RequestStop();
 	if (m_eventqueuethread)
 	{
-		m_stoprequested = true;
 		UnlockEventQueueThread();
 		m_eventqueuethread->join();
-		m_eventqueue.clear();
 		m_eventqueuethread.reset();
 	}
 
 	if (m_thread)
 	{
-		m_stoprequested = true;
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -309,10 +305,8 @@ void CEventSystem::Do_Work()
 	int _LastMinute = tmptime.tm_min;
 
 	_log.Log(LOG_STATUS, "EventSystem: Started");
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		//sleep 500 milliseconds
-		sleep_milliseconds(500);
 		time_t atime = mytime(NULL);
 
 		if (atime != lasttime)
@@ -1416,13 +1410,13 @@ void CEventSystem::EventQueueThread()
 	std::vector<_tEventQueue> items;
 	std::vector<_tEventQueue>::const_iterator itt;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(0))
 	{
 		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
 		if (!hasPopped)
 			continue;
 
-		if (m_stoprequested)
+		if (IsStopRequested(0))
 			break;
 #ifdef _DEBUG
 		//_log.Log(LOG_STATUS, "EventSystem: \n reason => %d\n id => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n lastUpdate => %s\n lastLevel => %d\n",
@@ -1444,6 +1438,8 @@ void CEventSystem::EventQueueThread()
 		EvaluateEvent(items);
 		items.clear();
 	}
+	m_eventqueue.clear();
+
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread stopped...");
 }
 

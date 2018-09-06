@@ -147,7 +147,6 @@ private:
 };
 
 CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms) :
-	m_stoprequested(false),
 	m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
@@ -172,11 +171,8 @@ bool CPinger::StartHardware()
 	ReloadNodes();
 
 	//Start worker thread
-	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CPinger::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "Pinger");
-	_log.Log(LOG_STATUS, "Pinger: Started");
-
 	return true;
 }
 
@@ -184,23 +180,11 @@ bool CPinger::StopHardware()
 {
 	StopHeartbeatThread();
 
-	try {
-		if (m_thread)
-		{
-			m_stoprequested = true;
-			m_thread->join();
-			m_thread.reset();
-
-			//Make sure all our background workers are stopped
-			while (m_iThreadsRunning > 0)
-			{
-				sleep_milliseconds(150);
-			}
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -385,7 +369,7 @@ void CPinger::DoPingHosts()
 	std::vector<PingNode>::const_iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 	{
-		if (m_stoprequested)
+		if (IsStopRequested(0))
 			return;
 		if (m_iThreadsRunning < 1000)
 		{
@@ -402,9 +386,9 @@ void CPinger::Do_Work()
 	int mcounter = 0;
 	int scounter = 0;
 	bool bFirstTime = true;
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "Pinger: Worker started...");
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
 		mcounter++;
 		if (mcounter == 2)
 		{
@@ -417,6 +401,11 @@ void CPinger::Do_Work()
 				DoPingHosts();
 			}
 		}
+	}
+	//Make sure all our background workers are stopped
+	while (m_iThreadsRunning > 0)
+	{
+		sleep_milliseconds(150);
 	}
 	_log.Log(LOG_STATUS, "Pinger: Worker stopped...");
 }
