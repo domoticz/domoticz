@@ -142,6 +142,7 @@ void CEventSystem::StartEventSystem()
 		return;
 
 	RequestStart();
+	m_TaskQueue.RequestStart();
 
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 
@@ -163,13 +164,14 @@ void CEventSystem::StartEventSystem()
 void CEventSystem::StopEventSystem()
 {
 	RequestStop();
+	m_TaskQueue.RequestStop();
+
 	if (m_eventqueuethread)
 	{
 		UnlockEventQueueThread();
 		m_eventqueuethread->join();
 		m_eventqueuethread.reset();
 	}
-
 	if (m_thread)
 	{
 		m_thread->join();
@@ -1413,13 +1415,13 @@ void CEventSystem::EventQueueThread()
 	std::vector<_tEventQueue> items;
 	std::vector<_tEventQueue>::const_iterator itt;
 
-	while (!IsStopRequested(0))
+	while (!m_TaskQueue.IsStopRequested(0))
 	{
 		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
 		if (!hasPopped)
 			continue;
 
-		if (IsStopRequested(0))
+		if (m_TaskQueue.IsStopRequested(0))
 			break;
 #ifdef _DEBUG
 		//_log.Log(LOG_STATUS, "EventSystem: \n reason => %d\n id => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n lastUpdate => %s\n lastLevel => %d\n",

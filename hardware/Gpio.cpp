@@ -284,7 +284,11 @@ bool CGpio::StopHardware()
 			m_threadSensors->join();
 			m_threadSensors.reset();
 		}
-
+	catch (...)
+	{
+	}
+	try
+	{
 		if (m_threadSwitches)
 		{
 			m_threadSwitches->join();
@@ -293,7 +297,6 @@ bool CGpio::StopHardware()
 	}
 	catch (...)
 	{
-
 	}
 
 

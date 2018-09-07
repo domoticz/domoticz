@@ -197,7 +197,6 @@ namespace tcp {
 MainWorker::MainWorker()
 {
 	m_SecCountdown = -1;
-	m_stopRxMessageThread = false;
 
 	m_bStartHardware = false;
 	m_hardwareStartCounter = 0;
@@ -1183,7 +1182,7 @@ bool MainWorker::Stop()
 {
 	if (m_rxMessageThread) {
 		// Stop RxMessage thread before hardware to avoid NULL pointer exception
-		m_stopRxMessageThread = true;
+		m_TaskRXMessage.RequestStop();
 		UnlockRxMessageQueue();
 		m_rxMessageThread->join();
 		m_rxMessageThread.reset();
@@ -1977,7 +1976,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 	rxMessage.crc = crc_ccitt2();
 #endif
 
-	if (m_stopRxMessageThread) {
+	if (m_TaskRXMessage.IsStopRequested(0)) {
 		// Server is stopping
 		return;
 	}
@@ -2009,7 +2008,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 #ifdef DEBUG_RXQUEUE
 			_log.Log(LOG_STATUS, "RxQueue: wait 1s for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
 #endif
-			if (m_stopRxMessageThread) {
+			if (m_TaskRXMessage.IsStopRequested(0)) {
 				// Server is stopping
 				break;
 			}
@@ -2041,17 +2040,12 @@ void MainWorker::Do_Work_On_Rx_Messages()
 {
 	_log.Log(LOG_STATUS, "RxQueue: queue worker started...");
 
-	m_stopRxMessageThread = false;
-	while (true) {
-		if (m_stopRxMessageThread) {
-			// Server is stopping
-			break;
-		}
-
+	while (!m_TaskRXMessage.IsStopRequested(0))
+	{
 		// Wait and pop next message or timeout
 		_tRxQueueItem rxQItem;
 		bool hasPopped = m_rxMessageQueue.timed_wait_and_pop<std::chrono::duration<int> >(rxQItem, std::chrono::duration<int>(5));
-		// (if no message for 5 seconds, returns anyway to check m_stopRxMessageThread)
+		// (if no message for 5 seconds, returns anyway to check m_TaskRXMessage.IsStopRequested)
 
 		if (!hasPopped) {
 			// Timeout occurred : queue is empty

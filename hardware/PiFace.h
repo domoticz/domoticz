@@ -161,6 +161,7 @@ private:
 private:
 	std::shared_ptr<std::thread> m_thread;
 	std::shared_ptr<std::thread> m_queue_thread;
+	StoppableTask m_TaskQueue;
 
 	int m_InputSample_waitcntr;
 	int m_CounterEdgeSample_waitcntr;

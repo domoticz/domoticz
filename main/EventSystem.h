@@ -187,7 +187,9 @@ private:
 	boost::shared_mutex m_eventtriggerMutex;
 	std::mutex m_measurementStatesMutex;
 	std::mutex luaMutex;
-	std::shared_ptr<std::thread> m_thread, m_eventqueuethread;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_eventqueuethread;
+	StoppableTask m_TaskQueue;
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;

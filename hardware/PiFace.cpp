@@ -694,6 +694,7 @@ bool CPiFace::StartHardware()
     StopHardware();
 
 	RequestStart();
+	m_TaskQueue.RequestStart();
 
     m_InputSample_waitcntr=(PIFACE_INPUT_PROCESS_INTERVAL)*20;
     m_CounterEdgeSample_waitcntr=(PIFACE_COUNTER_COUNTER_INTERVAL)*20;
@@ -730,10 +731,14 @@ bool CPiFace::StartHardware()
 			SetThreadName(m_queue_thread->native_handle(), "PiFaceQueue");
 		}
 		else
-			RequestStop();
+		{
+			return false;
+		}
 	}
 	else
-		RequestStop();
+	{
+		return false;
+	}
     m_bIsStarted=true;
     sOnConnected(this);
     return (m_thread != nullptr);
@@ -742,23 +747,18 @@ bool CPiFace::StartHardware()
 bool CPiFace::StopHardware()
 {
 	RequestStop();
+	m_TaskQueue.RequestStop();
 
-	try
+	if (m_thread)
 	{
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-		if (m_queue_thread)
-		{
-			m_queue_thread->join();
-			m_queue_thread.reset();
-		}
+		m_thread->join();
+		m_thread.reset();
 	}
-	catch (...)
-	{
 
+	if (m_queue_thread)
+	{
+		m_queue_thread->join();
+		m_queue_thread.reset();
 	}
 #ifdef HAVE_LINUX_SPI
     if (m_fd > 0) {
@@ -866,7 +866,7 @@ void CPiFace::Do_Work()
 void CPiFace::Do_Work_Queue()
 {
     std::vector<std::string>::iterator itt;
-    while (!IsStopRequested(100))
+    while (!m_TaskQueue.IsStopRequested(100))
     {
         if (m_send_queue.empty())
             continue;

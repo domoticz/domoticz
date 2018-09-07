@@ -192,16 +192,31 @@ bool CSysfsGpio::StopHardware()
 {
 	RequestStop();
 
-	if (m_thread)
+	try
 	{
-		m_thread->join();
-		m_thread.reset();
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
 	}
-	if (m_edge_thread)
+	catch (...)
 	{
-		m_edge_thread->join();
-		m_edge_thread.reset();
+
 	}
+	try
+	{
+		if (m_edge_thread)
+		{
+			m_edge_thread->join();
+			m_edge_thread.reset();
+		}
+	}
+	catch (...)
+	{
+
+	}
+
 	m_bIsStarted = false;
 	return true;
 }

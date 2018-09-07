@@ -193,9 +193,9 @@ private:
 	unsigned char get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
-	volatile bool m_stopRxMessageThread;
 	volatile unsigned long m_rxMessageIdx;
 	std::shared_ptr<std::thread> m_rxMessageThread;
+	StoppableTask m_TaskRXMessage;
 	void Do_Work_On_Rx_Messages();
 	struct _tRxQueueItem {
 		std::string Name;
