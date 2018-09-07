@@ -60,7 +60,6 @@ m_password(password)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
-	m_stoprequested = false;
 	m_iModel = model;
 
         // Updates must be at least every 5mn in order to keep consistent historical data
@@ -84,7 +83,6 @@ CEcoDevices::~CEcoDevices(void)
 
 void CEcoDevices::Init()
 {
-	m_stoprequested = false;
 	m_bFirstRun = true;
 
 	// Is the device we poll password protected?
@@ -100,6 +98,8 @@ void CEcoDevices::Init()
 
 bool CEcoDevices::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CEcoDevices::Do_Work, this);
@@ -113,7 +113,7 @@ bool CEcoDevices::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -125,9 +125,8 @@ void CEcoDevices::Do_Work()
 {
 	int sec_counter = m_iRateLimit - 2; // Make sure we update once soon after restart
 	_log.Log(LOG_STATUS, "(%s): Worker started...", m_Name.c_str());
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		mytime(&m_LastHeartbeat);
 		if (sec_counter >= m_iRateLimit)

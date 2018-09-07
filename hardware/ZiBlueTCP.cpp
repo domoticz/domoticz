@@ -21,6 +21,7 @@ CZiBlueTCP::~CZiBlueTCP(void)
 
 bool CZiBlueTCP::StartHardware()
 {
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=ZiBlue_RETRY_DELAY;

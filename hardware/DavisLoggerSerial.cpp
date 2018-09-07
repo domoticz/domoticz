@@ -42,6 +42,9 @@ CDavisLoggerSerial::~CDavisLoggerSerial(void)
 bool CDavisLoggerSerial::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDavisLoggerSerial::Do_Work, this);

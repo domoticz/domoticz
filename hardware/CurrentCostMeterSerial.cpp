@@ -31,6 +31,8 @@ CurrentCostMeterSerial::~CurrentCostMeterSerial()
 
 bool CurrentCostMeterSerial::StartHardware()
 {
+	RequestStart();
+
 	m_thread = std::make_shared<std::thread>(&CurrentCostMeterSerial::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "CurrentCostMeterSerial");
 

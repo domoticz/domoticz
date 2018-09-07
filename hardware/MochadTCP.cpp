@@ -90,6 +90,7 @@ MochadTCP::~MochadTCP(void)
 
 bool MochadTCP::StartHardware()
 {
+	RequestStart();
 
 	//force connect the next first time
 //	m_retrycntr=RETRY_DELAY;

@@ -22,6 +22,7 @@ OTGWTCP::~OTGWTCP(void)
 
 bool OTGWTCP::StartHardware()
 {
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;

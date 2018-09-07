@@ -118,6 +118,8 @@ void CEvohomeRadio::RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecod
 
 bool CEvohomeRadio::StartHardware()
 {
+	RequestStart();
+
 	if (m_bDebug && !m_pEvoLog)
 	{
 		try

@@ -23,7 +23,6 @@ private:
 	std::string m_ForecastURL;
 	std::string m_Language;
 	bool m_bHaveGPSCoordinated;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 };
 

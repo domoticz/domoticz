@@ -1063,7 +1063,7 @@ void eHouseTCP::TerminateUDP(void)
 
 	//struct timeval timeout;
 	m_UDP_terminate_listener = 1;
-	m_stoprequested = true;
+	RequestStop();
 	if (m_ViaTCP)
 	{
 		unsigned long iMode = 1;
@@ -2437,7 +2437,6 @@ void eHouseTCP::Do_Work()
 
 		ressock = bind(m_eHouseUDPSocket, (struct sockaddr *) &saddr, sizeof(saddr));  //bind socket
 	}
-	m_stoprequested = false;
 	int SecIter = 0;
 	unsigned char ou = 0;
 	//	LOG(LOG_STATUS, "TIM: %d", mytime(NULL) - m_LastHeartbeat);
@@ -2445,7 +2444,7 @@ void eHouseTCP::Do_Work()
 	int prevtim, tim = clock();
 	prevtim = tim;
 	time_t tt = time(NULL);
-	while (!m_stoprequested)				//main loop
+	while (!IsStopRequested(0))				//main loop
 	{
 		tim = clock();
 		//if (tim-prevtim>= 100)
@@ -2526,7 +2525,7 @@ void eHouseTCP::Do_Work()
 					else
 						if (nbytes < 0)									//SOCKET ERROR
 						{
-							if (m_stoprequested)					//real termination - end LOOP
+							if (IsStopRequested(0))					//real termination - end LOOP
 							{
 								TerminateUDP();
 								break;
@@ -2539,7 +2538,7 @@ void eHouseTCP::Do_Work()
 								_log.Log(LOG_STATUS, "[eHouse TCP] Connection Lost. Reconnecting...");
 								closesocket(m_TCPSocket);				// Try close socket
 								m_TCPSocket = -1;
-								ssl(6);
+								sleep_seconds(6);
 								m_TCPSocket = ConnectTCP(0);				// Reconect
 																		//	goto RETRY;							// Go to start
 							}
@@ -2575,7 +2574,7 @@ void eHouseTCP::Do_Work()
 		if (nbytes == 0) continue;
 		if (nbytes < 0)									//SOCKET ERROR
 		{
-			if (m_stoprequested)					//real termination - end LOOP
+			if (IsStopRequested(0))					//real termination - end LOOP
 			{
 				TerminateUDP();
 				break;
@@ -2588,7 +2587,7 @@ void eHouseTCP::Do_Work()
 				_log.Log(LOG_STATUS, "[eHouse TCP] Connection Lost. Reconnecting...");
 				closesocket(m_TCPSocket);				// Try close socket
 				m_TCPSocket = -1;
-				ssl(6);
+				sleep_seconds(6);
 				m_TCPSocket = ConnectTCP(0);				// Reconnect
 														//	goto RETRY;							// Go to start
 			}
@@ -3160,7 +3159,7 @@ void eHouseTCP::Do_Work()
 			LOG(LOG_ERROR, "[TCP Client Status] Set Write Timeout failed");
 			perror("[TCP Client Status] Set Write Timeout failed\n");
 			}*/
-		msl(1000);
+		sleep_seconds(1);
 		ressock = shutdown(m_eHouseUDPSocket, SHUT_RDWR);
 	}
 	else
@@ -3299,7 +3298,6 @@ void eHouseTCP::Do_Work()
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	LOG(LOG_STATUS, "END LISTENER TCP Client");
 	m_bIsStarted = false;
-	m_stoprequested = true;
 	//pthread_exit(NULL);
 	return;
 }

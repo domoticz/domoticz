@@ -22,6 +22,7 @@ S0MeterTCP::~S0MeterTCP(void)
 
 bool S0MeterTCP::StartHardware()
 {
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr= S0METER_RETRY_DELAY;

@@ -556,7 +556,6 @@ namespace Plugins {
 
 
 	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) :
-		m_stoprequested(false),
 		m_PluginKey(sPluginKey),
 		m_iPollInterval(10),
 		m_Notifier(NULL),
@@ -819,6 +818,8 @@ namespace Plugins {
 	{
 		if (m_bIsStarted) StopHardware();
 
+		RequestStart();
+
 		//	Add start command to message queue
 		m_bIsStarting = true;
 		MessagePlugin(new InitializeMessage(this));
@@ -867,13 +868,11 @@ namespace Plugins {
 			// loop on plugin to finish startup
 			while (m_bIsStarting)
 			{
-				while (m_bIsStarting)
-				{
-					sleep_milliseconds(100);
-				}
+				sleep_milliseconds(100);
 			}
 
-			m_stoprequested = true;
+			RequestStop();
+
 			if (m_bIsStarted)
 			{
 				// If we have connections queue disconnects
@@ -898,12 +897,12 @@ namespace Plugins {
 					// otherwise just signal stop
 					MessagePlugin(new onStopCallback(this));
 				}
-			}
 
-			// loop on stop to be processed
-			while (m_bIsStarted)
-			{
-				sleep_milliseconds(100);
+				// loop on stop to be processed
+				while (m_bIsStarted)
+				{
+					sleep_milliseconds(100);
+				}
 			}
 
 			_log.Log(LOG_STATUS, "(%s) Stopping threads.", m_Name.c_str());
@@ -935,7 +934,7 @@ namespace Plugins {
 		_log.Log(LOG_STATUS, "(%s) Entering work loop.", m_Name.c_str());
 		m_LastHeartbeat = mytime(NULL);
 		int scounter = m_iPollInterval * 2;
-		while (!m_stoprequested)
+		while (!IsStopRequested(500))
 		{
 			if (!--scounter)
 			{
@@ -965,8 +964,6 @@ namespace Plugins {
 			{
 				_log.Log(LOG_NORM, "(%s) Transport vector changed during %s loop, continuing.", m_Name.c_str(), __func__);
 			}
-
-			sleep_milliseconds(500);
 		}
 
 		_log.Log(LOG_STATUS, "(%s) Exiting work loop.", m_Name.c_str());
@@ -1043,7 +1040,6 @@ namespace Plugins {
 			pModState->pPlugin = this;
 
 			//Start worker thread
-			m_stoprequested = false;
 			m_thread = std::make_shared<std::thread>(&CPlugin::Do_Work, this);
 			std::string plugin_name = "Plugin_" + m_PluginKey;
 			SetThreadName(m_thread->native_handle(), plugin_name.c_str());
@@ -1488,7 +1484,7 @@ Error:
 				pConnection->pTransport = NULL;
 
 				// Plugin exiting and all connections have disconnect messages queued
-				if (m_stoprequested && !m_Transports.size())
+				if (IsStopRequested(0) && !m_Transports.size())
 				{
 					MessagePlugin(new onStopCallback(this));
 				}
@@ -1601,7 +1597,7 @@ Error:
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
-			if (m_stoprequested && !m_Transports.size())
+			if (IsStopRequested(0) && !m_Transports.size())
 			{
 				MessagePlugin(new onStopCallback(this));
 			}

@@ -132,9 +132,6 @@ private:
 	std::string m_szHarmonyAddress;
 	unsigned short m_usHarmonyPort;
 
-	// vars
-	volatile bool m_stoprequested;
-
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 

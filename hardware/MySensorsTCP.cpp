@@ -22,6 +22,8 @@ MySensorsTCP::~MySensorsTCP(void)
 
 bool MySensorsTCP::StartHardware()
 {
+	RequestStart();
+
 	m_LineReceived.clear();
 
 	LoadDevicesFromDatabase();

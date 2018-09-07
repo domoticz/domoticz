@@ -13,9 +13,7 @@ private:
 	bool StopHardware() override;
 	bool OpenSerialDevice();
 
-	void StartPollerThread();
-	void StopPollerThread();
-	void Do_PollWork();
+	void Do_Work();
 	bool WriteInt(const unsigned char *pData, const unsigned char Len) override;
 	int m_retrycntr;
 	std::shared_ptr<std::thread> m_thread;

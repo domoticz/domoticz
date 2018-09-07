@@ -28,7 +28,6 @@ private:
 	std::string m_Password;
 	std::string m_SerialNumber;
 	std::string m_Token;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	_eICYCompanyMode m_companymode;
 };

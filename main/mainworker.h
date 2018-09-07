@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include <deque>
 #include "WindCalculation.h"
+#include "StoppableTask.h"
 #include "../tcpserver/TCPServer.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
@@ -14,7 +15,7 @@
 #	include "../hardware/plugins/PluginManager.h"
 #endif
 
-class MainWorker
+class MainWorker : public StoppableTask
 {
 public:
 	MainWorker();
@@ -170,13 +171,11 @@ private:
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
 #endif
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 
 	time_t m_LastUpdateCheck;
 
-	bool StartThread();
 	void Do_Work();
 	void Heartbeat();
 	void ParseRFXLogFile();
@@ -194,9 +193,9 @@ private:
 	unsigned char get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
-	volatile bool m_stopRxMessageThread;
 	volatile unsigned long m_rxMessageIdx;
 	std::shared_ptr<std::thread> m_rxMessageThread;
+	StoppableTask m_TaskRXMessage;
 	void Do_Work_On_Rx_Messages();
 	struct _tRxQueueItem {
 		std::string Name;

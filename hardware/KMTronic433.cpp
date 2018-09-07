@@ -35,6 +35,8 @@ KMTronic433::~KMTronic433()
 
 bool KMTronic433::StartHardware()
 {
+	RequestStart();
+
 	m_bDoInitialQuery = true;
 	m_iQueryState = 0;
 

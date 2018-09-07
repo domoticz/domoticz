@@ -58,6 +58,7 @@ Ec3kMeterTCP::~Ec3kMeterTCP(void)
 
 bool Ec3kMeterTCP::StartHardware()
 {
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;

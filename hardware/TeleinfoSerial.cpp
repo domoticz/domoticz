@@ -77,6 +77,8 @@ void CTeleinfoSerial::Init()
 
 bool CTeleinfoSerial::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Try to open the Serial Port
 	try

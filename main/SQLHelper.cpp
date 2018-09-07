@@ -623,7 +623,6 @@ CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchRowID = 0;
 	m_dbase = NULL;
-	m_stoprequested = false;
 	m_sensortimeoutcounter = 0;
 	m_bAcceptNewHardware = true;
 	m_bAllowWidgetOrdering = true;
@@ -645,11 +644,11 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_background_task_thread)
+	if (m_thread)
 	{
-		m_stoprequested = true;
-		m_background_task_thread->join();
-		m_background_task_thread.reset();
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	CloseDatabase();
 }
@@ -3042,9 +3041,9 @@ void CSQLHelper::CloseDatabase()
 
 bool CSQLHelper::StartThread()
 {
-	m_background_task_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
-	SetThreadName(m_background_task_thread->native_handle(), "SQLHelper");
-	return (m_background_task_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "SQLHelper");
+	return (m_thread != NULL);
 }
 
 bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color)
@@ -3069,10 +3068,8 @@ void CSQLHelper::Do_Work()
 {
 	std::vector<_tTaskItem> _items2do;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(static_cast<const long>(1000.0f / timer_resolution_hz)))
 	{
-		sleep_milliseconds(static_cast<const long>(1000.0f / timer_resolution_hz));
-
 		if (m_bAcceptHardwareTimerActive)
 		{
 			m_iAcceptHardwareTimerCounter -= static_cast<float>(1. / timer_resolution_hz);

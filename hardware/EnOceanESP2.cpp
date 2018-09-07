@@ -642,6 +642,8 @@ CEnOceanESP2::~CEnOceanESP2()
 
 bool CEnOceanESP2::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr = ENOCEAN_RETRY_DELAY * 5; //will force reconnect first thing
 
 	//Start worker thread

@@ -24,7 +24,8 @@ RAVEn::~RAVEn(void)
 
 bool RAVEn::StartHardware()
 {
-    StartHeartbeatThread();
+	RequestStart();
+
     //Try to open the Serial Port
     try
     {
@@ -49,6 +50,8 @@ bool RAVEn::StartHardware()
     setReadCallback(boost::bind(&RAVEn::readCallback, this, _1, _2));
     m_bIsStarted = true;
     sOnConnected(this);
+
+	StartHeartbeatThread();
 
     return true;
 }

@@ -50,6 +50,7 @@ FritzboxTCP::~FritzboxTCP(void)
 
 bool FritzboxTCP::StartHardware()
 {
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;

@@ -22,6 +22,5 @@ private:
 	std::string m_Username;
 	std::string m_Password;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

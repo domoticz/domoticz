@@ -49,6 +49,8 @@ m_szIPAddress(IPAddress)
 
 bool Comm5TCP::StartHardware()
 {
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time

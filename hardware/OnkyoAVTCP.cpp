@@ -152,6 +152,7 @@ OnkyoAVTCP::~OnkyoAVTCP(void)
 
 bool OnkyoAVTCP::StartHardware()
 {
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;

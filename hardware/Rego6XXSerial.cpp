@@ -133,6 +133,8 @@ CRego6XXSerial::~CRego6XXSerial()
 
 bool CRego6XXSerial::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr=Rego6XX_RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
