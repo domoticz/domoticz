@@ -641,6 +641,8 @@ void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::strin
 
 bool XiaomiGateway::StartHardware()
 {
+	RequestStart();
+
 	m_bDoRestart = false;
 
 	//force connect the next first time

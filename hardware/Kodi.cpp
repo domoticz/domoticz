@@ -908,6 +908,9 @@ CKodi::~CKodi(void)
 bool CKodi::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 

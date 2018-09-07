@@ -57,6 +57,8 @@ SolarMaxTCP::~SolarMaxTCP(void)
 
 bool SolarMaxTCP::StartHardware()
 {
+	RequestStart();
+
 	m_bIsStarted = true;
 
 	memset(&m_addr, 0, sizeof(sockaddr_in));

@@ -69,6 +69,8 @@ bool C1Wire::StartHardware()
 	if (!m_system)
 		return false;
 
+	RequestStart();
+
 	m_system->PrepareDevices();
 
 	// Start worker thread
@@ -89,16 +91,24 @@ bool C1Wire::StartHardware()
 bool C1Wire::StopHardware()
 {
 	RequestStop();
-	if (m_threadSensors)
-	{
-		m_threadSensors->join();
-		m_threadSensors.reset();
-	}
 
-	if (m_threadSwitches)
+	try
 	{
-		m_threadSwitches->join();
-		m_threadSwitches.reset();
+		if (m_threadSensors)
+		{
+			m_threadSensors->join();
+			m_threadSensors.reset();
+		}
+
+		if (m_threadSwitches)
+		{
+			m_threadSwitches->join();
+			m_threadSwitches.reset();
+		}
+	}
+	catch (...)
+	{
+
 	}
 
 	m_bIsStarted=false;

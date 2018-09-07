@@ -129,6 +129,8 @@ MultiFun::~MultiFun()
 
 bool MultiFun::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_MultiFun
 	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
 #endif

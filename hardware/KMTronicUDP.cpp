@@ -27,6 +27,8 @@ void KMTronicUDP::Init()
 
 bool KMTronicUDP::StartHardware()
 {
+	RequestStart();
+
 	Init();
  	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&KMTronicUDP::Do_Work, this);

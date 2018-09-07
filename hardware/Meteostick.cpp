@@ -49,6 +49,8 @@ Meteostick::~Meteostick()
 
 bool Meteostick::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	m_thread = std::make_shared<std::thread>(&Meteostick::Do_Work, this);

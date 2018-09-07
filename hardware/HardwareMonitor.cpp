@@ -107,6 +107,8 @@ bool CHardwareMonitor::StartHardware()
 #endif
 	StopHardware();
 
+	RequestStart();
+
 #ifdef WIN32
 	InitWMI();
 #endif

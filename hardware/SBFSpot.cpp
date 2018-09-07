@@ -100,6 +100,8 @@ void CSBFSpot::Init()
 
 bool CSBFSpot::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CSBFSpot::Do_Work, this);

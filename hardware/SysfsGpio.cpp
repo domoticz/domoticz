@@ -177,6 +177,8 @@ CSysfsGpio::~CSysfsGpio(void)
 
 bool CSysfsGpio::StartHardware()
 {
+	RequestStart();
+
 	Init();
 
 	m_thread = std::make_shared<std::thread>(&CSysfsGpio::Do_Work, this);

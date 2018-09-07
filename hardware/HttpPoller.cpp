@@ -57,6 +57,8 @@ bool CHttpPoller::WriteToHardware(const char* /*pdata*/, const unsigned char /*l
 
 bool CHttpPoller::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHttpPoller::Do_Work, this);

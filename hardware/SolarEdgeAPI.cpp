@@ -71,6 +71,8 @@ SolarEdgeAPI::~SolarEdgeAPI(void)
 
 bool SolarEdgeAPI::StartHardware()
 {
+	RequestStart();
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&SolarEdgeAPI::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "SolarEdgeAPI");

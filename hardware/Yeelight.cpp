@@ -63,6 +63,8 @@ Yeelight::~Yeelight(void)
 
 bool Yeelight::StartHardware()
 {
+	RequestStart();
+
 	m_bDoRestart = false;
 
 	//force connect the next first time

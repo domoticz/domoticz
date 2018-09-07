@@ -91,7 +91,10 @@ void CAtagOne::Init()
 
 bool CAtagOne::StartHardware()
 {
+	RequestStart();
+
 	Init();
+
 	m_LastMinute = -1;
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CAtagOne::Do_Work, this);

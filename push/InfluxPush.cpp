@@ -22,18 +22,33 @@ CInfluxPush::CInfluxPush() :
 	m_bLinkActive = false;
 }
 
-void CInfluxPush::Start()
+bool CInfluxPush::Start()
 {
+	Stop();
+
+	RequestStart();
+
 	UpdateSettings();
+
+	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "InfluxPush");
+
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CInfluxPush::OnDeviceReceived, this, _1, _2, _3, _4));
-	StartThread();
+
+	return (m_thread != NULL);
 }
 
 void CInfluxPush::Stop()
 {
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
-	StopThread();
+
+	if (m_thread)
+	{
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
 }
 
 void CInfluxPush::UpdateSettings()
@@ -151,25 +166,6 @@ void CInfluxPush::DoInfluxPush()
 		}
 	}
 }
-
-bool CInfluxPush::StartThread()
-{
-	StopThread();
-	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "InfluxPush");
-	return (m_thread != NULL);
-}
-
-void CInfluxPush::StopThread()
-{
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
-}
-
 
 void CInfluxPush::Do_Work()
 {

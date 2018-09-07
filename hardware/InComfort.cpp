@@ -49,6 +49,8 @@ void CInComfort::Init()
 
 bool CInComfort::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CInComfort::Do_Work, this);

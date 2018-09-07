@@ -19,6 +19,8 @@ CRFLinkSerial::~CRFLinkSerial()
 
 bool CRFLinkSerial::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr = RFLINK_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread

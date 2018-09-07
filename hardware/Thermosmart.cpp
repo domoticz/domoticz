@@ -95,6 +95,8 @@ void CThermosmart::Init()
 
 bool CThermosmart::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	m_LastMinute = -1;
 	//Start worker thread

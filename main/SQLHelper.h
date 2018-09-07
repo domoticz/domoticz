@@ -437,7 +437,7 @@ private:
 	bool			m_bPreviousAcceptNewHardware;
 
 	std::vector<_tTaskItem> m_background_task_queue;
-	std::shared_ptr<std::thread> m_background_task_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;
 	bool StartThread();
 	void Do_Work();

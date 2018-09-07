@@ -763,6 +763,9 @@ CPanasonic::~CPanasonic(void)
 bool CPanasonic::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 

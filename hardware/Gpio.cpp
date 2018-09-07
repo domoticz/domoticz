@@ -205,7 +205,7 @@ int CGpio::waitForInterrupt(int fd, const int mS)
 	while (x == 0)
 	{
 		x = poll(&polls, 1, mS);
-		if (IsStpRequested(0))
+		if (IsStopRequested(0))
 			return -1;
 	}
 
@@ -239,6 +239,8 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 
 bool CGpio::StartHardware()
 {
+	RequestStart();
+
 	//	_log.Log(LOG_NORM,"GPIO: Starting hardware (debounce: %d ms, period: %d ms, poll interval: %d sec)", m_debounce, m_period, m_pollinterval);
 
 	_log.Log(LOG_STATUS, "GPIO: This hardware is deprecated. Please transfer to the new SysFS hardware type!");
@@ -275,17 +277,25 @@ bool CGpio::StopHardware()
 {
 	RequestStop();
 
-	if (m_thread_poller != NULL)
+	try
 	{
-		m_thread_poller->join();
-		m_thread_poller.reset();
+		if (m_threadSensors)
+		{
+			m_threadSensors->join();
+			m_threadSensors.reset();
+		}
+
+		if (m_threadSwitches)
+		{
+			m_threadSwitches->join();
+			m_threadSwitches.reset();
+		}
+	}
+	catch (...)
+	{
+
 	}
 
-	if (m_thread_updatestartup != NULL)
-	{
-		m_thread_updatestartup->join();
-		m_thread_updatestartup.reset();
-	}
 
 	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)

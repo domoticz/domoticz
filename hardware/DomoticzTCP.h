@@ -27,8 +27,6 @@ private:
 	void write(const char *data, size_t size);
 	bool isConnectedTCP();
 	void disconnectTCP();
-	bool StartHardwareTCP();
-	bool StopHardwareTCP();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void writeTCP(const char *data, size_t size);

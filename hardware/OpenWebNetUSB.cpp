@@ -43,6 +43,8 @@ COpenWebNetUSB::~COpenWebNetUSB()
 
 bool COpenWebNetUSB::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr = RETRY_DELAY - 2; //will force reconnect first thing
 
 								   //Start worker thread

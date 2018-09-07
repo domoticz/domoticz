@@ -19,6 +19,8 @@ CRFLinkTCP::~CRFLinkTCP(void)
 
 bool CRFLinkTCP::StartHardware()
 {
+	RequestStart();
+
 	m_bDoRestart=false;
 
 	//force connect the next first time

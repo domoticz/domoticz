@@ -65,6 +65,8 @@ void CDarkSky::Init()
 
 bool CDarkSky::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDarkSky::Do_Work, this);

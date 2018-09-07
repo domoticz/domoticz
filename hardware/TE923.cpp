@@ -34,6 +34,8 @@ void CTE923::Init()
 
 bool CTE923::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTE923::Do_Work, this);

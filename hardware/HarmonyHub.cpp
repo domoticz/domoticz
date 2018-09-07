@@ -138,6 +138,8 @@ void CHarmonyHub::Logout()
 
 bool CHarmonyHub::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHarmonyHub::Do_Work, this);

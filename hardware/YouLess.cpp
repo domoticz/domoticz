@@ -54,6 +54,8 @@ void CYouLess::Init()
 
 bool CYouLess::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CYouLess::Do_Work, this);

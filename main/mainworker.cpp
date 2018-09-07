@@ -1121,48 +1121,7 @@ bool MainWorker::Start()
 #endif
 	// load notifications configuration
 	m_notifications.LoadConfig();
-	if (!StartThread())
-		return false;
-	return true;
-}
 
-
-bool MainWorker::Stop()
-{
-	if (m_rxMessageThread) {
-		// Stop RxMessage thread before hardware to avoid NULL pointer exception
-		m_stopRxMessageThread = true;
-		UnlockRxMessageQueue();
-		m_rxMessageThread->join();
-		m_rxMessageThread.reset();
-	}
-	if (m_thread)
-	{
-		m_webservers.StopServers();
-		m_sharedserver.StopServer();
-		_log.Log(LOG_STATUS, "Stopping all hardware...");
-		StopDomoticzHardware();
-		m_scheduler.StopScheduler();
-		m_eventsystem.StopEventSystem();
-		m_fibaropush.Stop();
-		m_httppush.Stop();
-		m_influxpush.Stop();
-		m_googlepubsubpush.Stop();
-#ifdef ENABLE_PYTHON
-		m_pluginsystem.StopPluginSystem();
-#endif
-
-		//    m_cameras.StopCameraGrabber();
-
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
-	return true;
-}
-
-bool MainWorker::StartThread()
-{
 	if (m_webserver_settings.is_enabled()
 #ifdef WWW_ENABLE_SSL
 		|| m_secure_webserver_settings.is_enabled()
@@ -1217,6 +1176,41 @@ bool MainWorker::StartThread()
 	m_rxMessageThread = std::make_shared<std::thread>(&MainWorker::Do_Work_On_Rx_Messages, this);
 	SetThreadName(m_rxMessageThread->native_handle(), "MainWorkerRxMsg");
 	return (m_thread != nullptr) && (m_rxMessageThread != NULL);
+}
+
+
+bool MainWorker::Stop()
+{
+	if (m_rxMessageThread) {
+		// Stop RxMessage thread before hardware to avoid NULL pointer exception
+		m_stopRxMessageThread = true;
+		UnlockRxMessageQueue();
+		m_rxMessageThread->join();
+		m_rxMessageThread.reset();
+	}
+	if (m_thread)
+	{
+		m_webservers.StopServers();
+		m_sharedserver.StopServer();
+		_log.Log(LOG_STATUS, "Stopping all hardware...");
+		StopDomoticzHardware();
+		m_scheduler.StopScheduler();
+		m_eventsystem.StopEventSystem();
+		m_fibaropush.Stop();
+		m_httppush.Stop();
+		m_influxpush.Stop();
+		m_googlepubsubpush.Stop();
+#ifdef ENABLE_PYTHON
+		m_pluginsystem.StopPluginSystem();
+#endif
+
+		//    m_cameras.StopCameraGrabber();
+
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
+	return true;
 }
 
 #define HEX( x ) \

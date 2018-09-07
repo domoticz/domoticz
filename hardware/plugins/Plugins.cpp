@@ -818,6 +818,8 @@ namespace Plugins {
 	{
 		if (m_bIsStarted) StopHardware();
 
+		RequestStart();
+
 		//	Add start command to message queue
 		m_bIsStarting = true;
 		MessagePlugin(new InitializeMessage(this));
@@ -866,10 +868,7 @@ namespace Plugins {
 			// loop on plugin to finish startup
 			while (m_bIsStarting)
 			{
-				while (m_bIsStarting)
-				{
-					sleep_milliseconds(100);
-				}
+				sleep_milliseconds(100);
 			}
 
 			RequestStop();

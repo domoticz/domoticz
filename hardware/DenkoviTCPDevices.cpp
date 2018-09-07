@@ -54,6 +54,8 @@ void CDenkoviTCPDevices::Init()
 
 bool CDenkoviTCPDevices::StartHardware()
 {
+	RequestStart();
+
 	Init();
 
 	m_bIsStarted = true;

@@ -644,11 +644,11 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_background_task_thread)
+	if (m_thread)
 	{
 		RequestStop();
-		m_background_task_thread->join();
-		m_background_task_thread.reset();
+		m_thread->join();
+		m_thread.reset();
 	}
 	CloseDatabase();
 }
@@ -3041,9 +3041,9 @@ void CSQLHelper::CloseDatabase()
 
 bool CSQLHelper::StartThread()
 {
-	m_background_task_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
-	SetThreadName(m_background_task_thread->native_handle(), "SQLHelper");
-	return (m_background_task_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "SQLHelper");
+	return (m_thread != NULL);
 }
 
 bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color)

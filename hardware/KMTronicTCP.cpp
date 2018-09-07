@@ -53,6 +53,8 @@ void KMTronicTCP::Init()
 
 bool KMTronicTCP::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&KMTronicTCP::Do_Work, this);

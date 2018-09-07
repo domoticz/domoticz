@@ -123,6 +123,8 @@ SatelIntegra::~SatelIntegra()
 
 bool SatelIntegra::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_STATUS, "Satel Integra: Start hardware");
 #endif

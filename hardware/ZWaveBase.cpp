@@ -42,6 +42,8 @@ ZWaveBase::~ZWaveBase(void)
 
 bool ZWaveBase::StartHardware()
 {
+	RequestStart();
+
 	m_bInitState=true;
 	m_updateTime=0;
 	m_LastIncludedNode=0;

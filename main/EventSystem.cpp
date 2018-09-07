@@ -137,8 +137,11 @@ CEventSystem::~CEventSystem(void)
 void CEventSystem::StartEventSystem()
 {
 	StopEventSystem();
+
 	if (!m_bEnabled)
 		return;
+
+	RequestStart();
 
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 

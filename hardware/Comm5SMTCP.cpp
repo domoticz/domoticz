@@ -45,6 +45,8 @@ Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigne
 
 bool Comm5SMTCP::StartHardware()
 {
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time

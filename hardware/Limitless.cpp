@@ -204,6 +204,8 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 
 bool CLimitLess::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	if (m_RemoteSocket!=INVALID_SOCKET)
 	{

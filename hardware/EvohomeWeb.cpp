@@ -161,6 +161,8 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	RequestStart();
+
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();

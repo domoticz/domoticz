@@ -176,7 +176,6 @@ private:
 
 	time_t m_LastUpdateCheck;
 
-	bool StartThread();
 	void Do_Work();
 	void Heartbeat();
 	void ParseRFXLogFile();

@@ -72,6 +72,8 @@ COpenWeatherMap::~COpenWeatherMap(void)
 
 bool COpenWeatherMap::StartHardware()
 {
+	RequestStart();
+
 	m_thread = std::make_shared<std::thread>(&COpenWeatherMap::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "OpenWeatherMap");
 	m_bIsStarted=true;

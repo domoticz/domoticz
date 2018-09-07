@@ -61,21 +61,14 @@ bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)
 
 bool DomoticzTCP::StartHardware()
 {
+	RequestStart();
+
 #ifndef NOCLOUD
 	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	if (b_useProxy) {
 		return StartHardwareProxy();
 	}
-	else {
-		return StartHardwareTCP();
-	}
-#else
-	return StartHardwareTCP();
 #endif
-}
-
-bool DomoticzTCP::StartHardwareTCP()
-{
 	int rc;
 	struct addrinfo hints;
 	m_bIsStarted = true;
@@ -129,16 +122,8 @@ bool DomoticzTCP::StopHardware()
 	if (b_useProxy) {
 		return StopHardwareProxy();
 	}
-	else {
-		return StopHardwareTCP();
-	}
-#else
-	return StopHardwareTCP();
 #endif
-}
 
-bool DomoticzTCP::StopHardwareTCP()
-{
 	if (m_thread)
 	{
 		RequestStop();

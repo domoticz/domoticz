@@ -11,7 +11,7 @@ class CInfluxPush : public CBasePush
 	};
 public:
 	CInfluxPush();
-	void Start();
+	bool Start();
 	void Stop();
 	void UpdateSettings();
 private:
@@ -20,8 +20,6 @@ private:
 
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;
-	bool StartThread();
-	void StopThread();
 	void Do_Work();
 
 	std::map<std::string,_tPushItem> m_PushedItems;

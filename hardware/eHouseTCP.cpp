@@ -533,6 +533,8 @@ eHouseTCP::~eHouseTCP()
 /////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StartHardware()
 {
+	RequestStart();
+
 #ifdef UDP_USE_THREAD
 	ThEhouseUDPdta.No = 1;
 	ThEhouseUDPdta.IntParam = UDP_PORT;		//udp thread setup

@@ -51,6 +51,8 @@ void CNestOAuthAPI::Init()
 
 bool CNestOAuthAPI::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CNestOAuthAPI::Do_Work, this);

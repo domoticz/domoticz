@@ -47,7 +47,10 @@ BleBox::~BleBox()
 
 bool BleBox::StartHardware()
 {
+	RequestStart();
+
 	LoadNodes();
+
 	m_thread = std::make_shared<std::thread>(&BleBox::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "BleBox");
 	m_bIsStarted = true;

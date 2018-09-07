@@ -22,6 +22,8 @@ CurrentCostMeterTCP::~CurrentCostMeterTCP(void)
 
 bool CurrentCostMeterTCP::StartHardware()
 {
+	RequestStart();
+
 	memset(&m_addr,0,sizeof(sockaddr_in));
 	m_addr.sin_family = AF_INET;
 	m_addr.sin_port = htons(m_usIPPort);

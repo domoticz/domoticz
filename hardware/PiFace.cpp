@@ -692,6 +692,9 @@ void CPiFace::CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinI
 bool CPiFace::StartHardware()
 {
     StopHardware();
+
+	RequestStart();
+
     m_InputSample_waitcntr=(PIFACE_INPUT_PROCESS_INTERVAL)*20;
     m_CounterEdgeSample_waitcntr=(PIFACE_COUNTER_COUNTER_INTERVAL)*20;
 
@@ -739,15 +742,23 @@ bool CPiFace::StartHardware()
 bool CPiFace::StopHardware()
 {
 	RequestStop();
-    if (m_thread)
-    {
-        m_thread->join();
-        m_thread.reset();
-    }
-	if (m_queue_thread)
+
+	try
 	{
-		m_queue_thread->join();
-		m_queue_thread.reset();
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+		if (m_queue_thread)
+		{
+			m_queue_thread->join();
+			m_queue_thread.reset();
+		}
+	}
+	catch (...)
+	{
+
 	}
 #ifdef HAVE_LINUX_SPI
     if (m_fd > 0) {

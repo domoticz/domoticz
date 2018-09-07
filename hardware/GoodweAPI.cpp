@@ -136,6 +136,8 @@ void GoodweAPI::Init()
 
 bool GoodweAPI::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&GoodweAPI::Do_Work, this);

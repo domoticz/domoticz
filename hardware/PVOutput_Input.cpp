@@ -32,6 +32,8 @@ void CPVOutputInput::Init()
 
 bool CPVOutputInput::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPVOutputInput::Do_Work, this);

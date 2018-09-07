@@ -176,6 +176,8 @@ void CToonThermostat::Init()
 
 bool CToonThermostat::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CToonThermostat::Do_Work, this);

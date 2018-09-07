@@ -42,7 +42,7 @@ MQTT::~MQTT(void)
 
 bool MQTT::StartHardware()
 {
-	StartHeartbeatThread();
+	RequestStart();
 
 	//force connect the next first time
 	m_IsConnected=false;
@@ -52,6 +52,8 @@ bool MQTT::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "MQTT");
+
+	StartHeartbeatThread();
 	return (m_thread != nullptr);
 }
 

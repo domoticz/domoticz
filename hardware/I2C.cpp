@@ -171,6 +171,8 @@ I2C::~I2C()
 
 bool I2C::StartHardware()
 {
+	RequestStart();
+
 	if ((m_dev_type == I2CTYPE_BMP085)|| (m_dev_type == I2CTYPE_BME280))
 	{
 		m_minuteCount = 0;

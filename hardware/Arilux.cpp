@@ -37,6 +37,8 @@ Arilux::~Arilux(void)
 
 bool Arilux::StartHardware()
 {
+	RequestStart();
+
 	m_bDoRestart = false;
 
 	//force connect the next first time

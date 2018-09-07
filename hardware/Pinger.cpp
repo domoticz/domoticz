@@ -162,6 +162,9 @@ CPinger::~CPinger(void)
 bool CPinger::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 	m_iThreadsRunning = 0;

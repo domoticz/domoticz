@@ -97,6 +97,8 @@ void CDenkoviDevices::Init()
 
 bool CDenkoviDevices::StartHardware()
 {
+	RequestStart();
+
 	Init();
 
 	//Start worker thread

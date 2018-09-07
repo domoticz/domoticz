@@ -34,6 +34,8 @@ void CSterbox::Init()
 
 bool CSterbox::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CSterbox::Do_Work, this);

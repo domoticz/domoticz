@@ -52,6 +52,8 @@ EnphaseAPI::~EnphaseAPI(void)
 
 bool EnphaseAPI::StartHardware()
 {
+	RequestStart();
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&EnphaseAPI::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "EnphaseAPI");

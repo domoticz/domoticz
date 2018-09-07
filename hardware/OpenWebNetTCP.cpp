@@ -83,6 +83,8 @@ COpenWebNetTCP::~COpenWebNetTCP(void)
 **/
 bool COpenWebNetTCP::StartHardware()
 {
+	RequestStart();
+
 	m_bIsStarted = true;
 	mask_request_status = 0x1; // Set scan all devices
 	LastScanTimeEnergy = LastScanTimeEnergyTot = 0;	// Force first request command
@@ -112,15 +114,23 @@ bool COpenWebNetTCP::StopHardware()
 	{
 		m_pStatusSocket->close();
 	}
-	if (m_monitorThread)
+
+	try
 	{
-		m_monitorThread->join();
-		m_monitorThread.reset();
+		if (m_monitorThread)
+		{
+			m_monitorThread->join();
+			m_monitorThread.reset();
+		}
+		if (m_heartbeatThread)
+		{
+			m_heartbeatThread->join();
+			m_heartbeatThread.reset();
+		}
 	}
-	if (m_heartbeatThread)
+	catch (...)
 	{
-		m_heartbeatThread->join();
-		m_heartbeatThread.reset();
+
 	}
 	m_bIsStarted = false;
 	return true;

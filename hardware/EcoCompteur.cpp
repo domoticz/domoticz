@@ -45,6 +45,8 @@ bool CEcoCompteur::WriteToHardware(const char* /*pdata*/, const unsigned char /*
 
 bool CEcoCompteur::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CEcoCompteur::Do_Work, this);

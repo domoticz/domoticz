@@ -558,6 +558,8 @@ _eNotificationTypes	CHEOS::NotificationType(_eMediaStatus nStatus)
 
 bool CHEOS::StartHardware()
 {
+	RequestStart();
+
 	//force connect the next first time
 	m_retrycntr = RETRY_DELAY;
 	m_bIsStarted = true;

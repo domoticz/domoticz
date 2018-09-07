@@ -45,6 +45,8 @@ void CICYThermostat::Init()
 
 bool CICYThermostat::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CICYThermostat::Do_Work, this);

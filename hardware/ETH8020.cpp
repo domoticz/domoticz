@@ -32,6 +32,8 @@ void CETH8020::Init()
 
 bool CETH8020::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CETH8020::Do_Work, this);

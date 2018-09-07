@@ -36,6 +36,8 @@ CVolcraftCO20::~CVolcraftCO20(void)
 
 bool CVolcraftCO20::StartHardware()
 {
+	RequestStart();
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CVolcraftCO20::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "VolcraftCO20");

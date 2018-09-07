@@ -20,6 +20,8 @@ P1MeterTCP::~P1MeterTCP(void)
 
 bool P1MeterTCP::StartHardware()
 {
+	RequestStart();
+
 	m_bIsStarted = true;
 
 	//Start worker thread

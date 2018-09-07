@@ -52,6 +52,8 @@ P1MeterSerial::~P1MeterSerial()
 
 bool P1MeterSerial::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_FROM_FILE
 	FILE *fIn=fopen("E:\\meter.txt","rb+");
 	BYTE buffer[1400];

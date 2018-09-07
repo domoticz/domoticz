@@ -2338,24 +2338,24 @@ void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, con
 bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
-	m_send_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Send_Work, this);
-	SetThreadName(m_send_thread->native_handle(), "MySensorsBase");
-	return (m_send_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MySensorsBase");
+	return (m_thread != NULL);
 }
 
 void MySensorsBase::StopSendQueue()
 {
-	if (m_send_thread)
+	if (m_thread)
 	{
 		//Add a dummy queue item, so we stop
 		std::string emptyString;
 		m_sendQueue.push(emptyString);
-		m_send_thread->join();
-		m_send_thread.reset();
+		m_thread->join();
+		m_thread.reset();
 	}
 }
 
-void MySensorsBase::Do_Send_Work()
+void MySensorsBase::Do_Work()
 {
 	while (true)
 	{

@@ -23,6 +23,8 @@ RFXComTCP::~RFXComTCP(void)
 
 bool RFXComTCP::StartHardware()
 {
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time

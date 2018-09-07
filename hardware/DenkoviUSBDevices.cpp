@@ -26,6 +26,10 @@ CDenkoviUSBDevices::CDenkoviUSBDevices(const int ID, const std::string& comPort,
 	m_bOutputLog = false;
 	m_iModel = model;
 	m_pollInterval = 1000;
+
+	if (m_iModel == DDEV_USB_16R)
+		m_baudRate = 9600;
+
 	/*if (m_pollInterval < 500)
 		m_pollInterval = 500;
 	else if (m_pollInterval > MAX_POLL_INTERVAL)
@@ -44,8 +48,7 @@ void CDenkoviUSBDevices::Init()
 
 bool CDenkoviUSBDevices::StartHardware()
 {
-	if (m_iModel == DDEV_USB_16R)
-		m_baudRate = 9600;
+	RequestStart();
 
 	//Try to open the Serial Port
 	try

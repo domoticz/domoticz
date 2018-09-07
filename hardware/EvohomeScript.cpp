@@ -54,6 +54,8 @@ void CEvohomeScript::Init()
 
 bool CEvohomeScript::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	m_bIsStarted=true;
 	sOnConnected(this);

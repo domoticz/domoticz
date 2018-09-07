@@ -84,6 +84,8 @@ CTTNMQTT::~CTTNMQTT(void)
 
 bool CTTNMQTT::StartHardware()
 {
+	RequestStart();
+
 	StartHeartbeatThread();
 
 	//force connect the next first time

@@ -75,6 +75,8 @@ void CWinddelen::Init()
 
 bool CWinddelen::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CWinddelen::Do_Work, this);

@@ -40,15 +40,19 @@ CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::str
 	Init();
 }
 
-CHoneywell::~CHoneywell(void) {
+CHoneywell::~CHoneywell(void)
+{
 }
 
-void CHoneywell::Init() {
-	mStopRequested = false;
+void CHoneywell::Init()
+{
 	mNeedsTokenRefresh = true;
 }
 
-bool CHoneywell::StartHardware() {
+bool CHoneywell::StartHardware()
+{
+	RequestStart();
+
 	Init();
 	mLastMinute = -1;
 	//Start worker thread
@@ -59,10 +63,11 @@ bool CHoneywell::StartHardware() {
 	return (m_thread != nullptr);
 }
 
-bool CHoneywell::StopHardware() {
+bool CHoneywell::StopHardware()
+{
 	if (m_thread)
 	{
-		mStopRequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -76,12 +81,12 @@ bool CHoneywell::StopHardware() {
 //
 // worker thread
 //
-void CHoneywell::Do_Work() {
+void CHoneywell::Do_Work()
+{
 	_log.Log(LOG_STATUS, "Honeywell: Worker started...");
 	int sec_counter = HONEYWELL_POLL_INTERVAL - 5;
-	while (!mStopRequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
@@ -131,7 +136,8 @@ bool CHoneywell::WriteToHardware(const char *pdata, const unsigned char /*length
 //
 // refresh the OAuth2 token through Honeywell API
 //
-bool CHoneywell::refreshToken() {
+bool CHoneywell::refreshToken()
+{
 	if (mRefreshToken.empty())
 		return false;
 
@@ -188,8 +194,8 @@ bool CHoneywell::refreshToken() {
 //
 // Get honeywell data through Honeywell API
 //
-void CHoneywell::GetMeterDetails() {
-
+void CHoneywell::GetMeterDetails()
+{
 	if (mNeedsTokenRefresh) {
 		if (!refreshToken())
 			return;

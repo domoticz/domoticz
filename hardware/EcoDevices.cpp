@@ -98,6 +98,8 @@ void CEcoDevices::Init()
 
 bool CEcoDevices::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CEcoDevices::Do_Work, this);

@@ -133,6 +133,8 @@ void CNefitEasy::Init()
 
 bool CNefitEasy::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CNefitEasy::Do_Work, this);
