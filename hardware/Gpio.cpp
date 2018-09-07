@@ -279,20 +279,21 @@ bool CGpio::StopHardware()
 
 	try
 	{
-		if (m_threadSensors)
+		if (m_thread_updatestartup)
 		{
-			m_threadSensors->join();
-			m_threadSensors.reset();
+			m_thread_updatestartup->join();
+			m_thread_updatestartup.reset();
 		}
+	}
 	catch (...)
 	{
 	}
 	try
 	{
-		if (m_threadSwitches)
+		if (m_thread_poller)
 		{
-			m_threadSwitches->join();
-			m_threadSwitches.reset();
+			m_thread_poller->join();
+			m_thread_poller.reset();
 		}
 	}
 	catch (...)
