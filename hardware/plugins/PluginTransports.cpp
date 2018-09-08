@@ -128,6 +128,8 @@ namespace Plugins {
 	{
 		try
 		{
+			PyType_Ready(&CConnectionType);
+
 			if (!m_Socket)
 			{
 				if (!m_Acceptor)
@@ -165,7 +167,6 @@ namespace Plugins {
 			std::string sAddress = remote_ep.address().to_string();
 			std::string sPort = std::to_string(remote_ep.port());
 
-			PyType_Ready(&CConnectionType);
 			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
 			CPluginTransportTCP* pTcpTransport = new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 			Py_DECREF(pConnection);
@@ -482,6 +483,8 @@ namespace Plugins {
 	{
 		try
 		{
+			PyType_Ready(&CConnectionType);
+
 			if (!m_Socket)
 			{
 				boost::system::error_code ec;
@@ -525,7 +528,6 @@ namespace Plugins {
 			std::string sAddress = m_remote_endpoint.address().to_string();
 			std::string sPort = std::to_string(m_remote_endpoint.port());
 
-			PyType_Ready(&CConnectionType);
 			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
 
 			// Configure temporary Python Connection object
