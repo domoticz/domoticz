@@ -61,7 +61,7 @@ bool CTE923::StopHardware()
 void CTE923::Do_Work()
 {
 	int sec_counter=TE923_POLL_INTERVAL-4;
-	while (!IsStop|Requested(1000))
+	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
