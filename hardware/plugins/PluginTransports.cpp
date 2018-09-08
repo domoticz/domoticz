@@ -143,6 +143,7 @@ namespace Plugins {
 				//
 				boost::asio::ip::tcp::socket*	pSocket = new boost::asio::ip::tcp::socket(ios);
 				m_Acceptor->async_accept((boost::asio::ip::tcp::socket&)*pSocket, boost::bind(&CPluginTransportTCP::handleAsyncAccept, this, pSocket, boost::asio::placeholders::error));
+				m_bConnecting = true;
 			}
 		}
 		catch (std::exception& e)
