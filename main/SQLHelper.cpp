@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 131
+#define DB_VERSION 132
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2565,6 +2565,41 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 131)
 		{
 			query("DROP TABLE IF EXISTS [EventActions]");
+		}
+		if (dbversion < 132)
+		{
+			//Patch for PhilipsHue pTypeLighting2/sTypeAC to pTypeGeneralSwitch/sSwitchGeneralSwitch
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::string> sd;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_Philips_Hue << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto & itt : result)
+				{
+					sd = itt;
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery.str());
+					if (!result2.empty())
+					{
+						for (const auto & itt2 : result2)
+						{
+							sd = itt2;
+							std::string ndeviceid = "0" + sd[1];
+
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "', [Type]=" << pTypeGeneralSwitch << ", SubType=" << sSwitchGeneralSwitch << " WHERE (ID=" << sd[0] << ")";
+							query(szQuery.str());
+						}
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
