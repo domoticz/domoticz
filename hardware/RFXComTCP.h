@@ -2,6 +2,7 @@
 
 #include "ASyncTCP.h"
 #include "RFXBase.h"
+#include <boost/asio/steady_timer.hpp>
 
 class RFXComTCP : public CRFXBase, ASyncTCP
 {
@@ -12,7 +13,7 @@ public:
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 
 	void OnConnect() override;
 	void OnDisconnect() override;
@@ -22,5 +23,6 @@ private:
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
+	boost::asio::steady_timer m_heartbeat_timer;
 };
 

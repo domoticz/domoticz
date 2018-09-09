@@ -2,6 +2,7 @@
 
 #include "ASyncTCP.h"
 #include "RFLinkBase.h"
+#include <boost/asio/steady_timer.hpp>
 
 class CRFLinkTCP: public CRFLinkBase, ASyncTCP
 {
@@ -18,16 +19,15 @@ private:
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
 	void OnError(const std::exception e) override;
 	void OnError(const boost::system::error_code& error) override;
-
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
+	int m_sec_counter;
 };
 

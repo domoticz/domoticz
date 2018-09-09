@@ -20,24 +20,11 @@ ASyncTCP::ASyncTCP()
 	mAllowCallbacks(true),
 	m_reconnect_delay(RECONNECT_TIME)
 {
-	// Reset IO Service
-	mIos.reset();
-
-	//Start IO Service worker thread
-	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
 }
 
 ASyncTCP::~ASyncTCP(void)
 {
-	disconnect();
-
-	// tell the IO service to stop
-	mIos.stop();
-	if (m_tcpthread)
-	{
-		m_tcpthread->join();
-		m_tcpthread.reset();
-	}
+	terminate();
 }
 
 void ASyncTCP::SetReconnectDelay(int Delay)
@@ -47,6 +34,16 @@ void ASyncTCP::SetReconnectDelay(int Delay)
 
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
 {
+	//Start IO Service worker thread if not started
+	if (!m_tcpthread)
+	{
+		// Reset IO Service
+		mIos.reset();
+
+		//Start IO Service worker thread
+		m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
+	}
+
 	// connect socket
 	try
 	{
@@ -120,6 +117,18 @@ void ASyncTCP::terminate(const bool silent)
 {
 	mAllowCallbacks = false;
 	disconnect(silent);
+	// tell the IO service to stop
+	mIos.stop();
+	if (m_tcpthread)
+	{
+		m_tcpthread->join();
+		m_tcpthread.reset();
+	}
+}
+
+void ASyncTCP::schedule_reconnect()
+{
+	mIos.post(boost::bind(&ASyncTCP::StartReconnect, this));
 }
 
 void ASyncTCP::StartReconnect()
@@ -277,23 +286,26 @@ void ASyncTCP::do_close()
 	mSocket.close();
 }
 
-void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
+void ASyncTCP::do_reconnect(const boost::system::error_code& error)
 {
-	if(mIsConnected) return;
-	if(mIsClosing) return;
-
-	// close current socket if necessary
-	mSocket.close();
-
-	if (!mDoReconnect)
+	if (!error) // the timer was cancelled
 	{
-		return;
+		if(mIsConnected) return;
+		if(mIsClosing) return;
+
+		// close current socket if necessary
+		mSocket.close();
+
+		if (!mDoReconnect)
+		{
+			return;
+		}
+		mReconnectTimer.cancel();
+		// try to reconnect, then call handle_connect
+		mSocket.async_connect(mEndPoint,
+			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+		mIsReconnecting = false;
 	}
-	mReconnectTimer.cancel();
-	// try to reconnect, then call handle_connect
-	mSocket.async_connect(mEndPoint,
-        boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
-	mIsReconnecting = false;
 }
 
 void ASyncTCP::do_write(const std::string &msg)

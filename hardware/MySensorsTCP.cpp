@@ -5,13 +5,15 @@
 #include <iostream>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include <boost/asio/placeholders.hpp>
 
 #define RETRY_DELAY 30
 
 MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
 	m_szIPAddress(IPAddress),
 	m_usIPPort(usIPPort),
-	m_retrycntr(RETRY_DELAY)
+	m_retrycntr(RETRY_DELAY),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID = ID;
 }
@@ -32,22 +34,25 @@ bool MySensorsTCP::StartHardware()
 	m_retrycntr = RETRY_DELAY;
 	m_bIsStarted = true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&MySensorsTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "MySensorsTCP");
+	//Connect
+	_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "MySensorsTCP");
+
+	//Start heartbeat timer
+	Do_Work(boost::system::error_code());
 	StartSendQueue();
-	return (m_thread != nullptr);
+
+	return (m_tcpthread != nullptr);
 }
 
 bool MySensorsTCP::StopHardware()
 {
 	StopSendQueue();
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS, "MySensors: TCP/IP Worker stopped...");
+
 	m_bIsStarted = false;
 	return true;
 }
@@ -70,33 +75,24 @@ void MySensorsTCP::OnDisconnect()
 	_log.Log(LOG_STATUS, "MySensors: disconnected");
 }
 
-void MySensorsTCP::Do_Work()
+void MySensorsTCP::Do_Work(const boost::system::error_code& error)
 {
-	bool bFirstTime = true;
-	int sec_counter = 0;
-	_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	connect(m_szIPAddress, m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
 
-		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
-		}
+		m_LastHeartbeat = mytime(NULL);
 
 		if (isConnected())
 		{
-			if (sec_counter % 10 == 0)
-			{
-				//Send a Heartbeat message
-				std::string sRequest = "0;0;3;0;18;PING\n";
-				WriteInt(sRequest);
-			}
+			//Send a Heartbeat message
+			std::string sRequest = "0;0;3;0;18;PING\n";
+			WriteInt(sRequest);
 		}
-	}
-	terminate();
 
-	_log.Log(LOG_STATUS, "MySensors: TCP/IP Worker stopped...");
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(10));
+		m_heartbeat_timer.async_wait(boost::bind(&MySensorsTCP::Do_Work, this, boost::asio::placeholders::error));
+	}
 }
 
 void MySensorsTCP::OnData(const unsigned char *pData, size_t length)

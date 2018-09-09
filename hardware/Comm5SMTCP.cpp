@@ -6,6 +6,7 @@
 #include "../main/mainworker.h"
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
+#include <boost/asio/placeholders.hpp>
 
 #include <iostream>
 
@@ -35,7 +36,8 @@ static inline bool startsWith(const std::string &haystack, const std::string &ne
 }
 
 Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-	m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -52,23 +54,24 @@ bool Comm5SMTCP::StartHardware()
 	//force connect the next first time
 	m_bIsStarted = true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&Comm5SMTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Comm5SMTCP");
+	//Connect
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "Comm5SMTCP");
+
+	//Start heartbeat timer
+	m_sec_counter = 0;
+	Do_Work(boost::system::error_code());
 
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: Started");
 
-	return (m_thread != nullptr);
+	return (m_tcpthread != nullptr);
 }
 
 bool Comm5SMTCP::StopHardware()
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: TCP/IP Worker stopped...");
 	m_bIsStarted = false;
 	return true;
 }
@@ -87,24 +90,23 @@ void Comm5SMTCP::OnDisconnect()
 	_log.Log(LOG_ERROR, "Comm5 SM-XXXX: disconected");
 }
 
-void Comm5SMTCP::Do_Work()
+void Comm5SMTCP::Do_Work(const boost::system::error_code& error)
 {
-	int sec_counter = 0;
-	connect(m_szIPAddress, m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
+		m_sec_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (m_sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 4 == 0) {
+		if (m_sec_counter % 4 == 0) {
 			querySensorState();
 		}
-	}
-	terminate();
 
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: TCP/IP Worker stopped...");
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(1));
+		m_heartbeat_timer.async_wait(boost::bind(&Comm5SMTCP::Do_Work, this, boost::asio::placeholders::error));
+	}
 }
 
 void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)

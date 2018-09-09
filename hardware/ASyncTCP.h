@@ -15,14 +15,14 @@ namespace boost { namespace system { class error_code; } }
 class ASyncTCP
 {
 protected:
-	ASyncTCP();
+	ASyncTCP(/*const std::string foo*/);
 	virtual ~ASyncTCP(void);
 	// Async connect and start async read from the socket, data is delivered in OnData()
 	// No action if mIsConnected = true. If the connection is lost, it will automatically be setup again
 	void connect(const std::string &hostname, unsigned short port);
 
-	// Schedule reconnect (TODO: Implement)
-	void schedule_reconnect(const int Delay = 30);
+	// Schedule reconnect
+	void schedule_reconnect();
 
 	bool isConnected() { return mIsConnected; };
 
@@ -49,7 +49,8 @@ protected:
 	virtual void OnError(const boost::system::error_code& error) = 0;
 
 protected:
-	boost::asio::io_service			mIos; // protected to allow derived classes to attach timers etc.
+	boost::asio::io_service			mIos;        // protected to allow derived classes to attach timers etc.
+	std::shared_ptr<std::thread> 	m_tcpthread; // protected to allow derived classes to set thread name etc.
 
 private:
 	// Internal helper functions
@@ -80,7 +81,6 @@ private:
 	int								m_reconnect_delay;
 	boost::asio::deadline_timer		mReconnectTimer;
 
-	std::shared_ptr<std::thread> 	m_tcpthread;
 	boost::asio::io_service::work 	m_tcpwork; // Create some work to keep IO Service alive
 
 	boost::asio::ip::tcp::socket	mSocket;

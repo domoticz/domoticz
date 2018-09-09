@@ -8,6 +8,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include <sstream>
+#include <boost/asio/placeholders.hpp>
 
 #define MAX_POLL_INTERVAL 30*1000
 
@@ -28,7 +29,8 @@ enum _eDaeTcpState
 
 CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int pollInterval, const int model, const int slaveId) :
 	m_szIPAddress(IPAddress),
-	m_pollInterval(pollInterval)
+	m_pollInterval(pollInterval),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -62,8 +64,14 @@ bool CDenkoviTCPDevices::StartHardware()
 	m_uiTransactionCounter = 0;
 	m_uiReceivedDataLength = 0;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CDenkoviTCPDevices::Do_Work, this);
+	//Connect
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "DenkoviTCP");
+
+	//Start heartbeat timer
+	m_halfsec_counter = 0;
+	Do_Work(boost::system::error_code());
+
 	m_bIsStarted = true;
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:
@@ -73,7 +81,7 @@ bool CDenkoviTCPDevices::StartHardware()
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Started");
 		break;
 	}
-	return (m_thread != NULL);
+	return (m_tcpthread != NULL);
 }
 
 void CDenkoviTCPDevices::ConvertResponse(const std::string pData, const size_t length)
@@ -220,33 +228,7 @@ void CDenkoviTCPDevices::OnError(const boost::system::error_code& error) {
 
 bool CDenkoviTCPDevices::StopHardware()
 {
-	if (m_thread != NULL)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
-	m_bIsStarted = false;
-	return true;
-}
-
-void CDenkoviTCPDevices::Do_Work()
-{
-	int poll_interval = m_pollInterval / 500;
-	int halfsec_counter = 0;
-	connect(m_szIPAddress, m_usIPPort);
-	while (!IsStopRequested(500))
-	{
-		halfsec_counter++;
-
-		if (halfsec_counter % 24 == 0) {
-			m_LastHeartbeat = mytime(NULL);
-		}
-		if (halfsec_counter % poll_interval == 0) {
-			if (m_bReadingNow == false && m_bUpdateIo == false)
-				GetMeterDetails();
-		}
-	}
+	RequestStop();
 	terminate();
 
 	switch (m_iModel) {
@@ -256,6 +238,30 @@ void CDenkoviTCPDevices::Do_Work()
 	case DDEV_WIFI_16R_Modbus:
 		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Worker stopped...");
 		break;
+	}
+
+	m_bIsStarted = false;
+	return true;
+}
+
+void CDenkoviTCPDevices::Do_Work(const boost::system::error_code& error)
+{
+	if (!IsStopRequested(0) && !error)
+	{
+		int poll_interval = m_pollInterval / 500;
+		m_halfsec_counter++;
+
+		if (m_halfsec_counter % 24 == 0) {
+			m_LastHeartbeat = mytime(NULL);
+		}
+		if (m_halfsec_counter % poll_interval == 0) {
+			if (m_bReadingNow == false && m_bUpdateIo == false)
+				GetMeterDetails();
+		}
+
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::milliseconds(500));
+		m_heartbeat_timer.async_wait(boost::bind(&CDenkoviTCPDevices::Do_Work, this, boost::asio::placeholders::error));
 	}
 }
 

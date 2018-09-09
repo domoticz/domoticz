@@ -13,13 +13,15 @@
 #include "../webserver/cWebem.h"
 
 #include <iostream>
+#include <boost/asio/placeholders.hpp>
 
 #define RETRY_DELAY 30
 
 CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
 	m_IP(IPAddress),
 	m_User(User),
-	m_Pwd(Pwd)
+	m_Pwd(Pwd),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -497,37 +499,28 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 	}
 }
 
-void CHEOS::Do_Work()
+void CHEOS::Do_Work(const boost::system::error_code& error)
 {
-
-	_log.Log(LOG_STATUS, "HEOS by DENON: Worker started...");
-
-	ReloadNodes();
-
-	bool bCheckedForPlayers = false;
-	int sec_counter = 25;
-	m_lastUpdate = 25;
-	connect(m_IP, m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
+		m_sec_counter++;
 		m_lastUpdate++;
 
-		if (sec_counter % 12 == 0) {
+		if (m_sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (isConnected())
 		{
-			if (!bCheckedForPlayers)
+			if (!m_bCheckedForPlayers)
 			{
 				// Update all players and groups
 				SendCommand("getPlayers");
-				bCheckedForPlayers = true;
+				m_bCheckedForPlayers = true;
 				// Enable event changes
 				SendCommand("registerForEvents");
 			}
-			if (sec_counter % 30 == 0 && m_lastUpdate >= 30)//updates every 30 seconds
+			if (m_sec_counter % 30 == 0 && m_lastUpdate >= 30)//updates every 30 seconds
 			{
 				std::vector<HEOSNode>::const_iterator itt;
 				for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
@@ -536,11 +529,11 @@ void CHEOS::Do_Work()
 				}
 			}
 		}
+
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(1));
+		m_heartbeat_timer.async_wait(boost::bind(&CHEOS::Do_Work, this, boost::asio::placeholders::error));
 	}
-	terminate();
-
-	_log.Log(LOG_STATUS, "HEOS by DENON: Worker stopped...");
-
 }
 
 _eNotificationTypes	CHEOS::NotificationType(_eMediaStatus nStatus)
@@ -564,20 +557,27 @@ bool CHEOS::StartHardware()
 	m_retrycntr = RETRY_DELAY;
 	m_bIsStarted = true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CHEOS::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "HEOS");
-	return (m_thread != nullptr);
+	//Connect
+	connect(m_IP, m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "HEOS");
+
+	//Start heartbeat timer
+	_log.Log(LOG_STATUS, "HEOS by DENON: Worker started...");
+	ReloadNodes();
+	m_bCheckedForPlayers = false;
+	m_sec_counter = 25;
+	m_lastUpdate = 25;
+	Do_Work(boost::system::error_code());
+
+	return (m_tcpthread != nullptr);
 }
 
 bool CHEOS::StopHardware()
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS, "HEOS by DENON: Worker stopped...");
+
 	m_bIsStarted = false;
 	return true;
 }

@@ -3,6 +3,7 @@
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
+#include <boost/asio/steady_timer.hpp>
 
 class MochadTCP: public CDomoticzHardwareBase,  ASyncTCP
 {
@@ -13,7 +14,7 @@ public:
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 
 	void OnConnect() override;
 	void OnDisconnect() override;
@@ -30,7 +31,7 @@ private:
 	RBUF m_mochadsec;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
 	int selected[17][17];
 	int currentHouse;
 	int currentUnit;
@@ -39,6 +40,5 @@ private:
 	unsigned char m_mochadbuffer[1028];
 	char s_buffer[1028];
 	int m_bufferpos;
-
 };
 

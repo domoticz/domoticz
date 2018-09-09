@@ -7,7 +7,7 @@ class CRFLinkSerial: public AsyncSerial, public CRFLinkBase
 {
 public:
 	CRFLinkSerial(const int ID, const std::string& devname);
-    ~CRFLinkSerial();
+	~CRFLinkSerial();
 private:
 	void Init();
 	bool StartHardware() override;
@@ -17,6 +17,7 @@ private:
 	bool WriteInt(const std::string &sendString) override;
 	std::shared_ptr<std::thread> m_thread;
 	std::string m_szSerialPort;
-    void readCallback(const char *data, size_t len);
+	void readCallback(const char *data, size_t len);
+	int m_retrycntr;
 };
 

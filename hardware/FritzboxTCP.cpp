@@ -10,6 +10,7 @@
 #include "../hardware/hardwaretypes.h"
 
 #include <sstream>
+#include <boost/asio/placeholders.hpp>
 
 #define RETRY_DELAY 30
 
@@ -36,7 +37,8 @@ datum;DISCONNECT;ConnectionID;dauerInSekunden;
 */
 
 FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-	m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
@@ -56,20 +58,22 @@ bool FritzboxTCP::StartHardware()
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&FritzboxTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "FritzboxTCP");
-	return (m_thread != nullptr);
+	//Connect
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "FritzboxTCP");
+
+	//Start heartbeat timer
+	Do_Work(boost::system::error_code());
+
+	return (m_tcpthread != nullptr);
 }
 
 bool FritzboxTCP::StopHardware()
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS,"Fritzbox: TCP/IP Worker stopped...");
+
 	m_bIsStarted=false;
 	return true;
 }
@@ -88,21 +92,16 @@ void FritzboxTCP::OnDisconnect()
 	_log.Log(LOG_STATUS,"Fritzbox: disconnected");
 }
 
-void FritzboxTCP::Do_Work()
+void FritzboxTCP::Do_Work(const boost::system::error_code& error)
 {
-	int sec_counter = 0;
-	connect(m_szIPAddress,m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
+		m_LastHeartbeat = mytime(NULL);
 
-		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
-		}
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(12));
+		m_heartbeat_timer.async_wait(boost::bind(&FritzboxTCP::Do_Work, this, boost::asio::placeholders::error));
 	}
-	terminate();
-
-	_log.Log(LOG_STATUS,"Fritzbox: TCP/IP Worker stopped...");
 }
 
 void FritzboxTCP::OnData(const unsigned char *pData, size_t length)

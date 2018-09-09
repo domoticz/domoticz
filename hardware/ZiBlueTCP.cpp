@@ -4,11 +4,13 @@
 #include "../main/Helper.h"
 #include <iostream>
 #include "../main/localtime_r.h"
+#include <boost/asio/placeholders.hpp>
 
 #define ZiBlue_RETRY_DELAY 30
 
 CZiBlueTCP::CZiBlueTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
-	m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
@@ -27,20 +29,23 @@ bool CZiBlueTCP::StartHardware()
 	m_retrycntr=ZiBlue_RETRY_DELAY;
 	m_bIsStarted=true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CZiBlueTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "ZiBlueTCP");
-	return (m_thread != nullptr);
+	//Connect
+	_log.Log(LOG_STATUS, "ZiBlue: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "ZiBlueTCP");
+
+	//Start heartbeat timer
+	Do_Work(boost::system::error_code());
+
+	return (m_tcpthread != nullptr);
 }
 
 bool CZiBlueTCP::StopHardware()
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS,"ZiBlue: TCP/IP Worker stopped...");
+
 	m_bIsStarted=false;
 	return true;
 }
@@ -60,22 +65,17 @@ void CZiBlueTCP::OnDisconnect()
 	_log.Log(LOG_STATUS,"ZiBlue: disconnected");
 }
 
-void CZiBlueTCP::Do_Work()
+void CZiBlueTCP::Do_Work(const boost::system::error_code& error)
 {
-	int sec_counter = 0;
-	_log.Log(LOG_STATUS, "ZiBlue: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	connect(m_szIPAddress,m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
+		m_LastHeartbeat = mytime(NULL);
 
-		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
-		}
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(12));
+		m_heartbeat_timer.async_wait(boost::bind(&CZiBlueTCP::Do_Work, this, boost::asio::placeholders::error));
 	}
-	terminate();
 
-	_log.Log(LOG_STATUS,"ZiBlue: TCP/IP Worker stopped...");
 }
 
 void CZiBlueTCP::OnData(const unsigned char *pData, size_t length)

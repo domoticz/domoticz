@@ -2,6 +2,7 @@
 
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
+#include <boost/asio/steady_timer.hpp>
 
 class OnkyoAVTCP : public CDomoticzHardwareBase, ASyncTCP
 {
@@ -21,7 +22,7 @@ private:
 	bool ReceiveXML(const char *pData, int Len);
 	void EnsureSwitchDevice(int Unit, const char *options = NULL);
 	std::string BuildSelectorOptions(const std::string & names, const std::string & ids);
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 
 	void OnConnect() override;
 	void OnDisconnect() override;
@@ -36,5 +37,5 @@ private:
 	int m_PPktLen;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
 };

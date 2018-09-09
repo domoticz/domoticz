@@ -2,6 +2,7 @@
 
 #include "ASyncTCP.h"
 #include "OTGWBase.h"
+#include <boost/asio/steady_timer.hpp>
 
 class OTGWTCP: public OTGWBase, ASyncTCP
 {
@@ -20,7 +21,7 @@ protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 
 	void OnConnect() override;
 	void OnDisconnect() override;
@@ -28,6 +29,7 @@ protected:
 	void OnError(const std::exception e) override;
 	void OnError(const boost::system::error_code& error) override;
 
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
+	int m_sec_counter;
 };
 
