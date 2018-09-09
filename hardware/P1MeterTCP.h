@@ -3,7 +3,7 @@
 #include "ASyncTCP.h"
 #include "P1MeterBase.h"
 
-class P1MeterTCP: public P1MeterBase, ASyncTCP
+class P1MeterTCP : public P1MeterBase, ASyncTCP
 {
 public:
 	P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit);
@@ -23,6 +23,7 @@ protected:
 	unsigned short m_usIPPort;
 
 	void Do_Work();
+
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
@@ -30,6 +31,5 @@ protected:
 	void OnError(const boost::system::error_code& error) override;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

@@ -38,7 +38,6 @@ private:
 	std::string m_UserID;
 //	std::string m_Serial;
 	//std::string m_StructureID;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::map<int, _tNestThemostat> m_thermostats;
 	bool m_bDoLogin;

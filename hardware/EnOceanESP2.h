@@ -36,7 +36,6 @@ private:
 	int m_wantedlength;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
     int m_Type;
 	std::string m_szSerialPort;
 

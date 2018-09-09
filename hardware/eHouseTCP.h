@@ -171,7 +171,6 @@ private:
 	const         unsigned short m_IPPort;  // 9876;    default port
 	const          std::string m_IPAddress; // "192.168.0.200"; - default eHouse PRO srv address
 	int m_pollInterval;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::shared_ptr<std::thread> m_EhouseTcpClientThread[MAX_CLIENT_SOCKETS];
 	unsigned char m_newData[7];

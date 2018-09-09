@@ -161,6 +161,8 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	RequestStart();
+
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();
@@ -168,7 +170,6 @@ bool CEvohomeWeb::StartHardware()
 	SetThreadName(m_thread->native_handle(), "EvohomeWeb");
 	if (!m_thread)
 		return false;
-	m_stoprequested = false;
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return true;
@@ -179,7 +180,7 @@ bool CEvohomeWeb::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -194,9 +195,8 @@ void CEvohomeWeb::Do_Work()
 	int pollcounter = LOGONFAILTRESHOLD;
 	_log.Log(LOG_STATUS, "(%s) Worker started...", m_Name.c_str());
 	m_lastconnect=0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		m_lastconnect++;
 		if (sec_counter % 10 == 0) {
@@ -214,6 +214,7 @@ void CEvohomeWeb::Do_Work()
 			m_lastconnect=0;
 		}
 	}
+
 	_log.Log(LOG_STATUS, "(%s) Worker stopped...", m_Name.c_str());
 }
 

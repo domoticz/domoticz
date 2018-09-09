@@ -23,10 +23,13 @@ CDenkoviUSBDevices::CDenkoviUSBDevices(const int ID, const std::string& comPort,
 	m_szSerialPort(comPort)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_bOutputLog = false;
 	m_iModel = model;
 	m_pollInterval = 1000;
+
+	if (m_iModel == DDEV_USB_16R)
+		m_baudRate = 9600;
+
 	/*if (m_pollInterval < 500)
 		m_pollInterval = 500;
 	else if (m_pollInterval > MAX_POLL_INTERVAL)
@@ -45,12 +48,7 @@ void CDenkoviUSBDevices::Init()
 
 bool CDenkoviUSBDevices::StartHardware()
 {
-	m_stoprequested = false;
-	m_thread = std::make_shared<std::thread>(&CDenkoviUSBDevices::Do_Work, this);
-	//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviUSBDevices::Do_Work, this)));
-
-	if (m_iModel == DDEV_USB_16R)
-		m_baudRate = 9600;
+	RequestStart();
 
 	//Try to open the Serial Port
 	try
@@ -79,6 +77,9 @@ bool CDenkoviUSBDevices::StartHardware()
 			_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error opening serial port!");
 		return false;
 	}
+
+	m_thread = std::make_shared<std::thread>(&CDenkoviUSBDevices::Do_Work, this);
+
 	m_bIsStarted = true;
 	setReadCallback(boost::bind(&CDenkoviUSBDevices::readCallBack, this, _1, _2));
 	
@@ -129,9 +130,9 @@ bool CDenkoviUSBDevices::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -144,22 +145,23 @@ void CDenkoviUSBDevices::Do_Work()
 
 	int msec_counter = 0;
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "Denkovi: Worker started...");
+
+	while (!IsStopRequested(100))
 	{
 		m_LastHeartbeat = mytime(NULL);
-		sleep_milliseconds(40);
-		if (msec_counter++ >= 100) {
+		if (msec_counter++ >= 40) {
 			msec_counter = 0;
 			if (m_readingNow == false && m_updateIo == false)
+			{
+				//Every 4 seconds
 				GetMeterDetails();
+			}
 		}
 	}
+	terminate();
 
-	switch (m_iModel) {
-	case DDEV_USB_16R:
-		_log.Log(LOG_STATUS, "USB 16 Relays-VCP: Worker stopped...");
-		break;
-	}
+	_log.Log(LOG_STATUS, "Denkovi: Worker stopped...");
 }
 
 bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char length)

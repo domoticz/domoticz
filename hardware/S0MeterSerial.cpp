@@ -41,7 +41,8 @@ S0MeterSerial::~S0MeterSerial()
 
 bool S0MeterSerial::StartHardware()
 {
-	StartHeartbeatThread();
+	RequestStart();
+
 	//Try to open the Serial Port
 	try
 	{
@@ -102,15 +103,19 @@ bool S0MeterSerial::StartHardware()
 	}
 #endif
 
+	StartHeartbeatThread();
+
+	_log.Log(LOG_STATUS, "S0 Meter: Worker started...");
+
 	return true;
 }
 
 bool S0MeterSerial::StopHardware()
 {
+	terminate();
 	m_bIsStarted=false;
 	StopHeartbeatThread();
-	terminate();
-	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
+	_log.Log(LOG_STATUS, "S0 Meter: Worker stopped...");
 	return true;
 }
 

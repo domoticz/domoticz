@@ -623,7 +623,6 @@ CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchRowID = 0;
 	m_dbase = NULL;
-	m_stoprequested = false;
 	m_sensortimeoutcounter = 0;
 	m_bAcceptNewHardware = true;
 	m_bAllowWidgetOrdering = true;
@@ -645,11 +644,11 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_background_task_thread)
+	if (m_thread)
 	{
-		m_stoprequested = true;
-		m_background_task_thread->join();
-		m_background_task_thread.reset();
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	CloseDatabase();
 }
@@ -2567,13 +2566,48 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("DROP TABLE IF EXISTS [EventActions]");
 		}
+		if (dbversion < 132)
+		{
+			//Patch for PhilipsHue pTypeLighting2/sTypeAC to pTypeGeneralSwitch/sSwitchGeneralSwitch
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::string> sd;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_Philips_Hue << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto & itt : result)
+				{
+					sd = itt;
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery.str());
+					if (!result2.empty())
+					{
+						for (const auto & itt2 : result2)
+						{
+							sd = itt2;
+							std::string ndeviceid = "0" + sd[1];
+
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "', [Type]=" << pTypeGeneralSwitch << ", SubType=" << sSwitchGeneralSwitch << " WHERE (ID=" << sd[0] << ")";
+							query(szQuery.str());
+						}
+					}
+				}
+			}
+		}
 		if (dbversion < 133)
 		{
 			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
 			query(sqlCreateHardware);
 			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
 			query("DROP TABLE tmp_Hardware;");
-		}
+    }    
 	}
 	else if (bNewInstall)
 	{
@@ -3049,9 +3083,9 @@ void CSQLHelper::CloseDatabase()
 
 bool CSQLHelper::StartThread()
 {
-	m_background_task_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
-	SetThreadName(m_background_task_thread->native_handle(), "SQLHelper");
-	return (m_background_task_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "SQLHelper");
+	return (m_thread != NULL);
 }
 
 bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color)
@@ -3076,10 +3110,8 @@ void CSQLHelper::Do_Work()
 {
 	std::vector<_tTaskItem> _items2do;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(static_cast<const long>(1000.0f / timer_resolution_hz)))
 	{
-		sleep_milliseconds(static_cast<const long>(1000.0f / timer_resolution_hz));
-
 		if (m_bAcceptHardwareTimerActive)
 		{
 			m_iAcceptHardwareTimerCounter -= static_cast<float>(1. / timer_resolution_hz);

@@ -32,7 +32,6 @@ private:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 
 #endif //BUFFEREDP1ASYNCSERIAL_H

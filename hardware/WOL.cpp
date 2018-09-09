@@ -33,6 +33,8 @@ void CWOL::Init()
 
 bool CWOL::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	m_bIsStarted = true;
 	sOnConnected(this);

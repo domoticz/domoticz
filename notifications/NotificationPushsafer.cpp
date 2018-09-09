@@ -27,6 +27,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 	const int Priority,
 	const std::string &Sound,
 	const bool bFromNotification)
+	
 {
 	//send message to Pushsafer
 	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
@@ -43,7 +44,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 	StringSplit(CURLEncode::URLDecode(Text), "|", splitresults);
 	if (splitresults.size() == 11)
 	{
-		// [0] privatekey | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live
+		// [0] private or alias key | [1] deviceid | [2] icon | [3] sound | [4] vibration | [5] title | [6] message | [7] pictureurl | [8] url | [9] urltitle | [10] time2live
 		std::string PS_k = splitresults[0];
 		std::string PS_d = splitresults[1];
 		std::string PS_i = splitresults[2];
@@ -61,18 +62,12 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			_apikey = PS_k;
 		}
 
-		if (PS_m.length() >= 1)
-		{
-		}
-		else
+		if (PS_m.empty())
 		{
 			PS_m = Text;
 		}
-
-		if (PS_t.length() >= 1)
-		{
-		}
-		else
+		
+		if (PS_t.empty())
 		{
 			PS_t = cSubject;
 		}
@@ -83,17 +78,17 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			{
 				std::string base64ImageString(camimage.begin(), camimage.end());
 				base64ImageString = base64_encode(base64ImageString);
-				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l;
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority;
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
-				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l;
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority;
 			}
 		}
 		else
 		{
-			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l;
+			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l << "&pr=" << Priority;
 		}
 	}
 	else

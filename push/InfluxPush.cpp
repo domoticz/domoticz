@@ -17,24 +17,38 @@
 
 CInfluxPush::CInfluxPush() :
 	m_InfluxPort(8086),
-	m_bInfluxDebugActive(false),
-	m_stoprequested(false)
+	m_bInfluxDebugActive(false)
 {
 	m_bLinkActive = false;
 }
 
-void CInfluxPush::Start()
+bool CInfluxPush::Start()
 {
+	Stop();
+
+	RequestStart();
+
 	UpdateSettings();
+
+	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "InfluxPush");
+
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CInfluxPush::OnDeviceReceived, this, _1, _2, _3, _4));
-	StartThread();
+
+	return (m_thread != NULL);
 }
 
 void CInfluxPush::Stop()
 {
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
-	StopThread();
+
+	if (m_thread)
+	{
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
 }
 
 void CInfluxPush::UpdateSettings()
@@ -153,31 +167,11 @@ void CInfluxPush::DoInfluxPush()
 	}
 }
 
-bool CInfluxPush::StartThread()
-{
-	StopThread();
-	m_stoprequested = false;
-	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "InfluxPush");
-	return (m_thread != NULL);
-}
-
-void CInfluxPush::StopThread()
-{
-	if (m_thread)
-	{
-		m_stoprequested = true;
-		m_thread->join();
-		m_thread.reset();
-	}
-}
-
-
 void CInfluxPush::Do_Work()
 {
 	std::vector<_tPushItem> _items2do;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
 		sleep_milliseconds(500);
 

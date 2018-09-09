@@ -179,7 +179,6 @@ private:
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;
 	std::shared_ptr<std::thread> m_thread;
-	bool m_stoprequested;
 };
 
 

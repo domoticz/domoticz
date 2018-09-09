@@ -3,7 +3,7 @@
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
-#define RFLINK_READ_BUFFER_SIZE 65*1024
+#define RX_BUFFER_SIZE 100
 
 class CRFXBase: public CDomoticzHardwareBase
 {
@@ -26,7 +26,6 @@ private:
 	static bool CheckValidRFXData(const uint8_t *pData);
 	void SendCommand(const unsigned char Cmd);
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	bool m_bReceiverStarted;
 };
 

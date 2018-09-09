@@ -60,6 +60,5 @@ private:
 	bool m_bReceiverStarted;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

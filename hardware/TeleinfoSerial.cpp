@@ -77,7 +77,8 @@ void CTeleinfoSerial::Init()
 
 bool CTeleinfoSerial::StartHardware()
 {
-	StartHeartbeatThread();
+	RequestStart();
+
 	Init();
 	//Try to open the Serial Port
 	try
@@ -104,6 +105,8 @@ bool CTeleinfoSerial::StartHardware()
 		_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port!!!");
 		return false;
 	}
+	StartHeartbeatThread();
+
 	setReadCallback(boost::bind(&CTeleinfoSerial::readCallback, this, _1, _2));
 	m_bIsStarted = true;
 	sOnConnected(this);

@@ -33,7 +33,6 @@ private:
 	double m_totalActivePower;
 	double m_totalEnergy;
 
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 };
 

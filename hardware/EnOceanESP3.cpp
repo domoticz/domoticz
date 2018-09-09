@@ -410,7 +410,6 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 	memset(&m_buffer,0,sizeof(m_buffer));
 	m_id_base=0;
 	m_receivestate=ERS_SYNCBYTE;
-	m_stoprequested=false;
 
 	//Test
 	//m_ReceivedPacketType = 0x01;
@@ -428,6 +427,8 @@ CEnOceanESP3::~CEnOceanESP3()
 
 bool CEnOceanESP3::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr=ENOCEAN_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
@@ -439,15 +440,12 @@ bool CEnOceanESP3::StartHardware()
 
 bool CEnOceanESP3::StopHardware()
 {
-	m_stoprequested=true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
-		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-		sleep_milliseconds(10);
 		m_thread.reset();
 	}
-	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -457,12 +455,11 @@ void CEnOceanESP3::Do_Work()
 {
 	int msec_counter=0;
 	int sec_counter = 0;
-	while (!m_stoprequested)
-	{
-		sleep_milliseconds(200);
-		if (m_stoprequested)
-			break;
 
+	_log.Log(LOG_STATUS, "EnOcean: Worker started...");
+
+	while (!IsStopRequested(200))
+	{
 		msec_counter++;
 		if (msec_counter == 5)
 		{
@@ -501,7 +498,9 @@ void CEnOceanESP3::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS,"EnOcean: Serial Worker stopped...");
+	terminate();
+
+	_log.Log(LOG_STATUS,"EnOcean: Worker stopped...");
 }
 
 void CEnOceanESP3::Add2SendQueue(const char* pData, const size_t length)

@@ -197,8 +197,6 @@ namespace tcp {
 MainWorker::MainWorker()
 {
 	m_SecCountdown = -1;
-	m_stoprequested = false;
-	m_stopRxMessageThread = false;
 
 	m_bStartHardware = false;
 	m_hardwareStartCounter = 0;
@@ -1122,48 +1120,7 @@ bool MainWorker::Start()
 #endif
 	// load notifications configuration
 	m_notifications.LoadConfig();
-	if (!StartThread())
-		return false;
-	return true;
-}
 
-
-bool MainWorker::Stop()
-{
-	if (m_rxMessageThread) {
-		// Stop RxMessage thread before hardware to avoid NULL pointer exception
-		m_stopRxMessageThread = true;
-		UnlockRxMessageQueue();
-		m_rxMessageThread->join();
-		m_rxMessageThread.reset();
-	}
-	if (m_thread)
-	{
-		m_webservers.StopServers();
-		m_sharedserver.StopServer();
-		_log.Log(LOG_STATUS, "Stopping all hardware...");
-		StopDomoticzHardware();
-		m_scheduler.StopScheduler();
-		m_eventsystem.StopEventSystem();
-		m_fibaropush.Stop();
-		m_httppush.Stop();
-		m_influxpush.Stop();
-		m_googlepubsubpush.Stop();
-#ifdef ENABLE_PYTHON
-		m_pluginsystem.StopPluginSystem();
-#endif
-
-		//    m_cameras.StopCameraGrabber();
-
-		m_stoprequested = true;
-		m_thread->join();
-		m_thread.reset();
-	}
-	return true;
-}
-
-bool MainWorker::StartThread()
-{
 	if (m_webserver_settings.is_enabled()
 #ifdef WWW_ENABLE_SSL
 		|| m_secure_webserver_settings.is_enabled()
@@ -1218,6 +1175,41 @@ bool MainWorker::StartThread()
 	m_rxMessageThread = std::make_shared<std::thread>(&MainWorker::Do_Work_On_Rx_Messages, this);
 	SetThreadName(m_rxMessageThread->native_handle(), "MainWorkerRxMsg");
 	return (m_thread != nullptr) && (m_rxMessageThread != NULL);
+}
+
+
+bool MainWorker::Stop()
+{
+	if (m_rxMessageThread) {
+		// Stop RxMessage thread before hardware to avoid NULL pointer exception
+		m_TaskRXMessage.RequestStop();
+		UnlockRxMessageQueue();
+		m_rxMessageThread->join();
+		m_rxMessageThread.reset();
+	}
+	if (m_thread)
+	{
+		m_webservers.StopServers();
+		m_sharedserver.StopServer();
+		_log.Log(LOG_STATUS, "Stopping all hardware...");
+		StopDomoticzHardware();
+		m_scheduler.StopScheduler();
+		m_eventsystem.StopEventSystem();
+		m_fibaropush.Stop();
+		m_httppush.Stop();
+		m_influxpush.Stop();
+		m_googlepubsubpush.Stop();
+#ifdef ENABLE_PYTHON
+		m_pluginsystem.StopPluginSystem();
+#endif
+
+		//    m_cameras.StopCameraGrabber();
+
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
+	return true;
 }
 
 #define HEX( x ) \
@@ -1528,11 +1520,8 @@ void MainWorker::Do_Work()
 {
 	int second_counter = 0;
 	int heartbeat_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		//sleep 500 milliseconds
-		sleep_milliseconds(500);
-
 		if (m_bDoDownloadDomoticzUpdate)
 		{
 			m_bDoDownloadDomoticzUpdate = false;
@@ -1987,7 +1976,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 	rxMessage.crc = crc_ccitt2();
 #endif
 
-	if (m_stopRxMessageThread) {
+	if (m_TaskRXMessage.IsStopRequested(0)) {
 		// Server is stopping
 		return;
 	}
@@ -2019,7 +2008,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 #ifdef DEBUG_RXQUEUE
 			_log.Log(LOG_STATUS, "RxQueue: wait 1s for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
 #endif
-			if (m_stopRxMessageThread) {
+			if (m_TaskRXMessage.IsStopRequested(0)) {
 				// Server is stopping
 				break;
 			}
@@ -2051,17 +2040,12 @@ void MainWorker::Do_Work_On_Rx_Messages()
 {
 	_log.Log(LOG_STATUS, "RxQueue: queue worker started...");
 
-	m_stopRxMessageThread = false;
-	while (true) {
-		if (m_stopRxMessageThread) {
-			// Server is stopping
-			break;
-		}
-
+	while (!m_TaskRXMessage.IsStopRequested(0))
+	{
 		// Wait and pop next message or timeout
 		_tRxQueueItem rxQItem;
 		bool hasPopped = m_rxMessageQueue.timed_wait_and_pop<std::chrono::duration<int> >(rxQItem, std::chrono::duration<int>(5));
-		// (if no message for 5 seconds, returns anyway to check m_stopRxMessageThread)
+		// (if no message for 5 seconds, returns anyway to check m_TaskRXMessage.IsStopRequested)
 
 		if (!hasPopped) {
 			// Timeout occurred : queue is empty

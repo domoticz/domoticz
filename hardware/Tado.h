@@ -24,7 +24,6 @@ class CTado : public CDomoticzHardwareBase
 		void Do_Work();
 
 		std::shared_ptr<std::thread> m_thread;
-		volatile bool m_stoprequested;
 		struct _tTadoZone {
 			std::string Id;
 			std::string Name;

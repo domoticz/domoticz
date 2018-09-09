@@ -32,7 +32,6 @@ CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddres
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
-	m_stoprequested = false;
 	m_bOutputLog = false;
 	m_iModel = model;
 	m_slaveId = slaveId;
@@ -55,9 +54,10 @@ void CDenkoviTCPDevices::Init()
 
 bool CDenkoviTCPDevices::StartHardware()
 {
+	RequestStart();
+
 	Init();
 
-	m_stoprequested = false;
 	m_bIsStarted = true;
 	m_uiTransactionCounter = 0;
 	m_uiReceivedDataLength = 0;
@@ -195,17 +195,6 @@ void CDenkoviTCPDevices::OnDisconnect() {
 	}
 }
 
-void CDenkoviTCPDevices::OnError(const boost::system::error_code& error) {
-	switch (m_iModel) {
-	case DDEV_WIFI_16R:
-		_log.Log(LOG_STATUS, "WiFi 16 Relays-VCP: Error occured.");
-		break;
-	case DDEV_WIFI_16R_Modbus:
-		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Error occured.");
-		break;
-	}
-}
-
 void CDenkoviTCPDevices::OnError(const std::exception e)
 {
 	switch (m_iModel) {
@@ -218,13 +207,24 @@ void CDenkoviTCPDevices::OnError(const std::exception e)
 	}
 }
 
+void CDenkoviTCPDevices::OnError(const boost::system::error_code& error) {
+	switch (m_iModel) {
+	case DDEV_WIFI_16R:
+		_log.Log(LOG_STATUS, "WiFi 16 Relays-VCP: Error occured.");
+		break;
+	case DDEV_WIFI_16R_Modbus:
+		_log.Log(LOG_STATUS, "WiFi 16 Relays-TCP Modbus: Error occured.");
+		break;
+	}
+}
+
 bool CDenkoviTCPDevices::StopHardware()
 {
 	if (m_thread != NULL)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -232,33 +232,22 @@ bool CDenkoviTCPDevices::StopHardware()
 
 void CDenkoviTCPDevices::Do_Work()
 {
-	int poll_interval = m_pollInterval / 100;
-	int poll_counter = poll_interval - 2;
-
-	int msec_counter = 0;
-
-	while (!m_stoprequested)
+	int poll_interval = m_pollInterval / 500;
+	int halfsec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(500))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (m_bFirstTime)
-		{
-			m_bFirstTime = false;
-			if (!mIsConnected)
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		halfsec_counter++;
+
+		if (halfsec_counter % 24 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			sleep_milliseconds(100);
-			update();
-			if (msec_counter++ >= poll_interval) {
-				msec_counter = 0;
-				if (m_bReadingNow == false && m_bUpdateIo == false)
-					GetMeterDetails();
-			}
+		if (halfsec_counter % poll_interval == 0) {
+			if (m_bReadingNow == false && m_bUpdateIo == false)
+				GetMeterDetails();
 		}
 	}
+	terminate();
 
 	switch (m_iModel) {
 	case DDEV_WIFI_16R:

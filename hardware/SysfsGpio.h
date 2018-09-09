@@ -63,7 +63,6 @@ private:
 	static int m_sysfs_req_update;
 	bool m_polling_enabled;
 	bool m_interrupts_enabled;
-	volatile bool m_stoprequested;
 	int m_debounce_msec;
 	int m_auto_configure_devices;
 	int m_maxfd;

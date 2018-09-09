@@ -50,7 +50,6 @@ protected:
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	boost::signals2::connection m_sDeviceReceivedConnection;
 	boost::signals2::connection m_sSwitchSceneConnection;
 	enum _ePublishTopics {

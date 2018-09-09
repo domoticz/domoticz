@@ -23,7 +23,6 @@ KMTronicSerial::KMTronicSerial(const int ID, const std::string& devname)
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate = 9600;
-	m_stoprequested = false;
 	m_iQueryState = 0;
 	m_retrycntr = RETRY_DELAY - 2;
 	m_bHaveReceived = false;
@@ -36,6 +35,8 @@ KMTronicSerial::~KMTronicSerial()
 
 bool KMTronicSerial::StartHardware()
 {
+	RequestStart();
+
 	m_bDoInitialQuery = true;
 	m_iQueryState = 0;
 
@@ -50,15 +51,12 @@ bool KMTronicSerial::StartHardware()
 
 bool KMTronicSerial::StopHardware()
 {
-	m_stoprequested = true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-	sleep_milliseconds(10);
-	terminate();
 	m_bIsStarted = false;
 	return true;
 }
@@ -66,16 +64,16 @@ bool KMTronicSerial::StopHardware()
 void KMTronicSerial::Do_Work()
 {
 	int sec_counter = 0;
-	while (!m_stoprequested)
+
+	_log.Log(LOG_STATUS, "KMTronic: Worker started...");
+
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (m_stoprequested)
-			break;
 		if (!isOpen())
 		{
 			if (m_retrycntr == 0)
@@ -93,7 +91,9 @@ void KMTronicSerial::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS, "KMTronic: Serial Worker stopped...");
+	terminate();
+
+	_log.Log(LOG_STATUS, "KMTronic: Worker stopped...");
 }
 
 bool KMTronicSerial::OpenSerialDevice()

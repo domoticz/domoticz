@@ -9,7 +9,6 @@ CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :
 m_szSerialPort(devname)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_retrycntr = RFLINK_RETRY_DELAY * 5;
 }
 
@@ -20,6 +19,8 @@ CRFLinkSerial::~CRFLinkSerial()
 
 bool CRFLinkSerial::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr = RFLINK_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
@@ -31,15 +32,12 @@ bool CRFLinkSerial::StartHardware()
 
 bool CRFLinkSerial::StopHardware()
 {
-	m_stoprequested=true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
-		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-		sleep_milliseconds(10);
 		m_thread.reset();
 	}
-	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -49,12 +47,8 @@ void CRFLinkSerial::Do_Work()
 {
 	int msec_counter = 0;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(200))
 	{
-		sleep_milliseconds(200);
-		if (m_stoprequested)
-			break;
-
 		msec_counter++;
 		if (msec_counter == 5)
 		{
@@ -145,7 +139,9 @@ void CRFLinkSerial::Do_Work()
 		}
 		*/
 	}
-	_log.Log(LOG_STATUS,"RFLink: Serial Worker stopped...");
+	terminate();
+
+	_log.Log(LOG_STATUS,"RFLink: Worker stopped...");
 }
 
 /*

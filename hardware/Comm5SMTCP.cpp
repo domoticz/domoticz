@@ -38,7 +38,6 @@ Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	initSensorData = true;
 	m_bReceiverStarted = false;
@@ -46,7 +45,8 @@ Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigne
 
 bool Comm5SMTCP::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
@@ -65,7 +65,7 @@ bool Comm5SMTCP::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -89,29 +89,21 @@ void Comm5SMTCP::OnDisconnect()
 
 void Comm5SMTCP::Do_Work()
 {
-	bool bFirstTime = true;
-	int count = 0;
-	while (!m_stoprequested)
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!mIsConnected)
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			sleep_milliseconds(40);
-			update();
-			if (count++ >= 100) {
-				count = 0;
-				querySensorState();
-			}
+		if (sec_counter % 4 == 0) {
+			querySensorState();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: TCP/IP Worker stopped...");
 }
 

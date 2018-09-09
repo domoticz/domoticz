@@ -90,12 +90,13 @@ void CThermosmart::Init()
 {
 	m_AccessToken = "";
 	m_ThermostatID = "";
-	m_stoprequested = false;
 	m_bDoLogin = true;
 }
 
 bool CThermosmart::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	m_LastMinute = -1;
 	//Start worker thread
@@ -110,13 +111,11 @@ bool CThermosmart::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
     m_bIsStarted=false;
-	if (!m_bDoLogin)
-		Logout();
     return true;
 }
 
@@ -126,9 +125,8 @@ void CThermosmart::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Thermosmart: Worker started...");
 	int sec_counter = THERMOSMART_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
@@ -139,6 +137,8 @@ void CThermosmart::Do_Work()
 			GetMeterDetails();
 		}
 	}
+	Logout();
+
 	_log.Log(LOG_STATUS,"Thermosmart: Worker stopped...");
 }
 

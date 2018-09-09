@@ -578,6 +578,7 @@
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
     <ClInclude Include="..\main\Noncopyable.h" />
+    <ClInclude Include="..\main\StoppableTask.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
     <ClInclude Include="..\main\WebServerHelper.h" />
