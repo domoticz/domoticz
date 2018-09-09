@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 132
+#define DB_VERSION 133
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -231,7 +231,7 @@ const char *sqlCreateHardware =
 "[Type] INTEGER NOT NULL, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
-"[SerialPort] VARCHAR(50) DEFAULT (''), "
+"[SerialPort] TEXT DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
 "[Extra] TEXT DEFAULT (''),"
@@ -2601,6 +2601,13 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+		if (dbversion < 133)
+		{
+			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
+			query(sqlCreateHardware);
+			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
+			query("DROP TABLE tmp_Hardware;");
+    }    
 	}
 	else if (bNewInstall)
 	{

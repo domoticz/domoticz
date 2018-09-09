@@ -196,6 +196,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 #else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
+	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
 	std::string sLine = "";
@@ -305,6 +306,25 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		closedir(d);
 	}
 
+#if defined(__linux__) || defined(__linux) || defined(linux)
+	d=opendir("/dev/serial/by-id");
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while ((de = readdir(d)))
+		{
+			// Only consider symbolic links
+                        if (de->d_type == DT_LNK)
+                        {
+				std::string fname = de->d_name;
+				ret.push_back("/dev/serial/by-id/" + fname);
+			}
+		}
+		closedir(d);
+	}
+
+#endif
 #endif
 	return ret;
 }
