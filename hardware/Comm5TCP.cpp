@@ -4,6 +4,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
+#include <boost/asio/placeholders.hpp>
 
 #define RETRY_DELAY 30
 #define Max_Comm5_MA_Relais 16
@@ -37,7 +38,8 @@ static inline bool startsWith(const std::string &haystack, const std::string &ne
 }
 
 Comm5TCP::Comm5TCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
@@ -56,23 +58,24 @@ bool Comm5TCP::StartHardware()
 	//force connect the next first time
 	m_bIsStarted = true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&Comm5TCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Comm5TCP");
+	//Connect
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "Comm5TCP");
+
+	//Start heartbeat timer
+	m_sec_counter = 0;
+	Do_Work(boost::system::error_code());
 
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: Started");
 
-	return (m_thread != nullptr);
+	return (m_tcpthread != nullptr);
 }
 
 bool Comm5TCP::StopHardware()
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: TCP/IP Worker stopped...");
 	m_bIsStarted = false;
 	return true;
 }
@@ -91,27 +94,26 @@ void Comm5TCP::OnConnect()
 
 void Comm5TCP::OnDisconnect()
 {
-	_log.Log(LOG_ERROR, "Comm5 MA-5XXX: disconected");
+	_log.Log(LOG_ERROR, "Comm5 MA-5XXX: disconnected");
 }
 
-void Comm5TCP::Do_Work()
+void Comm5TCP::Do_Work(const boost::system::error_code& error)
 {
-	int sec_counter = 0;
-	connect(m_szIPAddress, m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
+		m_sec_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (m_sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 4 == 0) {
+		if (m_sec_counter % 4 == 0) {
 			querySensorState();
 		}
-	}
-	terminate();
 
-	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: TCP/IP Worker stopped...");
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(1));
+		m_heartbeat_timer.async_wait(boost::bind(&Comm5TCP::Do_Work, this, boost::asio::placeholders::error));
+	}
 }
 
 void Comm5TCP::processSensorData(const std::string& line)

@@ -2,7 +2,7 @@
 
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
-
+#include <boost/asio/steady_timer.hpp>
 
 #define MAX_EC3K_METERS 64
 #define EC3K_UPDATE_INTERVAL 60
@@ -39,7 +39,7 @@ public:
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 	void ParseData(const unsigned char *pData, int Len);
 
 	void OnConnect() override;
@@ -53,6 +53,6 @@ private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
 };
 

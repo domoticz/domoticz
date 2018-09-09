@@ -8,6 +8,7 @@
 
 #include "hardwaretypes.h"
 #include "../main/Logger.h"
+#include <boost/asio/placeholders.hpp>
 
 #define RETRY_DELAY 30
 
@@ -50,7 +51,8 @@ static MochadMatch matchlist[] = {
 //end
 
 MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
-	m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
@@ -92,24 +94,23 @@ bool MochadTCP::StartHardware()
 {
 	RequestStart();
 
-	//force connect the next first time
-//	m_retrycntr=RETRY_DELAY;
-//	m_bIsStarted=true;
+	//Connect
+	_log.Log(LOG_STATUS, "Mochad: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "MochadTCP");
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&MochadTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "MochadTCP");
-	return (m_thread != nullptr);
+	//Start heartbeat timer
+	Do_Work(boost::system::error_code());
+
+	return (m_tcpthread != nullptr);
 }
 
 bool MochadTCP::StopHardware()
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
+
 	m_bIsStarted=false;
 	return true;
 }
@@ -133,23 +134,16 @@ void MochadTCP::OnData(const unsigned char *pData, size_t length)
 	ParseData(pData, length);
 }
 
-void MochadTCP::Do_Work()
+void MochadTCP::Do_Work(const boost::system::error_code& error)
 {
-	_log.Log(LOG_STATUS, "Mochad: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	int sec_counter = 0;
-	connect(m_szIPAddress, m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sleep_seconds(1);
-		sec_counter++;
+		m_LastHeartbeat = mytime(NULL);
 
-		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
-		}
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(12));
+		m_heartbeat_timer.async_wait(boost::bind(&MochadTCP::Do_Work, this, boost::asio::placeholders::error));
 	}
-	terminate();
-
-	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
 }
 
 void MochadTCP::OnError(const std::exception e)

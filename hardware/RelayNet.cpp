@@ -102,6 +102,7 @@
 #include "../webserver/Base64.h"
 #include "../httpclient/HTTPClient.h"
 #include <sstream>
+#include <boost/asio/placeholders.hpp>
 
 //===========================================================================
 
@@ -119,7 +120,8 @@
 RelayNet::RelayNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const bool pollInputs, const bool pollRelays, const int pollInterval, const int inputCount, const int relayCount) :
 	m_szIPAddress(IPAddress),
 	m_username(CURLEncode::URLEncode(username)),
-	m_password(CURLEncode::URLEncode(password))
+	m_password(CURLEncode::URLEncode(password)),
+	m_heartbeat_timer(mIos)
 {
 	m_setup_devices = true;
 	m_bOutputLog = false;
@@ -170,11 +172,24 @@ bool RelayNet::StartHardware()
 
 	if (m_input_count || m_relay_count)
 	{
-		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
-		SetThreadName(m_thread->native_handle(), "RelayNet");
+		/*  Init  */
+		Init();
+
+		if (m_poll_inputs || m_poll_relays)
+		{
+			_log.Log(LOG_STATUS, "RelayNet: %d-second poller started (%s)", m_poll_interval, m_szIPAddress.c_str());
+		}
+
+		//Connect
+		connect(m_szIPAddress,m_usIPPort);
+		SetThreadName(m_tcpthread->native_handle(), "RelayNet");
+
+		//Start heartbeat timer
+		m_sec_counter = 0;
+		Do_Work(boost::system::error_code());
 	}
 
-	if (m_thread)
+	if (m_tcpthread)
 	{
 		bOk = true;
 		m_bIsStarted=true;
@@ -187,12 +202,14 @@ bool RelayNet::StartHardware()
 
 bool RelayNet::StopHardware()
 {
-	if (m_thread)
+	RequestStop();
+	terminate();
+
+	if (m_poll_inputs || m_poll_relays)
 	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
+		_log.Log(LOG_STATUS, "RelayNet: %d-second poller stopped (%s)", m_poll_interval, m_szIPAddress.c_str());
 	}
+
 	m_bIsStarted = false;
 	_log.Log(LOG_STATUS, "RelayNet: Relay Module disconnected %s", m_szIPAddress.c_str());
 
@@ -212,48 +229,34 @@ bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 
 //===========================================================================
 
-void RelayNet::Do_Work()
+void RelayNet::Do_Work(const boost::system::error_code& error)
 {
-	int sec_counter = 0;
-
-	/*  Init  */
-	Init();
-
-	if (m_poll_inputs || m_poll_relays)
+	while (!IsStopRequested(0) && !error)
 	{
-		_log.Log(LOG_STATUS, "RelayNet: %d-second poller started (%s)", m_poll_interval, m_szIPAddress.c_str());
-	}
-	connect(m_szIPAddress,m_usIPPort);
-	/*  One second sleep  */
-	while (!IsStopRequested(1000))
-	{
-		sec_counter++;
+		m_sec_counter++;
 
 		/*  Heartbeat maintenance  */
-		if (sec_counter  % 10 == 0)
+		if (m_sec_counter  % 10 == 0)
 		{
 			m_LastHeartbeat = mytime(NULL);
 		}
 
 		/*  Prevent disconnect request by Relay Module  */
-		if ((sec_counter % KEEP_ALIVE_INTERVAL == 0) &&
+		if ((m_sec_counter % KEEP_ALIVE_INTERVAL == 0) &&
 			((m_poll_interval > KEEP_ALIVE_INTERVAL) || (!m_poll_inputs && !m_poll_relays)))
 		{
 			KeepConnectionAlive();
 		}
 
 		/*  Update relay module status when poll interval has expired  */
-		if ((m_poll_inputs || m_poll_relays) && (sec_counter % m_poll_interval == 0))
+		if ((m_poll_inputs || m_poll_relays) && (m_sec_counter % m_poll_interval == 0))
 		{
 			TcpRequestRelaycardDump();
 		}
-	}
-	terminate();
 
-	/*  Done  */
-	if (m_poll_inputs || m_poll_relays)
-	{
-		_log.Log(LOG_STATUS, "RelayNet: %d-second poller stopped (%s)", m_poll_interval, m_szIPAddress.c_str());
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(1));
+		m_heartbeat_timer.async_wait(boost::bind(&RelayNet::Do_Work, this, boost::asio::placeholders::error));
 	}
 }
 

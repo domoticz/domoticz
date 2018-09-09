@@ -40,7 +40,8 @@ private:
 	unsigned char m_rx_input_buffer[512];
 	int m_rx_tot_bytes;
 	int m_retrycntr;
-    void readCallback(const char *data, size_t len);
+	void readCallback(const char *data, size_t len);
+	std::shared_ptr<std::thread> m_thread;
 };
 
 #endif //BUFFEREDASYNCSERIAL_H

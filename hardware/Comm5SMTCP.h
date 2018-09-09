@@ -4,6 +4,7 @@
 #include <iostream>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
+#include <boost/asio/steady_timer.hpp>
 
 class Comm5SMTCP : public CDomoticzHardwareBase, ASyncTCP
 {
@@ -21,7 +22,7 @@ protected:
 	void OnError(const std::exception e) override;
 	void OnError(const boost::system::error_code& error) override;
 
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 	void ParseData(const unsigned char *data, const size_t len);
 	void querySensorState();
 private:
@@ -30,6 +31,7 @@ private:
 	std::string buffer;
 	bool initSensorData;
 	bool m_bReceiverStarted;
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
+	int m_sec_counter;
 };
 

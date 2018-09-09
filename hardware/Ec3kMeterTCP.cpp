@@ -9,6 +9,7 @@
 #include "../json/json.h"
 
 #include <sstream>
+#include <boost/asio/placeholders.hpp>
 
 /*
   Extract readings from the json messages posted by the
@@ -44,7 +45,8 @@
 #define RESET_COUNT "reset_counter"
 
 Ec3kMeterTCP::Ec3kMeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-	m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
@@ -64,26 +66,22 @@ bool Ec3kMeterTCP::StartHardware()
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&Ec3kMeterTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Ec3kMeterTCP");
-	return (m_thread != nullptr);
+	//Connect
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "Ec3kMeterTCP");
+
+	//Start heartbeat timer
+	Do_Work(boost::system::error_code());
+
+	return (m_tcpthread != nullptr);
 }
 
 bool Ec3kMeterTCP::StopHardware()
 {
-	try {
-		if (m_thread)
-		{
-			RequestStop();
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
-	{
-		//Don't throw from a Stop command
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS,"Ec3kMeter: TCP/IP Worker stopped...");
+
 	m_bIsStarted=false;
 	return true;
 }
@@ -101,22 +99,16 @@ void Ec3kMeterTCP::OnDisconnect()
 	_log.Log(LOG_STATUS,"Ec3kMeter: disconnected");
 }
 
-void Ec3kMeterTCP::Do_Work()
+void Ec3kMeterTCP::Do_Work(const boost::system::error_code& error)
 {
-	bool bFirstTime=true;
-	int sec_counter = 0;
-	connect(m_szIPAddress,m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
+		m_LastHeartbeat = mytime(NULL);
 
-		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
-		}
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(12));
+		m_heartbeat_timer.async_wait(boost::bind(&Ec3kMeterTCP::Do_Work, this, boost::asio::placeholders::error));
 	}
-	terminate();
-
-	_log.Log(LOG_STATUS,"Ec3kMeter: TCP/IP Worker stopped...");
 }
 
 void Ec3kMeterTCP::OnData(const unsigned char *pData, size_t length)

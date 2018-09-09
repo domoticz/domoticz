@@ -4,11 +4,13 @@
 #include "../main/Helper.h"
 #include <iostream>
 #include "../main/localtime_r.h"
+#include <boost/asio/placeholders.hpp>
 
 #define RETRY_DELAY 30
 
 OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6):
-	m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress),
+	m_heartbeat_timer(mIos)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
@@ -28,20 +30,23 @@ bool OTGWTCP::StartHardware()
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "OTGWTCP");
-	return (m_thread != nullptr);
+	//Connect
+	connect(m_szIPAddress,m_usIPPort);
+	SetThreadName(m_tcpthread->native_handle(), "OTGWTCP");
+
+	//Start heartbeat timer
+	m_sec_counter = 25;
+	Do_Work(boost::system::error_code());
+
+	return (m_tcpthread != nullptr);
 }
 
 bool OTGWTCP::StopHardware()
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	RequestStop();
+	terminate();
+	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
+
 	m_bIsStarted=false;
 	return true;
 }
@@ -60,36 +65,36 @@ void OTGWTCP::OnDisconnect()
 	_log.Log(LOG_STATUS,"OTGW: disconnected");
 }
 
-void OTGWTCP::Do_Work()
+void OTGWTCP::Do_Work(const boost::system::error_code& error)
 {
-	int sec_counter = 25;
-	connect(m_szIPAddress,m_usIPPort);
-	while (!IsStopRequested(1000))
+	if (!IsStopRequested(0) && !error)
 	{
-		sec_counter++;
+		m_sec_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (m_sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (isConnected())
 		{
-			if ((sec_counter % 28 == 0) && (m_bRequestVersion))
+			if ((m_sec_counter % 28 == 0) && (m_bRequestVersion))
 			{
 				m_bRequestVersion = false;
 				GetVersion();
 			}
-			else if (sec_counter % 30 == 0)//updates every 30 seconds
+			else if (m_sec_counter % 30 == 0)//updates every 30 seconds
 			{
 				SendOutsideTemperature();
 				SendTime();
 				GetGatewayDetails();
 			}
 		}
-	}
-	terminate();
 
-	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
+		// Schedule next heartbeat
+		m_heartbeat_timer.expires_from_now(std::chrono::seconds(1));
+		m_heartbeat_timer.async_wait(boost::bind(&OTGWTCP::Do_Work, this, boost::asio::placeholders::error));
+	}
+
 }
 
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)

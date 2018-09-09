@@ -2,6 +2,7 @@
 
 #include "ASyncTCP.h"
 #include "S0MeterBase.h"
+#include <boost/asio/steady_timer.hpp>
 
 class S0MeterTCP: public S0MeterBase, ASyncTCP
 {
@@ -14,7 +15,7 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool WriteInt(const std::string &sendString);
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 
 	void OnConnect() override;
 	void OnDisconnect() override;
@@ -25,6 +26,6 @@ private:
 	int m_retrycntr;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
 };
 

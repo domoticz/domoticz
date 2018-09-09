@@ -3,6 +3,7 @@
 #include "DomoticzHardware.h"
 #include "ASyncTCP.h"
 #include <string>
+#include <boost/asio/steady_timer.hpp>
 
 class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 {
@@ -30,7 +31,7 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool WriteInt(const std::string &sendStr);
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 
 	void OnConnect() override;
 	void OnDisconnect() override;
@@ -63,5 +64,7 @@ private:
 	unsigned short m_usIPPort;
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
+	int m_sec_counter;
+	bool m_bCheckedForPlayers;
 };

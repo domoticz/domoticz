@@ -3,6 +3,7 @@
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
+#include <boost/asio/steady_timer.hpp>
 
 class RelayNet : public CDomoticzHardwareBase, ASyncTCP
 {
@@ -16,7 +17,7 @@ public:
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 	void Init();
 	void SetupDevices();
 	void TcpGetSetRelay(int RelayNumber, bool Set, bool State);
@@ -50,7 +51,8 @@ private:
 	int									m_input_count;
 	int									m_relay_count;
 	int									m_retrycntr;
-	std::shared_ptr<std::thread> 	m_thread;
+	boost::asio::steady_timer 			m_heartbeat_timer;
+	int 								m_sec_counter;
 	tRBUF 								m_Packet;
 };
 

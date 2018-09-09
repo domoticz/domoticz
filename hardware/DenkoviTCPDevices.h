@@ -3,6 +3,7 @@
 #include "DomoticzHardware.h"
 #include "ASyncTCP.h"
 #include <iosfwd>
+#include <boost/asio/steady_timer.hpp>
 
 enum _eDenkoviTCPDevice
 {
@@ -47,7 +48,7 @@ private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 	void GetMeterDetails();
 	void readCallBack(const char * data, size_t len);
 	void ConvertResponse(const std::string pData, const size_t length);
@@ -59,7 +60,8 @@ private:
 	int m_pollInterval;
 	int m_slaveId;
 	int m_iModel;
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
+	int m_halfsec_counter;
 	int m_Cmd;
 	bool m_bReadingNow = false;
 	bool m_bUpdateIo = false;

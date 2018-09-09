@@ -2,6 +2,7 @@
 
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
+#include <boost/asio/steady_timer.hpp>
 
 class FritzboxTCP : public CDomoticzHardwareBase, ASyncTCP
 {
@@ -15,7 +16,7 @@ private:
 	bool StopHardware() override;
 	void UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 	void WriteInt(const std::string &sendStr);
-	void Do_Work();
+	void Do_Work(const boost::system::error_code& error);
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
@@ -29,7 +30,7 @@ private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	int m_bufferpos;
-	std::shared_ptr<std::thread> m_thread;
+	boost::asio::steady_timer m_heartbeat_timer;
 	unsigned char m_buffer[1024];
 };
 
