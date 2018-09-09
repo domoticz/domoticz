@@ -2350,7 +2350,7 @@ bool CSQLHelper::OpenDatabase()
 						szQuery2 << "SELECT Value1, Value2, Value3, Date FROM MultiMeter_Calendar WHERE ([DeviceRowID]=" << sd[0] << ")";
 						result3 = query(szQuery2.str());
 
-						for (const auto & itt3 :result3)
+						for (const auto & itt3 : result3)
 						{
 							std::vector<std::string> sd3 = itt3;
 							szQuery2.clear();
@@ -2557,7 +2557,7 @@ bool CSQLHelper::OpenDatabase()
 					if (EnergyMeterMode == "1")
 					{
 						uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
-						m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions("EnergyMeterMode:"+EnergyMeterMode, false));
+						m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions("EnergyMeterMode:" + EnergyMeterMode, false));
 					}
 				}
 			}
@@ -2607,7 +2607,7 @@ bool CSQLHelper::OpenDatabase()
 			query(sqlCreateHardware);
 			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
 			query("DROP TABLE tmp_Hardware;");
-    }    
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3619,7 +3619,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 
 uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions)
 {
-	uint64_t DeviceRowIdx = (uint64_t )-1;
+	uint64_t DeviceRowIdx = (uint64_t)-1;
 	char ID[20];
 	sprintf(ID, "%lu", nid);
 
