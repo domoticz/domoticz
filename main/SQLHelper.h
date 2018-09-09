@@ -1,6 +1,11 @@
 #pragma once
 
 #include <string>
+
+#ifndef WIN32
+#include <sys/time.h>
+#endif
+
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include "Helper.h"
