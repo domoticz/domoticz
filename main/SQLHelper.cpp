@@ -231,7 +231,7 @@ const char *sqlCreateHardware =
 "[Type] INTEGER NOT NULL, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
-"[SerialPort] VARCHAR(100) DEFAULT (''), "
+"[SerialPort] TEXT DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
 "[Extra] TEXT DEFAULT (''),"

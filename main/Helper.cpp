@@ -314,8 +314,8 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
-			// Only consider symbolic links and limited to 99 chars incl prefix i.e. 81 chars
-                        if ((de->d_type == DT_LNK) && (strlen(de->d_name) <= 81))
+			// Only consider symbolic links
+                        if (de->d_type == DT_LNK)
                         {
 				std::string fname = de->d_name;
 				ret.push_back("/dev/serial/by-id/" + fname);
