@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 132
+#define DB_VERSION 133
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2567,7 +2567,7 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("DROP TABLE IF EXISTS [EventActions]");
 		}
-		if (dbversion < 132)
+		if (dbversion < 133)
 		{
 			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
 			query(sqlCreateHardware);
