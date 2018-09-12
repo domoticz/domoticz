@@ -368,10 +368,9 @@ const std::string SMTPClient::MakeMessage()
 		ret += "--" + std::string(szBoundaryMixed) + "--\r\n";
 	}
 
-	// end the data in the message.
-	// Do not do this - libcurl will escape the dot so it will appear in the body of the sent message
-	// libcurl sends the terminating dot at end of data
-	// ret += "\n.\n";
+	// We do not have to end the message with "<CRLF>.<CRLF>" as libcurl does this for us
+	// ret += "\r\n.\r\n";
+	
 	ret += "\r\n";
 
 	return ret;
