@@ -225,7 +225,7 @@ const std::string SMTPClient::MakeMessage()
 	//From
 	ret = "From: " + m_From + "\r\n";
 
-	//To (first one, rest in BCC)
+	//To (first one, rest in Cc)
 	ii = 0;
 	for (itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
 	{
