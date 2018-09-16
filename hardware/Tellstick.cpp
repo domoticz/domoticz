@@ -26,7 +26,7 @@ CTellstick::CTellstick(const int ID, int repeats, int repeatInterval)
 void CTellstick::SetSettings(int repeats, int repeatInterval)
 {
     m_numRepeats = repeats;
-    m_repeatInterval = boost::posix_time::milliseconds(repeatInterval);
+    m_repeatInterval = std::chrono::milliseconds(repeatInterval);
 }
 
 bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
@@ -275,9 +275,10 @@ void CTellstick::ThreadSendCommands()
     std::unique_lock<std::mutex> lock(m_mutex);
     while (m_bIsStarted)
     {
-        boost::system_time now = boost::get_system_time();
-        boost::system_time nextTime = now + m_repeatInterval;
-        for (map<int, Command>::iterator it = m_commands.begin();
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        auto nextTime = now + m_repeatInterval;
+
+        for (std::map<int, Command>::iterator it = m_commands.begin();
              it != m_commands.end();
              /* no increment */)
         {
@@ -303,7 +304,7 @@ void CTellstick::ThreadSendCommands()
         if (m_commands.empty())
             m_cond.wait(lock);
         else
-            m_cond.timed_wait(lock, nextTime);
+            m_cond.wait_until(lock, nextTime);
     }
 }
 
@@ -318,9 +319,9 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-            string hwIdStr = request::findValue(&req, "idx");
-            string repeatsStr = request::findValue(&req, "repeats");
-            string repeatIntervalStr = request::findValue(&req, "repeatInterval");
+            std::string hwIdStr = request::findValue(&req, "idx");
+            std::string repeatsStr = request::findValue(&req, "repeats");
+            std::string repeatIntervalStr = request::findValue(&req, "repeatInterval");
 
             if (hwIdStr.empty() || repeatsStr.empty() || repeatIntervalStr.empty())
                 return;
