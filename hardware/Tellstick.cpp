@@ -214,6 +214,8 @@ void CTellstick::Init()
 
 bool CTellstick::StartHardware()
 {
+	RequestStart();
+
     Init();
     m_bIsStarted=true;
     sOnConnected(this);

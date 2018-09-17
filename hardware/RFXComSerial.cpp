@@ -91,6 +91,8 @@ RFXComSerial::~RFXComSerial()
 
 bool RFXComSerial::StartHardware()
 {
+	RequestStart();
+
 	//return OpenSerialDevice();
 	//somehow retry does not seem to work?!
 	m_bReceiverStarted = false;

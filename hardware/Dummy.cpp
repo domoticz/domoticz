@@ -29,6 +29,8 @@ void CDummy::Init()
 
 bool CDummy::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	m_bIsStarted=true;
 	sOnConnected(this);

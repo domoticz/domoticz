@@ -150,7 +150,7 @@ char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCou
 	SetThreadName(m_EhouseTcpClientThread[tcp_client_socket_index]->native_handle(), "EHouseTCPClient");
 
 	m_EhouseTcpClientThread[tcp_client_socket_index]->detach();
-	msl(100);
+	sleep_milliseconds(100);
 	ExecQueuedEvents();
 
 #endif

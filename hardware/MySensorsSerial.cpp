@@ -41,6 +41,8 @@ MySensorsSerial::~MySensorsSerial()
 
 bool MySensorsSerial::StartHardware()
 {
+	RequestStart();
+
 	m_LineReceived.clear();
 	LoadDevicesFromDatabase();
 

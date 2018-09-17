@@ -108,7 +108,6 @@ XiaomiGateway::XiaomiGateway(const int ID)
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
-	m_stoprequested = false;
 	m_ListenPort9898 = false;
 }
 
@@ -642,7 +641,8 @@ void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::strin
 
 bool XiaomiGateway::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	m_bDoRestart = false;
 
 	//force connect the next first time
@@ -705,21 +705,13 @@ void XiaomiGateway::Restart()
 
 bool XiaomiGateway::StopHardware()
 {
-	m_stoprequested = true;
-
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
-	RemoveFromGatewayList();
 	return true;
 }
 
@@ -755,9 +747,8 @@ void XiaomiGateway::Do_Work()
 	}
 
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
@@ -768,6 +759,7 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 	io_service.stop();
+	RemoveFromGatewayList();
 	_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): stopped", m_HwdID);
 }
 

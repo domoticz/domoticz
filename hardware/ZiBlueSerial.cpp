@@ -22,6 +22,8 @@ CZiBlueSerial::~CZiBlueSerial()
 
 bool CZiBlueSerial::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr=ZiBlue_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread

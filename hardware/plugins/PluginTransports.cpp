@@ -128,6 +128,8 @@ namespace Plugins {
 	{
 		try
 		{
+			PyType_Ready(&CConnectionType);
+
 			if (!m_Socket)
 			{
 				if (!m_Acceptor)
@@ -141,6 +143,7 @@ namespace Plugins {
 				//
 				boost::asio::ip::tcp::socket*	pSocket = new boost::asio::ip::tcp::socket(ios);
 				m_Acceptor->async_accept((boost::asio::ip::tcp::socket&)*pSocket, boost::bind(&CPluginTransportTCP::handleAsyncAccept, this, pSocket, boost::asio::placeholders::error));
+				m_bConnecting = true;
 			}
 		}
 		catch (std::exception& e)
@@ -165,7 +168,6 @@ namespace Plugins {
 			std::string sAddress = remote_ep.address().to_string();
 			std::string sPort = std::to_string(remote_ep.port());
 
-			PyType_Ready(&CConnectionType);
 			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
 			CPluginTransportTCP* pTcpTransport = new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 			Py_DECREF(pConnection);
@@ -482,6 +484,8 @@ namespace Plugins {
 	{
 		try
 		{
+			PyType_Ready(&CConnectionType);
+
 			if (!m_Socket)
 			{
 				boost::system::error_code ec;
@@ -525,7 +529,6 @@ namespace Plugins {
 			std::string sAddress = m_remote_endpoint.address().to_string();
 			std::string sPort = std::to_string(m_remote_endpoint.port());
 
-			PyType_Ready(&CConnectionType);
 			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
 
 			// Configure temporary Python Connection object
@@ -974,7 +977,10 @@ namespace Plugins {
 
 	void CPluginTransportSerial::handleWrite(const std::vector<byte>& data)
 	{
-		write((const char *)&data[0], data.size());
+		if (data.size())
+		{
+			write((const char *)&data[0], data.size());
+		}
 	}
 
 	bool CPluginTransportSerial::handleDisconnect()

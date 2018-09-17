@@ -10,7 +10,7 @@
 #define RETRY_DELAY 30
 
 RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
@@ -23,6 +23,8 @@ RFXComTCP::~RFXComTCP(void)
 
 bool RFXComTCP::StartHardware()
 {
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
@@ -62,22 +64,14 @@ void RFXComTCP::OnDisconnect()
 
 void RFXComTCP::Do_Work()
 {
-	bool bFirstTime = true;
-	while (!IsStopRequested(40))
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!isConnected())
-			{
-				m_rxbufferpos = 0;
-				connect(m_szIPAddress, m_usIPPort);
-			}
-		}
-		else
-		{
-			update();
+		sec_counter++;
+
+		if (sec_counter  % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	terminate();

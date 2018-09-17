@@ -161,6 +161,8 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	RequestStart();
+
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();
@@ -212,7 +214,6 @@ void CEvohomeWeb::Do_Work()
 			m_lastconnect=0;
 		}
 	}
-	terminate();
 
 	_log.Log(LOG_STATUS, "(%s) Worker stopped...", m_Name.c_str());
 }

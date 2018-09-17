@@ -40,7 +40,6 @@ private:
 	SOCKET	m_RemoteSocket;
 	sockaddr_in m_stRemoteDestAddr;
 
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 };
 

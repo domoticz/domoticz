@@ -52,7 +52,6 @@ CWinddelen::CWinddelen(const int ID, const std::string &IPAddress, const unsigne
 	m_HwdID = ID;
 	m_usTotParts = usTotParts;
 	m_usMillID = usMillID;
-	m_stoprequested = false;
 
 	m_winddelen_per_mill[1] = 9910.0;
 	m_winddelen_per_mill[2] = 10154.0;
@@ -76,6 +75,8 @@ void CWinddelen::Init()
 
 bool CWinddelen::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CWinddelen::Do_Work, this);
@@ -89,7 +90,7 @@ bool CWinddelen::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -103,9 +104,8 @@ void CWinddelen::Do_Work()
 
 	int sec_counter = WINDDELEN_POLL_INTERVAL - 2;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {

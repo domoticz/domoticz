@@ -79,7 +79,7 @@ Possible Commands:
 
 */
 
-class CPanasonicNode //: public std::enable_shared_from_this<CPanasonicNode>
+class CPanasonicNode : public StoppableTask
 {
 	class CPanasonicStatus
 	{
@@ -126,7 +126,6 @@ public:
 	int				m_DevID;
 	std::string		m_Name;
 
-	bool			m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 protected:
 	bool			m_Busy;
@@ -182,17 +181,11 @@ void CPanasonicNode::CPanasonicStatus::Clear()
 
 void CPanasonicNode::StopThread()
 {
-	try {
-		if (m_thread)
-		{
-			m_stoprequested = true;
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 }
 
@@ -247,7 +240,6 @@ _eNotificationTypes	CPanasonicNode::CPanasonicStatus::NotificationType()
 CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
 	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort)
 {
-	m_stoprequested = false;
 	m_Busy = false;
 	m_Stoppable = false;
 	m_PowerOnSupported = false;
@@ -326,7 +318,7 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 {
 	try
 	{
-		if (!m_stoprequested)
+		if (!IsStopRequested(0))
 		{
 			socket.connect(endpoint, ec);
 			if (!ec)
@@ -545,10 +537,8 @@ void CPanasonicNode::Do_Work()
 	_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) started.", m_Name.c_str());
 	int	iPollCount = 9;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
-
 		iPollCount++;
 		if (iPollCount >= 10)
 		{
@@ -756,14 +746,12 @@ std::vector<std::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
 CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
 CPanasonic::CPanasonic(const int ID)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	SetSettings(10, 3000);
 }
 
@@ -775,13 +763,15 @@ CPanasonic::~CPanasonic(void)
 bool CPanasonic::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 
 	StartHeartbeatThread();
 
 	//Start worker thread
-	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CPanasonic::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "Panasonic");
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Started");
@@ -793,17 +783,11 @@ bool CPanasonic::StopHardware()
 {
 	StopHeartbeatThread();
 
-	try {
-		if (m_thread)
-		{
-			m_stoprequested = true;
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -815,7 +799,7 @@ void CPanasonic::Do_Work()
 
 	ReloadNodes();
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
 		if (scounter++ >= (m_iPollInterval * 2))
 		{
@@ -834,7 +818,6 @@ void CPanasonic::Do_Work()
 				if ((*itt)->IsOn()) bWorkToDo = true;
 			}
 		}
-		sleep_milliseconds(500);
 	}
 	UnloadNodes();
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Worker stopped...");

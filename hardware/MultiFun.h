@@ -28,7 +28,6 @@ private:
 private:
 	const unsigned short m_IPPort;
 	const std::string m_IPAddress;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	csocket *m_socket;
 	sockaddr_in m_addr;

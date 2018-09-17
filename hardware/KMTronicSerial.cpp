@@ -35,6 +35,8 @@ KMTronicSerial::~KMTronicSerial()
 
 bool KMTronicSerial::StartHardware()
 {
+	RequestStart();
+
 	m_bDoInitialQuery = true;
 	m_iQueryState = 0;
 

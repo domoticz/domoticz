@@ -1232,7 +1232,7 @@ namespace Plugins {
 		}
 
 		//	Add connect command to message queue unless already connected
-		if (self->pPlugin->m_stoprequested)
+		if (self->pPlugin->IsStopRequested(0))
 		{
 			_log.Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
@@ -1266,7 +1266,7 @@ namespace Plugins {
 		}
 
 		//	Add connect command to message queue unless already connected
-		if (self->pPlugin->m_stoprequested)
+		if (self->pPlugin->IsStopRequested(0))
 		{
 			_log.Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
@@ -1295,7 +1295,7 @@ namespace Plugins {
 		{
 			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
 		}
-		else if (self->pPlugin->m_stoprequested)
+		else if (self->pPlugin->IsStopRequested(0))
 		{
 			_log.Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 		}

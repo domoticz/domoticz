@@ -41,7 +41,6 @@ private:
 	std::string m_LastBoilerStatus;
 	bool m_bClockMode;
 
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 
 	uint32_t m_lastgasusage;

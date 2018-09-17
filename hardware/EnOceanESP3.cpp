@@ -427,6 +427,8 @@ CEnOceanESP3::~CEnOceanESP3()
 
 bool CEnOceanESP3::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr=ENOCEAN_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread

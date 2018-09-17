@@ -18,7 +18,6 @@ m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	m_bOutputLog = false;
 	Init();
 }
@@ -33,6 +32,8 @@ void CETH8020::Init()
 
 bool CETH8020::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CETH8020::Do_Work, this);
@@ -47,7 +48,7 @@ bool CETH8020::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -59,9 +60,8 @@ void CETH8020::Do_Work()
 {
 	int sec_counter = ETH8020_POLL_INTERVAL - 2;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {

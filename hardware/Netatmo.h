@@ -39,7 +39,6 @@ private:
 	bool m_bForceSetpointUpdate;
 	time_t m_tSetpointUpdateTime;
 
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 
 	time_t m_nextRefreshTs;

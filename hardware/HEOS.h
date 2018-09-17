@@ -61,7 +61,6 @@ private:
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
 	std::shared_ptr<std::thread> m_thread;

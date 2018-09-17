@@ -45,7 +45,6 @@ private:
 
 private:
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 
 	_eI2CType m_dev_type;
 	uint8_t m_i2c_addr;

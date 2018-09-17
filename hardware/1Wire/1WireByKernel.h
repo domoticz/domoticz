@@ -2,8 +2,9 @@
 #include "1WireSystem.h"
 #include <condition_variable>
 #include <list>
+#include "../../main/StoppableTask.h"
 
-class C1WireByKernel : public I_1WireSystem
+class C1WireByKernel : public I_1WireSystem, StoppableTask
 {
 public:
    C1WireByKernel();
@@ -45,7 +46,6 @@ protected:
    void ThreadWriteRawDataDualChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
    void ThreadWriteRawData8ChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
 private:
-   volatile bool m_stoprequested;
    // Devices
    #define MAX_DIGITAL_IO  8
    class DeviceState
