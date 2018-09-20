@@ -225,7 +225,7 @@ const std::string SMTPClient::MakeMessage()
 	//From
 	ret = "From: " + m_From + "\r\n";
 
-	//To (first one, rest in BCC)
+	//To (first one, rest in Cc)
 	ii = 0;
 	for (itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
 	{
@@ -369,8 +369,8 @@ const std::string SMTPClient::MakeMessage()
 	}
 
 	// We do not have to end the message with "<CRLF>.<CRLF>" as libcurl does this for us, but ensure the last line is terminated
-	// ret += "\n.\n";
-
+	// ret += "\r\n.\r\n";
+	
 	ret += "\r\n";
 
 	return ret;
