@@ -68,14 +68,18 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyDict_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItemString, PyObject* COMMA const char*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItemString, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItem, PyObject* COMMA PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_Next, PyObject* COMMA Py_ssize_t* COMMA PyObject** COMMA PyObject**);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_Items, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_New, Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyList_Append, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_GetItem, PyObject* COMMA Py_ssize_t);
+		DECLARE_PYTHON_SYMBOL(int, PyList_SetItem, PyObject* COMMA Py_ssize_t COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void*, PyModule_GetState, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyState_FindModule, struct PyModuleDef*);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Clear, );
@@ -83,8 +87,14 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_ImportModule, const char*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_CallObject, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
+		DECLARE_PYTHON_SYMBOL(int, PyEval_ThreadsInitialized, );
+		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Get, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyEval_SaveThread, void);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_ReleaseLock, );
+		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(int, PyGILState_Check, );
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, _PyObject_New, PyTypeObject*);
 #ifdef _DEBUG
@@ -109,6 +119,10 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyByteArray_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyErr_Occurred, );
 		DECLARE_PYTHON_SYMBOL(long, PyLong_AsLong, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsUTF8String, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_AddModule, const char*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_SetProfile, Py_tracefunc COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_SetTrace, Py_tracefunc COMMA PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -123,17 +137,20 @@ namespace Plugins {
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef _DEBUG
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python38_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
 #	else
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #	endif
 #else
+				if (!shared_lib_) FindLibrary("python3.8", true);
 				if (!shared_lib_) FindLibrary("python3.7", true);
 				if (!shared_lib_) FindLibrary("python3.6", true);
 				if (!shared_lib_) FindLibrary("python3.5", true);
@@ -171,14 +188,18 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Clear);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Size);
+					RESOLVE_PYTHON_SYMBOL(PyDict_GetItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_GetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_DelItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Next);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Items);
+					RESOLVE_PYTHON_SYMBOL(PyList_New);
 					RESOLVE_PYTHON_SYMBOL(PyList_Size);
-					RESOLVE_PYTHON_SYMBOL(PyList_GetItem);
+					RESOLVE_PYTHON_SYMBOL(PyList_GetItem); 
+					RESOLVE_PYTHON_SYMBOL(PyList_SetItem);
+					RESOLVE_PYTHON_SYMBOL(PyList_Append);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Clear);
@@ -186,8 +207,14 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
 					RESOLVE_PYTHON_SYMBOL(PyFrame_GetLineNumber);
+					RESOLVE_PYTHON_SYMBOL(PyEval_InitThreads);
+					RESOLVE_PYTHON_SYMBOL(PyEval_ThreadsInitialized);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Get);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SaveThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
+					RESOLVE_PYTHON_SYMBOL(PyEval_ReleaseLock);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Swap);
+					RESOLVE_PYTHON_SYMBOL(PyGILState_Check);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
 #ifdef _DEBUG
@@ -215,6 +242,10 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyByteArray_Size);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Occurred);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLong);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8String);
+					RESOLVE_PYTHON_SYMBOL(PyImport_AddModule);
+					RESOLVE_PYTHON_SYMBOL(PyEval_SetProfile);
+					RESOLVE_PYTHON_SYMBOL(PyEval_SetTrace);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -334,14 +365,18 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyDict_New				pythonLib->PyDict_New
 #define PyDict_Clear			pythonLib->PyDict_Clear
 #define PyDict_Size				pythonLib->PyDict_Size
+#define PyDict_GetItem			pythonLib->PyDict_GetItem
 #define PyDict_GetItemString	pythonLib->PyDict_GetItemString
 #define PyDict_SetItemString	pythonLib->PyDict_SetItemString
 #define PyDict_SetItem			pythonLib->PyDict_SetItem
 #define PyDict_DelItem			pythonLib->PyDict_DelItem
 #define PyDict_Next				pythonLib->PyDict_Next
 #define PyDict_Items			pythonLib->PyDict_Items
+#define PyList_New				pythonLib->PyList_New
 #define PyList_Size				pythonLib->PyList_Size
 #define PyList_GetItem			pythonLib->PyList_GetItem
+#define PyList_SetItem			pythonLib->PyList_SetItem
+#define PyList_Append			pythonLib->PyList_Append
 #define PyModule_GetState		pythonLib->PyModule_GetState
 #define PyState_FindModule		pythonLib->PyState_FindModule
 #define PyErr_Clear				pythonLib->PyErr_Clear
@@ -349,8 +384,14 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyImport_ImportModule	pythonLib->PyImport_ImportModule
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
 #define PyFrame_GetLineNumber	pythonLib->PyFrame_GetLineNumber
+#define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
+#define	PyEval_ThreadsInitialized	pythonLib->PyEval_ThreadsInitialized
+#define	PyThreadState_Get		pythonLib->PyThreadState_Get
 #define PyEval_SaveThread		pythonLib->PyEval_SaveThread
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
+#define PyEval_ReleaseLock		pythonLib->PyEval_ReleaseLock
+#define PyThreadState_Swap		pythonLib->PyThreadState_Swap
+#define PyGILState_Check		pythonLib->PyGILState_Check
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
@@ -381,4 +422,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyByteArray_Size		pythonLib->PyByteArray_Size
 #define PyErr_Occurred			pythonLib->PyErr_Occurred
 #define PyLong_AsLong			pythonLib->PyLong_AsLong
+#define PyUnicode_AsUTF8String	pythonLib->PyUnicode_AsUTF8String
+#define PyImport_AddModule		pythonLib->PyImport_AddModule
+#define PyEval_SetProfile		pythonLib->PyEval_SetProfile
+#define PyEval_SetTrace			pythonLib->PyEval_SetTrace
 }

@@ -69,31 +69,31 @@ void CNest::Init()
 {
 	m_AccessToken = "";
 	m_UserID = "";
-	m_stoprequested = false;
 	m_bDoLogin = true;
 }
 
 bool CNest::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CNest::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CNest::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Nest");
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CNest::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
-	if (!m_bDoLogin)
-		Logout();
     return true;
 }
 
@@ -103,9 +103,8 @@ void CNest::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Nest: Worker started...");
 	int sec_counter = NEST_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
@@ -118,6 +117,7 @@ void CNest::Do_Work()
 		}
 
 	}
+	Logout();
 	_log.Log(LOG_STATUS,"Nest: Worker stopped...");
 }
 
@@ -233,7 +233,7 @@ bool CNest::Login()
 		return false;
 	}
 	m_AccessToken = root["access_token"].asString();
-	
+
 	if (root["userid"].empty())
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
@@ -292,7 +292,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, Idx, 0);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bDeviceExits = false;
 	}
@@ -464,7 +464,7 @@ void CNest::GetMeterDetails()
 							}
 						}
 					}
-					
+
 				}
 			}
 			bool bIAlarm = false;

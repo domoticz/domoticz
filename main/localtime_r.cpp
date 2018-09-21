@@ -2,19 +2,23 @@
 #include "localtime_r.h"
 
 time_t m_lasttime=time(NULL);
-boost::mutex TimeMutex_;
+std::mutex TimeMutex_;
 
-#if defined(__APPLE__) || defined(__USE_POSIX)
-	#define localtime_r
+#if defined(localtime_r) || defined(__APPLE__) || defined(__USE_POSIX)
+	#define HAVE_LOCALTIME_R
 #endif
 
-#ifndef localtime_r
+#if defined(localtime_s)
+	#define HAVE_LOCALTIME_S
+#endif
+
+#ifndef HAVE_LOCALTIME_R
 struct tm *localtime_r(const time_t *timep, struct tm *result)
 {
-#ifdef localtime_s
+#ifdef HAVE_LOCALTIME_S
 	localtime_s(timep, result);
 #else
-	boost::mutex::scoped_lock lock(TimeMutex_);
+	std::unique_lock<std::mutex> lock(TimeMutex_);
 	struct tm *s = localtime(timep);
 	if (s == NULL)
 		return NULL;
@@ -35,14 +39,14 @@ time_t mytime(time_t * _Time)
 
 // GB3
 /* ParseSQLdatetime()
- * Sets time value and corresponding tm struct to match a localized datetime string in 
+ * Sets time value and corresponding tm struct to match a localized datetime string in
  * SQL format (YYYY-MM-DD HH:mm:dd). Corrects for DST jump by verifying if mktime
  * returned a different value of tm_isdst than assumed.
  *
  * Note that if the SQL datetime input string falls within the DST jump range this
  * method may still produce an incorrect result. This is because default assumption for
  * the DST flag is to use the one from current time. To defeat this limitation you may
- * use the optional parameter isdst to set either Summer (1) or Winter (0) time as the 
+ * use the optional parameter isdst to set either Summer (1) or Winter (0) time as the
  * initial value, or set to -1 to accept either one.
  *
  * Returns false if no time can be created

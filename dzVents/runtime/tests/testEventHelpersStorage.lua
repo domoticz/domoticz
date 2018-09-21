@@ -30,8 +30,6 @@ end
 describe('event helper storage', function()
 	local EventHelpers, helpers, utils, domoticz
 
-
-
 	setup(function()
 		local settings = {
 			['Domoticz url'] = 'http://10.0.0.8:8080',
@@ -70,23 +68,6 @@ describe('event helper storage', function()
 				return devs[id]
 			end
 		}
-		_G.scripts = {
-			['myInternalScript'] = [[
-				return {
-					active = true,
-					on = {
-						'someswitch'
-					},
-					data = {
-						x = { initial = 4 }
-					},
-					execute = function(domoticz, device, triggerInfo)
-						domoticz.data.x = domoticz.data.x + 10
-
-					end
-				}
-			]],
-		}
 
 		EventHelpers = require('EventHelpers')
 	end)
@@ -115,11 +96,30 @@ describe('event helper storage', function()
 		local script_data = bindings['somedevice'][1]
 		local context = helpers.getStorageContext(script_data.data, script_data.dataFileName)
 
-		assert.is_same({'a','b','c','d','e','g'}, keys(context))
+		assert.is_same({'a','b','c','d','e','g', 'initialize'}, keys(context))
+		-- note that 'h' is not here because it is nil and then it is ommited from the table
 		assert.is_same('', context.a)
 		assert.is_same(1, context.b)
 		assert.is_same({x=1, y=2}, context.c)
 		assert.is_same(666, context.g)
+
+	end)
+
+	it('should re-initialize a variable in a context', function()
+		local bindings = helpers.getEventBindings()
+		local script_data = bindings['somedevice'][1]
+		local context = helpers.getStorageContext(script_data.data, script_data.dataFileName)
+
+		assert.is_same({x=1, y=2}, context.c)
+
+		context.c = 'bla'
+
+		assert.is_same('bla', context.c)
+
+		context.initialize('c')
+
+		assert.is_same({x=1, y=2}, context.c)
+
 	end)
 
 	it('should write a storage context', function()
@@ -134,6 +134,7 @@ describe('event helper storage', function()
 		context['e'].setNew(200)
 		context['g'] = 22
 		context['p'] = 'should not be stored'
+		context['h'] = 'somestuff'
 
 		--helpers.writeStorageContext(script_data, context, LOCAL)
 		helpers.writeStorageContext(
@@ -148,13 +149,14 @@ describe('event helper storage', function()
 		-- check if it was properly stored
 
 		local newContext = helpers.getStorageContext(script_data.data, script_data.dataFileName)
-		assert.is_same({'a','b','c', 'd', 'e', 'g'}, keys(newContext))
+		assert.is_same({'a','b','c', 'd', 'e', 'g', 'h', 'initialize'}, keys(newContext))
 		assert.is_same('a new value', newContext.a)
 		assert.is_same(100, newContext.b)
 		assert.is_same({x=12, y=23}, newContext.c)
 		assert.is_same(100, newContext.d.getLatest().data)
 		assert.is_same(200, newContext.e.getLatest().data)
 		assert.is_same(22, newContext.g)
+		assert.is_same('somestuff', newContext.h)
 	end)
 
 	it('should write local storage inside the script', function()
@@ -166,14 +168,13 @@ describe('event helper storage', function()
 		-- should pass the arguments to the execute function
 		-- and catch the results from the function
 		local newContext = helpers.getStorageContext(script_data.data, script_data.dataFileName)
-		assert.is_same({'a','b','c','d','e','g'}, keys(newContext))
+		assert.is_same({'a','b','c','d','e','g', 'initialize'}, keys(newContext))
 		assert.is_same('this is set from script', newContext.a)
 		assert.is_same(245, newContext.b)
 		assert.is_same(123, newContext.d.getLatest().data)
 		assert.is_same({num=456}, newContext.e.getLatest().data)
 		assert.is_same(87, newContext.g)
 		assert.is_same({x=10, y=20}, newContext.c)
-
 	end)
 
 	it('should write local storage inside the script for internal scripts', function()
@@ -185,17 +186,16 @@ describe('event helper storage', function()
 		-- should pass the arguments to the execute function
 		-- and catch the results from the function
 		local newContext = helpers.getStorageContext(script_data.data, script_data.dataFileName)
-		assert.is_same({ 'x' }, keys(newContext))
+		assert.is_same({ 'initialize', 'x' }, keys(newContext))
 		assert.is_same(14, newContext.x)
 	end)
-
 
 	it('should have a default global context', function()
 		local bindings = helpers.getEventBindings()
 		local script_data = bindings['somedevice'][1]
 		local context = helpers.getStorageContext(helpers.globalsDefinition, '__data_global_data')
 
-		assert.is_same({'g','h'}, keys(context))
+		assert.is_same({'g','h', 'initialize'}, keys(context))
 		assert.is_same(666, context.g)
 		assert.is_same(true, context.h)
 	end)
@@ -221,7 +221,7 @@ describe('event helper storage', function()
 		-- check if it was properly stored
 
 		local newContext = helpers.getStorageContext(helpers.globalsDefinition, '__data_global_data')
-		assert.is_same({'g','h'}, keys(newContext))
+		assert.is_same({'g','h', 'initialize'}, keys(newContext))
 		assert.is_same(777, newContext.g)
 		assert.is_same(false, newContext.h)
 		assert.is_nil(newContext.d)
@@ -238,13 +238,13 @@ describe('event helper storage', function()
 		local localContext = helpers.getStorageContext(script_data.data,script_data.dataFileName)
 		local globalContext = helpers.getStorageContext(helpers.globalsDefinition, '__data_global_data')
 
-		assert.is_same({'a','b','c','d','e','g'}, keys(localContext))
+		assert.is_same({'a','b','c','d','e','g', 'initialize'}, keys(localContext))
 		assert.is_same('this is set from script', localContext.a)
 		assert.is_same(245, localContext.b)
 		assert.is_same(87, localContext.g)
 		assert.is_same({x=10, y=20}, localContext.c)
 
-		assert.is_same({'g', 'h'}, keys(globalContext))
+		assert.is_same({'g', 'h', 'initialize'}, keys(globalContext))
 		assert.is_same(456, globalContext.g)
 		assert.is_same(false, globalContext.h)
 	end)
@@ -255,18 +255,19 @@ describe('event helper storage', function()
 
 		local def = {
 			x = { initial = 1},
-			y = { initial = 2}
+			y = { initial = 2},
+			'a'
 		}
-
 
 		local context = helpers.getStorageContext(def, script_data.dataFileName)
 
 		-- just checking
-		assert.is_same({ 'x', 'y' }, keys(context))
+		assert.is_same({ 'initialize', 'x', 'y' }, keys(context)) -- a is not there yet as it is nill
 
 		-- create some new data
 		context['x'] = 10
 		context['y'] = 20
+		context['a'] = 'this is a'
 
 		-- write the data
 
@@ -278,17 +279,18 @@ describe('event helper storage', function()
 		-- just checking again
 		local exists = utils.fileExists(script_data.dataFilePath)
 
-
 		-- now add a new var to the def
 
 		def['z'] = { initial = 3 }
 
 		context = helpers.getStorageContext(def, script_data.dataFileName)
 
-		assert.is_same({ 'x', 'y', 'z' }, keys(context))
+		assert.is_same({ 'a', 'initialize', 'x', 'y', 'z' }, keys(context))
 		assert.is_same(10, context.x) -- the updated old ones
 		assert.is_same(20, context.y)
+		assert.is_same('this is a', context.a) -- this is created after the first assignment of a (and a is part of the def so it may persist)
 		assert.is_same(3, context.z) -- the new one with initial value
+
 
 		-- now remove a var from the def and check if the old var isn't still in the
 		-- file data
@@ -304,8 +306,7 @@ describe('event helper storage', function()
 
 		-- require the file
 		fileStorage = require(script_data.dataFileName)
-		assert.is_same({ 'x', 'y'}, keys(fileStorage)) -- z is no longer there
-
+		assert.is_same({ 'a', 'x', 'y'}, keys(fileStorage)) -- z is no longer there
 	end)
 
 	describe('Historical storage', function()
@@ -414,10 +415,11 @@ describe('event helper storage', function()
 
 		it('should get the oldest', function()
 			local hs = HS(data)
-			local item = hs.getOldest()
+			local item, index = hs.getOldest()
 
 			assert.is_same(data[10].time, item.time.raw)
 			assert.is_same(data[10].data, item.data)
+			assert.is_same(index, hs.size)
 
 			-- empty
 			hs = HS()
@@ -662,6 +664,8 @@ describe('event helper storage', function()
 
 			hs = HS()
 			assert.is_same(0, hs.avg(1,10))
+
+			assert.is_same(0, hs.avg())
 		end)
 
 		it('should return average over a time period', function()
@@ -820,23 +824,85 @@ describe('event helper storage', function()
 			local smooth = hs.delta(1, 10, 2)  -- 3 > 13  = 10
 			assert.is_same(10, smooth)
 
-			smooth = hs.delta(2, 10, 2)  -- 3 > 13  = 10
+			smooth = hs.delta(2, 10, 2)  -- 3 > 11.75  = 8.75
 			assert.is_same(8.75, smooth)
 
+			-- check against an empty storage
 			hs = HS()
 			assert.is_nil(hs.delta(1, 4))
+			assert.is_same(100, hs.delta(1, 4, nil, 100))
 
+		end)
+
+		it('should return a delta value since a specifc time without start-smoothing', function()
+			local hs = HS(data)
+			hs.setNew(20)
+			-- 20[1] 10[2], 9[3], 8[4], 7[5], 6[6], 5[7], 4[8], 3[9], 2[10] dropped: 1
+
+			local nosmooth, refFrom, refTo = hs.delta2(1, 6)  -- 6 > 20 = 14
+			assert.is_same(14, nosmooth)
+			assert.is_same(refFrom, 20)
+			assert.is_same(refTo, 6)
+
+			local smooth, refFrom, refTo = hs.delta2(1, 10, 0, 2)  -- 3 > 20  = 17
+			assert.is_same(17, smooth)
+			assert.is_same(refFrom, 20)
+			assert.is_same(refTo, 3)
+
+			smooth, refFrom, refTo = hs.delta2(2, 10, 0, 2)  -- 3 > 10  = 7
+			assert.is_same(7, smooth)
+			assert.is_same(refFrom, 10)
+			assert.is_same(refTo, 3)
+
+			smooth, refFrom, refTo = hs.delta2(2, 10, 2, 2)  -- 3 > 11.75  = 8.75
+			assert.is_same(8.75, smooth)
+			assert.is_same(refFrom, 11.75)
+			assert.is_same(refTo, 3)
+
+			smooth, refFrom, refTo = hs.delta2(2, 10, 2, 2)  -- 3 > 11.75  = 8.75
+			assert.is_same(8.75, smooth)
+			assert.is_same(refFrom, 11.75)
+			assert.is_same(refTo, 3)
+
+			-- check against an empty storage
+			hs = HS()
+			assert.is_nil(hs.delta2(1, 4))
+			assert.is_same(100, hs.delta2(1, 4, 0, 0, 100))
 		end)
 
 		it('should return a delta value since a specifc time', function()
 			local hs = HS(data)
-			local smooth = hs.deltaSince('5:0:0', 2)
+			local smooth, refFrom, refTo = hs.deltaSince('5:0:0', 2)
 			assert.is_same(4, smooth)
+			assert.is_same(refFrom, 9)
+			assert.is_same(refTo, 5)
 
-			smooth = hs.deltaSince('15:0:0', 2, 22)
+			smooth, refFrom, refTo = hs.deltaSince('15:0:0', 2, 22)
 			-- beyond the limits, return default value (22)
 			assert.is_same(22, smooth)
+			assert.is_same(refFrom, 22)
+			assert.is_same(refTo, 22)
 		end)
+
+		it('should return a delta value since a specifc time or oldest', function()
+			local hs = HS(data)
+			-- 10[1], 9[2], 8[3], 7[4], 6[5], 5[6], 4[7], 3[8], 2[9], 1[10]
+
+			local smooth, refFrom, refTo = hs.deltaSinceOrOldest('5:0:0', 2, 2) -- 5[6] > 10[1] (smoothed: 5 > 9)
+			assert.is_same(4, smooth)
+			assert.is_same(refFrom, 9)
+			assert.is_same(refTo, 5)
+
+			smooth, refFrom, refTo = hs.deltaSinceOrOldest('15:0:0')
+			-- beyond the limits, use oldest value
+			assert.is_same(9, smooth) -- 1 > 10
+			assert.is_same(refFrom, 10)
+			assert.is_same(refTo, 1)
+
+			hs = HS()
+			assert.is_same(33, hs.deltaSinceOrOldest('15:0:0', nil, nil, 33)) -- empty set
+		end)
+
 
 		it('should return an item at a specific time', function()
 			local hs = HS(data)

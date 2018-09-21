@@ -41,7 +41,7 @@ void connection_manager::start(connection_ptr c)
 	{
 		//ok, this could get a very long list when running for years
 		connectedips_.insert(s);
-		_log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
+		//_log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
 	}
 
 	c->start();

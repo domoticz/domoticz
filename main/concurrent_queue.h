@@ -10,11 +10,13 @@
 #ifndef MAIN_CONCURRENT_QUEUE_H_
 #define MAIN_CONCURRENT_QUEUE_H_
 
-#include <boost/noncopyable.hpp>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #include <queue>
 
 template<typename Data>
-class concurrent_queue : private boost::noncopyable {
+class concurrent_queue {
 private:
 	struct queue_not_empty {
 		std::queue<Data>& queue;
@@ -27,24 +29,35 @@ private:
 	};
 
 	std::queue<Data> the_queue;
-	mutable boost::mutex the_mutex;
-	boost::condition_variable the_condition_variable;
+	mutable std::mutex the_mutex;
+	std::condition_variable the_condition_variable;
 
 public:
+	size_t size() const {
+		std::unique_lock<std::mutex> lock(the_mutex);
+		return the_queue.size();
+	}
+
+	void clear() {
+		std::unique_lock<std::mutex> lock(the_mutex);
+		while (!the_queue.empty())
+			the_queue.pop();
+	}
+
 	void push(Data const& data) {
-		boost::mutex::scoped_lock lock(the_mutex);
+		std::unique_lock<std::mutex> lock(the_mutex);
 		the_queue.push(data);
 		lock.unlock();
 		the_condition_variable.notify_one();
 	}
 
 	bool empty() const {
-		boost::mutex::scoped_lock lock(the_mutex);
+		std::unique_lock<std::mutex> lock(the_mutex);
 		return the_queue.empty();
 	}
 
 	bool try_pop(Data& popped_value) {
-		boost::mutex::scoped_lock lock(the_mutex);
+		std::unique_lock<std::mutex> lock(the_mutex);
 		if(the_queue.empty()) {
 			return false;
 		}
@@ -55,7 +68,7 @@ public:
 	}
 
 	void wait_and_pop(Data& popped_value) {
-		boost::mutex::scoped_lock lock(the_mutex);
+		std::unique_lock<std::mutex> lock(the_mutex);
 		/*
 		while(the_queue.empty()) {
 			the_condition_variable.wait(lock);
@@ -69,8 +82,8 @@ public:
 
 	template<typename Duration>
 	bool timed_wait_and_pop(Data& popped_value, Duration const& wait_duration) {
-		boost::mutex::scoped_lock lock(the_mutex);
-		if(!the_condition_variable.timed_wait(lock, wait_duration, queue_not_empty(the_queue))) {
+		std::unique_lock<std::mutex> lock(the_mutex);
+		if(!the_condition_variable.wait_for(lock, wait_duration, queue_not_empty(the_queue))) {
 			return false;
 		}
 		popped_value=the_queue.front();
@@ -80,7 +93,7 @@ public:
 
 };
 
-class queue_element_trigger : private boost::noncopyable {
+class queue_element_trigger {
 private:
 	struct element_popped {
 		bool& popped;
@@ -92,8 +105,8 @@ private:
 		}
 	};
 
-	mutable boost::mutex the_mutex;
-	boost::condition_variable the_condition_variable;
+	mutable std::mutex the_mutex;
+	std::condition_variable the_condition_variable;
 	bool elementPopped;
 
 public:
@@ -101,18 +114,18 @@ public:
 		elementPopped = false;
 	}
 	void popped() {
-		boost::mutex::scoped_lock lock(the_mutex);
+		std::unique_lock<std::mutex> lock(the_mutex);
 		elementPopped = true;
 		the_condition_variable.notify_one();
 	}
 	void wait() {
-		boost::mutex::scoped_lock lock(the_mutex);
+		std::unique_lock<std::mutex> lock(the_mutex);
 		the_condition_variable.wait(lock, element_popped(elementPopped));
 	}
 	template<typename Duration>
 	bool timed_wait(Duration const& wait_duration) {
-		boost::mutex::scoped_lock lock(the_mutex);
-		if(!the_condition_variable.timed_wait(lock, wait_duration, element_popped(elementPopped))) {
+		std::unique_lock<std::mutex> lock(the_mutex);
+		if(!the_condition_variable.wait_for(lock, wait_duration, element_popped(elementPopped))) {
 			return false;
 		}
 		return true;

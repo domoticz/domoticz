@@ -1,14 +1,19 @@
 #pragma once
-#include <iosfwd>
-#include <vector>
 
 class HTTPClient
 {
 public:
+	enum _eHTTPmethod
+	{
+		HTTP_METHOD_GET,
+		HTTP_METHOD_POST
+	};
 	//GET functions
 	static bool GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned = false);
 	static bool GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned = false);
+	static bool GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bIgnoreNoDataReturned = false);
 	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut = -1);
+	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const int TimeOut = -1);
 
 	static bool GETBinaryToFile(const std::string &url, const std::string &outputfile);
 
@@ -17,7 +22,9 @@ public:
 
 	//POST functions, postdata looks like: "name=john&age=123&country=this"
 	static bool POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect=true, const bool bIgnoreNoDataReturned = false);
+	static bool POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect=true, const bool bIgnoreNoDataReturned = false);
 	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect = true);
+	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect = true);
 
 	//PUT functions, postdata looks like: "name=john&age=123&country=this"
 	static bool PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned = false);
@@ -38,7 +45,7 @@ public:
 private:
 	static void SetGlobalOptions(void *curlobj);
 	static bool CheckIfGlobalInitDone();
-	static void LogError(void *curlobj);
+	static void LogError(const long response_code);
 	//our static variables
 	static bool m_bCurlGlobalInitialized;
 	static bool m_bVerifyHost;

@@ -15,7 +15,7 @@ fi
 
 echo "Updating to latest release version..."
 echo "Please Standby..."
-wget -O domoticz_release.tgz "http://www.domoticz.com/download.php?channel=stable&type=release&system=${OS}&machine=${MACH}"
+wget -O domoticz_release.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=stable&type=release&system=${OS}&machine=${MACH}"
 tar xvfz domoticz_release.tgz
 rm domoticz_release.tgz
 echo "Restarting Domoticz... (please standby...)"

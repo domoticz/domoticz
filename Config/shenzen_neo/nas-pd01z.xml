@@ -33,7 +33,7 @@
       <Help>This parameter can be enabled or disabled the PIR detector detecting function.
       </Help>
       <Item label="Disable" value="0" />
-      <Item label="Enable" value="1" />
+      <Item label="Enable" value="255" />
      </Value>
     
     <Value type="short" genre="config" instance="1" index="5" label="Ambient Illumination Lux Level" units="lux" value="100" min="0" max="1000" size="2">

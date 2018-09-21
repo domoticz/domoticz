@@ -11,8 +11,6 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
@@ -24,51 +22,33 @@ OTGWTCP::~OTGWTCP(void)
 
 bool OTGWTCP::StartHardware()
 {
-	m_stoprequested=false;
-	m_bDoRestart=false;
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&OTGWTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "OTGWTCP");
+	return (m_thread != nullptr);
 }
 
 bool OTGWTCP::StopHardware()
 {
-	m_stoprequested=true;
-	if (isConnected())
+	if (m_thread)
 	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
-	{
-		//Don't throw from a Stop command
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
 
 void OTGWTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"OTGW: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
+	_log.Log(LOG_STATUS,"OTGW: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted=true;
 	m_bufferpos=0;
 	sOnConnected(this);
@@ -82,56 +62,38 @@ void OTGWTCP::OnDisconnect()
 
 void OTGWTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 25;
-	while (!m_stoprequested)
+	connect(m_szIPAddress,m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (bFirstTime)
+		if (isConnected())
 		{
-			bFirstTime=false;
-			connect(m_szIPAddress,m_usIPPort);
-			if (mIsConnected)
+			if ((sec_counter % 28 == 0) && (m_bRequestVersion))
 			{
+				m_bRequestVersion = false;
+				GetVersion();
+			}
+			else if (sec_counter % 30 == 0)//updates every 30 seconds
+			{
+				SendOutsideTemperature();
+				SendTime();
 				GetGatewayDetails();
 			}
 		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
-			if (mIsConnected)
-			{
-				if ((sec_counter % 28 == 0) && (m_bRequestVersion))
-				{
-					m_bRequestVersion = false;
-					GetVersion();
-				}
-				else if (sec_counter % 30 == 0)//updates every 30 seconds
-				{
-					bFirstTime=false;
-					SendOutsideTemperature();
-					SendTime();
-					GetGatewayDetails();
-				}
-			}
-		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
-} 
+}
 
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 
@@ -150,7 +112,7 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "OTGW: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "OTGW: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -165,7 +127,7 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 
 bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return false;
 	}

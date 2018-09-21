@@ -735,8 +735,14 @@
                 <th width="70" align="center" data-i18n="ID">ID</th>
                 <th align="left" data-i18n="Name">Name</th>
                 <th width="120" align="left" data-i18n="Mac Address">Mac Address</th>
+                <th width="60" align="left" data-i18n="Status">Status</th>
             </tr>
         </thead>
+    </table>
+    <table class="display" id="lmsnodesettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td><a class="btn-danger sub-tabs-apply" onclick="DeleteUnusedLMSDevices();" data-i18n="Delete Unused Devices">Delete Unused Devices</a></td>
+        </tr>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
 </div>
@@ -793,7 +799,7 @@
 		<tr>
 			<td></td>
 			<td><input type="checkbox" id="RSL" name="RSL">&nbsp;<label for="rfu4">Conrad RSL</label></td>
-			<td><input type="checkbox" id="FS20" name="FS20">&nbsp;<label for="FS20">FS20/Legrand CAD</label></td>
+			<td><input type="checkbox" id="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand CAD</label></td>
 			<td><input type="checkbox" id="Meiantech" name="Meiantech">&nbsp;<label for="Meiantech">Meiantech</label></td>
 		</tr>
 		<tr>
@@ -846,7 +852,7 @@
 		<tr>
 			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse (not IT+)</label></td>
 			<td><input type="checkbox" id="Alecto" name="Alecto">&nbsp;<label for="Alecto">Alecto</label></td>
-			<td><input type="checkbox" id="FS20" name="FS20">&nbsp;<label for="FS20">FS20/Legrand CAD</label></td>
+			<td><input type="checkbox" id="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand CAD</label></td>
 			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
 			<td><input type="checkbox" id="VionicPowerCode" name="VionicPowerCode">&nbsp;<label for="VionicPowerCode">VionicPowerCode</label></td>
 		</tr>
@@ -1028,7 +1034,7 @@
 			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
 				<option value="1">RGBW</option>
 				<option value="2">RGB</option>
-				<option value="3">White</option>
+				<option value="8">White with adjustable color temperature</option>
 				<option value="4">RGBWW</option>
 			</select>
 			<br><br>
@@ -1137,7 +1143,7 @@
 			<table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
 				<tr>
 					<td align="right" style="width:110px"><label id="lblserialport" for="name"><span data-i18n="Serial Port"></span>:</label></td>
-					<td><select id="comboserialport" style="width:210px" class="combobox ui-corner-all"></select></td>
+					<td><select id="comboserialport" style="width:600px" class="combobox ui-corner-all"></select></td>
 				</tr>
 			</table>
 		</div>
@@ -1174,14 +1180,33 @@
 					<td align="right" style="width:110px"><label id="lbli2cname" for="name"><span data-i18n="SubType"></span>:</label></td>
 					<td><select id="comboi2clocal" style="width:410px" class="combobox ui-corner-all"></select></td>
 				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2cpath" for="name"><span data-i18n="Path to I2C bus:"></span>Path to I2C bus:</label></td>
+					<td>
+						<input type="text" id="i2cpath" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<span data-i18n="(etc. /dev/i2c-1, or empty for autodetection)">(etc. /dev/i2c-1, or empty for autodetection)</span>
+					</td>
+				</tr>
 			</table>
 		</div>
 		<div id="divi2caddress">
 			<br>
 			<table class="display" id="hardwareparami2caddress" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address"></span>I2C address:</label></td>
-					<td><input type="text" id="i2caddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address:"></span>I2C address:</label></td>
+					<td>
+						<input type="text" id="i2caddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<span data-i18n="(decimal value)">(decimal value)</span>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divi2cinvert">
+			<br>
+			<table class="display" id="hardwareparami2cinvert" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address"></span>Invert GPIO:</label></td>
+					<td><input type="checkbox" id="i2cinvert" checked><label for="i2cinvert"/></td>
 				</tr>
 			</table>
 		</div>
@@ -1311,7 +1336,61 @@
                                         </td>
                                 </tr>
                         </table>
-                </div>
+                </div>				
+               <div id="divmodeldenkovidevices">
+                   <table class="display" id="hardwareparamsmodeldenkovidevices" border="0" cellpadding="0" cellspacing="20">
+                       <tr>
+                           <td align="right" style="width:110px"><label id="lblmodeldenkovidevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                           <td>
+                               <select id="combomodeldenkovidevices" style="width:210px" class="combobox ui-corner-all">
+                                   <option value="0">DAEnetIP4</option>
+                                   <option value="1">SmartDEN IP-16R</option>
+                                   <option value="2">SmartDEN IP-32IN</option>
+                                   <option value="3">SmartDEN IP-Maxi</option>
+                                   <option value="4">SmartDEN IP-Watchdog</option>
+                                   <option value="5">SmartDEN Logger</option>
+                                   <option value="6">SmartDEN Notifier</option>
+                                   <option value="7">DAEnetIP3</option>
+                                   <option value="8">DAEnetIP2</option>
+                                   <option value="9">DAEnetIP2 8 Relay Module - LM35DZ</option>
+                                   <option value="10">SmartDEN Opener</option>
+                               </select>
+                               <br />
+                               <span data-i18n="For DAEnetIP2 boards password field must contain username:password. Example admin:admin">For DAEnetIP2 boards password field must contain username:password. Example admin:admin</span>
+                           </td>
+                          </tr>
+                   </table>
+                </div>			
+               <div id="divmodeldenkoviusbdevices">
+                   <table class="display" id="hardwareparamsmodeldenkoviusbdevices" border="0" cellpadding="0" cellspacing="20">
+                       <tr>
+                           <td align="right" style="width:110px"><label id="lblmodeldenkoviusbdevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                           <td>
+                               <select id="combomodeldenkoviusbdevices" style="width:210px" class="combobox ui-corner-all">
+                                   <option value="0">USB 16 Relays-VCP</option>
+                                   <!--<option value="1">USB 16 Relays-RTU Modbus</option>-->
+                               </select>
+							</td>
+                          </tr>
+                   </table>
+                </div>	
+               <div id="divmodeldenkovitcpdevices">
+                   <table class="display" id="hardwareparamsmodeldenkovitcpdevices" border="0" cellpadding="0" cellspacing="20">
+                       <tr>
+                           <td align="right" style="width:110px"><label id="lblmodeldenkovitcpdevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                           <td>
+                               <select id="combomodeldenkovitcpdevices" style="width:210px" class="combobox ui-corner-all">
+                                   <option value="0">WiFi 16 Relays-VCP</option>
+                                   <option value="1">WiFi 16 Relays-TCP Modbus</option>
+                               </select>
+							</td>
+                          </tr>
+						<tr>
+							<td align="right" style="width:110px"><label id="lbldenkovislaveid" for="name"><span data-i18n="Slave ID"></span>Slave ID</label></td>
+							<td><input type="text" id="denkovislaveid" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+						</tr>
+                   </table>
+                </div>	
 		<div id="divremote">
 			<br>
 			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
@@ -1480,6 +1559,36 @@
 				</tr>
 			</table>
 		</div>
+        <div id="divnestoauthapi">
+			<table class="display" id="hardwareparamsnestoauthapi" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td></td>
+                    <td><br>
+                        <ul>
+                            <li>If you enter an API key all the other fields are optional.</li>
+                            <li>If you enter a Product Id, Secret and PIN but leave the API Key blank Domoticz will attempt to grab an API key from Nest using that information.</li>
+                            <li>To obtain an API Key you will need to register with Nest. See the Domoticz Wiki (<a href="http://www.domoticz.com/wiki/NestDeveloperApiKey">NestDeveloperApiKey</a>) for more information.</li>
+                        </ul>
+                    </td>
+                </tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
+					<td><input type="text" id="apikey" style="width: 550px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client Id">Client Id</span>:</label></td>
+                    <td><input type="text" id="productid" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client Secret">Client Secret</span>:</label></td>
+                    <td><input type="text" id="productsecret" style="width: 220px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="OAuth PIN">OAuth PIN</span>:</label></td>
+                    <td><input type="text" id="productpin" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+			</table>
+		</div>
 		<div id="divenecotoon">
 			<br>
 			<table class="display" id="hardwareparamsenecotoon" border="0" cellpadding="0" cellspacing="20">
@@ -1522,6 +1631,14 @@
                     <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
                 </tr>
 				<tr>
+                    <td align="right" style="width:110px"><label for="addgroups"><span data-i18n="Add Groups">Add Groups</span>:</label></td>
+                    <td><input type="checkbox" id="addgroups"/>&nbsp;<label for="addgroups">&nbsp;</label></td>
+                </tr>
+				<tr>
+                    <td align="right" style="width:110px"><label for="addscenes"><span data-i18n="Add Scenes">Add Scenes</span>:</label></td>
+                    <td><input type="checkbox" id="addscenes"/>&nbsp;<label for="addscenes">&nbsp;</label></td>
+                </tr>
+				<tr>
 					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
 					<td>
 						<input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
@@ -1535,7 +1652,24 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divwinddelen">
+		<div id="divhoneywell">
+			<br>
+			<table class="display" id="hardwareparamshoneywell" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Access token">Access token</span>:</label></td>
+					<td><input type="text" id="hwAccessToken" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh token">Refresh token</span>:</label></td>
+					<td><input type="text" id="hwRefreshToken" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"></td>
+					<td>You need to provide both the access and refresh token. We <a href="http://www.netwalk.be/lyric" target="_blank">provide</a> an easy to use interface to get them.</td>
+				</tr>
+			</table>
+		</div>
+    <div id="divwinddelen">
 			<br>
 			<table class="display" id="hardwareparamswinddelen" border="0" cellpadding="0" cellspacing="20">
 				<tr>
@@ -1564,7 +1698,16 @@
                         <br>
                         <table class="display" id="hardwareparamsgoodweweb" border="0" cellpadding="0" cellspacing="20">
                                 <tr>
-					<td align="right" style="width:110px"><label><span data-i18n="username">Goodwe-power Username</span>:</label></td>
+					<td align="right" style="width:110px"><label for="comboserverselect"><span data-i18n="Location"></span>:</label></td>
+					<td><select id="comboserverselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">Global</option>
+						<option value="1">Oceania</option>
+						<option value="2">Europe</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Username"></span>:</label></td>
 					<td><input type="text" id="username" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
                                 </tr>
                         </table>
@@ -1573,7 +1716,7 @@
 		<div id="divmqtt">
 			<br>
 			<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
-				<tr valign="top">
+				<tr id="mqtt_publish" valign="top">
 					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
 					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
 						<option value="1">out</option>
@@ -1713,45 +1856,49 @@
 				<td align="right" ><label for="sensortype"><span data-i18n="Sensor Type"></span>: </label></td>
 				<td>
 				<select id="sensortype" style="width:250px" class="combobox ui-corner-all">
-					<option value="249" data-i18n="Air Quality">Air Quality</option>
-					<option value="7" data-i18n="Alert">Alert</option>
-					<option value="9" data-i18n="Ampere (3 Phase)">Ampere (3 Phase)"</option>
-					<option value="19" data-i18n="Ampere (1 Phase)">Ampere (1 Phase)</option>
-					<option value="11" data-i18n="Barometer">Barometer</option>
-					<option value="113" data-i18n="Counter">Counter</option>
-					<option value="14" data-i18n="Counter Incremental">Counter Incremental</option>
-					<option value="1004" data-i18n="Custom Sensor">Custom Sensor</option>
-					<option value="13" data-i18n="Distance">Distance</option>
-					<option value="18" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
-					<option value="3" data-i18n="Gas">Gas</option>
-					<option value="81" data-i18n="Humidity">Humidity</option>
-					<option value="16" data-i18n="Leaf Wetness">Leaf Wetness</option>
-					<option value="246" data-i18n="Lux">Lux</option>
-					<option value="250" data-i18n="P1 Smart Meter (Electric)">P1 Smart Meter (Electric)</option>
-					<option value="2" data-i18n="Percentage">Percentage</option>
-					<option value="1" data-i18n="Pressure (Bar)">Pressure (Bar)</option>
-					<option value="85" data-i18n="Rain">Rain</option>
-					<option value="241" data-i18n="RGB Switch">RGB Switch</option>
-					<option value="1003" data-i18n="RGBW Switch">RGBW Switch</option>
-					<option value="93" data-i18n="Scale">Scale (Weight)</option>
-					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
-					<option value="15" data-i18n="Soil Moisture">Soil Moisture</option>
-					<option value="20" data-i18n="Solar Radiation">Solar Radiation</option>
-					<option value="10" data-i18n="Sound Level">Sound Level</option>
-					<option value="6" data-i18n="Switch">Switch</option>
-					<option value="80" data-i18n="Temperature">Temperature</option>
-					<option value="82" data-i18n="Temp+Hum">Temp+Hum</option>
-					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
-                    <option value="247" data-i18n="Temp+Baro">Temp+Baro</option>
-					<option value="5" data-i18n="Text">Text</option>
-					<option value="8" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
-					<option value="248" data-i18n="Usage (Electric)">Usage (Electric)</option>
-					<option value="87" data-i18n="UV">UV</option>
-					<option value="12" data-i18n="Visibility">Visibility</option>
-					<option value="4" data-i18n="Voltage">Voltage</option>
-					<option value="1000" data-i18n="Waterflow">Waterflow</option>
-					<option value="86" data-i18n="Wind">Wind</option>
-					<option value="1001" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
+					<option value="0xF901" data-i18n="Air Quality">Air Quality</option>
+					<option value="0xF316" data-i18n="Alert">Alert</option>
+					<option value="0x5901" data-i18n="Ampere (3 Phase)">Ampere (3 Phase)"</option>
+					<option value="0xF317" data-i18n="Ampere (1 Phase)">Ampere (1 Phase)</option>
+					<option value="0xF31A" data-i18n="Barometer">Barometer</option>
+					<option value="0x7100" data-i18n="Counter">Counter</option>
+					<option value="0xF31C" data-i18n="Counter Incremental">Counter Incremental</option>
+					<option value="0xF31F" data-i18n="Custom Sensor">Custom Sensor</option>
+					<option value="0xF31B" data-i18n="Distance">Distance</option>
+					<option value="0xF31D" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
+					<option value="0xF321" data-i18n="Managed counter">Managed counter</option>
+					<option value="0xFB02" data-i18n="Gas">Gas</option>
+					<option value="0x5101" data-i18n="Humidity">Humidity</option>
+					<option value="0xF304" data-i18n="Leaf Wetness">Leaf Wetness</option>
+					<option value="0xF601" data-i18n="Lux">Lux</option>
+					<option value="0xFA01" data-i18n="P1 Smart Meter (Electric)">P1 Smart Meter (Electric)</option>
+					<option value="0xF306" data-i18n="Percentage">Percentage</option>
+					<option value="0xF309" data-i18n="Pressure (Bar)">Pressure (Bar)</option>
+					<option value="0x5503" data-i18n="Rain">Rain</option>
+					<option value="0xF102" data-i18n="RGB Switch">RGB Switch</option>
+					<option value="0xF101" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="0xF104" data-i18n="RGBWW Switch">RGBWW Switch</option>
+					<option value="0xF106" data-i18n="RGBWZ Switch">RGBWZ Switch</option>
+					<option value="0xF107" data-i18n="RGBWWZ Switch">RGBWWZ Switch</option>
+					<option value="0x5D01" data-i18n="Scale">Scale (Weight)</option>
+					<option value="0xF43E" data-i18n="Selector Switch">Selector Switch</option>
+					<option value="0xF303" data-i18n="Soil Moisture">Soil Moisture</option>
+					<option value="0xF302" data-i18n="Solar Radiation">Solar Radiation</option>
+					<option value="0xF318" data-i18n="Sound Level">Sound Level</option>
+					<option value="0xF449" data-i18n="Switch">Switch</option>
+					<option value="0x5005" data-i18n="Temperature">Temperature</option>
+					<option value="0x5201" data-i18n="Temp+Hum">Temp+Hum</option>
+					<option value="0x5401" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+                    <option value="0xF701" data-i18n="Temp+Baro">Temp+Baro</option>
+					<option value="0xF313" data-i18n="Text">Text</option>
+					<option value="0xF201" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
+					<option value="0xF801" data-i18n="Usage (Electric)">Usage (Electric)</option>
+					<option value="0x5701" data-i18n="UV">UV</option>
+					<option value="0xF301" data-i18n="Visibility">Visibility</option>
+					<option value="0xF308" data-i18n="Voltage">Voltage</option>
+					<option value="0xF31E" data-i18n="Waterflow">Waterflow</option>
+					<option value="0x5601" data-i18n="Wind">Wind</option>
+					<option value="0x5604" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
 				</select>
 				</td>
 			</tr>

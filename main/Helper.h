@@ -1,4 +1,3 @@
-
 #pragma once
 
 enum _eTimeFormat
@@ -10,11 +9,13 @@ enum _eTimeFormat
 };
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
+uint64_t hexstrtoui64(const std::string &str);
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
 void stdupper(std::string &inoutstring);
+void stdlower(std::string &inoutstring);
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
 double CalculateAltitudeFromPressure(double pressure);
@@ -45,7 +46,7 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 std::string TimeToString(const time_t *ltime, const _eTimeFormat format);
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 
-void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);
+void hsb2rgb(const float hue, const float saturation, const float vlue, int &outR, int &outG, int &outB, const double maxValue = 100.0);
 void rgb2hsb(const int r, const int g, const int b, float hsbvals[3]);
 
 bool is_number(const std::string& s);
@@ -56,12 +57,13 @@ bool IsLightOrSwitch(const int devType, const int subType);
 int MStoBeaufort(const float ms);
 
 struct dirent;
-bool dirent_is_directory(std::string dir, struct dirent *ent);
-bool dirent_is_file(std::string dir, struct dirent *ent);
+bool dirent_is_directory(const std::string &dir, struct dirent *ent);
+bool dirent_is_file(const std::string &dir, struct dirent *ent);
 void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles);
 
 std::string GenerateUserAgent();
 std::string MakeHtml(const std::string &txt);
+std::string SafeHtml(const std::string &txt);
 
 #if defined WIN32
 	int gettimeofday(timeval * tp, void * tzp);
@@ -71,4 +73,15 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
 
 bool IsArgumentSecure(const std::string &arg);
 uint32_t SystemUptime();
+int GenerateRandomNumber(const int range);
+int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files);
+
+int SetThreadName(std::thread::native_handle_type thread, const char *name);
+
+#if !defined(WIN32)
+	bool IsDebuggerPresent(void);
+#endif
+#if defined(__linux__)
+	bool IsWSL(void); //Detects if running under Windows Subsystem for Linux (WSL)
+#endif
 

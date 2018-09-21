@@ -5,7 +5,7 @@ return {
 			'every minute'
 		}
 	},
-	execute = function(domoticz, device)
+	execute = function(domoticz, timer)
 		domoticz.setScene('scene 1', 'On')
 		return 'script_timer_table'
 	end

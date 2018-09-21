@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!--
+Qubino: ZMNHXDx 3-phase Smart Meter
+-->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="7" label="Input switch function selection" size="1" min="0" max="5" value="0">
+			<Help></Help>
+			<Item label="disabled" value="0" />
+			<Item label="IR external relay control - mono stable push button" value="2" />
+			<Item label="IR external relay control - bi-stable switch" value="3" />
+			<Item label="External relay control - mono stable push button" value="4" />
+			<Item label="External relay control - bi-stable switch" value="5" />
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="40" label="Reporting on power change" size="1" min="0" max="100" value="50">
+			<Help>This parameter is valid for Active Power Total, Active Power Phase1, Active Power Phase2 and Active Power Phase3. Set value means percentage from 0-100 = 0% - 100%</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="42" label="Reporting on time interval" size="2" min="0" max="65536" value="600">
+			<Help>This parameter is currently valid only for Active Energy Total Import/Export (kWh), Reactive Energy Total (kvarh), Total Energy (kVAh)</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="43" label="Other Values - Reporting on time interval" size="2" min="0" max="65536" value="600">
+			<Help>This parameter is valid only for Voltage (V of ph1, ph2, ph3), Current (A of ph1, ph2, ph3), Total Power Factor, Total Reactive Power (var)</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="100" label="Enable / Disable External IR relay (BICOM)" size="1" min="0" max="2" value="0">
+			<Help></Help>
+			<Item label="External IR relay disabled" value="0" />
+			<Item label="External IR relay enabled and connected to all 3 Phases" value="1" />
+			<Item label="External IR relay enabled and connected to a Phase 1" value="2" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="101" label="Enable / Disable External relay (IKA)" size="1" min="0" max="1" value="0">
+			<Help></Help>
+			<Item label="External relay disabled" value="0" />
+			<Item label="External relay enabled and connected to Phase 2" value="1" />
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="106" label="External IR relay (BICOM) power threshold settings - maximum power of all phases together" size="2" min="0" max="60000" value="0">
+			<Help>This parameter defines a threshold when External IR relay is being turned off. (If Parameter no. 100 is set to the value 1 or 2)</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="107" label="External relay (IKA) power threshold settings - maximum power on phase L2" size="2" min="0" max="20000" value="0">
+			<Help>This parameter defines a threshold when External relay is being turned off (if the parameter no. 100 is set to the value 1 or 2).</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="112" label="Power threshold - Delay before power on" size="2" min="0" max="32535" value="0">
+			<Help>External IR relay/ External relay is turned off due to detected overload (as set by parameter 106 and 107) and remains off for a time, defined in this parameter. After that time, the output turns on to check, if the overload is still present.</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Lifeline" />
+		</Associations>
+	</CommandClass>
+
+	<CommandClass id="142" ForceInstances="true" />
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>

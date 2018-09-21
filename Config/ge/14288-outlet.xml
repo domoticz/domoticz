@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  GE In-Wall Tamper Resistant Smart Outlet 
+  https://products.z-wavealliance.org/products/2236
+-->
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" size="1" value="1">
+			<Help>Sets when the LED on the outlet is lit.</Help>
+			<Item label="LED On when load is Off, Led Off when load is On" value="0" />
+			<Item label="LED On when load is On, LED Off when laod is Off (Default)" value="1" />
+			<Item label="LED always off" value="2" />
+		</Value>
+	</CommandClass>
+        <!-- Association Groups -->
+        <CommandClass id="133">
+                <Associations num_groups="3">
+                        <Group index="1" max_associations="5" label="Z-Wave Plus Lifeline" />
+                        <Group index="2" max_associations="5" label="Supports Basic Set and is controlled with the local load" />
+                        <Group index="3" max_associations="5" label="Supports Basic Set and is controlled by pressing the On or Off button" />
+                </Associations>
+        </CommandClass>
+</Product>
+

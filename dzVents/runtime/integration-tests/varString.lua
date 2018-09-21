@@ -24,6 +24,8 @@ end
 
 local testLastUpdate = function(trigger)
 	-- check if trigger.lastUpdate is older than the current time
+	print(dz.time.raw)
+	print(trigger.lastUpdate.raw)
 	local now = dz.time.secondsSinceMidnight
 	local results = (trigger.lastUpdate.secondsSinceMidnight < now)
 
@@ -54,13 +56,16 @@ return {
 
 		res = res and testLastUpdate(variable)
 
-		if (not variable.value == 'Zork is a dork' or not res) then
+		if (variable.value ~= 'Zork is a dork' or not res) then
 			dz.log('varString: Test variable: FAILED', dz.LOG_ERROR)
 			dz.devices('varStringResults').updateText('FAILED')
 		else
 			dz.log('varString: Test variable: OK')
-			dz.devices('varStringResults').updateText('SUCCEEDED')
+			dz.devices('varStringResults').updateText('STRING VARIABLE SUCCEEDED')
 		end
+
+		-- finally cancel the queued command for varCancelled
+		dz.variables('varCancelled').cancelQueuedCommands()
 
 	end
 }

@@ -7,8 +7,9 @@
 #define HTTP_SSLSERVER_HPP
 
 #include <boost/asio.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <string>
-#include <boost/noncopyable.hpp>
+#include "../main/Noncopyable.h"
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 #include "server_settings.hpp"
@@ -20,7 +21,7 @@ typedef boost::function< void() > init_connectionhandler_func;
 typedef boost::function< void(const boost::system::error_code & error) > accept_handler_func;
 
 /// The top-level class of the HTTP(S) server.
-class server_base : private boost::noncopyable {
+class server_base : private domoticz::noncopyable {
 public:
 	/// Construct the server to listen on the specified TCP address and port, and
 	/// serve up files from the given directory.
@@ -68,6 +69,9 @@ protected:
 private:
 	/// Handle a request to stop the server.
 	void handle_stop();
+
+	boost::asio::steady_timer m_heartbeat_timer;
+	void heart_beat(const boost::system::error_code& error);
 };
 
 class server : public server_base {
@@ -78,7 +82,7 @@ public:
 	virtual ~server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'server[" + settings_.to_string() + "]'";
 	}
 protected:
@@ -100,7 +104,7 @@ public:
 	virtual ~ssl_server() {}
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const {
+	virtual std::string to_string() const override {
 		return "'ssl_server[" + settings_.to_string() + "]'";
 	}
 
@@ -115,6 +119,12 @@ protected:
 	ssl_server_settings settings_;
 
 private:
+	/// Reload certificate and SSL params if they're changed
+	void reinit_connection();
+	time_t dhparam_tm_;
+	time_t cert_tm_;
+	time_t cert_chain_tm_;
+
 	/// callback for the certficiate passphrase
 	std::string get_passphrase() const;
 
@@ -126,10 +136,10 @@ private:
 /// server factory
 class server_factory {
 public:
-	static boost::shared_ptr<server_base> create(const server_settings & settings, request_handler & user_request_handler);
+	static std::shared_ptr<server_base> create(const server_settings & settings, request_handler & user_request_handler);
 
 #ifdef WWW_ENABLE_SSL
-	static boost::shared_ptr<server_base> create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
+	static std::shared_ptr<server_base> create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
 #endif
 };
 

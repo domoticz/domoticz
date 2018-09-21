@@ -36,7 +36,7 @@ namespace http {
 
 		std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload, bool domasking)
 		{
-			size_t payloadlen = payload.length();
+			size_t_t payloadlen = payload.length();
 			std::string res;
 			// byte 0
 			res += ((uint8_t)opcode | FIN_MASK);
@@ -69,7 +69,7 @@ namespace http {
 					masking_key[i] = rand();
 					res += masking_key[i];
 				}
-				res += unmask(masking_key, (const uint8_t *)payload.c_str(), payloadlen);
+				res += unmask(masking_key, (const uint8_t *)payload.c_str(), (size_t)payloadlen);
 			}
 			else {
 				res += payload;
@@ -157,12 +157,12 @@ namespace http {
 			return opcode;
 		};
 
-		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler):
+		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite) :
+			handler(_webEm, _WSWrite),
 			OUR_PING_ID("fd")
 		{
 			start_new_packet = true;
 			MyWrite = _MyWrite;
-			handler = _handler;
 		}
 
 		CWebsocket::~CWebsocket()
@@ -225,7 +225,7 @@ namespace http {
 		//       if everything works. We need a proper implementation here.
 		void CWebsocket::OnReceiveText(const std::string &packet_data)
 		{
-			boost::tribool result = handler->Handle(packet_data);
+			boost::tribool result = handler.Handle(packet_data);
 		}
 
 		void CWebsocket::OnReceiveBinary(const std::string &packet_data)
@@ -264,17 +264,17 @@ namespace http {
 
 		void CWebsocket::Start()
 		{
-			handler->Start();
+			handler.Start();
 		}
 
 		void CWebsocket::Stop()
 		{
-			handler->Stop();
+			handler.Stop();
 		}
 
 		CWebsocketHandler * CWebsocket::GetHandler()
 		{
-			return handler;
+			return &handler;
 		}
 
 	}

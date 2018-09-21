@@ -13,9 +13,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <queue>
 #include "reply.hpp"
 #include "request.hpp"
@@ -35,8 +32,8 @@ class CWebsocket;
 
 /// Represents a single connection from a client.
 class connection
-  : public boost::enable_shared_from_this<connection>,
-    private boost::noncopyable
+  : public std::enable_shared_from_this<connection>,
+    private domoticz::noncopyable
 {
 public:
   /// Construct a connection with the given io_service.
@@ -80,7 +77,7 @@ private:
   /// Handle completion of a write operation.
   void handle_write(const boost::system::error_code& e, size_t bytes_transferred);
   /// Protect the write queue
-  boost::mutex writeMutex;
+  std::mutex writeMutex;
   /// Is protected by writeMutex
   std::queue<std::string> writeQ;
   /// indicates if we are currently writing
@@ -168,7 +165,7 @@ private:
   } connection_type;
 };
 
-typedef boost::shared_ptr<connection> connection_ptr;
+typedef std::shared_ptr<connection> connection_ptr;
 
 } // namespace server
 } // namespace http

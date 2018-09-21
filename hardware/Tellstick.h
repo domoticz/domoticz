@@ -4,34 +4,27 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <iosfwd>
-#include <map>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread_time.hpp>
 
 class CTellstick : public CDomoticzHardwareBase
 {
 public:
     explicit CTellstick(const int ID, int repeats, int repeatInterval);
     void SetSettings(int repeats, int repeatInterval);
-    bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
     struct Command
     {
         Command()
             : repeat(0),
-              repeatTimePoint(boost::get_system_time()) {}
+              repeatTimePoint(std::chrono::system_clock::now()) {}
         Command(_tGeneralSwitch genSwitch)
             : genSwitch(genSwitch),
               repeat(0),
-              repeatTimePoint(boost::get_system_time()) {}
+              repeatTimePoint(std::chrono::system_clock::now()) {}
 
         _tGeneralSwitch genSwitch;
         int repeat;
-        boost::system_time repeatTimePoint;
+        std::chrono::system_clock::time_point repeatTimePoint;
     };
 
     void deviceEvent(int deviceId, int method, const char *data);
@@ -45,22 +38,22 @@ private:
                     int timestamp, int callbackId, void *context);
     bool AddSwitchIfNotExits(const int id, const char* devname, bool isDimmer);
     void Init();
-    bool StartHardware();
-    bool StopHardware();
+    bool StartHardware() override;
+    bool StopHardware() override;
     void SendCommand(int devID, const _tGeneralSwitch &cmd);
-    
-    void ThreadSendCommands();
 
+    void ThreadSendCommands();
+private:
     int m_deviceEventId;
     int m_rawDeviceEventId;
     int m_sensorEventId;
 
-    boost::thread m_thread;
-    boost::mutex m_mutex;
-    boost::condition_variable m_cond;
+	std::shared_ptr<std::thread> m_thread;
+    std::mutex m_mutex;
+    std::condition_variable m_cond;
     std::map<int, Command> m_commands;
     int m_numRepeats;
-    boost::posix_time::milliseconds m_repeatInterval;
+    std::chrono::milliseconds m_repeatInterval;
 };
 
 #endif //WITH_TELLSTICK

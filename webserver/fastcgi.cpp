@@ -2,8 +2,6 @@
 #include "fastcgi.hpp"
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
-
 #include "../httpclient/UrlEncode.h"
 #include "../main/Helper.h"
 
@@ -414,7 +412,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	if (!pret.empty())
 	{
 		rep.content.append(pret);
-		reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+		reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 	}
 	mInfo.delay_status = true;
 	return true;

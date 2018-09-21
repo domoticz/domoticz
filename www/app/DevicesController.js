@@ -277,6 +277,7 @@ define(['app'], function (app) {
 							if ((item.Type == "Group") || (item.Type == "Scene")) {
 								itemSubIcons += '&nbsp;<img src="images/empty16.png">';
 								itemSubIcons += '<img src="images/rename.png" title="' + $.t('Rename Device') + '" onclick="RenameDevice(' + item.idx + ',\'' + item.Type + '\',\'' + escape(item.Name) + '\')">';
+								itemSubIcons += '&nbsp;<a href="#/Scenes/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else {
 								if (item.Used != 0) {
@@ -298,34 +299,25 @@ define(['app'], function (app) {
 							}
 							if (
 								(item.Type.indexOf("Light") == 0) ||
+                                (item.Type.indexOf("Color Switch") == 0) ||
 								(item.Type.indexOf("Chime") == 0) ||
 								(item.Type.indexOf("Security") == 0) ||
 								(item.Type.indexOf("RFY") == 0) ||
 								(item.Type.indexOf("ASA") == 0) ||
 								(item.Type.indexOf("Blinds") == 0)
 							) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#devicescontent\', \'ShowDevices\');">';
+								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
-							else if ((item.Type.indexOf("Temp") == 0) || (item.Type.indexOf("Thermostat") == 0) || (item.Type.indexOf("Humidity") == 0)) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');">';
+							else if ((/Temp|Thermostat|Humidity/i).test(item.Type)) {
+								itemSubIcons += '&nbsp;<a href="#Devices/'+ item.idx +'/Log"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
-							else if (item.SubType == "Voltage") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'VoltageGeneral\');">';
-							}
-							else if (item.SubType == "Current") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'CurrentGeneral\');">';
-							}
-							else if (item.SubType == "Pressure") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'Pressure\');">';
-							}
-							else if (item.SubType == "Custom Sensor") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.SensorUnit) + '\', \'' + item.SubType + '\');">';
-							}
-							else if (item.SubType == "Percentage") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowPercentageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
-							}
-							else if (item.SubType == "Sound Level") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');">';
+							else if ([
+								'Voltage', 'Current', 'Pressure', 'Custom Sensor',
+								'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
+								'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage'
+							].includes(item.SubType) || item.Type === 'Usage') {
+								var graphLogLink = '#/Devices/' + item.idx + '/Log';
+								itemSubIcons += '&nbsp;<a href="' + graphLogLink + '"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if (typeof item.Counter != 'undefined') {
 								if ((item.Type == "P1 Smart Meter") && (item.SubType == "Energy")) {
@@ -356,34 +348,24 @@ define(['app'], function (app) {
 							else if (item.Type == "Air Quality") {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowAirQualityLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 							}
-							else if (item.Type == "Lux") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowLuxLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
-							}
-							else if (item.Type == "Usage") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowUsageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
-							}
-							else if (item.SubType == "Solar Radiation") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'Radiation\');">';
-							}
-							else if (item.SubType == "Visibility") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'Visibility\');">';
-							}
-							else if (item.SubType == "Distance") {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'DistanceGeneral\');">';
-							}
 							else if (item.SubType == "Barometer") {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 							}
 							else if ((item.SubType == "Text") || (item.SubType == "Alert")) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
-							}
-							else if ((item.SubType == "Soil Moisture") || (item.SubType == "Leaf Wetness") || (item.SubType == "Waterflow")) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');">';
+                                var logLink = '#/Devices/' + item.idx + '/Log';
+								itemSubIcons += '&nbsp;<a href="' + logLink + '"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else {
 								itemSubIcons += '&nbsp;<img src="images/empty16.png">';
 							}
 							var ID = item.ID;
+							if (typeof(item.HardwareTypeVal) != 'undefined' && item.HardwareTypeVal == 21) {
+								if (item.ID.substr(-4, 2) == '00') {
+									ID = item.ID.substr(1,item.ID.length-2) + '<span class="ui-state-default">' + item.ID.substr(-2, 2) + '</span>';
+								} else {
+									ID = item.ID.substr(1,item.ID.length-4) + '<span class="ui-state-default">' + item.ID.substr(-4, 2) + '</span>' + item.ID.substr(-2, 2);
+								}
+							}
 							if (item.Type == "Lighting 1") {
 								ID = String.fromCharCode(item.ID);
 							}

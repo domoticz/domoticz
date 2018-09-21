@@ -29,6 +29,8 @@ return {
 										 -- sunrise/sunset'
 			'at nighttime',              -- between sunset and sunrise
 			'at daytime',                -- between sunrise and sunset
+			'at civildaytime',           -- between civil twilight start and civil twilight end
+			'at civilnighttime',         -- between civil twilight end and civil twilight start
 			'at daytime on mon,tue',     -- between sunrise and sunset
 										 --	only on monday and tuesday
 
@@ -45,7 +47,7 @@ return {
 			end
 	   },
     },
-	execute = function(domoticz, dummy, info)
-		domoticz.log('Timer event was triggered by ' .. info.trigger, domoticz.LOG_INFO)
+	execute = function(domoticz, timer)
+		domoticz.log('Timer event was triggered by ' .. timer.trigger, domoticz.LOG_INFO)
 	end
 }

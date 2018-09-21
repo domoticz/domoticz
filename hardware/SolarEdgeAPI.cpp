@@ -61,7 +61,6 @@ SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string &APIKey):
 {
 	m_SiteID = 0;
 	m_HwdID = ID;
-	m_stoprequested=false;
 	m_totalActivePower = 0;
 	m_totalEnergy = 0;
 }
@@ -72,20 +71,23 @@ SolarEdgeAPI::~SolarEdgeAPI(void)
 
 bool SolarEdgeAPI::StartHardware()
 {
+	RequestStart();
+
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SolarEdgeAPI::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&SolarEdgeAPI::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "SolarEdgeAPI");
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool SolarEdgeAPI::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -95,9 +97,8 @@ void SolarEdgeAPI::Do_Work()
 {
 	_log.Log(LOG_STATUS, "SolarEdgeAPI Worker started...");
 	int sec_counter = 295;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

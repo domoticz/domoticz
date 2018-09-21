@@ -17,10 +17,10 @@
 #include <ctime>
 
 #ifndef WIN32
-	#include <sys/stat.h>
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <pwd.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #endif
 
 #define RETRY_DELAY 30
@@ -60,12 +60,11 @@ const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 //Class RFXComSerial
 //
 RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
-m_szSerialPort(devname)
+	m_szSerialPort(devname)
 {
-	m_HwdID=ID;
-	m_iBaudRate=baud_rate;
-	
-	m_stoprequested=false;
+	m_HwdID = ID;
+	m_iBaudRate = baud_rate;
+
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
 	m_bStartFirmwareUpload = false;
@@ -92,47 +91,47 @@ RFXComSerial::~RFXComSerial()
 
 bool RFXComSerial::StartHardware()
 {
+	RequestStart();
+
 	//return OpenSerialDevice();
 	//somehow retry does not seem to work?!
 	m_bReceiverStarted = false;
 
-	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
+	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "RFXComSerial");
 
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 
 }
 
 bool RFXComSerial::StopHardware()
 {
-	m_stoprequested=true;
-	if (m_thread!=NULL)
+	if (m_thread)
+	{
+		RequestStop();
 		m_thread->join();
-    // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-    sleep_milliseconds(10);
-	if (m_serial.isOpen())
-		m_serial.close();
-	terminate();
-	m_bIsStarted=false;
+		m_thread.reset();
+	}
+	m_bIsStarted = false;
 	return true;
 }
 
 void RFXComSerial::Do_Work()
 {
 	int sec_counter = 0;
-	while (!m_stoprequested)
+
+	_log.Log(LOG_STATUS, "RFXCOM: Worker started...");
+
+	while (IsStopRequested(1000) == false)
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(NULL);
 		}
-
-		if (m_stoprequested)
-			break;
 
 		if (m_bStartFirmwareUpload)
 		{
@@ -149,21 +148,22 @@ void RFXComSerial::Do_Work()
 
 		if (!isOpen())
 		{
-			if (m_retrycntr==0)
+			if (m_retrycntr == 0)
 			{
-				_log.Log(LOG_STATUS,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
+				_log.Log(LOG_STATUS, "RFXCOM: retrying in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
-			if (m_retrycntr>=RETRY_DELAY)
+			if (m_retrycntr >= RETRY_DELAY)
 			{
-				m_retrycntr=0;
+				m_retrycntr = 0;
 				OpenSerialDevice();
 			}
 		}
-
 	}
-	_log.Log(LOG_STATUS,"RFXCOM: Serial Worker stopped...");
-} 
+	terminate(); //Close serial port (if open)
+
+	_log.Log(LOG_STATUS, "RFXCOM: Worker stopped...");
+}
 
 
 bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
@@ -171,26 +171,26 @@ bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
 	//Try to open the Serial Port
 	try
 	{
-		open(m_szSerialPort,m_iBaudRate);
-		_log.Log(LOG_STATUS,"RFXCOM: Using serial port: %s", m_szSerialPort.c_str());
+		open(m_szSerialPort, m_iBaudRate);
+		_log.Log(LOG_STATUS, "RFXCOM: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"RFXCOM: Error opening serial port!");
+		_log.Log(LOG_ERROR, "RFXCOM: Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
 		return false;
 	}
-	catch ( ... )
+	catch (...)
 	{
-		_log.Log(LOG_ERROR,"RFXCOM: Error opening serial port!!!");
+		_log.Log(LOG_ERROR, "RFXCOM: Error opening serial port!!!");
 		return false;
 	}
-	m_bIsStarted=true;
-	m_rxbufferpos=0;
+	m_bIsStarted = true;
+	m_rxbufferpos = 0;
 	setReadCallback(boost::bind(&RFXComSerial::readCallback, this, _1, _2));
 	if (!bIsFirmwareUpgrade)
 		sOnConnected(this);
@@ -224,7 +224,6 @@ bool RFXComSerial::UpgradeFirmware()
 	m_FirmwareUploadPercentage = 0;
 	m_bStartFirmwareUpload = false;
 	std::map<unsigned long, std::string> firmwareBuffer;
-	std::map<unsigned long, std::string>::const_iterator itt;
 	int icntr = 0;
 	if (!Read_Firmware_File(m_szFirmwareFile.c_str(), firmwareBuffer))
 	{
@@ -239,22 +238,22 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Error opening serial port!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
 	//Start bootloader mode
 	m_szUploadMessage = "RFXCOM: Start bootloader process...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	m_szUploadMessage = "RFXCOM: Get bootloader version...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	//read bootloader version
 	if (!Write_TX_PKT(PKT_VERSION, sizeof(PKT_VERSION)))
 	{
 		m_szUploadMessage = "RFXCOM: Error getting bootloader version!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -274,7 +273,7 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -295,26 +294,26 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Error opening serial port!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
 
 	m_szUploadMessage = "RFXCOM: Start bootloader version...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 
 	m_szUploadMessage = "RFXCOM: Bootloader, Start programming...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
-	for (itt = firmwareBuffer.begin(); itt != firmwareBuffer.end(); ++itt)
+	_log.Log(LOG_STATUS, m_szUploadMessage);
+	for (auto itt : firmwareBuffer)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
 		{
 			m_LastHeartbeat = mytime(NULL);
 		}
-		unsigned long Address = itt->first;
+		unsigned long Address = itt.first;
 		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
@@ -326,9 +325,9 @@ bool RFXComSerial::UpgradeFirmware()
 
 			std::stringstream spercentage;
 			spercentage.precision(2);
-			spercentage << std::setprecision(2)  << std::fixed << m_FirmwareUploadPercentage;
+			spercentage << std::setprecision(2) << std::fixed << m_FirmwareUploadPercentage;
 			m_szUploadMessage = saddress.str() + ", " + spercentage.str() + " %";
-			_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
+			_log.Log(LOG_STATUS, m_szUploadMessage);
 
 			unsigned char bcmd[PKT_writeblock + 10];
 			bcmd[0] = COMMAND_WRITEPM;
@@ -336,12 +335,12 @@ bool RFXComSerial::UpgradeFirmware()
 			bcmd[2] = Address & 0xFF;
 			bcmd[3] = (Address & 0xFF00) >> 8;
 			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
-			memcpy(bcmd + 5, itt->second.c_str(), itt->second.size());
-			bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 20);
+			memcpy(bcmd + 5, itt.second.c_str(), itt.second.size());
+			bool ret = Write_TX_PKT(bcmd, 5 + itt.second.size(), 20);
 			if (!ret)
 			{
 				m_szUploadMessage = "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, m_szUploadMessage);
 				m_FirmwareUploadPercentage = -1;
 				goto exitfirmwareupload;
 			}
@@ -356,18 +355,18 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
 #endif
 	//Verify
 	m_szUploadMessage = "RFXCOM: Start bootloader verify...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	if (!Write_TX_PKT(PKT_VERIFY_OK, sizeof(PKT_VERIFY_OK)))
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -375,16 +374,16 @@ bool RFXComSerial::UpgradeFirmware()
 	{
 		m_FirmwareUploadPercentage = -1;
 		m_szUploadMessage = "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 	}
 	else
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, Programming completed successfully...";
-		_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+		_log.Log(LOG_STATUS, m_szUploadMessage);
 	}
 exitfirmwareupload:
 	m_szUploadMessage = "RFXCOM: bootloader reset...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	Write_TX_PKT(PKT_RESET, sizeof(PKT_RESET), 1);
 #ifndef WIN32
 	try
@@ -394,7 +393,7 @@ exitfirmwareupload:
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -432,14 +431,14 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 {
 #ifndef WIN32
 	struct stat info;
-	if (stat(szFilename,&info)==0)
+	if (stat(szFilename, &info) == 0)
 	{
 		struct passwd *pw = getpwuid(info.st_uid);
-		int ret=chown(szFilename,pw->pw_uid,pw->pw_gid);
-		if (ret!=0)
+		int ret = chown(szFilename, pw->pw_uid, pw->pw_gid);
+		if (ret != 0)
 		{
 			m_szUploadMessage = "Error setting firmware ownership (chown returned an error!)";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			return false;
 		}
 	}
@@ -451,12 +450,12 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	if (!infile.is_open())
 	{
 		m_szUploadMessage = "RFXCOM: bootloader, unable to open file: " + std::string(szFilename);
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		return false;
 	}
 
 	m_szUploadMessage = "RFXCOM: start reading Firmware...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 
 	unsigned char rawLineBuf[PKT_writeblock];
 	int raw_length = 0;
@@ -465,7 +464,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	int addrh = 0;
 
 	fileBuffer.clear();
-	std::string dstring="";
+	std::string dstring = "";
 	bool bHaveEOF = false;
 
 	while (!infile.eof())
@@ -478,7 +477,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 			infile.close();
 			m_szUploadMessage = "RFXCOM: bootloader, firmware does not start with ':'";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			return false;
 		}
 		sLine = sLine.substr(1);
@@ -497,7 +496,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 			infile.close();
 			m_szUploadMessage = "RFXCOM: bootloader, firmware line not equals 2 digests";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			return false;
 		}
 		raw_length = 0;
@@ -516,18 +515,18 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			{
 				infile.close();
 				m_szUploadMessage = "RFXCOM: bootloader, incorrect length";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, m_szUploadMessage);
 				return false;
 			}
-			
+
 		}
 		//
 		chksum = ~chksum + 1;
-		if ((chksum != rawLineBuf[raw_length - 1]) || (raw_length<4))
+		if ((chksum != rawLineBuf[raw_length - 1]) || (raw_length < 4))
 		{
 			infile.close();
 			m_szUploadMessage = "RFXCOM: bootloader, checksum mismatch!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			return false;
 		}
 		int byte_count = rawLineBuf[0];
@@ -538,7 +537,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 		case 0:
 			//Data record
-			dstring+= std::string((const char*)&rawLineBuf + 4, (const char*)rawLineBuf + 4 + byte_count);
+			dstring += std::string((const char*)&rawLineBuf + 4, (const char*)rawLineBuf + 4 + byte_count);
 			if (dstring.size() == PKT_writeblock)
 			{
 				dest_address = (((((addrh << 16) | (faddress + byte_count)) - PKT_writeblock)) / PKT_bytesperaddr);
@@ -552,19 +551,19 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			if (!bHaveEOF)
 			{
 				m_szUploadMessage = "RFXCOM: Bootloader invalid size!";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, m_szUploadMessage);
 			}
 			break;
 		case 2:
-			//Extended Segment Address Record 
+			//Extended Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 2 not supported!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			infile.close();
 			return false;
 		case 3:
-			//Start Segment Address Record 
+			//Start Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 3 not supported!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			infile.close();
 			return false;
 		case 4:
@@ -572,16 +571,16 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			if (raw_length < 7)
 			{
 				m_szUploadMessage = "RFXCOM: Invalid line length!!";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, m_szUploadMessage);
 				infile.close();
 				return false;
 			}
-			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5]; 
+			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5];
 			break;
 		case 5:
 			//Start Linear Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 5 not supported!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			infile.close();
 			return false;
 		}
@@ -591,18 +590,18 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	if (!bHaveEOF)
 	{
 		m_szUploadMessage = "RFXCOM: No end-of-line found!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, m_szUploadMessage);
 		return false;
 	}
 	m_szUploadMessage = "RFXCOM: Firmware read correctly...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	return true;
 }
 
 bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 {
 	m_szUploadMessage = "RFXCOM: Erasing memory....";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	int BootAddr = StartAddress;
 
 	while (BootAddr < StopAddress)
@@ -622,17 +621,17 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 		if (!Write_TX_PKT(bcmd, sizeof(bcmd), 5))
 		{
 			m_szUploadMessage = "RFXCOM: Error erasing memory!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, m_szUploadMessage);
 			return false;
 		}
-		BootAddr+= (PKT_eraseblock * nBlocks);
+		BootAddr += (PKT_eraseblock * nBlocks);
 	}
 	m_szUploadMessage = "RFXCOM: Erasing memory completed....";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, m_szUploadMessage);
 	return true;
 }
 
-bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry)
+bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, int max_retry)
 {
 	if (!m_serial.isOpen())
 		return false;
@@ -674,29 +673,24 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 		return true;
 	}
 	*/
-	int nretry = 0;
-	unsigned char input_buffer[512];
-	int tot_read;
-
-	while (nretry < max_retry)
+	while (max_retry > 0)
 	{
 		try
 		{
-			m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
-			int rcount = 0;
-			while (rcount < 2)
+			size_t twrite = m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
+			sleep_milliseconds(100);
+			if (twrite == tot_bytes)
 			{
-				sleep_milliseconds(500);
-				tot_read = m_serial.read((uint8_t *)&input_buffer, sizeof(input_buffer));
-				if (tot_read)
+				int rcount = 0;
+				while (rcount < 2)
 				{
-					bool bret=Handle_RX_PKT(input_buffer, tot_read);
-					if (bret)
+					if (Read_TX_PKT())
 						return true;
+					sleep_milliseconds(500);
+					rcount++;
 				}
-				rcount++;
 			}
-			nretry++;
+			max_retry--;
 		}
 		catch (...)
 		{
@@ -704,6 +698,72 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 		}
 	}
 	return m_bHaveRX;
+}
+
+//Reads data from serial port between STX/ETX
+bool RFXComSerial::Read_TX_PKT()
+{
+	uint8_t sbuffer[512];
+	size_t buffer_offset = 0;
+	bool bSTXFound1 = false;
+	bool bSTXFound2 = false;
+	bool bETXFound = false;
+	bool bHadDLE = false;
+	unsigned char chksum = 0;
+	m_rx_tot_bytes = 0;
+	while (m_rx_tot_bytes < sizeof(m_rx_input_buffer))
+	{
+		size_t tot_read = m_serial.read((uint8_t*)&sbuffer, sizeof(sbuffer));
+		if (tot_read <= 0)
+			return false;
+		int ii = 0;
+		while (tot_read > 0)
+		{
+			uint8_t tByte = sbuffer[ii++];
+			if (!bSTXFound1)
+			{
+				if (tByte != PKT_STX)
+					return false;
+				bSTXFound1 = true;
+			}
+			else if (!bSTXFound2)
+			{
+				if (tByte != PKT_STX)
+					return false;
+				bSTXFound2 = true;
+				chksum = 0;
+				bHadDLE = false;
+				m_rx_tot_bytes = 0;
+			}
+			else
+			{
+				//Read data until ETX is found
+				if ((tByte == PKT_ETX) && (!bHadDLE))
+				{
+					chksum = ~chksum + 1; //test checksum
+					if (chksum != 0)
+					{
+						_log.Log(LOG_ERROR, "RFXCOM: bootloader, received response with invalid checksum!");
+						return false;
+					}
+					m_bHaveRX = true;
+					return true;
+				}
+				else if (tByte == PKT_DLE)
+				{
+					bHadDLE = true;
+				}
+				else
+				{
+					bHadDLE = false;
+					chksum += tByte;
+					m_rx_input_buffer[m_rx_tot_bytes++] = tByte;
+				}
+			}
+			tot_read--;
+		}
+	}
+	return ((buffer_offset > 0) && (bETXFound));
 }
 
 bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
@@ -716,9 +776,9 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 	unsigned char chksum = 0;
 	m_rx_tot_bytes = 0;
 	size_t ii = 1;
-//	std::string szRespone = "Received: ";
-//	int jj;
-	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer) - 1))
+	//	std::string szRespone = "Received: ";
+	//	int jj;
+	while ((ii < length) && (m_rx_tot_bytes < sizeof(m_rx_input_buffer) - 1))
 	{
 		unsigned char dbyte = pdata[ii];
 		switch (dbyte)
@@ -750,7 +810,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 			return true;
 			break;
 		case PKT_DLE:
-			dbyte = pdata[ii+1];
+			dbyte = pdata[ii + 1];
 			ii++;
 			if (ii >= length)
 				return false;
@@ -766,7 +826,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 
 void RFXComSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		if (!m_bInBootloaderMode)
@@ -792,7 +852,7 @@ bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 		return false;
 	if (m_bInBootloaderMode)
 		return false;
-	write(pdata,length);
+	write(pdata, length);
 	return true;
 }
 
@@ -817,15 +877,15 @@ namespace http {
 			}
 
 			CDomoticzHardwareBase *pHardware = NULL;
-			if ((!hardwareid.empty()) && (hardwareid!="undefined"))
+			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
 			{
 				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
 			}
-			if (pHardware==NULL)
+			if (pHardware == NULL)
 			{
 				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
-				if (pHardware==NULL)
+				if (pHardware == NULL)
 				{
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
 					if (pHardware == NULL)
@@ -873,9 +933,9 @@ namespace http {
 			}
 			std::vector<std::vector<std::string> > result;
 
-			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')",
+			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, [Type] FROM Hardware WHERE (ID='%q')",
 				idx.c_str());
-			if (result.size() < 1)
+			if (result.empty())
 				return;
 
 			unsigned char Mode1 = atoi(result[0][0].c_str());
@@ -885,6 +945,8 @@ namespace http {
 			unsigned char Mode5 = atoi(result[0][4].c_str());
 			unsigned char Mode6 = atoi(result[0][5].c_str());
 
+			_eHardwareTypes HWType = (_eHardwareTypes)atoi(result[0][6].c_str());
+
 			tRBUF Response;
 			Response.ICMND.freqsel = Mode1;
 			Response.ICMND.xmitpwr = Mode2;
@@ -893,34 +955,46 @@ namespace http {
 			Response.ICMND.msg5 = Mode5;
 			Response.ICMND.msg6 = Mode6;
 
-			Response.IRESPONSE.UNDECODEDenabled = (request::findValue(&req, "undecon") == "on") ? 1 : 0;
-			Response.IRESPONSE.X10enabled = (request::findValue(&req, "X10") == "on") ? 1 : 0;
-			Response.IRESPONSE.ARCenabled = (request::findValue(&req, "ARC") == "on") ? 1 : 0;
-			Response.IRESPONSE.ACenabled = (request::findValue(&req, "AC") == "on") ? 1 : 0;
-			Response.IRESPONSE.HEEUenabled = (request::findValue(&req, "HomeEasyEU") == "on") ? 1 : 0;
-			Response.IRESPONSE.MEIANTECHenabled = (request::findValue(&req, "Meiantech") == "on") ? 1 : 0;
-			Response.IRESPONSE.OREGONenabled = (request::findValue(&req, "OregonScientific") == "on") ? 1 : 0;
-			Response.IRESPONSE.ATIenabled = (request::findValue(&req, "ATIremote") == "on") ? 1 : 0;
-			Response.IRESPONSE.VISONICenabled = (request::findValue(&req, "Visonic") == "on") ? 1 : 0;
-			Response.IRESPONSE.MERTIKenabled = (request::findValue(&req, "Mertik") == "on") ? 1 : 0;
-			Response.IRESPONSE.LWRFenabled = (request::findValue(&req, "ADLightwaveRF") == "on") ? 1 : 0;
-			Response.IRESPONSE.HIDEKIenabled = (request::findValue(&req, "HidekiUPM") == "on") ? 1 : 0;
-			Response.IRESPONSE.LACROSSEenabled = (request::findValue(&req, "LaCrosse") == "on") ? 1 : 0;
-			Response.IRESPONSE.FS20enabled = (request::findValue(&req, "FS20") == "on") ? 1 : 0;
-			Response.IRESPONSE.PROGUARDenabled = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
-			Response.IRESPONSE.BLINDST0enabled = (request::findValue(&req, "BlindT0") == "on") ? 1 : 0;
-			Response.IRESPONSE.BLINDST1enabled = (request::findValue(&req, "BlindT1T2T3T4") == "on") ? 1 : 0;
-			Response.IRESPONSE.AEenabled = (request::findValue(&req, "AEBlyss") == "on") ? 1 : 0;
-			Response.IRESPONSE.RUBICSONenabled = (request::findValue(&req, "Rubicson") == "on") ? 1 : 0;
-			Response.IRESPONSE.FINEOFFSETenabled = (request::findValue(&req, "FineOffsetViking") == "on") ? 1 : 0;
-			Response.IRESPONSE.LIGHTING4enabled = (request::findValue(&req, "Lighting4") == "on") ? 1 : 0;
-			Response.IRESPONSE.RSLenabled = (request::findValue(&req, "RSL") == "on") ? 1 : 0;
-			Response.IRESPONSE.SXenabled = (request::findValue(&req, "ByronSX") == "on") ? 1 : 0;
-			Response.IRESPONSE.IMAGINTRONIXenabled = (request::findValue(&req, "ImaginTronix") == "on") ? 1 : 0;
-			Response.IRESPONSE.KEELOQenabled = (request::findValue(&req, "Keeloq") == "on") ? 1 : 0;
-			Response.IRESPONSE.HCEnabled = (request::findValue(&req, "HC") == "on") ? 1 : 0;
+			if (HWType != HTYPE_RFXtrx868)
+			{
+				Response.IRESPONSE.UNDECODEDenabled = (request::findValue(&req, "undecon") == "on") ? 1 : 0;
+				Response.IRESPONSE.X10enabled = (request::findValue(&req, "X10") == "on") ? 1 : 0;
+				Response.IRESPONSE.ARCenabled = (request::findValue(&req, "ARC") == "on") ? 1 : 0;
+				Response.IRESPONSE.ACenabled = (request::findValue(&req, "AC") == "on") ? 1 : 0;
+				Response.IRESPONSE.HEEUenabled = (request::findValue(&req, "HomeEasyEU") == "on") ? 1 : 0;
+				Response.IRESPONSE.MEIANTECHenabled = (request::findValue(&req, "Meiantech") == "on") ? 1 : 0;
+				Response.IRESPONSE.OREGONenabled = (request::findValue(&req, "OregonScientific") == "on") ? 1 : 0;
+				Response.IRESPONSE.ATIenabled = (request::findValue(&req, "ATIremote") == "on") ? 1 : 0;
+				Response.IRESPONSE.VISONICenabled = (request::findValue(&req, "Visonic") == "on") ? 1 : 0;
+				Response.IRESPONSE.MERTIKenabled = (request::findValue(&req, "Mertik") == "on") ? 1 : 0;
+				Response.IRESPONSE.LWRFenabled = (request::findValue(&req, "ADLightwaveRF") == "on") ? 1 : 0;
+				Response.IRESPONSE.HIDEKIenabled = (request::findValue(&req, "HidekiUPM") == "on") ? 1 : 0;
+				Response.IRESPONSE.LACROSSEenabled = (request::findValue(&req, "LaCrosse") == "on") ? 1 : 0;
+				Response.IRESPONSE.LEGRANDenabled = (request::findValue(&req, "Legrand") == "on") ? 1 : 0;
+				Response.IRESPONSE.MSG4Reserved5 = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
+				Response.IRESPONSE.BLINDST0enabled = (request::findValue(&req, "BlindT0") == "on") ? 1 : 0;
+				Response.IRESPONSE.BLINDST1enabled = (request::findValue(&req, "BlindT1T2T3T4") == "on") ? 1 : 0;
+				Response.IRESPONSE.AEenabled = (request::findValue(&req, "AEBlyss") == "on") ? 1 : 0;
+				Response.IRESPONSE.RUBICSONenabled = (request::findValue(&req, "Rubicson") == "on") ? 1 : 0;
+				Response.IRESPONSE.FINEOFFSETenabled = (request::findValue(&req, "FineOffsetViking") == "on") ? 1 : 0;
+				Response.IRESPONSE.LIGHTING4enabled = (request::findValue(&req, "Lighting4") == "on") ? 1 : 0;
+				Response.IRESPONSE.RSLenabled = (request::findValue(&req, "RSL") == "on") ? 1 : 0;
+				Response.IRESPONSE.SXenabled = (request::findValue(&req, "ByronSX") == "on") ? 1 : 0;
+				Response.IRESPONSE.IMAGINTRONIXenabled = (request::findValue(&req, "ImaginTronix") == "on") ? 1 : 0;
+				Response.IRESPONSE.KEELOQenabled = (request::findValue(&req, "Keeloq") == "on") ? 1 : 0;
+				Response.IRESPONSE.HCEnabled = (request::findValue(&req, "HC") == "on") ? 1 : 0;
 
-			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+				if (pHardware)
+				{
+					CRFXBase *pBase = reinterpret_cast<CRFXBase *>(pHardware);
+					pBase->SetRFXCOMHardwaremodes(Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
+				}
+			}
+			else
+			{
+				//For now disable setting the protocols on a 868Mhz device
+			}
 
 		}
 		void CWebServer::Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root)

@@ -5,6 +5,7 @@ local Variable = require('Variable')
 local Time = require('Time')
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
+local _ = require('lodash')
 
 -- simple string splitting method
 -- coz crappy LUA doesn't have this natively... *sigh*
@@ -33,9 +34,13 @@ local function Domoticz(settings)
 	end
 
 	nowTime['isDayTime'] = timeofday['Daytime']
+	nowTime['isCivilDayTime'] = timeofday['Civildaytime']
+	nowTime['isCivilNightTime'] = timeofday['Civilnighttime']
 	nowTime['isNightTime'] = timeofday['Nighttime']
 	nowTime['sunriseInMinutes'] = timeofday['SunriseInMinutes']
 	nowTime['sunsetInMinutes'] = timeofday['SunsetInMinutes']
+	nowTime['civTwilightStartInMinutes'] = timeofday['CivTwilightStartInMinutes']
+	nowTime['civTwilightEndInMinutes'] = timeofday['CivTwilightEndInMinutes']
 
 	-- the new instance
 	local self = {
@@ -112,6 +117,7 @@ local function Domoticz(settings)
 		['EVENT_TYPE_SECURITY'] = 'security',
 		['EVENT_TYPE_SCENE'] = 'scene',
 		['EVENT_TYPE_GROUP'] = 'group',
+		['EVENT_TYPE_HTTPRESPONSE'] = 'httpResponse',
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
@@ -129,7 +135,60 @@ local function Domoticz(settings)
 		['NSS_PUSHALOT'] = 'pushalot',
 		['NSS_PUSHBULLET'] = 'pushbullet',
 		['NSS_PUSHOVER'] = 'pushover',
-		['NSS_PUSHSAFER'] = 'pushsafer'
+		['NSS_PUSHSAFER'] = 'pushsafer',
+		['BASETYPE_DEVICE'] = 'device',
+		['BASETYPE_SCENE'] = 'scene',
+		['BASETYPE_GROUP'] = 'group',
+		['BASETYPE_VARIABLE'] = 'variable',
+		['BASETYPE_SECURITY'] = 'security',
+		['BASETYPE_TIMER'] = 'timer',
+		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse',
+
+		utils = {
+			_ = _,
+
+			toCelsius = function(f, relative)
+				if (relative) then
+					return f*(1/1.8)
+				end
+				return ((f-32) / 1.8)
+			end,
+
+			urlEncode = function(s, strSub)
+				return utils.urlEncode(s, strSub)
+			end,
+
+			round = function(x, n)
+				n = math.pow(10, n or 0)
+				x = x * n
+				if x >= 0 then
+					x = math.floor(x + 0.5)
+				else
+					x = math.ceil(x - 0.5)
+				end
+				return x / n
+			end,
+
+			osExecute = function(cmd)
+				utils.osExecute(cmd)
+			end,
+
+			fileExists = function(path)
+				return utils.fileExists(path)
+			end,
+
+			fromJSON = function(json)
+				return utils.fromJSON(json)
+			end,
+
+			toJSON = function(luaTable)
+				return utils.toJSON(luaTable)
+			end,
+
+			rgbToHSB = function(r, g, b)
+				return utils.rgbToHSB(r,g,b)
+			end
+		}
 	}
 
 	-- add domoticz commands to the commandArray
@@ -162,12 +221,13 @@ local function Domoticz(settings)
 				_subSystem = ''
 			end
 		end
-		self.sendCommand('SendNotification', subject
+		local data = subject
 				.. '#' .. message
 				.. '#' .. tostring(priority)
 				.. '#' .. tostring(sound)
 				.. '#' .. tostring(extra)
-				.. '#' .. tostring(_subSystem))
+				.. '#' .. tostring(_subSystem)
+		self.sendCommand('SendNotification', data)
 	end
 
 	-- have domoticz send an email
@@ -187,18 +247,69 @@ local function Domoticz(settings)
 	end
 
 	-- have domoticz open a url
-	function self.openURL(url)
-		utils.log('OpenURL: ' .. tostring(url), utils.LOG_DEBUG)
-		self.sendCommand('OpenURL', url)
+	function self.openURL(options)
+
+		if (type(options) == 'string') then
+			options = {
+				url = options,
+				method = 'GET'
+			}
+		end
+
+		if (type(options) == 'table') then
+
+			local url = options.url
+			local method = string.upper(options.method or 'GET')
+			local callback = options.callback
+			local postData
+
+			-- process body data
+			if (method == 'POST') then
+				postData = ''
+				if (options.postData ~= nil) then
+					if (type(options.postData) == 'table') then
+						postData = utils.toJSON(options.postData)
+
+						if (options.headers == nil) then
+							options.headers = { ['Content-Type'] = 'application/json' }
+						end
+					else
+						postData = options.postData
+					end
+				end
+			end
+
+			local request = {
+				URL = url,
+				method = method,
+				headers = options.headers,
+				postdata = postData,
+				_trigger = callback,
+			}
+
+			utils.log('OpenURL: url = ' .. _.str(request.URL), utils.LOG_DEBUG)
+			utils.log('OpenURL: method = ' .. _.str(request.method), utils.LOG_DEBUG)
+			utils.log('OpenURL: post data = ' .. _.str(request.postdata), utils.LOG_DEBUG)
+			utils.log('OpenURL: headers = ' .. _.str(request.headers), utils.LOG_DEBUG)
+			utils.log('OpenURL: callback = ' .. _.str(request._trigger), utils.LOG_DEBUG)
+
+			return TimedCommand(self, 'OpenURL', request, 'updatedevice')
+
+		else
+			utils.log('OpenURL: Invalid arguments, use either a string or a table with options', utils.LOG_ERROR)
+		end
+
 	end
 
 	-- send a scene switch command
 	function self.setScene(scene, value)
+		utils.log('setScene is deprecated. Please use the scene object directly.', utils.LOG_INFO)
 		return TimedCommand(self, 'Scene:' .. scene, value, 'device', scene.state)
 	end
 
 	-- send a group switch command
 	function self.switchGroup(group, value)
+		utils.log('switchGroup is deprecated. Please use the group object directly.', utils.LOG_INFO)
 		return TimedCommand(self, 'Group:' .. group, value, 'device', group.state)
 	end
 
@@ -228,25 +339,18 @@ local function Domoticz(settings)
 	end
 
 	function self.toCelsius(f, relative)
-		if (relative) then
-			return f*(1/1.8)
-		end
-		return ((f-32) / 1.8)
+		utils.log('domoticz.toCelsius deprecated. Please use domoticz.utils.toCelsius.', utils.LOG_INFO)
+		return self.utils.toCelsius(f, relative)
 	end
 
 	function self.urlEncode(s, strSub)
-		return utils.urlEncode(s, strSub)
+		utils.log('domoticz.urlEncode deprecated. Please use domoticz.utils.urlEncode.', utils.LOG_INFO)
+		return self.utils.urlEncode(s, strSub)
 	end
 
 	function self.round(x, n)
-		n = math.pow(10, n or 0)
-		x = x * n
-		if x >= 0 then
-			x = math.floor(x + 0.5)
-		else
-			x = math.ceil(x - 0.5)
-		end
-		return x / n
+		utils.log('domoticz.round deprecated. Please use domoticz.utils.round.', utils.LOG_INFO)
+		return self.utils.round(x, n)
 	end
 
 	-- doesn't seem to work well for some weird reasone
@@ -259,7 +363,7 @@ local function Domoticz(settings)
 	self.__groups = {}
 	self.__variables = {}
 
-	function getItemFromData(baseType, id)
+	function self._getItemFromData(baseType, id)
 
 		local res
 
@@ -278,7 +382,7 @@ local function Domoticz(settings)
 		return res
 	end
 
-	function getObject(baseType, id, data)
+	function self._getObject(baseType, id, data)
 		local cache
 		local constructor
 
@@ -305,7 +409,7 @@ local function Domoticz(settings)
 		end
 
 		if (data == nil) then
-			data = getItemFromData(baseType, id)
+			data = self._getItemFromData(baseType, id)
 		end
 
 		if (data ~= nil) then
@@ -325,16 +429,18 @@ local function Domoticz(settings)
 		else
 			utils.log('There is no ' .. baseType .. ' with that name or id: ' .. tostring(id), utils.LOG_ERROR)
 		end
-
 	end
 
-
-	local function setIterators(collection, initial, baseType, filterForChanged)
+	function self._setIterators(collection, initial, baseType, filterForChanged, initalCollection)
 
 		local _collection
 
 		if (initial) then
-			_collection = _G.domoticzData
+			if (initalCollection == nil) then
+				_collection = _G.domoticzData
+			else
+				_collection = initalCollection
+			end
 		else
 			_collection = collection
 		end
@@ -347,7 +453,7 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
@@ -372,7 +478,7 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
@@ -395,7 +501,7 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
@@ -416,87 +522,100 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
 				end
 
 				if (_item and type(_item) ~= 'function' and ( (initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
-					if (filter(_item)) then
-						res[i] = _item
+					if (type(filter) == 'function') then
+						if (filter(_item)) then
+							res[i] = _item
+						end
+					elseif (type(filter) == 'table') then
+						-- assume a list of names
+
+						for i, filterItem in pairs(filter) do
+							if (_item[ (type(filterItem) == 'number') and 'id' or 'name' ] == filterItem) then
+								res[i] = _item
+								break
+							end
+						end
+					else
+						--unsupported
+						utils.log('Please provide either a function or a table with names/ids to the filter.', utils.LOG_ERROR)
 					end
 				end
 			end
-			setIterators(res, false, baseType)
+			self._setIterators(res, false, baseType)
 			return res
 		end
 
 		return collection
 	end
 
-
 	function self.devices(id)
 		if (id ~= nil) then
-			return getObject('device', id)
+			return self._getObject('device', id)
 		else
-			return setIterators({}, true, 'device', false)
+			return self._setIterators({}, true, 'device', false)
 		end
 	end
 
 	function self.groups(id)
 		if (id ~= nil) then
-			return getObject('group', id)
+			return self._getObject('group', id)
 		else
-			return setIterators({}, true, 'group', false)
+			return self._setIterators({}, true, 'group', false)
 		end
 	end
 
 	function self.scenes(id)
 		if (id ~= nil) then
-			return getObject('scene', id)
+			return self._getObject('scene', id)
 		else
-			return setIterators({}, true, 'scene', false)
+			return self._setIterators({}, true, 'scene', false)
 		end
 	end
 
 	function self.variables(id)
 		if (id ~= nil) then
-			return getObject('uservariable', id)
+			return self._getObject('uservariable', id)
 		else
-			return setIterators({}, true, 'uservariable', false)
+			return self._setIterators({}, true, 'uservariable', false)
 		end
 	end
 
 	function self.changedDevices(id)
 		if (id ~= nil) then
-			return getObject('device', id)
+			return self._getObject('device', id)
 		else
-			return setIterators({}, true, 'device', true)
+			return self._setIterators({}, true, 'device', true)
 		end
 	end
 
 	function self.changedScenes(id)
 		if (id ~= nil) then
-			return getObject('scene', id)
+			return self._getObject('scene', id)
 		else
-			return setIterators({}, true, 'scene', true)
+			return self._setIterators({}, true, 'scene', true)
 		end
 	end
 
 	function self.changedGroups(id)
 		if (id ~= nil) then
-			return getObject('group', id)
+			return self._getObject('group', id)
 		else
-			return setIterators({}, true, 'group', true)
+			return self._setIterators({}, true, 'group', true)
 		end
 	end
 
 	function self.changedVariables(id)
 		if (id ~= nil) then
-			return getObject('uservariable', id)
+			return self._getObject('uservariable', id)
 		else
-			return setIterators({}, true, 'uservariable', true)
+			return self._setIterators({}, true, 'uservariable', true)
 		end
 	end
 

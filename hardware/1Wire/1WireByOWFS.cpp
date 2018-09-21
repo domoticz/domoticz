@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "1WireByOWFS.h"
 #include "../../main/mainworker.h"
+#include "../main/Logger.h"
 
 #include <fstream>
 #include <algorithm>
@@ -92,10 +93,7 @@ void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1Wi
             GetDevice(inDir, de->d_name, device);
 
             // Add device to list
-			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-			{
-				_log.Log(LOG_STATUS, "1Wire (OWFS): Add device %s", device.filename.c_str());
-			}
+			_log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Add device %s", device.filename.c_str());
             devices.push_back(device);
 
             // If device is a hub, scan for all hub connected devices (recursively)
@@ -156,21 +154,21 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
       {
          if (unit<0 || unit>1)
             return;
-         writeData(device,std::string("PIO.").append(1,'A'+unit),value?"yes":"no");
+         writeData(device,std::string("PIO.").append(1,'A'+(char)unit),value?"yes":"no");
          break;
       }
    case _8_channel_addressable_switch:
       {
          if (unit<0 || unit>7)
             return;
-         writeData(device,std::string("PIO.").append(1,'0'+unit),value?"yes":"no");
+         writeData(device,std::string("PIO.").append(1,'0'+(char)unit),value?"yes":"no");
          break;
       }
    case _4k_EEPROM_with_PIO:
       {
          if (unit<0 || unit>1)
             return;
-         writeData(device,std::string("PIO.").append(1,'0'+unit),value?"yes":"no");
+         writeData(device,std::string("PIO.").append(1,'0'+(char)unit),value?"yes":"no");
          break;
       }
    case microlan_coupler:
@@ -183,7 +181,7 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
    {
 	   writeData(device, "chargepump", "1");
 	   unsigned int wiper = static_cast<unsigned int>(level * (255.0 / 15.0));
-	   writeData(device, "wiper", boost::to_string(wiper));
+	   writeData(device, "wiper", std::to_string(wiper));
 	   break;
    }
 
@@ -196,10 +194,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/temperature"));
 
-   if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-   {
-	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s = %s", device.filename.c_str(), readValue.c_str());
-   }
+   _log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Get Temperature from %s = %s", device.filename.c_str(), readValue.c_str());
 
    if (readValue.empty())
       return -1000.0;
@@ -210,10 +205,7 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/humidity"));
 
-   if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-   {
-	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Humidity from %s = %s", device.filename.c_str(), readValue.c_str());
-   }
+   _log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Get Humidity from %s = %s", device.filename.c_str(), readValue.c_str());
 
    if (readValue.empty())
 	   return -1000.0;
@@ -247,21 +239,21 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
       {
          if (unit<0 || unit>1)
             return false;
-         fileName.append("/sensed.").append(1,'A'+unit);
+         fileName.append("/sensed.").append(1,'A'+(char)unit);
          break;
       }
    case _8_channel_addressable_switch:
       {
          if (unit<0 || unit>7)
             return false;
-         fileName.append("/sensed.").append(1,'0'+unit);
+         fileName.append("/sensed.").append(1,'0'+(char)unit);
          break;
       }
    case _4k_EEPROM_with_PIO:
       {
          if (unit<0 || unit>1)
             return false;
-         fileName.append("/sensed.").append(1,'0'+unit);
+         fileName.append("/sensed.").append(1,'0'+(char)unit);
          break;
       }
    case microlan_coupler:
@@ -311,9 +303,9 @@ unsigned int C1WireByOWFS::GetNbChannels(const _t1WireDevice& device) const
 unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) const
 {
    // Depending on OWFS version, file can be "counter" or "counters". So try both.
-   std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+unit));
+   std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+(char)unit));
    if (readValue.empty())
-      readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+unit));
+      readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+(char)unit));
    if (readValue.empty())
 	   return 0;
    return (unsigned long)atol(readValue.c_str());
@@ -367,20 +359,14 @@ int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
 
 void C1WireByOWFS::StartSimultaneousTemperatureRead()
 {
-	if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-	{
-		_log.Log(LOG_STATUS, "1Wire (OWFS): Initiating simultaneous temperature read");
-	}
+	_log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Initiating simultaneous temperature read");
 	std::ofstream file;
 	file.open(m_simultaneousTemperaturePath.c_str());
 	if (file.is_open())
 	{
 		file << "1";
 		file.close();
-		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-		{
-			_log.Log(LOG_STATUS, "1Wire (OWFS): Simultaneous temperature read successful");
-		}
+		_log.Debug(DEBUG_HARDWARE, "1Wire (OWFS): Simultaneous temperature read successful");
 		sleep_milliseconds(800);
 	}
 }

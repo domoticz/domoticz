@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdarg.h>
 #include <time.h>
+#include <algorithm>
 #include "localtime_r.h"
 #include "Helper.h"
 #include "mainworker.h"
@@ -30,13 +31,13 @@ CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::st
 
 CLogger::CLogger(void)
 {
-	FilterString = "";
 	m_bInSequenceMode = false;
-	m_bEnableLogTimestamps = true;
 	m_bEnableLogThreadIDs = false;
-	m_verbose_level = VBL_ALL;
+	m_bEnableLogTimestamps = true;
 	m_bEnableErrorsToNotificationSystem = false;
 	m_LastLogNotificationsSend = 0;
+	m_log_flags = LOG_NORM | LOG_STATUS | LOG_ERROR;
+	m_debug_flags = DEBUG_NORM;
 }
 
 CLogger::~CLogger(void)
@@ -45,9 +46,89 @@ CLogger::~CLogger(void)
 		m_outputfile.close();
 }
 
+//Supported flags: normal,status,error,debug
+bool CLogger::SetLogFlags(const std::string &sFlags)
+{
+	std::vector<std::string> flags;
+	StringSplit(sFlags, ",", flags);
+
+	uint32_t iFlags = 0;
+
+	for (const auto & itt : flags)
+	{
+		std::string wflag = itt;
+		stdstring_trim(wflag);
+		if (wflag.empty())
+			continue;
+		if (is_number(wflag))
+		{
+			//Flags are set provided (bitwise)
+			SetLogFlags(atoi(wflag.c_str()));
+			return true;
+		}
+		if (wflag == "all")
+			iFlags |= LOG_ALL;
+		else if (wflag == "normal")
+			iFlags |= LOG_NORM;
+		else if (wflag == "status")
+			iFlags |= LOG_STATUS;
+		else if (wflag == "error")
+			iFlags |= LOG_ERROR;
+		else if (wflag == "debug")
+			iFlags |= LOG_DEBUG_INT;
+		else
+			return false; //invalid flag
+	}
+	SetLogFlags(iFlags);
+	return true;
+}
+
+//Supported flags: normal,hardware,received,webserver,eventsystem,python,thread_id
+bool CLogger::SetDebugFlags(const std::string &sFlags)
+{
+	std::vector<std::string> flags;
+	StringSplit(sFlags, ",", flags);
+
+	uint32_t iFlags = 0;
+
+	for (const auto & itt : flags)
+	{
+		std::string wflag = itt;
+		stdstring_trim(wflag);
+		if (wflag.empty())
+			continue;
+		if (is_number(wflag))
+		{
+			//Flags are set provided (bitwise)
+			SetLogFlags(atoi(wflag.c_str()));
+			return true;
+		}
+		if (wflag == "all")
+			iFlags |= DEBUG_ALL;
+		if (wflag == "normal")
+			iFlags |= DEBUG_NORM;
+		else if (wflag == "hardware")
+			iFlags |= DEBUG_HARDWARE;
+		else if (wflag == "received")
+			iFlags |= DEBUG_RECEIVED;
+		else if (wflag == "webserver")
+			iFlags |= DEBUG_WEBSERVER;
+		else if (wflag == "eventsystem")
+			iFlags |= DEBUG_EVENTSYSTEM;
+		else if (wflag == "python")
+			iFlags |= DEBUG_PYTHON;
+		else if (wflag == "thread_id")
+			iFlags |= DEBUG_THREADIDS;
+		else
+			return false; //invalid flag
+	}
+	SetDebugFlags(iFlags);
+	return true;
+}
+
 void CLogger::SetOutputFile(const char *OutputFile)
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	if (m_outputfile.is_open())
 		m_outputfile.close();
 
@@ -70,11 +151,6 @@ void CLogger::SetOutputFile(const char *OutputFile)
 	}
 }
 
-void CLogger::SetVerboseLevel(_eLogFileVerboseLevel vLevel)
-{
-	m_verbose_level = vLevel;
-}
-
 void CLogger::ForwardErrorsToNotificationSystem(const bool bDoForward)
 {
 	m_bEnableErrorsToNotificationSystem = bDoForward;
@@ -82,16 +158,15 @@ void CLogger::ForwardErrorsToNotificationSystem(const bool bDoForward)
 		m_notification_log.clear();
 }
 
+void CLogger::Log(const _eLogLevel level, const std::string& sLogline)
+{
+	Log(level, "%s", sLogline.c_str());
+}
+
 void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
-
-	bool bDoLog = false;
-	if (level <= (_eLogLevel)m_verbose_level)
-		bDoLog = true;
-
-	if (!bDoLog)
-		return;
+	if (!(m_log_flags & level))
+		return; //This log level is not enabled!
 
 	va_list argList;
 	char cbuffer[MAX_LOG_LINE_LENGTH];
@@ -99,17 +174,13 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
 
-	//test if log contain a string to be filtered from LOG content
-	if (TestFilter(cbuffer))
-		return;
-
 #ifndef WIN32
 	if (g_bUseSyslog)
 	{
 		int sLogLevel = LOG_INFO;
-		if (level == LOG_ERROR)
+		if (level & LOG_ERROR)
 			sLogLevel = LOG_ERR;
-		else if (level == LOG_STATUS)
+		else if (level & LOG_STATUS)
 			sLogLevel = LOG_NOTICE;
 		syslog(sLogLevel, "%s", cbuffer);
 	}
@@ -120,7 +191,7 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	if (m_bEnableLogTimestamps)
 		sstr << TimeToString(NULL, TF_DateTimeMs) << "  ";
 
-	if (m_bEnableLogThreadIDs)
+	if ((m_log_flags & LOG_DEBUG_INT) && (m_debug_flags & DEBUG_THREADIDS))
 	{
 #ifdef WIN32
 		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << ::GetCurrentThreadId() << "] ";
@@ -129,57 +200,81 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 #endif
 	}
 
-	if ((level != LOG_ERROR))
-	{
-		sstr << cbuffer;
-	}
-	else
-	{
+	if (level & LOG_STATUS)
+		sstr << "Status: " << cbuffer;
+	else if (level & LOG_ERROR)
 		sstr << "Error: " << cbuffer;
-	}
+	else if (level & LOG_DEBUG_INT)
+		sstr << "Debug: " << cbuffer;
+	else
+		sstr << cbuffer;
 
 	std::string szIntLog = sstr.str();
 
-	if ((level == LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
 	{
-		if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_notification_log.erase(m_last_error_log.begin());
-		m_notification_log.push_back(_tLogLineStruct(level, szIntLog));
-		if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
+		// Locked region to allow multiple threads to print at the same time
+		std::unique_lock<std::mutex> lock(m_mutex);
+
+		if ((level & LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
 		{
-			m_mainworker.ForceLogNotificationCheck();
+			if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
+				m_notification_log.erase(m_notification_log.begin());
+			m_notification_log.push_back(_tLogLineStruct(level, szIntLog));
+			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
+			{
+				m_mainworker.ForceLogNotificationCheck();
+			}
 		}
-	}
 
-	if (!g_bRunAsDaemon)
-	{
-		//output to console
-		std::cout << szIntLog << std::endl;
-	}
+		if (!g_bRunAsDaemon)
+		{
+			//output to console
+	#ifndef WIN32
+			if (level != LOG_ERROR)
+	#endif
+				std::cout << szIntLog << std::endl;
+	#ifndef WIN32
+			else  // print text in red color
+				std::cout << szIntLog.substr(0, 25) << "\033[1;31m" << szIntLog.substr(25) << "\033[0;0m" << std::endl;
+	#endif
+		}
 
-	if (m_outputfile.is_open())
-	{
-		//output to file
-		m_outputfile << szIntLog << std::endl;
-		m_outputfile.flush();
-	}
+		if (m_outputfile.is_open())
+		{
+			//output to file
+			m_outputfile << szIntLog << std::endl;
+			m_outputfile.flush();
+		}
 
-	if (m_lastlog.size() >= MAX_LOG_LINE_BUFFER)
-		m_lastlog.erase(m_lastlog.begin());
-	m_lastlog.push_back(_tLogLineStruct(level, szIntLog));
+		std::map<_eLogLevel, std::deque<_tLogLineStruct> >::iterator itt;
 
-	if (level == LOG_STATUS)
-	{
-		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_last_status_log.erase(m_last_status_log.begin());
-		m_last_status_log.push_back(_tLogLineStruct(level, szIntLog));
+		itt = m_lastlog.find(level);
+		if (itt != m_lastlog.end())
+		{
+			if (m_lastlog[level].size() >= MAX_LOG_LINE_BUFFER)
+				m_lastlog[level].erase(m_lastlog[level].begin());
+		}
+		m_lastlog[level].push_back(_tLogLineStruct(level, szIntLog));
 	}
-	else if (level == LOG_ERROR)
-	{
-		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_last_error_log.erase(m_last_error_log.begin());
-		m_last_error_log.push_back(_tLogLineStruct(level, szIntLog));
-	}
+}
+
+void CLogger::Debug(const _eDebugLevel level, const char* logline, ...)
+{
+	if (!IsDebugLevelEnabled(level))
+		return;
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	Debug(level, std::string(cbuffer));
+}
+
+void CLogger::Debug(const _eDebugLevel level, const std::string& sLogline)
+{
+	if (!IsDebugLevelEnabled(level))
+		return;
+	Log(LOG_DEBUG_INT, sLogline);
 }
 
 bool strhasEnding(std::string const &fullString, std::string const &ending)
@@ -205,7 +300,7 @@ void CLogger::LogSequenceEnd(const _eLogLevel level)
 		message = message.substr(0, message.size() - 1);
 	}
 
-	Log(level, message.c_str());
+	Log(level, message);
 	m_sequencestring.clear();
 	m_sequencestring.str("");
 
@@ -238,178 +333,57 @@ bool CLogger::IsLogTimestampsEnabled()
 	return (m_bEnableLogTimestamps && !g_bUseSyslog);
 }
 
-void CLogger::EnableLogThreadIDs(const bool bEnableThreadIDs)
+bool compareLogByTime(const CLogger::_tLogLineStruct &a, CLogger::_tLogLineStruct &b)
 {
-	m_bEnableLogThreadIDs = bEnableThreadIDs;
+	return a.logtime < b.logtime;
 }
 
-bool CLogger::IsLogThreadIDsEnabled()
+std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, const time_t lastlogtime)
 {
-	return m_bEnableLogThreadIDs && !g_bUseSyslog;
-}
-
-std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
-{
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
-	std::deque<_tLogLineStruct>::const_iterator itt;
 
-	if (lType == LOG_NORM)
+	if (level != LOG_ALL)
 	{
-		for (itt = m_lastlog.begin(); itt != m_lastlog.end(); ++itt)
-		{
-			mlist.push_back(*itt);
-		};
-	}
-	else if (lType == LOG_STATUS)
-	{
-		for (itt = m_last_status_log.begin(); itt != m_last_status_log.end(); ++itt)
-		{
-			mlist.push_back(*itt);
-		};
-	}
-	else if (lType == LOG_ERROR)
-	{
-		for (itt = m_last_error_log.begin(); itt != m_last_error_log.end(); ++itt)
-		{
-			mlist.push_back(*itt);
-		};
-	}
-	return mlist;
-}
+		if (m_lastlog.find(level) == m_lastlog.end())
+			return mlist;
 
-void CLogger::SetFilterString(std::string  &pFilter)
-{
-	std::vector<std::string> FilterList;
-	FilterString = pFilter;
-	FilterStringList.clear();
-	KeepStringList.clear();
-	StringSplit(pFilter, ";", FilterList);
-	for (size_t i = 0; i < FilterList.size(); i++)
-	{
-		if (FilterList[i][0] == '+')
-			KeepStringList.push_back(FilterList[i].substr(1));
-		else
-			FilterStringList.push_back(FilterList[i]);
-	}
-}
-
-bool CLogger::isTraceEnabled()
-{
-	return (m_verbose_level == VBL_TRACE);
-}
-
-//return true if the log shall be filtered
-//
-bool CLogger::TestFilter(const char *cbuffer)
-{
-	bool filtered = false; //default not filtered
-
-	//search if the log shall be filter
-	for (size_t i = 0; i < FilterStringList.size(); i++)
-	{
-		if (strstr(cbuffer, FilterStringList[i].c_str()) != 0)
+		for (const auto & itt : m_lastlog[level])
 		{
-			filtered = true;
-			break;
-		}
-	}
-	//if the log as been filtered , search if it shall be kept
-	if (filtered)
-	{
-		for (size_t i = 0; i < KeepStringList.size(); i++)
-		{
-			if (strstr(cbuffer, KeepStringList[i].c_str()) != 0)
-			{
-				filtered = false;
-				break;
+			if (itt.logtime > lastlogtime) {
+				mlist.push_back(itt);
 			}
-		}
+		};
 	}
-	return filtered;
-}
-
-void CLogger::setLogVerboseLevel(int LogLevel)
-{
-	SetVerboseLevel((_eLogFileVerboseLevel)(LogLevel & 0x3));
-	//test verbose level
-	if (LogLevel & 0x4)
-		m_mainworker.SetVerboseLevel(EVBL_ALL);
 	else
-		m_mainworker.SetVerboseLevel(EVBL_None);
-}
-
-//set the DEBUG option in order to allow LOG_TRACE log level
-void CLogger::SetLogDebug(bool debug)
-{
-	m_debug = debug;
-}
-
-bool CLogger::GetLogDebug()
-{
-	return m_debug;
-}
-
-void CLogger::SetLogPreference(std::string  LogFilter, std::string  LogFileName, std::string  LogLevel)
-{
-	//if trace level is allowed
-	if (GetLogDebug())
 	{
-		//set LogFilter/LogFileName/LogLevel from Preferences tables
-		m_sql.UpdatePreferencesVar("LogFilter", 0, LogFilter.c_str());
-		m_sql.UpdatePreferencesVar("LogFileName", 0, LogFileName.c_str());
-		m_sql.UpdatePreferencesVar("LogLevel", 0, LogLevel.c_str());
-		SetFilterString(LogFilter);
-		SetOutputFile(LogFileName.c_str());
-		setLogVerboseLevel(atoi(LogLevel.c_str()));
-	}
-}
-void CLogger::GetLogPreference()
-{
-	std::string LogFilter, LogFileName, LogLevel;
-
-	//if trace level is allowed
-	if (GetLogDebug())
-	{
-		//get LogFilter/LogFileName/LogLevel from Preferences tables
-		m_sql.GetPreferencesVar("LogFilter", LogFilter);
-		m_sql.GetPreferencesVar("LogFileName", LogFileName);
-		m_sql.GetPreferencesVar("LogLevel", LogLevel);
-		SetFilterString(LogFilter);
-		SetOutputFile(LogFileName.c_str());
-
-		if (LogLevel.length() != 0)
-			setLogVerboseLevel(atoi(LogLevel.c_str()));
-		else
+		for (const auto & itt : m_lastlog)
 		{
-			m_sql.UpdatePreferencesVar("LogLevel", 0, boost::to_string(VBL_ALL));
-			SetVerboseLevel(VBL_ALL);
+			for (const auto & itt2 : itt.second)
+			{
+				if (itt2.logtime > lastlogtime) {
+					mlist.push_back(itt2);
+				}
+			};
 		}
 	}
-	else
-	{
-		//delete LogLevel key in order to dot not display in settings TAB
-		m_sql.DeletePreferencesVar("LogLevel");
-	}
+	//Sort by time
+	mlist.sort(compareLogByTime);
+	return mlist;
 }
 
 void CLogger::ClearLog()
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	m_lastlog.clear();
-	m_last_status_log.clear();
-	m_last_error_log.clear();
 }
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
-	std::deque<_tLogLineStruct>::const_iterator itt;
-	for (itt = m_notification_log.begin(); itt != m_notification_log.end(); ++itt)
-	{
-		mlist.push_back(*itt);
-	};
+	for (const auto & itt : m_notification_log)
+		mlist.push_back(itt);
 	m_notification_log.clear();
 	if (!mlist.empty())
 		m_LastLogNotificationsSend = mytime(NULL);

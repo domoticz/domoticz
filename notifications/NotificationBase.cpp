@@ -9,6 +9,8 @@
 typedef std::map<std::string, std::string* >::iterator it_conf_type;
 typedef std::map<std::string, int* >::iterator it_conf_type_int;
 
+using namespace http::server;
+
 CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options):
 _subsystemid(subsystemid),
 _options(options),
@@ -117,13 +119,13 @@ bool CNotificationBase::SendMessageEx(
 		fText = CURLEncode::URLEncode(fText);
 	}
 
-	boost::mutex::scoped_lock SendMessageEx(SendMessageExMutex);
+	std::unique_lock<std::mutex> SendMessageEx(SendMessageExMutex);
 	bool bRet = SendMessageImplementation(Idx, Name, fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
 	if (bRet) {
-		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
+		_log.Log(LOG_NORM, "Notification sent (%s) => Success", _subsystemid.c_str());
 	}
 	else {
-		_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
+		_log.Log(LOG_NORM, "Notification sent (%s) => Failed", _subsystemid.c_str());
 	}
 	return bRet;
 }
@@ -192,7 +194,7 @@ void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, iter3->first.c_str())));
 			*(iter3->second) = Value;
 			if (save) {
-				std::string ValueBase64 = base64_encode((const unsigned char*)Value.c_str(), Value.size());
+				std::string ValueBase64 = base64_encode(Value);
 				m_sql.UpdatePreferencesVar(iter3->first, ValueBase64);
 			}
 		}

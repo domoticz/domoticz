@@ -1,0 +1,76 @@
+<Product xmlns="http://code.google.com/p/open-zwave/">
+    <!-- Telldus TZWP-102 On/Off -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="1" genre="config" label="Overcurrent protection" min="0" max="1" size="1" value="1">
+            <Help>
+                If the current exceeds 16A for more than 5 sec, the load will be switched off. Default 1.
+            </Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="list" index="2" genre="config" label="Remember device status after power failure" min="0" max="2" size="1" value="0">
+            <Help>
+                Define how the plug will react after the power supply is back on. Default 0.
+            </Help>
+                        <Item label="Remember status" value="0"/>
+            <Item label="Always on" value="1"/>
+                        <Item label="Always off" value="2"/>
+        </Value>
+                <Value type="list" index="3" genre="config" label="Send status in Lifeline when Load status change" min="0" max="2" size="1" value="1">
+            <Help>
+                Smart Plug can send notifications to associated devices in Lifeline when the status of the plug is changed. Default 1.
+            </Help>
+                        <Item label="Disabled" value="0"/>
+            <Item label="Send Basic Report" value="1"/>
+                        <Item label="Send Basic Report only when Load status is not changed by Z-Wave Command" value="2"/>
+        </Value>
+                <Value type="list" index="4" genre="config" label="LED Indicator" min="0" max="1" size="1" value="0">
+            <Help>
+                Configure LED mode. Default 0.
+            </Help>
+                        <Item label="The LED follows the load status" value="0"/>
+            <Item label="When operating plug, the LED is lit for 5 seconds" value="1"/>
+        </Value>
+                <Value type="short" index="16" genre="config" label="Send report on change of power consumption (W)" units="Watts" min="0" max="2500" size="2" value="50">
+            <Help>
+                This parameter will send a power report automatically if the power value changes of x W (Watts) compared to the last report. Default 50.
+            </Help>
+        </Value>
+                <Value type="byte" index="17" genre="config" label="Send report on change of power consumption (%)" units="%" min="0" max="100" size="1" value="10">
+            <Help>
+                This parameter will send a power report automatically if the power value changes of x % compared to the last report. Default 10.
+            </Help>
+        </Value>
+                <Value type="int" index="101" genre="config" label="Power (W) report interval" units="seconds" min="0" max="2678400" size="4" value="600">
+            <Help>
+                This parameter defines the period of sending power reports. Default 600.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+        </Value>
+                <Value type="int" index="102" genre="config" label="Energy (kWh) report interval" units="seconds" min="0" max="2678400" size="4" value="3600">
+            <Help>
+                This parameter defines the period of sending energy reports. Default 3600.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+        </Value>
+                <Value type="int" index="103" genre="config" label="Voltage (V) report interval" units="seconds" min="0" max="2678400" size="4" value="0">
+            <Help>
+                This parameter defines the period of sending voltage reports. Default 0.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+        </Value>
+                <Value type="int" index="104" genre="config" label="Current (A) report interval" units="seconds" min="0" max="2678400" size="4" value="0">
+            <Help>
+                This parameter defines the period of sending current reports. Default 0.
+                                0=Disabled, 5-2678400 seconds
+            </Help>
+        </Value>
+                </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

@@ -12,7 +12,7 @@
 #define HTTP_CONNECTION_MANAGER_HPP
 
 #include <set>
-#include <boost/noncopyable.hpp>
+#include "../main/Noncopyable.h"
 #include "connection.hpp"
 
 namespace http {
@@ -21,7 +21,7 @@ namespace server {
 /// Manages open connections so that they may be cleanly stopped when the server
 /// needs to shut down.
 class connection_manager
-  : private boost::noncopyable
+  : private domoticz::noncopyable
 {
 public:
   /// Add the specified connection to the manager and start it.

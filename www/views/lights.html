@@ -1,203 +1,20 @@
-<div id="dialog-confirm-delete-subs" title="Warning:" style="display:none;">
-    <p>This device is used as a Sub/Slave device for other Devices.<br>Do you want to remove this device from those devices too?</p>
-</div>
-<div id="editlightswitch" style="display:none;">
-		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
-			<tr>
-				<td align="right" style="width:120px"><label for="name"><span data-i18n="Name"></span>: </label></td>
-				<td><input type="text" id="devicename" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-			</tr>
-			<tr id="SwitchType">
-				<td align="right"><label for="comboswitchtype"><span data-i18n="Switch Type"></span>: </label></td>
-				<td><select id="comboswitchtype" style="width:200px" class="combobox ui-corner-all">
-					<!--#embed switchtypes -->
-				</select></td>
-			</tr>
-			<tr id="SwitchIconDiv">
-				<td align="right"><label for="comboswitchicon"><span data-i18n="Switch Icon"></span>: </label></td>
-				<td>
-					<select id="comboswitchicon" style="width:200px" class="combobox ui-corner-all">
-					</select>
-            	</td>
-			</tr>
-			<tr id="MotionDiv">
-				<td align="right"><label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
-				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Use sensor time">(Seconds) 0 = Use sensor time</span></td>
-			</tr>
-			<tr id="OnDelayDiv">
-				<td align="right"><label for="ondelay"><span data-i18n="On Delay">On Delay</span>:</label></td>
-				<td><input type="text" id="ondelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Disabled">(Seconds) 0 = Disabled</span></td>
-			</tr>
-			<tr id="OffDelayDiv">
-				<td align="right"><label for="offdelay"><span data-i18n="Off Delay"></span>:</label></td>
-				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Disabled">(Seconds) 0 = Disabled</span></td>
-			</tr>
-			<tr id="OnActionDiv">
-				<td align="right"><label for="onaction"><span data-i18n="On Action">On Action</span>:</label></td>
-				<td><input type="text" id="onaction" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span></td>
-			</tr>
-			<tr id="OffActionDiv">
-				<td align="right"><label for="offaction"><span data-i18n="Off Action">Off Action</span>:</label></td>
-				<td><input type="text" id="offaction" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span></td>
-			</tr>
-			<tr id="ProtectionDiv">
-				<td align="right"><span data-i18n="Protected">Protected</span>:</td>
-				<td><div id="id_protected"/></td>
-			</tr>
-			<tr id="optionsWhite">
-				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
-				<td>
-					<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
-					<button id="discoUp" onclick="appLampWarmer()">Warm White</button><button id="discoDown" onclick="appLampCooler()">Cool White</button><br />
-					<button id="speedUp" onclick="appLampFull()">Full Light</button><button id="speedDown" onclick="appLampNight()">Night Light</button><br />
-				</td>
-			</tr>
-			</div>
-			<tr id="LedColor">
-				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
-				<td>
-					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
-					<tr>
-						<td align="left" style="width:200px">
-							<div id="picker" width="100px" height="100px"></div>
-						</td>
-						<td align="left" style="vertical-align: top;">
-							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
-							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
-							<div class="radio" id="optionsRGBW" style="display:none;">
-								<label>
-									<input type="radio" name="optionsType" id="optionRGB" value="false" checked>
-										RGB
-								</label>
-								<label>
-									<input type="radio" name="optionsType" id="optionWhite" value="true">
-										White
-								</label>
-							</div>
-							<div id="optionsRGBLimit" style="display:none;">
-								<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
-							</div>
-							<div id="optionsRGBWLimit" style="display:none;">
-								<button id="Night" onclick="appLampNight()">Night Light</button><button id="White" onclick="appLampWhite()">Set White</button><br />
-							</div>
-							<div id="optionsRGBWWLimit" style="display:none;">
-								<!--#For later use with slider: chris								
-								<input type="text" id="Temperature" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Temperature"></span><br>
-								-->
-								<button id="kelvin1" onclick="appLampSetKelvin(0)">Kelvin 0%</button><button id="kelvin2" onclick="appLampSetKelvin(25)">Kelvin 25%</button><br />
-								<button id="kelvin3" onclick="appLampSetKelvin(50)">Kelvin 50%</button><button id="kelvin4" onclick="appLampSetKelvin(75)">Kelvin 75%</button><br />
-								<button id="kelvin5" onclick="appLampSetKelvin(100)">Kelvin 100%</button><br />
-								<br />								
-								<button id="Night" onclick="appLampNight()">Night Light</button><button id="White" onclick="appLampWhite()">Set White</button><br />
-							</div>
-						</td>
-					</tr>
-					</table>
-				</td>
-			</tr>
-			<tr class="selector-switch-options style">
-				<td align="right"><label><span data-i18n="Selector Style">Selector Style</span>:</label></td>
-				<td>
-					<input type="radio" id="selectorstyle0" name="selectorstyle" value="0"><label for="selectorstyle0" data-i18n="Button set">Button set</label>
-					<input type="radio" id="selectorstyle1" name="selectorstyle" value="1"><label for="selectorstyle1" data-i18n="Select menu">Select menu</label>
-				</td>
-			</tr>
-			<tr class="selector-switch-options level-off-hidden">
-				<td align="right"><span  data-i18n="Hide Off level">Hide Off level</span>:</td>
-				<td><div id="id_selectorHiddenOff"/></td>
-			</tr>
-			<tr class="selector-switch-options levels">
-				<td align="right"><label><span data-i18n="Selector Levels">Selector Levels</span>:</label></td>
-				<td>
-					<table class="display" id="selectorlevelstable" border="0" cellpadding="0" cellspacing="0" width="100%">
-						<thead>
-							<tr valign="middle">
-								<th width="40" align="center" data-i18n="Level">Level</th>
-								<th align="left" data-i18n="Level name">Level name</th>
-								<th width="60" align="center" data-i18n="Order">Order</th>
-								<th width="60" align="center"></th>
-							</tr>
-						</thead>
-					</table>
-					<span data-i18n="Level name">Level name</span>:<input type="text" id="newselectorlevel"><a id="newselectorlevelbutton" class="btnstyle3" onclick="AddSelectorLevel();" data-i18n="Add">Add</a>
-				</td>
-			</tr>
-			<tr class="selector-switch-options actions">
-				<td align="right"><label><span data-i18n="Selector actions">Selector actions</span>:</label></td>
-				<td>
-					<table class="display" id="selectoractionstable" border="0" cellpadding="0" cellspacing="0" width="100%">
-						<thead>
-							<tr valign="middle">
-								<th width="40" align="center" data-i18n="Level">Level</th>
-								<th align="left" data-i18n="Action">Action</th>
-								<th width="60" align="center"></th>
-							</tr>
-						</thead>
-					</table>
-				</td>
-			</tr>
-			<tr>
-				<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
-				<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
-			</tr>
-			<tr>
-				<td></td>
-				<td>
-					<a class="btnstyle3" onclick="SaveLightSwitch();" data-i18n="Save">Save</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3" onclick="DeleteLightSwitch();" data-i18n="Delete">Delete</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-		<h2><span data-i18n="Sub/Slave Devices"></span>:</h2>
-		<br>
-		<table class="display" id="subdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
-				<thead>
-						<tr>
-								<th align="left" data-i18n="Name">Name</th>
-						</tr>
-				</thead>
-		</table>
-    <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					<a class="btnstyle3-dis" id="subdevicedelete" data-i18n="Delete">Delete</a>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" onclick="ClearSubDevices();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
-			<tr>
-				<td align="right" style="width:120px"><label for="name"><span data-i18n="Sub/Slave Device"></span>: </label></td>
-				<td>
-					<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
-					</select>
-					<a class="btnstyle3" onclick="AddSubDevice();" data-i18n="Add">Add</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-</div>
 <div id="dialog-addlightdevice">
-    <form>
-        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td align="right" style="width:120px"><label for="name">Name: </label></td>
-          <td><input type="text" id="devicename" style="width: 244px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
-          <td align="right"><label for="switchtype">Switch Type: </label></td>
-          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
-            <!--#embed switchtypes -->
-          </select></td>
-		    </tr>
-		    <br>
-        <tr>
-          <td align="right"><label>As: </label></td>
-          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
-        <tr>
+	<form>
+		<table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="right" style="width:120px"><label for="name">Name: </label></td>
+			<td><input type="text" id="devicename" style="width: 244px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		<tr>
+			<td align="right"><label for="switchtype">Switch Type: </label></td>
+			<td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
+				<!--#embed switchtypes -->
+			</select></td>
+		</tr>
+		<br>
+		<tr>
+			<td align="right"><label>As: </label></td>
+			<td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
+		<tr>
 		<tr id="subdevice" style="display:none">
 			<td align="right"><label>Device: </label></td>
 			<td>
@@ -206,89 +23,92 @@
 			</td>
 		</tr>
 		</table>
-    </form>
+	</form>
 </div>
 <div id="dialog-addmanuallightdevice">
-    <form>
-        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td align="right" style="width:120px"><label for="combohardware"><span data-i18n="Hardware">Hardware</span>: </label></td>
-          <td><select id="combohardware" style="width:260px" class="combobox ui-corner-all">
-          </select></td>
-        <tr>
-        <tr>
-          <td align="right"><label for="devicename"><span data-i18n="Device name">Device name</span>: </label></td>
-          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
-          <td align="right"><label for="comboswitchtype"><span data-i18n="Switch Type">Switch Type</span>: </label></td>
-					<td><select id="comboswitchtype" style="width:210px" class="combobox ui-corner-all">
-						<!--#embed switchtypes -->
-					</select></td>
-	    </tr>
-	    <tr>
+	<form>
+		<table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="right" style="width:120px"><label for="combohardware"><span data-i18n="Hardware">Hardware</span>: </label></td>
+			<td><select id="combohardware" style="width:260px" class="combobox ui-corner-all">
+			</select></td>
+		<tr>
+		<tr>
+			<td align="right"><label for="devicename"><span data-i18n="Device name">Device name</span>: </label></td>
+			<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		<tr>
+			<td align="right"><label for="comboswitchtype"><span data-i18n="Switch Type">Switch Type</span>: </label></td>
+			<td><select id="comboswitchtype" style="width:210px" class="combobox ui-corner-all">
+				<!--#embed switchtypes -->
+			</select></td>
+		</tr>
+		<tr>
 			<td></td>
 			<td></td>
-	    </tr>
-	    <tr>
-          <td align="right"><label><span data-i18n="Type">Type</span>: </label></td>
-          <td>
-			<select id="combolighttype" style="width:210px" class="combobox ui-corner-all">
-						<option value="0">X10</option>
-						<option value="1">ARC</option>
-						<option value="2">AB400D</option>
-						<option value="3">Waveman</option>
-						<option value="4">EMW200</option>
-						<option value="5">Impuls</option>
-						<option value="6">RisingSun</option>
-						<option value="7">Philips SBC</option>
-						<option value="8">Energenie</option>
-						<option value="9">Energenie 5-gang</option>
-						<option value="10">COCO GDR2</option>
-						<option value="11">HQ COCO-20</option>
-						<option value="20">AC</option>
-						<option value="21">HE EU</option>
-						<option value="22">ANSLUT</option>
-						<option value="50">LightwaveRF</option>
-						<option value="51">EMW100 GAO/Everflourish</option>
-						<option value="53">MDRemote</option>
-						<option value="55">Livolo</option>
-						<option value="57">Aoke</option>
-						<option value="62">MDRemote 107</option>
-						<option value="65">IT</option>
-						<option value="66">MDRemote 108</option>
-						<option value="106">Blyss</option>
-						<option value="70">EnOcean</option>
-						<option value="68">GPIO</option>
-						<option value="69">Sysfs GPIO</option>
-						<option value="100">ByronSX</option>
-						<option value="101">Harrison Curtain</option>
-						<option value="102">RFY</option>
-						<option value="107">RFY-2</option>
-						<option value="105">ASA</option>
-						<option value="103">Meiantech Security</option>
-						<option value="104">HE105</option>
-						<option value="205">Blinds T5 Media Mount</option>
-						<option value="206">Blinds T6 DC106</option>
-						<option value="207">Blinds T7 Forest</option>
-						<option value="208">Blinds T8 Chamberlain</option>
-						<option value="209">Blinds T9 Sunpery</option>
-						<option value="210">Blinds T10 Dolat DLM-1</option>
-						<option value="211">Blinds T11 ASP</option>
-						<option value="212">Blinds T12 Confexx</option>
-						<option value="213">Blinds T13 Screenline</option>
-						<option value="301">Smartwares Radiator</option>
-						<option value="302">Home Confort TEL-010</option>
-						<option value="303">Selector Switch</option>
-						<option value="304">Itho CVE RFT</option>
-						<option value="305">Lucci Air</option>
-						<option value="400">Blinds OpenWebNet Bus</option>
-						<option value="401">Lights OpenWebNet Bus</option>
-						<option value="402">Auxiliary OpenWebNet Bus</option>
-						<option value="403">Blinds OpenWebNet Zigbee</option>
-						<option value="404">Lights OpenWebNet Zigbee</option>
-                        <option value="405">Dry Contact OpenWebNet</option>
-                        <option value="406">IR Detection OpenWebNet</option>
-			</select>
+		</tr>
+		<tr>
+			<td align="right"><label><span data-i18n="Type">Type</span>: </label></td>
+			<td>
+				<select id="combolighttype" style="width:210px" class="combobox ui-corner-all">
+					<option value="0">X10</option>
+					<option value="1">ARC</option>
+					<option value="2">AB400D</option>
+					<option value="3">Waveman</option>
+					<option value="4">EMW200</option>
+					<option value="5">Impuls</option>
+					<option value="6">RisingSun</option>
+					<option value="7">Philips SBC</option>
+					<option value="8">Energenie</option>
+					<option value="9">Energenie 5-gang</option>
+					<option value="10">COCO GDR2</option>
+					<option value="11">HQ COCO-20</option>
+					<option value="20">AC</option>
+					<option value="21">HE EU</option>
+					<option value="22">ANSLUT</option>
+					<option value="50">LightwaveRF</option>
+					<option value="51">EMW100 GAO/Everflourish</option>
+					<option value="53">MDRemote</option>
+					<option value="55">Livolo</option>
+					<option value="250">EV1527</option>
+					<option value="226">Eurodomest</option>
+					<option value="57">Aoke</option>
+					<option value="62">MDRemote 107</option>
+					<option value="65">IT</option>
+					<option value="66">MDRemote 108</option>
+					<option value="106">Blyss</option>
+					<option value="70">EnOcean</option>
+					<option value="68">GPIO</option>
+					<option value="69">Sysfs GPIO</option>
+					<option value="100">ByronSX</option>
+					<option value="101">Harrison Curtain</option>
+					<option value="102">RFY</option>
+					<option value="107">RFY-2</option>
+					<option value="105">ASA</option>
+					<option value="103">Meiantech Security</option>
+					<option value="104">HE105</option>
+					<option value="205">Blinds T5 Media Mount</option>
+					<option value="206">Blinds T6 DC106</option>
+					<option value="207">Blinds T7 Forest</option>
+					<option value="208">Blinds T8 Chamberlain</option>
+					<option value="209">Blinds T9 Sunpery</option>
+					<option value="210">Blinds T10 Dolat DLM-1</option>
+					<option value="211">Blinds T11 ASP</option>
+					<option value="212">Blinds T12 Confexx</option>
+					<option value="213">Blinds T13 Screenline</option>
+					<option value="301">Smartwares Radiator</option>
+					<option value="302">Home Confort TEL-010</option>
+					<option value="303">Selector Switch</option>
+					<option value="304">Itho CVE RFT</option>
+					<option value="305">Lucci Air</option>
+					<option value="306">Lucci Air DC</option>
+					<option value="400">Blinds OpenWebNet Bus</option>
+					<option value="401">Lights OpenWebNet Bus</option>
+					<option value="402">Auxiliary OpenWebNet Bus</option>
+					<option value="403">Blinds OpenWebNet Zigbee</option>
+					<option value="404">Lights OpenWebNet Zigbee</option>
+					<option value="405">Dry Contact OpenWebNet</option>
+					<option value="406">IR Detection OpenWebNet</option>
+				</select>
 			</td>
 		  </tr>
 		</table>
@@ -461,10 +281,10 @@
 					<td align="right"><label><span data-i18n="Point of Load">Point of Load</span>:</label></td>
 					<td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
 				</tr>
-                <tr id="openwebnet_bus">
-                    <td align="right"><label><span data-i18n="Bus">Bus</span>:</label></td>
-                    <td><select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select></td>
-                </tr>
+				<tr id="openwebnet_bus">
+					<td align="right"><label><span data-i18n="Bus">Bus</span>:</label></td>
+					<td><select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
 			</table>
 		</div>
 		<div id="openwebnetparamsAUX">
@@ -475,46 +295,46 @@
 				</tr>
 			</table>
 		</div>
-        <div id="openwebnetparamsZigbee">
-            <table class="display" border="0" cellpadding="0" cellspacing="20">
-                <tr id="openwebnet_zigbeeid">
-                    <td align="right"><label><span data-i18n="ZigbeeId">Zigbee id (hexadecimal)</span>:</label></td>
-                    <td><input type="text" id="inputcmd1" style="width:60px" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-                </tr>
-                <tr id="openwebnet_unit">
-                    <td align="right"><label><span data-i18n="Unit">Unit</span>:</label></td>
-                    <td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
-                </tr>
-            </table>
-        </div>
-        <div id="openwebnetparamsDryContact">
-            <table class="display" border="0" cellpadding="0" cellspacing="20">
-                <tr id="openwebnet_drycontact">
-                    <td align="right"><label><span data-i18n="Zone">Zone</span>:</label></td>
-                    <td><select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select></td>
-                </tr>
-            </table>
-        </div>
-        <div id="openwebnetparamsIRdetec">
-            <table class="display" border="0" cellpadding="0" cellspacing="20">
-                <tr id="openwebnet_zoneIR">
-                    <td align="right"><label><span data-i18n="Zone">Zone</span>:</label></td>
-                    <td><select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select></td>
-                </tr>
-                <tr id="openwebnet_subzoneIR">
-                    <td align="right"><label><span data-i18n="SubZone">SubZone</span>:</label></td>
-                    <td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
-                </tr>
-            </table>
-        </div>
+		<div id="openwebnetparamsZigbee">
+			<table class="display" border="0" cellpadding="0" cellspacing="20">
+				<tr id="openwebnet_zigbeeid">
+					<td align="right"><label><span data-i18n="ZigbeeId">Zigbee id (hexadecimal)</span>:</label></td>
+					<td><input type="text" id="inputcmd1" style="width:60px" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr id="openwebnet_unit">
+					<td align="right"><label><span data-i18n="Unit">Unit</span>:</label></td>
+					<td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<div id="openwebnetparamsDryContact">
+			<table class="display" border="0" cellpadding="0" cellspacing="20">
+				<tr id="openwebnet_drycontact">
+					<td align="right"><label><span data-i18n="Zone">Zone</span>:</label></td>
+					<td><select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<div id="openwebnetparamsIRdetec">
+			<table class="display" border="0" cellpadding="0" cellspacing="20">
+				<tr id="openwebnet_zoneIR">
+					<td align="right"><label><span data-i18n="Zone">Zone</span>:</label></td>
+					<td><select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
+				<tr id="openwebnet_subzoneIR">
+					<td align="right"><label><span data-i18n="SubZone">SubZone</span>:</label></td>
+					<td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
 		<br>
 		<center><a class="btnstyle3" onclick="TestManualLight();" data-i18n="Test">Test</a></center>
 		<br>
-        <table class="display" id="howtable" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td align="right"><label><span data-i18n="As">As</span>: </label></td>
-          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;<span data-i18n="Main Device">Main Device</span>&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;<span data-i18n="Sub/Slave Device">Sub/Slave Device</span></td>
-        <tr>
+		<table class="display" id="howtable" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="right"><label><span data-i18n="As">As</span>: </label></td>
+			<td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;<span data-i18n="Main Device">Main Device</span>&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;<span data-i18n="Sub/Slave Device">Sub/Slave Device</span></td>
+		<tr>
 		<tr id="subdevice" style="display:none">
 			<td align="right" style="width:60px"><label><span data-i18n="Device">Device</span>: </label></td>
 			<td>
@@ -523,7 +343,7 @@
 			</td>
 		</tr>
 		</table>
-    </form>
+	</form>
 </div>
 <div id="dialog-renameselectorlevel" title="Rename selector level" style="display: none;">
 	<form>
@@ -550,276 +370,4 @@
 	</form>
 </div>
 <div id="lightcontent" class="container">
-</div>
-<div id="edittimers" style="display:none;">
-    <table class="display" id="timertable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th width="40" align="center" data-i18n="Active">Active</th>
-                <th width="150" align="center" data-i18n="Type">Type</th>
-                <th width="80" align="center" data-i18n="Date">Date</th>
-                <th width="60" align="center" data-i18n="Time">Time</th>
-                <th width="60" align="center" data-i18n="Randomness">Randomness</th>
-                <th width="140" align="center" data-i18n="Command">Command</th>
-                <th align="left" data-i18n="Days">Days</th>
-            </tr>
-        </thead>
-    </table>
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					<a class="btnstyle3-dis" id="timerupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3-dis" id="timerdelete" data-i18n="Delete">Delete</a>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" onclick="ClearTimers();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table class="display" id="timerparamstable" border="0" cellpadding="0" cellspacing="20">
-			<tr>
-				<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-				<td><input type="checkbox" id="enabled" checked><label for="enabled"/></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
-				<td><select id="combotype" style="width:180px" class="combobox ui-corner-all">
-						<!--#embed timertypes -->
-						</select>
-				</td>
-			</tr>
-			<tr id="rdate">
-				<td align="right" style="width:80px"><label for="sdate"><span data-i18n="Date"></span>:</label></td>
-				<td><input type="text" id="sdate" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="combotimehour"><span data-i18n="Time"></span>:</label></td>
-				<td><select id="combotimehour" style="width:50px" class="combobox ui-corner-all"></select>
-						:
-						<select id="combotimemin" style="width:50px" class="combobox ui-corner-all"></select>
-						<span data-i18n="(hour/minute)"></span>
-				</td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><span data-i18n="Randomness"></span>:</td>
-				<td><input type="checkbox" id="randomness"><label for="randomness"/></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="combocommand"><span data-i18n="Command"></span>:</label></td>
-				<td>
-					<select id="combocommand" style="width:90px" class="combobox ui-corner-all">
-					<option value="0" data-i18n="On">On</option>
-					<option value="1" data-i18n="Off">Off</option>
-					</select>
-				</td>
-			</tr>
-			<tr id="LevelDiv">
-				<td align="right" style="width:80px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
-				<td>
-					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
-                        <option value="1">1%</option>
-                        <option value="2">2%</option>
-                        <option value="3">3%</option>
-                        <option value="4">4%</option>
-                        <option value="5">5%</option>
-                        <option value="6">6%</option>
-                        <option value="7">7%</option>
-                        <option value="8">8%</option>
-                        <option value="9">9%</option>
-                        <option value="10">10%</option>
-                        <option value="11">11%</option>
-                        <option value="12">12%</option>
-                        <option value="13">13%</option>
-                        <option value="14">14%</option>
-                        <option value="15">15%</option>
-                        <option value="16">16%</option>
-                        <option value="17">17%</option>
-                        <option value="18">18%</option>
-                        <option value="19">19%</option>
-                        <option value="20">20%</option>
-                        <option value="21">21%</option>
-                        <option value="22">22%</option>
-                        <option value="23">23%</option>
-                        <option value="24">24%</option>
-                        <option value="25">25%</option>
-                        <option value="26">26%</option>
-                        <option value="27">27%</option>
-                        <option value="28">28%</option>
-                        <option value="29">29%</option>
-                        <option value="30">30%</option>
-                        <option value="31">31%</option>
-                        <option value="32">32%</option>
-                        <option value="33">33%</option>
-                        <option value="34">34%</option>
-                        <option value="35">35%</option>
-                        <option value="36">36%</option>
-                        <option value="37">37%</option>
-                        <option value="38">38%</option>
-                        <option value="39">39%</option>
-                        <option value="40">40%</option>
-                        <option value="41">41%</option>
-                        <option value="42">42%</option>
-                        <option value="43">43%</option>
-                        <option value="44">44%</option>
-                        <option value="45">45%</option>
-                        <option value="46">46%</option>
-                        <option value="47">47%</option>
-                        <option value="48">48%</option>
-                        <option value="49">49%</option>
-                        <option value="50">50%</option>
-                        <option value="51">51%</option>
-                        <option value="52">52%</option>
-                        <option value="53">53%</option>
-                        <option value="54">54%</option>
-                        <option value="55">55%</option>
-                        <option value="56">56%</option>
-                        <option value="57">57%</option>
-                        <option value="58">58%</option>
-                        <option value="59">59%</option>
-                        <option value="60">60%</option>
-                        <option value="61">61%</option>
-                        <option value="62">62%</option>
-                        <option value="63">63%</option>
-                        <option value="64">64%</option>
-                        <option value="65">65%</option>
-                        <option value="66">66%</option>
-                        <option value="67">67%</option>
-                        <option value="68">68%</option>
-                        <option value="69">69%</option>
-                        <option value="70">70%</option>
-                        <option value="71">71%</option>
-                        <option value="72">72%</option>
-                        <option value="73">73%</option>
-                        <option value="74">74%</option>
-                        <option value="75">75%</option>
-                        <option value="76">76%</option>
-                        <option value="77">77%</option>
-                        <option value="78">78%</option>
-                        <option value="79">79%</option>
-                        <option value="80">80%</option>
-                        <option value="81">81%</option>
-                        <option value="82">82%</option>
-                        <option value="83">83%</option>
-                        <option value="84">84%</option>
-                        <option value="85">85%</option>
-                        <option value="86">86%</option>
-                        <option value="87">87%</option>
-                        <option value="88">88%</option>
-                        <option value="89">89%</option>
-                        <option value="90">90%</option>
-                        <option value="91">91%</option>
-                        <option value="92">92%</option>
-                        <option value="93">93%</option>
-                        <option value="94">94%</option>
-                        <option value="95">95%</option>
-                        <option value="96">96%</option>
-                        <option value="97">97%</option>
-                        <option value="98">98%</option>
-                        <option value="99">99%</option>
-                        <option value="100">100%</option>
-					</select>
-				</td>
-			</tr>
-			<tr id="LedColor">
-				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
-				<td>
-					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
-					<tr>
-						<td align="left" style="width:200px">
-							<div id="picker" width="100px" height="100px"></div>
-						</td>
-						<td align="left" style="vertical-align: top;">
-							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
-							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
-							<div class="radio" id="optionsRGBW" style="display:none;">
-								<label>
-									<input type="radio" name="optionsType" id="optionRGB" value="false" checked>
-										RGB
-								</label>
-								<label>
-									<input type="radio" name="optionsType" id="optionWhite" value="true">
-										White
-								</label>
-							</div>
-						</td>
-					</tr>
-					</table>
-				</td>
-			</tr>
-			<tr id="rnorm"><td></td></tr>
-			<tr id="rnorm">
-				<td align="right" style="width:80px"><label for="when"><span data-i18n="When"></span>:</label></td>
-				<td>
-					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;<span data-i18n="Everyday"></span><br><br>
-					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;<span data-i18n="Weekdays"></span><br><br>
-					<input type="radio" name="when" id="when_3" value="Weekends">&nbsp;<span data-i18n="Weekends"></span><br><br>
-					<input type="radio" name="when" id="when_4" value="SelectedDays">&nbsp;<span data-i18n="Selected Days"></span><br><br>
-				</td>
-			</tr>
-			<tr id="rnorm"><td></td></tr>
-			<tr id="rnorm">
-				<td align="right" style="width:80px"><label for="name"><span data-i18n="Days"></span>:</label></td>
-				<td>
-					<input type="checkbox" id="ChkMon" checked/>&nbsp;<label for="ChkMon"><span data-i18n="Monday"></span></label><br/>
-					<input type="checkbox" id="ChkTue" checked/>&nbsp;<label for="ChkTue"><span data-i18n="Tuesday"></span></label><br />
-					<input type="checkbox" id="ChkWed" checked/>&nbsp;<label for="ChkWed"><span data-i18n="Wednesday"></span></label><br />
-					<input type="checkbox" id="ChkThu" checked/>&nbsp;<label for="ChkThu"><span data-i18n="Thursday"></span></label><br />
-					<input type="checkbox" id="ChkFri" checked/>&nbsp;<label for="ChkFri"><span data-i18n="Friday"></span></label><br />
-					<input type="checkbox" id="ChkSat" checked/>&nbsp;<label for="ChkSat"><span data-i18n="Saturday"></span></label><br />
-					<input type="checkbox" id="ChkSun" checked/>&nbsp;<label for="ChkSun"><span data-i18n="Sunday"></span></label>
-				</td>
-			</tr>
-			<tr id="rdays"><td></td></tr>
-			<tr id="rdays">
-				<td align="right" style="width:80px"><label for="days"><span data-i18n="Day"></span>:</label></td>
-				<td>
-					<select id="days" style="width:50px" class="combobox ui-corner-all"></select>
-				</td>
-			</tr>
-			<tr id="roccurence"><td></td></tr>
-			<tr id="roccurence">
-				<td align="right" style="width:80px"><label for="occurence"><span data-i18n="Day"></span>:</label></td>
-				<td>
-					<select id="occurence" style="width:90px" class="combobox ui-corner-all">
-					<option value="1" data-i18n="First">First</option>
-					<option value="2" data-i18n="2nd">2nd</option>
-					<option value="3" data-i18n="3rd">3rd</option>
-					<option value="4" data-i18n="4th">4th</option>
-					<option value="5" data-i18n="Last">Last</option>
-					</select>
-					<select id="weekdays" style="width:100px" class="combobox ui-corner-all">
-					<option value="0" data-i18n="Monday">Monday</option>
-					<option value="1" data-i18n="Tuesday">Tuesday</option>
-					<option value="2" data-i18n="Wednesday">Wednesday</option>
-					<option value="3" data-i18n="Thursday">Thursday</option>
-					<option value="4" data-i18n="Friday">Friday</option>
-					<option value="5" data-i18n="Saturday">Saturday</option>
-					<option value="6" data-i18n="Sunday">Sunday</option>
-					</select>
-				</td>
-			</tr>
-			<tr id="rmonths"><td></td></tr>
-			<tr id="rmonths">
-				<td align="right" style="width:80px"><label for="months"><span data-i18n="Month"></span>:</label></td>
-				<td>
-					<select id="months" style="width:90px" class="combobox ui-corner-all">
-					<option value="1" data-i18n="January">January</option>
-					<option value="2" data-i18n="February">February</option>
-					<option value="3" data-i18n="March">March</option>
-					<option value="4" data-i18n="April">April</option>
-					<option value="5" data-i18n="May">May</option>
-					<option value="6" data-i18n="June">June</option>
-					<option value="7" data-i18n="July">July</option>
-					<option value="8" data-i18n="August">August</option>
-					<option value="9" data-i18n="September">September</option>
-					<option value="10" data-i18n="October">October</option>
-					<option value="11" data-i18n="November">November</option>
-					<option value="12" data-i18n="December">December</option>
-					</select>
-				</td>
-			</tr>
-		</table>
-		<br>
-    <a class="btnstyle3" onclick="AddTimer();" data-i18n="Add">Add</a>
 </div>

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(domoticz)
 
 ## required min. libBoost version
-SET(DOMO_MIN_LIBBOOST_VERSION 105500)
+SET(DOMO_MIN_LIBBOOST_VERSION 106000)
 ##
 
 MACRO(Gitversion_GET_REVISION dir variable)
@@ -36,9 +36,15 @@ MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 MESSAGE(STATUS "###########################")
 
 # The version number.
-set (domoticz_VERSION_MAJOR 3)
+set (domoticz_VERSION_MAJOR 4)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CXX_EXTENSIONS NO)
+endif()
 
 option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
 IF(USE_OPENSSL_STATIC)
@@ -57,9 +63,24 @@ ELSE(USE_BUILTIN_LUA)
   find_package(PkgConfig)
   pkg_search_module(LUA lua5.2>=5.2 lua>=5.2 lua-5.2)
   IF(LUA_FOUND)
+    # Lua 5.2 pkg-config is broken.
+    # Depending on whether the used distro fixed that to
+    # provide backward compatibility we need to find the
+    # include dir and library name ourselves.
+    IF(NOT LUA_INCLUDE_DIRS)
+      find_path(LUA_INC_DIRS NAMES "lua.h" PATH_SUFFIXES "lua5.2")
+      set(LUA_INCLUDE_DIRS ${LUA_INC_DIRS})
+    ENDIF(NOT LUA_INCLUDE_DIRS)
+    message(STATUS "Found lua.h at: ${LUA_INCLUDE_DIRS}")
     INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS})
     add_definitions(-DWITH_EXTERNAL_LUA)
-    link_directories(${LUA_LIBRARY_DIRS})
+    IF(LUA_LIBRARY_DIRS)
+      link_directories(${LUA_LIBRARY_DIRS})
+    ELSE(LUA_LIBRARY_DIRS)
+      find_library(LUA_LIB NAMES lua lua5.2)
+      message(STATUS "Found lua library at: ${LUA_LIB}")
+      set(LUA_LIBRARIES ${LUA_LIB})
+    ENDIF(LUA_LIBRARY_DIRS)
   ELSE(LUA_FOUND)
     MESSAGE(FATAL_ERROR "LUA not found but USE_BUILTIN_LUA=NO")
   ENDIF(LUA_FOUND)
@@ -122,8 +143,13 @@ INCLUDE(CheckIncludeFile)
 CHECK_INCLUDE_FILE (execinfo.h HAVE_EXECINFO_H)
 
 IF(HAVE_EXECINFO_H)
-  # FreeBSD have to include libexeinfo
+  # FreeBSD has to include libexecinfo
   IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    find_library(EXECINFO_LIBRARIES NAMES libexecinfo.so)
+    IF(EXECINFO_LIBRARIES)
+      ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
+    ENDIF()
+  ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
     find_library(EXECINFO_LIBRARIES NAMES libexecinfo.so)
     IF(EXECINFO_LIBRARIES)
       ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
@@ -212,10 +238,14 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
   ENDIF()
+  IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+  ENDIF()
   IF(CMAKE_COMPILER_IS_GNUCXX)
-  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
-  #ADD_DEFINITIONS( -Wall -O0 -ggdb )
-  #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
+    #ADD_DEFINITIONS( -Wall -O0 -ggdb )
+    #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
 
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
     SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
@@ -224,15 +254,18 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     SET(_output "${_outdir}/.c++")
 
     STRING(TOUPPER "CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}" _flags_var_name)
-    SET(_compiler_FLAGS "${CMAKE_CXX_FLAGS} ${${_flags_var_name}}")
+    # Strip out -Wl,… linker directives as they make GCC fail
+    STRING(REGEX REPLACE " -Wl,[^ ]*" " " _compiler_FLAGS " ${CMAKE_CXX_FLAGS} ${${_flags_var_name}}")
 
     GET_DIRECTORY_PROPERTY(_directory_flags INCLUDE_DIRECTORIES)
     FOREACH(item ${_directory_flags})
       LIST(APPEND _compiler_FLAGS "-I${item}")
     ENDFOREACH(item)
 
-    GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
-    LIST(APPEND _compiler_FLAGS ${_directory_flags})
+    GET_DIRECTORY_PROPERTY(_directory_flags COMPILE_DEFINITIONS)
+    FOREACH(item ${_directory_flags})
+      LIST(APPEND _compiler_FLAGS "-D${item}")
+    ENDFOREACH(item)
 
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
     MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
@@ -265,6 +298,7 @@ ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
 set(
 domoticz_SRCS
 main/stdafx.cpp
+main/BaroForecastCalculator.cpp
 main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
@@ -281,6 +315,7 @@ main/LuaHandler.cpp
 main/mainworker.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
+main/SignalHandler.cpp
 main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp
@@ -306,8 +341,11 @@ hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
-hardware/Comm5TCP.cpp
+hardware/cayenne_lpp/CayenneLPP_Dec.cpp
+hardware/ColorSwitch.cpp
 hardware/Comm5Serial.cpp
+hardware/Comm5SMTCP.cpp
+hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
@@ -315,12 +353,14 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
-hardware/DenkoviSmartdenIPInOut.cpp
-hardware/DenkoviSmartdenLan.cpp
+hardware/DenkoviDevices.cpp
+hardware/DenkoviUSBDevices.cpp
+hardware/DenkoviTCPDevices.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
+hardware/EcoCompteur.cpp
 hardware/EcoDevices.cpp
 hardware/eHouseTCP.cpp
 hardware/eHouse/EhouseEvents.cpp
@@ -343,6 +383,7 @@ hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/Honeywell.cpp
 hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
@@ -365,6 +406,7 @@ hardware/MySensorsTCP.cpp
 hardware/MySensorsMQTT.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
+hardware/NestOAuthAPI.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OnkyoAVTCP.cpp
@@ -383,11 +425,12 @@ hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
 hardware/PhilipsHue/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHueHelper.cpp
 hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
-hardware/Razberry.cpp
+hardware/RAVEn.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
@@ -408,6 +451,7 @@ hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
 hardware/SysfsGpio.cpp
+hardware/Tado.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -416,10 +460,10 @@ hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
+hardware/TTNMQTT.cpp
 hardware/USBtin.cpp
 hardware/USBtin_MultiblocV8.cpp
 hardware/VolcraftCO20.cpp
-hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
@@ -444,7 +488,6 @@ notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
 notifications/NotificationLogitechMediaServer.cpp
-notifications/NotificationNma.cpp
 notifications/NotificationPushbullet.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
@@ -530,7 +573,7 @@ set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-find_package(Boost REQUIRED COMPONENTS thread date_time system)
+find_package(Boost REQUIRED COMPONENTS thread system)
 
 if(USE_STATIC_BOOST)
    message(STATUS "Linking against boost static libraries")
@@ -564,6 +607,27 @@ else(USE_BUILTIN_ZLIB)
 endif(USE_BUILTIN_ZLIB)
 
 #
+# MINIZIP
+#
+option(USE_BUILTIN_MINIZIP "Use builtin minizip library" YES)
+if(USE_BUILTIN_MINIZIP)
+  add_subdirectory(zip)
+  get_directory_property(MINIZIP_LIBRARIES DIRECTORY zip DEFINITION MINIZIP_LIBRARIES)
+  get_directory_property(MINIZIP_INCLUDE_DIRS DIRECTORY zip DEFINITION MINIZIP_INCLUDE_DIRS)
+  include_directories(${MINIZIP_INCLUDE_DIRS})
+else(USE_BUILTIN_MINIZIP)
+  find_package(PkgConfig)
+  pkg_check_modules(MINIZIP minizip)
+  if(MINIZIP_FOUND)
+    MESSAGE(STATUS "MINIZIP libraries found at: ${MINIZIP_LIBRARIES}")
+    MESSAGE(STATUS "MINIZIP includes found at: ${MINIZIP_INCLUDE_DIRS}")
+    include_directories(${MINIZIP_INCLUDE_DIRS})
+  else()
+    MESSAGE(FATAL_ERROR "MINIZIP not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libminizip-dev')")
+  endif(MINIZIP_FOUND)
+endif(USE_BUILTIN_MINIZIP)
+
+#
 # CURL
 #
 FIND_PACKAGE(CURL)
@@ -573,26 +637,29 @@ IF(CURL_FOUND)
   INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
   # add_definitions(-DWWW_ENABLE_SSL)
 else()
-  MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
+  MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-gnutls-dev')")
 ENDIF(CURL_FOUND)
 
 #
 # USB
 #
-find_path(LIBUSB_INCLUDE_DIR usb.h
-   HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
-find_library(LIBUSB_LIBRARY NAMES usb
-   HINTS ${PC_LIBUSB_LIBDIR} ${PC_LIBUSB_LIBRARY_DIRS})
-set(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
+option(WITH_LIBUSB "Enable libusb support" YES)
+if(WITH_LIBUSB)
+  find_path(LIBUSB_INCLUDE_DIR usb.h
+     HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
+  find_library(LIBUSB_LIBRARY NAMES usb
+     HINTS ${PC_LIBUSB_LIBDIR} ${PC_LIBUSB_LIBRARY_DIRS})
+  set(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
 
-find_package_handle_standard_args(LIBUSB  DEFAULT_MSG  LIBUSB_LIBRARIES LIBUSB_INCLUDE_DIR)
-IF(LIBUSB_FOUND)
-  MESSAGE(STATUS "LIBUSB found at: ${LIBUSB_LIBRARIES}")
-  add_definitions(-DWITH_LIBUSB)
-  target_link_libraries(domoticz ${LIBUSB_LIBRARIES})
-else()
-  MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
-ENDIF(LIBUSB_FOUND)
+  find_package_handle_standard_args(LIBUSB  DEFAULT_MSG  LIBUSB_LIBRARIES LIBUSB_INCLUDE_DIR)
+  IF(LIBUSB_FOUND)
+    MESSAGE(STATUS "LIBUSB found at: ${LIBUSB_LIBRARIES}")
+    add_definitions(-DWITH_LIBUSB)
+    target_link_libraries(domoticz ${LIBUSB_LIBRARIES})
+  else()
+    MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
+  ENDIF(LIBUSB_FOUND)
+endif(WITH_LIBUSB)
 
 ## support lua popen on Linux platforms
 #IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -621,12 +688,12 @@ IF(OpenZWave)
   target_link_libraries(domoticz ${OpenZWave})
   include_directories(${CMAKE_SOURCE_DIR}/hardware/openzwave)
   add_definitions(-DWITH_OPENZWAVE)
-  # open-zwave needs libudev
-  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(IOKIT_LIBRARY "-framework IOKit -framework CoreFoundation" CACHE FILEPATH "IOKit framework" FORCE)
-    target_link_libraries(domoticz ${IOKIT_LIBRARY})
-  else()
-    IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  # open-zwave needs libudev if statically linked
+  IF(USE_STATIC_OPENZWAVE)
+    IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+      set(IOKIT_LIBRARY "-framework IOKit -framework CoreFoundation" CACHE FILEPATH "IOKit framework" FORCE)
+      target_link_libraries(domoticz ${IOKIT_LIBRARY})
+    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
       MESSAGE(STATUS "Building on FreeBSD, libudev not needed!")
       FIND_PATH(ICONV_INCLUDE_DIR iconv.h)
       FIND_LIBRARY(ICONV_LIBRARIES NAMES iconv libiconv libiconv-2 c)
@@ -635,26 +702,28 @@ IF(OpenZWave)
         #target_link_libraries(domoticz ${ICONV_INCLUDE_DIR})
         target_link_libraries(domoticz ${ICONV_LIBRARIES} -lrt)
         message(STATUS ${ICONV_LIBRARIES})
-      else()
+      ELSE()
         MESSAGE(FATAL_ERROR "libiconv not found on your system")
       ENDIF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)
-    else()
+    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+      MESSAGE(STATUS "Building on NetBSD, libudev not needed!")
+    ELSE()
       find_library(UDEV NAMES libudev.a)
       IF(UDEV)
         message(STATUS ${UDEV})
         target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
-      else()
+      ELSE()
         find_library(UDEV NAMES libudev.so)
         IF(UDEV)
            message(STATUS ${UDEV})
            target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
-        else()
+        ELSE()
            MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
         ENDIF(UDEV)
       ENDIF(UDEV)
     ENDIF()
-  ENDIF()
-else()
+  ENDIF(USE_STATIC_OPENZWAVE)
+ELSE()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
@@ -680,11 +749,11 @@ else()
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
@@ -742,5 +811,5 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_IN
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dzVents DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
-

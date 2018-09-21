@@ -137,7 +137,7 @@ local testElectricInstanceCounter = function(name)
 	res = res and checkAttributes(dev, {
 		['WhTotal'] = 20,
 		['WhActual'] = 10,
-		['counterToday'] = 0.020,
+		-- only works after at least 5 minutes ['counterToday'] = 0.020,
 		['usage'] = 10.0,
 	})
 	tstMsg('Test electric instance counter device', res)
@@ -380,6 +380,17 @@ local testText = function(name)
 	res = res and checkAttributes(dev, {
 		["text"] = "Oh my Darwin, what a lot of tests!"
 	})
+
+	local Time = require('Time')
+
+	local stage1Time = Time(dz.globalData.stage1Time)
+
+	local diff = dev.lastUpdate.compare(stage1Time).secs
+
+	res = res and (diff >= 3)
+
+	res = expectEql(true, res, 'Text device should have been delayed with 3 seconds.')
+
 	tstMsg('Test text device', res)
 	return res
 end
@@ -388,7 +399,7 @@ local testThermostatSetpoint = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["setPoint"] = 22,
+		["setPoint"] = 22.00,
 	})
 	tstMsg('Test thermostat device', res)
 	return res
@@ -557,7 +568,6 @@ local testRepeatSwitchDelta = function(expectedState, expectedDelta, state, delt
 	return res
 end
 
-
 local testRepeatSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -575,7 +585,14 @@ local testRepeatSwitch = function(name)
 
 	tstMsg('Test repeat switch', res)
 	return res
+end
 
+local testCancelledRepeatSwitch = function(name)
+	local res = true
+	local count = dz.globalData.cancelledRepeatSwitch
+	res = res and expectEql(1, count)
+	tstMsg('Cancelled repeat switch', res)
+	return res
 end
 
 local testLastUpdates = function(stage2Trigger)
@@ -599,6 +616,7 @@ local testLastUpdates = function(stage2Trigger)
 			if (device.name ~= 'endResult' and
 				device.name ~= 'stage1Trigger' and
 				device.name ~= 'vdRepeatSwitch' and
+				device.anme ~= 'vdText' and
 				device.name ~= 'stage2Trigger') then
 				local delta = stage1SecsAgo - device.lastUpdate.secondsAgo
 
@@ -619,6 +637,29 @@ local testLastUpdates = function(stage2Trigger)
 	return results
 end
 
+local testVarCancelled = function(name)
+	local res = true
+	local var = dz.variables('varCancelled')
+	res = res and expectEql(0, var.value)
+	tstMsg('Cancelled variable', res)
+	return res
+end
+
+local testCancelledScene = function(name)
+	local res = true
+	local count = dz.globalData.cancelledScene
+	res = res and expectEql(1, count)
+	tstMsg('Cancelled repeat scene', res)
+	return res
+end
+
+local testHTTPSwitch = function(name)
+	local res = true
+	local trigger = dz.globalData.httpTrigger
+	res = res and expectEql('trigger2', trigger)
+	tstMsg('Test http trigger switch device', res)
+	return res
+end
 
 return {
 	active = true,
@@ -681,8 +722,13 @@ return {
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testAPITemperature('vdAPITemperature')
 
+		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch')
 		res = res and testLastUpdates(stage2Trigger)
 		res = res and testRepeatSwitch('vdRepeatSwitch')
+
+		res = res and testVarCancelled('varCancelled')
+		res = res and testCancelledScene('scCancelledScene')
+		res = res and testHTTPSwitch('vdHTTPSwitch');
 
 		-- test a require
 		local m = require('some_module')
@@ -698,7 +744,7 @@ return {
 			dz.devices('endResult').updateText('FAILED')
 		else
 			log('Results stage 2: SUCCEEDED')
-			dz.devices('endResult').updateText('SUCCEEDED')
+			dz.devices('endResult').updateText('ENDRESULT SUCCEEDED')
 		end
 
 		log('Finishing stage 2')

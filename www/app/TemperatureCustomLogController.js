@@ -12,7 +12,7 @@ define(['app'], function (app) {
                     $('#customlog').i18n();
 
                     $('.datepick').datepicker({
-                        dateFormat: 'yy-mm-dd',
+                        dateFormat: window.myglobals.DateFormat,
                         onClose: function () {
                             ctrl.datePickerChanged(this);
                         }

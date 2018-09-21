@@ -5,12 +5,13 @@
 #include "../main/RFXtrx.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <boost/bind.hpp>
 
+#include <algorithm>
 #include <ctime>
+#include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <iostream>
+#include <string>
 
 #ifdef _DEBUG
 	//#define DEBUG_S0
@@ -40,7 +41,8 @@ S0MeterSerial::~S0MeterSerial()
 
 bool S0MeterSerial::StartHardware()
 {
-	StartHeartbeatThread();
+	RequestStart();
+
 	//Try to open the Serial Port
 	try
 	{
@@ -101,22 +103,25 @@ bool S0MeterSerial::StartHardware()
 	}
 #endif
 
+	StartHeartbeatThread();
+
+	_log.Log(LOG_STATUS, "S0 Meter: Worker started...");
+
 	return true;
 }
 
 bool S0MeterSerial::StopHardware()
 {
-	m_bIsStarted=false;
 	terminate();
+	m_bIsStarted=false;
 	StopHeartbeatThread();
-	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
+	_log.Log(LOG_STATUS, "S0 Meter: Worker stopped...");
 	return true;
 }
 
 
 void S0MeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

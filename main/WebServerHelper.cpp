@@ -1,13 +1,15 @@
 #include "stdafx.h"
 #include "WebServerHelper.h"
+#include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../webserver/proxyclient.h"
 
 namespace http {
 	namespace server {
 
-		typedef std::vector<boost::shared_ptr<CWebServer> >::iterator server_iterator;
+		typedef std::vector<std::shared_ptr<CWebServer> >::iterator server_iterator;
 #ifndef NOCLOUD
-		typedef std::vector<boost::shared_ptr<CProxyManager> >::iterator proxy_iterator;
+		typedef std::vector<std::shared_ptr<CProxyManager> >::iterator proxy_iterator;
 		extern CProxySharedData sharedData;
 #endif
 
@@ -82,20 +84,25 @@ namespace http {
 			const unsigned int connections = GetNrMyDomoticzThreads();
 			proxymanagerCollection.clear();
 			for (unsigned int i = 0; i < connections; i++) {
-				proxymanagerCollection.push_back(boost::shared_ptr<CProxyManager>(new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ)));
+				cWebem *my_pWebEm = (plainServer_ != NULL ? plainServer_->m_pWebEm : (secureServer_ != NULL ? secureServer_->m_pWebEm : NULL));
+				if (my_pWebEm == NULL) {
+					_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either.");
+					break;
+				}
+				proxymanagerCollection.push_back(std::shared_ptr<CProxyManager>(new CProxyManager(our_serverpath, my_pWebEm, m_pDomServ)));
 				proxymanagerCollection[i]->Start(i == 0);
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		boost::shared_ptr<CProxyClient> CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
+		std::shared_ptr<CProxyClient> CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
 			if (proxymanagerCollection.size() > 0) {
 				// todo: make this a random connection?
 				return proxymanagerCollection[0]->GetProxyForMaster(master);
 			}
 			// we are not connected yet. save this master and connect later.
 			sharedData.AddTCPClient(master);
-			return boost::shared_ptr<CProxyClient>();
+			return std::shared_ptr<CProxyClient>();
 		}
 
 		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {
@@ -103,7 +110,14 @@ namespace http {
 		}
 #endif
 
-		void CWebServerHelper::SetAuthenticationMethod(int amethod)
+		void CWebServerHelper::SetWebCompressionMode(const _eWebCompressionMode gzmode)
+		{
+			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
+				(*it)->SetWebCompressionMode(gzmode);
+			 }
+		}
+
+		void CWebServerHelper::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				(*it)->SetAuthenticationMethod(amethod);

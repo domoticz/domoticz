@@ -16,7 +16,9 @@ local deviceAdapters = {
 	'humidity_device',
 	'kwh_device',
 	'leafwetness_device',
+	'logitech_media_server_device',
 	'lux_device',
+	'onkyo_device',
 	'opentherm_gateway_device',
 	'p1_smartmeter_device',
 	'percentage_device',
@@ -39,6 +41,7 @@ local deviceAdapters = {
 	'uv_device',
 	'visibility_device',
 	'voltage_device',
+	'youless_device',
 	'waterflow_device',
 	'wind_device',
 	'zone_heating_device',
@@ -57,9 +60,7 @@ end
 
 local function DeviceAdapters(dummyLogger)
 
-
 	local self = {}
-
 
 	self.name = 'Adapter manager'
 
@@ -69,7 +70,6 @@ local function DeviceAdapters(dummyLogger)
 		local adapters = {}
 
 		for i, adapterName in pairs(deviceAdapters) do
-
 			-- do a safe call and catch possible errors
 			ok, adapter = pcall(require, adapterName)
 			if (not ok) then
@@ -78,13 +78,11 @@ local function DeviceAdapters(dummyLogger)
 				if (adapter.baseType == device.baseType) then
 					local matches = adapter.matches(device, self)
 					if (matches) then
-						utils.log('Device-adapter found for ' .. device.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
 						table.insert(adapters, adapter)
 					end
 				end
 			end
 		end
-
 		return adapters
 	end
 
@@ -129,7 +127,6 @@ local function DeviceAdapters(dummyLogger)
 		end
 	end
 
-
 	function self.addDummyMethod(device, name)
 		if (device[name] == nil) then
 			device[name] = self.getDummyMethod(device, name)
@@ -160,6 +157,8 @@ local function DeviceAdapters(dummyLogger)
 		motion = { b = true },
 		off = { b = false, inv = 'On' },
 		closed = { b = false, inv = 'On' },
+		unlocked = { b = false, inv = 'On' },
+		locked = { b = true, inv = 'Off' },
 		['group off'] = { b = false },
 		['panic end'] = { b = false },
 		['no motion'] = { b = false, inv = 'Off' },
@@ -168,6 +167,9 @@ local function DeviceAdapters(dummyLogger)
 		paused = { b = false, inv = 'Play' },
 		['all on'] = { b = true, inv = 'All Off' },
 		['all off'] = { b = false, inv = 'All On' },
+		['nightmode'] = { b = true, inv = 'Off' },
+		['set to white'] = { b = true, inv = 'Off' },
+		['set kelvin level'] = { b = true, inv = 'Off' },
 	}
 
 	return self

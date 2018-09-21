@@ -32,7 +32,7 @@ after_build:
     
     cp History.txt history_windows_x86.txt
     
-    Tools.InnoSetup.5.5.9\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
+    Tools.InnoSetup.5.6.1\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
     
     msbuild msbuild\package.proj
 
