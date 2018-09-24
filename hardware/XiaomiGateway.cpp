@@ -918,7 +918,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Motion;
 						name = "Aqara Motion Sensor";
 					}
-					else if (model == "switch") {
+					else if ((model == "switch") || (model == "remote.b1acn01")) {
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
