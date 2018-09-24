@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#ifdef WITH_TELLDUSCORE
 #include "Tellstick.h"
 
 #include "../main/Helper.h"
@@ -9,10 +8,10 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
-#include <telldus-core.h>
 
-CTellstick::CTellstick(const int ID, int repeats, int repeatInterval)
-    : m_deviceEventId(-1),
+CTellstick::CTellstick(const TelldusFunctions& functions, const int ID, int repeats, int repeatInterval)
+    : m_td(functions),
+      m_deviceEventId(-1),
       m_rawDeviceEventId(-1),
       m_sensorEventId(-1),
       m_numRepeats(repeats),
@@ -196,19 +195,20 @@ void CTellstick::sensorEventCallback(const char *protocol, const char *model, in
 
 void CTellstick::Init()
 {
-    tdInit();
-    m_deviceEventId = tdRegisterDeviceEvent(reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this);
-    m_rawDeviceEventId = tdRegisterRawDeviceEvent(reinterpret_cast<TDRawDeviceEvent>(&CTellstick::rawDeviceEventCallback), this);
-    m_sensorEventId = tdRegisterSensorEvent(reinterpret_cast<TDSensorEvent>(&CTellstick::sensorEventCallback), this);
+    m_td.Init();
+    m_deviceEventId = m_td.RegisterDeviceEvent(reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this);
+    m_rawDeviceEventId = m_td.RegisterRawDeviceEvent(reinterpret_cast<TDRawDeviceEvent>(&CTellstick::rawDeviceEventCallback), this);
+    m_sensorEventId = m_td.RegisterSensorEvent(reinterpret_cast<TDSensorEvent>(&CTellstick::sensorEventCallback), this);
 
-    for (int i = 0; i < tdGetNumberOfDevices(); i++)
+    const int numDevices = m_td.GetNumberOfDevices();
+    for (int i = 0; i < numDevices; i++)
     {
-        int id = tdGetDeviceId(i);
-        char *name = tdGetName(id);
-        _log.Log(LOG_NORM, "Tellstick: %s method %d", name, tdMethods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
-        bool isDimmer = tdMethods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM;
+        int id = m_td.GetDeviceId(i);
+        char *name = m_td.GetName(id);
+        _log.Log(LOG_NORM, "Tellstick: %s method %d", name, m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
+        bool isDimmer = m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM;
         AddSwitchIfNotExits(id, name, isDimmer);
-        tdReleaseString(name);
+        m_td.ReleaseString(name);
     }
 }
 
@@ -229,13 +229,13 @@ bool CTellstick::StartHardware()
 bool CTellstick::StopHardware()
 {
     if (m_deviceEventId != -1)
-        tdUnregisterCallback(m_deviceEventId);
+        m_td.UnregisterCallback(m_deviceEventId);
     if (m_rawDeviceEventId != -1)
-        tdUnregisterCallback(m_rawDeviceEventId);
+        m_td.UnregisterCallback(m_rawDeviceEventId);
     if (m_sensorEventId != -1)
-        tdUnregisterCallback(m_sensorEventId);
+        m_td.UnregisterCallback(m_sensorEventId);
 
-    tdClose();
+    m_td.Close();
     std::unique_lock<std::mutex> lock(m_mutex);
     m_bIsStarted = false;
     m_cond.notify_all();
@@ -256,16 +256,16 @@ void CTellstick::SendCommand(int devID, const _tGeneralSwitch &genSwitch)
     {
     case gswitch_sOn:
         _log.Log(LOG_NORM, "Tellstick: Switch ON");
-        tdTurnOn(genSwitch.id);
+        m_td.TurnOn(genSwitch.id);
         break;
     case gswitch_sOff:
         _log.Log(LOG_NORM, "Tellstick: Switch OFF");
-        tdTurnOff(genSwitch.id);
+        m_td.TurnOff(genSwitch.id);
         break;
     case gswitch_sSetLevel:
         _log.Log(LOG_NORM, "Tellstick: Dim level %d %d",
                  genSwitch.level, genSwitch.level * 255 / 99);
-        tdDim(genSwitch.id, genSwitch.level * 255 / 99);
+        m_td.Dim(genSwitch.id, genSwitch.level * 255 / 99);
         break;
     }
 }
@@ -343,5 +343,3 @@ namespace http {
         }
     }
 }
-
-#endif //WITH_TELLDUSCORE

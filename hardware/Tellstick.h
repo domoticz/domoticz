@@ -1,17 +1,20 @@
 #pragma once
 
-#ifdef WITH_TELLDUSCORE
-
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
+#include "TelldusFunctions.h"
 
 class CTellstick : public CDomoticzHardwareBase
 {
 public:
-    explicit CTellstick(const int ID, int repeats, int repeatInterval);
+    // If possible, creates a CTellstick object and return true, else false
+    static bool Create(CTellstick** tellstick, const int ID, int repeats, int repeatInterval);
+
     void SetSettings(int repeats, int repeatInterval);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
+    explicit CTellstick(const TelldusFunctions& functions, const int ID, int repeats, int repeatInterval);
+
     struct Command
     {
         Command()
@@ -44,6 +47,7 @@ private:
 
     void ThreadSendCommands();
 private:
+    const TelldusFunctions m_td;
     int m_deviceEventId;
     int m_rawDeviceEventId;
     int m_sensorEventId;
@@ -55,5 +59,3 @@ private:
     int m_numRepeats;
     std::chrono::milliseconds m_repeatInterval;
 };
-
-#endif //WITH_TELLSTICK
