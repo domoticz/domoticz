@@ -1,4 +1,4 @@
-define(['app'], function (app) {
+define(['app', 'report/helpers'], function (app, reportHelpers) {
     app.factory('DeviceTemperatureReportData', function (domoticzApi) {
         return {
             fetch: fetch
@@ -98,7 +98,7 @@ define(['app'], function (app) {
                         return a.date < b.date ? -1 : 1;
                     });
 
-                    month.days = addTrendData(month.days);
+                    month.days = reportHelpers.addTrendData(month.days, 'avg');
 
                     var stats = month.days.reduce(function (acc, item) {
                         if (!acc.min || acc.min.value > item.min) {
@@ -136,7 +136,7 @@ define(['app'], function (app) {
                         : undefined;
                 });
 
-                yearsData.months = addTrendData(yearsData.months);
+                yearsData.months = reportHelpers.addTrendData(yearsData.months, 'avg');
 
                 var stats = getGroupStats(yearsData.months);
 
@@ -173,74 +173,35 @@ define(['app'], function (app) {
                 return acc;
             }, {})
         }
-
-        function addTrendData(items) {
-            return items.map(function (item, index) {
-                var trend = 'equal'
-
-                if (index > 0 && item.avg > items[index - 1].avg) {
-                    trend = 'up'
-                }
-
-                if (index > 0 && item.avg < items[index - 1].avg) {
-                    trend = 'down'
-                }
-
-                return Object.assign({}, item, {
-                    avgTrend: trend
-                });
-            });
-        }
     });
 
-    app.controller('DeviceTemperatureReportController', function ($scope, $route, $routeParams, $location, domoticzApi, deviceApi, dataTableDefaultSettings, DeviceTemperatureReportData) {
-        var vm = this;
-        var $element = $('.js-report:last');
+    app.component('deviceTemperatureReport', {
+        bindings: {
+            device: '<',
+            selectedYear: '<',
+            selectedMonth: '<'
+        },
+        templateUrl: 'app/report/TemperatureReport.html',
+        controller: DeviceTemperatureReportController
+    });
 
+    function DeviceTemperatureReportController($scope, $element, $route, $routeParams, $location, domoticzApi, deviceApi, dataTableDefaultSettings, DeviceTemperatureReportData) {
+        var vm = this;
         var monthNames = ["January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"];
 
-        vm.getYearsOptions = getYearsOptions;
-        vm.selectYear = selectYear;
-
-        init();
+        vm.$onInit = init;
 
         function init() {
-            vm.deviceIdx = $routeParams.id;
-            vm.selectedYear = parseInt($routeParams.year) || ((new Date()).getYear() + 1900);
-            vm.selectedMonth = parseInt($routeParams.month) || undefined;
             vm.isMonthView = vm.selectedMonth > 0;
-
             vm.degreeType = $.myglobals.tempsign;
-
-            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
-                vm.title = vm.isMonthView
-                    ? device.Name + ', ' + $.t(monthNames[vm.selectedMonth - 1]) + ' ' + vm.selectedYear
-                    : device.Name + ' ' + vm.selectedYear;
-            });
 
             getData();
         }
 
-        function selectYear() {
-            $route.updateParams({ year: vm.selectedYear });
-            $location.replace();
-        }
-
-        function getYearsOptions() {
-            var currentYear = ((new Date()).getYear() + 1900);
-            var years = [];
-
-            for (var i = 2012; i <= currentYear; i++) {
-                years.push(i);
-            }
-
-            return years;
-        }
-
         function getData() {
             DeviceTemperatureReportData
-                .fetch(vm.deviceIdx, vm.selectedYear, vm.selectedMonth)
+                .fetch(vm.device.idx, vm.selectedYear, vm.selectedMonth)
                 .then(function (data) {
                     if (!data) {
                         vm.noDataAvailable = true;
@@ -309,7 +270,7 @@ define(['app'], function (app) {
                     title: $.t('Month'),
                     data: 'date',
                     render: function (data) {
-                        var link = '<a href="#/Devices/' + vm.deviceIdx + '/TemperatureReport/' + vm.selectedYear + '/' + data + '"><img src="images/next.png" /></a>';
+                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + data + '"><img src="images/next.png" /></a>';
                         return data.toString().padStart(2, '0') + '. ' + $.t(monthNames[data - 1]) + ' ' + link;
                     }
                 });
@@ -334,7 +295,7 @@ define(['app'], function (app) {
             columns.push({
                 title: '<>',
                 orderable: false,
-                data: 'avgTrend',
+                data: 'trend',
                 render: function (data) {
                     return '<img src="images/' + data + '.png">'
                 }
@@ -376,11 +337,6 @@ define(['app'], function (app) {
             });
 
             chartElement.highcharts({
-                credits: {
-                    enabled: true,
-                    href: "http://www.domoticz.com",
-                    text: "Domoticz.com"
-                },
                 title: {
                     text: data.isOnlyHumidity
                         ? $.t('Average Humidity')
@@ -516,5 +472,5 @@ define(['app'], function (app) {
                 ]
             });
         }
-    });
+    }
 });

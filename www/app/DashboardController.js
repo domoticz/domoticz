@@ -3477,29 +3477,13 @@ define(['app'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = item.Name;
 									if (typeof item.Counter != 'undefined') {
-										if (item.Type == "RFXMeter") {
-											vname = '<img src="images/next.png" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
-										}
-										else {
-											if ((item.Type == "P1 Smart Meter") && (item.SubType == "Energy")) {
-												vname = '<img src="images/next.png" onclick="ShowSmartLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
-											}
-											else if ((item.Type == "P1 Smart Meter") && (item.SubType == "Gas")) {
-												vname = '<img src="images/next.png" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
-											}
-											else if ((item.Type == "YouLess Meter") && (item.SwitchTypeVal == 0 || item.SwitchTypeVal == 4)) {
-												vname = '<img src="images/next.png" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
-											}
-											else {
-												vname = '<img src="images/next.png" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
-											}
-										}
+										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16">' + " " + item.Name + '</a>';
 									}
 									else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 										vname = '<img src="images/next.png" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="16" width="16">' + " " + item.Name;
 									}
 									else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.SubType == "Power")) {
-										vname = '<img src="images/next.png" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
+                                        vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16">' + " " + item.Name + '</a>';
 									}
 									else if (item.Type == "Air Quality") {
 										vname = '<img src="images/next.png" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
@@ -3737,30 +3721,27 @@ define(['app'], function (app) {
 									if (typeof item.Counter != 'undefined') {
 										if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter")) {
 											if (item.SwitchTypeVal == 1) {
-												imagehtml += 'Gas48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Gas48.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else if (item.SwitchTypeVal == 2) {
-												imagehtml += 'Water48_On.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Water48_On.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else if (item.SwitchTypeVal == 3) {
-												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Counter48.png.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else if (item.SwitchTypeVal == 4) {
-												imagehtml += 'PV48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/PV48.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else {
-												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Counter48.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 										}
 										else {
-											if ((item.Type == "P1 Smart Meter") && (item.SubType == "Energy")) {
-												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowSmartLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
-											}
-											else if ((item.Type == "P1 Smart Meter") && (item.SubType == "Gas")) {
-												imagehtml += 'Gas48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+											if ((item.Type == "P1 Smart Meter") && (item.SubType == "Gas")) {
+                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Gas48.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 											else {
-												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                                imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Counter48.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
 										}
 										if (
@@ -3780,10 +3761,10 @@ define(['app'], function (app) {
 									}
 									else if ((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 										if (((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
-											imagehtml += 'PV48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                            imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/PV48.png" class="lcursor" height="40" width="40"></a></td>\n';
 										}
 										else {
-											imagehtml += 'current48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+                                            imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/current48.png" class="lcursor" height="40" width="40"></a></td>\n';
 										}
 										statushtml = "";
 									}
@@ -3841,7 +3822,7 @@ define(['app'], function (app) {
 									}
 									else if (item.SubType == "Text") {
 										var logLink = '#/Devices/' + item.idx + '/Log';
-										
+
                                         imagehtml = '<a href="' + logLink + '"><img src="images/text48.png" class="lcursor" height="40" width="40"></a></td>\n';
 										statushtml = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
