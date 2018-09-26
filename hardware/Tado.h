@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 #include "hardwaretypes.h"
-#include <map>
 
 namespace Json
 {
@@ -24,8 +23,7 @@ class CTado : public CDomoticzHardwareBase
 		bool StopHardware() override;
 		void Do_Work();
 
-		boost::shared_ptr<boost::thread> m_thread;
-		volatile bool m_stoprequested;
+		std::shared_ptr<std::thread> m_thread;
 		struct _tTadoZone {
 			std::string Id;
 			std::string Name;

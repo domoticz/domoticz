@@ -39,6 +39,8 @@ MySensorsMQTT::~MySensorsMQTT(void)
 
 bool MySensorsMQTT::StartHardware()
 {
+	RequestStart();
+
 	m_LineReceived.clear();
 
 	LoadDevicesFromDatabase();

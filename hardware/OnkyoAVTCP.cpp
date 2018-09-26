@@ -12,7 +12,6 @@
 #include "../main/WebServer.h"
 
 #include <sstream>
-#include <map>
 
 #define RETRY_DELAY 30
 
@@ -131,11 +130,9 @@ static struct {
 
 
 OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_pPartialPkt = NULL;
@@ -155,41 +152,26 @@ OnkyoAVTCP::~OnkyoAVTCP(void)
 
 bool OnkyoAVTCP::StartHardware()
 {
-	m_stoprequested=false;
-	m_bDoRestart=false;
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&OnkyoAVTCP::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&OnkyoAVTCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "OnkyoAVTCP");
+	return (m_thread != nullptr);
 }
 
 bool OnkyoAVTCP::StopHardware()
 {
-	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	return true;
 }
@@ -197,7 +179,6 @@ bool OnkyoAVTCP::StopHardware()
 void OnkyoAVTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS,"OnkyoAVTCP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 
 	SendPacket("NRIQSTN");
@@ -211,37 +192,23 @@ void OnkyoAVTCP::OnDisconnect()
 
 void OnkyoAVTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
-		}
-
-		if (bFirstTime)
-		{
-			bFirstTime=false;
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS,"OnkyoAVTCP: TCP/IP Worker stopped...");
 }
 
 void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	ParseData(pData,length);
 }
 
@@ -275,7 +242,7 @@ void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 
 bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (!mIsConnected || !pdata)
+	if (!isConnected() || !pdata)
 	{
 		return false;
 	}
@@ -333,7 +300,7 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 bool OnkyoAVTCP::SendPacket(const char *pdata)
 {
-	if (!mIsConnected || !pdata)
+	if (!isConnected() || !pdata)
 	{
 		return false;
 	}
@@ -461,7 +428,7 @@ void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)
 	std::vector<std::vector<std::string> > result;
 	std::string options_str;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, ID);
-	if (result.size() == 0) {
+	if (result.empty()) {
 		if (!options && switch_types[ID].options) {
 			options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions(switch_types[ID].options, false));
 			options = options_str.c_str();

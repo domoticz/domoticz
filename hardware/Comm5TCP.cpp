@@ -1,13 +1,9 @@
 #include "stdafx.h"
 #include "Comm5TCP.h"
+#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-#include "../main/localtime_r.h"
-#include "../main/mainworker.h"
-
-#include <iostream>
-
-#include <boost/lexical_cast.hpp>
+#include "../main/RFXtrx.h"
 
 #define RETRY_DELAY 30
 #define Max_Comm5_MA_Relais 16
@@ -44,7 +40,6 @@ Comm5TCP::Comm5TCP(const int ID, const std::string &IPAddress, const unsigned sh
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	lastKnownSensorState = 0;
 	initSensorData = true;
@@ -54,28 +49,29 @@ m_szIPAddress(IPAddress)
 
 bool Comm5TCP::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
 	m_bIsStarted = true;
-	m_rxbufferpos = 0;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Comm5TCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&Comm5TCP::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Comm5TCP");
 
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: Started");
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool Comm5TCP::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -100,34 +96,25 @@ void Comm5TCP::OnDisconnect()
 
 void Comm5TCP::Do_Work()
 {
-	bool bFirstTime = true;
-	int count = 0;
-	while (!m_stoprequested)
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!mIsConnected)
-			{
-				m_rxbufferpos = 0;
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			sleep_milliseconds(40);
-			update();
-			if (count++ >= 100) {
-				count = 0;
-				querySensorState();
-			}
+		if (sec_counter % 4 == 0) {
+			querySensorState();
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: TCP/IP Worker stopped...");
 }
 
-void Comm5TCP::processSensorData(const std::string& line) 
+void Comm5TCP::processSensorData(const std::string& line)
 {
 	std::vector<std::string> tokens = tokenize(line);
 	if (tokens.size() < 2)
@@ -166,7 +153,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 		}
 		else if (startsWith(line, "210") && (!startsWith(line, "210 OK"))) {
 			processSensorData(line);
-		} 
+		}
 	}
 
 	// Trim consumed bytes.
@@ -189,14 +176,14 @@ void Comm5TCP::enableNotifications()
 	notificationEnabled = true;
 }
 
-bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
 	//unsigned char subtype = pSen->ICMND.subtype;
 
-	if (!mIsConnected)
+	if (!isConnected())
 		return false;
 
 	if (packettype == pTypeLighting2 && pSen->LIGHTING2.id3 == 0)
@@ -208,9 +195,9 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 			return false;
 
 		if (pSen->LIGHTING2.cmnd == light2_sOff)
-			write("RESET " + std::to_string(Relay) + "\n");
+			write("RESET " + std::to_string(Relay) + '\n');
 		else
-			write("SET " + std::to_string(Relay) + "\n");
+			write("SET " + std::to_string(Relay) + '\n');
 
 		return true;
 	}
@@ -219,7 +206,6 @@ bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 void Comm5TCP::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 

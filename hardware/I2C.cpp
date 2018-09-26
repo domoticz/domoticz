@@ -68,13 +68,16 @@ Authors:
 #define BMEx8x_CtrlMeas				0xF4
 #define BMEx8x_Config				0xF5
 
+#define BMEx8x_Control_Hum			0xF2
 #define BMEx8x_Hum_MSB				0xFD
 #define BMEx8x_Hum_LSB				0xFE
 
+//Oversample setting - page 27
 #define BMEx8x_OverSampling_Temp	2
-#define BMEx8x_OverSampling_hum		3
+#define BMEx8x_OverSampling_Hum		2
+#define BMEx8x_OverSampling_Pres	2
 #define BMEx8x_OverSampling_Mode	1
-#define BMEx8x_OverSampling_Control	BMEx8x_OverSampling_Temp<<5 | BMEx8x_OverSampling_hum<<2 | BMEx8x_OverSampling_Mode
+#define BMEx8x_OverSampling_Control	BMEx8x_OverSampling_Temp<<5 | BMEx8x_OverSampling_Pres<<2 | BMEx8x_OverSampling_Mode
 
 
 const unsigned char BMPx8x_OverSampling = 3;
@@ -152,8 +155,6 @@ m_ActI2CBus(SerialPort),
 m_invert_data((bool) Mode1)
 {
 	_log.Log(LOG_STATUS, "I2C  Start HW witf ID: %d Name: %s Address: %d Port: %s Invert:%d ", ID, szI2CTypeNames[m_dev_type], m_i2c_addr, m_ActI2CBus.c_str(), m_invert_data);
-
-	m_stoprequested = false;
 	m_HwdID = ID;
 	if ( m_ActI2CBus=="" ){ // if empty option then autodetect i2c bus
 		m_ActI2CBus = "/dev/i2c-1";
@@ -170,7 +171,8 @@ I2C::~I2C()
 
 bool I2C::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	if ((m_dev_type == I2CTYPE_BMP085)|| (m_dev_type == I2CTYPE_BME280))
 	{
 		m_minuteCount = 0;
@@ -184,24 +186,27 @@ bool I2C::StartHardware()
 		MCP23017_Init();
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&I2C::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&I2C::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "I2C");
 	sOnConnected(this);
 	m_bIsStarted = true;
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool I2C::StopHardware()
 {
-	m_stoprequested = true;
-	if (m_thread != NULL)
+	if (m_thread)
+	{
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
+	}
 	m_bIsStarted = false;
 	return true;
 }
 
-bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
+bool I2C::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
-	int rc = 0;
 	if (m_dev_type != I2CTYPE_PCF8574 && m_dev_type != I2CTYPE_MCP23017)
 		return false;
 
@@ -239,11 +244,8 @@ void I2C::Do_Work()
 		TSL2561_Init();
 	}
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(100))
 	{
-		sleep_milliseconds(100);
-		if (m_stoprequested)
-			break;
 		msec_counter++;
 		if (msec_counter == 10)
 		{
@@ -331,7 +333,7 @@ int I2C::i2c_Open(const char *I2CBusName)
 // PCF8574 and PCF8574A
 
 void I2C::PCF8574_ReadChipDetails()
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return;
 #else
@@ -357,7 +359,7 @@ void I2C::PCF8574_ReadChipDetails()
 
 
 int I2C::PCF8574_WritePin(uint8_t pin_number,uint8_t  value)
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return -1;
 #else
@@ -396,7 +398,7 @@ void I2C::MCP23017_Init()
 	uint16_t GPIO_reg = 0xFFFF;
 	int unit;
 	bool value;
-	
+
 	results = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, m_i2c_addr);
 	if (!results.empty())
 	{
@@ -406,7 +408,9 @@ void I2C::MCP23017_Init()
 			unit = atoi(sd[0].c_str());
 			nvalue = atoi(sd[1].c_str());
 
-			nvalue ^= 1;
+			if (m_invert_data == true) {
+				nvalue ^= 1;
+			}
 			//prepare new value by combinating current value, mask and new value
 			if (nvalue==1) {
 				GPIO_reg |= (0x01 << unit);
@@ -441,7 +445,7 @@ void I2C::MCP23017_Init()
 }
 
 void I2C::MCP23017_ReadChipDetails()
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return;
 #else
@@ -469,7 +473,7 @@ void I2C::MCP23017_ReadChipDetails()
 }
 
 int I2C::MCP23017_WritePin(uint8_t pin_number,uint8_t  value)
-{	
+{
 #ifndef HAVE_LINUX_I2C
 	return -1;
 #else
@@ -479,14 +483,14 @@ int I2C::MCP23017_WritePin(uint8_t pin_number,uint8_t  value)
 	uint16_t new_data = 0;
 	i2c_data cur_data, cur_iodir;
 	int rc;
-	
+
 	pin_mask=0x01<<(pin_number);
 	iodir_mask &= ~(0x01 << (pin_number));
-	
+
 	// open i2c device
 	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0) return -1; 								// Error opening i2c device!
-	
+
 	rc = I2CReadReg16(fd, MCP23x17_GPIOA, &cur_data); 		// get current gio port value
 	if (rc < 0) {
 		_log.Log(LOG_NORM, "I2C::MCP23017_WritePin. %s. Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
@@ -500,10 +504,10 @@ int I2C::MCP23017_WritePin(uint8_t pin_number,uint8_t  value)
 		return -2; 						//read from i2c failed
 	}
 	cur_iodir.word &= iodir_mask; 							// create mask for iodir register to set pin as output.
-	
+
 	if (value==1) new_data = cur_data.word | pin_mask;		//prepare new value by combinating current value, mask and new value
 	else new_data = cur_data.word & ~pin_mask;
-	
+
 	if (new_data!=cur_data.word) { 							// if value change write new value
 		if (I2CWriteReg16(fd, MCP23x17_GPIOA, new_data) < 0 ) {
 			_log.Log(LOG_ERROR, "I2C::MCP23017_WritePin. %s: Failed to write to I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
@@ -575,6 +579,31 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 		return rc;
 	}
 	//note that the return data is contained in the array pointed to by devValues (passed by-ref)
+	return 0;
+#endif
+}
+
+int I2C::WriteCmdAddr(const int fd, const uint8_t CmdAddr, const uint8_t devAction)
+{
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
+	int rc;
+	struct i2c_rdwr_ioctl_data messagebuffer;
+	uint8_t datatosend[2];
+	struct i2c_msg bme_write_reg[1] = {
+		{ BMEx8x_I2CADDR, 0, 2, datatosend }
+	};
+	datatosend[0] = CmdAddr;
+	datatosend[1] = devAction;
+	//Build a register write command
+	//Requires one complete message containing a reg address and command
+	messagebuffer.msgs = bme_write_reg;           //load the 'write__reg' message into the buffer
+	messagebuffer.nmsgs = 1;                  //One message/action
+	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
+	if (rc < 0) {
+		return rc;
+	}
 	return 0;
 #endif
 }
@@ -724,7 +753,7 @@ int I2C::I2CReadReg16(int fd, unsigned char reg, i2c_data *data )
 //		_log.Log(LOG_NORM, "I2C::I2CReadReg16. %s, Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
 //		return rc;
 //	}
-	//return data.word ;	
+	//return data.word ;
 #endif
 }
 
@@ -1310,11 +1339,15 @@ uint8_t getUChar(uint8_t *data, int index)
 
 bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidity)
 {
+	//Oversample setting for humidity register - page 26
+	WriteCmdAddr(fd, BMEx8x_Control_Hum, BMEx8x_OverSampling_Hum);
+	
 	if (WriteCmd(fd, BMEx8x_OverSampling_Control) != 0) {
 		_log.Log(LOG_ERROR, "%s: Error Writing to I2C register", szI2CTypeNames[m_dev_type]);
 		return false;
 	}
 
+	//Read blocks of calibration data from EEPROM
 	uint8_t cal1[24] = { 0 };
 	uint8_t cal2[1] = { 0 };
 	uint8_t cal3[7] = { 0 };
@@ -1359,6 +1392,11 @@ bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidit
 	dig_H5 = dig_H5 | (getUChar(cal3, 4) >> 4 & 0x0F);
 
 	int8_t dig_H6 = getChar(cal3, 6);
+
+	// Wait in ms(Datasheet Appendix B : Measurement time and current calculation)
+	double wait_time = 1.25 + (2.3 * BMEx8x_OverSampling_Temp) + ((2.3 * BMEx8x_OverSampling_Pres) + 0.575) + ((2.3 * BMEx8x_OverSampling_Hum) + 0.575);
+	int wait_time_ms = (int)rint(wait_time) + 1;
+	sleep_milliseconds(wait_time_ms);
 
 	// Read temperature/pressure/humidity
 	uint8_t data[8] = { 0 };

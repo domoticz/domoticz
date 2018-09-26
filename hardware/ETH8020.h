@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CETH8020 : public CDomoticzHardwareBase
 {
@@ -15,13 +14,12 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_Username;
 	std::string m_Password;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

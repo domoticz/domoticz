@@ -69,22 +69,23 @@ define(['app', 'log/components'], function (app) {
         }
     });
 
-    app.controller('DeviceLightLogController', function ($routeParams, deviceLightLogsHighchartSettings, dataTableDefaultSettings, domoticzApi, deviceApi, permissions) {
+    app.component('deviceLightLog', {
+        bindings: {
+            deviceIdx: '<'
+        },
+        templateUrl: 'views/log/device_light_log.html',
+        controller: DeviceLightLogController,
+        controllerAs: 'vm'
+    });
+
+    function DeviceLightLogController($element, deviceLightLogsHighchartSettings, dataTableDefaultSettings, domoticzApi, deviceApi, permissions) {
         var vm = this;
-        var $element = $('.js-device-logs:last');
         var logsChart;
 
         vm.clearLog = clearLog;
-
-        init();
+        vm.$onInit = init;
 
         function init() {
-            vm.deviceIdx = $routeParams.id;
-
-            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
-                vm.deviceName = device.Name;
-            });
-
             logsChart = $element.find('#lightgraph').highcharts(deviceLightLogsHighchartSettings);
             refreshLog();
         }
@@ -173,5 +174,5 @@ define(['app', 'log/components'], function (app) {
                     });
             });
         }
-    });
+    }
 });

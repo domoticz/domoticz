@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 
 #include <string>
-#include <vector>
 
 namespace Json
 {
@@ -73,7 +72,6 @@ private:
 	bool m_bShowedStartupMessage;
 	int m_iMissedQueries;
 
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
-	boost::mutex m_mutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::mutex m_mutex;
 };

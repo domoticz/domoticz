@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PhilipsHue.h"
 #include "../../main/Logger.h"
+#include <cmath>
 
 /*
  * Helper funtions to convert from Philips XY color to RGB
@@ -245,8 +246,7 @@ bool CPhilipsHue::StatesSimilar(const _tHueLightState &s1, const _tHueLightState
 	bool res = false;
 	if (s1.on == s2.on &&
 	    s1.mode == s2.mode &&
-	    //s1.level == s2.level)
-		abs(s1.level - s2.level) <= 1)
+	    abs(s1.level - s2.level) <= 1)
 	{
 		switch (s1.mode)
 		{

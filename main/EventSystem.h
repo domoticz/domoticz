@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <boost/thread/shared_mutex.hpp>
 
 extern "C" {
 #ifdef WITH_EXTERNAL_LUA
@@ -18,8 +18,9 @@ extern "C" {
 
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
+#include "StoppableTask.h"
 
-class CEventSystem : public CLuaCommon
+class CEventSystem : public CLuaCommon, StoppableTask
 {
 	friend class CdzVents;
 	friend class CLuaHandler;
@@ -184,10 +185,11 @@ private:
 	boost::shared_mutex m_uservariablesMutex;
 	boost::shared_mutex m_scenesgroupsMutex;
 	boost::shared_mutex m_eventtriggerMutex;
-	boost::mutex m_measurementStatesMutex;
-	boost::mutex luaMutex;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread, m_eventqueuethread;
+	std::mutex m_measurementStatesMutex;
+	std::mutex luaMutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_eventqueuethread;
+	StoppableTask m_TaskQueue;
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;

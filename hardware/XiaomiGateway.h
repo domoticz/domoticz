@@ -1,13 +1,11 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
-
-#include <memory>
-#include <string>
-#include <vector>
 #include <boost/tuple/tuple.hpp>
-#include <boost/thread/mutex.hpp>
+#include <list>
+#include <mutex>
+
+#define MAX_LOG_LINE_LENGTH (2048*3)
 
 class XiaomiGateway : public CDomoticzHardwareBase
 {
@@ -15,6 +13,16 @@ public:
 	explicit XiaomiGateway(const int ID);
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+
+	int GetGatewayHardwareID(){ return m_HwdID; };
+	std::string GetGatewayIp(){ return m_GatewayIp; };
+	std::string GetGatewaySid(){ return m_GatewaySID; };
+
+	bool IsMainGateway(){ return m_ListenPort9898; };
+	void SetAsMainGateway(){ m_ListenPort9898 = true; };
+	void UnSetMainGateway(){ m_ListenPort9898 = false; };
+	void Restart();
+
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -33,8 +41,8 @@ private:
 	unsigned int GetShortID(const std::string & nodeid);
 
 	bool m_bDoRestart;
-	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> m_udp_thread;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_udp_thread;
 	bool m_OutputMessage;
 	bool m_IncludeVoltage;
 	bool m_ListenPort9898;
@@ -48,9 +56,11 @@ private:
 	std::string m_GatewayPassword;
 	std::string m_GatewayMusicId;
 	std::string m_GatewayVolume;
-	boost::mutex m_mutex;
-
-	volatile bool m_stoprequested;
+	std::mutex m_mutex;
+	
+	XiaomiGateway * GatewayByIp( std::string ip );
+	void AddGatewayToList();
+	void RemoveFromGatewayList();
 
 	class xiaomi_udp_server
 	{
@@ -81,7 +91,7 @@ private:
 		std::string GetToken(const std::string &ip);
 		std::string GetSID(const std::string &sid);
 	private:
-		boost::mutex m_mutex;
+		std::mutex m_mutex;
 		std::vector<boost::tuple<std::string, std::string, std::string> > m_GatewayTokens;
 
 		XiaomiGatewayTokenManager() { ; }

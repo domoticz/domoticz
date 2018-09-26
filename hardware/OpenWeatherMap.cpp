@@ -55,7 +55,6 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	m_Language("en")
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 
 	m_bHaveGPSCoordinated = (Location.find("lat=") != std::string::npos);
 
@@ -73,20 +72,23 @@ COpenWeatherMap::~COpenWeatherMap(void)
 
 bool COpenWeatherMap::StartHardware()
 {
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWeatherMap::Do_Work, this)));
+	RequestStart();
+
+	m_thread = std::make_shared<std::thread>(&COpenWeatherMap::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "OpenWeatherMap");
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "OpenWeatherMap: Started");
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool COpenWeatherMap::StopHardware()
 {
-	m_stoprequested = true;
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
 	return true;
@@ -95,9 +97,8 @@ bool COpenWeatherMap::StopHardware()
 void COpenWeatherMap::Do_Work()
 {
 	int sec_counter = 595;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 #include "hardwaretypes.h"
 
 namespace Json
@@ -50,8 +49,7 @@ private:
 	int m_Agreement;
 	std::string m_ClientID;
 	std::string m_ClientIDChecksum;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	unsigned long m_LastUsage1;
 	unsigned long m_LastUsage2;

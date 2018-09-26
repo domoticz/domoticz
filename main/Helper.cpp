@@ -1,13 +1,19 @@
 #include "stdafx.h"
 #include "Helper.h"
+#include "Logger.h"
 #ifdef WIN32
 #include "dirent_windows.h"
 #include <direct.h>
 #else
 #include <dirent.h>
+#include <unistd.h>
+#endif
+#if !defined(WIN32)
+#include <sys/ptrace.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <fstream>
 #include <math.h>
 #include <algorithm>
@@ -15,7 +21,8 @@
 #include <sstream>
 #include <openssl/md5.h>
 #include <chrono>
-#include <thread>
+#include <limits.h>
+#include <cstring>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -26,6 +33,7 @@
 
 // Includes for SystemUptime()
 #if defined(__linux__) || defined(__linux) || defined(linux)
+#include <sys/time.h>
 #include <sys/sysinfo.h>
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <time.h>
@@ -33,6 +41,14 @@
 #include <sys/sysctl.h>
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
 #include <time.h>
+#endif
+
+#if defined(__FreeBSD__) 
+// Check if OpenBSD or DragonFly need that at well?
+#include <pthread_np.h>
+#ifndef PTHREAD_MAX_MAMELEN_NP
+#define PTHREAD_MAX_NAMELEN_NP 32 	// Arbitrary
+#endif
 #endif
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
@@ -180,6 +196,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 #else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
+	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
 	std::string sLine = "";
@@ -289,6 +306,25 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		closedir(d);
 	}
 
+#if defined(__linux__) || defined(__linux) || defined(linux)
+	d=opendir("/dev/serial/by-id");
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while ((de = readdir(d)))
+		{
+			// Only consider symbolic links
+                        if (de->d_type == DT_LNK)
+                        {
+				std::string fname = de->d_name;
+				ret.push_back("/dev/serial/by-id/" + fname);
+			}
+		}
+		closedir(d);
+	}
+
+#endif
 #endif
 	return ret;
 }
@@ -1080,3 +1116,144 @@ int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> 
 	closedir(dir);
 	return 0;
 }
+
+#ifdef WIN32
+// From https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+typedef struct tagTHREADNAME_INFO
+{
+	DWORD dwType; // Must be 0x1000.
+	LPCSTR szName; // Pointer to name (in user addr space).
+	DWORD dwThreadID; // Thread ID (-1=caller thread).
+	DWORD dwFlags; // Reserved for future use, must be zero.
+} THREADNAME_INFO;
+#pragma pack(pop)
+int SetThreadName(std::thread::native_handle_type thread, const char* threadName) {
+	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = threadName;
+	info.dwThreadID = dwThreadID;
+	info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable: 6320 6322)
+	__try{
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER){
+	}
+#pragma warning(pop)
+	return 0;
+}
+#else
+// Based on https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+int SetThreadName(std::thread::native_handle_type thread, const char *name)
+{
+#if defined(__linux__) || defined(__linux) || defined(linux)
+	char name_trunc[16];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	return pthread_setname_np(thread, name_trunc);
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+	return 0;
+#elif defined(__NetBSD__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	return pthread_setname_np(thread, "%s", (void *)name_trunc);
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	pthread_setname_np(thread, name_trunc);
+	return 0;
+#elif defined(__FreeBSD__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	pthread_set_name_np(thread, name_trunc);
+	return 0;
+#endif
+}
+#endif
+
+#if !defined(WIN32)
+bool IsDebuggerPresent(void)
+{
+#if defined(__linux__)
+	// Linux implementation: Search for 'TracerPid:' in /proc/self/status
+	char buf[4096];
+
+	const int status_fd = ::open("/proc/self/status", O_RDONLY);
+	if (status_fd == -1)
+		return false;
+
+	const ssize_t num_read = ::read(status_fd, buf, sizeof(buf) - 1);
+	if (num_read <= 0)
+		return false;
+
+	buf[num_read] = '\0';
+	constexpr char tracerPidString[] = "TracerPid:";
+	const auto tracer_pid_ptr = ::strstr(buf, tracerPidString);
+	if (!tracer_pid_ptr)
+		return false;
+
+	for (const char* characterPtr = tracer_pid_ptr + sizeof(tracerPidString) - 1; characterPtr <= buf + num_read; ++characterPtr)
+	{
+		if (::isspace(*characterPtr))
+			continue;
+		else
+			return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
+	}
+
+	return false;
+#else
+	// MacOS X / BSD: TODO
+#	ifdef _DEBUG
+	return true;
+#	else
+	return false;
+#	endif
+#endif
+}
+#endif
+
+#if defined(__linux__)
+bool IsWSL(void)
+{
+	// Detect WSL according to https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
+	bool is_wsl = false;
+
+	char buf[1024];
+
+	int status_fd = open("/proc/sys/kernel/osrelease", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	ssize_t num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	status_fd = open("/proc/version", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	return is_wsl;
+}
+#endif

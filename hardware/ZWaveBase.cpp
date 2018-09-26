@@ -3,7 +3,6 @@
 #include "ZWaveCommands.h"
 
 #include <sstream>      // std::stringstream
-#include <vector>
 #include <ctype.h>
 #include <iomanip>
 
@@ -34,7 +33,6 @@ ZWaveBase::ZWaveBase()
 	m_LastRemovedNode = -1;
 	m_ControllerCommandStartTime = 0;
 	m_bInitState = true;
-	m_stoprequested = false;
 }
 
 
@@ -44,8 +42,9 @@ ZWaveBase::~ZWaveBase(void)
 
 bool ZWaveBase::StartHardware()
 {
+	RequestStart();
+
 	m_bInitState=true;
-	m_stoprequested=false;
 	m_updateTime=0;
 	m_LastIncludedNode=0;
 	m_bControllerCommandInProgress=false;
@@ -53,18 +52,18 @@ bool ZWaveBase::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ZWaveBase::Do_Work, this)));
-	return (m_thread!=NULL);
+	m_thread = std::make_shared<std::thread>(&ZWaveBase::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "ZWaveBase");
+	return (m_thread != nullptr);
 }
 
 bool ZWaveBase::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
-		if (m_thread!=NULL)
-			m_thread->join();
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted=false;
 	return true;
@@ -78,11 +77,8 @@ void ZWaveBase::Do_Work()
 #endif
 	int msec_counter = 0;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
-		if (m_stoprequested)
-			return;
 		msec_counter++;
 		if (msec_counter == 2)
 		{
@@ -850,7 +846,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 
 bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	const _tZWaveDevice* pDevice=NULL;
 
@@ -916,7 +912,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				if ((cmnd== gswitch_sOff)||(cmnd== gswitch_sGroupOff))
 					svalue=0;
-				else 
+				else
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}

@@ -52,7 +52,6 @@ m_APIKey(APIKey),
 m_Location(Location)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -66,21 +65,24 @@ void CDarkSky::Init()
 
 bool CDarkSky::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDarkSky::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CDarkSky::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Darksky");
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CDarkSky::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -91,9 +93,8 @@ void CDarkSky::Do_Work()
 	_log.Log(LOG_STATUS, "DarkSky: Started...");
 
 	int sec_counter = 290;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
@@ -106,7 +107,7 @@ void CDarkSky::Do_Work()
 	_log.Log(LOG_STATUS,"DarkSky: Worker stopped...");
 }
 
-bool CDarkSky::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDarkSky::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -240,8 +241,8 @@ void CDarkSky::GetMeterDetails()
 	float windgust_ms=0;
 	float wind_temp=temp;
 	float wind_chill=temp;
-	int windgust=1;
-	float windchill=-1;
+	//int windgust=1;
+	//float windchill=-1;
 
 	if (root["currently"]["windBearing"].empty()==false)
 	{

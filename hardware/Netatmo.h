@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "../main/BaroForecastCalculator.h"
 
 namespace Json
 {
@@ -13,7 +14,7 @@ public:
 	CNetatmo(const int ID, const std::string& username, const std::string& password);
 	~CNetatmo(void);
 
-	bool WriteToHardware(const char *, const unsigned char);
+	bool WriteToHardware(const char *, const unsigned char) override;
 	void SetSetpoint(int idx, const float temp);
 	bool SetProgramState(const int idx, const int newState);
 private:
@@ -38,8 +39,7 @@ private:
 	bool m_bForceSetpointUpdate;
 	time_t m_tSetpointUpdateTime;
 
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	time_t m_nextRefreshTs;
 
@@ -72,6 +72,8 @@ private:
 	std::map<std::string, int> m_RoomIDs;
 	std::map<std::string, std::string> m_ModuleNames;
 	std::map<std::string, int> m_ModuleIDs;
+
+	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 
 	int GetBatteryLevel(const std::string &ModuleType, int battery_percent);
 	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_percent, const int rf_status);

@@ -1915,3 +1915,13 @@ tspan {
    margin-left: 6px !important;
    margin-top: 10px !important;       
 }
+
+.device-log-chart {
+	display: block;
+	height: 300px;
+	margin-bottom: 24px;
+}
+
+#container-speed > .highcharts-container {
+    overflow: visible !important;
+}

@@ -1,23 +1,20 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
-#include <boost/lexical_cast.hpp>
 #include "../hardware/hardwaretypes.h"
 #include "../json/json.h"
 #include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../notifications/NotificationHelper.h"
-#include "../main/WebServer.h"
-#include "../main/mainworker.h"
 #include "../main/localtime_r.h"
-#include "../webserver/cWebem.h"
+#include "../main/Logger.h"
+#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
+#include "../notifications/NotificationHelper.h"
 #include "../httpclient/HTTPClient.h"
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
 	m_IP(IPAddress),
 	m_User(User),
 	m_Pwd(Pwd),
-	m_stoprequested(false),
 	m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
@@ -27,7 +24,8 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAd
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
+CLogitechMediaServer::CLogitechMediaServer(const int ID) : 
+	m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
 	m_Port = 0;
@@ -109,6 +107,9 @@ _eNotificationTypes	CLogitechMediaServer::NotificationType(_eMediaStatus nStatus
 bool CLogitechMediaServer::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 	m_iThreadsRunning = 0;
@@ -117,35 +118,21 @@ bool CLogitechMediaServer::StartHardware()
 	StartHeartbeatThread();
 
 	//Start worker thread
-	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLogitechMediaServer::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Logitech");
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CLogitechMediaServer::StopHardware()
 {
 	StopHeartbeatThread();
 
-	try {
-		if (m_thread)
-		{
-			m_stoprequested = true;
-			m_thread->join();
-			m_thread.reset();
-
-			//Make sure all our background workers are stopped
-			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter < 15))
-			{
-				sleep_milliseconds(500);
-				iRetryCounter++;
-			}
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -326,9 +313,8 @@ void CLogitechMediaServer::Do_Work()
 	//Mark devices as 'Unused'
 	m_sql.safe_query("UPDATE WOLNodes SET Timeout=-1 WHERE (HardwareID==%d)", m_HwdID);
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
 		mcounter++;
 		if (mcounter == 2)
 		{
@@ -336,7 +322,7 @@ void CLogitechMediaServer::Do_Work()
 			scounter++;
 			if ((scounter >= m_iPollInterval) || (bFirstTime))
 			{
-				boost::lock_guard<boost::mutex> l(m_mutex);
+				std::lock_guard<std::mutex> l(m_mutex);
 
 				scounter = 0;
 				bFirstTime = false;
@@ -346,18 +332,25 @@ void CLogitechMediaServer::Do_Work()
 				std::vector<LogitechMediaServerNode>::const_iterator itt;
 				for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 				{
-					if (m_stoprequested)
+					if (IsStopRequested(0))
 						return;
 					if (m_iThreadsRunning < 1000)
 					{
 						m_iThreadsRunning++;
 						boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, *itt));
+						SetThreadName(t.native_handle(), "LogitechNode");
 						t.join();
 					}
 				}
 			}
 		}
 	}
+	//Make sure all our background workers are stopped
+	while (m_iThreadsRunning > 0)
+	{
+		sleep_milliseconds(150);
+	}
+
 	_log.Log(LOG_STATUS, "Logitech Media Server: Worker stopped...");
 }
 

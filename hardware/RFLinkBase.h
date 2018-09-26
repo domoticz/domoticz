@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-#include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
 #define RFLINK_READ_BUFFER_SIZE 65*1024

@@ -34,7 +34,6 @@
 #include "../hardware/VolcraftCO20.h"
 #endif
 #include "../hardware/Rego6XXSerial.h"
-#include "../hardware/Razberry.h"
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
 #endif
@@ -109,9 +108,9 @@
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
 #include "../hardware/RAVEn.h"
-#include "../hardware/DenkoviSmartdenLan.h"
-#include "../hardware/DenkoviSmartdenIPInOut.h"
 #include "../hardware/DenkoviDevices.h"
+#include "../hardware/DenkoviUSBDevices.h"
+#include "../hardware/DenkoviTCPDevices.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
@@ -138,6 +137,8 @@
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EcoCompteur.h"
 #include "../hardware/Honeywell.h"
+#include "../hardware/TTNMQTT.h"
+
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -159,9 +160,9 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-	//#define PARSE_RFXCOM_DEVICE_LOG
-	//#define DEBUG_DOWNLOAD
-	//#define DEBUG_RXQUEUE
+//#define PARSE_RFXCOM_DEVICE_LOG
+//#define DEBUG_DOWNLOAD
+//#define DEBUG_RXQUEUE
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -177,8 +178,7 @@ extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
-extern _eWebCompressionMode g_wwwCompressMode;
-
+extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 
 
@@ -197,8 +197,6 @@ namespace tcp {
 MainWorker::MainWorker()
 {
 	m_SecCountdown = -1;
-	m_stoprequested = false;
-	m_stopRxMessageThread = false;
 
 	m_bStartHardware = false;
 	m_hardwareStartCounter = 0;
@@ -224,6 +222,7 @@ MainWorker::MainWorker()
 	m_bIgnoreUsernamePassword = false;
 
 	time_t atime = mytime(NULL);
+	m_LastHeartbeat = atime;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 	m_ScheduleLastMinute = ltime.tm_min;
@@ -307,7 +306,7 @@ void MainWorker::StopDomoticzHardware()
 	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
 	std::vector<CDomoticzHardwareBase*> OrgHardwaredevices;
 	{
-		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::lock_guard<std::mutex> l(m_devicemutex);
 		for (auto & itt : m_hardwaredevices)
 		{
 			OrgHardwaredevices.push_back(itt);
@@ -358,7 +357,7 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 	{
 		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
 	}
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
 	pHardware->sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
 	m_hardwaredevices.push_back(pHardware);
@@ -370,7 +369,7 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
 	CDomoticzHardwareBase *pOrgHardware = NULL;
 	{
-		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::lock_guard<std::mutex> l(m_devicemutex);
 		std::vector<CDomoticzHardwareBase*>::iterator itt;
 		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 		{
@@ -402,7 +401,7 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 
 int MainWorker::FindDomoticzHardware(int HwdId)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	int ii = 0;
 	for (const auto & itt : m_hardwaredevices)
 	{
@@ -415,7 +414,7 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 
 int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	int ii = 0;
 	for (const auto & itt : m_hardwaredevices)
 	{
@@ -428,7 +427,7 @@ int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 
 CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	for (auto & itt : m_hardwaredevices)
 	{
 		if (itt->m_HwdID == HwdId)
@@ -452,7 +451,7 @@ CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string &HwdId,
 
 CDomoticzHardwareBase* MainWorker::GetHardwareByType(const _eHardwareTypes HWType)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_devicemutex);
 	for (auto & itt : m_hardwaredevices)
 	{
 		if (itt->HwdType == HWType)
@@ -533,7 +532,7 @@ bool MainWorker::GetSunSettings()
 	asttwend = szRiseSet;
 
 	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
-	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3)+ ";" + daylength.substr(0, daylength.size() - 3); //make a short version
+	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3) + ";" + daylength.substr(0, daylength.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
 		m_DayLength = daylength;
@@ -546,7 +545,7 @@ bool MainWorker::GetSunSettings()
 		StringSplit(m_LastSunriseSet, ";", strarray);
 		m_SunRiseSetMins.clear();
 
-		for(const auto & it : strarray)
+		for (const auto & it : strarray)
 		{
 			StringSplit(it, ":", hourMinItem);
 			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
@@ -577,13 +576,13 @@ bool MainWorker::GetSunSettings()
 		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
 		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
 
-		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
-		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
+									// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
+									// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
 	return true;
 }
 
-void MainWorker::SetWebserverSettings(const server_settings & settings)
+void MainWorker::SetWebserverSettings(const http::server::server_settings & settings)
 {
 	m_webserver_settings.set(settings);
 }
@@ -604,7 +603,7 @@ std::string MainWorker::GetSecureWebserverPort()
 	return m_secure_webserver_settings.listening_port;
 }
 
-void MainWorker::SetSecureWebserverSettings(const ssl_server_settings & ssl_settings)
+void MainWorker::SetSecureWebserverSettings(const http::server::ssl_server_settings & ssl_settings)
 {
 	m_secure_webserver_settings.set(ssl_settings);
 }
@@ -744,10 +743,6 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new DomoticzTCP(ID, Address, Port, Username, Password);
 		break;
-	case HTYPE_RazberryZWave:
-		_log.Log(LOG_ERROR, "Razberry: Deprecated, support is removed! Use OpenZWave (see wiki)...");
-		return false;
-		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
 		pHardware = new P1MeterTCP(ID, Address, Port, (Mode2 != 0), Mode3);
@@ -862,17 +857,17 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CSterbox(ID, Address, Port, Username, Password);
 		break;
-	case HTYPE_DenkoviSmartdenLan:
-		//LAN
-		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password, Mode1);
-		break;
-	case HTYPE_DenkoviSmartdenIPInOut:
-		//LAN
-		pHardware = new CDenkoviSmartdenIPInOut(ID, Address, Port, Password, Mode1);
-		break;
-	case HTYPE_DenkoviDevices:
+	case HTYPE_DenkoviHTTPDevices:
 		//LAN
 		pHardware = new CDenkoviDevices(ID, Address, Port, Password, Mode1, Mode2);
+		break;
+	case HTYPE_DenkoviUSBDevices:
+		//USB
+		pHardware = new CDenkoviUSBDevices(ID, SerialPort, Mode1);
+		break;
+	case HTYPE_DenkoviTCPDevices:
+		//LAN
+		pHardware = new CDenkoviTCPDevices(ID, Address, Port, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_HEOS:
 		//HEOS by DENON
@@ -964,7 +959,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTado(ID, Username, Password);
 		break;
 	case HTYPE_Honeywell:
-		pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		pHardware = new CHoneywell(ID, Username, Password);
 		break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1, Mode2);
@@ -1070,12 +1065,16 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EcoCompteur:
 		pHardware = new CEcoCompteur(ID, Address, Port);
 		break;
+	case HTYPE_TTN_MQTT:
+		//LAN
+		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Filename);
+		break;
 	}
 
 	if (pHardware)
 	{
 		pHardware->HwdType = Type;
-		pHardware->Name = Name;
+		pHardware->m_Name = Name;
 		pHardware->m_DataTimeout = DataTimeout;
 		AddDomoticzHardware(pHardware);
 
@@ -1121,48 +1120,7 @@ bool MainWorker::Start()
 #endif
 	// load notifications configuration
 	m_notifications.LoadConfig();
-	if (!StartThread())
-		return false;
-	return true;
-}
 
-
-bool MainWorker::Stop()
-{
-	if (m_rxMessageThread) {
-		// Stop RxMessage thread before hardware to avoid NULL pointer exception
-		m_stopRxMessageThread = true;
-		UnlockRxMessageQueue();
-		m_rxMessageThread->join();
-		m_rxMessageThread.reset();
-	}
-	if (m_thread)
-	{
-		m_webservers.StopServers();
-		m_sharedserver.StopServer();
-		_log.Log(LOG_STATUS, "Stopping all hardware...");
-		StopDomoticzHardware();
-		m_scheduler.StopScheduler();
-		m_eventsystem.StopEventSystem();
-		m_fibaropush.Stop();
-		m_httppush.Stop();
-		m_influxpush.Stop();
-		m_googlepubsubpush.Stop();
-#ifdef ENABLE_PYTHON
-		m_pluginsystem.StopPluginSystem();
-#endif
-
-		//    m_cameras.StopCameraGrabber();
-
-		m_stoprequested = true;
-		m_thread->join();
-		m_thread.reset();
-	}
-	return true;
-}
-
-bool MainWorker::StartThread()
-{
 	if (m_webserver_settings.is_enabled()
 #ifdef WWW_ENABLE_SSL
 		|| m_secure_webserver_settings.is_enabled()
@@ -1185,7 +1143,7 @@ bool MainWorker::StartThread()
 	int nValue = 0;
 	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
 	{
-		m_webservers.SetAuthenticationMethod((_eAuthenticationMethod)nValue);
+		m_webservers.SetAuthenticationMethod((http::server::_eAuthenticationMethod)nValue);
 	}
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
@@ -1212,10 +1170,46 @@ bool MainWorker::StartThread()
 		LoadSharedUsers();
 	}
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work, this)));
-	m_rxMessageThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work_On_Rx_Messages, this)));
+	m_thread = std::make_shared<std::thread>(&MainWorker::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MainWorker");
+	m_rxMessageThread = std::make_shared<std::thread>(&MainWorker::Do_Work_On_Rx_Messages, this);
+	SetThreadName(m_rxMessageThread->native_handle(), "MainWorkerRxMsg");
+	return (m_thread != nullptr) && (m_rxMessageThread != NULL);
+}
 
-	return (m_thread != NULL) && (m_rxMessageThread != NULL);
+
+bool MainWorker::Stop()
+{
+	if (m_rxMessageThread) {
+		// Stop RxMessage thread before hardware to avoid NULL pointer exception
+		m_TaskRXMessage.RequestStop();
+		UnlockRxMessageQueue();
+		m_rxMessageThread->join();
+		m_rxMessageThread.reset();
+	}
+	if (m_thread)
+	{
+		m_webservers.StopServers();
+		m_sharedserver.StopServer();
+		_log.Log(LOG_STATUS, "Stopping all hardware...");
+		StopDomoticzHardware();
+		m_scheduler.StopScheduler();
+		m_eventsystem.StopEventSystem();
+		m_fibaropush.Stop();
+		m_httppush.Stop();
+		m_influxpush.Stop();
+		m_googlepubsubpush.Stop();
+#ifdef ENABLE_PYTHON
+		m_pluginsystem.StopPluginSystem();
+#endif
+
+		//    m_cameras.StopCameraGrabber();
+
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
+	return true;
 }
 
 #define HEX( x ) \
@@ -1525,11 +1519,9 @@ void MainWorker::ParseRFXLogFile()
 void MainWorker::Do_Work()
 {
 	int second_counter = 0;
-	while (!m_stoprequested)
+	int heartbeat_counter = 0;
+	while (!IsStopRequested(500))
 	{
-		//sleep 500 milliseconds
-		sleep_milliseconds(500);
-
 		if (m_bDoDownloadDomoticzUpdate)
 		{
 			m_bDoDownloadDomoticzUpdate = false;
@@ -1636,7 +1628,7 @@ void MainWorker::Do_Work()
 
 				tzset(); //this because localtime_r/localtime_s does not update for DST
 
-				//check for 5 minute schedule
+						 //check for 5 minute schedule
 				if (ltime.tm_min % m_sql.m_ShortLogInterval == 0)
 				{
 					m_sql.ScheduleShortlog();
@@ -1684,7 +1676,7 @@ void MainWorker::Do_Work()
 				if (ltime.tm_hour == 4)
 				{
 					//Heal the OpenZWave network
-					boost::lock_guard<boost::mutex> l(m_devicemutex);
+					std::lock_guard<std::mutex> l(m_devicemutex);
 					std::vector<CDomoticzHardwareBase*>::iterator itt;
 					for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 					{
@@ -1704,8 +1696,10 @@ void MainWorker::Do_Work()
 				HandleAutomaticBackups();
 			}
 		}
-		if (ltime.tm_sec % 30 == 0)
+		if (heartbeat_counter++ > 12)
 		{
+			heartbeat_counter = 0;
+			m_LastHeartbeat = mytime(NULL);
 			HeartbeatCheck();
 		}
 	}
@@ -1754,8 +1748,7 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 		(pHardware->HwdType != HTYPE_RFXLAN)
 		)
 	{
-		//clear buffer, and enable receive
-		pHardware->m_rxbufferpos = 0;
+		//enable receive
 		pHardware->m_bEnableReceive = true;
 		return;
 	}
@@ -1925,7 +1918,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	if ((pHardware->HwdType == HTYPE_Domoticz) && (pHardware->m_HwdID == 8765))
 	{
 		//Directly process the command
-		boost::lock_guard<boost::mutex> l(m_decodeRXMessageMutex);
+		std::lock_guard<std::mutex> l(m_decodeRXMessageMutex);
 		ProcessRXMessage(pHardware, pRXCommand, defaultName, BatteryLevel);
 	}
 	else
@@ -1959,7 +1952,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 		_log.Log(LOG_ERROR, "RxQueue: cannot push message with invalid hardware id (id=%d, type=%d, name=%s)",
 			pHardware->m_HwdID,
 			pHardware->HwdType,
-			pHardware->Name.c_str());
+			pHardware->m_Name.c_str());
 		return;
 	}
 
@@ -1983,7 +1976,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 	rxMessage.crc = crc_ccitt2();
 #endif
 
-	if (m_stopRxMessageThread) {
+	if (m_TaskRXMessage.IsStopRequested(0)) {
 		// Server is stopping
 		return;
 	}
@@ -2011,11 +2004,11 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 #ifdef DEBUG_RXQUEUE
 		_log.Log(LOG_STATUS, "RxQueue: wait for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
 #endif
-		while (!rxMessage.trigger->timed_wait(boost::posix_time::milliseconds(1000))) {
+		while (!rxMessage.trigger->timed_wait(std::chrono::duration<int>(1))) {
 #ifdef DEBUG_RXQUEUE
 			_log.Log(LOG_STATUS, "RxQueue: wait 1s for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
 #endif
-			if (m_stopRxMessageThread) {
+			if (m_TaskRXMessage.IsStopRequested(0)) {
 				// Server is stopping
 				break;
 			}
@@ -2047,22 +2040,17 @@ void MainWorker::Do_Work_On_Rx_Messages()
 {
 	_log.Log(LOG_STATUS, "RxQueue: queue worker started...");
 
-	m_stopRxMessageThread = false;
-	while (true) {
-		if (m_stopRxMessageThread) {
-			// Server is stopping
-			break;
-		}
-
+	while (!m_TaskRXMessage.IsStopRequested(0))
+	{
 		// Wait and pop next message or timeout
 		_tRxQueueItem rxQItem;
-		bool hasPopped = m_rxMessageQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(rxQItem,
-			boost::posix_time::milliseconds(5000));// (if no message for 2 seconds, returns anyway to check m_stopRxMessageThread)
+		bool hasPopped = m_rxMessageQueue.timed_wait_and_pop<std::chrono::duration<int> >(rxQItem, std::chrono::duration<int>(5));
+		// (if no message for 5 seconds, returns anyway to check m_TaskRXMessage.IsStopRequested)
 
 		if (!hasPopped) {
 			// Timeout occurred : queue is empty
 #ifdef DEBUG_RXQUEUE
-				//_log.Log(LOG_STATUS, "RxQueue: the queue has been empty for five seconds");
+			//_log.Log(LOG_STATUS, "RxQueue: the queue has been empty for five seconds");
 #endif
 			continue;
 		}
@@ -2138,7 +2126,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 
 	const_cast<CDomoticzHardwareBase *>(pHardware)->SetHeartbeatReceived();
 
-	uint64_t DeviceRowIdx = -1;
+	uint64_t DeviceRowIdx = (uint64_t)-1;
 	std::string DeviceName = "";
 	tcp::server::CTCPClient *pClient2Ignore = NULL;
 
@@ -2422,14 +2410,14 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
 		std::stringstream sTmp;
-		sTmp << "(" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
+		sTmp << "(" << pHardware->m_Name << ") " << sdevicetype << " (" << DeviceName << ")";
 		WriteMessageStart();
 		WriteMessage(sTmp.str().c_str());
 		WriteMessageEnd();
 	}
 
 	//TODO: Notify plugin?
-	
+
 	//Send to connected Sharing Users
 	m_sharedserver.SendToAll(pHardware->m_HwdID, DeviceRowIdx, (const char*)pRXCommand, pRXCommand[0] + 1, pClient2Ignore);
 
@@ -2514,6 +2502,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 			}
 			int FWType = 0;
 			int FWVersion = 0;
+			int NoiseLevel = 0;
 			if (mlen > 13)
 			{
 				FWType = pResponse->IRESPONSE.msg10;
@@ -2542,23 +2531,30 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				WriteMessage("Firmware type     = ", false);
 				switch (FWType)
 				{
-				case 0:
+				case FWtyperec:
 					strcpy(szTmp, "Type1 RX");
 					break;
-				case 1:
+				case FWtype1:
 					strcpy(szTmp, "Type1");
 					break;
-				case 2:
+				case FWtype2:
 					strcpy(szTmp, "Type2");
 					break;
-				case 3:
+				case FWtypeExt:
 					strcpy(szTmp, "Ext");
 					break;
-				case 4:
+				case FWtypeExt2:
 					strcpy(szTmp, "Ext2");
 					break;
-				case 5:
+				case FWtypePro1:
 					strcpy(szTmp, "Pro1");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
+					break;
+				case FWtypePro2:
+					strcpy(szTmp, "Pro2");
+					break;
+				case FWtypeProXL1:
+					strcpy(szTmp, "Pro XL1");
 					break;
 				default:
 					strcpy(szTmp, "?");
@@ -2573,6 +2569,13 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				std::stringstream sstr;
 				sstr << szTmp << "/" << FWVersion;
 				pMyHardware->m_Version = sstr.str();
+
+				if (FWType == FWtypePro1)
+				{
+					pMyHardware->m_NoiseLevel = NoiseLevel;
+					sprintf(szTmp, "Noise Level: %d dB", pMyHardware->m_NoiseLevel);
+					WriteMessage(szTmp);
+				}
 			}
 
 
@@ -2985,11 +2988,9 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 		//Get our index
 		result = m_sql.safe_query(
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
-		if (result.size() != 0)
+		if (!result.empty())
 		{
-			uint64_t ulID;
-			std::stringstream s_str(result[0][0]);
-			s_str >> ulID;
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
 
 			//Get Counter from one Hour ago
 			time_t now = mytime(NULL);
@@ -3386,7 +3387,7 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 			sprintf(szTmp, "%.1f;%d;%d", temp, humidity, humidity_status);
 			DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, SignalLevel, BatteryLevel, 0, szTmp, procResult.DeviceName);
 			m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, Unit, pTypeTEMP_HUM, sTypeTH_LC_TC, szTmp);
-			
+
 			bHandledNotification = true;
 		}
 	}
@@ -3660,14 +3661,14 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 		return;
 	}
 	/*
-		AddjValue=0.0f;
-		AddjMulti=1.0f;
-		m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-		Humidity+=int(AddjValue);
-		if (Humidity>100)
-			Humidity=100;
-		if (Humidity<0)
-			Humidity=0;
+	AddjValue=0.0f;
+	AddjMulti=1.0f;
+	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	Humidity+=int(AddjValue);
+	if (Humidity>100)
+	Humidity=100;
+	if (Humidity<0)
+	Humidity=0;
 	*/
 	sprintf(szTmp, "%.1f;%d;%d", temp, Humidity, HumidityStatus);
 	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
@@ -5055,7 +5056,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 	char szTmp[100];
 	unsigned char devType = pTypeLighting5;
 	unsigned char subType = pResponse->LIGHTING5.subtype;
-	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W) && (subType != sTypeKangtai))
+	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivolo1to10) && (subType != sTypeRGB432W) && (subType != sTypeKangtai))
 		sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	else
 		sprintf(szTmp, "%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
@@ -5288,7 +5289,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			}
 			break;
-		case sTypeLivoloAppliance:
+		case sTypeLivolo1to10:
 			WriteMessage("subtype       = Livolo On/Off module");
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
@@ -5717,6 +5718,12 @@ void MainWorker::decode_Fan(const int HwdID, const _eHardwareTypes HwdType, cons
 		case sTypeFT1211R:
 			WriteMessage("subtype       = FT1211R");
 			break;
+		case sTypeFalmec:
+			WriteMessage("subtype       = Falmec");
+			break;
+		case sTypeLucciAirDCII:
+			WriteMessage("subtype       = Lucci Air DC II");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
 			WriteMessage(szTmp);
@@ -5838,11 +5845,9 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HwdID, ID.c_str(), Unit, devType, subType);
-		if (result.size() != 0)
+		if (!result.empty())
 		{
-			uint64_t ulID;
-			std::stringstream s_str(result[0][0]);
-			s_str >> ulID;
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
 
 			//store light level
 			m_sql.safe_query(
@@ -5859,11 +5864,9 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HwdID, ID.c_str(), Unit, devType, subType);
-		if (result.size() != 0)
+		if (!result.empty())
 		{
-			uint64_t ulID;
-			std::stringstream s_str(result[0][0]);
-			s_str >> ulID;
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
 
 			//store color in database
 			m_sql.safe_query(
@@ -6260,6 +6263,12 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeBlindsT14:
 			WriteMessage("subtype       = Hualite");
 			break;
+		case sTypeBlindsT15:
+			WriteMessage("subtype       = RFU");
+			break;
+		case sTypeBlindsT16:
+			WriteMessage("subtype       = Zemismart");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
 			WriteMessage(szTmp);
@@ -6466,38 +6475,124 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
+void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	char szTmp[100];
+	const _tEVOHOME1 *pEvo = reinterpret_cast<const _tEVOHOME1*>(pResponse);
+	unsigned char devType = pTypeEvohome;
+	unsigned char subType = pEvo->subtype;
+	std::stringstream szID;
+	if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
+		szID << std::hex << (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
+	else //GB3: web based evohome uses decimal device ID's
+		szID << std::dec << (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
+	std::string ID(szID.str());
+	unsigned char Unit = 0;
+	unsigned char cmnd = pEvo->status;
+	unsigned char SignalLevel = 255;//Unknown
+	unsigned char BatteryLevel = 255;//Unknown
+
+	std::string szUntilDate;
+	if (pEvo->mode == CEvohomeBase::cmTmp)//temporary
+		szUntilDate = CEvohomeDateTime::GetISODate(pEvo);
+
+	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
+
+	//FIXME A similar check is also done in switch modal do we want to forward the ooc flag and rely on this check entirely?
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
+		HwdID, ID.c_str());
+	bool bNewDev = false;
+	std::string name;
+	if (!result.empty())
+	{
+		std::vector<std::string> sd = result[0];
+		if (atoi(sd[7].c_str()) == cmnd && sd[8] == szUntilDate)
+			return;
+	}
+	else
+	{
+		bNewDev = true;
+		if (!pEvoHW)
+			return;
+		name = pEvoHW->GetControllerName();
+		if (name.empty())
+			return;
+	}
+
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szUntilDate.c_str(), procResult.DeviceName, pEvo->action != 0);
+	if (DevRowIdx == -1)
+		return;
+	if (bNewDev)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
+			name.c_str(), DevRowIdx);
+		procResult.DeviceName = name;
+	}
+
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
+	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
+	{
+		WriteMessageStart();
+		switch (pEvo->subtype)
+		{
+		case sTypeEvohome:
+			WriteMessage("subtype       = Evohome");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pEvo->type, pEvo->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
+			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->id1, pEvo->id2, pEvo->id3);
+		else //GB3: web based evohome uses decimal device ID's
+			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3));
+		WriteMessage(szTmp);
+		sprintf(szTmp, "action        = %d", (int)pEvo->action);
+		WriteMessage(szTmp);
+		WriteMessage("status        = ");
+		WriteMessage(pEvoHW->GetControllerModeName(pEvo->status));
+
+		WriteMessageEnd();
+	}
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
 void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
+	const _tEVOHOME2 *pEvo = reinterpret_cast<const _tEVOHOME2*>(pResponse);
 	unsigned char cmnd = 0;
 	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
 
-	//Get Device details
+									 //Get Device details
 	std::vector<std::vector<std::string> > result;
-	if (pEvo->EVOHOME2.type == pTypeEvohomeZone && pEvo->EVOHOME2.zone > 12) //Allow for additional Zone Temp devices which require DeviceID
+	if (pEvo->type == pTypeEvohomeZone && pEvo->zone > 12) //Allow for additional Zone Temp devices which require DeviceID
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
-			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
+			HwdID, (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3), (int)pEvo->type);
 	}
-	else if (pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
+	else if (pEvo->zone)//if unit number is available the id3 will be the controller device id
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == %d) AND (Type==%d)",
-			HwdID, (int)pEvo->EVOHOME2.zone, (int)pEvo->EVOHOME2.type);
+			HwdID, (int)pEvo->zone, (int)pEvo->type);
 	}
 	else//unit number not available then id3 should be the zone device id
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
-			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
+			HwdID, (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3), (int)pEvo->type);
 	}
-	if (result.size() < 1 && !pEvo->EVOHOME2.zone)
+	if (result.size() < 1 && !pEvo->zone)
 		return;
 
 	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
@@ -6521,11 +6616,11 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	else
 	{
 		bNewDev = true;
-		Unit = pEvo->EVOHOME2.zone;//should always be non zero
-		dType = pEvo->EVOHOME2.type;
-		dSubType = pEvo->EVOHOME2.subtype;
+		Unit = pEvo->zone;//should always be non zero
+		dType = pEvo->type;
+		dSubType = pEvo->subtype;
 
-		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
+		szID << std::hex << (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
 		szDevID = szID.str();
 
 		if (!pEvoHW)
@@ -6541,45 +6636,45 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		szUpdateStat = "0.0;0.0;Auto";
 	}
 
-	if (pEvo->EVOHOME2.updatetype == CEvohomeBase::updBattery)
-		BatteryLevel = pEvo->EVOHOME2.battery_level;
+	if (pEvo->updatetype == CEvohomeBase::updBattery)
+		BatteryLevel = pEvo->battery_level;
 	else
 	{
-		if (dType == pTypeEvohomeWater && pEvo->EVOHOME2.updatetype == pEvoHW->updSetPoint)
-			sprintf(szTmp, "%s", pEvo->EVOHOME2.temperature ? "On" : "Off");
+		if (dType == pTypeEvohomeWater && pEvo->updatetype == pEvoHW->updSetPoint)
+			sprintf(szTmp, "%s", pEvo->temperature ? "On" : "Off");
 		else
-			sprintf(szTmp, "%.2f", pEvo->EVOHOME2.temperature / 100.0f);
+			sprintf(szTmp, "%.2f", pEvo->temperature / 100.0f);
 
 		std::vector<std::string> strarray;
 		StringSplit(szUpdateStat, ";", strarray);
 		if (strarray.size() >= 3)
 		{
-			if (pEvo->EVOHOME2.updatetype == pEvoHW->updSetPoint)//SetPoint
+			if (pEvo->updatetype == pEvoHW->updSetPoint)//SetPoint
 			{
 				strarray[1] = szTmp;
-				if (pEvo->EVOHOME2.mode <= pEvoHW->zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
+				if (pEvo->mode <= pEvoHW->zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
 				{
-					int nControllerMode = pEvo->EVOHOME2.controllermode;
+					int nControllerMode = pEvo->controllermode;
 					if (dType == pTypeEvohomeWater && (nControllerMode == pEvoHW->cmEvoHeatingOff || nControllerMode == pEvoHW->cmEvoAutoWithEco || nControllerMode == pEvoHW->cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
 						nControllerMode = pEvoHW->cmEvoAuto;
-					if (pEvo->EVOHOME2.mode == pEvoHW->zmAuto || nControllerMode == pEvoHW->cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
+					if (pEvo->mode == pEvoHW->zmAuto || nControllerMode == pEvoHW->cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
 						strarray[2] = pEvoHW->GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
 					else
-						strarray[2] = pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
-					if (pEvo->EVOHOME2.mode == pEvoHW->zmTmp)
+						strarray[2] = pEvoHW->GetZoneModeName(pEvo->mode);
+					if (pEvo->mode == pEvoHW->zmTmp)
 					{
-						std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+						std::string szISODate(CEvohomeDateTime::GetISODate(pEvo));
 						if (strarray.size() < 4) //add or set until
 							strarray.push_back(szISODate);
 						else
 							strarray[3] = szISODate;
 					}
-					else if ((pEvo->EVOHOME2.mode == pEvoHW->zmAuto) && (HwdType == HTYPE_EVOHOME_WEB))
+					else if ((pEvo->mode == pEvoHW->zmAuto) && (HwdType == HTYPE_EVOHOME_WEB))
 					{
 						strarray[2] = "FollowSchedule";
-						if ((pEvo->EVOHOME2.year != 0) && (pEvo->EVOHOME2.year != 0xFFFF))
+						if ((pEvo->year != 0) && (pEvo->year != 0xFFFF))
 						{
-							std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+							std::string szISODate(CEvohomeDateTime::GetISODate(pEvo));
 							if (strarray.size() < 4) //add or set until
 								strarray.push_back(szISODate);
 							else
@@ -6592,9 +6687,9 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 							strarray.resize(3);
 				}
 			}
-			else if (pEvo->EVOHOME2.updatetype == pEvoHW->updOverride)
+			else if (pEvo->updatetype == pEvoHW->updOverride)
 			{
-				strarray[2] = pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
+				strarray[2] = pEvoHW->GetZoneModeName(pEvo->mode);
 				if (strarray.size() >= 4) //remove until
 					strarray.resize(3);
 			}
@@ -6615,105 +6710,19 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
-void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
-{
-	char szTmp[100];
-	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
-	unsigned char devType = pTypeEvohome;
-	unsigned char subType = pEvo->EVOHOME1.subtype;
-	std::stringstream szID;
-	if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
-		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
-	else //GB3: web based evohome uses decimal device ID's
-		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
-	std::string ID(szID.str());
-	unsigned char Unit = 0;
-	unsigned char cmnd = pEvo->EVOHOME1.status;
-	unsigned char SignalLevel = 255;//Unknown
-	unsigned char BatteryLevel = 255;//Unknown
-
-	std::string szUntilDate;
-	if (pEvo->EVOHOME1.mode == CEvohomeBase::cmTmp)//temporary
-		szUntilDate = CEvohomeDateTime::GetISODate(pEvo->EVOHOME1);
-
-	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
-
-	//FIXME A similar check is also done in switchmodal do we want to forward the ooc flag and rely on this check entirely?
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
-		HwdID, ID.c_str());
-	bool bNewDev = false;
-	std::string name;
-	if (!result.empty())
-	{
-		std::vector<std::string> sd = result[0];
-		if (atoi(sd[7].c_str()) == cmnd && sd[8] == szUntilDate)
-			return;
-	}
-	else
-	{
-		bNewDev = true;
-		if (!pEvoHW)
-			return;
-		name = pEvoHW->GetControllerName();
-		if (name.empty())
-			return;
-	}
-
-	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szUntilDate.c_str(), procResult.DeviceName, pEvo->EVOHOME1.action != 0);
-	if (DevRowIdx == -1)
-		return;
-	if (bNewDev)
-	{
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
-			name.c_str(), DevRowIdx);
-		procResult.DeviceName = name;
-	}
-
-	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
-	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
-	{
-		WriteMessageStart();
-		switch (pEvo->EVOHOME1.subtype)
-		{
-		case sTypeEvohome:
-			WriteMessage("subtype       = Evohome");
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pEvo->EVOHOME1.type, pEvo->EVOHOME1.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-
-		if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
-			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
-		else //GB3: web based evohome uses decimal device ID's
-			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3));
-		WriteMessage(szTmp);
-		sprintf(szTmp, "action        = %d", (int)pEvo->EVOHOME1.action);
-		WriteMessage(szTmp);
-		WriteMessage("status        = ");
-		WriteMessage(pEvoHW->GetControllerModeName(pEvo->EVOHOME1.status));
-
-		WriteMessageEnd();
-	}
-	procResult.DeviceRowIdx = DevRowIdx;
-}
-
 void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
+	const _tEVOHOME3 *pEvo = reinterpret_cast<const _tEVOHOME3*>(pResponse);
 	unsigned char devType = pTypeEvohomeRelay;
-	unsigned char subType = pEvo->EVOHOME1.subtype;
+	unsigned char subType = pEvo->subtype;
 	std::stringstream szID;
-	int nDevID = (int)RFX_GETID3(pEvo->EVOHOME3.id1, pEvo->EVOHOME3.id2, pEvo->EVOHOME3.id3);
+	int nDevID = (int)RFX_GETID3(pEvo->id1, pEvo->id2, pEvo->id3);
 	szID << std::hex << nDevID;
 	std::string ID(szID.str());
-	unsigned char Unit = pEvo->EVOHOME3.devno;
-	unsigned char cmnd = (pEvo->EVOHOME3.demand > 0) ? light1_sOn : light1_sOff;
-	sprintf(szTmp, "%d", pEvo->EVOHOME3.demand);
+	unsigned char Unit = pEvo->devno;
+	unsigned char cmnd = (pEvo->demand > 0) ? light1_sOn : light1_sOff;
+	sprintf(szTmp, "%d", pEvo->demand);
 	std::string szDemand(szTmp);
 	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
@@ -6732,17 +6741,17 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		result = m_sql.safe_query(
 			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d') AND (Type==%d) AND (DeviceID == '%q')",
-			HwdID, (int)Unit, (int)pEvo->EVOHOME3.type, ID.c_str());
+			HwdID, (int)Unit, (int)pEvo->type, ID.c_str());
 	if (!result.empty())
 	{
-		if (pEvo->EVOHOME3.demand == 0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
+		if (pEvo->demand == 0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
 			return;
 		unsigned char cur_cmnd = atoi(result[0][5].c_str());
 		BatteryLevel = atoi(result[0][7].c_str());
 
-		if (pEvo->EVOHOME3.updatetype == CEvohomeBase::updBattery)
+		if (pEvo->updatetype == CEvohomeBase::updBattery)
 		{
-			BatteryLevel = pEvo->EVOHOME3.battery_level;
+			BatteryLevel = pEvo->battery_level;
 			szDemand = result[0][6];
 			cmnd = (atoi(szDemand.c_str()) > 0) ? light1_sOn : light1_sOff;
 		}
@@ -6763,10 +6772,10 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		if (Unit == 0xFF || (nDevID == 0 && Unit > 12))
 			return;
 		bNewDev = true;
-		if (pEvo->EVOHOME3.demand == 0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
+		if (pEvo->demand == 0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
 			szDemand = "0";
-		if (pEvo->EVOHOME3.updatetype == CEvohomeBase::updBattery)
-			BatteryLevel = pEvo->EVOHOME3.battery_level;
+		if (pEvo->updatetype == CEvohomeBase::updBattery)
+			BatteryLevel = pEvo->battery_level;
 	}
 
 	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szDemand.c_str(), procResult.DeviceName);
@@ -6781,7 +6790,7 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			procResult.DeviceName = "DHW Valve";
 		else if (Unit == 0xFC)
 		{
-			if (pEvo->EVOHOME3.id1 >> 2 == CEvohomeID::devBridge) // Evohome OT Bridge
+			if (pEvo->id1 >> 2 == CEvohomeID::devBridge) // Evohome OT Bridge
 				procResult.DeviceName = "Boiler (OT Bridge)";
 			else
 				procResult.DeviceName = "Boiler";
@@ -9065,7 +9074,7 @@ void MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, c
 		return;
 
 	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, Unit, devType, subType, weight);
-	
+
 	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
 	{
 		WriteMessageStart();
@@ -10661,7 +10670,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		StringSplit(sValue, ";", results);
 		if (results.size() < 6)
 			return false; //invalid data
-		//Return usage or delivery
+						  //Return usage or delivery
 		long usagecurrent = atol(results[4].c_str());
 		long delivcurrent = atol(results[5].c_str());
 		std::stringstream ssvalue;
@@ -10702,15 +10711,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		if (!result2.empty())
 		{
 			std::vector<std::string> sd2 = result2[0];
-
-			unsigned long long total_min_gas, total_real_gas;
-			unsigned long long gasactual;
-
-			std::stringstream s_str1(sd2[0]);
-			s_str1 >> total_min_gas;
-			std::stringstream s_str2(sValue);
-			s_str2 >> gasactual;
-			total_real_gas = gasactual - total_min_gas;
+			unsigned long long total_min_gas = std::strtoull(sd2[0].c_str(), nullptr, 10);
+			unsigned long long gasactual = std::strtoull(sValue.c_str(), nullptr, 10);
+			unsigned long long total_real_gas = gasactual - total_min_gas;
 			float musage = float(total_real_gas) / GasDivider;
 			sprintf(szTmp, "%.03f", musage);
 		}
@@ -10737,7 +10740,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		}
 		//if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 		//{
-			//WaterDivider = float(tValue);
+		//WaterDivider = float(tValue);
 		//}
 
 		//get value of today
@@ -10764,13 +10767,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 		{
 			std::vector<std::string> sd2 = result2[0];
 
-			unsigned long long total_min, total_max, total_real;
-
-			std::stringstream s_str1(sd2[0]);
-			s_str1 >> total_min;
-			std::stringstream s_str2(sd2[1]);
-			s_str2 >> total_max;
-			total_real = total_max - total_min;
+			unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
+			unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
+			unsigned long long total_real = total_real = total_max - total_min;
 			sprintf(szTmp, "%llu", total_real);
 
 			float musage = 0;
@@ -10792,9 +10791,9 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 				sprintf(szTmp, "%llu", total_real);
 				break;
 				/*
-							default:
-								strcpy(szTmp, "?");
-								break;
+				default:
+				strcpy(szTmp, "?");
+				break;
 				*/
 			}
 		}
@@ -10874,15 +10873,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 	// If dimlevel is 0 or no dimlevel, turn switch off
 	if (level <= 0 && switchcmd == "Set Level")
-		switchcmd="Off";
+		switchcmd = "Off";
 
 	//when level is invalid or command is "On", replace level with "LastLevel"
-	if (switchcmd=="On" || level < 0)
+	if (switchcmd == "On" || level < 0)
 	{
 		//Get LastLevel
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
-		"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
+			"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
 		if (result.size() == 1)
 		{
 			level = atoi(result[0][0].c_str());
@@ -10890,7 +10889,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
 	}
 	// TODO: Something smarter if level is not valid?
-	level = max(level,0);
+	level = std::max(level, 0);
 
 	//
 	//	For plugins all the specific logic below is irrelevent
@@ -11455,13 +11454,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		lcmd.BLINDS1.id3 = ID3;
 		lcmd.BLINDS1.id4 = 0;
 		if (
-			(dSubType == sTypeBlindsT0) || 
-			(dSubType == sTypeBlindsT1) || 
-			(dSubType == sTypeBlindsT3) || 
-			(dSubType == sTypeBlindsT8) || 
-			(dSubType == sTypeBlindsT12) || 
+			(dSubType == sTypeBlindsT0) ||
+			(dSubType == sTypeBlindsT1) ||
+			(dSubType == sTypeBlindsT3) ||
+			(dSubType == sTypeBlindsT8) ||
+			(dSubType == sTypeBlindsT12) ||
 			(dSubType == sTypeBlindsT13) ||
-			(dSubType == sTypeBlindsT14)
+			(dSubType == sTypeBlindsT14) ||
+			(dSubType == sTypeBlindsT15) ||
+			(dSubType == sTypeBlindsT16)
 			)
 		{
 			lcmd.BLINDS1.unitcode = Unit;
@@ -11607,25 +11608,25 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	{
 		_log.Log(LOG_ERROR, "Thermostat 4 not implemented yet!");
 		/*
-					tRBUF lcmd;
-					lcmd.THERMOSTAT4.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
-					lcmd.THERMOSTAT4.packettype = dType;
-					lcmd.THERMOSTAT4.subtype = dSubType;
-					lcmd.THERMOSTAT4.unitcode1 = ID2;
-					lcmd.THERMOSTAT4.unitcode2 = ID3;
-					lcmd.THERMOSTAT4.unitcode3 = ID4;
-					lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-					if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
-						return false;
-					level = 15;
-					lcmd.THERMOSTAT4.filler = 0;
-					lcmd.THERMOSTAT4.rssi = 12;
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
-						return false;
-					if (!IsTesting) {
-						//send to internal for now (later we use the ACK)
-						PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
-					}
+		tRBUF lcmd;
+		lcmd.THERMOSTAT4.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
+		lcmd.THERMOSTAT4.packettype = dType;
+		lcmd.THERMOSTAT4.subtype = dSubType;
+		lcmd.THERMOSTAT4.unitcode1 = ID2;
+		lcmd.THERMOSTAT4.unitcode2 = ID3;
+		lcmd.THERMOSTAT4.unitcode3 = ID4;
+		lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
+		return false;
+		level = 15;
+		lcmd.THERMOSTAT4.filler = 0;
+		lcmd.THERMOSTAT4.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
+		return false;
+		if (!IsTesting) {
+		//send to internal for now (later we use the ACK)
+		PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
 		*/
 		return true;
 	}
@@ -11653,19 +11654,19 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	break;
 	case pTypeEvohomeRelay:
 	{
-		REVOBUF lcmd;
-		memset(&lcmd, 0, sizeof(REVOBUF));
-		lcmd.EVOHOME3.len = sizeof(lcmd.EVOHOME3) - 1;
-		lcmd.EVOHOME3.type = pTypeEvohomeRelay;
-		lcmd.EVOHOME3.subtype = sTypeEvohomeRelay;
-		RFX_SETID3(ID, lcmd.EVOHOME3.id1, lcmd.EVOHOME3.id2, lcmd.EVOHOME3.id3)
-			lcmd.EVOHOME3.devno = Unit;
+		_tEVOHOME3 lcmd;
+		memset(&lcmd, 0, sizeof(_tEVOHOME3));
+		lcmd.len = sizeof(_tEVOHOME3) - 1;
+		lcmd.type = pTypeEvohomeRelay;
+		lcmd.subtype = sTypeEvohomeRelay;
+		RFX_SETID3(ID, lcmd.id1, lcmd.id2, lcmd.id3)
+			lcmd.devno = Unit;
 		if (switchcmd == "On")
-			lcmd.EVOHOME3.demand = 200;
+			lcmd.demand = 200;
 		else
-			lcmd.EVOHOME3.demand = level;
+			lcmd.demand = level;
 
-		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.EVOHOME3)))
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tEVOHOME3)))
 			return false;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
@@ -11821,19 +11822,19 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	s_strid >> ID;
 
 	//Update Domoticz evohome Device
-	REVOBUF tsen;
-	memset(&tsen, 0, sizeof(REVOBUF));
-	tsen.EVOHOME1.len = sizeof(tsen.EVOHOME1) - 1;
-	tsen.EVOHOME1.type = pTypeEvohome;
-	tsen.EVOHOME1.subtype = sTypeEvohome;
-	RFX_SETID3(ID, tsen.EVOHOME1.id1, tsen.EVOHOME1.id2, tsen.EVOHOME1.id3)
-		tsen.EVOHOME1.action = (action == "1") ? 1 : 0;
-	tsen.EVOHOME1.status = nStatus;
+	_tEVOHOME1 tsen;
+	memset(&tsen, 0, sizeof(_tEVOHOME1));
+	tsen.len = sizeof(_tEVOHOME1) - 1;
+	tsen.type = pTypeEvohome;
+	tsen.subtype = sTypeEvohome;
+	RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3)
+		tsen.action = (action == "1") ? 1 : 0;
+	tsen.status = nStatus;
 
-	tsen.EVOHOME1.mode = until.empty() ? CEvohomeBase::cmPerm : CEvohomeBase::cmTmp;
-	if (tsen.EVOHOME1.mode == CEvohomeBase::cmTmp)
-		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1, until.c_str());
-	WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME1));
+	tsen.mode = until.empty() ? CEvohomeBase::cmPerm : CEvohomeBase::cmTmp;
+	if (tsen.mode == CEvohomeBase::cmTmp)
+		CEvohomeDateTime::DecodeISODate(tsen, until.c_str());
+	WriteToHardware(HardwareID, (const char*)&tsen, sizeof(_tEVOHOME1));
 
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 	PushRxMessage(pHardware, (const unsigned char *)&tsen, NULL, 255);
@@ -11842,9 +11843,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay)
 {
-	uint64_t ID;
-	std::stringstream s_str(idx);
-	s_str >> ID;
+	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 	int ilevel = -1;
 	if (level != "")
 		ilevel = atoi(level.c_str());
@@ -11946,20 +11945,19 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 
 	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 	{
-		REVOBUF tsen;
-		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
-		tsen.EVOHOME2.len = sizeof(tsen.EVOHOME2) - 1;
-		tsen.EVOHOME2.type = dType;
-		tsen.EVOHOME2.subtype = dSubType;
-		RFX_SETID3(ID, tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3)
-
-			tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
-		tsen.EVOHOME2.updatetype = CEvohomeBase::updSetPoint;//setpoint
-		tsen.EVOHOME2.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue*100.0f);
-		tsen.EVOHOME2.mode = nEvoMode;
+		_tEVOHOME2 tsen;
+		memset(&tsen, 0, sizeof(_tEVOHOME2));
+		tsen.len = sizeof(_tEVOHOME2) - 1;
+		tsen.type = dType;
+		tsen.subtype = dSubType;
+		RFX_SETID3(ID, tsen.id1, tsen.id2, tsen.id3)
+			tsen.zone = Unit;//controller is 0 so let our zones start from 1...
+		tsen.updatetype = CEvohomeBase::updSetPoint;//setpoint
+		tsen.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue * 100.0f);
+		tsen.mode = nEvoMode;
 		if (nEvoMode == CEvohomeBase::zmTmp)
-			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2, until.c_str());
-		WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME2));
+			CEvohomeDateTime::DecodeISODate(tsen, until.c_str());
+		WriteToHardware(HardwareID, (const char*)&tsen, sizeof(_tEVOHOME2));
 
 		//Pass across the current controller mode if we're going to update as per the hw device
 		result = m_sql.safe_query(
@@ -11968,7 +11966,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		if (!result.empty())
 		{
 			sd = result[0];
-			tsen.EVOHOME2.controllermode = atoi(sd[2].c_str());
+			tsen.controllermode = atoi(sd[2].c_str());
 		}
 		//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 		PushAndWaitRxMessage(pHardware, (const unsigned char*)&tsen, NULL, -1);
@@ -12384,9 +12382,7 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 
 bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcmd)
 {
-	uint64_t ID;
-	std::stringstream s_str(idx);
-	s_str >> ID;
+	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 
 	return SwitchScene(ID, switchcmd);
 }
@@ -12422,10 +12418,7 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID;
-				std::stringstream sstr;
-				sstr << sID;
-				sstr >> aID;
+				uint64_t aID = std::strtoull(sID.c_str(), nullptr, 10);
 				if (aID == DevRowIdx)
 				{
 					if ((SceneType == SGTYPE_GROUP) || (sCode.empty()))
@@ -12442,18 +12435,16 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 
 bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 {
-	//Get Scene details
 	std::vector<std::vector<std::string> > result;
 	int nValue = (switchcmd == "On") ? 1 : 0;
 
-	//first set actual scene status
 	std::string Name = "Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
 	std::string onaction = "";
 	std::string offaction = "";
 	std::string status = "";
 
-	//Get Scene Name
+	//Get Scene details
 	result = m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction, nValue FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
 	if (!result.empty())
 	{
@@ -12464,12 +12455,14 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 		offaction = sds[3];
 		status = sds[4];
 
-		//when asking for Toggle, just switch to the opposite value
-		if (switchcmd == "Toggle") {
-			nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
-			switchcmd = (nValue == 1 ? "On" : "Off");
+		if (scenetype == SGTYPE_GROUP)
+		{
+			//when asking for Toggle, just switch to the opposite value
+			if (switchcmd == "Toggle") {
+				nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
+				switchcmd = (nValue == 1 ? "On" : "Off");
+			}
 		}
-
 		m_sql.HandleOnOffAction((nValue == 1), onaction, offaction);
 	}
 
@@ -12550,10 +12543,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 			_eSwitchType switchtype = (_eSwitchType)atoi(sd2[5].c_str());
 
 			//Check if this device will not activate a scene
-			uint64_t dID;
-			std::stringstream sdID;
-			sdID << sd[0];
-			sdID >> dID;
+			uint64_t dID = std::strtoull(sd[0].c_str(), nullptr, 10);
 			if (DoesDeviceActiveAScene(dID, cmd))
 			{
 				_log.Log(LOG_ERROR, "Skipping sensor '%s' because this triggers another scene!", DeviceName.c_str());
@@ -12661,16 +12651,12 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 					sCode = arrayCode[1];
 				}
 
-				uint64_t aID;
-				std::stringstream sstr;
-				sstr << sID;
-				sstr >> aID;
+				uint64_t aID = std::strtoull(sID.c_str(), nullptr, 10);
 				if (aID == DevRowIdx)
 				{
-					uint64_t ID;
-					std::stringstream s_str(sd[0]);
-					s_str >> ID;
+					uint64_t ID = std::strtoull(sd[0].c_str(), nullptr, 10);
 					int scenetype = atoi(sd[2].c_str());
+					int rnValue = nValue;
 
 					if ((scenetype == SGTYPE_SCENE) && (!sCode.empty()))
 					{
@@ -12678,6 +12664,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 						int iCode = atoi(sCode.c_str());
 						if (iCode != nValue)
 							continue;
+						rnValue = 1; //A Scene can only be activated (On)
 					}
 
 					std::string lstatus = "";
@@ -12686,7 +12673,7 @@ void MainWorker::CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dT
 					bool bHaveGroupCmd = false;
 					int maxDimLevel = 0;
 
-					GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					GetLightStatus(dType, dSubType, STYPE_OnOff, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 					std::string switchcmd = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 
 					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(0.2f, ID, switchcmd, "SceneTrigger"));
@@ -12720,9 +12707,7 @@ void MainWorker::LoadSharedUsers()
 				for (const auto & itt2 : result2)
 				{
 					std::vector<std::string> sd2 = itt2;
-					uint64_t ID;
-					std::stringstream s_str(sd2[0]);
-					s_str >> ID;
+					uint64_t ID = std::strtoull(sd2[0].c_str(), nullptr, 10);
 					suser.Devices.push_back(ID);
 				}
 			}
@@ -12821,23 +12806,23 @@ void MainWorker::HandleLogNotifications()
 	m_sql.AddTaskItem(_tTaskItem::SendEmail(1, sTopic, sstr.str()));
 }
 
-void MainWorker::HeartbeatUpdate(const std::string &component)
+void MainWorker::HeartbeatUpdate(const std::string &component, bool critical /*= true*/)
 {
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
+	std::lock_guard<std::mutex> l(m_heartbeatmutex);
 	time_t now = time(0);
-	std::map<std::string, time_t >::iterator itt = m_componentheartbeats.find(component);
+	auto itt = m_componentheartbeats.find(component);
 	if (itt != m_componentheartbeats.end()) {
-		itt->second = now;
+		itt->second.first = now;
 	}
 	else {
-		m_componentheartbeats[component] = now;
+		m_componentheartbeats[component] = std::make_pair(now, critical);
 	}
 }
 
 void MainWorker::HeartbeatRemove(const std::string &component)
 {
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
-	std::map<std::string, time_t >::iterator itt = m_componentheartbeats.find(component);
+	std::lock_guard<std::mutex> l(m_heartbeatmutex);
+	auto itt = m_componentheartbeats.find(component);
 	if (itt != m_componentheartbeats.end()) {
 		m_componentheartbeats.erase(itt);
 	}
@@ -12845,8 +12830,8 @@ void MainWorker::HeartbeatRemove(const std::string &component)
 
 void MainWorker::HeartbeatCheck()
 {
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
-	boost::lock_guard<boost::mutex> l2(m_devicemutex);
+	std::lock_guard<std::mutex> l(m_heartbeatmutex);
+	std::lock_guard<std::mutex> l2(m_devicemutex);
 
 	m_devicestorestart.clear();
 
@@ -12855,10 +12840,21 @@ void MainWorker::HeartbeatCheck()
 
 	for (const auto & itt : m_componentheartbeats)
 	{
-		double dif = difftime(now, itt.second);
-		if (dif > 60)
+		double diff = difftime(now, itt.second.first);
+		if (diff > 60)
 		{
-			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", itt.first.c_str());
+			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
+			if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
+			{
+				if (!IsDebuggerPresent())
+				{
+#ifdef WIN32
+					abort();
+#else
+					raise(SIGUSR1);
+#endif
+				}
+			}
 		}
 	}
 

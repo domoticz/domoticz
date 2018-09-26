@@ -6,8 +6,6 @@
 #include "stdafx.h"
 #include "cWebem.h"
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // uuid generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
@@ -53,12 +51,13 @@ namespace http {
 			myRequestHandler(doc_root, this),
 			m_DigistRealm("Domoticz.com"),
 			m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
-			m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
 			m_sessions(), // Rene, make sure we initialize m_sessions first, before starting a server
 			myServer(server_factory::create(settings, myRequestHandler))
 		{
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
+			m_io_service_thread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &m_io_service));
+			SetThreadName(m_io_service_thread->native_handle(), "Webem_ssncleaner");
 		}
 
 		cWebem::~cWebem()
@@ -101,7 +100,11 @@ namespace http {
 				if (!m_io_service.stopped())
 				{
 					m_io_service.stop();
-					m_io_service_thread.join();
+				}
+				if (m_io_service_thread)
+				{
+					m_io_service_thread->join();
+					m_io_service_thread.reset();
 				}
 			}
 			catch (...)
@@ -851,7 +854,7 @@ namespace http {
 		{
 			m_userpasswords.clear();
 
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			m_sessions.clear(); //TODO : check if it is really necessary
 		}
 
@@ -997,7 +1000,7 @@ namespace http {
 
 		WebEmSession * cWebem::GetSession(const std::string & ssid)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
 			{
@@ -1008,7 +1011,7 @@ namespace http {
 
 		void cWebem::AddSession(const WebEmSession & session)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			m_sessions[session.id] = session;
 		}
 
@@ -1019,7 +1022,7 @@ namespace http {
 
 		void cWebem::RemoveSession(const std::string & ssid)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
 			{
@@ -1029,7 +1032,7 @@ namespace http {
 
 		int cWebem::CountSessions()
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			return (int)m_sessions.size();
 		}
 
@@ -1041,7 +1044,7 @@ namespace http {
 			// Clean up timed out sessions from memory
 			std::vector<std::string> ssids;
 			{
-				boost::mutex::scoped_lock lock(m_sessionsMutex);
+				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				time_t now = mytime(NULL);
 				std::map<std::string, WebEmSession>::iterator itt;
 				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
@@ -1061,7 +1064,7 @@ namespace http {
 			int after = CountSessions();
 			std::stringstream ss;
 			{
-				boost::mutex::scoped_lock lock(m_sessionsMutex);
+				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				std::map<std::string, WebEmSession>::iterator itt;
 				int i = 0;
 				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
@@ -1336,7 +1339,7 @@ namespace http {
 			ss << u;
 			randomValue = ss.str();
 
-			std::string sessionId = GenerateMD5Hash(base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size()));
+			std::string sessionId = GenerateMD5Hash(base64_encode(randomValue));
 
 			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new session id token %s", myWebem->GetPort().c_str(), sessionId.c_str());
 
@@ -1354,7 +1357,7 @@ namespace http {
 			ss << u;
 			randomValue = ss.str();
 
-			std::string authToken = base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size());
+			std::string authToken = base64_encode(randomValue);
 
 			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token %s", myWebem->GetPort().c_str(), authToken.c_str());
 
@@ -1506,7 +1509,7 @@ namespace http {
 				rep = reply::stock_reply(reply::internal_server_error);
 				return true;
 			}
-			int version = boost::lexical_cast<int>(h);
+			int version = atoi(h);
 			// we support versions 13 (and higher)
 			if (version < 13)
 			{

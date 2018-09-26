@@ -18,7 +18,6 @@
 //Class CurrentCostMeterSerial
 //
 CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& devname, unsigned int baudRate):
-	m_stoprequested(false),
 	m_szSerialPort(devname),
 	m_baudRate(baudRate)
 {
@@ -32,8 +31,10 @@ CurrentCostMeterSerial::~CurrentCostMeterSerial()
 
 bool CurrentCostMeterSerial::StartHardware()
 {
-	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CurrentCostMeterSerial::Do_Work, this)));
+	RequestStart();
+
+	m_thread = std::make_shared<std::thread>(&CurrentCostMeterSerial::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "CurrentCostMeterSerial");
 
 	//Try to open the Serial Port
 	try
@@ -70,13 +71,11 @@ bool CurrentCostMeterSerial::StartHardware()
 
 bool CurrentCostMeterSerial::StopHardware()
 {
-	terminate();
-	m_stoprequested = true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
-		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -85,15 +84,13 @@ bool CurrentCostMeterSerial::StopHardware()
 
 void CurrentCostMeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
-
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
 	ParseData(data, static_cast<int>(len));
 }
 
-bool CurrentCostMeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool CurrentCostMeterSerial::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -102,11 +99,11 @@ void CurrentCostMeterSerial::Do_Work()
 {
 	int sec_counter = 0;
 	int msec_counter = 0;
-	while (!m_stoprequested)
+
+	_log.Log(LOG_STATUS, "CurrentCost: Worker started...");
+
+	while (!IsStopRequested(200))
 	{
-		sleep_milliseconds(200);
-		if (m_stoprequested)
-			break;
 		msec_counter++;
 		if (msec_counter == 5)
 		{
@@ -118,6 +115,9 @@ void CurrentCostMeterSerial::Do_Work()
 			}
 		}
 	}
+	terminate();
+
+	_log.Log(LOG_STATUS, "CurrentCost: Worker stopped...");
 }
 
 //Webserver helpers

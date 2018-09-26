@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Heatit Z-Wave Z-TRM2 -->
+<!-- Heatit Z-Wave thermostat Z-TRM2 TF 033 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
 	<CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE">
@@ -16,6 +16,12 @@
 			<Mode index="11" label="Energy Heat"/>
 		</SupportedModes>
 	</CommandClass>
+
+	<CommandClass id="49" name="COMMAND_CLASS_SENSOR_MULTILEVEL" version="1" request_flags="4" create_vars="true" base="0">
+      <Value type="decimal" genre="user" instance="1" index="1" label="Internal sensor" units="C" read_only="true" write_only="false" min="0" max="0"/>
+      <Value type="decimal" genre="user" instance="2" index="1" label="External sensor" units="C" read_only="true" write_only="false" min="0" max="0" />
+      <Value type="decimal" genre="user" instance="3" index="1" label="Floor sensor" units="C" read_only="true" write_only="false" min="0" max="0" />
+  </CommandClass>
 
 	<CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
 		<Instance index="1"/>

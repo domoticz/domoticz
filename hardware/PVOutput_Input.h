@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CPVOutputInput : public CDomoticzHardwareBase
 {
@@ -18,7 +17,6 @@ private:
 private:
 	std::string m_SID;
 	std::string m_KEY;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

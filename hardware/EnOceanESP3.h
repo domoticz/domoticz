@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
@@ -40,8 +39,7 @@ private:
 	_eEnOcean_Receive_State m_receivestate;
 	int m_wantedlength;
 
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
     int m_Type;
 	std::string m_szSerialPort;
 
@@ -55,7 +53,7 @@ private:
 	int m_bufferpos;
 	int m_retrycntr;
 
-	boost::mutex m_sendMutex;
+	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
 };
 

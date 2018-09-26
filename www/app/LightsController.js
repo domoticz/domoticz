@@ -1353,7 +1353,7 @@ define(['app'], function (app) {
 									'<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 							}
 							xhtm +=
-								'<a class="btnsmall" href="#/Devices/' + item.idx + '/LightLog" data-i18n="Log">Log</a> ';
+								'<a class="btnsmall" href="#/Devices/' + item.idx + '/Log" data-i18n="Log">Log</a> ';
 							if (permissions.hasPermission("Admin")) {
 								xhtm +=
 									'<a class="btnsmall" href="#/Devices/' + item.idx + '/LightEdit" data-i18n="Edit">Edit</a> ';

@@ -43,10 +43,10 @@ namespace Plugins {
 
 		CPluginNotifier*	m_Notifier;
 
-		boost::mutex	m_TransportsMutex;
+		std::mutex	m_TransportsMutex;
 		std::vector<CPluginTransport*>	m_Transports;
 
-		boost::shared_ptr<boost::thread> m_thread;
+		std::shared_ptr<std::thread> m_thread;
 
 		bool StartHardware() override;
 		void Do_Work();
@@ -60,7 +60,6 @@ namespace Plugins {
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		~CPlugin(void);
 
-		bool	IoThreadRequired();
 		int		PollInterval(int Interval = -1);
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
@@ -78,11 +77,12 @@ namespace Plugins {
 		void	DisconnectEvent(CEventBase*);
 		void	Callback(std::string sHandler, void* pParams);
 		void	RestoreThread();
+		void	ReleaseThread();
 		void	Stop();
 
 		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
 
-		bool	WriteToHardware(const char *pdata, const unsigned char length);
+		bool	WriteToHardware(const char *pdata, const unsigned char length) override;
 		void	Restart();
 		void	SendCommand(const int Unit, const std::string &command, const int level, const _tColor color);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
@@ -105,8 +105,8 @@ namespace Plugins {
 		void*				m_SettingsDict;
 		std::string			m_HomeFolder;
 		PluginDebugMask		m_bDebug;
-		bool				m_stoprequested;
 		bool				m_bIsStarting;
+		bool				m_bTracing;
 	};
 
 	class CPluginNotifier : public CNotificationBase

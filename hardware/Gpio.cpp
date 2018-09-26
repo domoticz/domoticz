@@ -79,14 +79,13 @@ Connection information:
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
 
-boost::shared_ptr<boost::thread> m_thread_interrupt[GPIO_PIN_MAX + 1];
+std::shared_ptr<std::thread> m_thread_interrupt[GPIO_PIN_MAX + 1];
 
 /*
  * Direct GPIO implementation, inspired by other hardware implementations such as PiFace and EnOcean
  */
 CGpio::CGpio(const int ID, const int debounce, const int period, const int pollinterval)
 {
-	m_stoprequested = false;
 	m_HwdID = ID;
 	m_debounce = debounce;
 	m_period = period;
@@ -142,7 +141,7 @@ void CGpio::InterruptHandler()
 			bRead = read(fd, &c, 1); // Catch value to suppress compiler unused warning
 
 	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d started (TID: %d)", pin, (pid_t)syscall(SYS_gettid));
-	while (!m_stoprequested)
+	while (!IsStopRequested(0))
 	{
 		if (waitForInterrupt(fd, 2000) > 0)
 		{
@@ -206,7 +205,7 @@ int CGpio::waitForInterrupt(int fd, const int mS)
 	while (x == 0)
 	{
 		x = poll(&polls, 1, mS);
-		if (m_stoprequested)
+		if (IsStopRequested(0))
 			return -1;
 	}
 
@@ -240,7 +239,8 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 
 bool CGpio::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	//	_log.Log(LOG_NORM,"GPIO: Starting hardware (debounce: %d ms, period: %d ms, poll interval: %d sec)", m_debounce, m_period, m_pollinterval);
 
 	_log.Log(LOG_STATUS, "GPIO: This hardware is deprecated. Please transfer to the new SysFS hardware type!");
@@ -251,39 +251,64 @@ bool CGpio::StartHardware()
 		 if (!CreateDomoticzDevices())
 		 {
 			_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
-			m_stoprequested=true;
+			RequestStop();
 		 }*/
-		m_thread_updatestartup = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::UpdateStartup, this)));
+		m_thread_updatestartup = std::make_shared<std::thread>(&CGpio::UpdateStartup, this);
+		SetThreadName(m_thread_updatestartup->native_handle(), "GPIO_UpdStartup");
 
 		if (m_pollinterval > 0)
-			m_thread_poller = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
+		{
+			m_thread_poller = std::make_shared<std::thread>(&CGpio::Poller, this);
+			SetThreadName(m_thread_poller->native_handle(), "GPIO_Poller");
+		}
 	}
 	else
 	{
 		_log.Log(LOG_NORM, "GPIO: No exported pins found, aborting...");
-		m_stoprequested = true;
+		RequestStop();
 	}
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CGpio::StopHardware()
 {
-	m_stoprequested = true;
+	RequestStop();
 
-	if (m_thread_poller != NULL)
-		m_thread_poller->join();
+	try
+	{
+		if (m_thread_updatestartup)
+		{
+			m_thread_updatestartup->join();
+			m_thread_updatestartup.reset();
+		}
+	}
+	catch (...)
+	{
+	}
+	try
+	{
+		if (m_thread_poller)
+		{
+			m_thread_poller->join();
+			m_thread_poller.reset();
+		}
+	}
+	catch (...)
+	{
+	}
 
-	if (m_thread_updatestartup != NULL)
-		m_thread_updatestartup->join();
 
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (m_thread_interrupt[it->GetPin()] != NULL)
+		{
 			m_thread_interrupt[it->GetPin()]->join();
+			m_thread_interrupt[it->GetPin()].reset();
+		}
 	}
 
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
@@ -327,8 +352,7 @@ void CGpio::UpdateStartup()
 	{
 		for (int i = 0; i < DELAYED_STARTUP_SEC; ++i)
 		{
-			sleep_milliseconds(1000);
-			if (m_stoprequested)
+			if (IsStopRequested(1000))
 				return;
 		}
 		_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
@@ -348,13 +372,10 @@ void CGpio::Poller()
 	int sec_counter = 0;
 
 	_log.Log(LOG_STATUS, "GPIO: Poller started (interval: %d sec, TID: %d)", m_pollinterval, (pid_t)syscall(SYS_gettid));
-
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
-
-		if ((sec_counter % m_pollinterval == 0) && (!m_stoprequested))
+		if (sec_counter % m_pollinterval == 0)
 			UpdateDeviceStates(false);
 	}
 	_log.Log(LOG_STATUS, "GPIO: Poller stopped. TID: %d", (pid_t)syscall(SYS_gettid));
@@ -364,7 +385,7 @@ void CGpio::Poller()
 bool CGpio::CreateDomoticzDevices()
 {
 	std::vector<std::vector<std::string> > result;
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		bool createNewDevice = false;
@@ -419,7 +440,7 @@ CGpioPin* CGpio::GetPPinById(int id)
 
 void CGpio::UpdateDeviceStates(bool forceUpdate)
 {
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	for (std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (it->GetIsInput())
@@ -470,7 +491,7 @@ bool CGpio::InitPins()
 	char szIdx[10];
 	char label[12];
 	std::vector<std::vector<std::string> > result;
-	boost::mutex::scoped_lock lock(m_pins_mutex);
+	std::unique_lock<std::mutex> lock(m_pins_mutex);
 	pins.clear();
 
 	for (int gpio_pin = GPIO_PIN_MIN; gpio_pin <= GPIO_PIN_MAX; gpio_pin++)
@@ -500,7 +521,8 @@ bool CGpio::InitPins()
 			if (fd != -1)
 			{
 				pinPass = gpio_pin;
-				m_thread_interrupt[gpio_pin] = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::InterruptHandler, this)));
+				m_thread_interrupt[gpio_pin] = std::make_shared<std::thread>(&CGpio::InterruptHandler, this);
+				SetThreadName(m_thread_interrupt[gpio_pin]->native_handle(), "GPIO_Interrupt");
 				while (pinPass != -1)
 					sleep_milliseconds(1);
 			}

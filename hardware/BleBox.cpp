@@ -15,7 +15,7 @@ struct STR_DEVICE {
 	std::string api_name;
 	std::string name;
 	int			deviceID;
-	int			subType;
+	uint8_t		subType;
 	int			switchType;
 	std::string api_state;
 };
@@ -33,8 +33,7 @@ const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
 	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" }
 };
 
-BleBox::BleBox(const int id, const int pollIntervalsec) :
-	m_stoprequested(false)
+BleBox::BleBox(const int id, const int pollIntervalsec)
 {
 	m_HwdID = id;
 	m_RGBWisWhiteState = true;
@@ -48,22 +47,24 @@ BleBox::~BleBox()
 
 bool BleBox::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
 
 	LoadNodes();
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
+
+	m_thread = std::make_shared<std::thread>(&BleBox::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "BleBox");
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool BleBox::StopHardware()
 {
-	m_stoprequested = true;
-
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	m_bIsStarted = false;
@@ -74,11 +75,9 @@ void BleBox::Do_Work()
 {
 	int sec_counter = m_PollInterval - 1;
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "BleBox: Worker started...");
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -90,11 +89,12 @@ void BleBox::Do_Work()
 			GetDevicesState();
 		}
 	}
+	_log.Log(LOG_STATUS, "BleBox: Worker started...");
 }
 
 void BleBox::GetDevicesState()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	for (const auto & itt : m_devices)
 	{
@@ -199,7 +199,7 @@ void BleBox::GetDevicesState()
 					Json::Value relay = relays[index];
 					if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
 						break;
-					int relayNumber = relay["relay"].asInt(); // 0 or 1
+					uint8_t relayNumber = (uint8_t)relay["relay"].asInt(); // 0 or 1
 					bool currentState = relay["state"].asBool(); // 0 or 1
 					//std::string name = DevicesType[itt.second].name + " " + relay["state"].asString();
 					SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt.second].name);
@@ -274,7 +274,7 @@ std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 	return szIdx;
 }
 
-bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
+bool BleBox::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *output = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -465,9 +465,9 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					Json::Value relay = relays[index];
 					if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
 						continue;
-					int relayNumber = relay["relay"].asInt(); // 0 or 1
+					int relayNumber2 = relay["relay"].asInt(); // 0 or 1
 					std::string currentState = relay["state"].asString(); // 0 or 1
-					if (((output->LIGHTING2.unitcode) == relayNumber) && (state == currentState))
+					if (((output->LIGHTING2.unitcode) == relayNumber2) && (state == currentState))
 					{
 						success = true;
 						break;
@@ -668,10 +668,10 @@ void BleBox::Restart()
 	StartHardware();
 }
 
-void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
+void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
 { //TODO - remove this method, when in DomoticzHardware bug is fix (15 instead 16)
 	double rlevel = (15.0 / 100.0)*Level;
-	int level = int(rlevel);
+	uint8_t level = (uint8_t)(rlevel);
 
 	//make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
@@ -1081,19 +1081,19 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 	if (deviceType.unit == 4) // gatebox
 	{
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 2, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
 		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 3, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
 	}
 	else
 		if (deviceType.unit == 6) // switchboxd
 		{
-			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
-			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 		}
 		else
 		{
-			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 		}
 	ReloadNodes();
 }
@@ -1114,14 +1114,14 @@ void BleBox::RemoveAllNodes()
 
 void BleBox::UnloadNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_devices.clear();
 }
 
 bool BleBox::LoadNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
@@ -1177,7 +1177,7 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		return;
 
 
-	std::vector< boost::shared_ptr<boost::thread> > searchingThreads;
+	std::vector< std::shared_ptr<std::thread> > searchingThreads;
 
 	for (unsigned int i = 1; i < 255; ++i)
 	{
@@ -1188,7 +1188,9 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
 		if (itt == m_devices.end())
 		{
-			searchingThreads.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress))));
+			auto thread = std::make_shared<std::thread>(&BleBox::AddNode, this, "unknown", IPAddress);
+			SetThreadName(thread->native_handle(), "BleBox_Search");
+			searchingThreads.push_back(thread);
 		}
 	}
 

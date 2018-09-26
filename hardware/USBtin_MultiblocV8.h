@@ -40,8 +40,6 @@ private:
 	void SetOutputBlinkInDomoticz(unsigned long sID, int OutputNumber, bool Blink);
 	void Traitement_Trame_EtatBloc(const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
 
-	bool m_stoprequested;
-
 	bool m_BOOL_DebugInMultiblocV8;
 	bool m_BOOL_TaskAGo;
 	bool m_BOOL_TaskRqStorGo;
@@ -55,7 +53,7 @@ private:
 	int m_V8secCounter2;
 	int m_V8minCounterBase;
 	int m_V8minCounter1;
-	
+
 	struct
 	{
 		long BlocID;
@@ -70,7 +68,7 @@ private:
 		bool ForceUpdateSTOR[12];
 		bool IsOutputBlink[12];
 	} m_BlocList_CAN[MAX_NUMBER_BLOC]; //30 blocs Maxi
-	
-	boost::shared_ptr<boost::thread> m_thread;
+
+	std::shared_ptr<std::thread> m_thread;
 };
 

@@ -117,16 +117,12 @@
 //===========================================================================
 
 RelayNet::RelayNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const bool pollInputs, const bool pollRelays, const int pollInterval, const int inputCount, const int relayCount) :
-m_szIPAddress(IPAddress),
-m_username(CURLEncode::URLEncode(username)),
-m_password(CURLEncode::URLEncode(password)),
-m_stoprequested(false),
-m_reconnect(false)
+	m_szIPAddress(IPAddress),
+	m_username(CURLEncode::URLEncode(username)),
+	m_password(CURLEncode::URLEncode(password))
 {
-	m_stoprequested = false;
 	m_setup_devices = true;
 	m_bOutputLog = false;
-	m_bDoRestart = false;
 	m_bIsStarted = false;
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -164,22 +160,21 @@ RelayNet::~RelayNet(void)
 
 bool RelayNet::StartHardware()
 {
+	RequestStart();
+
 	bool bOk = false;;
-	m_stoprequested = false;
-	m_reconnect = false;
 	m_bIsStarted = false;
 	m_setup_devices = false;
 	m_bIsStarted = false;
-	m_stoprequested = false;
-	m_bDoRestart = false;
 	m_retrycntr = RETRY_DELAY; //force connect the next first time
 
 	if (m_input_count || m_relay_count)
 	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RelayNet::Do_Work, this)));
+		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
+		SetThreadName(m_thread->native_handle(), "RelayNet");
 	}
 
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		bOk = true;
 		m_bIsStarted=true;
@@ -192,26 +187,13 @@ bool RelayNet::StartHardware()
 
 bool RelayNet::StopHardware()
 {
-	m_stoprequested = true;
-
-	if (isConnected())
+	if (m_thread)
 	{
-		disconnect();
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-
-	try
-	{
-		if (m_thread)
-		{
-			m_thread->join();
-		}
-	}
-	catch (...)
-	{
-	}
-
 	m_bIsStarted = false;
-
 	_log.Log(LOG_STATUS, "RelayNet: Relay Module disconnected %s", m_szIPAddress.c_str());
 
 	return true;
@@ -232,7 +214,6 @@ bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 
 void RelayNet::Do_Work()
 {
-	bool bFirstTime = true;
 	int sec_counter = 0;
 
 	/*  Init  */
@@ -242,32 +223,16 @@ void RelayNet::Do_Work()
 	{
 		_log.Log(LOG_STATUS, "RelayNet: %d-second poller started (%s)", m_poll_interval, m_szIPAddress.c_str());
 	}
-
-	while (!m_stoprequested)
+	connect(m_szIPAddress,m_usIPPort);
+	/*  One second sleep  */
+	while (!IsStopRequested(1000))
 	{
-		/*  One second sleep  */
-		sleep_seconds(1);
 		sec_counter++;
 
 		/*  Heartbeat maintenance  */
 		if (sec_counter  % 10 == 0)
 		{
 			m_LastHeartbeat = mytime(NULL);
-		}
-
-		/*  Connection maintenance  */
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
 		}
 
 		/*  Prevent disconnect request by Relay Module  */
@@ -283,6 +248,7 @@ void RelayNet::Do_Work()
 			TcpRequestRelaycardDump();
 		}
 	}
+	terminate();
 
 	/*  Done  */
 	if (m_poll_inputs || m_poll_relays)
@@ -379,10 +345,7 @@ void RelayNet::TcpRequestRelaycardDump()
 {
 	std::string	sRequest = "DUMP\r\n";
 
-	if (isConnected())
-	{
-		write(sRequest);
-	}
+	write(sRequest);
 }
 
 //===========================================================================
@@ -391,10 +354,7 @@ void RelayNet::KeepConnectionAlive()
 {
 	std::string	sRequest = "R1\r\n";
 
-	if (isConnected())
-	{
-		write(sRequest);
-	}
+	write(sRequest);
 }
 
 //===========================================================================
@@ -423,10 +383,7 @@ void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 	sndbuf[2] = '\r';
 	sndbuf[3] = '\n';
 
-	if (isConnected())
-	{
-		write((const unsigned char*)&sndbuf[0], (size_t) sizeof(sndbuf));
-	}
+	write((const unsigned char*)&sndbuf[0], (size_t) sizeof(sndbuf));
 }
 
 void RelayNet::SetRelayState(int RelayNumber, bool State)
@@ -707,7 +664,7 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 			sLogin << m_username << ":" << m_password;
 
 			/* Generate UnEncrypted base64 Basic Authorization for username/password and add result to ExtraHeaders */
-			sAccessToken = base64_encode((const unsigned char *)(sLogin.str().c_str()), strlen(sLogin.str().c_str()));
+			sAccessToken = base64_encode(sLogin.str());
 			ExtraHeaders.push_back("Authorization: Basic " + sAccessToken);
 
 			/* Send URL to relay module and check return status */
@@ -738,7 +695,6 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 void RelayNet::OnConnect()
 {
 	_log.Log(LOG_STATUS, "RelayNet: Connected to Relay Module %s", m_szIPAddress.c_str());
-	m_reconnect = false;
 	m_bIsStarted = true;
 }
 
@@ -747,23 +703,13 @@ void RelayNet::OnConnect()
 void RelayNet::OnDisconnect()
 {
 	_log.Log(LOG_STATUS, "RelayNet: Relay Module disconnected %s, reconnect", m_szIPAddress.c_str());
-
-	if (!m_stoprequested)
-	{
-		m_reconnect = true;
-	}
 }
 
 //===========================================================================
 
 void RelayNet::OnData(const unsigned char *pData, size_t length)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
-
-	if (!m_stoprequested)
-	{
-		ParseData(pData, length);
-	}
+	ParseData(pData, length);
 }
 
 //===========================================================================

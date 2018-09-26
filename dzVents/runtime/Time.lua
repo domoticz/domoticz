@@ -302,12 +302,40 @@ local function Time(sDate, isUTC, _testMS)
 		return os.date("!%Y-%m-%dT%TZ", os.time(time))
 	end
 
+	function getCivilTwilightStart()
+		return _G.timeofday['CivTwilightStartInMinutes']
+	end
+
+	function getCivilTwilightEnd()
+		return _G.timeofday['CivTwilightEndInMinutes']
+	end
+
 	function getSunset()
 		return _G.timeofday['SunsetInMinutes']
 	end
 
 	function getSunrise()
 		return _G.timeofday['SunriseInMinutes']
+	end
+
+	-- return minutes before civil twilight start
+	function getMinutesBeforeCivilTwilightStart(minutes)
+		return getCivilTwilightStart() - minutes
+	end
+
+	-- return minutes after civil twilight start
+	function getMinutesAfterCivilTwilightStart(minutes)
+		return getCivilTwilightStart() + minutes
+	end
+
+	-- return minutes before civil twilight end
+	function getMinutesBeforeCivilTwilightEnd(minutes)
+		return getCivilTwilightEnd() - minutes
+	end
+
+	-- return minutes after civil twilight end
+	function getMinutesAfterCivilTwilightEnd(minutes)
+		return getCivilTwilightEnd() + minutes
 	end
 
 	-- return minutes before sunrise
@@ -524,6 +552,90 @@ local function Time(sDate, isUTC, _testMS)
 		return false
 	end
 
+	--returns true if self.time is at civil twilight start
+	function self.ruleIsAtCivilTwilightStart(rule)
+		if (string.find(rule, 'at civiltwilightstart')) then
+			local minutesnow = self.min + self.hour * 60
+			return (minutesnow == getCivilTwilightStart())
+		end
+
+		return nil -- no 'at civiltwilightstart' was specified in rule
+	end
+
+	-- returns true if self.time is in the rule 'xx minutes before civiltwilightstart'
+	function self.ruleIsBeforeCivilTwilightStart(rule)
+		-- xx minutes before civil twilight start
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes before civiltwilightstart'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == getMinutesBeforeCivilTwilightStart(minutes))
+		end
+
+		return nil -- no xx minutes before civil twilight start found
+	end
+
+	-- return true if the self.time is in the rule xx minutes after civil twilight start
+	function self.ruleIsAfterCivilTwilightStart(rule)
+		-- xx minutes after civil twilight start
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes after civiltwilightstart'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == getMinutesAfterCivilTwilightStart(minutes))
+		end
+
+		return nil -- no xx minutes after civil twilight start found
+	end
+
+	--returns true if self.time is at civil twilight end
+	function self.ruleIsAtCivilTwilightEnd(rule)
+		if (string.find(rule, 'at civiltwilightend')) then
+			local minutesnow = self.min + self.hour * 60
+			return (minutesnow == getCivilTwilightEnd())
+		end
+
+		return nil -- no 'at civiltwilightend' was specified in rule
+	end
+
+	-- returns true if self.time is in the rule 'xx minutes before civiltwilightend'
+	function self.ruleIsBeforeCivilTwilightEnd(rule)
+		-- xx minutes before civil twilight end
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes before civiltwilightend'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == getMinutesBeforeCivilTwilightEnd(minutes))
+		end
+
+		return nil -- no xx minutes before civil twilight end found
+	end
+
+	-- return true if the self.time is in the rule xx minutes after civil twilight end
+	function self.ruleIsAfterCivilTwilightEnd(rule)
+		-- xx minutes after civil twilight end
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes after civiltwilightend'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == getMinutesAfterCivilTwilightEnd(minutes))
+		end
+
+		return nil -- no xx minutes after civil twilight end found
+	end
+
 	--returns true if self.time is at sunrise
 	function self.ruleIsAtSunrise(rule)
 		if (string.find(rule, 'at sunrise')) then
@@ -606,6 +718,22 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		return nil -- no xx minutes before sunset found
+	end
+
+	-- returns true if self.time is after civil twilight start and before civil twilight end
+	function self.ruleIsAtCivilNight(rule)
+		if (string.find(rule, 'at civilnighttime')) then
+			return _G.timeofday['Civilnighttime'] -- coming from domotic
+		end
+		return nil -- no 'at civilnighttime' was specified in the rule
+	end
+
+	-- return true if self.time is after civil twilight end and before civil twilight start
+	function self.ruleIsAtCivilDayTime(rule)
+		if (string.find(rule, 'at civildaytime')) then
+			return _G.timeofday['Civildaytime'] -- coming from domotic
+		end
+		return nil -- no 'at civildaytime' was specified
 	end
 
 	-- returns true if self.time is after sunset and before sunrise
@@ -746,6 +874,29 @@ local function Time(sDate, isUTC, _testMS)
 			return tonumber(hh), tonumber(mm)
 		end
 
+		-- check if it is before civil twilight start
+		minutes = tonumber(string.match(moment, '(%d+) minutes before civiltwilightstart'))
+		if (minutes) then
+			return minutesToTime(getMinutesBeforeCivilTwilightStart(minutes))
+		end
+
+		-- check if it is after civil twilight start
+		minutes = tonumber(string.match(moment, '(%d+) minutes after civiltwilightstart'))
+		if (minutes) then
+			return minutesToTime(getMinutesAfterCivilTwilightEnd(minutes))
+		end
+		-- check if it is before civil twilight end
+		minutes = tonumber(string.match(moment, '(%d+) minutes before civiltwilightend'))
+		if (minutes) then
+			return minutesToTime(getMinutesBeforeCivilTwilightEnd(minutes))
+		end
+
+		-- check if it is after civil twilight end
+		minutes = tonumber(string.match(moment, '(%d+) minutes after civiltwilightend'))
+		if (minutes) then
+			return minutesToTime(getMinutesAfterCivilTwilightEnd(minutes))
+		end
+
 		-- check if it is before sunrise
 		minutes = tonumber(string.match(moment, '(%d+) minutes before sunrise'))
 		if (minutes) then
@@ -768,6 +919,18 @@ local function Time(sDate, isUTC, _testMS)
 		minutes = tonumber(string.match(moment, '(%d+) minutes after sunset'))
 		if (minutes) then
 			return minutesToTime(getMinutesAfterSunset(minutes))
+		end
+
+		-- check at civiltwilightstart
+		local twilightstart = string.match(moment, 'civiltwilightstart')
+		if (twilight) then
+			return minutesToTime(getCivilTwilightStart())
+		end
+
+		-- check at civiltwilightend
+		local twilightend = string.match(moment, 'civiltwilightend')
+		if (twilight) then
+			return minutesToTime(getCivilTwilightEnd())
 		end
 
 		-- check at sunrise
@@ -879,6 +1042,34 @@ local function Time(sDate, isUTC, _testMS)
 			end
 			updateTotal(res)
 
+			res = self.ruleIsBeforeCivilTwilightStart(rule) -- moment
+			if (res == false) then
+				-- rule has xx minutes before civil twilight start and now is not at that time
+				return false
+			end
+			updateTotal(res)
+
+			res = self.ruleIsAfterCivilTwilightStart(rule) -- moment
+			if (res == false) then
+				-- rule has xx minutes after civil twilight start and now is not at that time
+				return false
+			end
+			updateTotal(res)
+
+			res = self.ruleIsBeforeCivilTwilightEnd(rule) -- moment
+			if (res == false) then
+				-- rule has xx minutes before civil twilight end now is not at that time
+				return false
+			end
+			updateTotal(res)
+
+			res = self.ruleIsAfterCivilTwilightEnd(rule) -- moment
+			if (res == false) then
+				-- rule has xx minutes after civil twilight end now is not at that time
+				return false
+			end
+			updateTotal(res)
+
 			res = self.ruleIsBeforeSunrise(rule) -- moment
 			if (res == false) then
 				-- rule has xx minutes before sunrise and now is not at that time
@@ -893,6 +1084,20 @@ local function Time(sDate, isUTC, _testMS)
 			end
 			updateTotal(res)
 		end
+
+		res = self.ruleIsAtCivilTwilightStart(rule) -- moment
+		if (res == false) then
+			-- rule has at civil twilight start and now is not at that time
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsAtCivilTwilightEnd(rule) -- moment
+		if (res == false) then
+			-- rule has at civil twilight end and now is not at that time
+			return false
+		end
+		updateTotal(res)
 
 		res = self.ruleIsAtSunset(rule) -- moment
 		if (res == false) then

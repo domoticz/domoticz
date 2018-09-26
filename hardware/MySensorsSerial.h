@@ -13,8 +13,7 @@ private:
 	bool StopHardware() override;
 
 	unsigned int m_iBaudRate;
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
 	int m_retrycntr;
 	void Do_Work();
 	bool OpenSerialDevice();
@@ -23,6 +22,6 @@ private:
 	 * Read callback, stores data in the buffer
 	 */
 	void readCallback(const char *data, size_t len);
-	void WriteInt(const std::string &sendStr);
+	void WriteInt(const std::string &sendStr) override;
 };
 

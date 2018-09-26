@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "TeleinfoBase.h"
@@ -59,10 +58,9 @@ private:
 	std::string m_szIPAddress, m_username, m_password;
 	std::stringstream m_ssURL;
 	unsigned short m_usIPPort;
-	bool m_stoprequested;
 	bool m_bFirstRun;
 	int m_iModel;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	EcoStatus m_status;
 

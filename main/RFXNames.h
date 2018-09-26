@@ -97,7 +97,7 @@ enum _eMediaStatus
 };
 
 enum _eHardwareTypes {
-	HTYPE_RFXtrx315 = 0,			//0
+	HTYPE_RFXtrx315 = 0,		//0
 	HTYPE_RFXtrx433,			//1
 	HTYPE_RFXLAN,				//2
 	HTYPE_Domoticz,				//3
@@ -106,7 +106,7 @@ enum _eHardwareTypes {
 	HTYPE_YouLess,				//6
 	HTYPE_TE923,				//7
 	HTYPE_Rego6XX,				//8
-	HTYPE_RazberryZWave,		//9
+	HTYPE_TTN_MQTT,				//9
 	HTYPE_DavisVantage,			//10
 	HTYPE_VOLCRAFTCO20,			//11
 	HTYPE_1WIRE,				//12
@@ -175,7 +175,7 @@ enum _eHardwareTypes {
 	HTYPE_EVOHOME_WEB,			//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
-	HTYPE_DenkoviSmartdenLan,	//78
+	HTYPE_RESERVED_FOR_YOU_1,	//78
 	HTYPE_AccuWeather,			//79
 	HTYPE_Comm5Serial,          //80
 	HTYPE_Ec3kMeterTCP,			//81
@@ -202,7 +202,7 @@ enum _eHardwareTypes {
 	HTYPE_SysfsGpio,			//102
 	HTYPE_Rtl433,				//103
 	HTYPE_OnkyoAVTCP,			//104
-	HTYPE_DenkoviSmartdenIPInOut,	//105
+	HTYPE_RESERVED_FOR_YOU_2,	//105
 	HTYPE_EVOHOME_TCP,			//106
 	HTYPE_USBtinGateway,		//107
 	HTYPE_EnphaseAPI,			//108
@@ -213,7 +213,9 @@ enum _eHardwareTypes {
 	HTYPE_EcoCompteur,			//113
 	HTYPE_Honeywell,			//114
 	HTYPE_Tado,					//115
-	HTYPE_DenkoviDevices,		//116
+	HTYPE_DenkoviHTTPDevices,		//116
+	HTYPE_DenkoviUSBDevices,	//117
+	HTYPE_DenkoviTCPDevices,	//118
 	HTYPE_END
 };
 

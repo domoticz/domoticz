@@ -54,7 +54,6 @@ m_Location(Location),
 m_LocationKey("")
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -68,21 +67,25 @@ void CAccuWeather::Init()
 
 bool CAccuWeather::StartHardware()
 {
+	RequestStart();
+
 	Init();
+
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CAccuWeather::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CAccuWeather::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "AccuWeather");
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CAccuWeather::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -91,9 +94,8 @@ bool CAccuWeather::StopHardware()
 void CAccuWeather::Do_Work()
 {
 	int sec_counter = 595;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
@@ -112,7 +114,7 @@ void CAccuWeather::Do_Work()
 	_log.Log(LOG_STATUS,"AccuWeather Worker stopped...");
 }
 
-bool CAccuWeather::WriteToHardware(const char *pdata, const unsigned char length)
+bool CAccuWeather::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
@@ -345,7 +347,7 @@ void CAccuWeather::GetMeterDetails()
 			int wind_degrees = -1;
 			float windspeed_ms = 0;
 			float windgust_ms = 0;
-			float wind_temp = temp;
+			//float wind_temp = temp;
 			float wind_chill = temp;
 
 			if (!root["Wind"]["Direction"].empty())

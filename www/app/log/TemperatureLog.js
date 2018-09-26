@@ -1,48 +1,18 @@
-define(['app'], function (app) {
+define(['app', 'log/factories'], function (app) {
 
-    app.constant('domoticzGlobals', {
-        Get5MinuteHistoryDaysGraphTitle: Get5MinuteHistoryDaysGraphTitle,
-        chartPointClickNew: chartPointClickNew
-    });
+    app.component('deviceTemperatureLog', {
+        bindings: {
+            device: '<',
+        },
+        templateUrl: 'views/log/device_temperature_log.html',
+        controller: function() {
+            var vm = this;
 
-    // TODO: move to common factories once it will be reused
-    app.factory('domoticzDataPointApi', function ($q, domoticzApi, permissions) {
-        return {
-            deletePoint: deletePoint
-        };
-
-        function deletePoint(deviceIdx, point, isShort) {
-            return $q(function (resolve, reject) {
-                if (!permissions.hasPermission('Admin')) {
-                    HideNotify();
-                    ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-                    reject();
-                }
-
-                var dateString = isShort
-                    ? Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', point.x)
-                    : Highcharts.dateFormat('%Y-%m-%d', point.x);
-
-                var message = $.t("Are you sure to remove this value at") + " ?:\n\n" + $.t("Date") + ": " + dateString + " \n" + $.t("Value") + ": " + point.y;
-
-                bootbox.confirm(message, function (result) {
-                    if (result !== true) {
-                        reject();
-                    }
-
-                    domoticzApi
-                        .sendCommand('deletedatapoint', {
-                            idx: deviceIdx,
-                            date: dateString
-                        })
-                        .then(resolve)
-                        .catch(function () {
-                            HideNotify();
-                            ShowNotify($.t('Problem deleting data point!'), 2500, true);
-                            reject();
-                        });
-                });
-            });
+            vm.$onInit = function() {
+                vm.deviceIdx = vm.device.idx;
+                vm.deviceType = vm.device.Type;
+                vm.degreeType = $.myglobals.tempsign;
+            }
         }
     });
 
@@ -69,7 +39,7 @@ define(['app'], function (app) {
                     chart = $element
                         .highcharts({
                             chart: {
-                                type: 'spline',
+                                type: getChartType(),
                                 zoomType: 'x',
                                 resetZoomButton: {
                                     position: {
@@ -151,7 +121,26 @@ define(['app'], function (app) {
                                             }
                                         }
                                     }
-                                }
+                                },
+								line: {
+									lineWidth: 3,
+									states: {
+										hover: {
+											lineWidth: 3
+										}
+									},
+									marker: {
+										enabled: false,
+										states: {
+											hover: {
+												enabled: true,
+												symbol: 'circle',
+												radius: 5,
+												lineWidth: 1
+											}
+										}
+									}
+								}
                             },
                             title: {
                                 text: getChartTitle()
@@ -189,12 +178,16 @@ define(['app'], function (app) {
                         })
                         .then(function (data) {
                             if (typeof data.result != 'undefined') {
-                                AddDataToTempChart(data, chart, vm.range === 'day' ? 1 : 0);
+                                AddDataToTempChart(data, chart, vm.range === 'day' ? 1 : 0, (vm.deviceType === 'Thermostat'));
                                 chart.redraw();
                             }
-
                             chart.yAxis[1].visibility = vm.range !== 'day';
                         });
+                }
+                
+                function getChartType() {
+					if (vm.deviceType === 'Thermostat') return 'line';
+					return 'spline';
                 }
 
                 function getChartTitle() {
@@ -211,22 +204,6 @@ define(['app'], function (app) {
                     }
                 }
             }
-        }
-    });
-
-    app.controller('DeviceTemperatureLogController', function ($routeParams, deviceApi) {
-        var vm = this;
-
-        init();
-
-        function init() {
-            vm.deviceIdx = $routeParams.id;
-            vm.degreeType = $.myglobals.tempsign;
-
-            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
-                vm.deviceName = device.Name;
-                vm.deviceType = device.Type;
-            });
         }
     });
 });

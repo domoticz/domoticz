@@ -21,7 +21,6 @@
 CTE923::CTE923(const int ID)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -35,28 +34,25 @@ void CTE923::Init()
 
 bool CTE923::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTE923::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CTE923::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "TE923");
 	m_bIsStarted=true;
 	sOnConnected(this);
 
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CTE923::StopHardware()
 {
-	/*
-    m_stoprequested=true;
 	if (m_thread)
-		m_thread->join();
-	return true;
-    */
-	if (m_thread!=NULL)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted=false;
     return true;
@@ -65,9 +61,8 @@ bool CTE923::StopHardware()
 void CTE923::Do_Work()
 {
 	int sec_counter=TE923_POLL_INTERVAL-4;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CAnnaThermostat : public CDomoticzHardwareBase
 {
@@ -26,7 +25,6 @@ private:
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_ThermostatID;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

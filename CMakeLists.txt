@@ -36,7 +36,7 @@ MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 MESSAGE(STATUS "###########################")
 
 # The version number.
-set (domoticz_VERSION_MAJOR 3)
+set (domoticz_VERSION_MAJOR 4)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
@@ -298,6 +298,7 @@ ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
 set(
 domoticz_SRCS
 main/stdafx.cpp
+main/BaroForecastCalculator.cpp
 main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
@@ -314,6 +315,7 @@ main/LuaHandler.cpp
 main/mainworker.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
+main/SignalHandler.cpp
 main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp
@@ -339,6 +341,7 @@ hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
+hardware/cayenne_lpp/CayenneLPP_Dec.cpp
 hardware/ColorSwitch.cpp
 hardware/Comm5Serial.cpp
 hardware/Comm5SMTCP.cpp
@@ -350,9 +353,9 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
-hardware/DenkoviSmartdenIPInOut.cpp
-hardware/DenkoviSmartdenLan.cpp
 hardware/DenkoviDevices.cpp
+hardware/DenkoviUSBDevices.cpp
+hardware/DenkoviTCPDevices.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
@@ -428,7 +431,6 @@ hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/RAVEn.cpp
-hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
@@ -458,6 +460,7 @@ hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
+hardware/TTNMQTT.cpp
 hardware/USBtin.cpp
 hardware/USBtin_MultiblocV8.cpp
 hardware/VolcraftCO20.cpp

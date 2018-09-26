@@ -59,10 +59,9 @@ private:
 	uint32_t m_period;
 	uint32_t m_debounce;
 	uint32_t m_pollinterval;
-	boost::mutex m_pins_mutex;
-	boost::shared_ptr<boost::thread> m_thread, m_thread_poller, m_thread_updatestartup;
+	std::mutex m_pins_mutex;
+	std::shared_ptr<std::thread> m_thread, m_thread_poller, m_thread_updatestartup;
 	static std::vector<CGpioPin> pins;
-	volatile bool m_stoprequested;
 	volatile int pinPass;
 	tRBUF IOPinStatusPacket;
 };

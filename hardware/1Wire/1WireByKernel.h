@@ -1,7 +1,10 @@
 #pragma once
 #include "1WireSystem.h"
+#include <condition_variable>
+#include <list>
+#include "../../main/StoppableTask.h"
 
-class C1WireByKernel : public I_1WireSystem
+class C1WireByKernel : public I_1WireSystem, StoppableTask
 {
 public:
    C1WireByKernel();
@@ -32,7 +35,7 @@ protected:
    void ReadStates();
 
    // Thread management
-   boost::thread* m_Thread;
+   std::shared_ptr<std::thread> m_thread;
    void ThreadFunction();
    void ThreadProcessPendingChanges();
    void ThreadBuildDevicesList();
@@ -42,7 +45,7 @@ protected:
 
    void ThreadWriteRawDataDualChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
    void ThreadWriteRawData8ChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
-
+private:
    // Devices
    #define MAX_DIGITAL_IO  8
    class DeviceState
@@ -61,11 +64,11 @@ protected:
    };
 
    // Thread-shared data and lock methods
-   boost::mutex m_Mutex;
-   class Locker:boost::lock_guard<boost::mutex>
+   std::mutex m_Mutex;
+   class Locker:std::lock_guard<std::mutex>
    {
    public:
-	   explicit Locker(const boost::mutex& mutex):boost::lock_guard<boost::mutex>(*(const_cast<boost::mutex*>(&mutex))){}
+	   explicit Locker(const std::mutex& mutex):std::lock_guard<std::mutex>(*(const_cast<std::mutex*>(&mutex))){}
       virtual ~Locker(){}
    };
    typedef std::map<std::string,DeviceState*> DeviceCollection;
@@ -74,8 +77,8 @@ protected:
    // Pending changes queue
    std::list<DeviceState> m_PendingChanges;
    const DeviceState* GetDevicePendingState(const std::string& deviceId) const;
-   boost::mutex m_PendingChangesMutex;
-   boost::condition_variable m_PendingChangesCondition;
+   std::mutex m_PendingChangesMutex;
+   std::condition_variable m_PendingChangesCondition;
    class IsPendingChanges
    {
    private:

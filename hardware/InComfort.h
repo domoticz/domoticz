@@ -9,7 +9,6 @@
 // - Slow changing values were not updated. Forcing an update every 15 minutes.
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 #include "hardwaretypes.h"
 
 class CInComfort : public CDomoticzHardwareBase
@@ -34,8 +33,7 @@ private:
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 
 	time_t m_LastUpdateFrequentChangingValues;
 	time_t m_LastUpdateSlowChangingValues;
