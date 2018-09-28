@@ -8,7 +8,7 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
-#define MAX_POLL_INTERVAL 30*1000
+#define MAX_POLL_INTERVAL 3600*1000
 
 enum _edaeUsbState
 {
@@ -110,10 +110,10 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 			uint8_t z = 0;
 			for (uint8_t ii = 1; ii < 9; ii++) {
 				z = (firstEight >> (8 - ii)) & 0x01;
-				SendGeneralSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
 			}
 			for (uint8_t ii = 1; ii < 9; ii++)
-				SendGeneralSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(8+ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8+ii));
 		} 
 		break;
 	}
@@ -167,27 +167,31 @@ void CDenkoviUSBDevices::Do_Work()
 bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	m_updateIo = true;
-	const _tGeneralSwitch *pSen = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+	int ioType = pSen->LIGHTING2.id4;
+	int io = pSen->LIGHTING2.unitcode;
+	uint8_t command = pSen->LIGHTING2.cmnd;
+
 	if (m_bIsStarted == false)
 		return false;
 
 	switch (m_iModel) {
 	case DDEV_USB_16R: {
 		std::stringstream szCmd;
-		int ioType = pSen->id;
+		//int ioType = pSen->id;
 		if (ioType != DAE_IO_TYPE_RELAY)
 		{
 			_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Not a valid Relay");
 			return false;
 		}
-		int io = pSen->unitcode;//Relay1 to Relay16
+		//int io = pSen->unitcode;//Relay1 to Relay16
 		if (io > 16)
 			return false;
 
 		szCmd << (io < 10 ? "0" : "") << io;
-		if (pSen->cmnd == light2_sOff)
+		if (command == light2_sOff)
 			szCmd << "-//";
-		else if (pSen->cmnd == light2_sOn)
+		else if (command == light2_sOn)
 			szCmd << "+//";
 		m_Cmd = DAE_USB16_UPDATE_IO;
 		write(szCmd.str());
