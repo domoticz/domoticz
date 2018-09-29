@@ -956,7 +956,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Aqara Cube";
 						type = STYPE_Selector;
 					}
-					else if (model == "86sw2") {
+					else if (model == "86sw2" || model == "remote.b286acn01" ) {
 						name = "Xiaomi Wireless Dual Wall Switch";
 						type = STYPE_Selector;
 					}
@@ -971,7 +971,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Wired Single Wall Switch";
 						//type = STYPE_Selector;
 					}
-					else if (model == "86sw1") {
+					else if (model == "86sw1" || model == "remote.b186acn01") {
 						name = "Xiaomi Wireless Single Wall Switch";
 						type = STYPE_PushOn;
 					}
