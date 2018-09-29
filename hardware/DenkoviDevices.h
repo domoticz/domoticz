@@ -41,6 +41,7 @@ private:
 	std::string DAEnetIP2GetName(std::string tmpstr, const int &nmr);
 	uint16_t DAEnetIP2GetAiValue(std::string tmpstr, const int &aiNmr);
 	float DAEnetIP2CalculateAi(int adc, const int &valType);
+	void SendDenkoviTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

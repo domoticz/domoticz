@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-#define MAX_POLL_INTERVAL 30*1000
+#define MAX_POLL_INTERVAL 3600*1000
 
 enum _eDaeTcpState
 {
@@ -126,10 +126,10 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 			uint8_t z = 0;
 			for (uint8_t ii = 1; ii < 9; ii++) {
 				z = (firstEight >> (8 - ii)) & 0x01;
-				SendGeneralSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
 			}
 			for (uint8_t ii = 1; ii < 9; ii++)
-				SendGeneralSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(8 + ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii));
 		}
 		break;
 	}
@@ -153,10 +153,10 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 			firstEight = (uint8_t)m_pResp.data[0];
 			secondEight = (uint8_t)m_pResp.data[1];
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				SendGeneralSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii - 1)) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
 			}
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				SendGeneralSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, (((secondEight >> (ii - 1)) & 0x01) != 0) ? true : false, 100, "Relay " + std::to_string(8 + ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, (((secondEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii));
 			}
 		}
 		else if (m_Cmd == DAE_WRITE_COIL_CMD && m_uiReceivedDataLength >= WRITE_SINGLE_COIL_CMD_LENGTH) {
@@ -262,25 +262,30 @@ void CDenkoviTCPDevices::Do_Work()
 bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	m_bUpdateIo = true;
-	const _tGeneralSwitch *pSen = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+
+	int ioType = pSen->LIGHTING2.id4;
+	int io = pSen->LIGHTING2.unitcode;
+	uint8_t command = pSen->LIGHTING2.cmnd;
+
 	if (m_bIsStarted == false)
 		return false;
 
 	switch (m_iModel) {
 	case DDEV_WIFI_16R: {
 		std::stringstream szCmd;
-		int ioType = pSen->id;
+		//int ioType = pSen->id;
 		if (ioType != DAE_IO_TYPE_RELAY)
 		{
 			_log.Log(LOG_ERROR, "WiFi 16 Relays-VCP: Not a valid Relay");
 			return false;
 		}
-		int io = pSen->unitcode;//Relay1 to Relay16
+		//int io = pSen->unitcode;//Relay1 to Relay16
 		if (io > 16)
 			return false;
 
 		szCmd << (io < 10 ? "0" : "") << io;
-		if (pSen->cmnd == light2_sOff)
+		if (command == light2_sOff)
 			szCmd << "-//";
 		else
 			szCmd << "+//";
@@ -290,13 +295,13 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 	}
 	case DDEV_WIFI_16R_Modbus: {
 		std::stringstream szCmd;
-		int ioType = pSen->id;
+		//int ioType = pSen->id;
 		if (ioType != DAE_IO_TYPE_RELAY)
 		{
 			_log.Log(LOG_ERROR, "WiFi 16 Relays-TCP Modbus: Not a valid Relay");
 			return false;
 		}
-		int io = pSen->unitcode;//Relay1 to Relay16
+		//int io = pSen->unitcode;//Relay1 to Relay16
 		if (io > 16)
 			return false;
 
@@ -311,7 +316,7 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 		m_pReq.fc = DMODBUS_WRITE_SINGLE_COIL;
 		m_pReq.length[0] = 0;
 		m_pReq.length[1] = 6;
-		if (pSen->cmnd == light2_sOff)
+		if (command == light2_sOff)
 			m_pReq.data[0] = 0x00;
 		else
 			m_pReq.data[0] = 0xFF;
