@@ -17,7 +17,6 @@ private:
 	void Do_Work();
 	void GetSensorDetails();
 private:
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 };
 

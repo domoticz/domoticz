@@ -280,6 +280,7 @@ private:
 	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DuplicateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_AddCamera(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateCamera(WebEmSession & session, const request& req, Json::Value &root);

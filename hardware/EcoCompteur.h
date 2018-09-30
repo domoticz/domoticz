@@ -23,8 +23,6 @@ private:
 	std::string m_url;
 	unsigned short m_port;
 	unsigned short m_refresh;
-
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 };
 

@@ -73,6 +73,5 @@ private:
 	int m_iMissedQueries;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	std::mutex m_mutex;
 };

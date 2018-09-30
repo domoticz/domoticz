@@ -470,6 +470,7 @@ i18n/domoticz-uk.json
 i18n/domoticz-zh.json
 
 # Scripts
+app/devices/deviceFactory.js
 app/log/components.js
 app/log/DeviceLog.js
 app/log/factories.js
@@ -477,11 +478,22 @@ app/log/GraphLog.js
 app/log/LightLog.js
 app/log/SceneLog.js
 app/log/TemperatureLog.js
-app/log/TemperatureReport.js
 app/log/TextLog.js
+
 app/notifications/constants.js
 app/notifications/DeviceNotifications.js
 app/notifications/factories.js
+
+app/report/CounterReport.html
+app/report/CounterReport.js
+app/report/DeviceReport.html
+app/report/DeviceReport.js
+app/report/EnergyMultiCounterReport.html
+app/report/EnergyMultiCounterReport.js
+app/report/helpers.js
+app/report/TemperatureReport.html
+app/report/TemperatureReport.js
+
 app/scenes/factories.js
 app/timers/components.js
 app/timers/DeviceTimersController.js
@@ -603,7 +615,6 @@ views/log/device_graph_log.html
 views/log/device_light_log.html
 views/log/device_log.html
 views/log/device_temperature_log.html
-views/log/device_temperature_report.html
 views/log/device_text_log.html
 views/log/scene_log.html
 views/about.html

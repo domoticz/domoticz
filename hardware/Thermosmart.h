@@ -30,7 +30,6 @@ private:
 	std::string m_AccessToken;
 	std::string m_ThermostatID;
 	int m_OutsideTemperatureIdx;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 
 	bool m_bDoLogin;

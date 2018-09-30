@@ -10,6 +10,11 @@
 class StoppableTask
 {
 public:
+	template<typename R>
+	bool is_ready(std::future<R> const& f)
+	{
+		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+	}
 	StoppableTask() :
 		m_futureObj(m_exitSignal.get_future())
 	{
@@ -33,7 +38,16 @@ public:
 	// Request the thread to stop by setting value in promise object
 	void RequestStop()
 	{
-		m_exitSignal.set_value();
+		if (!is_ready(m_futureObj))
+			m_exitSignal.set_value();
+	}
+	void RequestStart()
+	{
+		if (is_ready(m_futureObj))
+		{
+			m_exitSignal = std::promise<void>();
+			m_futureObj = m_exitSignal.get_future();
+		}
 	}
 private:
 	std::promise<void> m_exitSignal;

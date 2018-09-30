@@ -21,7 +21,6 @@ void removeCharsFromString(std::string &str, const char* charsToRemove ) {
 }
 
 CRtl433::CRtl433(const int ID, const std::string &cmdline) :
-	m_stoprequested(false),
 	m_cmdline(cmdline)
 {
 	// Basic protection from malicious command line
@@ -36,6 +35,8 @@ CRtl433::~CRtl433()
 
 bool CRtl433::StartHardware()
 {
+	RequestStart();
+
 	m_thread = std::make_shared<std::thread>(&CRtl433::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "Rtl433");
 	m_bIsStarted = true;
@@ -48,7 +49,7 @@ bool CRtl433::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -95,7 +96,7 @@ void CRtl433::Do_Work()
 		_log.Log(LOG_STATUS, "Rtl433: Worker started...");
 
 	bool bHaveReceivedData = false;
-	while (!m_stoprequested)
+	while (!IsStopRequested(0))
 	{
 		char line[2048];
 		std::vector<std::string> headers;
@@ -111,15 +112,18 @@ void CRtl433::Do_Work()
 #endif
 		if (m_hPipe == NULL)
 		{
-			if (!m_stoprequested) {
+			if (!IsStopRequested(0))
+			{
 				// sleep 30 seconds before retrying
 #ifdef WIN32
 				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
 #else
 				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
 #endif
-				for (int i = 0; i < 30 && !m_stoprequested; i++) {
-					sleep_milliseconds(1000);
+				for (int i = 0; i < 30; i++)
+				{
+					if (IsStopRequested(1000))
+						break;
 				}
 			}
 			continue;
@@ -134,9 +138,8 @@ void CRtl433::Do_Work()
 #endif
 		bool bFirstTime = true;
 		time_t time_last_received = time(NULL);
-		while (!m_stoprequested)
+		while (!IsStopRequested(100))
 		{
-			sleep_milliseconds(100);
 			if (m_hPipe == NULL)
 				break;
 			//size_t bread = read(fd, (char*)&line, sizeof(line));
@@ -473,7 +476,7 @@ void CRtl433::Do_Work()
 				}
 				break; // bail out, subprocess has failed
 			}
-		} // while !m_stoprequested
+		} // while !IsStopRequested()
 		if (m_hPipe)
 		{
 #ifdef WIN32
@@ -483,7 +486,7 @@ void CRtl433::Do_Work()
 #endif
 			m_hPipe = NULL;
 		}
-		if (!m_stoprequested) {
+		if (!IsStopRequested(0)) {
 			// sleep 30 seconds before retrying
 			if (!bHaveReceivedData)
 			{
@@ -497,11 +500,13 @@ void CRtl433::Do_Work()
 			{
 				_log.Log(LOG_STATUS, "Rtl433: Failure! Retrying in 30 seconds...");
 			}
-			for (int i = 0; i < 30 && !m_stoprequested; i++) {
-				sleep_milliseconds(1000);
+			for (int i = 0; i < 30; i++)
+			{
+				if (IsStopRequested(1000))
+					break;
 			}
 		}
-	} // while !stoprequested
+	} // while !IsStopRequested()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
 }
 

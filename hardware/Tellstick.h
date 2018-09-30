@@ -3,7 +3,7 @@
 #ifdef WITH_TELLDUSCORE
 
 #include "DomoticzHardware.h"
-#include <condition_variable>
+#include "hardwaretypes.h"
 
 class CTellstick : public CDomoticzHardwareBase
 {
@@ -16,15 +16,15 @@ private:
     {
         Command()
             : repeat(0),
-              repeatTimePoint(boost::get_system_time()) {}
+              repeatTimePoint(std::chrono::system_clock::now()) {}
         Command(_tGeneralSwitch genSwitch)
             : genSwitch(genSwitch),
               repeat(0),
-              repeatTimePoint(boost::get_system_time()) {}
+              repeatTimePoint(std::chrono::system_clock::now()) {}
 
         _tGeneralSwitch genSwitch;
         int repeat;
-        boost::system_time repeatTimePoint;
+        std::chrono::system_clock::time_point repeatTimePoint;
     };
 
     void deviceEvent(int deviceId, int method, const char *data);
@@ -53,7 +53,7 @@ private:
     std::condition_variable m_cond;
     std::map<int, Command> m_commands;
     int m_numRepeats;
-    boost::posix_time::milliseconds m_repeatInterval;
+    std::chrono::milliseconds m_repeatInterval;
 };
 
 #endif //WITH_TELLSTICK

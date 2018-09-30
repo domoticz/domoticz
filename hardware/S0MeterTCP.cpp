@@ -11,7 +11,6 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = S0METER_RETRY_DELAY;
 	InitBase();
@@ -23,7 +22,7 @@ S0MeterTCP::~S0MeterTCP(void)
 
 bool S0MeterTCP::StartHardware()
 {
-	m_bDoRestart=false;
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr= S0METER_RETRY_DELAY;
@@ -53,7 +52,6 @@ bool S0MeterTCP::StopHardware()
 void S0MeterTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS,"S0 Meter: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos = 0;
 	sOnConnected(this);
@@ -62,40 +60,19 @@ void S0MeterTCP::OnConnect()
 void S0MeterTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS,"S0 Meter: disconnected");
-	m_bDoRestart = true;
 }
 
 void S0MeterTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 0;
+	_log.Log(LOG_ERROR, "S0 Meter: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
-		time_t atime = mytime(NULL);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat= atime;
-		}
-
-		if (bFirstTime)
-		{
-			bFirstTime=false;
-			if (isConnected())
-			{
-				disconnect();
-			}
-			_log.Log(LOG_ERROR, "S0 Meter: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				_log.Log(LOG_ERROR, "S0 Meter: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
+			m_LastHeartbeat = mytime(NULL);
 		}
 	}
 	terminate();

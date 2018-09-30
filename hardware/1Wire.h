@@ -33,9 +33,9 @@ private:
 	void ReportVoltage(const std::string& deviceId, const int unit, const int voltage);
 	void ReportIlluminance(const std::string& deviceId, const float illuminescence);
 private:
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_threadSensors;
 	std::shared_ptr<std::thread> m_threadSwitches;
+	StoppableTask m_TaskSwitches;
 	I_1WireSystem* m_system;
 	std::map<std::string, bool> m_LastSwitchState;
 	std::set<_t1WireDevice> m_sensors;

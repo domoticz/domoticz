@@ -3,7 +3,6 @@
 #define SIZEOFTEXT 80
 #define EH_REMOVE_NAMES 1
 #define LOG _log.Log
-extern class eHouseTCP eHouse;
 
 #define             MAXMSG 0xfffful										//size of udp message buffer
 
@@ -284,78 +283,5 @@ extern void UDPListener(void);  //for eHouse4Ethernet devices and eHouse1 via Co
 #define    AURA_STAT_ALARM_CO2           0x20000000ul
 #define    AURA_STAT_ALARM_GAS           0x40000000ul
 #define    AURA_STAT_ALARM_WIND          0x80000000ul
-
-
-#ifndef WIN32
-#define msl(x) {    \
-                struct timespec snts,sntr;    \
-                struct timeval tv;  \
-                if (x>0){    \
-               snts.tv_nsec=1000000l*x;\
-               snts.tv_sec=0;\
-               sntr.tv_nsec=0;\
-               sntr.tv_sec=0;\
-               do \
-                    {\
-                    if (nanosleep(&snts,&sntr)==0) break;\
-                    else\
-                        {\
-                        snts.tv_nsec=sntr.tv_nsec;\
-                        snts.tv_sec=sntr.tv_sec;\
-                        }\
-                    } while (1);    \
-              }}\
-
-#else
-#define msl(x) {    \
-				Sleep(x);\
-				}
-
-#endif
-#ifndef WIN32
-#define ssl(x) { \
-                struct timespec snts,sntr;    \
-                struct timeval tv;  \
-                if (x>0){    \
-               snts.tv_nsec=0;\
-               snts.tv_sec=x;\
-               sntr.tv_nsec=0;\
-               sntr.tv_sec=0;\
-               do \
-                    {\
-                    if (nanosleep(&snts,&sntr)==0) break;\
-                    else\
-                        {\
-                        snts.tv_nsec=sntr.tv_nsec;\
-                        snts.tv_sec=sntr.tv_sec;\
-                        }\
-                    } while (1);    \
-              }}\
-
-#else
-#define ssl(x) { \
-				Sleep(1000*x);\
-				} \
-
-#endif
-
-#define usl(x) { \
-                struct timespec snts,sntr;    \
-                struct timeval tv;  \
-                if (x>0){    \
-               snts.tv_nsec=1000l*x;\
-               snts.tv_sec=0;\
-               sntr.tv_nsec=0;\
-               sntr.tv_sec=0;\
-               do \
-                    {\
-                    if (nanosleep(&snts,&sntr)==0) break;\
-                    else\
-                        {\
-                        snts.tv_nsec=sntr.tv_nsec;\
-                        snts.tv_sec=sntr.tv_sec;\
-                        }\
-                    } while (1);    \
-              }}\
 
 

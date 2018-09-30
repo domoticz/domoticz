@@ -20,7 +20,6 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_Username;
 	std::string m_Password;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 };
 

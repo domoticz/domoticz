@@ -22,7 +22,6 @@ CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short us
 	m_Pwd(Pwd)
 {
 	m_HwdID = ID;
-	m_bDoRestart = false;
 	m_usIPPort = usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetSettings(PollIntervalsec, PingTimeoutms);
@@ -505,11 +504,10 @@ void CHEOS::Do_Work()
 
 	ReloadNodes();
 
-	bool bFirstTime = true;
 	bool bCheckedForPlayers = false;
 	int sec_counter = 25;
 	m_lastUpdate = 25;
-
+	connect(m_IP, m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -519,36 +517,22 @@ void CHEOS::Do_Work()
 			m_LastHeartbeat = mytime(NULL);
 		}
 
-		if (bFirstTime)
+		if (isConnected())
 		{
-			bFirstTime = false;
-			connect(m_IP, m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
+			if (!bCheckedForPlayers)
 			{
-				connect(m_IP, m_usIPPort);
+				// Update all players and groups
+				SendCommand("getPlayers");
+				bCheckedForPlayers = true;
+				// Enable event changes
+				SendCommand("registerForEvents");
 			}
-			update();
-			if (isConnected())
+			if (sec_counter % 30 == 0 && m_lastUpdate >= 30)//updates every 30 seconds
 			{
-				if (!bCheckedForPlayers)
+				std::vector<HEOSNode>::const_iterator itt;
+				for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 				{
-					// Update all players and groups
-					SendCommand("getPlayers");
-					bCheckedForPlayers = true;
-					// Enable event changes
-					SendCommand("registerForEvents");
-				}
-				if (sec_counter % 30 == 0 && m_lastUpdate >= 30)//updates every 30 seconds
-				{
-					bFirstTime = false;
-					std::vector<HEOSNode>::const_iterator itt;
-					for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
-					{
-						SendCommand("getPlayState", itt->DevID);
-					}
+					SendCommand("getPlayState", itt->DevID);
 				}
 			}
 		}
@@ -574,7 +558,7 @@ _eNotificationTypes	CHEOS::NotificationType(_eMediaStatus nStatus)
 
 bool CHEOS::StartHardware()
 {
-	m_bDoRestart = false;
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr = RETRY_DELAY;
@@ -601,7 +585,6 @@ bool CHEOS::StopHardware()
 void CHEOS::OnConnect()
 {
 	_log.Log(LOG_STATUS, "HEOS by DENON: Connected to: %s:%d", m_IP.c_str(), m_usIPPort);
-	m_bDoRestart = false;
 	m_bIsStarted = true;
 	m_bufferpos = 0;
 	sOnConnected(this);

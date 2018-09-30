@@ -41,12 +41,12 @@ private:
 	std::string DAEnetIP2GetName(std::string tmpstr, const int &nmr);
 	uint16_t DAEnetIP2GetAiValue(std::string tmpstr, const int &aiNmr);
 	float DAEnetIP2CalculateAi(int adc, const int &valType);
+	void SendDenkoviTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_Password;
 	int m_pollInterval;
-	volatile bool m_stoprequested;
 	int m_iModel;
 	//boost::shared_ptr<boost::thread> m_thread;
 	std::shared_ptr<std::thread> m_thread;

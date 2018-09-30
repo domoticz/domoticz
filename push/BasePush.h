@@ -1,8 +1,9 @@
 #pragma once
 
 #include <boost/signals2.hpp>
+#include "../main/StoppableTask.h"
 
-class CBasePush
+class CBasePush : public StoppableTask
 {
 public:
 	CBasePush();

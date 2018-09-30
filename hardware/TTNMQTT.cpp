@@ -62,7 +62,6 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	m_IsConnected = false;
 	m_bDoReconnect = false;
 
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	m_TopicIn = Username + "/devices/+/up";
 
@@ -85,9 +84,9 @@ CTTNMQTT::~CTTNMQTT(void)
 
 bool CTTNMQTT::StartHardware()
 {
-	StartHeartbeatThread();
+	RequestStart();
 
-	m_stoprequested = false;
+	StartHeartbeatThread();
 
 	//force connect the next first time
 	m_IsConnected = false;
@@ -109,17 +108,11 @@ void CTTNMQTT::StopMQTT()
 bool CTTNMQTT::StopHardware()
 {
 	StopHeartbeatThread();
-	m_stoprequested = true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_IsConnected = false;
 	return true;
@@ -161,7 +154,7 @@ void CTTNMQTT::on_disconnect(int rc)
 {
 	if (rc != 0)
 	{
-		if (!m_stoprequested)
+		if (!IsStopRequested(0))
 		{
 			if (rc == 5)
 			{
@@ -221,16 +214,15 @@ void CTTNMQTT::Do_Work()
 	int msec_counter = 0;
 	int sec_counter = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(100))
 	{
-		sleep_milliseconds(100);
 		if (!bFirstTime)
 		{
 			int rc = loop();
 			if (rc) {
 				if (rc != MOSQ_ERR_NO_CONN)
 				{
-					if (!m_stoprequested)
+					if (!IsStopRequested(0))
 					{
 						if (!m_bDoReconnect)
 						{

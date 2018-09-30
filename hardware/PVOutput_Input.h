@@ -17,7 +17,6 @@ private:
 private:
 	std::string m_SID;
 	std::string m_KEY;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 };
 

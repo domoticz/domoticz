@@ -55,7 +55,6 @@ private:
 	std::string m_TransportURL;
 	std::string m_AccessToken;
 	std::string m_UserID;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::map<int, _tNestThemostat> m_thermostats;
 	std::map<int, _tNestStructure> m_structures;
