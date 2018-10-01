@@ -625,7 +625,7 @@ void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const uint8_t Child
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
+void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeVoltage;
