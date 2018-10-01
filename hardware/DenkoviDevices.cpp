@@ -218,13 +218,13 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 	const _tGeneralSwitch *pSen1 = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
-	int ioType;
+	int ioType = pSen->LIGHTING2.id4;
 	int io;
 	int Relay;
 	uint8_t command;
 	uint8_t level;
 
-	if (pSen1->cmnd != 204)
+	if (ioType!=DIOType_DO && ioType!=DIOType_Relay && ioType!= DIOType_DIO && ioType!= DIOType_MCD)
 	{
 		ioType = pSen1->id;
 		io = pSen1->unitcode;
