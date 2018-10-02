@@ -562,7 +562,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 				else if (Name == "Xiaomi Wireless Single Wall Switch") {
 					//for Aqara wireless switch, single button support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click", false));
 				}
 				else if (Name == "Xiaomi Gateway Alarm Ringtone") {
 					//for the Gateway Audio
@@ -973,7 +973,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (model == "86sw1" || model == "remote.b186acn01") {
 						name = "Xiaomi Wireless Single Wall Switch";
-						type = STYPE_PushOn;
+						type = STYPE_Selector;
 					}
 					else if (model == "smoke") {
 						name = "Xiaomi Smoke Detector";
