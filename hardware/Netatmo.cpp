@@ -11,6 +11,8 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+bool bNetatmoLocalConnected = true;
+
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
 #endif
@@ -435,6 +437,8 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	int co2;
 	float rain;
 	int sound;
+	std::time_t NetatmoLastUpdate = 0;
+	std::time_t DeviceLastUpdate = 0;
 
 	int wind_angle = 0;
 	int wind_gust_angle = 0;
@@ -442,6 +446,48 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	float wind_gust = 0;
 
 	int batValue = GetBatteryLevel(ModuleType, battery_percent);
+	
+	// Check when dashboard data was last updated
+	if (!root["time_utc"].empty())
+	{
+		NetatmoLastUpdate = root["time_utc"].asUInt();
+	}
+	//_log.Log(LOG_STATUS, "Debug Netatmo: Netatmo last refresh = %d", NetatmoLastUpdate);
+
+	// check when domoticz device was last updated
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%d')", m_HwdID, ID & 0xFFFF);
+	if (!result.empty())
+	{
+		std::string sLastUpdate = result[0][0];
+		DeviceLastUpdate = std::time(nullptr);
+		std::tm tLastUpdate = *std::localtime(&DeviceLastUpdate);
+		std::istringstream tempcstr;
+		tempcstr.str(sLastUpdate);
+		tempcstr >> std::get_time(&tLastUpdate, "%Y-%m-%d %H:%M:%S");
+		DeviceLastUpdate = std::mktime(&tLastUpdate);
+		//_log.Log(LOG_ERROR, "Debug Netatmo: domoticz last refresh = %d", DeviceLastUpdate);
+	}
+	
+	// check if Netatmo data was updated more recently than the domoticz device
+	if ( NetatmoLastUpdate > DeviceLastUpdate )
+	{
+		if (!bNetatmoLocalConnected)
+		{
+			_log.Log(LOG_STATUS, "Netatmo local connection resumed");
+			bNetatmoLocalConnected = true;
+		}
+	}
+	else
+	{
+		if ( bNetatmoLocalConnected )
+			_log.Log(LOG_ERROR, "Netatmo local connection could be dead. Please check !");
+		bNetatmoLocalConnected = false;
+		return false;
+	}
+
+	// check if last Netatmo update was more recent than last domoticz update
+	// TO DO
 
 	if (!root["Temperature"].empty())
 	{
