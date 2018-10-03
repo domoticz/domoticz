@@ -5841,7 +5841,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 					datatableUsage1.push([cdate, fValue]);
 				}
 				else {
-					datatableUsage1.push([cdate, parseFloat(item.v) * $.DividerWater]);
+					datatableUsage1.push([cdate, parseFloat(item.v) * 1000]);
 				}
 			}
 			if (typeof item.v2 != 'undefined') {
@@ -5866,7 +5866,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 				datatableUsage1.push([cdate, parseFloat(item.v)]);
 			}
 			else {
-				datatableUsage1.push([cdate, parseFloat(item.v) * $.DividerWater]);
+				datatableUsage1.push([cdate, parseFloat(item.v) * 1000]);
 			}
 			if (typeof item.v2 != 'undefined') {
 				datatableUsage2.push([cdate, parseFloat(item.v2)]);
@@ -6678,7 +6678,7 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 
 	var graph_title = (switchtype == 4) ? $.t('Generated') : $.t('Usage');
 	graph_title += ' ' + Get5MinuteHistoryDaysGraphTitle();
-
+	
 	$.DayChart = $($.content + ' #daygraph');
 	$.DayChart.highcharts({
 		chart: {
