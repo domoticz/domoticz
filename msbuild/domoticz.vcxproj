@@ -533,6 +533,7 @@
     <ClInclude Include="..\hardware\TE923Tool.h" />
     <ClInclude Include="..\hardware\TeleinfoBase.h" />
     <ClInclude Include="..\hardware\TeleinfoSerial.h" />
+    <ClInclude Include="..\hardware\TelldusFunctions.h" />
     <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
@@ -831,6 +832,7 @@
     <ClCompile Include="..\hardware\TeleinfoBase.cpp" />
     <ClCompile Include="..\hardware\TeleinfoSerial.cpp" />
     <ClCompile Include="..\hardware\Tellstick.cpp" />
+    <ClCompile Include="..\hardware\TellstickFactory.cpp" />
     <ClCompile Include="..\hardware\Thermosmart.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
     <ClCompile Include="..\hardware\TTNMQTT.cpp" />
