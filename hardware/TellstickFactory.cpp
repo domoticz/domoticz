@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Tellstick.h"
 #include "../main/Logger.h"
 
