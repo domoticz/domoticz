@@ -808,6 +808,7 @@ namespace Plugins {
 			PyObject*	pOptionsDict = NULL;
 
 			char*		Name = NULL;
+			char*		DeviceID = NULL;
 			char*		TypeName = NULL;
 			int			iType = self->Type;
 			int			iSubType = self->SubType;
@@ -821,12 +822,12 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
-			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", "Color", "SuppressTriggers", NULL };
+			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "DeviceID", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", "Color", "SuppressTriggers", NULL };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOisssiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &DeviceID, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
 				{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'DeviceID', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
@@ -898,6 +899,13 @@ namespace Plugins {
 				m_sql.UpdateDeviceValue("Name", sName, sID);
 			}
 
+			// DeviceID change
+			if (DeviceID)
+			{
+				sDeviceID = DeviceID;
+				m_sql.UpdateDeviceValue("DeviceID", sDeviceID, sID);
+			}
+			
 			// Description change
 			if (Description)
 			{
