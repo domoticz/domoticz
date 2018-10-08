@@ -40,6 +40,11 @@ define(['app', 'log/factories', 'log/components'], function (app) {
                             }
                         }
                     },
+                    credits: {
+                        enabled: true,
+                        href: 'http://www.domoticz.com',
+                        text: 'Domoticz.com'
+                    },
                     xAxis: {
                         type: 'datetime'
                     },
@@ -203,7 +208,41 @@ define(['app', 'log/factories', 'log/components'], function (app) {
             }
 
             function getChartUnit() {
-                return vm.device.getUnit();
+                if (vm.device.SubType === 'Custom Sensor') {
+                    return vm.device.SensorUnit
+                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Voltage') {
+                    return 'V';
+                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Distance') {
+                    return vm.device.SwitchTypeVal === 1 ? 'in' : 'cm'
+                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Current') {
+                    return 'A';
+                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Pressure') {
+                    return 'Bar';
+                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Sound Level') {
+                    return 'dB';
+                } else if (vm.device.SubType === 'Visibility') {
+                    return vm.device.SwitchTypeVal === 1 ? 'mi' : 'km';
+                } else if (vm.device.SubType === 'Solar Radiation') {
+                    return 'Watt/m2';
+                } else if (vm.device.SubType === 'Soil Moisture') {
+                    return 'cb';
+                } else if (vm.device.SubType === 'Leaf Wetness') {
+                    return 'Range';
+                } else if (vm.device.SubType === 'Weight') {
+                    return 'kg';
+                } else if (['Voltage', 'A/D'].includes(vm.device.SubType)) {
+                    return 'mV';
+                } else if (vm.device.SubType === 'Waterflow') {
+                    return 'l/min';
+                } else if (vm.device.SubType === 'Lux') {
+                    return 'lx';
+                } else if (vm.device.SubType === 'Percentage') {
+                    return '%';
+                } else if (vm.device.Type === 'Usage' && vm.device.SubType === 'Electric') {
+                    return 'W';
+                } else {
+                    return '?';
+                }
             }
 
             function getChartType() {
