@@ -3625,7 +3625,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 {
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate, HardwareID, DeviceID FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
+	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate, HardwareID, DeviceID, Unit FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
 		idx);
 	if (!result.empty())
 	{
@@ -3643,6 +3643,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		std::string db_LastUpdate = sd[9];
 		int HardwareID = atoi(sd[10].c_str());
 		std::string DeviceID = sd[11];
+		int Unit = atoi(sd[12].c_str());
 
 		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
@@ -3765,6 +3766,9 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		}
 		if (bEventTrigger)
 			ProcessDevice(0, idx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname);
+
+		//Handle notifications
+		m_notifications.CheckAndHandleNotification(idx, HardwareID, DeviceID, dname, Unit, devType, subType, nValue, sValue);
 	}
 	else
 		_log.Log(LOG_ERROR, "EventSystem: UpdateDevice IDX %" PRIu64 " not found!", idx);

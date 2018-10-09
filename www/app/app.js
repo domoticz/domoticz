@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		Notification.requestPermission();
 });
 
-define(['angularAMD', 'devices/deviceFactory', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD, deviceFactory) {
+define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD) {
 	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', 'ngWebsocket']);
 
 	isOnline = false;
@@ -267,7 +267,58 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-route', 'angular-animate
 		}
     });
 
-	app.factory('Device', deviceFactory);
+	app.factory('Device', function () {
+        return function Device(rawData) {
+        	var device = Object.assign({}, rawData);
+
+            device.isDimmer = function() {
+                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(this.SwitchType);
+            };
+
+            device.isSelector = function() {
+                return this.SwitchType === "Selector";
+            };
+
+            device.isLED = function() {
+                return (this.SubType.indexOf("RGB") >= 0 || this.SubType.indexOf("WW") >= 0);
+            };
+
+            device.getLevels = function() {
+                return this.LevelNames ? b64DecodeUnicode(this.LevelNames).split('|') : [];
+            };
+
+            device.getLevelActions = function() {
+                return this.LevelActions ? b64DecodeUnicode(this.LevelActions).split('|') : [];
+			};
+
+            device.getSelectorLevelOptions = function () {
+                return this.getLevels()
+                    .slice(1)
+                    .map(function (levelName, index) {
+                        return {
+                            label: levelName,
+                            value: (index + 1) * 10
+                        }
+                    });
+            };
+
+            device.getDimmerLevelOptions = function (step) {
+                var options = [];
+                var step = step || 5;
+
+                for (var i = step; i <= 100; i+=step) {
+                    options.push({
+                        label: i + '%',
+                        value: i
+                    });
+                }
+
+                return options;
+            };
+
+            return device;
+        };
+    });
 
 	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun, Device) {
 		return {
@@ -547,10 +598,10 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-route', 'angular-animate
 				controllerUrl: 'app/log/DeviceLog.js',
 				controllerAs: 'vm'
 			})).
-			when('/Devices/:id/Report/:year?/:month?', angularAMD.route({
-				templateUrl: 'app/report/DeviceReport.html',
-				controller: 'DeviceReportController',
-				controllerUrl: 'app/report/DeviceReport.js',
+			when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({
+				templateUrl: 'views/log/device_temperature_report.html',
+				controller: 'DeviceTemperatureReportController',
+				controllerUrl: 'app/log/TemperatureReport.js',
 				controllerAs: 'vm'
 			})).
 			when('/DPFibaro', angularAMD.route({
@@ -1110,14 +1161,6 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-route', 'angular-animate
 			}
 		});
 		permissions.setPermissions(permissionList);
-
-		Highcharts.setOptions({
-            credits: {
-                enabled: true,
-                href: "http://www.domoticz.com",
-                text: "Domoticz.com"
-            }
-		});
 
 			/* this doesnt run, for some reason */
 			app.run(function (livesocket) {

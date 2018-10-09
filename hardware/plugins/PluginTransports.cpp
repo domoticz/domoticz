@@ -32,7 +32,13 @@ namespace Plugins {
 		CPlugin*		pPlugin = pConnection ? pConnection->pPlugin : NULL;
 		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && m_pConnection && (m_pConnection->ob_refcnt <= 1))
 		{
-			_log.Log(LOG_NORM, "(%s) Connection released by Python, reference count is %d.", pPlugin->m_Name.c_str(), (int)m_pConnection->ob_refcnt);
+			std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+			std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if ((sTransport == "Serial") || (!sPort.length()))
+				_log.Log(LOG_NORM, "(%s) Connection '%s' released by Python, reference count is %d.", pPlugin->m_Name.c_str(), sAddress.c_str(), (int)m_pConnection->ob_refcnt);
+			else
+				_log.Log(LOG_NORM, "(%s) Connection '%s:%s' released by Python, reference count is %d.", pPlugin->m_Name.c_str(), sAddress.c_str(), sPort.c_str(), (int)m_pConnection->ob_refcnt);
 		}
 		if (!m_bDisconnectQueued && m_pConnection && (m_pConnection->ob_refcnt <= 1) && pPlugin)
 		{
@@ -288,7 +294,7 @@ namespace Plugins {
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s) Handling disconnect, socket (%s:%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), (m_bConnected?"":"not "));
+			_log.Log(LOG_NORM, "(%s) Handling TCP disconnect, socket (%s:%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), (m_bConnected?"":"not "));
 		}
 
 		m_tLastSeen = time(0);
@@ -511,7 +517,7 @@ namespace Plugins {
 		{
 			m_bConnected = false;
 
-			//	_log.Log(LOG_ERROR, "Plugin: Listen Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
+			_log.Log(LOG_ERROR, "Plugin: UDP Listen Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, std::string(e.what())));
 			return false;
@@ -567,8 +573,7 @@ namespace Plugins {
 		}
 		else
 		{
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
-				((ec == boost::asio::error::operation_aborted) || (ec == boost::asio::error::eof)))
+			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
 				_log.Log(LOG_NORM, "(%s) Queued asyncronous UDP read aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
 			else
 			{
@@ -627,7 +632,7 @@ namespace Plugins {
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s) Handling disconnect, socket (%s:%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
+			_log.Log(LOG_NORM, "(%s) Handling UDP disconnect, socket (%s:%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(0);
@@ -640,10 +645,10 @@ namespace Plugins {
 				m_Socket->shutdown(boost::asio::ip::udp::socket::shutdown_both, e);
 				if (e)
 				{
-#ifndef WIN32
 					if (e.value() != boost::asio::error::not_connected)		// Linux always reports error 107, Windows does not
-#endif
 						_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
+					else
+						m_Socket->close();
 				}
 				else
 				{
@@ -864,7 +869,7 @@ namespace Plugins {
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s) Handling disconnect, socket (%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), (m_bConnected ? "" : "not "));
+			_log.Log(LOG_NORM, "(%s) Handling ICMP disconnect, socket (%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(0);

@@ -325,13 +325,13 @@ function decodeBase64(s) {
 //  �2003 by Gavin Kistner:  http://phrogz.net/JS/classes/OOPinJS.html , http://phrogz.net/JS/classes/OOPinJS2.html
 Function.prototype.inheritsFrom = function (parentClassOrObject) {
     if (parentClassOrObject.constructor == Function) {
-        //Normal Inheritance
+        //Normal Inheritance 
         this.prototype = new parentClassOrObject;
         this.prototype.constructor = this;
         this.prototype.parent = parentClassOrObject.prototype;
     }
     else {
-        //Pure Virtual Inheritance
+        //Pure Virtual Inheritance 
         this.prototype = parentClassOrObject;
         this.prototype.constructor = this;
         this.prototype.parent = parentClassOrObject;
@@ -372,10 +372,10 @@ function Device(item) {
         this.level = (typeof item.LevelInt != 'undefined') ? parseInt(item.LevelInt) : 0;
         this.levelMax = (typeof item.MaxDimLevel != 'undefined') ? parseInt(item.MaxDimLevel) : 0;
         if (this.level > this.levelMax) this.levelMax = this.level;
-
+        
         if (this.subtype == "Alert" || this.subtype == "Text") {
             this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-
+            
             if (this.data.indexOf("<br />") != -1) {
                 this.hasNewLine = true;
                 console.log("YES!");
@@ -388,7 +388,7 @@ function Device(item) {
             this.data = (typeof item.Data != 'undefined') ? item.Data : '';
             this.hasNewLine = false;
         }
-
+        
         this.smallStatus = this.data;
         if (typeof item.Usage != 'undefined') {
             this.data = item.Usage;
@@ -473,10 +473,10 @@ function Device(item) {
                         Device.elementPadding * 2.5 + 1
                     );
                 }
-
-
-
-
+                
+                
+                
+                
                 var maxSpan = getMaxSpanWidth(oText);
                 el = makeSVGnode('g', { id: this.uniquename + "_Tile", 'class': 'DeviceTile', style: (maxSpan == 0) ? 'display:none' : 'display:inline' }, '');
                 var offset = (Device.iconSize / 2) - (maxSpan / 2) - Device.elementPadding;
@@ -606,7 +606,7 @@ function Device(item) {
                         }
                     }
                 }
-
+                
                 gStatusGroup.appendChild(oStatus);
             }
             var gText = makeSVGnode('text', { id: "lastseen", x: 0, y: Device.elementPadding * 7.5, 'font-size': '80%' }, '');
@@ -1013,7 +1013,7 @@ Device.popupCancelDelay = function () {
 Device.popup = function (target) {
     var ignorePopupDelay = (Device.popupDelayDevice != "");
     Device.popupCancelDelay();
-    $('.DeviceDetails').css('display', 'none');   // hide all popups
+    $('.DeviceDetails').css('display', 'none');   // hide all popups 
     if (Device.expandVar != null) {
         clearInterval(Device.expandVar);
         Device.expandVar = null;
@@ -1315,8 +1315,16 @@ function Counter(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/counter.png";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-
+        switch (item.SubType) {
+                        case "Energy":
+                this.LogLink = this.onClick = "ShowSmartLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                                break;
+                        case "Gas":
+                this.LogLink = this.onClick = "ShowCounterLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+                break;
+            default:
+                                this.LogLink = this.onClick = "ShowCounterLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+        }
         if (typeof item.CounterToday != 'undefined') {
             this.status += ' ' + $.t("Today") + ': ' + item.CounterToday;
             this.smallStatus = item.CounterToday;
@@ -1366,7 +1374,7 @@ function Current(item) {
         }
         switch (this.type) {
             case "Energy":
-                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                this.LogLink = this.onClick = "ShowCounterLogSpline('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
                 this.smallStatus = this.data;
                 break;
             case "Usage":
@@ -1375,7 +1383,7 @@ function Current(item) {
             case "General":
                 switch (this.subtype) {
                     case "kWh":
-                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.LogLink = this.onClick = "ShowCounterLogSpline('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
                         this.smallStatus = this.data;
                         break;
                     case "Voltage":

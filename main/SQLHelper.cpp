@@ -8421,7 +8421,8 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::
 	return true;
 }
 
-std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string & options, const bool decode) {
+std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string & options, const bool decode)
+{
 	std::map<std::string, std::string> optionsMap;
 	if (!options.empty()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Build device options from '%s'...", options.c_str());
@@ -8447,7 +8448,8 @@ std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::str
 	return optionsMap;
 }
 
-std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::string & idx) {
+std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::string & idx)
+{
 	std::map<std::string, std::string> optionsMap;
 
 	if (idx.empty()) {
@@ -8465,7 +8467,8 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	return optionsMap;
 }
 
-std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap) {
+std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap)
+{
 	std::string options;
 	int count = optionsMap.size();
 	if (count > 0) {
@@ -8488,7 +8491,8 @@ std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::str
 	return options;
 }
 
-bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
+bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap)
+{
 	if (idx < 1) {
 		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
 		return false;
@@ -8508,4 +8512,42 @@ bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string
 		safe_query("UPDATE DeviceStatus SET Options = '%q' WHERE (ID==%" PRIu64 ")", options.c_str(), idx);
 	}
 	return true;
+}
+
+float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const float DefaultValue)
+{
+	float divider = float(DefaultValue);
+	if (divider == 0)
+	{
+		int tValue;
+		switch (metertype)
+		{
+		case MTYPE_ENERGY:
+		case MTYPE_ENERGY_GENERATED:
+			if (GetPreferencesVar("MeterDividerEnergy", tValue))
+			{
+				divider = float(tValue);
+			}
+			break;
+		case MTYPE_GAS:
+			if (GetPreferencesVar("MeterDividerGas", tValue))
+			{
+				divider = float(tValue);
+			}
+			break;
+		case MTYPE_WATER:
+			if (GetPreferencesVar("MeterDividerWater", tValue))
+			{
+				divider = float(tValue);
+			}
+			break;
+		}
+		if (dType == pTypeP1Gas)
+			divider = 1000;
+		else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+			divider *= 100.0f;
+
+		if (divider == 0) divider = 1.0f;
+	}
+	return divider;
 }

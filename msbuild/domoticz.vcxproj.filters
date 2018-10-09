@@ -1801,6 +1801,9 @@
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\TelldusFunctions.h">
+      <Filter>Devices\Tellstick</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\Tellstick.h">
       <Filter>Devices\Tellstick</Filter>
     </ClInclude>
@@ -2548,6 +2551,9 @@
       <Filter>Devices\SatelIntegra</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Tellstick.cpp">
+      <Filter>Devices\Tellstick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TellstickFactory.cpp">
       <Filter>Devices\Tellstick</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">

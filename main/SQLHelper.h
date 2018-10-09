@@ -406,6 +406,8 @@ public:
 	std::map<std::string, std::string> GetDeviceOptions(const std::string & idx);
 	std::string FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap);
 	bool SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & options);
+
+	float GetCounterDivider(const int metertype, const int dType, const float DefaultValue);
 public:
 	std::string m_LastSwitchID;	//for learning command
 	uint64_t m_LastSwitchRowID;
