@@ -2083,6 +2083,9 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
+		case V_IR_SEND:
+			//Not for use, probably an ACK
+			break;
 		case V_CUSTOM:
 			//Request for a sensor state
 			if (!payload.empty())
