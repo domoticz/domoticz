@@ -1391,63 +1391,84 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	{
 		//Light command
 		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-
-		int node_id = pSwitch->id;
-		int child_sensor_id = pSwitch->unitcode;
-
-		if (_tMySensorNode *pNode = FindNode(node_id))
+		if (pSwitch->subtype != sSwitchTypeMDREMOTE)
 		{
-			_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
-			if (!pChild)
+			int node_id = pSwitch->id;
+			int child_sensor_id = pSwitch->unitcode;
+
+			if (_tMySensorNode *pNode = FindNode(node_id))
 			{
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+				_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
+				if (!pChild)
+				{
+					_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+					return false;
+				}
+
+				int level = pSwitch->level;
+				int cmnd = pSwitch->cmnd;
+
+				if (cmnd == gswitch_sSetLevel)
+				{
+					// Set command based on level value
+					if (level == 0)
+						cmnd = gswitch_sOff;
+					else if (level == 255)
+						cmnd = gswitch_sOn;
+					else
+					{
+						// For dimmers we only allow level 0-100
+						level = (level > 100) ? 100 : level;
+					}
+				}
+
+				if ((cmnd == gswitch_sOn) || (cmnd == gswitch_sOff))
+				{
+					std::string lState = (cmnd == gswitch_sOn) ? "1" : "0";
+					if (pChild->presType == S_LOCK)
+					{
+						//Door lock/contact
+						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
+					}
+					else if (pChild->presType == S_SCENE_CONTROLLER)
+					{
+						//Scene Controller
+						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (cmnd == gswitch_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
+					}
+					else
+					{
+						//normal
+						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
+					}
+				}
+				else if (cmnd == gswitch_sSetLevel)
+				{
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(level), pChild->useAck, pChild->ackTimeout);
+				}
+			}
+			else {
+				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
 				return false;
 			}
-
-			int level = pSwitch->level;
-			int cmnd = pSwitch->cmnd;
-
-			if (cmnd == gswitch_sSetLevel)
-			{
-				// Set command based on level value
-				if (level == 0)
-					cmnd = gswitch_sOff;
-				else if (level == 255)
-					cmnd = gswitch_sOn;
-				else
-				{
-					// For dimmers we only allow level 0-100
-					level = (level > 100) ? 100 : level;
-				}
-			}
-
-			if ((cmnd == gswitch_sOn) || (cmnd == gswitch_sOff))
-			{
-				std::string lState = (cmnd == gswitch_sOn) ? "1" : "0";
-				if (pChild->presType == S_LOCK)
-				{
-					//Door lock/contact
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
-				}
-				else if (pChild->presType == S_SCENE_CONTROLLER)
-				{
-					//Scene Controller
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (cmnd == gswitch_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
-				}
-				else
-				{
-					//normal
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
-				}
-			}
-			else if (cmnd == gswitch_sSetLevel)
-			{
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(level), pChild->useAck, pChild->ackTimeout);
-			}
 		}
-		else {
-			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
-			return false;
+		else
+		{
+			//Used to store IR codes
+			int node_id = pSwitch->unitcode;
+			unsigned int ir_code = pSwitch->id;
+
+			if (_tMySensorNode *pNode = FindNode(node_id))
+			{
+				_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
+				if (pChild)
+				{
+					return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, std::to_string(ir_code), pChild->useAck, pChild->ackTimeout);
+				}
+			}
+			else {
+				_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
+				return false;
+			}
 		}
 	}
 	else if (packettype == pTypeColorSwitch)
@@ -1595,27 +1616,6 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			char szTmp[10];
 			sprintf(szTmp, "%.1f", pMeter->temp);
 			return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp, pChild->useAck, pChild->ackTimeout);
-		}
-		else {
-			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
-			return false;
-		}
-	}
-	else if (packettype == pTypeGeneralSwitch)
-	{
-		//Used to store IR codes
-		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch *>(pCmd);
-
-		int node_id = pSwitch->unitcode;
-		unsigned int ir_code = pSwitch->id;
-
-		if (_tMySensorNode *pNode = FindNode(node_id))
-		{
-			_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
-			if (pChild)
-			{
-				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, std::to_string(ir_code), pChild->useAck, pChild->ackTimeout);
-			}
 		}
 		else {
 			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
