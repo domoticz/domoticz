@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Qubino ZMNHYDx Smart Plug
+    ZMNHYD1 868,4 MHz
+    ZMNHYD2 921,4 MHz
+    ZMNHYD3 908,4 MHz
+    ZMNHYD4 869,0 MHz
+    ZMNHYD5 916,0 MHz
+    -->
+
+    <!-- Configuration  -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="10" label="Functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+            <Help>Smart Meter module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system</Help>
+            <Item label="ALL ON is not active ALL OFF is not active" value="0" />
+            <Item label="ALL ON is not active ALL OFF active" value="1" />
+            <Item label="ALL ON active ALL OFF is not active" value="2" />
+            <Item label="ALL ON active, ALL OFF active" value="255" />
+        </Value>
+        <Value type="short" genre="config" instance="1" index="11" label="Automatic turning off relay after set time" size="2" min="0" max="32535" value="0">
+            <Help>
+                If Smart plug 16A is ON, you can schedule it to turn OFF automatically after a period of time defined in this parameter.
+                The timer is reset to zero each time the device receives an ON command, either remotely (from the gateway (hub) or associated device) or locally from the switch.
+                0 => Auto OFF disabled.
+                1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s).
+                Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="12" label="Automatic turning on relay after set time" size="2" min="0" max="32535" value="0">
+            <Help>
+                If Smart plug 16A is OFF, you can schedule it to turn ON automatically after a period of time defined in this parameter.
+                The timer is reset to zero each time the device receives an OFF command, either remotely (from the gateway (hub) or associated device) or locally from the switch.
+                0 - Auto OFF disabled.
+                1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s).
+                Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Set Timer Units" size="1" min="0" max="1" value="0">
+            <Help>
+                Choose if you want to set the timer in seconds or milliseconds in parameters 11 and 12.
+            </Help>
+            <Item label="Timer set in seconds" value="0" />
+            <Item label="Timer set in milliseconds" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="30" label="Restore on/off status after power failure" size="1" min="0" max="1" value="0">
+            <Help>
+                This parameter determines if on/off status is saved and restored for the Smart plug 16A after power failure.
+            </Help>
+            <Item label="Restores it after a power failure" value="0" />
+            <Item label="Remains off position" value="1" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" units="%" value="20">
+            <Help>
+                Choose by how much power consumption needs to increase or decrease to be reported. Values correspond to percentages so if 20 is set (by default), the device will report any power consumption changes of 20% or more compared to the last reading.
+                Set value from 0 - 100 (0% - 100%).
+                0 - Reporting Disabled.
+                1 - 100 = 1% - 100% Reporting enabled.
+                Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%.
+                Default value 20.</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" units="seconds" value="300">
+            <Help>
+                Set value refers to the time interval with which power consumption in Watts is reported (0 - 32535 seconds).
+                If 300 is entered (by default), energy consumption reports will be sent to the gateway (hub) every 300 seconds (or 5 minutes).
+                Set value means time interval (0 - 32767) in seconds, when power report is send.
+                0 - Reporting Disabled.
+                1 second to 32767 seconds reporting enabled.
+                Power report is send with time interval set by entered value.
+                Default value 300 (power report in Watts is send each 300s).
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="50" label="Down value" size="2" min="0" max="4000" units="Watts" value="30">
+            <Help>
+                Lower power threshold used in param 52.
+                Can not be higher than param 51
+                0-4000 (0.0 to 4000.0W, 0 disables)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="51" label="Up value" size="2" min="0" max="4000" units="Watts" value="50">
+            <Help>
+                Upper power threshold used in param 52.
+                Can not be higher than param 50
+                0-4000 (0.0 to 4000.0W, 0 disables)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="52" label="Action in case of exceeding power values (param 51/52)" size="1" min="0" max="6" value="6">
+            <Help>
+                Parameter defines the way 3rd association group devices are controlled, depending on the current power load.
+            </Help>
+            <Item label="Disbale" value="0" />
+            <Item label="1 - Turn on once the power drop below param 50" value="1" />
+            <Item label="2 - Turn off once the power drop below param 50" value="2" />
+            <Item label="3 - Turn on once the power rises above param 51" value="3" />
+            <Item label="4 - Turn off once the power rises above param 51" value="4" />
+            <Item label="1 and 4 combined" value="5" />
+            <Item label="2 and 6 combined" value="6" />
+        </Value>
+        <Value type="short" genre="config" instance="1" index="70" label="Overload safety switch" size="2" min="0" max="4000" units="Watts" value="0">
+            <Help>
+                The function allows for turning off the controlled device in case of exceeding the defined power for more than 3.1s.
+                Controlled device can be turned back on by S-button or sending a control frame. By default this function is inactive.
+                1-4000 (1-4000W) 0 disables
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="249" label="Reporting on set command" size="1" min="0" max="1" value="1">
+            <Help>
+                Using this parameter it is possible to enable/disable reporting after the set command (i.e. Basic set).
+            </Help>
+            <Item label="Disbale" value="0" />
+            <Item label="Enable" value="1" />
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="5">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Plug status Basic On/Off"/>
+            <Group index="3" max_associations="5" label="Basic On/Off depending on the current load"/>
+            <Group index="4" max_associations="5" label="Secure Encapsulated Plug status basic On/Off"/>
+            <Group index="5" max_associations="5" label="Secure Encapsulated Basic On/Off depending on the current load"/>
+        </Associations>
+    </CommandClass>
+
+    <!-- Remove COMMAND_CLASS_BASIC -->
+    <CommandClass id="32" action="remove" />
+
+</Product>

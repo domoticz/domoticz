@@ -3,7 +3,7 @@
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value genre="config" index="1" label="Dimming/Brightening Step Level" min="0" max="99" units="%" value="3" size="1" type="byte">
-      <Help>Each step of the dimming process will increase or decrease the brightness by this percentage. Increasing this will make the transition time quicker.</Help>
+      <Help>Each step of the dimming process will increase or decrease the brightness by this percentage. Increasing this will make the transition time slower. 0 is instant.</Help>
     </Value>
     <Value genre="config" index="2" label="Minimum Dimming Level" min="1" max="99" units="%" value="1" size="1" type="byte">
     <Help>This is the minimum value to which the switch will dim. Useful for CFL or LED lights that otherwise won't come on or come on but flicker/buzz.</Help>

@@ -7,18 +7,18 @@ https://products.z-wavealliance.org/products/2535/configs
 	<!-- Configuration -->
 	<CommandClass id="112">
 		<Value type="list" size="1" genre="config" instance="1" index="1" label="Volume" value="3">
-			<Help>Volume of the tones</Help>
+			<Help>Volume of the keypad tones and any voice prompts (default = 3, high)</Help>
 			<Item label="Silent" value="1" />
 			<Item label="Low" value="2" />
 			<Item label="High" value="3" />
 		</Value>
 		<Value type="list" size="1" genre="config" instance="1" index="2" label="Auto Relock" value="0">
-			<Help></Help>
+			<Help>Enable or disable the Auto relock feature (default = 255, enable)</Help>
 			<Item label="On" value="255" />
 			<Item label="Off" value="0" />
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="3" label="Auto-re-lock Time" size="1" min="7" max="60" units="seconds" value="30">
-			<Help>seconds; after successful code entry and unit unlocks, it will automatically re-lock after specified time (30 = default value)</Help>
+			<Help>After successful local unlock, automatically relock after the specified time (default = 7 seconds)</Help>
 		</Value>
 		<Value type="list" size="1" genre="config" instance="1" index="4" label="Wrong Tag Limit" min="1" max="20" value="5">
 			<Help>
@@ -47,7 +47,7 @@ https://products.z-wavealliance.org/products/2535/configs
 			<Item label="20" value="20" />
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="7" label="Wrong tag timeout" size="1" min="1" max="250" units="seconds" value="30">
-			<Help>number of seconds unit will be inoperable after number of Wrong tag attempts is exceeded (30 = default)</Help>
+			<Help>Number of seconds unit will be inoperable after number of Wrong tag attempts is exceeded (30 = default)</Help>
 		</Value>
 	</CommandClass>
 	<CommandClass id="113">

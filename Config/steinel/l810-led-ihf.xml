@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+    <!-- https://products.z-wavealliance.org/products/2309 -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value genre="config" instance="1" index="BASIC" type="byte" label="Default light level" units="" size="1" min="1" max="99" value="99">
+            <Help>
+                Range: 1-99 (default: 99).
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="1" type="short" label="Duration of light after motion detection" units="seconds" size="2" min="5" max="900" value="180">
+            <Help>
+                Range: 5-900 (default: 180 seconds).
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="2" type="short" label="Light threshold" units="lx" size="2" min="0" max="2000" value="2000">
+            <Help>
+            	Range: 2-2000, 0 (default: 2000 lux / potentiometer state if present).
+                0      - run Learn ambient light sequence.
+                2-1999 - threshold [lux].
+                2000   - is used as daylight (always night mode).
+
+                Value can be controlled via potentiometer (if present on device)  - potentiometer value is then used as the default value and any potentiometer movement rewrites the current setting. 
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="3" type="byte" label="Night dim mode and time" units="minutes" size="1" min="0" max="255" value="0">
+            <Help>
+            	Range: 0-60, -1 (default: 0 / potentiometer state if present).
+                0        - off (dim = basic light completely disabled).
+                1-60     - time [minutes] (enabled in night mode, starts after lamp is switched off after motion detection).
+                255 (-1) - whole night (dim through the whole night when lamp is off).
+
+                Dim mode is also disabled when local control is disabled as well as in Slave imode. 
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="4" type="short" label="Motion Radar Range" units="centimeters" size="2" min="100" max="500" value="500">
+            <Help>
+                Range: 100-500 (default: 500 cm / potentiometer state if present).
+
+                Value can be controlled via potentiometer (if present on device) - potentiometer value is then used as default value and any potentiometer movement rewrites the current setting.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="5" type="byte" label="Motion Radar Sensitivity" units="%" size="1" min="2" max="100" value="100">
+            <Help>
+                Range: 2-100 (default: 100 % / potentiometer state if present).
+
+                Value can be controlled via potentiometer (if present on device) . potentiometer value is then used as the default value and any potentiometer movement rewrites the current setting.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="6" type="byte" label="Brightness measuring interval" units="minutes" size="1" min="0" max="120" value="0">
+            <Help>
+            	Range: 5-120, 0 (default: 0, disabled).
+                5-120 - Interval for ambient light measuring when lamp is on (lamp switches off shortly and measures).
+                0     - function is off.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="8" type="list" label="Use external Ambient Light valu" units="" size="1" min="0" max="1" value="1">
+            <Help>
+            	Range: 0/1 (default: 1, disabled).
+
+                When GLOBAL_LIGHT mode is ON - device overrides its own light sensor values and uses Light Report values from any Z-Wave light sensor instead - this has to be configured appropriately to send light automatically. If the last remote light level value is older than 30 minutes, the internal light value is used again until the next external value is receive.
+            </Help>
+            <Item label="Enable" value="0" />
+            <Item label="Disable" value="1" />
+        </Value>
+        <Value genre="config" instance="1" index="9" type="list" label="Disable local control" units="bit field" size="1" min="0" max="4" value="2">
+            <Help>
+            	Range: 0-4 (default: 2, Normal mode with lifeline error signalisation).
+                "Stupid mode" - lamp permanently on (bit 2 = 1):
+                  - has higher priority then slave mode.
+                  - lamp/relay is permanently on (for simple power wall switch controlling).
+
+                Slave mode without gateway checking (bit 0 = 1):
+                  - only if included in Z-Wave network.
+                  - useful for controlling via third-party sensor.
+                  - lamp/relay is directly controlled via Z-Wave, internal sensors are not used for controlling it.
+
+                Central unit checking (bit 1 = 1): (useful especially for controlling via gateway)
+                  When slave bit is 0:
+                    - device signalises fail of lifeline connection (if this bit is zero, fail of lifeline connection is not signalised).
+                  When slave bit is 1:
+                    - device checks presence of Z-Wave device in lifeline group (gateway). 
+                      If it is not present for 2 minutes (testing repeatedly every 30 seconds) device switches to normal mode in the same way as after the end of local disabled mode (ON_BEHAVIOUR).
+                    - the device checks every 1 minute for recovery of lifeline connection.
+                    - if no lifeline specified - it works in normal mode.
+
+                Be careful with this option, device stops using its own motion sensor in Slave and "Stupid" mode.
+            </Help>
+            <Item label="Normal mode" value="0"/>
+            <Item label="Slave mode without gateway checking" value="1"/>
+            <Item label="Normal mode with lifeline error signalisation" value="2"/>
+            <Item label="Slave mode with gateway checking" value="3"/>
+            <Item label="Stupid mode - lamp permanently on" value="4"/>
+        </Value>
+        <Value genre="config" instance="1" index="10" type="short" label="Off behaviour (timeout)" units="" size="2" min="0" max="255" value="10">
+            <Help>
+                Behaviour after BASIC OFF (and similar commands). If a transition (even with zero change) with a non-default duration is to be processed, the transition cannot be interrupted by any motion event in any case.
+
+                Range: 0-209, 255 (default: 10 seconds).
+                0       - Lamp is switched off and remains so until any new motion event (local or remote) is received.
+                1-209   - Lamp/Relay is switched off and remains so until after a specified timeout once a new motion event (local or remote) is received.
+                          Timeout:
+                            1..100   - 1 second (1) to 100 seconds (100) in 1-second resolution.
+                            101..200 - 1 minute (101) to 100 minutes (200) 1-minute resolution.
+                            201..209 - 1 hour (201) to 9 hours (209) in 1-hour resolution.
+                210-254 - reserved.
+                255     - Lamp is switched off for TIME (cfg 1). It does not wait for a motion event and works normally via current motion evaluation.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="11" type="short" label="On behaviour (timeout)" units="" size="2" min="0" max="255" value="255">
+            <Help>
+                Behaviour after BASIC ON (and similar commands). If a transition (even with zero change) with a non-default duration is to be processed, the transition cannot be interrupted by any motion event in any case.
+
+                Range: 0-209, 255 (default: 255).
+                0       - Lamp is switched on and remains so until any new motion event (local or remote) is received. It then works normally via current motion evaluation.
+                          Notice - during the day, this mode cannot be ended remotely due to motion events not being transmitted - only via local motion sensor if enabled.
+                1-209   - Lamp/relay is switched on and remains so until after a specified timeout once a new motion event (local or remote) is received.  It then works normally via current motion evaluation.
+                          Notice - during the day, this mode cannot be ended remotely due to motion events not being transmitted - only via local motion sensor if enabled.
+                          Timeout:
+                            1..100   - 1 second (1) to 100 seconds (100) in 1-second resolution.
+                            101..200 - 1 minute (101) to 100 minutes (200) 1-minute resolution.
+                            201..209 - 1 hour (201) to 9 hours (209) in 1-hour resolution.
+                210-254 - reserved
+                255     - Lamp is switched on for TIME (cfg 1). It does not wait for a motion event and works normally via current motion evaluation.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="12" type="short" label="On behaviour time over (timeout)" units="" size="2" min="0" max="255" value="204">
+            <Help>
+                Time limit to stop waiting for motion after timeout of ON_BEHAVIOUR or OFF_ON_BEHAVIOUR (0-209) to prevent staying ON forever when there is no motion. 
+
+                Range: 0-209, 255 (default: 204, 4 hours).
+                0     - No additional waiting for motion.
+                1-209 - Timeout:
+                          1..100   - 1 second (1) to 100 seconds (100) in 1-second resolution.
+                          101..200 - 1 minute (101) to 100 minutes (200) 1-minute resolution.
+                          201..209 - 1 hour (201) to 9 hours (209) in 1-hour resolution.
+                255   - Never stop waiting before motion.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="13" type="short" label="Sequence On-Off behaviour (timeout)" units="" size="2" min="0" max="255" value="204">
+            <Help>
+            	Behaviour after a rapid sequence of BASIC ON and BASIC OFF commands. The intention is to use a much longer timeout value than the time after a single ON command which should then be followed by a short timeout value.
+
+                Range: 0-209,255 (default: 204, 4 hours).
+                0       - Lamp is switched off and remains so until any new motion event (local or remote) is received.
+                1-209   - Lamp/Relay is switched off and remains so until after a specified timeout once a new motion event (local or remote) is received.
+                          Timeout:
+                            1..100   - 1 second (1) to 100 seconds (100) in 1-second resolution.
+                            101..200 - 1 minute (101) to 100 minutes (200) 1-minute resolution.
+                            201..209 - 1 hour (201) to 9 hours (209) in 1-hour resolution.
+                210-254 - reserved.
+                255     - device ignores ON - OFF sequence and uses OFF behavior.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="14" type="short" label="Sequence Off-On behaviour (timeout)" units="" size="2" min="0" max="255" value="204">
+            <Help>
+            	Behaviour after a rapid sequence of BASIC OFF and BASIC ON commands. The intention is to use a much longer timeout value than the time after a single OFF command which should then be followed by a short timeout value.
+
+                Range: 0-209, 255 (default: 204, 4 hours).
+                0       - Lamp is switched on and remains so until any new motion event (local or remote) is received. It then works normally via current motion evaluation.
+                          Notice - during the day, this mode cannot be ended remotely due to motion events not being transmitted - only via local motion sensor if enabled.
+                1-209   - Lamp/relay is switched on and remains so until after a specified timeout once a new motion event (local or remote) is received.  It then works normally via current motion evaluation.
+                          Notice - during the day, this mode cannot be ended remotely due to motion events not being transmitted - only via local motion sensor if enabled.
+                          Timeout:
+                            1..100   - 1 second (1) to 100 seconds (100) in 1-second resolution.
+                            101..200 - 1 minute (101) to 100 minutes (200) 1-minute resolution.
+                            201..209 - 1 hour (201) to 9 hours (209) in 1-hour resolution.
+                210-254 - reserved
+                255 device ignores OFF - ON sequence and uses ON behaviour.
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="15" type="byte" label="Sequence timing" units="" size="1" min="10" max="50" value="10">
+            <Help>
+                Time in [100 miliseconds] of maximum delay between BASIC ON and BASIC OFF (and vice versa) to consider this as a sequence. It is typically 1 second, but can be exceptionally longer due to retransmissions and overload - in this case, a longer interval can be allowed (up to 5 seconds).
+
+                Range: 10-50 (default: 10, 1 scond).
+            </Help>
+        </Value>
+        <Value genre="config" instance="1" index="16" type="short" label="Motion Off behaviour (timeout)" units="" size="2" min="0" max="255" value="0">
+            <Help>
+            	Motion disable timeout after BASIC SET to motion endpoint when the internal motion sensor is not used for evaluating the behaviour of the lamp. Events are, however, still transmitted to the Lifeline, and the device can be controlled via remote motion sensors.
+
+                Range: 0-209,255 (default: 0, disabled).
+                0       - BASIC SET to Motion sensor endpoint ignored, BASIC to root is mapped to relay endpoint, motion sensor still enabled.
+                1-209   - Internal motion sensor is disabled for specified timeout after BASIC SET 0x00 to motion endpoint.
+                          Timeout:
+                            1..100   - 1 second (1) to 100 seconds (100) in 1-second resolution.
+                            101..200 - 1 minute (101) to 100 minutes (200) 1-minute resolution.
+                            201..209 - 1 hour (201) to 9 hours (209) in 1-hour resolution.
+                210-254 - reserved.
+                255     - BASIC SET to Motion sensor endpoint ignored, BASIC to root is mapped to relay endpoint, motion sensor still disabled.
+            </Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="4">
+            <Group index="1" label="Lifeline" max_associations="1" />
+            <Group index="2" label="On/Off Control" max_associations="16" />
+            <Group index="3" label="Notification Report" max_associations="16" />
+            <Group index="4" label="Ambient light" max_associations="15"/>
+        </Associations>
+    </CommandClass>
+
+</Product>
