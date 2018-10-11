@@ -552,6 +552,8 @@ namespace http {
 
 			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_PhilipsHueRegister, this, _1, _2, _3));
 
+			RegisterCommandCode("registerdeconz", boost::bind(&CWebServer::Cmd_DeconzRegister, this, _1, _2, _3));
+
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1, _2, _3));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1, _2, _3));
 			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1, _2, _3));
@@ -1264,6 +1266,15 @@ namespace http {
 					return;
 				if (port == 0)
 					port = 80;
+			}
+			else if (htype == HTYPE_Deconz) {
+			if (
+				(username.empty()) ||
+				(address.empty() || port == 0)
+				)
+				return;
+			if (port == 0)
+				port = 80;
 			}
 			else if (htype == HTYPE_WINDDELEN) {
 				std::string mill_id = request::findValue(&req, "Mode1");

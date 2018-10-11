@@ -38,6 +38,7 @@
 #include "../hardware/OpenZWave.h"
 #endif
 #include "../hardware/DavisLoggerSerial.h"
+#include "../hardware/deconz/Deconz.h"
 #include "../hardware/1Wire.h"
 #include "../hardware/I2C.h"
 #include "../hardware/Wunderground.h"
@@ -1070,6 +1071,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_TTN_MQTT:
 		//LAN
 		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Filename);
+		break;
+	case HTYPE_Deconz:
+		pHardware = new Deconz(ID, Address, Port, Username, Mode1, Mode2);
 		break;
 	}
 

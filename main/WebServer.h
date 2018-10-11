@@ -110,6 +110,7 @@ private:
 	bool IsIdxForUser(const WebEmSession *pSession, const int Idx);
 
 	//Commands
+	void Cmd_DeconzRegister(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);

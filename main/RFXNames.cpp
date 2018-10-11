@@ -279,6 +279,7 @@ const char *Hardware_Type_Desc(int hType)
 	{ HTYPE_DenkoviHTTPDevices, "Denkovi Modules with LAN (HTTP) Interface" },
 	{ HTYPE_DenkoviUSBDevices, "Denkovi Modules with USB Interface" },
 	{ HTYPE_DenkoviTCPDevices, "Denkovi Modules with LAN (TCP) Interface" },
+	{ HTYPE_Deconz, "deCONZ REST API"},
 	{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1(Table, hType);

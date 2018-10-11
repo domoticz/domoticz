@@ -216,6 +216,7 @@ enum _eHardwareTypes {
 	HTYPE_DenkoviHTTPDevices,		//116
 	HTYPE_DenkoviUSBDevices,	//117
 	HTYPE_DenkoviTCPDevices,	//118
+	HTYPE_Deconz,				//119
 	HTYPE_END
 };
 

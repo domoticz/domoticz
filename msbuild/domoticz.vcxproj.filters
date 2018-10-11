@@ -498,6 +498,9 @@
     <Filter Include="Logger">
       <UniqueIdentifier>{00a6f809-e840-406e-bb5e-4796d71ed4a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\deconz">
+      <UniqueIdentifier>{420b78d4-c9be-4f52-826f-7b14085d9bb3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2134,6 +2137,18 @@
     <ClInclude Include="..\hardware\TeleinfoBase.h">
       <Filter>Devices\Teleinfo</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\deconz\Deconz.h">
+      <Filter>Devices\deconz</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\deconz\DeconzLight.h">
+      <Filter>Devices\deconz</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\deconz\DeconzSensor.h">
+      <Filter>Devices\deconz</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\deconz\DeconzNode.h">
+      <Filter>Devices\deconz</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2909,6 +2924,18 @@
     </ClCompile>
     <ClCompile Include="..\hardware\TeleinfoBase.cpp">
       <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\deconz\Deconz.cpp">
+      <Filter>Devices\deconz</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\deconz\DeconzLight.cpp">
+      <Filter>Devices\deconz</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\deconz\DeconzNode.cpp">
+      <Filter>Devices\deconz</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\deconz\DeconzSensor.cpp">
+      <Filter>Devices\deconz</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

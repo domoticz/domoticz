@@ -353,6 +353,10 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/deconz/Deconz.cpp
+hardware/deconz/DeconzNode.cpp
+hardware/deconz/DeconzLight.cpp
+hardware/deconz/DeconzSensor.cpp
 hardware/DenkoviDevices.cpp
 hardware/DenkoviUSBDevices.cpp
 hardware/DenkoviTCPDevices.cpp
