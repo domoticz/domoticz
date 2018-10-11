@@ -82,7 +82,6 @@ namespace OpenZWave
 		vector<Item>	m_items;
 		int32			m_valueIdx;					// the current index in the m_items vector
 		int32			m_valueIdxCheck;			// the previous index in the m_items vector (used for double-checking spurious value reads)
-		int32			m_newValueIdx;				// a new value to be set on the appropriate device
 		uint8			m_size;
 	};
 

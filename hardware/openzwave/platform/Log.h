@@ -181,6 +181,7 @@ namespace OpenZWave
 
 		static i_LogImpl*	m_pImpl;		/**< Pointer to an object that encapsulates the platform-specific logging implementation. */
 		static Log*	s_instance;
+		static bool	s_customLogger;
 		Mutex*		m_logMutex;
 	};
 } // namespace OpenZWave
