@@ -24,7 +24,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     return null;
                 }
 
-                var data = getGroupedData(stats.result, costs, typeof stats.delivered !== 'undefined');
+                var includeReturn = typeof stats.delivered !== 'undefined';
+                var data = getGroupedData(stats.result, costs);
                 var source = month
                     ? data.years[year].months.find(function (item) {
                         return (new Date(item.date)).getMonth() + 1 === month;
@@ -35,8 +36,15 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     return null;
                 }
 
+                source.usage1.counter = parseFloat(costs.CounterT1);
+                source.usage2.counter = parseFloat(costs.CounterT2);
+
+                if (includeReturn) {
+                    source.return1.counter = parseFloat(costs.CounterR1);
+                    source.return2.counter = parseFloat(costs.CounterR2);
+                }
+
                 return Object.assign({}, source, {
-                    counter: month ? source.counter : parseFloat(stats.counter),
                     items: month ? source.days : source.months
                 });
             });
@@ -144,7 +152,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                     acc[key].usage = (acc[key].usage || 0) + item[key].usage;
                     acc[key].cost = (acc[key].cost || 0) + item[key].cost;
-                    acc[key].counter = Math.max(acc[key].counter || 0, item[key].counter);
                 });
 
                 acc.usage = (acc.usage || 0) + item.usage;
@@ -201,7 +208,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         }
 
         function showTable(data) {
-            var table = $element.find('#reporttable');
+            var table = $element.find('table');
             var columns = [];
 
             var counterRenderer = function (data) {

@@ -69,6 +69,8 @@ define(function () {
                 return 'kWh';
             } else if (this.Type === 'P1 Smart Meter' && this.SubType === 'Energy') {
                 return 'kWh';
+            } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 2) {
+                return 'm3';
             } else if (this.Type === 'Usage' && this.SubType === 'Electric') {
                 return 'W';
             } else if (this.SubType === 'Gas' || this.SubType === 'Water') {

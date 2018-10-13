@@ -50,9 +50,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             if (switchTypeVal === 0 || switchTypeVal === 4) {
                 return costs.CostEnergy / 10000;
             } else if (switchTypeVal === 1) {
-                return costs.CostGas;
+                return costs.CostGas / 10000;
             } else if (switchTypeVal === 2) {
-                return costs.CostWater / costs.DividerWater
+                return costs.CostWater / 10000;
             }
         }
 
@@ -118,7 +118,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
             return values.reduce(function (acc, item) {
                 keys.forEach(function (key) {
-                    acc[key] = item[key] !== null ? (acc[key] || 0) + item[key] : null
+                    acc[key] = item[key] !== null
+                        ? (acc[key] || 0) + item[key]
+                        : null
                 });
 
                 acc.counter = Math.max(acc.counter || 0, item.counter);
@@ -247,7 +249,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 data: data.items.map(function (item) {
                     return {
                         x: +(new Date(item.date)),
-                        y: item.usage
+                        y: parseFloat(item.usage.toFixed(3))
                     }
                 })
             });
@@ -270,7 +272,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     min: 0
                 },
                 tooltip: {
-                    valueSuffix: ' ' + vm.unit
+                    valueSuffix: ' ' + vm.unit,
+                    valueDecimals: 3
                 },
                 plotOptions: {
                     column: {
