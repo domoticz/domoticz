@@ -10,6 +10,13 @@
 #include "../../main/mainworker.h"
 #include "../../main/SQLHelper.h"
 
+/* Hardware to support deCONZ REST API 
+ * Zigbee gateway project to support all brands Zigbee devices in one gateway. 
+ * - deCONZ REST API (https://github.com/dresden-elektronik/deconz-rest-plugin)
+ * - Phoscon Gateway(https://www.dresden-elektronik.de/funktechnik/solutions/wireless-light-control/gateways/phoscon-gateway/?L=1&cHash=c9c902ccdb43164696acccf81b62b2bd)
+ * - RaspBee(https://www.dresden-elektronik.de/funktechnik/solutions/wireless-light-control/raspbee/?L=1) 
+ */
+
 Deconz::Deconz(const int id, const std::string& ipAddress, const unsigned short port,
                const std::string& username, const int poll, const int options)
 {
@@ -368,7 +375,8 @@ bool Deconz::GetStates()
 		return false;
 	}
 
-	SaveString2Disk(result, "E:\\deconz.json");
+	// Debugging removed.
+	//SaveString2Disk(result, "E:\\deconz.json");
 
 	Json::Value root;
 	Json::Reader jReader;
