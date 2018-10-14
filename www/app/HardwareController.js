@@ -661,61 +661,61 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
-            }
-            /* deCONZ */
+			}
+			/* deCONZ */
 			else if (text.indexOf("deCONZ REST API") >= 0) {
-			    var address = $("#hardwarecontent #divremote #tcpaddress").val();
-			    if (address == "") {
-			        ShowNotify($.t('Please enter an address!'), 2500, true);
-			        return;
-			    }
-			    var port = $("#hardwarecontent #divremote #tcpport").val();
-			    if (port == "") {
-			        ShowNotify($.t('Please enter an port!'), 2500, true);
-			        return;
-			    }
-			    var intRegex = /^\d+$/;
-			    if (!intRegex.test(port)) {
-			        ShowNotify($.t('Please enter an valid port!'), 2500, true);
-			        return;
-			    }
-			    var username = $("#hardwarecontent #hardwareparamsdeconz #username").val();
-			    if (username == "") {
-			        ShowNotify($.t('Please enter a username!'), 2500, true);
-			        return;
-			    }
-			    var pollinterval = $("#hardwarecontent #hardwareparamsdeconz #pollinterval").val();
-			    if (pollinterval == "") {
-			        ShowNotify($.t('Please enter poll interval!'), 2500, true);
-			        return;
-			    }
-			    Mode1 = pollinterval;
-			    Mode2 = 0;
-			    /*if ($("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked')) {
-			        Mode2 |= 1;
-			    }
-			    if ($("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked')) {
-			        Mode2 |= 2;
-			    }*/
-			    $.ajax({
-			        url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-			            "&address=" + address +
-			            "&port=" + port +
-			            "&username=" + encodeURIComponent(username) +
-			            "&name=" + encodeURIComponent(name) +
-			            "&enabled=" + bEnabled +
-			            "&idx=" + idx +
-			            "&datatimeout=" + datatimeout +
-			            "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-			        async: false,
-			        dataType: 'json',
-			        success: function (data) {
-			            RefreshHardwareTable();
-			        },
-			        error: function () {
-			            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-			        }
-			    });
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an address!'), 2500, true);
+					return;
+				}
+				var port = $("#hardwarecontent #divremote #tcpport").val();
+				if (port == "") {
+					ShowNotify($.t('Please enter an port!'), 2500, true);
+					return;
+				}
+				var intRegex = /^\d+$/;
+				if (!intRegex.test(port)) {
+					ShowNotify($.t('Please enter an valid port!'), 2500, true);
+					return;
+				}
+				var username = $("#hardwarecontent #hardwareparamsdeconz #username").val();
+				if (username == "") {
+					ShowNotify($.t('Please enter a username!'), 2500, true);
+					return;
+				}
+				var pollinterval = $("#hardwarecontent #hardwareparamsdeconz #pollinterval").val();
+				if (pollinterval == "") {
+					ShowNotify($.t('Please enter poll interval!'), 2500, true);
+					return;
+				}
+				Mode1 = pollinterval;
+				Mode2 = 0;
+				/*if ($("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked')) {
+					Mode2 |= 1;
+				}
+				if ($("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked')) {
+					Mode2 |= 2;
+				}*/
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&address=" + address +
+					"&port=" + port +
+					"&username=" + encodeURIComponent(username) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
 			}
 			else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
 				var url = $("#hardwarecontent #divhttppoller #url").val();
@@ -1737,40 +1737,40 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
-            }
+			}
 			else if (text.indexOf("deCONZ REST API") >= 0) {
-			    var address = $("#hardwarecontent #divremote #tcpaddress").val();
-			    if (address == "") {
-			        ShowNotify($.t('Please enter an address!'), 2500, true);
-			        return;
-			    }
-			    var port = $("#hardwarecontent #divremote #tcpport").val();
-			    if (port == "") {
-			        ShowNotify($.t('Please enter an port!'), 2500, true);
-			        return;
-			    }
-			    var intRegex = /^\d+$/;
-			    if (!intRegex.test(port)) {
-			        ShowNotify($.t('Please enter an valid port!'), 2500, true);
-			        return;
-			    }
-			    var username = $("#hardwarecontent #hardwareparamsdeconz #username").val();
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an address!'), 2500, true);
+					return;
+				}
+				var port = $("#hardwarecontent #divremote #tcpport").val();
+				if (port == "") {
+					ShowNotify($.t('Please enter an port!'), 2500, true);
+					return;
+				}
+				var intRegex = /^\d+$/;
+				if (!intRegex.test(port)) {
+					ShowNotify($.t('Please enter an valid port!'), 2500, true);
+					return;
+				}
+				var username = $("#hardwarecontent #hardwareparamsdeconz #username").val();
 
-			    if (username == "") {
-			        ShowNotify($.t('Please enter a username!'), 2500, true);
-			        return;
-			    }
-			    $.ajax({
-			        url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
-			        async: false,
-			        dataType: 'json',
-			        success: function (data) {
-			            RefreshHardwareTable();
-			        },
-			        error: function () {
-			            ShowNotify($.t('Problem adding hardware!'), 2500, true);
-			        }
-			    });
+				if (username == "") {
+					ShowNotify($.t('Please enter a username!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
 			}
 			else if (
 				(text.indexOf("Domoticz") >= 0) ||
@@ -5642,14 +5642,14 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked', (data["Mode2"]&1));
 							$("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked', (data["Mode2"]&2));
-                        }
+						}
 						else if (data["Type"].indexOf("deCONZ") >= 0) {
-						    $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
-						    $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
-						    $("#hardwarecontent #hardwareparamsdeconz #username").val(data["Username"]);
-						    $("#hardwarecontent #hardwareparamsdeconz #pollinterval").val(data["Mode1"]);
-						    /*$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked', (data["Mode2"] & 1));
-						    $("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked', (data["Mode2"] & 2));*/
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
+							$("#hardwarecontent #hardwareparamsdeconz #username").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamsdeconz #pollinterval").val(data["Mode1"]);
+							/*$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked', (data["Mode2"] & 1));
+							$("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked', (data["Mode2"] & 2));*/
 						}
 						else if (data["Type"].indexOf("Winddelen") >= 0) {
 							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
@@ -5731,41 +5731,41 @@ define(['app'], function (app) {
 			});
 
 			$('#modal').hide();
-        }
+		}
 
-	    RegisterDeconz = function () {
-	        var address = $("#hardwarecontent #divremote #tcpaddress").val();
-	        if (address == "") {
-	            ShowNotify($.t('Please enter an address!'), 2500, true);
-	            return;
-	        }
-	        var port = $("#hardwarecontent #divremote #tcpport").val();
-	        if (port == "") {
-	            ShowNotify($.t('Please enter an port!'), 2500, true);
-	            return;
-	        }
-	        var username = $("#hardwarecontent #hardwareparamsdeconz #username").val();
-	        $.ajax({
-	            url: "json.htm?type=command&param=registerdeconz" +
-	                "&ipaddress=" + address +
-	                "&port=" + port +
-	                "&username=" + encodeURIComponent(username),
-	            async: false,
-	            dataType: 'json',
-	            success: function (data) {
-	                if (data.status == "ERR") {
-	                    ShowNotify(data.statustext, 2500, true);
-	                    return;
-	                }
-	                $("#hardwarecontent #hardwareparamsdeconz #username").val(data.username)
-	                ShowNotify($.t('Registration successful!'), 2500);
-	            },
-	            error: function () {
-	                HideNotify();
-	                ShowNotify($.t('Problem registrating with the deCONZ bridge!'), 2500, true);
-	            }
-	        });
-	    }
+		RegisterDeconz = function () {
+			var address = $("#hardwarecontent #divremote #tcpaddress").val();
+			if (address == "") {
+				ShowNotify($.t('Please enter an address!'), 2500, true);
+				return;
+			}
+			var port = $("#hardwarecontent #divremote #tcpport").val();
+			if (port == "") {
+				ShowNotify($.t('Please enter an port!'), 2500, true);
+				return;
+			}
+			var username = $("#hardwarecontent #hardwareparamsdeconz #username").val();
+			$.ajax({
+				url: "json.htm?type=command&param=registerdeconz" +
+					"&ipaddress=" + address +
+					"&port=" + port +
+					"&username=" + encodeURIComponent(username),
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (data.status == "ERR") {
+						ShowNotify(data.statustext, 2500, true);
+						return;
+					}
+					$("#hardwarecontent #hardwareparamsdeconz #username").val(data.username)
+					ShowNotify($.t('Registration successful!'), 2500);
+				},
+				error: function () {
+					HideNotify();
+					ShowNotify($.t('Problem registrating with the deCONZ bridge!'), 2500, true);
+				}
+			});
+		}
 
 		RegisterPhilipsHue = function () {
 			var address = $("#hardwarecontent #divremote #tcpaddress").val();
