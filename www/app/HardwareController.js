@@ -5874,8 +5874,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divcrcp1").hide();
 			$("#hardwarecontent #divratelimitp1").hide();
 			$("#hardwarecontent #divlocation").hide();
-            $("#hardwarecontent #divphilipshue").hide();
-		    $("#hardwarecontent #divdeconz").hide();
+			$("#hardwarecontent #divphilipshue").hide();
+			$("#hardwarecontent #divdeconz").hide();
 			$("#hardwarecontent #divwinddelen").hide();
 			$("#hardwarecontent #divhoneywell").hide();
 			$("#hardwarecontent #divmqtt").hide();
@@ -6158,14 +6158,14 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divphilipshue").show();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
-            }
+			}
 			else if (text.indexOf("deCONZ") >= 0) {
-			    $("#hardwarecontent #divserial").hide();
-			    $("#hardwarecontent #divremote").show();
-			    $("#hardwarecontent #divlogin").hide();
-			    $("#hardwarecontent #divdeconz").show();
-			    $("#hardwarecontent #divunderground").hide();
-			    $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #divdeconz").show();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("Yeelight") >= 0) {
 				$("#hardwarecontent #divserial").hide();
