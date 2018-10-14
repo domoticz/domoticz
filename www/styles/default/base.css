@@ -25,17 +25,8 @@ body {
 	background-attachment: fixed;
 }
 
-html, body {
-	height: 100%;
-}
-
 #main-view {
 	padding-top: 0px;
-}
-
-#holder .container-fluid {
-	margin-top: 20px;
-	padding-bottom: 20px;
 }
 
 .row-fluid .span12,

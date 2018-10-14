@@ -65,21 +65,15 @@ li {
   background-image: none;
   border: none;
 }
-.bannercontent {
-  padding-top: 40px;
-  padding-bottom: 12px;
+
+#holder > .container-fluid {
+  padding-top: 51px;
 }
-/*OLD
-body {
-  background: #444 url(images/domoticz_bg.jpg) center fixed;
-  color: #ffffff;
-  background-attachment: fixed !important;
-  background-size: cover !important;
-}
-*/
+
 body {
   background: #7d7e7d;
 }
+
 /*only show special background when screen is min 1000px width, so tablets show normal background*/
 @media (min-width: 1025px) {
   body {
@@ -965,6 +959,11 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 
 .page-header {
     margin: 12px 0;
+}
+
+.events-editor {
+  top: 64px;
+  bottom: 32px;
 }
 
 .events-editor__search {

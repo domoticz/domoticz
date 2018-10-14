@@ -1,10 +1,10 @@
 .events-editor {
     display: flex;
     position: absolute;
-    top: 40px;
+    top: 60px;
     left: 12px;
     right: 12px;
-    bottom: 12px;
+    bottom: 40px;
 }
 
 .events-editor__tree {
