@@ -9342,9 +9342,9 @@ namespace http {
 								total_real *= AddjMulti;
 								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
-								sprintf(szTmp, "%.12g", total_real);
+								sprintf(szTmp, "%g", total_real);
 								root["result"][ii]["Rain"] = szTmp;
-								sprintf(szTmp, "%.12g", rate);
+								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
 								root["result"][ii]["Data"] = sValue;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -9396,11 +9396,11 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / (divider / 1000.0f);
@@ -9435,22 +9435,22 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.12g kWh", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.12g m3", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.12g m3", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.12g %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9501,15 +9501,15 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%" PRIu64, total_real);
@@ -9538,22 +9538,22 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.12g kWh", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.12g m3", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.12g m3", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.12g %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9605,22 +9605,22 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.12g kWh", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.12g m3", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.12g m3", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.12g %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9674,15 +9674,15 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / divider;
-								sprintf(szTmp, "%.12g m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
@@ -9732,15 +9732,15 @@ namespace http {
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
 							musage = float(acounter) / divider;
-							sprintf(szTmp, "%.12g kWh %s Watt", musage, splitresults[1].c_str());
+							sprintf(szTmp, "%g kWh %s Watt", musage, splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
 							musage = float(acounter) / divider;
-							sprintf(szTmp, "%.12g m3", musage);
+							sprintf(szTmp, "%g m3", musage);
 							break;
 						case MTYPE_WATER:
 							musage = float(acounter) / divider;
-							sprintf(szTmp, "%.12g m3", musage);
+							sprintf(szTmp, "%g m3", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
@@ -9864,15 +9864,15 @@ namespace http {
 								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
 
 								musage = double(total_real_usage) / EnergyDivider;
-								sprintf(szTmp, "%.12g kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								root["result"][ii]["CounterToday"] = szTmp;
 								musage = double(total_real_deliv) / EnergyDivider;
-								sprintf(szTmp, "%.12g kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
 							else
 							{
-								sprintf(szTmp, "%.12g kWh", 0.0f);
+								sprintf(szTmp, "%g kWh", 0.0f);
 								root["result"][ii]["CounterToday"] = szTmp;
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
@@ -9983,7 +9983,7 @@ namespace http {
 							}
 							if (total > 0)
 							{
-								sprintf(szTmp, ", Total: %.12g kWh", total / 1000.0f);
+								sprintf(szTmp, ", Total: %g kWh", total / 1000.0f);
 								strcat(szData, szTmp);
 							}
 							root["result"][ii]["Data"] = szData;
@@ -10019,7 +10019,7 @@ namespace http {
 								std::vector<std::string> sd2 = result2[0];
 								double minimum = atof(sd2[0].c_str()) / divider;
 
-								sprintf(szData, "%.12g kWh", total);
+								sprintf(szData, "%g kWh", total);
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
@@ -10027,16 +10027,16 @@ namespace http {
 								}
 								else
 								{
-									sprintf(szData, "%.12g Watt", atof(strarray[0].c_str()));
+									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-								sprintf(szTmp, "%.12g kWh", total - minimum);
+								sprintf(szTmp, "%g kWh", total - minimum);
 								root["result"][ii]["CounterToday"] = szTmp;
 							}
 							else
 							{
-								sprintf(szData, "%.12g kWh", total);
+								sprintf(szData, "%g kWh", total);
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
@@ -10044,7 +10044,7 @@ namespace http {
 								}
 								else
 								{
-									sprintf(szData, "%.12g Watt", atof(strarray[0].c_str()));
+									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10186,7 +10186,7 @@ namespace http {
 						}
 						else if (dSubType == sTypePercentage)
 						{
-							sprintf(szData, "%.12g%%", atof(sValue.c_str()));
+							sprintf(szData, "%g%%", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Computer";
@@ -10194,7 +10194,7 @@ namespace http {
 						}
 						else if (dSubType == sTypeWaterflow)
 						{
-							sprintf(szData, "%.12g l/min", atof(sValue.c_str()));
+							sprintf(szData, "%g l/min", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Moisture";
@@ -10212,7 +10212,7 @@ namespace http {
 								SensorType = atoi(sResults[0].c_str());
 								szAxesLabel = sResults[1];
 							}
-							sprintf(szData, "%.12g %s", atof(sValue.c_str()), szAxesLabel.c_str());
+							sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["SensorType"] = SensorType;
 							root["result"][ii]["SensorUnit"] = szAxesLabel;
@@ -10247,7 +10247,7 @@ namespace http {
 						}
 						else if (dSubType == sTypeVoltage)
 						{
-							sprintf(szData, "%.12g V", atof(sValue.c_str()));
+							sprintf(szData, "%g V", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10255,7 +10255,7 @@ namespace http {
 						}
 						else if (dSubType == sTypeCurrent)
 						{
-							sprintf(szData, "%.12g A", atof(sValue.c_str()));
+							sprintf(szData, "%g A", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10296,7 +10296,7 @@ namespace http {
 							StringSplit(sValue, ";", tstrarray);
 							if (tstrarray.empty())
 								continue;
-							sprintf(szData, "%.12g hPa", atof(tstrarray[0].c_str()));
+							sprintf(szData, "%g hPa", atof(tstrarray[0].c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10424,7 +10424,7 @@ namespace http {
 					}
 					else if (dType == pTypeWEIGHT)
 					{
-						sprintf(szTmp, "%.12g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
+						sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = false;
 					}
@@ -10432,7 +10432,7 @@ namespace http {
 					{
 						if (dSubType == sTypeElectric)
 						{
-							sprintf(szData, "%.12g Watt", atof(sValue.c_str()));
+							sprintf(szData, "%g Watt", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 						}
 						else
