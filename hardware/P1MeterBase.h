@@ -7,6 +7,7 @@ class P1MeterBase : public CDomoticzHardwareBase
 {
 	friend class P1MeterSerial;
 	friend class P1MeterTCP;
+	friend class CRFXBase;
 public:
 	P1MeterBase(void);
 	~P1MeterBase(void);
@@ -45,7 +46,7 @@ private:
 
 	void Init();
 	bool MatchLine();
-	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
+	void ParseP1Data(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
 
 	bool CheckCRC();
 };

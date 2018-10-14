@@ -23,20 +23,10 @@ History :
 
 class CTeleinfoBase : public CDomoticzHardwareBase
 {
-
 public:
-
 	CTeleinfoBase();
 	~CTeleinfoBase();
-
-private:
-	int AlertLevel(int Iinst, int Isousc, char* text);
-	P1Power m_p1power, m_p2power, m_p3power;
-
 protected:
-	int m_iRateLimit;
-	int m_iDataTimeout;
-
 	typedef struct _tTeleinfo
 	{
 		std::string ADCO;
@@ -116,10 +106,25 @@ protected:
 			CRCmode1 = 255;	 // means "bool not initialized yet", will be when running CRC Check for the first time
 		}
 	} Teleinfo;
-
 	void ProcessTeleinfo(Teleinfo &teleinfo);
 	void ProcessTeleinfo(const std::string &name, int rank, Teleinfo &teleinfo);
 	bool isCheckSumOk(const std::string &sLine, int &isMode1);
+
+	void InitTeleinfo();
+	void ParseTeleinfoData(const char *pData, int Len);
+	void MatchLine();
+protected:
+	int m_iRateLimit;
+	int m_iDataTimeout;
+	unsigned int m_iBaudRate;
+	bool m_bDisableCRC;
+private:
+	int AlertLevel(int Iinst, int Isousc, char* text);
+	P1Power m_p1power, m_p2power, m_p3power;
+	Teleinfo m_teleinfo;
+	char m_buffer[1024];
+	int m_bufferpos;
+	unsigned int m_counter;
 };
 
 /*  Details on Teleinfo variables

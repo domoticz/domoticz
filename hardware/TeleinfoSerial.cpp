@@ -27,14 +27,9 @@ History :
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
-#include "../main/Helper.h"
 
-#include <algorithm>
 #include <boost/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
-#include <ctime>
-#include <iostream>
-#include <string>
 
 CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
 {
@@ -69,9 +64,7 @@ CTeleinfoSerial::~CTeleinfoSerial()
 
 void CTeleinfoSerial::Init()
 {
-	m_bufferpos = 0;
-	m_counter = 0;
-	m_teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
+	InitTeleinfo();
 }
 
 
@@ -142,109 +135,5 @@ void CTeleinfoSerial::readCallback(const char *data, size_t len)
 		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", m_Name.c_str());
 		return;
 	}
-	ParseData(data, static_cast<int>(len));
+	ParseTeleinfoData(data, static_cast<int>(len));
 }
-
-
-void CTeleinfoSerial::MatchLine()
-{
-	std::string label, vString;
-	std::vector<std::string> splitresults;
-	unsigned long value;
-	std::string sline(m_buffer);
-
-	_log.Debug(DEBUG_HARDWARE, "Frame : #%s#", sline.c_str());
-
-	// Is the line we got worth analysing any further?
-	if ((sline.size() < 4) || (sline[0] == 0x0a))
-	{
-		_log.Debug(DEBUG_HARDWARE, "Frame #%s# ignored, too short or irrelevant", sline.c_str());
-		return;
-	}
-
-	// Extract the elements, return if not enough and line is invalid
-	StringSplit(sline, " ", splitresults);
-	if (splitresults.size() < 3)
-	{
-		_log.Log(LOG_ERROR, "Frame #%s# passed the checksum test but failed analysis", sline.c_str());
-		return;
-	}
-
-	label = splitresults[0];
-	vString = splitresults[1];
-	value = atoi(splitresults[1].c_str());
-
-	if (label == "ADCO") m_teleinfo.ADCO = vString;
-	else if (label == "OPTARIF") m_teleinfo.OPTARIF = vString;
-	else if (label == "ISOUSC") m_teleinfo.ISOUSC = value;
-	else if (label == "PAPP")
-	{
-		m_teleinfo.PAPP = value;
-		m_teleinfo.withPAPP = true;
-	}
-	else if (label == "PTEC")  m_teleinfo.PTEC = vString;
-	else if (label == "IINST") m_teleinfo.IINST = value;
-	else if (label == "BASE") m_teleinfo.BASE = value;
-	else if (label == "HCHC") m_teleinfo.HCHC = value;
-	else if (label == "HCHP") m_teleinfo.HCHP = value;
-	else if (label == "EJPHPM") m_teleinfo.EJPHPM = value;
-	else if (label == "EJPHN") m_teleinfo.EJPHN = value;
-	else if (label == "BBRHCJB") m_teleinfo.BBRHCJB = value;
-	else if (label == "BBRHPJB") m_teleinfo.BBRHPJB = value;
-	else if (label == "BBRHCJW") m_teleinfo.BBRHCJW = value;
-	else if (label == "BBRHPJW") m_teleinfo.BBRHPJW = value;
-	else if (label == "BBRHCJR") m_teleinfo.BBRHCJR = value;
-	else if (label == "BBRHPJR") m_teleinfo.BBRHPJR = value;
-	else if (label == "DEMAIN") m_teleinfo.DEMAIN = vString;
-	else if (label == "IINST1") m_teleinfo.IINST1 = value;
-	else if (label == "IINST2") m_teleinfo.IINST2 = value;
-	else if (label == "IINST3") m_teleinfo.IINST3 = value;
-	else if (label == "PPOT")  m_teleinfo.PPOT = value;
-	else if (label == "MOTDETAT") m_counter++;
-
-	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts.
-	if (m_counter >= m_iBaudRate / 600)
-	{
-		m_counter = 0;
-		_log.Debug(DEBUG_HARDWARE, "(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", m_Name.c_str(), m_teleinfo.PAPP, m_teleinfo.PTEC.c_str());
-		ProcessTeleinfo(m_teleinfo);
-		mytime(&m_LastHeartbeat);// keep heartbeat happy
-	}
-}
-
-
-void CTeleinfoSerial::ParseData(const char *pData, int Len)
-{
-	int ii = 0;
-	while (ii < Len)
-	{
-		const char c = pData[ii];
-
-		if ((c == 0x0d) || (c == 0x00) || (c == 0x02) || (c == 0x03))
-		{
-			ii++;
-			continue;
-		}
-
-		m_buffer[m_bufferpos] = c;
-		if (c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
-		{
-			// discard newline, close string, parse line and clear it.
-			if (m_bufferpos > 0)
-				m_buffer[m_bufferpos] = 0;
-
-			//We process the line only if the checksum is ok and user did not request to bypass CRC verification
-			if ((m_bDisableCRC) || isCheckSumOk(std::string(m_buffer), m_teleinfo.CRCmode1))
-			{
-				MatchLine();
-			}
-			m_bufferpos = 0;
-		}
-		else
-		{
-			m_bufferpos++;
-		}
-		ii++;
-	}
-}
-

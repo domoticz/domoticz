@@ -59,11 +59,12 @@ const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 //
 //Class RFXComSerial
 //
-RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
+RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate, const bool bIsXL) :
 	m_szSerialPort(devname)
 {
 	m_HwdID = ID;
 	m_iBaudRate = baud_rate;
+	m_bIsXL = bIsXL;
 
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
@@ -890,7 +891,11 @@ namespace http {
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
 					if (pHardware == NULL)
 					{
-						return;
+						pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433_Pro_XL);
+						if (pHardware == NULL)
+						{
+							return;
+						}
 					}
 				}
 			}
@@ -910,7 +915,8 @@ namespace http {
 			if (
 				(pHardware->HwdType == HTYPE_RFXtrx315) ||
 				(pHardware->HwdType == HTYPE_RFXtrx433) ||
-				(pHardware->HwdType == HTYPE_RFXtrx868)
+				(pHardware->HwdType == HTYPE_RFXtrx868) ||
+				(pHardware->HwdType == HTYPE_RFXtrx433_Pro_XL)
 				)
 			{
 				RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
@@ -1015,6 +1021,10 @@ namespace http {
 				if (pHardware == NULL)
 				{
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
+					if (pHardware == NULL)
+					{
+						pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433_Pro_XL);
+					}
 				}
 			}
 			if (pHardware != NULL)
@@ -1022,7 +1032,8 @@ namespace http {
 				if (
 					(pHardware->HwdType == HTYPE_RFXtrx315) ||
 					(pHardware->HwdType == HTYPE_RFXtrx433) ||
-					(pHardware->HwdType == HTYPE_RFXtrx868)
+					(pHardware->HwdType == HTYPE_RFXtrx868) ||
+					(pHardware->HwdType == HTYPE_RFXtrx433_Pro_XL)
 					)
 				{
 					RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);

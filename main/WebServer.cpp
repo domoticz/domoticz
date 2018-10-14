@@ -1480,7 +1480,7 @@ namespace http {
 				}
 			}
 			else if (
-				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) ||
+				(htype == HTYPE_RFXLAN) || (htype == HTYPE_RFXLAN_XL) || (htype == HTYPE_P1SmartMeterLAN) ||
 				(htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
@@ -3569,10 +3569,13 @@ namespace http {
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
 
-						if ((Type == HTYPE_RFXLAN) ||
+						if (
+							(Type == HTYPE_RFXLAN) ||
+							(Type == HTYPE_RFXLAN_XL) ||
 							(Type == HTYPE_RFXtrx315) ||
 							(Type == HTYPE_RFXtrx433) ||
 							(Type == HTYPE_RFXtrx868) ||
+							(Type == HTYPE_RFXtrx433_Pro_XL) ||
 							(Type == HTYPE_EnOceanESP2) ||
 							(Type == HTYPE_EnOceanESP3) ||
 							(Type == HTYPE_Dummy) ||
@@ -11075,7 +11078,9 @@ namespace http {
 							(pHardware->HwdType == HTYPE_RFXtrx315) ||
 							(pHardware->HwdType == HTYPE_RFXtrx433) ||
 							(pHardware->HwdType == HTYPE_RFXtrx868) ||
-							(pHardware->HwdType == HTYPE_RFXLAN)
+							(pHardware->HwdType == HTYPE_RFXtrx433_Pro_XL) ||
+							(pHardware->HwdType == HTYPE_RFXLAN) ||
+							(pHardware->HwdType == HTYPE_RFXLAN_XL)
 							)
 						{
 							CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(pHardware);
