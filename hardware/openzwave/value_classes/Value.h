@@ -99,7 +99,7 @@ namespace OpenZWave
 		void SetCheckingChange( bool _check ) { m_checkChange = _check; }
 		void OnValueRefreshed();			// A value in a device has been refreshed
 		void OnValueChanged();				// The refreshed value actually changed
-		int VerifyRefreshedValue( void* _originalValue, void* _checkValue, void* _newValue, ValueID::ValueType _type, int _length = 0 );
+		int VerifyRefreshedValue( void* _originalValue, void* _checkValue, void* _newValue, ValueID::ValueType _type, int _originalValueLength = 0, int _checkValueLength = 0, int _newValueLength = 0 );
 
 		int32		m_min;
 		int32		m_max;

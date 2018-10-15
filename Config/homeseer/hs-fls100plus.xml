@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="short" instance="1" index="1" value="15" label="PIR Trigger Off Period" units="seconds" size="2" min="8" max="720">
+      <Help>Period to send Trigger Off command after PIR is triggered.</Help>
+    </Value>
+    <Value genre="config" type="short" instance="1" index="2" value="50" label="Lux sensor threshold" units="" size="2" min="0" max="255">
+      <Help>
+        When the lux level falls below this threshold and the PIR gets triggered, the unit emits a Basic Set Command (Value=0xFF) and turns on its floodlight. This overwrites the Lux level set by the Lux knob.
+
+        Setting = 0: Never turn ON light when PIR triggered
+        Setting = 30~200: Turn ON light when lux is below configured threshold.
+        Setting = 255: Always turn ON light when PIR triggered
+
+        If the level is set to 0, the unit will not turn on its floodlight. The sensor will only send a notification report to the controller.
+      </Help>
+    </Value>
+    <Value genre="config" type="short" instance="1" index="3" value="10" label="Auto Report luminance interval" units="minutes" size="2" min="0" max="1440">
+      <Help>sets the interval of periodic lux level report to the controller</Help>
+    </Value>
+    <Value genre="config" type="list" instance="1" index="4" value="1" label="Basic Report" units="" size="1" min="0" max="1">
+      <Help></Help>
+      <Item value="0" label="Disable Basic Report"/>
+      <Item value="1" label="Enable Basic Report"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="1" />
+      <Group index="2" label="PIR Control" max_associations="4"/>
+    </Associations>
+  </CommandClass>
+</Product>

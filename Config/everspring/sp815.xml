@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="short" index="1" genre="config" label="Temperature and Humidity Auto Report period setting" units="Minutes" min="0" max="1440" value="30">
+            <Help>
+            </Help>
+        </Value>
+        <Value type="short" index="2" genre="config" label="Re-trigger Interval Setting" units="Seconds" min="10" max="3600" value="180">
+            <Help>
+                The parameter adjusts the sleep period after the detector has been triggered.
+                No response will be made during this interval if a movement is presented.
+                Longer re-trigger interval will result in longer battery life.
+            </Help>
+        </Value>
+        <Value type="short" index="3" genre="config" label="Trigger Off Interval Setting" units="Seconds" min="10" max="3600" value="15">
+            <Help>
+                This controls how long the connected lighting will stay on after the motion is detected.
+                This is useful for Group 2 associations where the detector is connected directly to another device such as smartplugs.
+            </Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Basic set as report -->
+    <CommandClass id="32" setasreport="true"/>
+
+    <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="1" label="Lifeline" />
+            <Group index="2" max_associations="4" label="Pir Control" />
+        </Associations>
+    </CommandClass>
+
+</Product>

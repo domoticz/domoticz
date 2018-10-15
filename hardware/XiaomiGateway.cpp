@@ -1023,7 +1023,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							if (model == "sensor_wleak.aq1" && battery != 255) {
 								level = 0;
 							}
-							if ((alarm == "1") || (status == "leak")) {
+							if ((alarm == "1") || (alarm == "2") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
