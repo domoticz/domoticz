@@ -34,6 +34,18 @@ define(['app', 'events/factories'], function (app) {
                         } else {
                             initAce(eventData)
                         }
+
+                        $element.on('keydown', function(event) {
+                            if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
+
+                                if (vm.event.isChanged) {
+                                    $scope.$apply(saveEvent);
+                                }
+
+                                event.preventDefault();
+                                return false
+                            }
+                        });
                     });
             }
 
