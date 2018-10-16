@@ -37,10 +37,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controllerUrl: 'app/log/DeviceLog.js',
                 controllerAs: 'vm'
             }))
-            .when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({
-                templateUrl: 'views/log/device_temperature_report.html',
-                controller: 'DeviceTemperatureReportController',
-                controllerUrl: 'app/log/TemperatureReport.js',
+            .when('/Devices/:id/Report/:year?/:month?', angularAMD.route({
+                templateUrl: 'app/report/DeviceReport.html',
+                controller: 'DeviceReportController',
+                controllerUrl: 'app/report/DeviceReport.js',
                 controllerAs: 'vm'
             }))
             .when('/DPFibaro', angularAMD.route({
