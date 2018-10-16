@@ -982,7 +982,7 @@ define(['app'], function (app) {
 								if (typeof obj != 'undefined') {
 									var vname = item.Name;
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-										var vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16">' + " " + item.Name+'</a>';
+										var vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 									}
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 										var status = "";
@@ -3477,13 +3477,13 @@ define(['app'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = item.Name;
 									if (typeof item.Counter != 'undefined') {
-										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16">' + " " + item.Name + '</a>';
+										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 									}
 									else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 										vname = '<img src="images/next.png" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="16" width="16">' + " " + item.Name;
 									}
 									else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.SubType == "Power")) {
-                                        vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16">' + " " + item.Name + '</a>';
+                                        vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 									}
 									else if (item.Type == "Air Quality") {
 										vname = '<img src="images/next.png" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
@@ -3501,7 +3501,7 @@ define(['app'], function (app) {
 										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 									}
 									else if (item.Type == "Usage") {
-										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16">' + " " + item.Name;
+										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
 									}
 									else if (item.SubType == "Soil Moisture") {
 										vname = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/next.png" height="16" width="16"></a>' + " " + item.Name;
