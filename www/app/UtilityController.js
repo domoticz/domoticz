@@ -754,15 +754,8 @@ define(['app'], function (app) {
 							}
 
 							if (typeof item.Counter != 'undefined') {
-								if ((item.Type == "P1 Smart Meter") && (item.SubType == "Energy")) {
-									xhtm += '<a class="btnsmall" onclick="ShowSmartLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
-								}
-								else if ((item.Type == "YouLess Meter") && (item.SwitchTypeVal == 0 || item.SwitchTypeVal == 4)) {
-									xhtm += '<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
-								}
-								else {
-									xhtm += '<a class="btnsmall" onclick="ShowCounterLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
-								}
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
+
 								if (permissions.hasPermission("Admin")) {
 									if (item.Type == "P1 Smart Meter") {
 										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
@@ -821,7 +814,8 @@ define(['app'], function (app) {
 								}
 							}
 							else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.Type == "Power")) {
-								xhtm += '<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
+
 								if (permissions.hasPermission("Admin")) {
 									if ((item.Type == "Energy") || (item.SubType == "kWh")) {
 										if (item.EnergyMeterMode == "") { item.EnergyMeterMode = "0" }

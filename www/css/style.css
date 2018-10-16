@@ -1716,6 +1716,13 @@ span.evomobile {
 	font-weight: bold;
 }
 
+.page-header {
+	padding: 0;
+	margin: 16px 0;
+	border: none;
+	text-align: center;
+}
+
 tspan {
 	text-decoration: none;
 	text-shadow: none !important;
