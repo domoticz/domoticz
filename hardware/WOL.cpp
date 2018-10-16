@@ -20,6 +20,7 @@ CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned sho
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
 	m_wol_port = Port;//9;
+	m_DataTimeout = -1;
 }
 
 CWOL::~CWOL(void)

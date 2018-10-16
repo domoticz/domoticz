@@ -127,6 +127,7 @@ bool DomoticzTCP::StopHardware()
 	if (m_thread)
 	{
 		RequestStop();
+		disconnectTCP();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -142,17 +143,25 @@ bool DomoticzTCP::ConnectInternal()
 		_log.Log(LOG_ERROR, "Domoticz: TCP could not create a TCP/IP socket!");
 		return false;
 	}
-	/*
-		//Set socket timeout to 2 minutes
-	#if !defined WIN32
-		struct timeval tv;
-		tv.tv_sec = 120;
-		setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
-	#else
-		unsigned long nTimeout = 120*1000;
-		setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
-	#endif
-	*/
+#ifndef WIN32
+	// Send keepalive after 600 sec inactivity, closes when no response after 12 * 10 sec.
+	int keepaliveEnable = 1;
+	int keepaliveTime = 600;
+	int keepaliveCount = 12;
+	int keepaliveInterval = 10;
+	if (
+		setsockopt(m_socket, IPPROTO_TCP, TCP_KEEPIDLE, &keepaliveTime, sizeof(keepaliveTime)) < 0 ||
+		setsockopt(m_socket, IPPROTO_TCP, TCP_KEEPCNT, &keepaliveCount, sizeof(keepaliveCount)) < 0 ||
+		setsockopt(m_socket, IPPROTO_TCP, TCP_KEEPINTVL, &keepaliveInterval, sizeof(keepaliveInterval)) < 0 ||
+#else
+	char keepaliveEnable = 1;
+	if (
+#endif
+		setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE, &keepaliveEnable, sizeof(keepaliveEnable)) < 0)
+	{
+		_log.Log(LOG_ERROR, "Domoticz: TCP could not set keepalive on socket");
+	}
+
 	// connect to the server
 	int nRet;
 	nRet = connect(m_socket, info->ai_addr, info->ai_addrlen);
@@ -234,8 +243,6 @@ void DomoticzTCP::Do_Work()
 			onInternalMessage((const unsigned char *)&buf, bread, false); // Do not check validity, this might be non RFX-message
 		}
 	}
-	disconnectTCP();
-
 	_log.Log(LOG_STATUS, "Domoticz: TCP/IP Worker stopped...");
 }
 

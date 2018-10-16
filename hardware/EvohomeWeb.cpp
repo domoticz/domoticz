@@ -46,6 +46,7 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 {
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
+	m_DataTimeout = -1;
 
 	m_locationId = (installation >> 12) & 15;
 	m_gatewayId = (installation >> 8) & 15;

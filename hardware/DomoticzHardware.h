@@ -28,7 +28,7 @@ public:
 
 	int m_HwdID = { 0 }; //must be uniquely assigned
 	bool m_bSkipReceiveCheck = { false };
-	unsigned long m_DataTimeout = { 0 };
+	int m_DataTimeout = { 0 };
 	std::string m_Name;
 	_eHardwareTypes HwdType;
 	unsigned char m_SeqNr = { 0 };

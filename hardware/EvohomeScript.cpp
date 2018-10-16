@@ -10,11 +10,11 @@
  *
  *  Copyright 2014 - fullTalgoRythm https://github.com/fullTalgoRythm/Domoticz-evohome
  *
- *  Licensed under GNU General Public License 3.0 or later. 
+ *  Licensed under GNU General Public License 3.0 or later.
  *  Some rights reserved. See COPYING, AUTHORS.
  *
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
- * 
+ *
  * based in part on https://github.com/mouse256/evomon
  * and details available at http://www.domoticaforum.eu/viewtopic.php?f=7&t=5806&start=90#p72564
  */
@@ -37,6 +37,7 @@ CEvohomeScript::CEvohomeScript(const int ID)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
+	m_DataTimeout = -1;
 }
 
 
@@ -115,7 +116,7 @@ void CEvohomeScript::RunScript(const char *pdata, const unsigned char /*length*/
 		std::stringstream s_strid;
 		s_strid << std::hex << sd[1];
 		s_strid >> ID;
-		
+
 		std::string OnAction(sd[6]);
 		if (OnAction.find("script://")!=std::string::npos)
 		{
@@ -154,7 +155,7 @@ void CEvohomeScript::RunScript(const char *pdata, const unsigned char /*length*/
 				scriptparams=scriptname.substr(pindex+1);
 				scriptname=scriptname.substr(0,pindex);
 			}
-			
+
 			if (file_exist(scriptname.c_str()))
 			{
 				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));

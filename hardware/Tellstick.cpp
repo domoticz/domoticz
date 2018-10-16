@@ -16,10 +16,10 @@ CTellstick::CTellstick(const TelldusFunctions& functions, const int ID, int repe
       m_sensorEventId(-1),
       m_numRepeats(repeats),
       m_repeatInterval(repeatInterval)
-
 {
     m_HwdID = ID;
     m_bSkipReceiveCheck = true;
+    m_DataTimeout = -1;
 }
 
 void CTellstick::SetSettings(int repeats, int repeatInterval)

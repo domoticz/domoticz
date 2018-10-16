@@ -16,6 +16,7 @@ CDummy::CDummy(const int ID)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
+	m_DataTimeout = -1;
 }
 
 CDummy::~CDummy(void)

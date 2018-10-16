@@ -151,6 +151,7 @@ CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutm
 {
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
+	m_DataTimeout = -1;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 

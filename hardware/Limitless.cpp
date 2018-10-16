@@ -164,6 +164,7 @@ m_szIPAddress(IPAddress)
 	m_usIPPort=usIPPort;
 	m_RemoteSocket=INVALID_SOCKET;
 	m_bSkipReceiveCheck = true;
+	m_DataTimeout = -1;
 	m_BridgeType = (_eLimitlessBridgeType)BridgeType;
 	m_LEDType=LedType;
 	m_bIsStarted=false;
