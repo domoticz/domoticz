@@ -62,6 +62,8 @@ private:
 	void AddGatewayToList();
 	void RemoveFromGatewayList();
 
+	int get_local_ipaddr(std::vector<std::string>& ip_addrs);
+	
 	class xiaomi_udp_server
 	{
 	public:
