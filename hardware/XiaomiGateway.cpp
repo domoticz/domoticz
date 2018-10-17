@@ -12,7 +12,10 @@
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <ifaddrs.h>
+
+#ifndef WIN32
+	#include <ifaddrs.h>
+#endif
 
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
@@ -110,6 +113,9 @@ void XiaomiGateway::RemoveFromGatewayList()
 // Code from Stack Overflow - https://stackoverflow.com/questions/2146191
 int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
 {
+#ifdef WIN32
+	return 0;
+#else
 	struct ifaddrs *myaddrs, *ifa;
 	void *in_addr;
 	char buf[64];
@@ -119,7 +125,7 @@ int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
 	{
 		_log.Log(LOG_ERROR, "getifaddrs failed! (when trying to determine local ip address)");
 		perror("getifaddrs");
-		exit(1);
+		return 0;
 	}
 
 	for (ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
@@ -162,8 +168,8 @@ int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
 
 	freeifaddrs(myaddrs);
 	return count;
+#endif
 }
-
 
 XiaomiGateway::XiaomiGateway(const int ID)
 {
