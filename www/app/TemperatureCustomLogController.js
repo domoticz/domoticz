@@ -107,7 +107,6 @@ define(['app'], function (app) {
                             formatter: function () {
                                 var unit = '';
                                 var baseName = this.series.name.split(':')[1];
-                                alert(this.series.name);
                                 if (baseName == $.t("Humidity")) {
                                     unit = '%'
                                 } else if (baseName == $.t("Barometer")) {
