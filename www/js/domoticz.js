@@ -5791,6 +5791,8 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 	if (typeof data.ValueQuantity != 'undefined') {
 		valueQuantity = data.ValueQuantity;
 	}
+	
+	$.DividerWater = 1000;
 
 	var valueUnits = "";
 	if (typeof data.ValueUnits != 'undefined') {
@@ -6687,7 +6689,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 			zoomType: 'x',
 			events: {
 				load: function () {
-
 					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=day",
 						function (data) {
 							if (typeof data.result != 'undefined') {
