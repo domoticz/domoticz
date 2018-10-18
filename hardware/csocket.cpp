@@ -335,7 +335,11 @@ csocket::SocketState csocket::getState( void ) const
 	return m_socketState;
 }
 
+#ifndef WIN32
 int csocket::setSockOpt(int level, int option_name, const void *option_value, socklen_t option_len)
+#else
+int csocket::setSockOpt(int level, int option_name, char *option_value, int option_len)
+#endif
 {
 	if (setsockopt(m_socket, level, option_name, option_value, option_len) < 0)
 #ifndef WIN32

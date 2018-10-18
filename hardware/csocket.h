@@ -38,7 +38,11 @@ public:
     virtual int     write( const char* pDataBuffer, unsigned int numBytesToWrite );
     SocketState     getState( void ) const;
     void            close();
-    int             setSockOpt(int level, int option_name, const void *option_value, socklen_t option_len);
+#ifndef WIN32
+	int             setSockOpt(int level, int option_name, const void *option_value, socklen_t option_len);
+#else
+	int             setSockOpt(int level, int option_name, char *option_value, int option_len);
+#endif
 private:
 
 
