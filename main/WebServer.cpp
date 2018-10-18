@@ -14468,6 +14468,9 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
+								case MTYPE_COUNTER:
+									//value already set above!
+									break;
 								default:
 									szValue = "0";
 									break;
@@ -14564,6 +14567,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								//value already set above!
 								break;
 							default:
 								szValue = "0";
