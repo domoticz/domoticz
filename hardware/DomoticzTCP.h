@@ -6,6 +6,7 @@
 #include "ws2tcpip.h"
 #endif
 
+class csocket;
 class DomoticzTCP : public CRFXBase
 {
 public:
@@ -25,11 +26,8 @@ public:
 #endif
 private:
 	void write(const char *data, size_t size);
-	bool isConnectedTCP();
-	void disconnectTCP();
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void writeTCP(const char *data, size_t size);
 	void Do_Work();
 	bool ConnectInternal();
 #ifndef NOCLOUD
@@ -47,10 +45,8 @@ private:
 	std::string m_password;
 	int m_retrycntr;
 	std::shared_ptr<std::thread> m_thread;
-	sockaddr_in6 m_addr;
-	struct addrinfo *info;
-	int m_socket;
-	unsigned char mBuffer[512];
+	csocket *m_connection;
+
 #ifndef NOCLOUD
 	std::string token;
 	bool b_ProxyConnected;

@@ -86,7 +86,6 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct sockaddr_in
 	return FAILURE;
 }
 
-
 int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 {
 	m_strRemoteHost = remoteHost;
@@ -335,3 +334,15 @@ csocket::SocketState csocket::getState( void ) const
 {
 	return m_socketState;
 }
+
+int csocket::setSockOpt(int level, int option_name, const void *option_value, socklen_t option_len)
+{
+	if (setsockopt(m_socket, level, option_name, option_value, option_len) < 0)
+#ifndef WIN32
+		return errno;
+#else
+		return WSAGetLastError();
+#endif
+	return 0;
+}
+

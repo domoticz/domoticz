@@ -38,6 +38,7 @@ public:
     virtual int     write( const char* pDataBuffer, unsigned int numBytesToWrite );
     SocketState     getState( void ) const;
     void            close();
+    int             setSockOpt(int level, int option_name, const void *option_value, socklen_t option_len);
 private:
 
 

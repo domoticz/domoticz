@@ -12868,7 +12868,7 @@ void MainWorker::HeartbeatCheck()
 		if (!pHardware->m_bSkipReceiveCheck)
 		{
 			//Skip Dummy Hardware
-			bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_Domoticz) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
+			bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
 			if (bDoCheck)
 			{
 				//Check Thread Timeout
@@ -12895,7 +12895,7 @@ void MainWorker::HeartbeatCheck()
 			{
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
-				if (result.size() == 1)
+				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
 
