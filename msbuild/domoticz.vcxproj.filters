@@ -1331,6 +1331,18 @@
     <None Include="..\www\secpanel\css\style.css">
       <Filter>www\secpanel\css</Filter>
     </None>
+    <None Include="..\www\app\DeviceLightEdit.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DummyController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\TemperatureCustomLogController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\TimerplanController.js">
+      <Filter>www\app</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

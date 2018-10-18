@@ -118,11 +118,13 @@
     <None Include="..\www\app\CamController.js" />
     <None Include="..\www\app\CustomIconsController.js" />
     <None Include="..\www\app\DashboardController.js" />
+    <None Include="..\www\app\DeviceLightEdit.js" />
     <None Include="..\www\app\DevicesController.js" />
     <None Include="..\www\app\DPFibaroController.js" />
     <None Include="..\www\app\DPGooglePubSubController.js" />
     <None Include="..\www\app\DPHttpController.js" />
     <None Include="..\www\app\DPInfluxController.js" />
+    <None Include="..\www\app\DummyController.js" />
     <None Include="..\www\app\EventsController.js" />
     <None Include="..\www\app\FloorplanController.js" />
     <None Include="..\www\app\FloorplanEditController.js" />
@@ -144,6 +146,8 @@
     <None Include="..\www\app\ScenesController.js" />
     <None Include="..\www\app\SetupController.js" />
     <None Include="..\www\app\TemperatureController.js" />
+    <None Include="..\www\app\TemperatureCustomLogController.js" />
+    <None Include="..\www\app\TimerplanController.js" />
     <None Include="..\www\app\UpdateController.js" />
     <None Include="..\www\app\UsersController.js" />
     <None Include="..\www\app\UserVariablesController.js" />

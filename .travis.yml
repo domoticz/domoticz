@@ -29,7 +29,7 @@ before_install:
 # Build matrix definition
 # * Two builds
 #   1. Linux x86_64
-#   2. Apple OSX
+#   2. Apple OSX (Disabled until someone wants to correct it)
 matrix:
   include:
   # Linux x86_64
@@ -72,23 +72,23 @@ matrix:
       - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
   # Apple OSX
-  - os: osx
-    osx_image: xcode8.3
-    #compiler:
-    #  - gcc
-    env:
-          - TARGET_ARCHITECTURE=x86_64
-    install:
-      - brew install boost|| true
-      - brew install zlib || true
-      - brew install openssl
-      - brew link openssl --force
-      - brew install md5sha1sum
-      - brew upgrade python
-      - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
-    script:
-      - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
-      - make
+  # - os: osx
+  #   osx_image: xcode8.3
+  #   #compiler:
+  #   #  - gcc
+  #   env:
+  #         - TARGET_ARCHITECTURE=x86_64
+  #   install:
+  #     - brew install boost|| true
+  #     - brew install zlib || true
+  #     - brew install openssl
+  #     - brew link openssl --force
+  #     - brew install md5sha1sum
+  #     - brew upgrade python
+  #     - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
+  #   script:
+  #     - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
+  #     - make
 
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
