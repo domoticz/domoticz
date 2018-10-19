@@ -142,17 +142,17 @@ bool DomoticzTCP::ConnectInternal()
 		_log.Log(LOG_ERROR, "Domoticz: TCP could not create a TCP/IP socket!");
 		return false;
 	}
-	/*
-		//Set socket timeout to 2 minutes
+
+	// Set socket timeout to 10 seconds for reasonable shutdown delay
 	#if !defined WIN32
 		struct timeval tv;
-		tv.tv_sec = 120;
+		tv.tv_sec = 10;
 		setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
 	#else
-		unsigned long nTimeout = 120*1000;
+		unsigned long nTimeout = 10*1000;
 		setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
 	#endif
-	*/
+
 	// connect to the server
 	int nRet;
 	nRet = connect(m_socket, info->ai_addr, info->ai_addrlen);
@@ -195,13 +195,14 @@ void DomoticzTCP::Do_Work()
 	{
 		if (m_socket == INVALID_SOCKET)
 		{
-			if (!IsStopRequested(900)) //+100 = 1 second
+			if (IsStopRequested(900)) //+100 = 1 second
 			{
+				break;
 			}
-			sleep_seconds(1);
 			sec_counter++;
 
-			if (sec_counter % 12 == 0) {
+			if (sec_counter % 12 == 0)
+			{
 				mytime(&m_LastHeartbeat);
 			}
 
@@ -217,21 +218,24 @@ void DomoticzTCP::Do_Work()
 		}
 		else
 		{
-			//this could take a long time... maybe there will be no data received at all,
-			//so it's no good to-do the heartbeat timing here
 			m_LastHeartbeat = mytime(NULL);
-
 			int bread = recv(m_socket, (char*)&buf, sizeof(buf), 0);
-			if (IsStopRequested(10))
-				break;
-			if (bread <= 0) {
+			if ((bread < 0) && (errno != EAGAIN))
+			{
 				disconnectTCP();
 				_log.Log(LOG_ERROR, "Domoticz: TCP/IP connection closed!, retrying in %d seconds...", RETRY_DELAY);
 				m_retrycntr = 0;
 				continue;
 			}
-			std::lock_guard<std::mutex> l(readQueueMutex);
-			onInternalMessage((const unsigned char *)&buf, bread, false); // Do not check validity, this might be non RFX-message
+			if (IsStopRequested(10))
+			{
+				break;
+			}
+			if (bread > 0)
+			{
+				std::lock_guard<std::mutex> l(readQueueMutex);
+				onInternalMessage((const unsigned char *)&buf, bread, false); // Do not check validity, this might be non RFX-message
+			}
 		}
 	}
 	disconnectTCP();
