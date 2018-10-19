@@ -86,7 +86,7 @@ public:
 		const _eHardwareTypes Type,
 		const std::string &Address, const unsigned short Port, const std::string &SerialPort,
 		const std::string &Username, const std::string &Password,
-		const std::string &Filename,
+		const std::string &Extra,
 		const int Mode1,
 		const int Mode2,
 		const int Mode3,

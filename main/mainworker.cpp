@@ -644,7 +644,7 @@ bool MainWorker::AddHardwareFromParams(
 	const _eHardwareTypes Type,
 	const std::string &Address, const unsigned short Port, const std::string &SerialPort,
 	const std::string &Username, const std::string &Password,
-	const std::string &Filename,
+	const std::string &Extra,
 	const int Mode1,
 	const int Mode2,
 	const int Mode3,
@@ -667,16 +667,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
 	case HTYPE_RFXtrx868:
-		pHardware = new RFXComSerial(ID, SerialPort, 38400, false);
-		break;
-	case HTYPE_RFXtrx433_Pro_XL:
-		pHardware = new RFXComSerial(ID, SerialPort, 38400, true);
+		pHardware = new RFXComSerial(ID, SerialPort, 38400, Extra);
 		break;
 	case HTYPE_RFXLAN:
-		pHardware = new RFXComTCP(ID, Address, Port, false);
-		break;
-	case HTYPE_RFXLAN_XL:
-		pHardware = new RFXComTCP(ID, Address, Port, true);
+		pHardware = new RFXComTCP(ID, Address, Port, Extra);
 		break;
 	case HTYPE_P1SmartMeter:
 		pHardware = new P1MeterSerial(ID, SerialPort, (Mode1 == 1) ? 115200 : 9600, (Mode2 != 0), Mode3);
@@ -724,10 +718,10 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Meteostick(ID, SerialPort, 115200);
 		break;
 	case HTYPE_EVOHOME_SERIAL:
-		pHardware = new CEvohomeSerial(ID, SerialPort, Mode1, Filename);
+		pHardware = new CEvohomeSerial(ID, SerialPort, Mode1, Extra);
 		break;
 	case HTYPE_EVOHOME_TCP:
-		pHardware = new CEvohomeTCP(ID, Address, Port, Filename);
+		pHardware = new CEvohomeTCP(ID, Address, Port, Extra);
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
@@ -766,7 +760,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MySensorsMQTT:
 		//LAN
-		pHardware = new MySensorsMQTT(ID, Name, Address, Port, Username, Password, Filename, Mode1);
+		pHardware = new MySensorsMQTT(ID, Name, Address, Port, Username, Password, Extra, Mode1);
 		break;
 	case HTYPE_RFLINKTCP:
 		//LAN
@@ -778,7 +772,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode1);
 		break;
 	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
@@ -833,7 +827,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
-		pHardware = new C1Wire(ID, Mode1, Mode2, Filename);
+		pHardware = new C1Wire(ID, Mode1, Mode2, Extra);
 		break;
 	case HTYPE_Pinger:
 		//System Alive Checker (Ping)
@@ -919,7 +913,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CWunderground(ID, Username, Password);
 		break;
 	case HTYPE_HTTPPOLLER:
-		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
+		pHardware = new CHttpPoller(ID, Username, Password, Address, Extra, Port);
 		break;
 	case HTYPE_DarkSky:
 		pHardware = new CDarkSky(ID, Username, Password);
@@ -952,7 +946,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CNest(ID, Username, Password);
 		break;
 	case HTYPE_Nest_OAuthAPI:
-		pHardware = new CNestOAuthAPI(ID, Username, Filename);
+		pHardware = new CNestOAuthAPI(ID, Username, Extra);
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
@@ -1036,7 +1030,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_PythonPlugin:
 #ifdef ENABLE_PYTHON
-		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
+		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Extra);
 #endif
 		break;
 	case HTYPE_XiaomiGateway:
@@ -1055,7 +1049,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
-		pHardware = new CRtl433(ID, Filename);
+		pHardware = new CRtl433(ID, Extra);
 		break;
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
@@ -1074,7 +1068,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_TTN_MQTT:
 		//LAN
-		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Filename);
+		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
 	}
 
@@ -1753,9 +1747,7 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 		(pHardware->HwdType != HTYPE_RFXtrx315) &&
 		(pHardware->HwdType != HTYPE_RFXtrx433) &&
 		(pHardware->HwdType != HTYPE_RFXtrx868) &&
-		(pHardware->HwdType != HTYPE_RFXtrx433_Pro_XL) &&
-		(pHardware->HwdType != HTYPE_RFXLAN) &&
-		(pHardware->HwdType != HTYPE_RFXLAN_XL)
+		(pHardware->HwdType != HTYPE_RFXLAN)
 		)
 	{
 		//enable receive
@@ -2591,6 +2583,11 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 					pMyHardware->m_NoiseLevel = NoiseLevel;
 					sprintf(szTmp, "Noise Level: %d dB", pMyHardware->m_NoiseLevel);
 					WriteMessage(szTmp);
+				}
+				if (FWType == FWtypeProXL1)
+				{
+					CRFXBase::_eRFXAsyncType AsyncType = (CRFXBase::_eRFXAsyncType)atoi(pMyHardware->m_sExtraData.c_str());
+					pMyHardware->SetAsyncType(AsyncType);
 				}
 			}
 
@@ -9164,10 +9161,8 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 		volt = (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
 		if (
 			(HwdType == HTYPE_RFXLAN) ||
-			(HwdType == HTYPE_RFXLAN_XL) ||
 			(HwdType == HTYPE_RFXtrx315) ||
 			(HwdType == HTYPE_RFXtrx433) ||
-			(HwdType == HTYPE_RFXtrx433_Pro_XL) ||
 			(HwdType == HTYPE_RFXtrx868)
 			)
 		{
@@ -10567,7 +10562,8 @@ void MainWorker::decode_ASyncData(const int HwdID, const _eHardwareTypes HwdType
 
 	if (
 		(pHardware->m_HwdID == 999)||
-		(pHardware->HwdType == HTYPE_RFXtrx433_Pro_XL)
+		(pHardware->HwdType == HTYPE_RFXtrx315) ||
+		(pHardware->HwdType == HTYPE_RFXLAN)
 		)
 	{
 		CRFXBase *pRFXBase = reinterpret_cast<CRFXBase*>(pHardware);

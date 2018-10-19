@@ -9,7 +9,7 @@
 class RFXComSerial: public CRFXBase, AsyncSerial
 {
 public:
-	RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate, const bool bIsXL);
+	RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate, const std::string &ExtraData);
     ~RFXComSerial();
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	bool UploadFirmware(const std::string &szFilename);

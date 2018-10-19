@@ -59,12 +59,12 @@ const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 //
 //Class RFXComSerial
 //
-RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate, const bool bIsXL) :
+RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate, const std::string &ExtraData) :
 	m_szSerialPort(devname)
 {
 	m_HwdID = ID;
 	m_iBaudRate = baud_rate;
-	m_bIsXL = bIsXL;
+	m_sExtraData = ExtraData;
 
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
@@ -891,11 +891,7 @@ namespace http {
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
 					if (pHardware == NULL)
 					{
-						pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433_Pro_XL);
-						if (pHardware == NULL)
-						{
-							return;
-						}
+						return;
 					}
 				}
 			}
@@ -915,8 +911,7 @@ namespace http {
 			if (
 				(pHardware->HwdType == HTYPE_RFXtrx315) ||
 				(pHardware->HwdType == HTYPE_RFXtrx433) ||
-				(pHardware->HwdType == HTYPE_RFXtrx868) ||
-				(pHardware->HwdType == HTYPE_RFXtrx433_Pro_XL)
+				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
 				RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
@@ -939,8 +934,7 @@ namespace http {
 			}
 			std::vector<std::vector<std::string> > result;
 
-			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, [Type] FROM Hardware WHERE (ID='%q')",
-				idx.c_str());
+			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, [Type] FROM Hardware WHERE (ID='%q')", idx.c_str());
 			if (result.empty())
 				return;
 
@@ -995,6 +989,15 @@ namespace http {
 				{
 					CRFXBase *pBase = reinterpret_cast<CRFXBase *>(pHardware);
 					pBase->SetRFXCOMHardwaremodes(Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
+
+					if (pBase->m_Version.find("Pro XL") != std::string::npos)
+					{
+						std::string AsyncMode = request::findValue(&req, "combo_rfx_xl_async_type");
+						if (AsyncMode == "")
+							AsyncMode = "0";
+						result = m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", AsyncMode.c_str(), idx.c_str());
+						pBase->SetAsyncType((CRFXBase::_eRFXAsyncType)atoi(AsyncMode.c_str()));
+					}
 				}
 			}
 			else
@@ -1021,10 +1024,6 @@ namespace http {
 				if (pHardware == NULL)
 				{
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
-					if (pHardware == NULL)
-					{
-						pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433_Pro_XL);
-					}
 				}
 			}
 			if (pHardware != NULL)
@@ -1032,8 +1031,7 @@ namespace http {
 				if (
 					(pHardware->HwdType == HTYPE_RFXtrx315) ||
 					(pHardware->HwdType == HTYPE_RFXtrx433) ||
-					(pHardware->HwdType == HTYPE_RFXtrx868) ||
-					(pHardware->HwdType == HTYPE_RFXtrx433_Pro_XL)
+					(pHardware->HwdType == HTYPE_RFXtrx868)
 					)
 				{
 					RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);

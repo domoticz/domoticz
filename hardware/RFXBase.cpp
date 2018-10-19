@@ -9,7 +9,6 @@ CRFXBase::CRFXBase()
 {
 	m_NoiseLevel = 0;
 	m_AsyncType = ATYPE_UNKNOWN;
-	m_bIsXL = false;
 }
 
 CRFXBase::~CRFXBase()
@@ -161,17 +160,23 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 	return false;
 }
 
-void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
+void CRFXBase::SetAsyncType(_eRFXAsyncType const AsyncType)
 {
 	m_AsyncType = AsyncType;
+	Set_Async_Parameters(m_AsyncType);
+}
 
+void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
+{
 	tRBUF cmd;
 	cmd.ASYNCPORT.packetlength = sizeof(cmd.ASYNCPORT) - 1;
 	cmd.ASYNCPORT.packettype = pTypeASYNCPORT;
 	cmd.ASYNCPORT.subtype = sTypeASYNCconfig;
 	cmd.ASYNCPORT.seqnbr = m_SeqNr++;
 
-	uint8_t baudrate, parity, databits, stopbits, polarity;
+	uint8_t baudrate = 0, parity = 0, databits = 0, stopbits = 0, polarity = 0;
+	uint8_t cmnd = asyncdisable;
+
 	switch (AsyncType)
 	{
 	case ATYPE_P1_DSMR_1:
@@ -182,6 +187,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		databits = asyncDatabits7;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
+		cmnd = asyncreceiveP1;
 		break;
 	case ATYPE_P1_DSMR_4:
 	case ATYPE_P1_DSMR_5:
@@ -190,6 +196,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		databits = asyncDatabits8;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
+		cmnd = asyncreceiveP1;
 		break;
 	case ATYPE_TELEINFO_1200:
 		baudrate = asyncbaud1200;
@@ -197,6 +204,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		databits = asyncDatabits7;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
+		cmnd = asyncreceiveTeleinfo;
 		break;
 	case ATYPE_TELEINFO_19200:
 		baudrate = asyncbaud19200;
@@ -210,7 +218,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		return; //not handled yet!
 	}
 
-	cmd.ASYNCPORT.cmnd = asyncreceiveP1;
+	cmd.ASYNCPORT.cmnd = cmnd;
 	cmd.ASYNCPORT.baudrate = baudrate;
 	cmd.ASYNCPORT.parity = parity;
 	cmd.ASYNCPORT.databits = databits;

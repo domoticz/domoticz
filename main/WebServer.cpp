@@ -1395,6 +1395,26 @@ namespace http {
 					iDataTimeout
 				);
 			}
+			else if (
+				(htype == HTYPE_RFXtrx433)||
+				(htype == HTYPE_RFXtrx868)
+				)
+			{
+				//No Extra field here, handled in CWebServer::SetRFXCOMMode
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					mode1, mode2, mode3, mode4, mode5, mode6,
+					iDataTimeout
+				);
+			}
 			else {
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1480,7 +1500,7 @@ namespace http {
 				}
 			}
 			else if (
-				(htype == HTYPE_RFXLAN) || (htype == HTYPE_RFXLAN_XL) || (htype == HTYPE_P1SmartMeterLAN) ||
+				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) ||
 				(htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
@@ -1748,6 +1768,27 @@ namespace http {
 						password.c_str(),
 						extra.c_str(),
 						mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+						iDataTimeout,
+						idx.c_str()
+					);
+				}
+				else if (
+					(htype == HTYPE_RFXtrx433) ||
+					(htype == HTYPE_RFXtrx868)
+					)
+				{
+					//No Extra field here, handled in CWebServer::SetRFXCOMMode
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(bEnabled == true) ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						mode1, mode2, mode3, mode4, mode5, mode6,
 						iDataTimeout,
 						idx.c_str()
 					);
@@ -3571,11 +3612,9 @@ namespace http {
 
 						if (
 							(Type == HTYPE_RFXLAN) ||
-							(Type == HTYPE_RFXLAN_XL) ||
 							(Type == HTYPE_RFXtrx315) ||
 							(Type == HTYPE_RFXtrx433) ||
 							(Type == HTYPE_RFXtrx868) ||
-							(Type == HTYPE_RFXtrx433_Pro_XL) ||
 							(Type == HTYPE_EnOceanESP2) ||
 							(Type == HTYPE_EnOceanESP3) ||
 							(Type == HTYPE_Dummy) ||
@@ -11041,6 +11080,8 @@ namespace http {
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
 						continue;
+					if (hType == HTYPE_RESERVED_FOR_YOU_1)
+						continue;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
@@ -11078,9 +11119,7 @@ namespace http {
 							(pHardware->HwdType == HTYPE_RFXtrx315) ||
 							(pHardware->HwdType == HTYPE_RFXtrx433) ||
 							(pHardware->HwdType == HTYPE_RFXtrx868) ||
-							(pHardware->HwdType == HTYPE_RFXtrx433_Pro_XL) ||
-							(pHardware->HwdType == HTYPE_RFXLAN) ||
-							(pHardware->HwdType == HTYPE_RFXLAN_XL)
+							(pHardware->HwdType == HTYPE_RFXLAN)
 							)
 						{
 							CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(pHardware);

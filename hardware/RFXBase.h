@@ -27,10 +27,11 @@ public:
     ~CRFXBase();
 	std::string m_Version;
 	int m_NoiseLevel;
+	std::string m_sExtraData;
 	bool SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
 	void SendResetCommand();
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length) = 0;
-	bool IsXL() { return m_bIsXL; };
+	void SetAsyncType(_eRFXAsyncType const AsyncType);
 protected:
 	void Set_Async_Parameters(const _eRFXAsyncType AsyncType);
 	void Parse_Async_Data(const uint8_t *pData, const int Len);
@@ -47,6 +48,5 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 	bool m_bReceiverStarted;
 	_eRFXAsyncType m_AsyncType;
-	bool m_bIsXL;
 };
 
