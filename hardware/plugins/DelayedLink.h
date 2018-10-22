@@ -300,6 +300,25 @@ namespace Plugins {
 						library = "/usr/local/lib/lib" + sLibrary + "m.so";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
+					// MacOS
+					// look for .dylib in /usr/local/lib
+					if (!shared_lib_)
+					{
+						library = "/usr/local/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// look for .dylib in /Library/Frameworks/Python.framework/Versions/*/lib
+					if (!shared_lib_)
+					{
+						library = "/Library/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// Finally look for .dylib installed by Homebrew
+					if (!shared_lib_)
+					{
+						library = "/usr/local/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
 				}
 				else
 				{
