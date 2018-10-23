@@ -1238,6 +1238,14 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 				bHandleAsBinary = true;
 			}
 		}
+		else if (pDevice->Manufacturer_id == 0x0154)
+		{
+			if ((pDevice->Product_id == 0x0003) && (pDevice->Product_type == 0x0005))
+			{
+				//Special case for the Popp 009501 Flow Stop
+				bHandleAsBinary = true;
+			}
+		}
 	}
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
