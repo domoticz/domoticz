@@ -1716,6 +1716,13 @@ span.evomobile {
 	font-weight: bold;
 }
 
+.page-header {
+	padding: 0;
+	margin: 16px 0;
+	border: none;
+	text-align: center;
+}
+
 tspan {
 	text-decoration: none;
 	text-shadow: none !important;
@@ -1913,11 +1920,23 @@ tspan {
 #rgbw_popup .dimslider, #rgbw_popup .dimslider .white_slider{
    width: calc(100% - 38px) !important;
    margin-left: 6px !important;
-   margin-top: 10px !important;       
+   margin-top: 10px !important;
 }
 
 .device-log-chart {
 	display: block;
 	height: 300px;
 	margin-bottom: 24px;
+}
+
+.no-data {
+	background-color: rgba(0, 0, 0, 0.25);
+	padding: 10px;
+	text-align: center;
+	margin-top: 24px;
+	font-style: italic;
+}
+
+#container-speed > .highcharts-container {
+    overflow: visible !important;
 }

@@ -28,7 +28,6 @@ private:
     void readCallback(const char *data, size_t len);
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	std::string m_szSerialPort;
 	unsigned int m_baudRate;
 

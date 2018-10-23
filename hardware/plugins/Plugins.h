@@ -60,7 +60,6 @@ namespace Plugins {
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		~CPlugin(void);
 
-		bool	IoThreadRequired();
 		int		PollInterval(int Interval = -1);
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
@@ -106,7 +105,6 @@ namespace Plugins {
 		void*				m_SettingsDict;
 		std::string			m_HomeFolder;
 		PluginDebugMask		m_bDebug;
-		bool				m_stoprequested;
 		bool				m_bIsStarting;
 		bool				m_bTracing;
 	};

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../main/StoppableTask.h"
+
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
@@ -8,7 +10,7 @@ class CDomoticzHardwareBase;
 
 namespace Plugins {
 
-	class CPluginSystem
+	class CPluginSystem : public StoppableTask
 	{
 	private:
 		bool	m_bEnabled;
@@ -21,11 +23,9 @@ namespace Plugins {
 		static	std::map<std::string, std::string>		m_PluginXml;
 
 		std::shared_ptr<std::thread> m_thread;
-		volatile bool m_stoprequested;
 		std::mutex m_mutex;
 
 		void Do_Work();
-
 	public:
 		CPluginSystem();
 		~CPluginSystem(void);

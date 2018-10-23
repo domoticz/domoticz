@@ -8,7 +8,6 @@ class MySensorsTCP : public MySensorsBase, ASyncTCP
 public:
 	MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~MySensorsTCP(void);
-	bool isConnected() { return mIsConnected; };
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
@@ -19,12 +18,11 @@ private:
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 
 	void WriteInt(const std::string &sendStr) override;
 
-
 	void Do_Work();
+
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
@@ -32,6 +30,5 @@ protected:
 	void OnError(const boost::system::error_code& error) override;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 };
 

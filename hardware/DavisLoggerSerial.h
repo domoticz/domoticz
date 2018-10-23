@@ -25,7 +25,6 @@ private:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	int m_retrycntr;
 	_eDavisState m_state;
 	int m_statecounter;

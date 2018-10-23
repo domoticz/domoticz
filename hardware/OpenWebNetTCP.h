@@ -90,8 +90,8 @@ private:
 
 	std::shared_ptr<std::thread> m_monitorThread;
 	std::shared_ptr<std::thread> m_heartbeatThread;
-	volatile bool m_stoprequested;
 	volatile uint32_t mask_request_status;
 	int m_heartbeatcntr;
 	csocket* m_pStatusSocket;
+	std::mutex readQueueMutex;
 };

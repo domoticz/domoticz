@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Aeotec ZW111 Nano Dimmer, base on Engineering Spec 3/6/2018
+Aeotec ZW111 Nano Dimmer, base on Engineering Spec 3/6/2018 V2.02
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 https://aeotec.freshdesk.com/helpdesk/attachments/6048080397
 -->
@@ -23,6 +23,79 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6048080397
             <Item label="Always on" value="1"/>
             <Item label="Always off" value="2"/>
         </Value>
+        <Value type="int" index="21" genre="config" label="WallSwipe IR sensor" value="80">
+			<Help>
+				Enable/disable the IR sensor of WallSwipe.
+				(LSB) Value 1.
+				Value 1 = 0, disable the IR Sensor.
+				Value 1 = 1, enable the IR Sensor.
+				Value 2 = 0, Wave Option 1 is selected.
+				Value 2 = 1, Wave Option 2 is selected.
+				Value 3 = 0, disable the scene control functionality for Left/Right wave.
+				Value 3 = 1, enable the scene control functionality for Left/Right wave
+				Value 4 = 0, disable the scene control functionality for all wave actions.
+				Value 4 = 1, enable the scene control functionality for all wave actions.
+			</Help>
+		</Value>
+		<Value type="int" index="64" genre="config" label="WallSwipe button color" value="184549375">
+			<Help>
+				Set the button color of WallSwipe.
+				Value 1= Level.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="65" genre="config" label="WallSwipe LED Up gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is UP.
+				Value 1= Reserved.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="66" genre="config" label="WallSwipe LED Down gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is Down.
+				Value 1= Level.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="67" genre="config" label="WallSwipe LED Left gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is Left.
+				Value 1= Level.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="68" genre="config" label="WallSwipe LED Right gesture action" value="855638015">
+			<Help>
+				Set the LED indication color of WallSwipe when the gesture action is Right.
+				Value 1= Level.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="int" index="69" genre="config" label="WallSwipe Night light" value="184483840">
+			<Help>
+				Set the LED indication color of WallSwipe when it is in Night light state.
+				Value 1= Level.
+				Value 2= the color value of Red.
+				Value 3= the color value of Green.
+				Value 4= the color value of Blue.
+			</Help>
+		</Value>
+		<Value type="short" index="71" genre="config" label="WallSwipe sensitivity" value="0">
+			<Help>
+				Set the sensitivity of WallSwipe.
+			</Help>
+		</Value>
         <Value type="list" index="80" genre="config" label="Notification report association group 1" units="" size="1" value="3">
             <Help>To set which notification would be sent to the associated nodes in association group 1 when the state of output load is changed</Help>
             <Item label="None" value="0"/>
@@ -169,10 +242,10 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6048080397
 			<Item label="Push button" value="3"/>
 			<Item label="Automatic identification mode" value="4"/>
         </Value>
-        <Value type="list" index="122" genre="config" label="Touch panel" units="" min="0" max="5" size="1" value="0" read_only="true">
+        <Value type="byte" index="122" genre="config" label="WallSwipe" units="" min="0" max="1" size="1" value="0" read_only="true">
             <Help>Get the state of touch panel port</Help>
-            <Item label="Not connected" value="0"/>
-            <Item label="Connected" value="5"/>
+            <Item label="Disconnected" value="0"/>
+            <Item label="Connected" value="1"/>
         </Value>
         <Value type="list" index="123" genre="config" label="Control destination for external switch S1" units="" min="0" max="3" size="1" value="3">
             <Help>Set the control destination for external switch S1</Help>

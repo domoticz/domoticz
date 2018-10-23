@@ -524,7 +524,7 @@ ul#noty_topRight_layout_container {
       margin-bottom: 10px;
   }
 }
-/* GZ changed to show history.txt in normal way */ 
+/* GZ changed to show history.txt in normal way */
 /*
 div.log {
   color: #FFF;
@@ -761,7 +761,7 @@ body table#itemtablenotype tr td:first-child+td+td+td+td+td img {
 
 /*bar color behind buttons*/
 body table#itemtable tr td:first-child + td + td + td + td + td + td,
-body table#itemtablenotype tr td:first-child + td + td + td + td + td, 
+body table#itemtablenotype tr td:first-child + td + td + td + td + td,
 body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td,
 body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td,
 body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
@@ -946,4 +946,8 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 }
 .modal-body form {
   color: #000;
+}
+
+.page-header {
+  margin: 12px 0;
 }

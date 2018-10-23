@@ -37,9 +37,7 @@
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
-#ifdef WITH_TELLDUSCORE
 #include "../hardware/Tellstick.h"
-#endif
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/json.h"
@@ -500,6 +498,7 @@ namespace http {
 			RegisterCommandCode("addtimerplan", boost::bind(&CWebServer::Cmd_AddTimerPlan, this, _1, _2, _3));
 			RegisterCommandCode("updatetimerplan", boost::bind(&CWebServer::Cmd_UpdateTimerPlan, this, _1, _2, _3));
 			RegisterCommandCode("deletetimerplan", boost::bind(&CWebServer::Cmd_DeleteTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("duplicatetimerplan", boost::bind(&CWebServer::Cmd_DuplicateTimerPlan, this, _1, _2, _3));
 
 			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2, _3));
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
@@ -662,10 +661,7 @@ namespace http {
 			//thpost.html
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
 #endif
-
-#ifdef WITH_TELLDUSCORE
 			RegisterCommandCode("tellstickApplySettings", boost::bind(&CWebServer::Cmd_TellstickApplySettings, this, _1, _2, _3));
-#endif
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
@@ -1018,8 +1014,6 @@ namespace http {
 				}
 #endif
 				if (ii == HTYPE_PythonPlugin)
-					bDoAdd = false;
-				else if (ii == HTYPE_FreeToUse) //Safe to remove when you changed this type for a new hardware class!
 					bDoAdd = false;
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
@@ -1489,10 +1483,10 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) ||
 				(htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
-				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
+				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_DenkoviSmartdenIPInOut) || (htype == HTYPE_DenkoviDevices) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviHTTPDevices) || (htype == HTYPE_DenkoviTCPDevices) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
 				) {
 				//Lan
 				if (address.empty())
@@ -2418,96 +2412,6 @@ namespace http {
 				aOrder.c_str(), oID.c_str());
 		}
 
-		void CWebServer::Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-			root["status"] = "OK";
-			root["title"] = "GetTimerPlans";
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
-			if (!result.empty())
-			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string name = request::findValue(&req, "name");
-			root["status"] = "OK";
-			root["title"] = "AddTimerPlan";
-			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
-		}
-
-		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string idx = request::findValue(&req, "idx");
-			if (idx.empty())
-				return;
-			std::string name = request::findValue(&req, "name");
-			if (
-				(name.empty())
-				)
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "UpdateTimerPlan";
-
-			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
-		}
-
-		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string idx = request::findValue(&req, "idx");
-			if (idx.empty())
-				return;
-			int iPlan = atoi(idx.c_str());
-			if (iPlan < 1)
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "DeletePlan";
-			m_sql.safe_query("DELETE FROM Timers WHERE (TimerPlan == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM TimerPlans WHERE (ID == '%q')", idx.c_str());
-
-			if (m_sql.m_ActiveTimerPlan == iPlan)
-			{
-				//Set active timer plan to default
-				m_sql.UpdatePreferencesVar("ActiveTimerPlan", 0);
-				m_sql.m_ActiveTimerPlan = 0;
-				m_mainworker.m_scheduler.ReloadSchedules();
-			}
-		}
-
 		void CWebServer::Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
@@ -2905,11 +2809,7 @@ namespace http {
 			int devType = atoi(dtype.c_str());
 			int subType = atoi(dsubtype.c_str());
 
-			std::stringstream sstr;
-
-			uint64_t ulIdx;
-			sstr << idx;
-			sstr >> ulIdx;
+			uint64_t ulIdx = std::strtoull(idx.c_str(), nullptr, 10);
 
 			int invalue = atoi(nvalue.c_str());
 
@@ -3137,26 +3037,12 @@ namespace http {
 						EnergyDivider = float(tValue);
 					}
 
-					unsigned long long powerusage1;
-					unsigned long long powerusage2;
-					unsigned long long powerdeliv1;
-					unsigned long long powerdeliv2;
-					unsigned long long usagecurrent;
-					unsigned long long delivcurrent;
-
-					std::stringstream s_powerusage1(splitresults[0]);
-					std::stringstream s_powerusage2(splitresults[1]);
-					std::stringstream s_powerdeliv1(splitresults[2]);
-					std::stringstream s_powerdeliv2(splitresults[3]);
-					std::stringstream s_usagecurrent(splitresults[4]);
-					std::stringstream s_delivcurrent(splitresults[5]);
-
-					s_powerusage1 >> powerusage1;
-					s_powerusage2 >> powerusage2;
-					s_powerdeliv1 >> powerdeliv1;
-					s_powerdeliv2 >> powerdeliv2;
-					s_usagecurrent >> usagecurrent;
-					s_delivcurrent >> delivcurrent;
+					unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
+					unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
+					unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
+					unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
+					unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
+					unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
 
 					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -4335,7 +4221,7 @@ namespace http {
 						(sunitcode.empty())
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
 						devid = "00" + id;
 					else
 						devid = id;
@@ -4899,7 +4785,7 @@ namespace http {
 						(sunitcode.empty())
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) && (subtype != sTypeIT))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) && (subtype != sTypeIT))
 						devid = "00" + id;
 					else
 						devid = id;
@@ -6725,10 +6611,7 @@ namespace http {
 				{
 					return;
 				}
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				_tColor color;
 
 				std::string json = request::findValue(&req, "color");
@@ -6850,13 +6733,9 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 
 				std::string kelvin = request::findValue(&req, "kelvin");
-
 				double ival = atof(kelvin.c_str());
 				ival = std::max(ival, 0.0);
 				ival = std::min(ival, 100.0);
@@ -6877,11 +6756,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Bright Up", 0, NoColor, false, 0);
 			}
 			else if (cparam == "brightnessdown")
@@ -6896,11 +6771,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, NoColor, false, 0);
 			}
 			else if (cparam == "discomode")
@@ -6915,11 +6786,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, NoColor, false, 0);
 			}
 			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size() == 13)
@@ -6934,11 +6801,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				char szTmp[40];
 				sprintf(szTmp, "Disco Mode %s", cparam.substr(12).c_str());
 				m_mainworker.SwitchLight(ID, szTmp, 0, NoColor, false, 0);
@@ -6955,11 +6818,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Disco Up", 0, NoColor, false, 0);
 			}
 			else if (cparam == "discodown")
@@ -6974,11 +6833,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Disco Down", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speedup")
@@ -6993,11 +6848,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Speed Up", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speeduplong")
@@ -7013,11 +6864,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speeddown")
@@ -7032,12 +6879,7 @@ namespace http {
 					return;
 				}
 
-				//TODO: Simplify with string to uint64 helper here and everywhere..
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speedmin")
@@ -7052,11 +6894,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, NoColor, false, 0);
 			}
 			else if (cparam == "speedmax")
@@ -7071,11 +6909,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, NoColor, false, 0);
 			}
 			else if (cparam == "warmer")
@@ -7090,11 +6924,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Warmer", 0, NoColor, false, 0);
 			}
 			else if (cparam == "cooler")
@@ -7109,11 +6939,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Cooler", 0, NoColor, false, 0);
 			}
 			else if (cparam == "fulllight")
@@ -7128,11 +6954,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Set Full", 0, NoColor, false, 0);
 			}
 			else if (cparam == "nightlight")
@@ -7147,11 +6969,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				m_mainworker.SwitchLight(ID, "Set Night", 0, NoColor, false, 0);
 			}
 			else if (cparam == "whitelight")
@@ -7166,11 +6984,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
-
+				uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
 				//TODO: Change to color with mode=ColorModeWhite and level=100?
 				m_mainworker.SwitchLight(ID, "Set White", 0, NoColor, false, 0);
 			}
@@ -7632,38 +7446,46 @@ namespace http {
 			std::string sCM113DisplayType = request::findValue(&req, "CM113DisplayType");
 			m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(sCM113DisplayType.c_str()));
 
-			std::string WebUserName = request::findValue(&req, "WebUserName");
-			std::string WebPassword = request::findValue(&req, "WebPassword");
-			std::string WebLocalNetworks = request::findValue(&req, "WebLocalNetworks");
-			std::string WebRemoteProxyIPs = request::findValue(&req, "WebRemoteProxyIPs");
-			WebUserName = CURLEncode::URLDecode(WebUserName);
-			WebPassword = CURLEncode::URLDecode(WebPassword);
-			WebLocalNetworks = CURLEncode::URLDecode(WebLocalNetworks);
-			WebRemoteProxyIPs = CURLEncode::URLDecode(WebRemoteProxyIPs);
+			std::string WebUserName = base64_encode(CURLEncode::URLDecode(request::findValue(&req, "WebUserName")));
+			std::string WebPassword = CURLEncode::URLDecode(request::findValue(&req, "WebPassword"));
 
-			if ((WebUserName.empty()) || (WebPassword.empty()))
+			//Get old username/password
+			std::string sOldWebLogin;
+			std::string sOldWebPassword;
+			m_sql.GetPreferencesVar("WebUserName", sOldWebLogin);
+			m_sql.GetPreferencesVar("WebPassword", sOldWebPassword);
+
+			bool bHaveAdminUserPasswordChange = false;
+
+			if ((WebUserName == sOldWebLogin) && (WebPassword.empty()))
 			{
+				//All is OK, no changes
+			}
+			else if (WebUserName.empty() || WebPassword.empty())
+			{
+				//If no Admin User/Password is specified, we clear them
+				if ((!sOldWebLogin.empty()) || (!sOldWebPassword.empty()))
+					bHaveAdminUserPasswordChange = true;
 				WebUserName = "";
 				WebPassword = "";
 			}
-			WebUserName = base64_encode(WebUserName);
-			if (WebPassword.size() != 32)
-			{
-				WebPassword = GenerateMD5Hash(WebPassword);
+			else {
+				if ((WebUserName != sOldWebLogin) || (WebPassword != sOldWebPassword))
+				{
+					bHaveAdminUserPasswordChange = true;
+				}
 			}
 
-			// Invalid sessions of WebUser when his username or password has been changed
-			int nUnusedValue = 0;
-			std::string sOldWebLogin;
-			std::string sOldWebPassword;
-			if (((m_sql.GetPreferencesVar("WebUserName", nUnusedValue, sOldWebLogin)) && (sOldWebLogin != WebUserName))
-				|| ((m_sql.GetPreferencesVar("WebPassword", nUnusedValue, sOldWebPassword)) && (sOldWebPassword != WebPassword)))
+			// Invalid sessions of WebUser when the username or password has been changed
+			if (bHaveAdminUserPasswordChange)
 			{
 				RemoveUsersSessions(sOldWebLogin, session);
+				m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
+				m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
 			}
 
-			m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
-			m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
+			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
+			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks.c_str());
 			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs.c_str());
 
@@ -9520,7 +9342,7 @@ namespace http {
 								total_real *= AddjMulti;
 								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
-								sprintf(szTmp, "%g", total_real);
+								sprintf(szTmp, "%.3f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
 								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
@@ -9538,24 +9360,9 @@ namespace http {
 					}
 					else if (dType == pTypeRFXMeter)
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
+
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
@@ -9582,20 +9389,21 @@ namespace http {
 							uint64_t total_real = total_max - total_min;
 							sprintf(szTmp, "%" PRIu64, total_real);
 
-							float musage = 0;
+							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+							float musage = 0.0f;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f kWh", musage);
 								break;
 							case MTYPE_GAS:
-								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / (WaterDivider / 1000.0f);
+								musage = float(total_real) / (divider / 1000.0f);
 								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
@@ -9619,23 +9427,25 @@ namespace http {
 						root["result"][ii]["ValueUnits"] = "";
 
 						double meteroffset = AddjValue;
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -9656,30 +9466,15 @@ namespace http {
 					}
 					else if ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
 							ValueUnits.assign("");
 						}
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
 						time_t now = mytime(NULL);
@@ -9705,16 +9500,16 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f kWh", musage);
 								break;
 							case MTYPE_GAS:
-								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%" PRIu64, total_real);
@@ -9743,17 +9538,17 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%gm3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -9774,30 +9569,15 @@ namespace http {
 					}
 					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
 							ValueUnits.assign("");
 						}
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
@@ -9825,17 +9605,17 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%gm3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -9856,31 +9636,16 @@ namespace http {
 					}
 					else if (dType == pTypeYouLess)
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
 						float musage = 0;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
 							ValueUnits.assign("");
 						}
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
 						time_t now = mytime(NULL);
@@ -9896,12 +9661,10 @@ namespace http {
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
+							unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd2[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd2[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 
@@ -9910,16 +9673,16 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f kWh", musage);
 								break;
 							case MTYPE_GAS:
-								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
@@ -9937,20 +9700,18 @@ namespace http {
 						if (splitresults.size() < 2)
 							continue;
 
-						unsigned long long total_actual;
-						std::stringstream s_stra(splitresults[0]);
-						s_stra >> total_actual;
+						unsigned long long total_actual = std::strtoull(splitresults[0].c_str(), nullptr, 10);
 						musage = 0;
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							musage = float(total_actual) / EnergyDivider;
+							musage = float(total_actual) / divider;
 							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_GAS:
 						case MTYPE_WATER:
-							musage = float(total_actual) / GasDivider;
+							musage = float(total_actual) / divider;
 							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_COUNTER:
@@ -9964,24 +9725,22 @@ namespace http {
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 
-						unsigned long long acounter;
-						std::stringstream s_str3(sValue);
-						s_str3 >> acounter;
+						unsigned long long acounter = std::strtoull(sValue.c_str(), nullptr, 10);
 						musage = 0;
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							musage = float(acounter) / EnergyDivider;
-							sprintf(szTmp, "%g kWh %s Watt", musage, splitresults[1].c_str());
+							musage = float(acounter) / divider;
+							sprintf(szTmp, "%.3f kWh %s Watt", musage, splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
-							musage = float(acounter) / GasDivider;
-							sprintf(szTmp, "%g m3", musage);
+							musage = float(acounter) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
 							break;
 						case MTYPE_WATER:
-							musage = float(acounter) / WaterDivider;
-							sprintf(szTmp, "%g m3", musage);
+							musage = float(acounter) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
@@ -10043,26 +9802,12 @@ namespace http {
 								EnergyDivider = float(tValue);
 							}
 
-							unsigned long long powerusage1;
-							unsigned long long powerusage2;
-							unsigned long long powerdeliv1;
-							unsigned long long powerdeliv2;
-							unsigned long long usagecurrent;
-							unsigned long long delivcurrent;
-
-							std::stringstream s_powerusage1(splitresults[0]);
-							std::stringstream s_powerusage2(splitresults[1]);
-							std::stringstream s_powerdeliv1(splitresults[2]);
-							std::stringstream s_powerdeliv2(splitresults[3]);
-							std::stringstream s_usagecurrent(splitresults[4]);
-							std::stringstream s_delivcurrent(splitresults[5]);
-
-							s_powerusage1 >> powerusage1;
-							s_powerusage2 >> powerusage2;
-							s_powerdeliv1 >> powerdeliv1;
-							s_powerdeliv2 >> powerdeliv2;
-							s_usagecurrent >> usagecurrent;
-							s_delivcurrent >> delivcurrent;
+							unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
+							unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
+							unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
+							unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
+							unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
+							unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
 
 							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
 							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
@@ -10109,31 +9854,25 @@ namespace http {
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
-								unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
-
-								std::stringstream s_str1(sd2[0]);
-								s_str1 >> total_min_usage_1;
-								std::stringstream s_str2(sd2[1]);
-								s_str2 >> total_min_deliv_1;
-								std::stringstream s_str3(sd2[2]);
-								s_str3 >> total_min_usage_2;
-								std::stringstream s_str4(sd2[3]);
-								s_str4 >> total_min_deliv_2;
+								unsigned long long total_min_usage_1 = std::strtoull(sd2[0].c_str(), nullptr, 10);
+								unsigned long long total_min_deliv_1 = std::strtoull(sd2[1].c_str(), nullptr, 10);
+								unsigned long long total_min_usage_2 = std::strtoull(sd2[2].c_str(), nullptr, 10);
+								unsigned long long total_min_deliv_2 = std::strtoull(sd2[3].c_str(), nullptr, 10);
+								unsigned long long total_real_usage, total_real_deliv;
 
 								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
 								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
 
 								musage = double(total_real_usage) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								sprintf(szTmp, "%.3f kWh", musage);
 								root["result"][ii]["CounterToday"] = szTmp;
 								musage = double(total_real_deliv) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								sprintf(szTmp, "%.3f kWh", musage);
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
 							else
 							{
-								sprintf(szTmp, "%g kWh", 0.0f);
+								sprintf(szTmp, "%.3f kWh", 0.0f);
 								root["result"][ii]["CounterToday"] = szTmp;
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
@@ -10143,7 +9882,6 @@ namespace http {
 					{
 						root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
 
-						float GasDivider = 1000.0f;
 						//get lowest value of today
 						time_t now = mytime(NULL);
 						struct tm ltime;
@@ -10152,6 +9890,8 @@ namespace http {
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 						std::vector<std::vector<std::string> > result2;
+
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						strcpy(szTmp, "0");
 						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
@@ -10164,14 +9904,14 @@ namespace http {
 							uint64_t gasactual = std::stoull(sValue);
 							uint64_t total_real_gas = gasactual - total_min_gas;
 
-							double musage = double(gasactual) / GasDivider;
+							double musage = double(gasactual) / divider;
 							sprintf(szTmp, "%.03f", musage);
 							root["result"][ii]["Counter"] = szTmp;
-							musage = double(total_real_gas) / GasDivider;
+							musage = double(total_real_gas) / divider;
 							sprintf(szTmp, "%.03f m3", musage);
 							root["result"][ii]["CounterToday"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / GasDivider);
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Data"] = szTmp;
 						}
 						else
@@ -10180,7 +9920,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							sprintf(szTmp, "%.03f m3", 0.0f);
 							root["result"][ii]["CounterToday"] = szTmp;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / GasDivider);
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
@@ -10243,7 +9983,7 @@ namespace http {
 							}
 							if (total > 0)
 							{
-								sprintf(szTmp, ", Total: %g kWh", total / 1000.0f);
+								sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0f);
 								strcat(szData, szTmp);
 							}
 							root["result"][ii]["Data"] = szData;
@@ -10274,21 +10014,12 @@ namespace http {
 								sd[0].c_str(), szDate);
 							if (!result2.empty())
 							{
-								float EnergyDivider = 1000.0f;
-								int tValue;
-								if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-								{
-									EnergyDivider = float(tValue);
-								}
-								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								{
-									EnergyDivider *= 100.0;
-								}
+								float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 								std::vector<std::string> sd2 = result2[0];
-								double minimum = atof(sd2[0].c_str()) / EnergyDivider;
+								double minimum = atof(sd2[0].c_str()) / divider;
 
-								sprintf(szData, "%g kWh", total);
+								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
@@ -10300,12 +10031,12 @@ namespace http {
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-								sprintf(szTmp, "%g kWh", total - minimum);
+								sprintf(szTmp, "%.3f kWh", total - minimum);
 								root["result"][ii]["CounterToday"] = szTmp;
 							}
 							else
 							{
-								sprintf(szData, "%g kWh", total);
+								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
@@ -10322,7 +10053,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
-							root["result"][ii]["Options"] = sOptions;  //for alternate Energy Reading
+							root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"];  //for alternate Energy Reading
 						}
 					}
 					else if (dType == pTypeAirQuality)
@@ -10786,12 +10517,10 @@ namespace http {
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								unsigned long long total_min, total_max, total_real;
+								unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
+								unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
+								unsigned long long total_real;
 
-								std::stringstream s_str1(sd2[0]);
-								s_str1 >> total_min;
-								std::stringstream s_str2(sd2[1]);
-								s_str2 >> total_max;
 								total_real = total_max - total_min;
 								sprintf(szTmp, "%llu", total_real);
 							}
@@ -10975,9 +10704,7 @@ namespace http {
 			m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
-			std::stringstream sstridx(idx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -11019,9 +10746,7 @@ namespace http {
 				offaction.c_str(),
 				idx.c_str()
 			);
-			std::stringstream sstridx(idx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -11358,6 +11083,7 @@ namespace http {
 								root["result"][ii]["version"] = pMyHardware->m_Version;
 							else
 								root["result"][ii]["version"] = sd[11];
+							root["result"][ii]["noiselvl"] = pMyHardware->m_NoiseLevel;
 						}
 						else if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP) || (pHardware->HwdType == HTYPE_MySensorsMQTT))
 						{
@@ -11593,10 +11319,7 @@ namespace http {
 							int maxDimLevel = 0;
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
-						std::stringstream sstr;
-						uint64_t dID;
-						sstr << sID;
-						sstr >> dID;
+						uint64_t dID = std::strtoull(sID.c_str(), nullptr, 10);
 						root["result"][ii]["idx"] = dID;
 						root["result"][ii]["name"] = sd[0];
 						root["result"][ii]["code"] = sCode;
@@ -11940,9 +11663,7 @@ namespace http {
 			root["title"] = "RenameDevice";
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			std::stringstream sstridx(sidx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::strtoull(sidx.c_str(), nullptr, 10);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_DEVICE);
 
 #ifdef ENABLE_PYTHON
@@ -11971,9 +11692,7 @@ namespace http {
 			root["title"] = "RenameScene";
 
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
-			std::stringstream sstridx(sidx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
+			uint64_t ullidx = std::strtoull(sidx.c_str(), nullptr, 10);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
@@ -12115,9 +11834,7 @@ namespace http {
 				(name.empty())
 				)
 				return;
-			uint64_t idx = 0;
-			std::stringstream s_str(sidx);
-			s_str >> idx;
+			uint64_t idx = std::strtoull(sidx.c_str(), nullptr, 10);
 
 			m_sql.safe_query("UPDATE MobileDevices SET Name='%q', Active=%d WHERE (ID==%" PRIu64 ")",
 				name.c_str(), (enabled == "true") ? 1 : 0, idx);
@@ -12154,8 +11871,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 
 			std::vector<std::vector<std::string> > result;
@@ -12270,8 +11986,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
 			if (notifications.size() > 0)
@@ -12375,6 +12090,7 @@ namespace http {
 
 			std::string sOptions = base64_decode(request::findValue(&req, "options"));
 			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
+			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
 
 			char szTmp[200];
 
@@ -12589,6 +12305,14 @@ namespace http {
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')",
 					faddjmulti2, idx.c_str());
 			}
+			if (!EnergyMeterMode.empty())
+			{
+				auto options = m_sql.GetDeviceOptions(idx);
+				options["EnergyMeterMode"] = EnergyMeterMode;
+				uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
+				m_sql.SetDeviceOptions(ullidx, options);
+			}
+
 			if (!devoptions.empty())
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID == '%q')", devoptions.c_str(), idx.c_str());
@@ -12611,9 +12335,7 @@ namespace http {
 			// Save device options
 			if (!sOptions.empty())
 			{
-				std::stringstream sstridx(idx);
-				uint64_t ullidx;
-				sstridx >> ullidx;
+				uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
@@ -12724,10 +12446,10 @@ namespace http {
 				{
 					root["WebUserName"] = base64_decode(sValue);
 				}
-				else if (Key == "WebPassword")
-				{
-					root["WebPassword"] = sValue;
-				}
+				//else if (Key == "WebPassword")
+				//{
+				//	root["WebPassword"] = sValue;
+				//}
 				else if (Key == "SecPassword")
 				{
 					root["SecPassword"] = sValue;
@@ -13031,8 +12753,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			std::vector<std::vector<std::string> > result;
 			//First get Device Type/SubType
@@ -13155,8 +12876,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			std::vector<std::vector<std::string> > result;
 
@@ -13185,8 +12905,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			std::vector<std::vector<std::string> > result;
 
@@ -13215,8 +12934,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 
 			std::vector<std::vector<std::string> > result;
@@ -13233,7 +12951,7 @@ namespace http {
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 
-			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
+			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, AddjValue2, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 				idx);
 			if (result.empty())
 				return;
@@ -13261,8 +12979,11 @@ namespace http {
 
 			double AddjValue = atof(result[0][3].c_str());
 			double AddjMulti = atof(result[0][4].c_str());
-			std::string sOptions = result[0][5].c_str();
+			double AddjValue2 = atof(result[0][5].c_str());
+			std::string sOptions = result[0][6].c_str();
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+
+			float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 			std::string dbasetable = "";
 			if (srange == "day") {
@@ -13491,16 +13212,10 @@ namespace http {
 
 								if (nMeterType == 0)
 								{
-									long long actUsage1, actUsage2, actDeliv1, actDeliv2;
-									std::stringstream s_str1(sd[0]);
-									s_str1 >> actUsage1;
-									std::stringstream s_str2(sd[4]);
-									s_str2 >> actUsage2;
-									std::stringstream s_str3(sd[1]);
-									s_str3 >> actDeliv1;
-									std::stringstream s_str4(sd[5]);
-									s_str4 >> actDeliv2;
-
+									long long actUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
+									long long actUsage2 = std::strtoll(sd[4].c_str(), nullptr, 10);
+									long long actDeliv1 = std::strtoll(sd[1].c_str(), nullptr, 10);
+									long long actDeliv2 = std::strtoll(sd[5].c_str(), nullptr, 10);
 									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
 									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
 
@@ -13590,14 +13305,10 @@ namespace http {
 											if (!result2.empty())
 											{
 												std::vector<std::string> sd = result2[0];
-												std::stringstream s_str1(sd[0]);
-												s_str1 >> firstUsage1;
-												std::stringstream s_str2(sd[1]);
-												s_str2 >> firstDeliv1;
-												std::stringstream s_str3(sd[2]);
-												s_str3 >> firstUsage2;
-												std::stringstream s_str4(sd[3]);
-												s_str4 >> firstDeliv2;
+												firstUsage1 = std::strtoll(sd[0].c_str(), nullptr, 10);
+												firstDeliv1 = std::strtoll(sd[1].c_str(), nullptr, 10);
+												firstUsage2 = std::strtoll(sd[2].c_str(), nullptr, 10);
+												firstDeliv2 = std::strtoll(sd[3].c_str(), nullptr, 10);
 												lastDay = ntime.tm_mday;
 											}
 										}
@@ -13941,38 +13652,13 @@ namespace http {
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
 
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
-						if (dType == pTypeP1Gas)
-							GasDivider = 1000;
-						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-							EnergyDivider *= 100.0f;
-
 						//First check if we had any usage in the short log, if not, its probably a meter without usage
 						bool bHaveUsage = true;
 						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
 						if (!result.empty())
 						{
-							std::stringstream s_str1(result[0][0]);
-							long long minValue;
-							s_str1 >> minValue;
-							std::stringstream s_str2(result[0][1]);
-							long long maxValue;
-							s_str2 >> maxValue;
+							long long minValue = std::strtoll(result[0][0].c_str(), nullptr, 10);
+							long long maxValue = std::strtoll(result[0][1].c_str(), nullptr, 10);
 							if ((minValue == 0) && (maxValue == 0))
 							{
 								bHaveUsage = false;
@@ -13996,7 +13682,7 @@ namespace http {
 						{
 							//realtime graph
 							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								EnergyDivider /= 100.0f;
+								divider /= 100.0f;
 						}
 						root["method"] = method;
 						bool bHaveFirstValue = false;
@@ -14039,13 +13725,13 @@ namespace http {
 											{
 											case MTYPE_ENERGY:
 											case MTYPE_ENERGY_GENERATED:
-												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+												sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
-												sprintf(szTmp, "%.3f", TotalValue / GasDivider);
+												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_WATER:
-												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
@@ -14060,9 +13746,7 @@ namespace http {
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
 									}
-									std::stringstream s_str1(sd[0]);
-									long long actValue;
-									s_str1 >> actValue;
+									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
 
 									if (actValue >= ulLastValue)
 										ulLastValue = actValue;
@@ -14081,9 +13765,7 @@ namespace http {
 
 								if (method == 1)
 								{
-									std::stringstream s_str1(sd[1]);
-									long long actValue;
-									s_str1 >> actValue;
+									long long actValue = std::strtoll(sd[1].c_str(), nullptr, 10);
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
@@ -14094,13 +13776,13 @@ namespace http {
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+										sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 										break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+										sprintf(szTmp, "%.2f", TotalValue / divider);
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+										sprintf(szTmp, "%.3f", TotalValue / divider);
 										break;
 									case MTYPE_COUNTER:
 										sprintf(szTmp, "%.1f", TotalValue);
@@ -14121,27 +13803,6 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
-
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
-						if (dType == pTypeP1Gas)
-							GasDivider = 1000.0f;
-						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-							EnergyDivider *= 100.0f;
 
 						int ii = 0;
 
@@ -14179,9 +13840,7 @@ namespace http {
 								{
 									//bars / hour
 
-									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
-									s_str1 >> actValue;
+									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
 
 									std::string actDateTimeHour = sd[1].substr(0, 13);
 									if (actDateTimeHour != LastDateTime)
@@ -14214,13 +13873,13 @@ namespace http {
 												{
 												case MTYPE_ENERGY:
 												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+													sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 													break;
 												case MTYPE_GAS:
-													sprintf(szTmp, "%.3f", TotalValue / GasDivider);
+													sprintf(szTmp, "%.3f", TotalValue / divider);
 													break;
 												case MTYPE_WATER:
-													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+													sprintf(szTmp, "%.3f", TotalValue / divider);
 													break;
 												case MTYPE_COUNTER:
 													sprintf(szTmp, "%.1f", TotalValue);
@@ -14249,9 +13908,7 @@ namespace http {
 								else
 								{
 									//realtime graph
-									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
-									s_str1 >> actValue;
+									unsigned long long actValue = std::strtoull(sd[0].c_str(), nullptr, 10);
 
 									std::string stime = sd[1];
 									struct tm ntime;
@@ -14276,13 +13933,13 @@ namespace http {
 											{
 											case MTYPE_ENERGY:
 											case MTYPE_ENERGY_GENERATED:
-												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+												sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
-												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+												sprintf(szTmp, "%.2f", TotalValue / divider);
 												break;
 											case MTYPE_WATER:
-												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
@@ -14320,13 +13977,13 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+									sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", TotalValue / GasDivider);
+									sprintf(szTmp, "%.3f", TotalValue / divider);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+									sprintf(szTmp, "%.3f", TotalValue / divider);
 									break;
 								case MTYPE_COUNTER:
 									sprintf(szTmp, "%.1f", TotalValue);
@@ -14733,29 +14390,6 @@ namespace http {
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
 
-					float EnergyDivider = 1000.0f;
-					float GasDivider = 100.0f;
-					float WaterDivider = 100.0f;
-					int tValue;
-					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-					{
-						GasDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-					{
-						WaterDivider = float(tValue);
-					}
-					if (dType == pTypeP1Gas)
-						GasDivider = 1000.0f;
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-						EnergyDivider *= 100.0f;
-					//else if (dType==pTypeRFXMeter)
-					//EnergyDivider*=1000.0f;
-
 					char szDateStart[40];
 					char szDateEnd[40];
 					sprintf(szDateEnd, "%04d-%02d-%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
@@ -14792,13 +14426,13 @@ namespace http {
 
 								if ((fDeliv1 != 0) || (fDeliv2 != 0))
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage1 / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage2 / divider);
 								root["result"][ii]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv1 / divider);
 								root["result"][ii]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv2 / divider);
 								root["result"][ii]["r2"] = szTmp;
 								ii++;
 							}
@@ -14823,16 +14457,19 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									//value already set above!
 									break;
 								default:
 									szValue = "0";
@@ -14853,31 +14490,21 @@ namespace http {
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
+							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
+							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
+							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
+							unsigned long long total_real_usage_1, total_real_usage_2;
+							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
+							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
+							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
+							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
+							unsigned long long total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max_usage_1;
-							std::stringstream s_str3(sd[4]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd[5]);
-							s_str4 >> total_max_usage_2;
-
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
-
-							std::stringstream s_str5(sd[2]);
-							s_str5 >> total_min_deliv_1;
-							std::stringstream s_str6(sd[3]);
-							s_str6 >> total_max_deliv_1;
-							std::stringstream s_str7(sd[6]);
-							s_str7 >> total_min_deliv_2;
-							std::stringstream s_str8(sd[7]);
-							s_str8 >> total_max_deliv_2;
 
 							total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
 							total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
@@ -14888,20 +14515,20 @@ namespace http {
 
 							sprintf(szTmp, "%llu", total_real_usage_1);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_usage_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
 							sprintf(szTmp, "%llu", total_real_deliv_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_deliv_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
 							ii++;
@@ -14919,12 +14546,10 @@ namespace http {
 						{
 							std::vector<std::string> sd = result[0];
 
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
+							unsigned long long total_max = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 							std::string szValue = szTmp;
@@ -14932,16 +14557,19 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								//value already set above!
 								break;
 							default:
 								szValue = "0";
@@ -15490,29 +15118,6 @@ namespace http {
 						sValue = sd[1];
 					}
 
-					float EnergyDivider = 1000.0f;
-					float GasDivider = 100.0f;
-					float WaterDivider = 100.0f;
-					int tValue;
-					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-					{
-						GasDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-					{
-						WaterDivider = float(tValue);
-					}
-					if (dType == pTypeP1Gas)
-						GasDivider = 1000.0f;
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-						EnergyDivider *= 100.0f;
-					//				else if (dType==pTypeRFXMeter)
-					//				EnergyDivider*=1000.0f;
-
 					int ii = 0;
 					iPrev = 0;
 					if (dType == pTypeP1Power)
@@ -15553,18 +15158,18 @@ namespace http {
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_1 / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_2 / divider);
 								root["result"][ii]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
 								root["result"][ii]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
 								root["result"][ii]["r2"] = szTmp;
 
 								if (counter_1 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / divider);
 								}
 								else
 								{
@@ -15574,7 +15179,7 @@ namespace http {
 
 								if (counter_2 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / divider);
 								}
 								else
 								{
@@ -15584,7 +15189,7 @@ namespace http {
 
 								if (counter_3 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / divider);
 								}
 								else
 								{
@@ -15594,7 +15199,7 @@ namespace http {
 
 								if (counter_4 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / divider);
 								}
 								else
 								{
@@ -15636,13 +15241,13 @@ namespace http {
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_1 / divider);
 								root["resultprev"][iPrev]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_2 / divider);
 								root["resultprev"][iPrev]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
 								root["resultprev"][iPrev]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
 								root["resultprev"][iPrev]["r2"] = szTmp;
 								iPrev++;
 							}
@@ -16025,7 +15630,7 @@ namespace http {
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 100.0f));
+								sprintf(szTmp, "%.3f", fvalue / (divider / 100.0f));
 								root["counter"] = szTmp;
 							}
 						}
@@ -16035,7 +15640,7 @@ namespace http {
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
+								sprintf(szTmp, "%.3f", fvalue / divider);
 								root["counter"] = szTmp;
 							}
 						}
@@ -16047,13 +15652,13 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", AddjValue + (fvalue / EnergyDivider));
+								sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", AddjValue + (fvalue / GasDivider));
+								sprintf(szTmp, "%.2f", AddjValue + (fvalue / divider));
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", AddjValue + (fvalue / WaterDivider));
+								sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
 								break;
 							default:
 								strcpy(szTmp, "");
@@ -16073,13 +15678,13 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
+									sprintf(szTmp, "%.3f", fvalue / divider);
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", fvalue / GasDivider);
+									sprintf(szTmp, "%.2f", fvalue / divider);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
+									sprintf(szTmp, "%.3f", fvalue / divider);
 									break;
 								default:
 									strcpy(szTmp, "");
@@ -16112,28 +15717,28 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / EnergyDivider));
+										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / GasDivider));
+										sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / WaterDivider));
+										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -16167,15 +15772,15 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
@@ -16226,29 +15831,19 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
-
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max_usage_1;
-							std::stringstream s_str3(sd[4]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd[5]);
-							s_str4 >> total_max_usage_2;
+							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
+							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
+							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
+							unsigned long long total_real_usage_1, total_real_usage_2;
+							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
+							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
+							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
+							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
+							unsigned long long total_real_deliv_1, total_real_deliv_2;
 
 							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
 							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
-
-							std::stringstream s_str5(sd[2]);
-							s_str5 >> total_min_deliv_1;
-							std::stringstream s_str6(sd[3]);
-							s_str6 >> total_max_deliv_1;
-							std::stringstream s_str7(sd[6]);
-							s_str7 >> total_min_deliv_2;
-							std::stringstream s_str8(sd[7]);
-							s_str8 >> total_max_deliv_2;
 
 							total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
 							total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
@@ -16262,20 +15857,20 @@ namespace http {
 
 							sprintf(szTmp, "%llu", total_real_usage_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_usage_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
 							sprintf(szTmp, "%llu", total_real_deliv_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_deliv_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
 							ii++;
@@ -16415,12 +16010,10 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
+							unsigned long long total_max = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 
@@ -16432,7 +16025,7 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 							{
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								root["result"][ii]["v"] = szTmp;
 
 								std::vector<std::string> mresults;
@@ -16442,22 +16035,22 @@ namespace http {
 									sValue = mresults[1];
 								}
 								if (dType == pTypeENERGY)
-									sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / EnergyDivider));
+									sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / divider));
 								else
-									sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider));
+									sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
 							}
 							break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / GasDivider));
+								sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider));
+								sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
@@ -16803,7 +16396,7 @@ namespace http {
 									root["result"][ii]["sx"] = sx;
 									char szTmp[1024];
 									sprintf(szTmp, "%.1f %.1f %.1f", sm, se, sx);
-									_log.Log(LOG_STATUS, szTmp);
+									_log.Log(LOG_STATUS, "%s", szTmp);
 
 								}
 								ii++;
@@ -16981,27 +16574,6 @@ namespace http {
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
 
-					float EnergyDivider = 1000.0f;
-					float GasDivider = 100.0f;
-					float WaterDivider = 100.0f;
-					int tValue;
-					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-					{
-						GasDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-					{
-						WaterDivider = float(tValue);
-					}
-					if (dType == pTypeP1Gas)
-						GasDivider = 1000.0f;
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-						EnergyDivider *= 100.0f;
-
 					int ii = 0;
 					if (dType == pTypeP1Power)
 					{
@@ -17029,9 +16601,9 @@ namespace http {
 
 								if (fDeliv != 0)
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv / divider);
 								root["result"][ii]["v2"] = szTmp;
 								ii++;
 							}
@@ -17055,15 +16627,15 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								}
@@ -17086,29 +16658,20 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max_usage_1;
-							std::stringstream s_str3(sd[4]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd[5]);
-							s_str4 >> total_max_usage_2;
+							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
+							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
+							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
+							unsigned long long total_real_usage;
+
+							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
+							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
+							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
+							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
+							unsigned long long total_real_deliv;
 
 							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
-
-							std::stringstream s_str5(sd[2]);
-							s_str5 >> total_min_deliv_1;
-							std::stringstream s_str6(sd[3]);
-							s_str6 >> total_max_deliv_1;
-							std::stringstream s_str7(sd[6]);
-							s_str7 >> total_min_deliv_2;
-							std::stringstream s_str8(sd[7]);
-							s_str8 >> total_max_deliv_2;
-
 							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
 
 							if (total_real_deliv != 0)
@@ -17118,11 +16681,11 @@ namespace http {
 
 							sprintf(szTmp, "%llu", total_real_usage);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_deliv);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 							ii++;
 							if (bHaveDeliverd)
@@ -17139,12 +16702,10 @@ namespace http {
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							unsigned long long total_min, total_max, total_real;
+							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
+							unsigned long long total_max = std::strtoull(sd[1].c_str(), nullptr, 10);
+							unsigned long long total_real;
 
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 
@@ -17153,15 +16714,15 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							}

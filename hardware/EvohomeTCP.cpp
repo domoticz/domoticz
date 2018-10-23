@@ -7,17 +7,19 @@
 #include "../main/localtime_r.h"
 
 CEvohomeTCP::CEvohomeTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &UserContID) :
-CEvohomeRadio(ID, UserContID), m_szIPAddress(IPAddress), m_usIPPort(usIPPort)
+
+	CEvohomeRadio(ID, UserContID),
+	m_szIPAddress(IPAddress),
+	m_usIPPort(usIPPort)
 {
 }
 
 bool CEvohomeTCP::StopHardware()
 {
-	m_stoprequested=true;
-
 	try {
 		if (m_thread)
 		{
+			RequestStop();
 			m_thread->join();
 			m_thread.reset();
 		}
@@ -26,17 +28,6 @@ bool CEvohomeTCP::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-
 	m_bIsStarted=false;
 	if(m_bDebug && m_pEvoLog)
 	{
@@ -68,61 +59,25 @@ void CEvohomeTCP::Do_Work()
     nStartup = 0;
     nStarts = 0;
 
-	bool bFirstTime = true;
 	int sec_counter = 0;
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
-		time_t atime = mytime(NULL);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat= atime;
+			m_LastHeartbeat= mytime(NULL);
 		}
 
-		if (bFirstTime)
-		{
-			bFirstTime=false;
-			if (mIsConnected)
-			{
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
-			}
-			_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				try {
-					disconnect();
-					close();
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
-				connect(m_szIPAddress, m_usIPPort);
-			}
-            update();
-            Idle_Work();
-		}
+		Idle_Work();
 	}
 	_log.Log(LOG_STATUS,"evohome TCP/IP: TCP/IP Worker stopped...");
 }
 
 void CEvohomeTCP::OnData(const unsigned char *pData, size_t length)
 {
-    std::lock_guard<std::mutex> l(readQueueMutex);
 	try
 	{
 		//_log.Log(LOG_NORM,"evohome: received %ld bytes",len);

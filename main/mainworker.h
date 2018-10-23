@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include <deque>
 #include "WindCalculation.h"
+#include "StoppableTask.h"
 #include "../tcpserver/TCPServer.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
@@ -14,7 +15,7 @@
 #	include "../hardware/plugins/PluginManager.h"
 #endif
 
-class MainWorker
+class MainWorker : public StoppableTask
 {
 public:
 	MainWorker();
@@ -35,7 +36,7 @@ public:
 	CDomoticzHardwareBase* GetHardwareByIDType(const std::string &HwdId, const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
 
-	void HeartbeatUpdate(const std::string &component);
+	void HeartbeatUpdate(const std::string &component, bool critical = true);
 	void HeartbeatRemove(const std::string &component);
 	void HeartbeatCheck();
 
@@ -133,11 +134,12 @@ public:
 	std::vector<std::string> m_webthemes;
 	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
 
+	time_t m_LastHeartbeat = 0;
 private:
 	void HandleAutomaticBackups();
 	uint64_t PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	void HandleLogNotifications();
-	std::map<std::string, time_t > m_componentheartbeats;
+	std::map<std::string, std::pair<time_t, bool> > m_componentheartbeats;
 	std::mutex m_heartbeatmutex;
 
 	std::mutex m_decodeRXMessageMutex;
@@ -169,13 +171,11 @@ private:
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
 #endif
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 
 	time_t m_LastUpdateCheck;
 
-	bool StartThread();
 	void Do_Work();
 	void Heartbeat();
 	void ParseRFXLogFile();
@@ -193,9 +193,9 @@ private:
 	unsigned char get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
-	volatile bool m_stopRxMessageThread;
 	volatile unsigned long m_rxMessageIdx;
 	std::shared_ptr<std::thread> m_rxMessageThread;
+	StoppableTask m_TaskRXMessage;
 	void Do_Work_On_Rx_Messages();
 	struct _tRxQueueItem {
 		std::string Name;

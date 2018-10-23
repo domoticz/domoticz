@@ -46,5 +46,5 @@ private:
 	int m_readBufferSize;
 
 	volatile bool m_bWriting;
-	volatile bool m_stoprequested;
+	std::mutex readQueueMutex;
 };

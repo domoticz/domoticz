@@ -33,7 +33,6 @@ ZWaveBase::ZWaveBase()
 	m_LastRemovedNode = -1;
 	m_ControllerCommandStartTime = 0;
 	m_bInitState = true;
-	m_stoprequested = false;
 }
 
 
@@ -43,8 +42,9 @@ ZWaveBase::~ZWaveBase(void)
 
 bool ZWaveBase::StartHardware()
 {
+	RequestStart();
+
 	m_bInitState=true;
-	m_stoprequested=false;
 	m_updateTime=0;
 	m_LastIncludedNode=0;
 	m_bControllerCommandInProgress=false;
@@ -61,7 +61,7 @@ bool ZWaveBase::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -77,11 +77,8 @@ void ZWaveBase::Do_Work()
 #endif
 	int msec_counter = 0;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
-		if (m_stoprequested)
-			return;
 		msec_counter++;
 		if (msec_counter == 2)
 		{

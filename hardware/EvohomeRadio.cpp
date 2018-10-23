@@ -70,7 +70,6 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string &UserContID)
 	for (int i = 0; i < 2; i++)
 		m_bStartup[i] = true;
 
-	m_stoprequested = false;
 	m_nBufPtr = 0;
 	m_nSendFail = 0;
 	m_nZoneCount = 0;
@@ -119,6 +118,8 @@ void CEvohomeRadio::RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecod
 
 bool CEvohomeRadio::StartHardware()
 {
+	RequestStart();
+
 	if (m_bDebug && !m_pEvoLog)
 	{
 		try
@@ -1633,7 +1634,7 @@ void CEvohomeRadio::PopSendQueue(const CEvohomeMsg &msg)
 
 void CEvohomeRadio::Send()
 {
-	std::lock_guard<std::mutex> rl(readQueueMutex);//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
+	//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
 	if (m_nBufPtr > 0)
 		return;
 	std::lock_guard<std::mutex> sl(m_mtxSend);

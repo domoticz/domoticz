@@ -516,7 +516,11 @@ public:
 	static const char* GetZoneModeName(uint8_t nZoneMode);
 
 	static void LogDate();
-	static void Log(bool bDebug, int nLogLevel, const char* format, ... );
+	static void Log(bool bDebug, int nLogLevel, const char* format, ... )
+#ifdef __GNUC__
+		__attribute__ ((format (printf, 3, 4)))
+#endif
+		;
 	static void Log(const char *szMsg, CEvohomeMsg &msg);
 
 private:

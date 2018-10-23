@@ -29,7 +29,6 @@ m_CAFilename(CAfilename)
 	m_bDoReconnect = false;
 	mosqpp::lib_init();
 
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_publish_topics = (_ePublishTopics)Topics;
 	m_TopicIn = TOPIC_IN;
@@ -43,9 +42,7 @@ MQTT::~MQTT(void)
 
 bool MQTT::StartHardware()
 {
-	StartHeartbeatThread();
-
-	m_stoprequested=false;
+	RequestStart();
 
 	//force connect the next first time
 	m_IsConnected=false;
@@ -55,6 +52,8 @@ bool MQTT::StartHardware()
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "MQTT");
+
+	StartHeartbeatThread();
 	return (m_thread != nullptr);
 }
 
@@ -67,22 +66,12 @@ void MQTT::StopMQTT()
 bool MQTT::StopHardware()
 {
 	StopHeartbeatThread();
-	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	if (m_sDeviceReceivedConnection.connected())
-		m_sDeviceReceivedConnection.disconnect();
-	if (m_sSwitchSceneConnection.connected())
-		m_sSwitchSceneConnection.disconnect();
 	m_IsConnected = false;
 	return true;
 }
@@ -155,7 +144,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
-				_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
 		}
@@ -165,7 +154,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			result = m_sql.safe_query("SELECT Name FROM Scenes WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
-				_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
 		}
@@ -175,7 +164,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			result = m_sql.safe_query("SELECT Name FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
-				_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
 		}
@@ -453,7 +442,7 @@ void MQTT::on_disconnect(int rc)
 {
 	if (rc != 0)
 	{
-		if (!m_stoprequested)
+		if (!IsStopRequested(0))
 		{
 			if (rc == 5)
 			{
@@ -512,16 +501,15 @@ void MQTT::Do_Work()
 	int msec_counter = 0;
 	int sec_counter = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(100))
 	{
-		sleep_milliseconds(100);
 		if (!bFirstTime)
 		{
 			int rc = loop();
 			if (rc) {
 				if (rc != MOSQ_ERR_NO_CONN)
 				{
-					if (!m_stoprequested)
+					if (!IsStopRequested(0))
 					{
 						if (!m_bDoReconnect)
 						{
@@ -562,6 +550,11 @@ void MQTT::Do_Work()
 			}
 		}
 	}
+	if (m_sDeviceReceivedConnection.connected())
+		m_sDeviceReceivedConnection.disconnect();
+	if (m_sSwitchSceneConnection.connected())
+		m_sSwitchSceneConnection.disconnect();
+
 	_log.Log(LOG_STATUS,"MQTT: Worker stopped...");
 }
 

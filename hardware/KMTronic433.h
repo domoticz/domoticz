@@ -17,7 +17,6 @@ private:
 	bool m_bHaveReceived;
 
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	int m_retrycntr;
 	void Do_Work();
 	bool OpenSerialDevice();

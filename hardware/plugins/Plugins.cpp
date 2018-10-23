@@ -41,7 +41,6 @@ namespace Plugins {
 
 	extern std::mutex PluginMutex;	// controls access to the message queue
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
-	extern boost::asio::io_service ios;
 
 	std::mutex PythonMutex;			// controls access to Python
 
@@ -557,7 +556,6 @@ namespace Plugins {
 
 
 	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) :
-		m_stoprequested(false),
 		m_PluginKey(sPluginKey),
 		m_iPollInterval(10),
 		m_Notifier(NULL),
@@ -672,10 +670,9 @@ namespace Plugins {
 				if (PyObject_HasAttrString(pExcept, "text"))
 				{
 					PyObject*		pString = PyObject_GetAttrString(pValue, "text");
-					PyBytesObject*	pBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pString);
-					_log.Log(LOG_ERROR, "(%s) Error Line '%s'", m_Name.c_str(), pBytes->ob_sval);
+					std::string		sUTF = PyUnicode_AsUTF8(pString);
+					_log.Log(LOG_ERROR, "(%s) Error Line '%s'", m_Name.c_str(), sUTF.c_str());
 					Py_XDECREF(pString);
-					Py_XDECREF(pBytes);
 				}
 				else
 				{
@@ -762,7 +759,7 @@ namespace Plugins {
 					Py_XDECREF(pFuncBytes);
 				}
 				if (FileName.length())
-					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%'s, function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
+					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
 				else
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
 			}
@@ -777,21 +774,6 @@ namespace Plugins {
 		if (pExcept) Py_XDECREF(pExcept);
 		if (pValue) Py_XDECREF(pValue);
 		if (pTraceback) Py_XDECREF(pTraceback);
-	}
-
-	bool CPlugin::IoThreadRequired()
-	{
-		std::lock_guard<std::mutex> l(m_TransportsMutex);
-		if (m_Transports.size())
-		{
-			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
-			{
-				CPluginTransport*	pPluginTransport = *itt;
-				if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
-					return true;
-			}
-		}
-		return false;
 	}
 
 	int CPlugin::PollInterval(int Interval)
@@ -835,6 +817,8 @@ namespace Plugins {
 	bool CPlugin::StartHardware()
 	{
 		if (m_bIsStarted) StopHardware();
+
+		RequestStart();
 
 		//	Add start command to message queue
 		m_bIsStarting = true;
@@ -884,31 +868,26 @@ namespace Plugins {
 			// loop on plugin to finish startup
 			while (m_bIsStarting)
 			{
-				int scounter = 0;
-				int timeout = 30;
-				while (m_bIsStarting && (scounter++ < timeout*10))
-				{
-					sleep_milliseconds(100);
-				}
-				if (m_bIsStarting)
-				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after %d seconds", m_Name.c_str(), timeout);
-				}
+				sleep_milliseconds(100);
 			}
 
-			m_stoprequested = true;
+			RequestStop();
+
 			if (m_bIsStarted)
 			{
 				// If we have connections queue disconnects
 				if (m_Transports.size())
 				{
-					std::lock_guard<std::mutex> l(m_TransportsMutex);
+					std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
+					                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
+					std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
 					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 					{
 						CPluginTransport*	pPluginTransport = *itt;
 						// Tell transport to disconnect if required
 						if (pPluginTransport)
 						{
+							//std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 							MessagePlugin(new DisconnectDirective(this, pPluginTransport->Connection()));
 						}
 					}
@@ -918,23 +897,11 @@ namespace Plugins {
 					// otherwise just signal stop
 					MessagePlugin(new onStopCallback(this));
 				}
-			}
 
-			// loop on stop to be processed
-			while (m_bIsStarted)
-			{
-				int scounter = 0;
-				int timeout = 30;
-				while (m_bIsStarted && (scounter++ < timeout*10))
+				// loop on stop to be processed
+				while (m_bIsStarted)
 				{
 					sleep_milliseconds(100);
-				}
-				if (m_bIsStarted)
-				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after %d seconds, flushing event queue...", m_Name.c_str(), timeout);
-
-					ClearMessageQueue();
-					m_bIsStarted = false;
 				}
 			}
 
@@ -967,7 +934,7 @@ namespace Plugins {
 		_log.Log(LOG_STATUS, "(%s) Entering work loop.", m_Name.c_str());
 		m_LastHeartbeat = mytime(NULL);
 		int scounter = m_iPollInterval * 2;
-		while (!m_stoprequested)
+		while (!IsStopRequested(500))
 		{
 			if (!--scounter)
 			{
@@ -980,11 +947,14 @@ namespace Plugins {
 			// Check all connections are still valid, vector could be affected by a disconnect on another thread
 			try
 			{
-				std::lock_guard<std::mutex> l(m_TransportsMutex);
+				std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
+				                                                  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
+				std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
 				if (m_Transports.size())
 				{
 					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 					{
+						//std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 						CPluginTransport*	pPluginTransport = *itt;
 						pPluginTransport->VerifyConnection();
 					}
@@ -994,8 +964,6 @@ namespace Plugins {
 			{
 				_log.Log(LOG_NORM, "(%s) Transport vector changed during %s loop, continuing.", m_Name.c_str(), __func__);
 			}
-
-			sleep_milliseconds(500);
 		}
 
 		_log.Log(LOG_STATUS, "(%s) Exiting work loop.", m_Name.c_str());
@@ -1010,8 +978,6 @@ namespace Plugins {
 	bool CPlugin::Initialise()
 	{
 		m_bIsStarted = false;
-
-		std::lock_guard<std::mutex> l(PythonMutex);
 
 		try
 		{
@@ -1074,7 +1040,6 @@ namespace Plugins {
 			pModState->pPlugin = this;
 
 			//Start worker thread
-			m_stoprequested = false;
 			m_thread = std::make_shared<std::thread>(&CPlugin::Do_Work, this);
 			std::string plugin_name = "Plugin_" + m_PluginKey;
 			SetThreadName(m_thread->native_handle(), plugin_name.c_str());
@@ -1510,8 +1475,8 @@ Error:
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
 			}
 
-			// If transport is not connected there won't be a Disconnect Event so tidy it up here
-			if (!pConnection->pTransport->IsConnected() && !pConnection->pTransport->IsConnecting())
+			// If transport is not going to disconnect asynchronously tidy it up here
+			if (!pConnection->pTransport->AsyncDisconnect())
 			{
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
@@ -1519,7 +1484,7 @@ Error:
 				pConnection->pTransport = NULL;
 
 				// Plugin exiting and all connections have disconnect messages queued
-				if (m_stoprequested && !m_Transports.size())
+				if (IsStopRequested(0) && !m_Transports.size())
 				{
 					MessagePlugin(new onStopCallback(this));
 				}
@@ -1632,7 +1597,7 @@ Error:
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
-			if (m_stoprequested && !m_Transports.size())
+			if (IsStopRequested(0) && !m_Transports.size())
 			{
 				MessagePlugin(new onStopCallback(this));
 			}
@@ -1669,6 +1634,7 @@ Error:
 					{
 						LogPythonException(sHandler);
 					}
+					Py_XDECREF(pReturnValue);
 				}
 				else if (m_bDebug & PDM_QUEUE) _log.Log(LOG_NORM, "(%s) Message handler '%s' not callable, ignored.", m_Name.c_str(), sHandler.c_str());
 			}

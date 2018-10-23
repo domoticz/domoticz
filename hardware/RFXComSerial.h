@@ -22,7 +22,8 @@ private:
 	void Do_Work();
 
 	bool UpgradeFirmware();
-	bool Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry = 3);
+	bool Read_TX_PKT();
+	bool Write_TX_PKT(const unsigned char *pdata, size_t length, int max_retry = 3);
 	bool Handle_RX_PKT(const unsigned char *pdata, size_t length);
 	bool Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string>& fileBuffer);
 	bool EraseMemory(const int StartAddress, const int StopAddress);

@@ -75,7 +75,6 @@ extern std::string szInternalCurrentCommand;
 CHardwareMonitor::CHardwareMonitor(const int ID)
 {
 	m_HwdID = ID;
-	m_stoprequested=false;
 	m_bOutputLog = false;
 	m_lastquerytime = 0;
 #if defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
@@ -108,10 +107,11 @@ bool CHardwareMonitor::StartHardware()
 #endif
 	StopHardware();
 
+	RequestStart();
+
 #ifdef WIN32
 	InitWMI();
 #endif
-	m_stoprequested = false;
 	m_lastquerytime = 0;
 	m_thread = std::make_shared<std::thread>(&CHardwareMonitor::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "HardwareMonitor");
@@ -132,7 +132,7 @@ bool CHardwareMonitor::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -150,9 +150,8 @@ void CHardwareMonitor::Do_Work()
 
 	int msec_counter = 0;
 	int64_t sec_counter = POLL_INTERVAL_CPU - 5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
 		msec_counter++;
 		if (msec_counter == 2)
 		{
@@ -222,16 +221,6 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	gDevice.id = 1;
 	gDevice.floatval1 = Curr;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
-void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypeFan;
-	gDevice.id = 1;
-	gDevice.intval1 = static_cast<int>(Idx);
-	gDevice.intval2 = FanSpeed;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
@@ -355,13 +344,13 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1200;
 		int fanspeed = atoi(devValue.c_str());
-		SendFanSensor(doffset + dindex, fanspeed, devName);
+		SendFanSensor(doffset + dindex, 255, fanspeed, devName);
 	}
 	else if (qType == "Voltage")
 	{
 		doffset = 1300;
 		float volt = static_cast<float>(atof(devValue.c_str()));
-		SendVoltageSensor(0, (uint8_t)(doffset + dindex), 255, volt, devName);
+		SendVoltageSensor(0, (uint32_t)(doffset + dindex), 255, volt, devName);
 	}
 	else if (qType == "Current")
 	{

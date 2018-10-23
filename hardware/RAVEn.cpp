@@ -24,7 +24,8 @@ RAVEn::~RAVEn(void)
 
 bool RAVEn::StartHardware()
 {
-    StartHeartbeatThread();
+	RequestStart();
+
     //Try to open the Serial Port
     try
     {
@@ -50,6 +51,8 @@ bool RAVEn::StartHardware()
     m_bIsStarted = true;
     sOnConnected(this);
 
+	StartHeartbeatThread();
+
     return true;
 }
 
@@ -63,7 +66,6 @@ bool RAVEn::StopHardware()
 
 void RAVEn::readCallback(const char *indata, size_t inlen)
 {
-    std::lock_guard<std::mutex> l(readQueueMutex);
     if (!m_bEnableReceive)
         return; //receiving not enabled
 

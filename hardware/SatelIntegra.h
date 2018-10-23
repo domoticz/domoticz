@@ -73,7 +73,6 @@ private:
 	const unsigned short m_IPPort;
 	const std::string m_IPAddress;
 	int m_pollInterval;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	std::map<unsigned int, const char*> errorCodes;
 	// filled by 0x7F command

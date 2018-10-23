@@ -36,10 +36,6 @@ History :
 #include <iostream>
 #include <string>
 
-#ifdef _DEBUG
-#define DEBUG_TeleinfoSerial
-#endif
-
 CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
 {
 	m_HwdID = ID;
@@ -75,12 +71,15 @@ void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
 	m_counter = 0;
+	m_teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
 }
 
 
 bool CTeleinfoSerial::StartHardware()
 {
-	StartHeartbeatThread();
+	RequestStart();
+
+	Init();
 	//Try to open the Serial Port
 	try
 	{
@@ -89,16 +88,11 @@ bool CTeleinfoSerial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-
-#ifdef DEBUG_TeleinfoSerial
-		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
-#else
-		(void)e;
-#endif
+		_log.Debug(DEBUG_HARDWARE, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 		_log.Log(LOG_STATUS, "Teleinfo: Serial port open failed, let's retry with CharSize:8 ...");
 
-		try	{
-			open(m_szSerialPort,m_iBaudRate,m_iOptParity,boost::asio::serial_port_base::character_size(8));
+		try {
+			open(m_szSerialPort, m_iBaudRate, m_iOptParity, boost::asio::serial_port_base::character_size(8));
 			_log.Log(LOG_STATUS, "Teleinfo: Serial port open successfully with CharSize:8 ...");
 		}
 		catch (...) {
@@ -111,10 +105,11 @@ bool CTeleinfoSerial::StartHardware()
 		_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port!!!");
 		return false;
 	}
+	StartHeartbeatThread();
+
 	setReadCallback(boost::bind(&CTeleinfoSerial::readCallback, this, _1, _2));
 	m_bIsStarted = true;
 	sOnConnected(this);
-	teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
 
 	if (m_bDisableCRC)
 		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", m_Name.c_str());
@@ -127,8 +122,8 @@ bool CTeleinfoSerial::StartHardware()
 
 bool CTeleinfoSerial::StopHardware()
 {
-	terminate();
 	StopHeartbeatThread();
+	terminate();
 	m_bIsStarted = false;
 	return true;
 }
@@ -142,7 +137,6 @@ bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char len
 
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
 	{
 		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", m_Name.c_str());
@@ -157,21 +151,22 @@ void CTeleinfoSerial::MatchLine()
 	std::string label, vString;
 	std::vector<std::string> splitresults;
 	unsigned long value;
-	const char* line = m_buffer;
+	std::string sline(m_buffer);
 
-	#ifdef DEBUG_TeleinfoSerial
-	_log.Log(LOG_NORM,"Frame : #%s#", line);
-	#endif
+	_log.Debug(DEBUG_HARDWARE, "Frame : #%s#", sline.c_str());
 
 	// Is the line we got worth analysing any further?
-	if ((strlen((const char*)&line)<4) || (line[0] == 0x0a))
+	if ((sline.size() < 4) || (sline[0] == 0x0a))
+	{
+		_log.Debug(DEBUG_HARDWARE, "Frame #%s# ignored, too short or irrelevant", sline.c_str());
 		return;
+	}
 
 	// Extract the elements, return if not enough and line is invalid
-	StringSplit(line, " ", splitresults);
-	if (splitresults.size() <3)
+	StringSplit(sline, " ", splitresults);
+	if (splitresults.size() < 3)
 	{
-		_log.Log(LOG_ERROR,"Frame #%s# passed the checksum test but failed analysis", line);
+		_log.Log(LOG_ERROR, "Frame #%s# passed the checksum test but failed analysis", sline.c_str());
 		return;
 	}
 
@@ -179,42 +174,40 @@ void CTeleinfoSerial::MatchLine()
 	vString = splitresults[1];
 	value = atoi(splitresults[1].c_str());
 
-	if (label == "ADCO") teleinfo.ADCO = vString;
-	else if (label == "OPTARIF") teleinfo.OPTARIF = vString;
-	else if (label == "ISOUSC") teleinfo.ISOUSC = value;
+	if (label == "ADCO") m_teleinfo.ADCO = vString;
+	else if (label == "OPTARIF") m_teleinfo.OPTARIF = vString;
+	else if (label == "ISOUSC") m_teleinfo.ISOUSC = value;
 	else if (label == "PAPP")
 	{
-		teleinfo.PAPP = value;
-		teleinfo.withPAPP = true;
+		m_teleinfo.PAPP = value;
+		m_teleinfo.withPAPP = true;
 	}
-	else if (label == "PTEC")  teleinfo.PTEC = vString;
-	else if (label == "IINST") teleinfo.IINST = value;
-	else if (label == "BASE") teleinfo.BASE = value;
-	else if (label == "HCHC") teleinfo.HCHC = value;
-	else if (label == "HCHP") teleinfo.HCHP = value;
-	else if (label == "EJPHPM") teleinfo.EJPHPM = value;
-	else if (label == "EJPHN") teleinfo.EJPHN = value;
-	else if (label == "BBRHCJB") teleinfo.BBRHCJB = value;
-	else if (label == "BBRHPJB") teleinfo.BBRHPJB = value;
-	else if (label == "BBRHCJW") teleinfo.BBRHCJW = value;
-	else if (label == "BBRHPJW") teleinfo.BBRHPJW = value;
-	else if (label == "BBRHCJR") teleinfo.BBRHCJR = value;
-	else if (label == "BBRHPJR") teleinfo.BBRHPJR = value;
-	else if (label == "DEMAIN") teleinfo.DEMAIN = vString;
-	else if (label == "IINST1") teleinfo.IINST1 = value;
-	else if (label == "IINST2") teleinfo.IINST2 = value;
-	else if (label == "IINST3") teleinfo.IINST3 = value;
-	else if (label == "PPOT")  teleinfo.PPOT = value;
+	else if (label == "PTEC")  m_teleinfo.PTEC = vString;
+	else if (label == "IINST") m_teleinfo.IINST = value;
+	else if (label == "BASE") m_teleinfo.BASE = value;
+	else if (label == "HCHC") m_teleinfo.HCHC = value;
+	else if (label == "HCHP") m_teleinfo.HCHP = value;
+	else if (label == "EJPHPM") m_teleinfo.EJPHPM = value;
+	else if (label == "EJPHN") m_teleinfo.EJPHN = value;
+	else if (label == "BBRHCJB") m_teleinfo.BBRHCJB = value;
+	else if (label == "BBRHPJB") m_teleinfo.BBRHPJB = value;
+	else if (label == "BBRHCJW") m_teleinfo.BBRHCJW = value;
+	else if (label == "BBRHPJW") m_teleinfo.BBRHPJW = value;
+	else if (label == "BBRHCJR") m_teleinfo.BBRHCJR = value;
+	else if (label == "BBRHPJR") m_teleinfo.BBRHPJR = value;
+	else if (label == "DEMAIN") m_teleinfo.DEMAIN = vString;
+	else if (label == "IINST1") m_teleinfo.IINST1 = value;
+	else if (label == "IINST2") m_teleinfo.IINST2 = value;
+	else if (label == "IINST3") m_teleinfo.IINST3 = value;
+	else if (label == "PPOT")  m_teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
 	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts.
-	if (m_counter >= m_iBaudRate/600)
+	if (m_counter >= m_iBaudRate / 600)
 	{
 		m_counter = 0;
-		#ifdef DEBUG_TeleinfoSerial
-		_log.Log(LOG_NORM,"(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", m_Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
-		#endif
-		ProcessTeleinfo(teleinfo);
+		_log.Debug(DEBUG_HARDWARE, "(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", m_Name.c_str(), m_teleinfo.PAPP, m_teleinfo.PTEC.c_str());
+		ProcessTeleinfo(m_teleinfo);
 		mytime(&m_LastHeartbeat);// keep heartbeat happy
 	}
 }
@@ -223,7 +216,7 @@ void CTeleinfoSerial::MatchLine()
 void CTeleinfoSerial::ParseData(const char *pData, int Len)
 {
 	int ii = 0;
-	while (ii<Len)
+	while (ii < Len)
 	{
 		const char c = pData[ii];
 
@@ -241,9 +234,10 @@ void CTeleinfoSerial::ParseData(const char *pData, int Len)
 				m_buffer[m_bufferpos] = 0;
 
 			//We process the line only if the checksum is ok and user did not request to bypass CRC verification
-			if ((m_bDisableCRC) || isCheckSumOk(teleinfo.CRCmode1))
+			if ((m_bDisableCRC) || isCheckSumOk(std::string(m_buffer), m_teleinfo.CRCmode1))
+			{
 				MatchLine();
-
+			}
 			m_bufferpos = 0;
 		}
 		else
@@ -254,77 +248,3 @@ void CTeleinfoSerial::ParseData(const char *pData, int Len)
 	}
 }
 
-
-//Example of data received from power meter
-//ADCO 271028237723 C
-//OPTARIF HC.. <
-//ISOUSC 45 ?
-//HCHC 013149843 '
-//HCHP 013016759 3
-//PTEC HP..
-//IINST 002 Y
-//IMAX 049 L
-//PAPP 00450 *
-//HHPHC D /
-//MOTDETAT 000000 B
-
-/* Explanation of the checksum computation issued from the official EDF specification
-
-a "checksum" is calculated on the set of characters from the beginning of the label field to the end of the field given character SP included.
-We first make ??the sum of all ASCII codes of all characters.
-to avoid introduce ASCII (00 to 1F hex) functions, it retains only the six least significant bits of
-result (this translates into a logical AND between the amount previously calculated and 03Fh).
-Finally, we added 20 hexadecimal. The result will always be a printable ASCII character (sign, digit,
-capital letter) of from 0x20 to hexadecimal 0x5F
-
-Le "checksum" est calcule sur l'ensemble des caracteres allant du debut du champ etiquette a la fin du champ
-donnee, caractere SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caracteres. Pour eviter
-d'introduire des fonctions ASCII (00  1F en hexadcimal), on ne conserve que les six bits de poids faible du
-resultat obtenu (cette operation se traduit par un ET logique entre la somme precedemment calculee et 03Fh).
-Enfin, on ajoute 20 en hexadecimal. Le resultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
-lettre majuscule) allant de 20 a 5F en hexadcimal.
-
-Un deuxime mode de calcul existe qui prend aussi le caractre de sparation final dans le calcul.
-*/
-
-bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
-{
-	unsigned int checksum, mode1 = 0x00, mode2 = 0x00;
-	int i;
-	bool line_ok = false;
-
-	checksum = m_buffer[strlen((char*)m_buffer) - 1];
-	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
-	{
-		mode1 += m_buffer[i];
-	}
-	mode2 = ((mode1 + m_buffer[i]) & 0x3F) + 0x20;
-	mode1 = (mode1 & 0x3F) + 0x20;
-
-	if (mode1 == checksum)
-	{
-		line_ok = true;
-		if (isMode1 != (int)true)// This will evaluate to false when isMode still equals to 255 at second run
-		{
-			isMode1 = true;
-			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", m_Name.c_str());
-		}
-	}
-	else if (mode2 == checksum)
-	{
-		line_ok = true;
-		if (isMode1 != false)	 // if this is first run, will still be at 255
-		{
-			isMode1 = false;
-			_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", m_Name.c_str());
-		}
-	}
-	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
-	if (isMode1 != 255)
-		_log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", m_Name.c_str(), m_buffer);
-
-	#ifdef DEBUG_TeleinfoSerial
-	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", m_Name.c_str(), m_buffer);
-	#endif
-	return line_ok;
-}

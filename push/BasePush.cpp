@@ -119,7 +119,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeTRC02_2, "Status" },
 		{ pTypeLighting5, sTypeAoke, "Status" },
 		{ pTypeLighting5, sTypeEurodomest, "Status" },
-		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
+		{ pTypeLighting5, sTypeLivolo1to10, "Status" },
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },

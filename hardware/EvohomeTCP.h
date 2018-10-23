@@ -11,7 +11,8 @@ private:
     bool StopHardware() override;
     virtual void Do_Work() override;
     virtual void Do_Send(std::string str) override;
-    virtual void OnConnect() override;
+    
+	void OnConnect() override;
     void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
 	void OnError(const std::exception e) override;

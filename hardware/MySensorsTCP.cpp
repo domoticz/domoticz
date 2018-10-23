@@ -11,9 +11,7 @@
 MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
 	m_szIPAddress(IPAddress),
 	m_usIPPort(usIPPort),
-	m_retrycntr(RETRY_DELAY),
-	m_stoprequested(false),
-	m_bDoRestart(false)
+	m_retrycntr(RETRY_DELAY)
 {
 	m_HwdID = ID;
 }
@@ -24,12 +22,11 @@ MySensorsTCP::~MySensorsTCP(void)
 
 bool MySensorsTCP::StartHardware()
 {
+	RequestStart();
+
 	m_LineReceived.clear();
 
 	LoadDevicesFromDatabase();
-
-	m_stoprequested = false;
-	m_bDoRestart = false;
 
 	//force connect the next first time
 	m_retrycntr = RETRY_DELAY;
@@ -44,30 +41,13 @@ bool MySensorsTCP::StartHardware()
 
 bool MySensorsTCP::StopHardware()
 {
-	m_stoprequested = true;
 	StopSendQueue();
-	if (isConnected())
+	if (m_thread)
 	{
-		try {
-			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
-	{
-		//Don't throw from a Stop command
-	}
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -75,7 +55,6 @@ bool MySensorsTCP::StopHardware()
 void MySensorsTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS, "MySensors: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart = false;
 	m_bIsStarted = true;
 	m_LineReceived.clear();
 
@@ -89,55 +68,39 @@ void MySensorsTCP::OnConnect()
 void MySensorsTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS, "MySensors: disconnected");
-	if (!m_stoprequested)
-		m_bDoRestart = true;
 }
 
 void MySensorsTCP::Do_Work()
 {
 	bool bFirstTime = true;
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat = mytime(NULL);
 		}
 
-		if (bFirstTime)
+		if (isConnected())
 		{
-			bFirstTime = false;
-			_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-			connect(m_szIPAddress, m_usIPPort);
-		}
-		else
-		{
-			time_t atime = time(NULL);
-			if ((m_bDoRestart) && (atime % 30 == 0))
+			if (sec_counter % 10 == 0)
 			{
-				_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				connect(m_szIPAddress, m_usIPPort);
-			}
-			update();
-			if (isConnected())
-			{
-				if (sec_counter % 10 == 0)
-				{
-					//Send a Heartbeat message
-					std::string sRequest = "0;0;3;0;18;PING\n";
-					WriteInt(sRequest);
-				}
+				//Send a Heartbeat message
+				std::string sRequest = "0;0;3;0;18;PING\n";
+				WriteInt(sRequest);
 			}
 		}
 	}
+	terminate();
+
 	_log.Log(LOG_STATUS, "MySensors: TCP/IP Worker stopped...");
 }
 
 void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
 
@@ -171,7 +134,7 @@ void MySensorsTCP::OnError(const boost::system::error_code& error)
 
 void MySensorsTCP::WriteInt(const std::string &sendStr)
 {
-	if (!mIsConnected)
+	if (!isConnected())
 	{
 		return;
 	}

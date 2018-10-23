@@ -22,8 +22,6 @@ History :
 
 class USBtin : public USBtin_MultiblocV8,AsyncSerial
 {
-
-
 public:
 	USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode/*,unsigned int baud_rate = USBTIN_BAUD_RATE*/);
 	~USBtin();
@@ -31,9 +29,7 @@ public:
 	void Restart();
 	unsigned int Bus_CANType;
 	unsigned long switch_id_base;
-
 private:
-	volatile bool m_stoprequested;
 	unsigned int m_EtapeInitCan;
 	int m_USBtinRetrycntr;
 	int m_USBtinBelErrorCount;
@@ -56,7 +52,6 @@ private:
 	void ParseData(const char *pData, int Len);
 	void Init();
 	bool writeFrame(const std::string&) override;
-	void ConfigCanPort();
 	void GetHWVersion();
 	void GetFWVersion();
 	void GetSerialNumber();

@@ -17,10 +17,10 @@
 #include <ctime>
 
 #ifndef WIN32
-	#include <sys/stat.h>
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <pwd.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #endif
 
 #define RETRY_DELAY 30
@@ -60,12 +60,11 @@ const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 //Class RFXComSerial
 //
 RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
-m_szSerialPort(devname)
+	m_szSerialPort(devname)
 {
-	m_HwdID=ID;
-	m_iBaudRate=baud_rate;
+	m_HwdID = ID;
+	m_iBaudRate = baud_rate;
 
-	m_stoprequested=false;
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
 	m_bStartFirmwareUpload = false;
@@ -92,11 +91,13 @@ RFXComSerial::~RFXComSerial()
 
 bool RFXComSerial::StartHardware()
 {
+	RequestStart();
+
 	//return OpenSerialDevice();
 	//somehow retry does not seem to work?!
 	m_bReceiverStarted = false;
 
-	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
+	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
@@ -108,35 +109,29 @@ bool RFXComSerial::StartHardware()
 
 bool RFXComSerial::StopHardware()
 {
-	m_stoprequested=true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-    // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-    sleep_milliseconds(10);
-	if (m_serial.isOpen())
-		m_serial.close();
-	terminate();
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
 void RFXComSerial::Do_Work()
 {
 	int sec_counter = 0;
-	while (!m_stoprequested)
+
+	_log.Log(LOG_STATUS, "RFXCOM: Worker started...");
+
+	while (IsStopRequested(1000) == false)
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(NULL);
 		}
-
-		if (m_stoprequested)
-			break;
 
 		if (m_bStartFirmwareUpload)
 		{
@@ -153,20 +148,21 @@ void RFXComSerial::Do_Work()
 
 		if (!isOpen())
 		{
-			if (m_retrycntr==0)
+			if (m_retrycntr == 0)
 			{
-				_log.Log(LOG_STATUS,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
+				_log.Log(LOG_STATUS, "RFXCOM: retrying in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
-			if (m_retrycntr>=RETRY_DELAY)
+			if (m_retrycntr >= RETRY_DELAY)
 			{
-				m_retrycntr=0;
+				m_retrycntr = 0;
 				OpenSerialDevice();
 			}
 		}
-
 	}
-	_log.Log(LOG_STATUS,"RFXCOM: Serial Worker stopped...");
+	terminate(); //Close serial port (if open)
+
+	_log.Log(LOG_STATUS, "RFXCOM: Worker stopped...");
 }
 
 
@@ -175,26 +171,26 @@ bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
 	//Try to open the Serial Port
 	try
 	{
-		open(m_szSerialPort,m_iBaudRate);
-		_log.Log(LOG_STATUS,"RFXCOM: Using serial port: %s", m_szSerialPort.c_str());
+		open(m_szSerialPort, m_iBaudRate);
+		_log.Log(LOG_STATUS, "RFXCOM: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"RFXCOM: Error opening serial port!");
+		_log.Log(LOG_ERROR, "RFXCOM: Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
 		return false;
 	}
-	catch ( ... )
+	catch (...)
 	{
-		_log.Log(LOG_ERROR,"RFXCOM: Error opening serial port!!!");
+		_log.Log(LOG_ERROR, "RFXCOM: Error opening serial port!!!");
 		return false;
 	}
-	m_bIsStarted=true;
-	m_rxbufferpos=0;
+	m_bIsStarted = true;
+	m_rxbufferpos = 0;
 	setReadCallback(boost::bind(&RFXComSerial::readCallback, this, _1, _2));
 	if (!bIsFirmwareUpgrade)
 		sOnConnected(this);
@@ -329,7 +325,7 @@ bool RFXComSerial::UpgradeFirmware()
 
 			std::stringstream spercentage;
 			spercentage.precision(2);
-			spercentage << std::setprecision(2)  << std::fixed << m_FirmwareUploadPercentage;
+			spercentage << std::setprecision(2) << std::fixed << m_FirmwareUploadPercentage;
 			m_szUploadMessage = saddress.str() + ", " + spercentage.str() + " %";
 			_log.Log(LOG_STATUS, m_szUploadMessage);
 
@@ -435,11 +431,11 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 {
 #ifndef WIN32
 	struct stat info;
-	if (stat(szFilename,&info)==0)
+	if (stat(szFilename, &info) == 0)
 	{
 		struct passwd *pw = getpwuid(info.st_uid);
-		int ret=chown(szFilename,pw->pw_uid,pw->pw_gid);
-		if (ret!=0)
+		int ret = chown(szFilename, pw->pw_uid, pw->pw_gid);
+		if (ret != 0)
 		{
 			m_szUploadMessage = "Error setting firmware ownership (chown returned an error!)";
 			_log.Log(LOG_ERROR, m_szUploadMessage);
@@ -468,7 +464,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	int addrh = 0;
 
 	fileBuffer.clear();
-	std::string dstring="";
+	std::string dstring = "";
 	bool bHaveEOF = false;
 
 	while (!infile.eof())
@@ -526,7 +522,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		}
 		//
 		chksum = ~chksum + 1;
-		if ((chksum != rawLineBuf[raw_length - 1]) || (raw_length<4))
+		if ((chksum != rawLineBuf[raw_length - 1]) || (raw_length < 4))
 		{
 			infile.close();
 			m_szUploadMessage = "RFXCOM: bootloader, checksum mismatch!";
@@ -541,7 +537,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 		case 0:
 			//Data record
-			dstring+= std::string((const char*)&rawLineBuf + 4, (const char*)rawLineBuf + 4 + byte_count);
+			dstring += std::string((const char*)&rawLineBuf + 4, (const char*)rawLineBuf + 4 + byte_count);
 			if (dstring.size() == PKT_writeblock)
 			{
 				dest_address = (((((addrh << 16) | (faddress + byte_count)) - PKT_writeblock)) / PKT_bytesperaddr);
@@ -628,14 +624,14 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 			_log.Log(LOG_ERROR, m_szUploadMessage);
 			return false;
 		}
-		BootAddr+= (PKT_eraseblock * nBlocks);
+		BootAddr += (PKT_eraseblock * nBlocks);
 	}
 	m_szUploadMessage = "RFXCOM: Erasing memory completed....";
 	_log.Log(LOG_STATUS, m_szUploadMessage);
 	return true;
 }
 
-bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry)
+bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, int max_retry)
 {
 	if (!m_serial.isOpen())
 		return false;
@@ -677,29 +673,24 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 		return true;
 	}
 	*/
-	int nretry = 0;
-	unsigned char input_buffer[512];
-	int tot_read;
-
-	while (nretry < max_retry)
+	while (max_retry > 0)
 	{
 		try
 		{
-			m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
-			int rcount = 0;
-			while (rcount < 2)
+			size_t twrite = m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
+			sleep_milliseconds(100);
+			if (twrite == tot_bytes)
 			{
-				sleep_milliseconds(500);
-				tot_read = m_serial.read((uint8_t *)&input_buffer, sizeof(input_buffer));
-				if (tot_read)
+				int rcount = 0;
+				while (rcount < 2)
 				{
-					bool bret=Handle_RX_PKT(input_buffer, tot_read);
-					if (bret)
+					if (Read_TX_PKT())
 						return true;
+					sleep_milliseconds(500);
+					rcount++;
 				}
-				rcount++;
 			}
-			nretry++;
+			max_retry--;
 		}
 		catch (...)
 		{
@@ -707,6 +698,72 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 		}
 	}
 	return m_bHaveRX;
+}
+
+//Reads data from serial port between STX/ETX
+bool RFXComSerial::Read_TX_PKT()
+{
+	uint8_t sbuffer[512];
+	size_t buffer_offset = 0;
+	bool bSTXFound1 = false;
+	bool bSTXFound2 = false;
+	bool bETXFound = false;
+	bool bHadDLE = false;
+	unsigned char chksum = 0;
+	m_rx_tot_bytes = 0;
+	while (m_rx_tot_bytes < sizeof(m_rx_input_buffer))
+	{
+		size_t tot_read = m_serial.read((uint8_t*)&sbuffer, sizeof(sbuffer));
+		if (tot_read <= 0)
+			return false;
+		int ii = 0;
+		while (tot_read > 0)
+		{
+			uint8_t tByte = sbuffer[ii++];
+			if (!bSTXFound1)
+			{
+				if (tByte != PKT_STX)
+					return false;
+				bSTXFound1 = true;
+			}
+			else if (!bSTXFound2)
+			{
+				if (tByte != PKT_STX)
+					return false;
+				bSTXFound2 = true;
+				chksum = 0;
+				bHadDLE = false;
+				m_rx_tot_bytes = 0;
+			}
+			else
+			{
+				//Read data until ETX is found
+				if ((tByte == PKT_ETX) && (!bHadDLE))
+				{
+					chksum = ~chksum + 1; //test checksum
+					if (chksum != 0)
+					{
+						_log.Log(LOG_ERROR, "RFXCOM: bootloader, received response with invalid checksum!");
+						return false;
+					}
+					m_bHaveRX = true;
+					return true;
+				}
+				else if (tByte == PKT_DLE)
+				{
+					bHadDLE = true;
+				}
+				else
+				{
+					bHadDLE = false;
+					chksum += tByte;
+					m_rx_input_buffer[m_rx_tot_bytes++] = tByte;
+				}
+			}
+			tot_read--;
+		}
+	}
+	return ((buffer_offset > 0) && (bETXFound));
 }
 
 bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
@@ -719,9 +776,9 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 	unsigned char chksum = 0;
 	m_rx_tot_bytes = 0;
 	size_t ii = 1;
-//	std::string szRespone = "Received: ";
-//	int jj;
-	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer) - 1))
+	//	std::string szRespone = "Received: ";
+	//	int jj;
+	while ((ii < length) && (m_rx_tot_bytes < sizeof(m_rx_input_buffer) - 1))
 	{
 		unsigned char dbyte = pdata[ii];
 		switch (dbyte)
@@ -753,7 +810,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 			return true;
 			break;
 		case PKT_DLE:
-			dbyte = pdata[ii+1];
+			dbyte = pdata[ii + 1];
 			ii++;
 			if (ii >= length)
 				return false;
@@ -795,7 +852,7 @@ bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 		return false;
 	if (m_bInBootloaderMode)
 		return false;
-	write(pdata,length);
+	write(pdata, length);
 	return true;
 }
 
@@ -820,15 +877,15 @@ namespace http {
 			}
 
 			CDomoticzHardwareBase *pHardware = NULL;
-			if ((!hardwareid.empty()) && (hardwareid!="undefined"))
+			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
 			{
 				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
 			}
-			if (pHardware==NULL)
+			if (pHardware == NULL)
 			{
 				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
-				if (pHardware==NULL)
+				if (pHardware == NULL)
 				{
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
 					if (pHardware == NULL)

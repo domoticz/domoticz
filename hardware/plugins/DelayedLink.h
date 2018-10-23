@@ -79,6 +79,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyList_Append, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_GetItem, PyObject* COMMA Py_ssize_t);
+		DECLARE_PYTHON_SYMBOL(int, PyList_SetItem, PyObject* COMMA Py_ssize_t COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void*, PyModule_GetState, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyState_FindModule, struct PyModuleDef*);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Clear, );
@@ -122,6 +123,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_AddModule, const char*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_SetProfile, Py_tracefunc COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_SetTrace, Py_tracefunc COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Str, PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -197,6 +199,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyList_New);
 					RESOLVE_PYTHON_SYMBOL(PyList_Size);
 					RESOLVE_PYTHON_SYMBOL(PyList_GetItem); 
+					RESOLVE_PYTHON_SYMBOL(PyList_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyList_Append);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
@@ -244,6 +247,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyImport_AddModule);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SetProfile);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SetTrace);
+					RESOLVE_PYTHON_SYMBOL(PyObject_Str);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -294,6 +298,25 @@ namespace Plugins {
 					if (!shared_lib_)
 					{
 						library = "/usr/local/lib/lib" + sLibrary + "m.so";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// MacOS
+					// look for .dylib in /usr/local/lib
+					if (!shared_lib_)
+					{
+						library = "/usr/local/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// look for .dylib in /Library/Frameworks/Python.framework/Versions/*/lib
+					if (!shared_lib_)
+					{
+						library = "/Library/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// Finally look for .dylib installed by Homebrew
+					if (!shared_lib_)
+					{
+						library = "/usr/local/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 				}
@@ -373,6 +396,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyList_New				pythonLib->PyList_New
 #define PyList_Size				pythonLib->PyList_Size
 #define PyList_GetItem			pythonLib->PyList_GetItem
+#define PyList_SetItem			pythonLib->PyList_SetItem
 #define PyList_Append			pythonLib->PyList_Append
 #define PyModule_GetState		pythonLib->PyModule_GetState
 #define PyState_FindModule		pythonLib->PyState_FindModule
@@ -423,4 +447,5 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyImport_AddModule		pythonLib->PyImport_AddModule
 #define PyEval_SetProfile		pythonLib->PyEval_SetProfile
 #define PyEval_SetTrace			pythonLib->PyEval_SetTrace
+#define PyObject_Str			pythonLib->PyObject_Str
 }

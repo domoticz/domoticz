@@ -1,11 +1,12 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "RFXBase.h"
 #if defined WIN32
 #include "ws2tcpip.h"
 #endif
 
-class DomoticzTCP : public CDomoticzHardwareBase
+class DomoticzTCP : public CRFXBase
 {
 public:
 	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
@@ -26,8 +27,6 @@ private:
 	void write(const char *data, size_t size);
 	bool isConnectedTCP();
 	void disconnectTCP();
-	bool StartHardwareTCP();
-	bool StopHardwareTCP();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void writeTCP(const char *data, size_t size);
@@ -48,7 +47,6 @@ private:
 	std::string m_password;
 	int m_retrycntr;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	sockaddr_in6 m_addr;
 	struct addrinfo *info;
 	int m_socket;

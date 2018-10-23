@@ -21,7 +21,6 @@ private:
 	bool StopHardware() override;
 	double m_lastquerytime;
 	void Do_Work();
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	void FetchData();
 	void GetInternalTemperature();
@@ -29,7 +28,6 @@ private:
 	void GetInternalCurrent();
 	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue);
 	void SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname);
-	void SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname);
 #ifdef WIN32
 	bool InitWMI();
 	void ExitWMI();

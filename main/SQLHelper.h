@@ -6,6 +6,7 @@
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
+#include "StoppableTask.h"
 
 #define timer_resolution_hz 25
 
@@ -279,7 +280,7 @@ typedef   std::vector<std::string> TSqlRowQuery;
 // result for an sql query : Vector of TSqlRowQuery
 typedef   std::vector<TSqlRowQuery> TSqlQueryResult;
 
-class CSQLHelper
+class CSQLHelper : public StoppableTask
 {
 public:
 	CSQLHelper(void);
@@ -405,6 +406,8 @@ public:
 	std::map<std::string, std::string> GetDeviceOptions(const std::string & idx);
 	std::string FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap);
 	bool SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & options);
+
+	float GetCounterDivider(const int metertype, const int dType, const float DefaultValue);
 public:
 	std::string m_LastSwitchID;	//for learning command
 	uint64_t m_LastSwitchRowID;
@@ -436,9 +439,8 @@ private:
 	bool			m_bPreviousAcceptNewHardware;
 
 	std::vector<_tTaskItem> m_background_task_queue;
-	std::shared_ptr<std::thread> m_background_task_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;
-	bool m_stoprequested;
 	bool StartThread();
 	void Do_Work();
 

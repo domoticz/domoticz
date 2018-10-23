@@ -29,7 +29,6 @@ private:
 	std::string mRefreshToken;
 	std::string mThermostatID;
 	int mOutsideTemperatureIdx;
-	volatile bool mStopRequested;
 	bool mNeedsTokenRefresh;
 	bool mIsStarted;
 	std::shared_ptr<std::thread> m_thread;

@@ -65,7 +65,6 @@ m_UserName(Username)
 	m_poll_interval = PollInterval;
 	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) != 0;
 	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) != 0;
-	m_stoprequested=false;
 
 	// Catch uninitialised Mode1 entry.
 	if (m_poll_interval < 1)
@@ -91,6 +90,8 @@ void CPhilipsHue::Init()
 
 bool CPhilipsHue::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPhilipsHue::Do_Work, this);
@@ -104,12 +105,12 @@ bool CPhilipsHue::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-    m_bIsStarted=false;
-    return true;
+	m_bIsStarted=false;
+	return true;
 }
 
 
@@ -120,10 +121,8 @@ void CPhilipsHue::Do_Work()
 
 	_log.Log(LOG_STATUS,"Philips Hue: Worker started...");
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
-
 		msec_counter++;
 		if (msec_counter == 2)
 		{
@@ -144,7 +143,6 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
-	//unsigned char subtype = pSen->ICMND.subtype;
 
 	int svalue = 0;
 	int svalue2 = 0;
@@ -152,29 +150,31 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string LCmd = "";
 	int nodeID = 0;
 
-	if (packettype == pTypeLighting2)
+	if (packettype == pTypeGeneralSwitch)
 	{
+		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pSen);
 		//light command
-		nodeID = (pSen->LIGHTING2.id3 << 8) + pSen->LIGHTING2.id4;
-		if ((pSen->LIGHTING2.cmnd == light2_sOff) || (pSen->LIGHTING2.cmnd == light2_sGroupOff))
+		nodeID = static_cast<int>(pSwitch->id);
+		if ((pSwitch->cmnd == gswitch_sOff) || (pSwitch->cmnd == gswitch_sGroupOff))
 		{
 			LCmd = "Off";
 			svalue = 0;
 		}
-		else if ((pSen->LIGHTING2.cmnd == light2_sOn) || (pSen->LIGHTING2.cmnd == light2_sGroupOn))
+		else if ((pSwitch->cmnd == gswitch_sOn) || (pSwitch->cmnd == gswitch_sGroupOn))
 		{
 			LCmd = "On";
 			svalue = 254;
 		}
-		else
+		else if (pSwitch->cmnd == gswitch_sSetLevel)
 		{
+			// From Philips Hue API documentation:
+			// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
 			LCmd = "Set Level";
-			float fvalue = (254.0f / 15.0f)*float(pSen->LIGHTING2.level);
+			float fvalue = (254.0f / 100.0f)*float(pSwitch->level);
 			if (fvalue > 254.0f)
 				fvalue = 254.0f;
 			svalue = round(fvalue);
 		}
-		//_log.Log(LOG_STATUS, "HueBridge state change: svalue = %d, psen-level = %d", svalue, pSen->LIGHTING2.level);
 		SwitchLight(nodeID, LCmd, svalue);
 	}
 	else if (packettype == pTypeColorSwitch)
@@ -516,7 +516,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Already in the system
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
-			bool tIsOn = (nvalue != 0);
 			unsigned sTypeOld = atoi(result[0][3].c_str());
 			std::string sID = result[0][4];
 			if (sTypeOld != sType)
@@ -559,17 +558,14 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			cmd = Color_SetColor;
 		}
 
-		//if (tstate.on != tIsOn) //light was switched, send on or off
-		{
-			//Send as ColorSwitch
-			_tColorSwitch lcmd;
-			lcmd.id = NodeID;
-			lcmd.command = cmd;
-			lcmd.value = tstate.level;
-			lcmd.color = color;
-			lcmd.subtype = sType;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
-		}
+		//Send as ColorSwitch
+		_tColorSwitch lcmd;
+		lcmd.id = NodeID;
+		lcmd.command = cmd;
+		lcmd.value = tstate.level;
+		lcmd.color = color;
+		lcmd.subtype = sType;
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 
 		if (result.empty())
 		{
@@ -618,33 +614,17 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 	}
 	else
 	{
-		//Send as Lighting 2
+		//Send as GeneralSwitch
 		char szID[10];
-		sprintf(szID, "%07X", (unsigned int)NodeID);
+		sprintf(szID, "%08X", (unsigned int)NodeID);
 		unsigned char unitcode = 1;
-		int cmd = (tstate.on ? light2_sOn : light2_sOff);
-		int level = 0;
-		bool tIsOn = !(tstate.on);
-
-		if (LType == HLTYPE_NORMAL)
-			tstate.on ? level = 15 : level = 0;
-		else
-		{
-			float flevel = (15.0f / 100.0f)*float(tstate.level);
-			level = round(flevel);
-			if (level > 15)
-				level = 15;
-			if (level == 0)
-				level += 1; //If brightnesslevel < 6, level = 0 even if light is on
-		}
-		char szLevel[20];
-		sprintf(szLevel, "%d", level);
+		int cmd = (tstate.on ? gswitch_sOn : gswitch_sOff);
 
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
-		//_log.Log(LOG_STATUS, "HueBridge state change: Bri = %d, Level = %d", BrightnessLevel, level);
+		//_log.Log(LOG_STATUS, "HueBridge state change for DeviceID '%s': Level = %d", szID, tstate.level);
 
 		if (result.empty() && !AddMissingDevice)
 			return;
@@ -654,31 +634,19 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Already in the system
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
-			tIsOn = (nvalue != 0);
 		}
 
-		if (tstate.on != tIsOn) //light was switched, send on or off
-		{
-			tRBUF lcmd;
-			memset(&lcmd, 0, sizeof(RBUF));
-			lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-			lcmd.LIGHTING2.packettype = pTypeLighting2;
-			lcmd.LIGHTING2.subtype = sTypeAC;
-			lcmd.LIGHTING2.seqnbr = 1;
-			lcmd.LIGHTING2.id1 = 0;
-			lcmd.LIGHTING2.id2 = 0;
-			lcmd.LIGHTING2.id3 = NodeID >> 8;
-			lcmd.LIGHTING2.id4 = NodeID;
-			lcmd.LIGHTING2.unitcode = unitcode;
-			lcmd.LIGHTING2.cmnd = cmd;
-			lcmd.LIGHTING2.level = level;
-			lcmd.LIGHTING2.filler = 0;
-			lcmd.LIGHTING2.rssi = 12;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
-		}
+		if (tstate.on && (tstate.level != 100))
+			cmd = gswitch_sSetLevel;
 
-		if (tstate.on && (level != 15))
-				cmd = light2_sSetLevel;
+		_tGeneralSwitch lcmd;
+		lcmd.subtype = sSwitchGeneralSwitch;
+		lcmd.id = NodeID;
+		lcmd.unitcode = unitcode;
+		lcmd.cmnd = cmd;
+		lcmd.level = tstate.level;
+		lcmd.seqnbr = 1;
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 
 		if (result.empty())
 		{
@@ -782,25 +750,38 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 			//Lamp with brightness control
 			hasBri = true;
 			int tbri = lightstate["bri"].asInt();
-			tlight.level = int((100.0f / 254.0f)*float(tbri));
+			// Clamp to conform to HUE API
+			tbri = std::max(1, tbri);
+			tbri = std::min(254, tbri);
+			tlight.level = int(ceil((100.0f / 254.0f)*float(tbri)));
 		}
 		if (!lightstate["sat"].empty())
 		{
 			//Lamp with color control
 			hasHueSat = true;
 			tlight.sat = lightstate["sat"].asInt();
+			// Clamp to conform to HUE API
+			tlight.sat = std::max(0, tlight.sat);
+			tlight.sat = std::min(254, tlight.sat);
 		}
 		if (!lightstate["hue"].empty())
 		{
 			//Lamp with color control
 			hasHueSat = true;
 			tlight.hue = lightstate["hue"].asInt();
+			// Clamp to conform to HUE API
+			tlight.hue = std::max(0, tlight.hue);
+			tlight.hue = std::min(65535, tlight.hue);
 		}
 		if (!lightstate["ct"].empty())
 		{
 			//Lamp with color temperature control
 			hasTemp = true;
-			tlight.ct = int((float(lightstate["ct"].asInt())-153.0)/(500.0-153.0));
+			int ct = lightstate["ct"].asInt();
+			// Clamp to conform to HUE API
+			ct = std::max(153, ct);
+			ct = std::min(500, ct);
+			tlight.ct = int((float(ct)-153.0)/(500.0-153.0));
 		}
 		if (!lightstate["xy"].empty())
 		{
