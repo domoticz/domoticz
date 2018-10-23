@@ -27,7 +27,16 @@ distribution.
 
 #include "tinyxml.h"
 #include "tinyxpath_conf.h"
-
+ 
+inline double atof_locale_c (const TIXML_STRING & S_value)
+{
+    double result = 0.0;
+    std::istringstream istr (S_value);
+    istr.imbue (std::locale::classic ());
+    istr >> result;
+    return result;
+}
+ 
 namespace TinyXPath
 {
 
@@ -157,7 +166,7 @@ public :
    /// Get the real value of a node
    double d_get_value (unsigned u_which)
    {
-      return atof (S_get_value (u_which) . c_str ());
+      return atof_locale_c (S_get_value (u_which));
    }
 
    void v_copy_node_children (const TiXmlNode * XNp_root);

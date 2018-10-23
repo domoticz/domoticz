@@ -758,7 +758,7 @@ void xpath_processor::v_execute_one (
                if (! o_skip_only)
                {
                   if (strchr (S_literal . c_str (), '.'))
-                     v_push_double (atof (S_literal . c_str ()));
+                     v_push_double (atof_locale_c (S_literal));
                   else
                      v_push_int (atoi (S_literal . c_str ()), "primary number");
                }

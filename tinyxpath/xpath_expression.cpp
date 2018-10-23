@@ -57,7 +57,7 @@ double expression_result::d_get_double ()
       case e_bool :
          return o_content ? 1.0 : 0.0;
       default :
-         return atof (S_get_string () . c_str ());
+         return atof_locale_c (S_get_string ());
 	}
 }
 
