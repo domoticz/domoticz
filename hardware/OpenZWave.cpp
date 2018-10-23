@@ -1238,7 +1238,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 				bHandleAsBinary = true;
 			}
 		}
-		if (pDevice->Manufacturer_id == 0x0154)
+		else if (pDevice->Manufacturer_id == 0x0154)
 		{
 			if ((pDevice->Product_id == 0x0003) && (pDevice->Product_type == 0x0005))
 			{
