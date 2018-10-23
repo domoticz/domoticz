@@ -7,10 +7,6 @@
 #include "../main/WebServerHelper.h"
 #include "../webserver/proxyclient.h"
 
-#ifdef WIN32
-#define SHUT_RDWR SD_BOTH
-#endif
-
 #define RETRY_DELAY 30
 
 extern http::server::CWebServerHelper m_webservers;
@@ -85,6 +81,13 @@ bool DomoticzTCP::StopHardware()
 void DomoticzTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS, "DomoticzTCP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	if (!m_username.empty())
+	{
+		char szAuth[300];
+		snprintf(szAuth, sizeof(szAuth), "AUTH;%s;%s", m_username.c_str(), m_password.c_str());
+		WriteToHardware((const char*)&szAuth, (const unsigned char)strlen(szAuth));
+	}
+	sOnConnected(this);
 }
 
 void DomoticzTCP::OnDisconnect()
@@ -94,6 +97,11 @@ void DomoticzTCP::OnDisconnect()
 
 void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 {
+	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != 0)
+	{
+		_log.Log(LOG_ERROR, "DomoticzTCP: Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
+		return;
+	}
 	std::lock_guard<std::mutex> l(readQueueMutex);
 	onInternalMessage((const unsigned char *)pData, length, false); // Do not check validity, this might be non RFX-message
 }
@@ -110,52 +118,27 @@ void DomoticzTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::connection_refused) ||
 		(error == boost::asio::error::access_denied) ||
 		(error == boost::asio::error::host_unreachable) ||
-		(error == boost::asio::error::timed_out)
+		(error == boost::asio::error::timed_out) ||
+		(error == boost::asio::error::host_not_found)
 		)
 	{
-		_log.Log(LOG_ERROR, "DomoticzTCP: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "DomoticzTCP: Can not connect to: %s:%d (%s)", m_szIPAddress.c_str(), m_usIPPort, error.message().c_str());
 	}
-	else if (
-		(error == boost::asio::error::eof) ||
-		(error == boost::asio::error::connection_reset)
-		)
-	{
-		_log.Log(LOG_STATUS, "DomoticzTCP: Connection reset!");
-	}
-	else
+	else if (error != boost::asio::error::eof)
 	{
 		_log.Log(LOG_ERROR, "DomoticzTCP: %s", error.message().c_str());
 	}
 }
 
-void DomoticzTCP::ConnectInternal()
-{
-	connect(m_szIPAddress, m_usIPPort);
-	while (!IsStopRequested(1000))
-	{
-		if (ASyncTCP::isConnected())
-			break;
-	}
-
-	if (m_username != "")
-	{
-		char szAuth[300];
-		snprintf(szAuth, sizeof(szAuth), "AUTH;%s;%s", m_username.c_str(), m_password.c_str());
-		WriteToHardware((const char*)&szAuth, (const unsigned char)strlen(szAuth));
-	}
-	sOnConnected(this);
-}
-
 void DomoticzTCP::Do_Work()
 {
+	connect(m_szIPAddress, m_usIPPort);
 	int sec_counter = 0;
-	ConnectInternal();
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		if (sec_counter % 12 == 0) {
+		if (sec_counter % 12 == 0)
 			mytime(&m_LastHeartbeat);
-		}
 	}
 	terminate();
 

@@ -28,7 +28,6 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void ConnectInternal();
 
 #ifndef NOCLOUD
 	bool StartHardwareProxy();
