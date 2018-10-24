@@ -279,6 +279,7 @@ images/RGB48_Sel.png
 images/scale.png
 images/scale48.png
 images/scenes.png
+images/script.png
 images/security.png
 images/security48.png
 images/setup.png
@@ -471,6 +472,20 @@ i18n/domoticz-zh.json
 
 # Scripts
 app/devices/deviceFactory.js
+
+app/events/blockly_blocks_domoticz.js
+app/events/blockly_messages_domoticz_en.js
+app/events/blockly_toolbox.xml
+app/events/blockly_xml_parser.js
+app/events/CurrentStates.html
+app/events/CurrentStates.js
+app/events/Events.css
+app/events/Events.html
+app/events/Events.js
+app/events/EventViewer.html
+app/events/EventViewer.js
+app/events/factories.js
+
 app/log/components.js
 app/log/DeviceLog.js
 app/log/factories.js
@@ -495,12 +510,15 @@ app/report/TemperatureReport.html
 app/report/TemperatureReport.js
 
 app/scenes/factories.js
+
 app/timers/components.js
 app/timers/DeviceTimersController.js
 app/timers/factories.js
 app/timers/SceneTimersController.js
+
 app/AboutController.js
 app/app.js
+app/app.routes.js
 app/CamController.js
 app/CustomIconsController.js
 app/DashboardController.js
@@ -511,7 +529,6 @@ app/DPHttpController.js
 app/DPInfluxController.js
 app/DPGooglePubSubController.js
 app/DummyController.js
-app/EventsController.js
 app/FloorplanController.js
 app/FloorplanEditController.js
 app/ForecastController.js
@@ -538,6 +555,22 @@ app/UserVariablesController.js
 app/UtilityController.js
 app/WeatherController.js
 app/ZWaveTopologyController.js
+
+js/ace/ace.js
+js/ace/ext-language_tools.js
+
+js/blockly/blockly_compressed.js
+js/blockly/blocks_compressed.js
+js/blockly/msg/en.js
+
+js/modules/exporting.js
+
+js/noty/jquery.noty.js
+js/noty/layouts/top.js
+js/noty/layouts/topLeft.js
+js/noty/layouts/topRight.js
+js/noty/themes/default.js
+
 js/angular-animate.min.js
 js/angular-md5-min.js
 js/angular-round-progress-directive.js
@@ -549,8 +582,6 @@ js/angular-websocket.js
 js/angular.min.js
 js/angularAMD.min.js
 js/babel-polyfill-6.26.0.js
-js/blockly_compressed.js
-js/blocks_compressed.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
@@ -559,10 +590,7 @@ js/dataTables.select.min.js
 js/dataTables.tableTools.min.js
 js/date.format.js
 js/domoticz.js
-js/domoticzblocks.js
-js/domoticzblocks_messages_en.js
 js/domoticzdevices.js
-js/en_compressed.js
 js/export-csv.js
 js/FileSaver.js
 js/highcharts-more.js
@@ -581,16 +609,10 @@ js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
 js/jquery.wheelcolorpicker.js
 js/md5.js
-js/modules/exporting.js
 js/ng-grid-flexible-height.js
 js/ng-grid.min.js
 js/ngDraggable.js
 js/ngload.min.js
-js/noty/jquery.noty.js
-js/noty/layouts/top.js
-js/noty/layouts/topLeft.js
-js/noty/layouts/topRight.js
-js/noty/themes/default.js
 js/require.js
 js/respond.min.js
 js/themes/dark-blue.js
@@ -627,7 +649,6 @@ views/dpfibaro.html
 views/dphttp.html
 views/dpinflux.html
 views/dpgooglepubsub.html
-views/events.html
 views/frontpage_example.html
 views/floorplanedit.html
 views/floorplans.html
@@ -652,7 +673,6 @@ views/users.html
 views/utility.html
 views/weather.html
 views/weather_widget.html
-eventsframe.html
 zwavetopology.html
 secpanel/index.html
 views/login.html

@@ -22,7 +22,7 @@ body {
 
 #status, #lastupdate, body table#itemtable tr td:first-child + td + td + td + td + td{color: #5e5d5d;}
 
-body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
+body table#itemtablesmall tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before,
 body table#itemtable tr td:first-child + td + td + td + td:before ,
 body table#itemtablenotype tr td:first-child + td + td + td + td:before,
@@ -34,7 +34,7 @@ body table#mobileitem tr td:first-child + td + td + td + td:before{
  content: "Last seen: " !important;
 }
 
-body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
+body table#itemtablesmall tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before,
 body table#itemtable tr td:first-child + td + td + td + td:before ,
 body table#itemtablenotype tr td:first-child + td + td + td + td:before,
@@ -46,11 +46,15 @@ body table#mobileitem tr td:first-child + td + td + td + td:before{
  content: "Type:"
 
 }
- 
+
 .navbar .nav {margin: 0 !important;}
 
 .ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br {
 border-radius: 0px !important;
+}
+
+#holder > .container-fluid {
+    padding-top: 61px;
 }
 
 #comboroom, #combofloorplan {
@@ -76,10 +80,6 @@ copyright {
 	background-color: #1b1b1b;
 }
 
-.bannercontent {
-	padding-top: 60px !important;
-}
-
 .navbar .nav li a {
     text-decoration: none;
     text-transform: none;
@@ -96,9 +96,9 @@ copyright {
 #timesun {
   text-align: left;
   color: #666;
-} 
+}
 
-#room, 
+#room,
 .room{
     background-color: #444343;
 	color: #666 !important;
@@ -232,7 +232,7 @@ width: 99.5% !important;
 #dashcontent .dimslider {
    width: calc(100% - 8px) !important;
    margin-left: 4px !important;
-   margin-top: 10px !important;       
+   margin-top: 10px !important;
 }
 
 #itemtablesmall .dimslider {
@@ -251,4 +251,8 @@ width: 99.5% !important;
    width: calc(98% - 98px) !important;
    margin-top: 10px !important;
    margin-left: 95px !important;
+}
+
+.events-editor {
+    top: 80px;
 }
