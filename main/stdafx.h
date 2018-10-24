@@ -16,6 +16,7 @@ typedef unsigned char       BYTE;
 //#include <stdlib.h>
 #include <string>
 	#include <sys/socket.h> // Needed for the socket functions
+	#include <sys/time.h>
 	#include <netdb.h>
 	#include <arpa/inet.h>
 	typedef int SOCKET;

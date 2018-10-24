@@ -26,7 +26,6 @@
 	#include <fstream>
 	#include <string>
 	#include <limits>
-	#include <sys/time.h>
 	#include <unistd.h>
 
 	struct _tDUsageStruct
