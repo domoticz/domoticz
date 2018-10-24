@@ -8,6 +8,7 @@
 CRFXBase::CRFXBase()
 {
 	m_NoiseLevel = 0;
+	m_AsyncType = ATYPE_UNKNOWN;
 }
 
 CRFXBase::~CRFXBase()
@@ -40,7 +41,7 @@ bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len,
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
 			if (!checkValid || CheckValidRFXData((uint8_t*)&m_rxbuffer))
-				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, -1);
+				sDecodeRXMessage(this, (const uint8_t*)&m_rxbuffer, NULL, -1);
 			else
 				_log.Log(LOG_ERROR, "RFXCOM: Invalid data received!....");
 
@@ -149,10 +150,99 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return (pLen == 0x0A);
 	case pTypeFS20:
 		return (pLen == 0x09);
+	case pTypeASYNCPORT:
+		return (pLen == 0x0B);
+	case pTypeASYNCDATA:
+		return (pLen > 0x03);
 	default:
 		return false;//unknown Type
 	}
 	return false;
+}
+
+void CRFXBase::SetAsyncType(_eRFXAsyncType const AsyncType)
+{
+	m_AsyncType = AsyncType;
+	Set_Async_Parameters(m_AsyncType);
+}
+
+void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
+{
+	tRBUF cmd;
+	cmd.ASYNCPORT.packetlength = sizeof(cmd.ASYNCPORT) - 1;
+	cmd.ASYNCPORT.packettype = pTypeASYNCPORT;
+	cmd.ASYNCPORT.subtype = sTypeASYNCconfig;
+	cmd.ASYNCPORT.seqnbr = m_SeqNr++;
+
+	uint8_t baudrate = 0, parity = 0, databits = 0, stopbits = 0, polarity = 0;
+	uint8_t cmnd = asyncdisable;
+
+	switch (AsyncType)
+	{
+	case ATYPE_P1_DSMR_1:
+	case ATYPE_P1_DSMR_2:
+	case ATYPE_P1_DSMR_3:
+		baudrate = asyncbaud9600;
+		parity = asyncParityEven;
+		databits = asyncDatabits7;
+		stopbits = asyncStopbits1;
+		polarity = asyncPolarityInvers;
+		cmnd = asyncreceiveP1;
+		break;
+	case ATYPE_P1_DSMR_4:
+	case ATYPE_P1_DSMR_5:
+		baudrate = asyncbaud115200;
+		parity = asyncParityNo;
+		databits = asyncDatabits8;
+		stopbits = asyncStopbits1;
+		polarity = asyncPolarityInvers;
+		cmnd = asyncreceiveP1;
+		break;
+	case ATYPE_TELEINFO_1200:
+		baudrate = asyncbaud1200;
+		parity = asyncParityEven;
+		databits = asyncDatabits7;
+		stopbits = asyncStopbits1;
+		polarity = asyncPolarityInvers;
+		cmnd = asyncreceiveTeleinfo;
+		break;
+	case ATYPE_TELEINFO_19200:
+		baudrate = asyncbaud19200;
+		parity = asyncParityEven;
+		databits = asyncDatabits7;
+		stopbits = asyncStopbits1;
+		polarity = asyncPolarityInvers;
+		break;
+	default:
+		_log.Log(LOG_ERROR, "RFXCOM: unknown ASync type received!....");
+		return; //not handled yet!
+	}
+
+	cmd.ASYNCPORT.cmnd = cmnd;
+	cmd.ASYNCPORT.baudrate = baudrate;
+	cmd.ASYNCPORT.parity = parity;
+	cmd.ASYNCPORT.databits = databits;
+	cmd.ASYNCPORT.stopbits = stopbits;
+	cmd.ASYNCPORT.polarity = polarity;
+	cmd.ASYNCPORT.filler1 = 0;
+	cmd.ASYNCPORT.filler2 = 0;
+
+	WriteToHardware((const char*)&cmd, sizeof(cmd.ASYNCPORT));
+}
+
+void CRFXBase::Parse_Async_Data(const uint8_t *pData, const int Len)
+{
+	switch (m_AsyncType)
+	{
+	case ATYPE_P1_DSMR_1:
+	case ATYPE_P1_DSMR_2:
+	case ATYPE_P1_DSMR_3:
+	case ATYPE_P1_DSMR_4:
+	case ATYPE_P1_DSMR_5:
+	default:
+		ParseP1Data(pData, Len, false, 0);
+		break;
+	}
 }
 
 void CRFXBase::SendCommand(const unsigned char Cmd)
@@ -216,3 +306,4 @@ void CRFXBase::SendResetCommand()
 	sleep_milliseconds(50);
 	SendCommand(cmdSTATUS);
 }
+

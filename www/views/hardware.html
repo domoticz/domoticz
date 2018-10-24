@@ -401,7 +401,7 @@
 		</tr>
 		<tr>
 			<td></td>
-			<td><a class="btn-danger sub-tabs-apply" onclick="SetPingerSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+			<td><a class="btn btn-danger sub-tabs-apply" onclick="SetPingerSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
 		</tr>
 	</table>
 	<div class="page-header-small">
@@ -477,7 +477,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><a class="btn-danger sub-tabs-apply" onclick="SetKodiSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetKodiSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
         </tr>
     </table>
     <div class="page-header-small">
@@ -553,7 +553,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><a class="btn-danger sub-tabs-apply" onclick="SetPanasonicSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetPanasonicSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
         </tr>
     </table>
     <div class="page-header-small">
@@ -630,7 +630,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><a class="btn-danger sub-tabs-apply" onclick="SetBleBoxSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetBleBoxSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
         </tr>
         <tr>
             <td align="left" style="width:170px">
@@ -717,7 +717,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><a class="btn-danger sub-tabs-apply" onclick="SetLMSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetLMSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
         </tr>
     </table>
     <div class="page-header-small">
@@ -741,7 +741,7 @@
     </table>
     <table class="display" id="lmsnodesettingstable" border="0" cellpadding="0" cellspacing="20">
         <tr>
-            <td><a class="btn-danger sub-tabs-apply" onclick="DeleteUnusedLMSDevices();" data-i18n="Delete Unused Devices">Delete Unused Devices</a></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="DeleteUnusedLMSDevices();" data-i18n="Delete Unused Devices">Delete Unused Devices</a></td>
         </tr>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
@@ -768,7 +768,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><a class="btn-danger sub-tabs-apply" onclick="SetHEOSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetHEOSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
         </tr>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
@@ -827,6 +827,28 @@
 			<td><input type="checkbox" id="X10" name="X10">&nbsp;<label for="X10">X10</label></td>
 		</tr>
 	</table>
+	<div id="rfx_xl_settings" style="display:none;">
+		<br>
+		<table >
+			<tr>
+				<td><label for="combo_rfx_xl_async_type">Async Type</label>:</td>
+				<td><select id="combo_rfx_xl_async_type" name="combo_rfx_xl_async_type" style="width:200px" class="combobox ui-corner-all">
+					<option value="0">Disabled</option>
+					<option value="1">DSMR_1</option>
+					<option value="2">DSMR_2</option>
+					<option value="3">DSMR_3</option>
+					<option value="4">DSMR_4</option>
+					<option value="5">DSMR_5</option>
+					<option value="6">Teleinfo (1200)</option>
+					<option value="7">Teleinfo (19200)</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>(Only for ProXL hardware devices!)</td>
+			</tr>
+		</table>
+	</div>
 	<br>
 	<input type="hidden" id="idx" name="idx" value="-1">
 	<button class="btn btn-warning" id="defaultbutton">Default</button>
@@ -1149,7 +1171,7 @@
 		</div>
 		<div id="divusbtin">
 			<br>
-			<table class="display" id="hardwareparamsusbtin" border="0" cellpadding="0" cellspacing="20">      
+			<table class="display" id="hardwareparamsusbtin" border="0" cellpadding="0" cellspacing="20">
                 <tr valign="top">
                     <td align="right" style="width:110px"><label><span data-i18n="Multibloc V8">Multibloc V8</span>:</label></td>
                     <td>
@@ -1247,30 +1269,30 @@
 					<td align="right" style="width:110px"><label for="sysfsdebounce"><span data-i18n="sysfsdebounce">Debounce</span>:</label></td>
 					<td><select id="sysfsdebounce" style="width:110" class="combobox ui-corner-all">
 						<option data-i18n="Default" value="50">default</option>
-						<option data-i18n="1 msec" value="1">1 msec</option>						
-						<option data-i18n="2 msec" value="2">2 msec</option>						
-						<option data-i18n="5 msec" value="5">5 msec</option>						
+						<option data-i18n="1 msec" value="1">1 msec</option>
+						<option data-i18n="2 msec" value="2">2 msec</option>
+						<option data-i18n="5 msec" value="5">5 msec</option>
 						<option data-i18n="10 msec" value="10">10 msec</option>
 						<option data-i18n="25 msec" value="25">25 msec</option>
 						<option data-i18n="50 msec" value="50">50 msec</option>
-						<option data-i18n="75 msec" value="75">75 msec</option>						
+						<option data-i18n="75 msec" value="75">75 msec</option>
 						<option data-i18n="100 msec" value="100">100 msec</option>
 						<option data-i18n="150 msec" value="150">150 msec</option>
 						<option data-i18n="200 msec" value="200">200 msec</option>
 						<option data-i18n="250 msec" value="250">250 msec</option>
-						<option data-i18n="300 msec" value="300">300 msec</option>					
-						<option data-i18n="350 msec" value="350">350 msec</option>					
-						<option data-i18n="400 msec" value="400">400 msec</option>					
-						<option data-i18n="450 msec" value="450">450 msec</option>					
-						<option data-i18n="500 msec" value="500">500 msec</option>										
+						<option data-i18n="300 msec" value="300">300 msec</option>
+						<option data-i18n="350 msec" value="350">350 msec</option>
+						<option data-i18n="400 msec" value="400">400 msec</option>
+						<option data-i18n="450 msec" value="450">450 msec</option>
+						<option data-i18n="500 msec" value="500">500 msec</option>
 					</select>
 					</td>
-				</tr>				
+				</tr>
             </table>
         </div>
         <div id="divevohome">
 			<br>
-			<table class="display" id="hardwareparamsevohome" border="0" cellpadding="0" cellspacing="20">      
+			<table class="display" id="hardwareparamsevohome" border="0" cellpadding="0" cellspacing="20">
                 <tr>
                     <td align="right" style="width:110px"><label id="lblbaudrateevohome" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
                     <td>
@@ -1336,7 +1358,7 @@
                                         </td>
                                 </tr>
                         </table>
-                </div>				
+                </div>
                <div id="divmodeldenkovidevices">
                    <table class="display" id="hardwareparamsmodeldenkovidevices" border="0" cellpadding="0" cellspacing="20">
                        <tr>
@@ -1360,7 +1382,7 @@
                            </td>
                           </tr>
                    </table>
-                </div>			
+                </div>
                <div id="divmodeldenkoviusbdevices">
                    <table class="display" id="hardwareparamsmodeldenkoviusbdevices" border="0" cellpadding="0" cellspacing="20">
                        <tr>
@@ -1373,7 +1395,7 @@
 							</td>
                           </tr>
                    </table>
-                </div>	
+                </div>
                <div id="divmodeldenkovitcpdevices">
                    <table class="display" id="hardwareparamsmodeldenkovitcpdevices" border="0" cellpadding="0" cellspacing="20">
                        <tr>
@@ -1390,7 +1412,7 @@
 							<td><input type="text" id="denkovislaveid" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 						</tr>
                    </table>
-                </div>	
+                </div>
 		<div id="divremote">
 			<br>
 			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
@@ -1992,7 +2014,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><a class="btn-danger sub-tabs-apply" onclick="TellstickApplySettings();" data-i18n="Apply Settings"></a></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="TellstickApplySettings();" data-i18n="Apply Settings"></a></td>
         </tr>
     </table>
 </div>

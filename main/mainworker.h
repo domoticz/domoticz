@@ -50,7 +50,7 @@ public:
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 
-	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay);
+	bool SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay);
 	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const _tColor color, const bool ooc, const int ExtraDelay);
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, _tColor color, const bool IsTesting);
 
@@ -80,22 +80,22 @@ public:
 	bool RestartHardware(const std::string &idx);
 
 	bool AddHardwareFromParams(
-				const int ID,
-				const std::string &Name,
-				const bool Enabled,
-				const _eHardwareTypes Type,
-				const std::string &Address, const unsigned short Port, const std::string &SerialPort,
-				const std::string &Username, const std::string &Password,
-				const std::string &Filename,
-				const int Mode1,
-				const int Mode2,
-				const int Mode3,
-				const int Mode4,
-				const int Mode5,
-				const int Mode6,
-				const int DataTimeout,
-				const bool bDoStart
-				);
+		const int ID,
+		const std::string &Name,
+		const bool Enabled,
+		const _eHardwareTypes Type,
+		const std::string &Address, const unsigned short Port, const std::string &SerialPort,
+		const std::string &Username, const std::string &Password,
+		const std::string &Extra,
+		const int Mode1,
+		const int Mode2,
+		const int Mode3,
+		const int Mode4,
+		const int Mode5,
+		const int Mode6,
+		const int DataTimeout,
+		const bool bDoStart
+	);
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
@@ -119,7 +119,7 @@ public:
 	std::string m_szSystemName;
 	std::string m_szDomoticzUpdateURL;
 
-	bool IsUpdateAvailable(const bool bIsForced=false);
+	bool IsUpdateAvailable(const bool bIsForced = false);
 	bool StartDownloadUpdate();
 	bool m_bHaveDownloadedDomoticzUpdate;
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
@@ -281,9 +281,11 @@ private:
 	void decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-   void decode_Cartelectronic(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-   void decode_CartelectronicTIC(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-   void decode_CartelectronicEncoder(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Cartelectronic(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_CartelectronicTIC(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_CartelectronicEncoder(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_ASyncPort(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_ASyncData(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 };
 
 extern MainWorker m_mainworker;

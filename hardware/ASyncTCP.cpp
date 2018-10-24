@@ -61,9 +61,9 @@ void ASyncTCP::connect(const std::string &ip, unsigned short port)
 	}
 	catch (const std::exception &e)
 	{
-		if (mAllowCallbacks)
-			OnError(boost::system::error_code(boost::asio::error::host_not_found));
-		return;
+		if (!mAllowCallbacks)
+			return;
+		OnError(boost::system::error_code(boost::asio::error::host_not_found));
 	}
 
 	// connect socket

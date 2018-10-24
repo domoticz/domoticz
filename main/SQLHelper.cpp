@@ -644,12 +644,7 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	StopThread();
 	CloseDatabase();
 }
 
@@ -3081,8 +3076,19 @@ void CSQLHelper::CloseDatabase()
 	}
 }
 
+void CSQLHelper::StopThread()
+{
+	if (m_thread)
+	{
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
+}
+
 bool CSQLHelper::StartThread()
 {
+	RequestStart();
 	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "SQLHelper");
 	return (m_thread != NULL);
@@ -7195,6 +7201,9 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	sqlite3_close(dbase_restore);
 	//we have a valid database!
 	std::remove(outputfile.c_str());
+
+	StopThread();
+
 	//stop database
 	sqlite3_close(m_dbase);
 	m_dbase = NULL;

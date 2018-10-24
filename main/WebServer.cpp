@@ -1395,6 +1395,26 @@ namespace http {
 					iDataTimeout
 				);
 			}
+			else if (
+				(htype == HTYPE_RFXtrx433)||
+				(htype == HTYPE_RFXtrx868)
+				)
+			{
+				//No Extra field here, handled in CWebServer::SetRFXCOMMode
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					mode1, mode2, mode3, mode4, mode5, mode6,
+					iDataTimeout
+				);
+			}
 			else {
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1748,6 +1768,27 @@ namespace http {
 						password.c_str(),
 						extra.c_str(),
 						mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+						iDataTimeout,
+						idx.c_str()
+					);
+				}
+				else if (
+					(htype == HTYPE_RFXtrx433) ||
+					(htype == HTYPE_RFXtrx868)
+					)
+				{
+					//No Extra field here, handled in CWebServer::SetRFXCOMMode
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(bEnabled == true) ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						mode1, mode2, mode3, mode4, mode5, mode6,
 						iDataTimeout,
 						idx.c_str()
 					);
@@ -3569,7 +3610,8 @@ namespace http {
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
 
-						if ((Type == HTYPE_RFXLAN) ||
+						if (
+							(Type == HTYPE_RFXLAN) ||
 							(Type == HTYPE_RFXtrx315) ||
 							(Type == HTYPE_RFXtrx433) ||
 							(Type == HTYPE_RFXtrx868) ||
@@ -11037,6 +11079,8 @@ namespace http {
 
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
+						continue;
+					if (hType == HTYPE_RESERVED_FOR_YOU_1)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
