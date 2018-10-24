@@ -644,7 +644,7 @@ bool MainWorker::AddHardwareFromParams(
 	const _eHardwareTypes Type,
 	const std::string &Address, const unsigned short Port, const std::string &SerialPort,
 	const std::string &Username, const std::string &Password,
-	const std::string &Filename,
+	const std::string &Extra,
 	const int Mode1,
 	const int Mode2,
 	const int Mode3,
@@ -667,7 +667,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
 	case HTYPE_RFXtrx868:
-		pHardware = new RFXComSerial(ID, SerialPort, 38400);
+		pHardware = new RFXComSerial(ID, SerialPort, 38400, Extra);
+		break;
+	case HTYPE_RFXLAN:
+		pHardware = new RFXComTCP(ID, Address, Port, Extra);
 		break;
 	case HTYPE_P1SmartMeter:
 		pHardware = new P1MeterSerial(ID, SerialPort, (Mode1 == 1) ? 115200 : 9600, (Mode2 != 0), Mode3);
@@ -715,10 +718,10 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Meteostick(ID, SerialPort, 115200);
 		break;
 	case HTYPE_EVOHOME_SERIAL:
-		pHardware = new CEvohomeSerial(ID, SerialPort, Mode1, Filename);
+		pHardware = new CEvohomeSerial(ID, SerialPort, Mode1, Extra);
 		break;
 	case HTYPE_EVOHOME_TCP:
-		pHardware = new CEvohomeTCP(ID, Address, Port, Filename);
+		pHardware = new CEvohomeTCP(ID, Address, Port, Extra);
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
@@ -734,10 +737,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Comm5Serial:
 		pHardware = new Comm5Serial(ID, SerialPort);
-		break;
-	case HTYPE_RFXLAN:
-		//LAN
-		pHardware = new RFXComTCP(ID, Address, Port);
 		break;
 	case HTYPE_Domoticz:
 		//LAN
@@ -761,7 +760,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MySensorsMQTT:
 		//LAN
-		pHardware = new MySensorsMQTT(ID, Name, Address, Port, Username, Password, Filename, Mode1);
+		pHardware = new MySensorsMQTT(ID, Name, Address, Port, Username, Password, Extra, Mode1);
 		break;
 	case HTYPE_RFLINKTCP:
 		//LAN
@@ -773,7 +772,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode1);
 		break;
 	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
@@ -828,7 +827,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
-		pHardware = new C1Wire(ID, Mode1, Mode2, Filename);
+		pHardware = new C1Wire(ID, Mode1, Mode2, Extra);
 		break;
 	case HTYPE_Pinger:
 		//System Alive Checker (Ping)
@@ -914,7 +913,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CWunderground(ID, Username, Password);
 		break;
 	case HTYPE_HTTPPOLLER:
-		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
+		pHardware = new CHttpPoller(ID, Username, Password, Address, Extra, Port);
 		break;
 	case HTYPE_DarkSky:
 		pHardware = new CDarkSky(ID, Username, Password);
@@ -947,7 +946,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CNest(ID, Username, Password);
 		break;
 	case HTYPE_Nest_OAuthAPI:
-		pHardware = new CNestOAuthAPI(ID, Username, Filename);
+		pHardware = new CNestOAuthAPI(ID, Username, Extra);
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
@@ -1031,7 +1030,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_PythonPlugin:
 #ifdef ENABLE_PYTHON
-		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
+		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Extra);
 #endif
 		break;
 	case HTYPE_XiaomiGateway:
@@ -1050,7 +1049,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
-		pHardware = new CRtl433(ID, Filename);
+		pHardware = new CRtl433(ID, Extra);
 		break;
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
@@ -1069,7 +1068,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_TTN_MQTT:
 		//LAN
-		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Filename);
+		pHardware = new CTTNMQTT(ID, Address, Port, Username, Password, Extra);
 		break;
 	}
 
@@ -1474,11 +1473,12 @@ void MainWorker::ParseRFXLogFile()
 	if (pHardware == NULL)
 	{
 		pHardware = new CDummy(HWID);
+		//pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
 		AddDomoticzHardware(pHardware);
 	}
 
 	std::vector<std::string>::iterator itt;
-	unsigned char rxbuffer[100];
+	unsigned char rxbuffer[600];
 	static const char* const lut = "0123456789ABCDEF";
 	for (itt = _lines.begin(); itt != _lines.end(); ++itt)
 	{
@@ -1506,7 +1506,7 @@ void MainWorker::ParseRFXLogFile()
 			continue;
 		if (CRFXBase::CheckValidRFXData((const uint8_t*)&rxbuffer))
 		{
-			pHardware->WriteToHardware((const char *)&rxbuffer, totbytes);
+			//pHardware->WriteToHardware((const char *)&rxbuffer, totbytes);
 			DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
 			sleep_milliseconds(300);
 		}
@@ -2378,6 +2378,12 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeCARTELECTRONIC:
 			decode_Cartelectronic(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
+		case pTypeASYNCPORT:
+			decode_ASyncPort(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
+		case pTypeASYNCDATA:
+			decode_ASyncData(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -2554,9 +2560,11 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 					break;
 				case FWtypePro2:
 					strcpy(szTmp, "Pro2");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
 					break;
 				case FWtypeProXL1:
 					strcpy(szTmp, "Pro XL1");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
 					break;
 				default:
 					strcpy(szTmp, "?");
@@ -2568,15 +2576,18 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 			CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(GetHardware(HwdID));
 			if (pMyHardware)
 			{
-				std::stringstream sstr;
-				sstr << szTmp << "/" << FWVersion;
-				pMyHardware->m_Version = sstr.str();
+				pMyHardware->m_Version = std::string(szTmp) + std::string("/") + std::to_string(FWVersion);
 
-				if (FWType == FWtypePro1)
+				if (FWType >= FWtypePro1)
 				{
 					pMyHardware->m_NoiseLevel = NoiseLevel;
 					sprintf(szTmp, "Noise Level: %d dB", pMyHardware->m_NoiseLevel);
 					WriteMessage(szTmp);
+				}
+				if (FWType == FWtypeProXL1)
+				{
+					CRFXBase::_eRFXAsyncType AsyncType = (CRFXBase::_eRFXAsyncType)atoi(pMyHardware->m_sExtraData.c_str());
+					pMyHardware->SetAsyncType(AsyncType);
 				}
 			}
 
@@ -10388,6 +10399,177 @@ void MainWorker::decode_Cartelectronic(const int HwdID, const _eHardwareTypes Hw
 	default:
 		WriteMessage("Cartelectronic protocol not supported");
 		break;
+	}
+}
+
+void MainWorker::decode_ASyncPort(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
+	{
+		WriteMessageStart();
+
+		char szTmp[100];
+		unsigned char subType = pResponse->ASYNCPORT.subtype;
+
+		switch (pResponse->ASYNCPORT.subtype)
+		{
+		case sTypeASYNCconfig:
+			WriteMessage("subtype       = Async port configure");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->ASYNCPORT.seqnbr);
+		WriteMessage(szTmp);
+
+		WriteMessage("Command     = ", false);
+		switch (pResponse->ASYNCPORT.cmnd)
+		{
+		case asyncdisable:
+			WriteMessage("Disable");
+			break;
+		case asyncreceiveP1:
+			WriteMessage("Enable P1 Receive");
+			break;
+		case asyncreceiveTeleinfo:
+			WriteMessage("Enable Teleinfo Recieve");
+			break;
+		case asyncreceiveRAW:
+			WriteMessage("Enable Raw Receive");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown command type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		WriteMessage("Baudrate    = ", false);
+		switch (pResponse->ASYNCPORT.baudrate)
+		{
+		case asyncbaud110:
+			WriteMessage("110");
+			break;
+		case asyncbaud300:
+			WriteMessage("300");
+			break;
+		case asyncbaud600:
+			WriteMessage("600");
+			break;
+		case asyncbaud1200:
+			WriteMessage("1200");
+			break;
+		case asyncbaud2400:
+			WriteMessage("2400");
+			break;
+		case asyncbaud4800:
+			WriteMessage("4800");
+			break;
+		case asyncbaud9600:
+			WriteMessage("9600");
+			break;
+		case asyncbaud14400:
+			WriteMessage("14400");
+			break;
+		case asyncbaud19200:
+			WriteMessage("19200");
+			break;
+		case asyncbaud38400:
+			WriteMessage("38400");
+			break;
+		case asyncbaud57600:
+			WriteMessage("57600");
+			break;
+		case asyncbaud115200:
+			WriteMessage("115200");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown baudrate type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		WriteMessage("Parity      = ", false);
+		switch (pResponse->ASYNCPORT.parity)
+		{
+		case asyncParityNo:
+			WriteMessage("None");
+			break;
+		case asyncParityOdd:
+			WriteMessage("Odd");
+			break;
+		case asyncParityEven:
+			WriteMessage("Even");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown partity type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		WriteMessage("Databits    = ", false);
+		switch (pResponse->ASYNCPORT.databits)
+		{
+		case asyncDatabits7:
+			WriteMessage("7");
+			break;
+		case asyncDatabits8:
+			WriteMessage("8");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown databits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		WriteMessage("Stopbits    = ", false);
+		switch (pResponse->ASYNCPORT.stopbits)
+		{
+		case asyncStopbits1:
+			WriteMessage("1");
+			break;
+		case asyncStopbits2:
+			WriteMessage("2");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown stopbits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		WriteMessage("Polarity    = ", false);
+		switch (pResponse->ASYNCPORT.polarity)
+		{
+		case asyncPolarityNormal:
+			WriteMessage("Normal");
+			break;
+		case asyncPolarityInvers:
+			WriteMessage("Inverted");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown stopbits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		WriteMessageEnd();
+	}
+}
+
+void MainWorker::decode_ASyncData(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	CDomoticzHardwareBase *pHardware = GetHardware(HwdID);
+	if (pHardware == NULL)
+		return;
+
+	if (
+		(pHardware->m_HwdID == 999)||
+		(pHardware->HwdType == HTYPE_RFXtrx315) ||
+		(pHardware->HwdType == HTYPE_RFXLAN)
+		)
+	{
+		CRFXBase *pRFXBase = reinterpret_cast<CRFXBase*>(pHardware);
+		const uint8_t *pData = reinterpret_cast<const uint8_t*>(&pResponse->ASYNCDATA.datachar[0]);
+		int Len = pResponse->ASYNCDATA.packetlength - 3;
+		pRFXBase->Parse_Async_Data(pData, Len);
 	}
 }
 

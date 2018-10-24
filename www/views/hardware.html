@@ -827,6 +827,28 @@
 			<td><input type="checkbox" id="X10" name="X10">&nbsp;<label for="X10">X10</label></td>
 		</tr>
 	</table>
+	<div id="rfx_xl_settings" style="display:none;">
+		<br>
+		<table >
+			<tr>
+				<td><label for="combo_rfx_xl_async_type">Async Type</label>:</td>
+				<td><select id="combo_rfx_xl_async_type" name="combo_rfx_xl_async_type" style="width:200px" class="combobox ui-corner-all">
+					<option value="0">Disabled</option>
+					<option value="1">DSMR_1</option>
+					<option value="2">DSMR_2</option>
+					<option value="3">DSMR_3</option>
+					<option value="4">DSMR_4</option>
+					<option value="5">DSMR_5</option>
+					<option value="6">Teleinfo (1200)</option>
+					<option value="7">Teleinfo (19200)</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>(Only for ProXL hardware devices!)</td>
+			</tr>
+		</table>
+	</div>
 	<br>
 	<input type="hidden" id="idx" name="idx" value="-1">
 	<button class="btn btn-warning" id="defaultbutton">Default</button>
