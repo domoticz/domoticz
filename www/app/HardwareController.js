@@ -23,6 +23,11 @@ define(['app'], function (app) {
 				}
 			});
 		}
+		
+		function hideAndRefreshHardwareTable() {
+			HideNotify();
+			RefreshHardwareTable();
+		}
 
 		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
 			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
@@ -288,7 +293,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
@@ -367,7 +377,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
@@ -1260,7 +1275,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
@@ -1465,7 +1485,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
