@@ -32,17 +32,8 @@ public:
 	//Checks if thread is requested to stop
 	bool IsStopRequested(const int timeMS)
 	{
-#if defined(__NetBSD__)
-		// checks if value in future object is available; sleeps if not
-		// avoid using wait_for() to sleep; it busy waits under some versions of NetBSD
-		if (m_futureObj.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
-			return true;
-		std::this_thread::sleep_for(std::chrono::milliseconds(timeMS));
-		return false;
-#else
 		// checks if value in future object is available
 		return (m_futureObj.wait_for(std::chrono::milliseconds(timeMS)) != std::future_status::timeout);
-#endif
 	}
 	// Request the thread to stop by setting value in promise object
 	void RequestStop()
