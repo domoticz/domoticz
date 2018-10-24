@@ -254,7 +254,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 	}
 	server.sin_addr.s_addr = m_SrvAddrU | (m_SrvAddrM << 8) | (ClientCon->AddrH << 16) | (ClientCon->AddrL << 24);
 	server.sin_family = AF_INET;                    //tcp v4
-	server.sin_port = htons((u_short)m_EHOUSE_TCP_PORT);       //assign eHouse Port
+	server.sin_port = htons((uint16_t)m_EHOUSE_TCP_PORT);       //assign eHouse Port
 	if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Connecting to: %s", SocketIndex, line);
 	if (connect(ClientCon->Socket, (struct sockaddr *) &server, sizeof(server)) < 0)
 	{
