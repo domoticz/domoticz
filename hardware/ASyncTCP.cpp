@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "ASyncTCP.h"
-
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
@@ -47,40 +46,36 @@ void ASyncTCP::SetReconnectDelay(int Delay)
 
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
 {
+	std::stringstream fip;
+	// resolve hostname
+	try
+	{
+		boost::asio::ip::tcp::resolver resolver(mIos);
+		boost::asio::ip::tcp::resolver::query query(ip, "");
+		for(auto i = resolver.resolve(query); i != boost::asio::ip::tcp::resolver::iterator(); ++i)
+		{
+			boost::asio::ip::tcp::endpoint end = *i;
+			fip << end.address();
+			break; // only retrieve the first address
+		}
+	}
+	catch (const std::exception &e)
+	{
+		if (!mAllowCallbacks)
+			return;
+		OnError(boost::system::error_code(boost::asio::error::host_not_found));
+	}
+
 	// connect socket
 	try
 	{
-		std::string fip = ip;
-
-		unsigned long ipn = inet_addr(fip.c_str());
-		// if we have a error in the ip, it means we have entered a string
-		if (ipn == INADDR_NONE)
-		{
-			// change Hostname in Server Address
-			hostent *he = gethostbyname(fip.c_str());
-			if (he != NULL)
-			{
-				char szIP[20];
-				sprintf(szIP, "%d.%d.%d.%d", (uint8_t)he->h_addr_list[0][0], (uint8_t)he->h_addr_list[0][1], (uint8_t)he->h_addr_list[0][2], (uint8_t)he->h_addr_list[0][3]);
-				fip = szIP;
-			}
-			else
-			{
-				// Failed to resolve hostname
-				if (mAllowCallbacks)
-					OnError(boost::system::errc::make_error_code(boost::system::errc::host_unreachable));
-			}
-		}
-
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(fip), port);
-
+		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(fip.str()), port);
 		connect(endpoint);
 	}
 	catch(const std::exception &e)
 	{
-		if (!mAllowCallbacks)
-			return;
-		OnError(e);
+		if (mAllowCallbacks)
+			OnError(e);
 	}
 }
 

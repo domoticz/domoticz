@@ -13050,7 +13050,7 @@ void MainWorker::HeartbeatCheck()
 		if (!pHardware->m_bSkipReceiveCheck)
 		{
 			//Skip Dummy Hardware
-			bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_Domoticz) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
+			bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
 			if (bDoCheck)
 			{
 				//Check Thread Timeout
