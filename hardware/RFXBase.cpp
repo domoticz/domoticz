@@ -8,7 +8,7 @@
 CRFXBase::CRFXBase()
 {
 	m_NoiseLevel = 0;
-	m_AsyncType = ATYPE_UNKNOWN;
+	m_AsyncType = ATYPE_DISABLED;
 }
 
 CRFXBase::~CRFXBase()
@@ -188,6 +188,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
 		cmnd = asyncreceiveP1;
+		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'DSMR 1/2/3'");
 		break;
 	case ATYPE_P1_DSMR_4:
 	case ATYPE_P1_DSMR_5:
@@ -197,21 +198,27 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
 		cmnd = asyncreceiveP1;
+		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'DSMR 4/5'");
 		break;
-	case ATYPE_TELEINFO_1200:
+	case ATYPE_TELEINFO_1200://not handled yet!
 		baudrate = asyncbaud1200;
 		parity = asyncParityEven;
 		databits = asyncDatabits7;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
 		cmnd = asyncreceiveTeleinfo;
+		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'Teleinfo 1200' (not implemented yet!)");
 		break;
-	case ATYPE_TELEINFO_19200:
+	case ATYPE_TELEINFO_19200://not handled yet!
 		baudrate = asyncbaud19200;
 		parity = asyncParityEven;
 		databits = asyncDatabits7;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
+		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'Teleinfo 19200' (not implemented yet!)");
+		break;
+	case ATYPE_DISABLED:
+		_log.Log(LOG_STATUS, "RFXCOM: Async Disabled");
 		break;
 	default:
 		_log.Log(LOG_ERROR, "RFXCOM: unknown ASync type received!....");

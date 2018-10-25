@@ -14,7 +14,7 @@ friend class MainWorker;
 public:
 	enum _eRFXAsyncType
 	{
-		ATYPE_UNKNOWN = 0,
+		ATYPE_DISABLED = 0,
 		ATYPE_P1_DSMR_1,
 		ATYPE_P1_DSMR_2,
 		ATYPE_P1_DSMR_3,
@@ -26,8 +26,8 @@ public:
 	CRFXBase();
     ~CRFXBase();
 	std::string m_Version;
+	_eRFXAsyncType m_AsyncType;
 	int m_NoiseLevel;
-	std::string m_sExtraData;
 	bool SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
 	void SendResetCommand();
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length) = 0;
@@ -47,6 +47,5 @@ private:
 	void SendCommand(const unsigned char Cmd);
 	std::shared_ptr<std::thread> m_thread;
 	bool m_bReceiverStarted;
-	_eRFXAsyncType m_AsyncType;
 };
 

@@ -667,10 +667,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
 	case HTYPE_RFXtrx868:
-		pHardware = new RFXComSerial(ID, SerialPort, 38400, Extra);
+		pHardware = new RFXComSerial(ID, SerialPort, 38400, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
 		break;
 	case HTYPE_RFXLAN:
-		pHardware = new RFXComTCP(ID, Address, Port, Extra);
+		pHardware = new RFXComTCP(ID, Address, Port, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
 		break;
 	case HTYPE_P1SmartMeter:
 		pHardware = new P1MeterSerial(ID, SerialPort, (Mode1 == 1) ? 115200 : 9600, (Mode2 != 0), Mode3);
@@ -2585,8 +2585,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				}
 				if (FWType == FWtypeProXL1)
 				{
-					CRFXBase::_eRFXAsyncType AsyncType = (CRFXBase::_eRFXAsyncType)atoi(pMyHardware->m_sExtraData.c_str());
-					pMyHardware->SetAsyncType(AsyncType);
+					pMyHardware->SetAsyncType(pMyHardware->m_AsyncType);
 				}
 			}
 
