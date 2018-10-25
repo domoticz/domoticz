@@ -459,10 +459,34 @@ void CEventSystem::GetCurrentStates()
 			sitem.ID = std::stoull(sd[1]);
 			sitem.deviceName = l_deviceName.assign(sd[2]);
 
-			sitem.nValue = atoi(sd[3].c_str());
-			sitem.sValue = l_sValue.assign(sd[4]);
 			sitem.devType = atoi(sd[5].c_str());
 			sitem.subType = atoi(sd[6].c_str());
+
+			if ((sitem.devType == pTypeGeneral) && (sitem.subType == sTypeCounterIncremental))
+			{
+				//special case for incremental counter, need to calculate the actual count value
+
+				uint64_t total_min, total_max, total_real;
+				std::vector<std::vector<std::string> > result2;
+
+				result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
+				total_max = std::stoull(result2[0][0]);
+
+				//get value of today
+				std::string szDate = TimeToString(NULL, TF_Date);
+				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
+				if (!result2.empty())
+				{
+					total_min = std::stoull(result2[0][0]);
+					total_real = total_max - total_min;
+
+					sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
+				}
+			}
+
+			sitem.nValue = atoi(sd[3].c_str());
+			sitem.sValue = l_sValue.assign(sd[4]);
+
 			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
@@ -613,6 +637,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 		_tDeviceStatus sitem = itt->second;
 		std::vector<std::string> splitresults;
 		StringSplit(sitem.sValue, ";", splitresults);
+
+		if ((itt->second.devType == pTypeGeneral) && (itt->second.subType == sTypeCounterIncremental))
+			splitresults.clear();
 
 		float temp = 0;
 		float chill = 0;
@@ -845,8 +872,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		{
 			if (!splitresults.empty())
 			{
-				if ((sitem.subType == sTypeVisibility)
-					|| (sitem.subType == sTypeSolarRadiation))
+				if ((sitem.subType == sTypeVisibility) || (sitem.subType == sTypeSolarRadiation))
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
@@ -883,19 +909,19 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
+					uint64_t total_min, total_max, total_real;
+					std::vector<std::vector<std::string> > result2;
+
+					result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
+					total_max = std::stoull(result2[0][0]);
+
 					//get value of today
 					std::string szDate = TimeToString(NULL, TF_Date);
-					std::vector<std::vector<std::string> > result2;
-					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate.c_str());
 					if (!result2.empty())
 					{
-						std::vector<std::string> sd2 = result2[0];
-
-						uint64_t total_min, total_max, total_real;
-
-						total_min = std::stoull(sd2[0]);
-						total_max = std::stoull(sd2[1]);
+						total_min = std::stoull(result2[0][0]);
 						total_real = total_max - total_min;
 
 						char szTmp[100];
@@ -1464,6 +1490,31 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
+		std::string osValue = sValue;
+
+		if ((devType == pTypeGeneral) && (subType == sTypeCounterIncremental))
+		{
+			//special case for incremental counter, need to calculate the actual count value
+
+			//get value of today
+			std::string szDate = TimeToString(NULL, TF_Date);
+			std::vector<std::vector<std::string> > result2;
+
+			uint64_t total_min, total_max, total_real;
+
+			result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", ulDevID);
+			total_max = std::stoull(result2[0][0]);
+
+			result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", ulDevID, szDate.c_str());
+			if (!result2.empty())
+			{
+				total_min = std::stoull(result2[0][0]);
+				total_real = total_max - total_min;
+
+				osValue = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
+			}
+		}
+
 		if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 		{
 			_tEventQueue item;
@@ -1471,8 +1522,8 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			item.id = ulDevID;
 			item.devname = devname;
 			item.nValue = nValue;
-			item.sValue = sValue;
-			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
+			item.sValue = osValue;
+			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, options);
 			item.trigger = NULL;
 			boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 			std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
@@ -1495,7 +1546,7 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			m_eventqueue.push(item);
 		}
 		else
-			UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
+			UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
 	}
 	else
 	{
