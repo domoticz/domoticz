@@ -10561,6 +10561,8 @@ void MainWorker::decode_ASyncData(const int HwdID, const _eHardwareTypes HwdType
 	if (
 		(pHardware->m_HwdID == 999)||
 		(pHardware->HwdType == HTYPE_RFXtrx315) ||
+		(pHardware->HwdType == HTYPE_RFXtrx433) ||
+		(pHardware->HwdType == HTYPE_RFXtrx868) ||
 		(pHardware->HwdType == HTYPE_RFXLAN)
 		)
 	{

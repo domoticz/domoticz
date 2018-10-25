@@ -1414,6 +1414,7 @@ namespace http {
 					mode1, mode2, mode3, mode4, mode5, mode6,
 					iDataTimeout
 				);
+				extra = "0";
 			}
 			else {
 				m_sql.safe_query(
@@ -1792,6 +1793,10 @@ namespace http {
 						iDataTimeout,
 						idx.c_str()
 					);
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE ID=%q", idx.c_str());
+					if (!result.empty())
+						extra = result[0][0];
 				}
 				else {
 					m_sql.safe_query(
