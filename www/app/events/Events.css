@@ -93,15 +93,16 @@
 /* ///////////////////// */
 
 .events-editor-tree {
-    display: flex;
-    flex-direction: column;
     flex: 1;
     background-color: rgba(255, 255, 255, 0.8);
     overflow-y: scroll;
+    overflow-x: auto;
 }
 
 .events-editor-tree__item {
-    display: flex;
+    position: relative;
+    list-style: none;
+    padding: 2px;
 }
 
 .events-editor-tree__file:link {
@@ -110,8 +111,6 @@
     cursor: default;
     white-space: nowrap;
     padding-left: 22px;
-    padding-top: 4px;
-    flex: 1;
     overflow: hidden;
 }
 
