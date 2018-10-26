@@ -4,6 +4,7 @@ Version 4.xxxx (October xxth 2018)
 - Implemented: InfluxDB Data push, support for Username/Password
 - Implemented: Timer Plan, duplicate option
 - Implemented: RFXMeter, Option to specify meter divider
+- Implemented: Starting implementation of Taiwanese language (big thanks to berry lin!)
 - Fixed: Philips Hue, should work correctly now again
 - Updated: Dzvents (version 2.4.7, See dzVents/documentation/history.md)
 
