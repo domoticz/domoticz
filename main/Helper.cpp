@@ -33,7 +33,6 @@
 
 // Includes for SystemUptime()
 #if defined(__linux__) || defined(__linux) || defined(linux)
-#include <sys/time.h>
 #include <sys/sysinfo.h>
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <time.h>
