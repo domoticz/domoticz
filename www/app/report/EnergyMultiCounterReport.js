@@ -25,7 +25,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
 
                 var includeReturn = typeof stats.delivered !== 'undefined';
-                var data = getGroupedData(stats.result, costs,includeReturn);
+                var data = getGroupedData(stats.result, costs, includeReturn);
                 var source = month
                     ? data.years[year].months.find(function (item) {
                         return (new Date(item.date)).getMonth() + 1 === month;
@@ -104,7 +104,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 dayRecord.usage = dayRecord.usage1.usage + dayRecord.usage2.usage -
                     (includeReturn ? dayRecord.return1.usage + dayRecord.return2.usage : 0);
                 dayRecord.cost = dayRecord.usage1.cost + dayRecord.usage2.cost -
-                    (includeReturn ? dayRecord.return1.cost - dayRecord.return2.cost : 0);
+                    (includeReturn ? dayRecord.return1.cost + dayRecord.return2.cost : 0);
 
                 result.years[year].months[month].days[day] = dayRecord
             });
