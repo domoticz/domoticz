@@ -398,6 +398,9 @@
 	<Manufacturer id="0148" name="EUROtronic">
 		<Product type="0001" id="0001" name="EUR_STELLAZ Wall Radiator Thermostat Valve Control" config="eurotronic/eur_stellaz.xml"/>
 		<Product type="0002" id="0001" name="EUR_COMETZ Wall Radiator Thermostat Valve Control" config="eurotronic/eur_cometz.xml"/>
+		<Product type="0003" id="0001" name="EUR_SPIRITZ Wall Radiator Thermostat" config="eurotronic/eur_spiritz.xml"/>
+		<Product type="0003" id="0002" name="EUR_SPIRITZ Wall Radiator Thermostat" config="eurotronic/eur_spiritz.xml"/>
+		<Product type="0003" id="0003" name="EUR_SPIRITZ Wall Radiator Thermostat" config="eurotronic/eur_spiritz.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0128" name="Eneco">
 		<Product type="0000" id="0000" name="ED2.0 Meter Adapter"/>
@@ -532,6 +535,7 @@
 		<Product type="0800" id="4001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<!--<Product type="0801" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />-->
 		<Product type="0801" id="1001" name="FGMS001-ZW5 Motion Sensor" config="fibaro/fgmszw5.xml"/>
+		<Product type="0801" id="1002" name="FGMS001-ZW5 Motion Sensor" config="fibaro/fgmszw5.xml"/>
 		<Product type="0801" id="2001" name="FGMS001-ZW5 Motion Sensor" config="fibaro/fgmszw5.xml"/>
 		<Product type="0801" id="3001" name="FGMS001-ZW5 Motion Sensor" config="fibaro/fgmszw5.xml"/>
 		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
@@ -709,6 +713,7 @@
 		<Product type="201"  id="9"    name="HS-MS100+ Motion Sensor" config="homeseer/hs-ms100plus.xml"/>
 		<Product type="201"  id="a"    name="HS-LS100+ Leak Sensor" config="homeseer/hs-ls100plus.xml"/>
 		<Product type="0201" id="000b" name="HS-FLS100+ Floodlight Sensor" config="homeseer/hs-fls100plus.xml"/>
+		<Product type="0203" id="0001" name="HS-FC200+ Z-Wave Plus Fan Controller" config="homeseer/hs-fc200plus.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0030" name="HomeSeer Tech">
 	</Manufacturer>
