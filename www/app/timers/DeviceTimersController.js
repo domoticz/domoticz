@@ -46,7 +46,7 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                     }, setDeviceColor);
                 }
 
-                if (!vm.isLED && vm.isDimmer) {
+                if (vm.isDimmer) {
                     vm.levelOptions = device.getDimmerLevelOptions(1);
                 }
 
