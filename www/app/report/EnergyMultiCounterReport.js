@@ -25,7 +25,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
 
                 var includeReturn = typeof stats.delivered !== 'undefined';
-                var data = getGroupedData(stats.result, costs);
+                var data = getGroupedData(stats.result, costs,includeReturn);
                 var source = month
                     ? data.years[year].months.find(function (item) {
                         return (new Date(item.date)).getMonth() + 1 === month;
@@ -238,6 +238,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             } else {
                 columns.push({
                     title: $.t('Month'),
+                    width: 150,
                     data: 'date',
                     render: function (data) {
                         var date = new Date(data);
