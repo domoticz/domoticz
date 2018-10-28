@@ -456,7 +456,7 @@ define(['app'], function (app) {
 
 						var level = data["Level"];
 						$("#scenecontent #combolevel").val(level);
-						
+
 						var SubType = "";
 						var DimmerType = "";
 						$.each($.LightsAndSwitches, function (i, item) {
@@ -692,6 +692,8 @@ define(['app'], function (app) {
 			$('#scenecontent #combodevice').keypress(function () {
 				$(this).change();
 			});
+
+            $('#scenecontent #combodevice').trigger('change');
 
 			OnSelChangeDevice();
 
