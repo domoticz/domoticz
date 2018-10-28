@@ -370,6 +370,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     min: 0
                 },
                 tooltip: {
+					valueDecimals: 3,
                     valueSuffix: ' ' + vm.unit
                 },
                 plotOptions: {
