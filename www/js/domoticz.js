@@ -7590,7 +7590,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	$(selector + ' #popup_picker').wheelColorPicker('setRgb', color_r/255, color_g/255, color_b/255);
 	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt/MaxDimLevel);
 
-	var rgbhex = $(selector + ' #popup_picker').wheelColorPicker('getValue', 'hex');
+	var rgbhex = $(selector + ' #popup_picker').wheelColorPicker('getValue', 'hex').toUpperCase();
 	$(selector + ' .pickerrgbcolorinput').val(rgbhex);
 
 	// Update color picker controls
@@ -7600,7 +7600,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		clearTimeout($.setColValue);
 
 		var color = $(this).wheelColorPicker('getColor');
-		var rgbhex = $(this).wheelColorPicker('getValue', 'hex');
+		var rgbhex = $(this).wheelColorPicker('getValue', 'hex').toUpperCase();
 		var dimlevel = Math.round((color.m*99)+1); // 1..100
 		var JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
 		//TODO: Rate limit instead of debounce
