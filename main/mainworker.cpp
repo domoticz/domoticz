@@ -13189,7 +13189,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			{
 				float temp = static_cast<float>(atof(sValue.c_str()));
 				temp += AddjValue;
-				sprintf(szTmp, "%.1f", temp);
+				sprintf(szTmp, "%.2f", temp);
 				sValue = szTmp;
 			}
 			else if (devType == pTypeTEMP_HUM)
@@ -13199,7 +13199,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				{
 					float temp = static_cast<float>(atof(strarray[0].c_str()));
 					temp += AddjValue;
-					sprintf(szTmp, "%.1f;%s;%s", temp, strarray[1].c_str(), strarray[2].c_str());
+					sprintf(szTmp, "%.2f;%s;%s", temp, strarray[1].c_str(), strarray[2].c_str());
 					sValue = szTmp;
 				}
 			}
@@ -13219,11 +13219,11 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 
 					if (subType == sTypeTHBFloat)
 					{
-						sprintf(szTmp, "%.1f;%s;%s;%.1f;%s", temp, strarray[1].c_str(), strarray[2].c_str(), fbarometer, strarray[4].c_str());
+						sprintf(szTmp, "%.2f;%s;%s;%.1f;%s", temp, strarray[1].c_str(), strarray[2].c_str(), fbarometer, strarray[4].c_str());
 					}
 					else
 					{
-						sprintf(szTmp, "%.1f;%s;%s;%d;%s", temp, strarray[1].c_str(), strarray[2].c_str(), (int)rint(fbarometer), strarray[4].c_str());
+						sprintf(szTmp, "%.2f;%s;%s;%d;%s", temp, strarray[1].c_str(), strarray[2].c_str(), (int)rint(fbarometer), strarray[4].c_str());
 					}
 					sValue = szTmp;
 				}
