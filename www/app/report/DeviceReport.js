@@ -64,9 +64,9 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
             if (!vm.device) {
                 return undefined;
             }
-
             return ['Power', 'Energy', 'RFXMeter'].includes(vm.device.Type)
                 || ['kWh'].includes(vm.device.SubType)
+                || ['Counter Incremental'].includes(vm.device.SubType)
                 || (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType !== 'Energy');
         }
 

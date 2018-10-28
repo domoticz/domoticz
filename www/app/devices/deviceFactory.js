@@ -67,6 +67,8 @@ define(function () {
                 return 'dB';
             } else if (this.Type === 'General' && this.SubType === 'kWh') {
                 return 'kWh';
+            } else if (this.Type === 'General' && this.SubType === 'Counter Incremental') {
+                return '';
             } else if (this.Type === 'P1 Smart Meter' && this.SubType === 'Energy') {
                 return 'kWh';
             } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 2) {
