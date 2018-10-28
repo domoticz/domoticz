@@ -28,7 +28,7 @@ bool CZiBlueSerial::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CZiBlueSerial::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "ZiBlueSerial");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

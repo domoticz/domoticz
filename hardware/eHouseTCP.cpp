@@ -550,7 +550,7 @@ bool eHouseTCP::StartHardware()
 
 #endif
 	m_thread = std::make_shared<std::thread>(&eHouseTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "eHouseTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();

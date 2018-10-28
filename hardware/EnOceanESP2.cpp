@@ -648,7 +648,7 @@ bool CEnOceanESP2::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CEnOceanESP2::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "EnOceanESP2");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

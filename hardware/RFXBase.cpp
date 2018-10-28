@@ -34,7 +34,7 @@ bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len,
 		{
 			//something is out of sync here!!
 			//restart
-			_log.Log(LOG_ERROR, "RFXCOM: input buffer out of sync, going to restart!....");
+			Log(LOG_ERROR, "input buffer out of sync, going to restart!....");
 			m_rxbufferpos = 0;
 			return false;
 		}
@@ -43,7 +43,7 @@ bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len,
 			if (!checkValid || CheckValidRFXData((uint8_t*)&m_rxbuffer))
 				sDecodeRXMessage(this, (const uint8_t*)&m_rxbuffer, NULL, -1);
 			else
-				_log.Log(LOG_ERROR, "RFXCOM: Invalid data received!....");
+				Log(LOG_ERROR, "Invalid data received!....");
 
 			m_rxbufferpos = 0;    //set to zero to receive next message
 		}
@@ -188,7 +188,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
 		cmnd = asyncreceiveP1;
-		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'DSMR 1/2/3'");
+		Log(LOG_STATUS, "Async mode set to: 'DSMR 1/2/3'");
 		break;
 	case ATYPE_P1_DSMR_4:
 	case ATYPE_P1_DSMR_5:
@@ -198,7 +198,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
 		cmnd = asyncreceiveP1;
-		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'DSMR 4/5'");
+		Log(LOG_STATUS, "Async mode set to: 'DSMR 4/5'");
 		break;
 	case ATYPE_TELEINFO_1200://not handled yet!
 		baudrate = asyncbaud1200;
@@ -207,7 +207,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
 		cmnd = asyncreceiveTeleinfo;
-		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'Teleinfo 1200' (not implemented yet!)");
+		Log(LOG_STATUS, "Async mode set to: 'Teleinfo 1200' (not implemented yet!)");
 		break;
 	case ATYPE_TELEINFO_19200://not handled yet!
 		baudrate = asyncbaud19200;
@@ -215,13 +215,13 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		databits = asyncDatabits7;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
-		_log.Log(LOG_STATUS, "RFXCOM: Async mode set to: 'Teleinfo 19200' (not implemented yet!)");
+		Log(LOG_STATUS, "Async mode set to: 'Teleinfo 19200' (not implemented yet!)");
 		break;
 	case ATYPE_DISABLED:
-		_log.Log(LOG_STATUS, "RFXCOM: Async Disabled");
+		Log(LOG_STATUS, "Async Disabled");
 		break;
 	default:
-		_log.Log(LOG_ERROR, "RFXCOM: unknown ASync type received!....");
+		Log(LOG_ERROR, "unknown ASync type received!....");
 		return; //not handled yet!
 	}
 

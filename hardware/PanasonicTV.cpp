@@ -773,7 +773,7 @@ bool CPanasonic::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPanasonic::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Panasonic");
+	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Started");
 
 	return true;

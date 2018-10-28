@@ -119,7 +119,7 @@ bool CLogitechMediaServer::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Logitech");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

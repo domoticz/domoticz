@@ -38,7 +38,7 @@ bool CRtl433::StartHardware()
 	RequestStart();
 
 	m_thread = std::make_shared<std::thread>(&CRtl433::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Rtl433");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();

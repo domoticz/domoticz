@@ -51,7 +51,7 @@ bool MQTT::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "MQTT");
+	SetThreadNameInt(m_thread->native_handle());
 
 	StartHeartbeatThread();
 	return (m_thread != nullptr);

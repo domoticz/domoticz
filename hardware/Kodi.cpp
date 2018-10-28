@@ -918,7 +918,7 @@ bool CKodi::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CKodi::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Kodi");
+	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
 	return true;

@@ -112,7 +112,7 @@ bool P1MeterSerial::StartHardware()
 	m_bIsStarted=true;
 
 	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "P1MeterSerial");
+	SetThreadNameInt(m_thread->native_handle());
 
 	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);

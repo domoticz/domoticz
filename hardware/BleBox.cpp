@@ -52,7 +52,7 @@ bool BleBox::StartHardware()
 	LoadNodes();
 
 	m_thread = std::make_shared<std::thread>(&BleBox::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "BleBox");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);

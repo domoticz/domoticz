@@ -34,7 +34,7 @@ bool RFXComTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&RFXComTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "RFXComTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 
@@ -52,7 +52,7 @@ bool RFXComTCP::StopHardware()
 
 void RFXComTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "RFXCOM: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -60,7 +60,7 @@ void RFXComTCP::OnConnect()
 
 void RFXComTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS, "RFXCOM: disconnected");
+	Log(LOG_STATUS, "disconnected");
 }
 
 void RFXComTCP::Do_Work()
@@ -77,7 +77,7 @@ void RFXComTCP::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"RFXCOM: TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"TCP/IP Worker stopped...");
 }
 
 void RFXComTCP::OnData(const unsigned char *pData, size_t length)
@@ -88,7 +88,7 @@ void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 
 void RFXComTCP::OnError(const std::exception e)
 {
-	_log.Log(LOG_ERROR, "RFXCOM: Error: %s", e.what());
+	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 void RFXComTCP::OnError(const boost::system::error_code& error)
@@ -101,17 +101,17 @@ void RFXComTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "RFXCOM: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
 		(error == boost::asio::error::connection_reset)
 		)
 	{
-		_log.Log(LOG_STATUS, "RFXCOM: Connection reset!");
+		Log(LOG_STATUS, "Connection reset!");
 	}
 	else
-		_log.Log(LOG_ERROR, "RFXCOM: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 }
 
 bool RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)

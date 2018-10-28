@@ -758,7 +758,7 @@ bool XiaomiGateway::StartHardware()
 
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
-	SetThreadName(m_thread->native_handle(), "XiaomiGateway");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

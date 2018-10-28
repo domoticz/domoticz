@@ -1128,7 +1128,7 @@ typedef struct tagTHREADNAME_INFO
 	DWORD dwFlags; // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 #pragma pack(pop)
-int SetThreadName(std::thread::native_handle_type thread, const char* threadName) {
+int SetThreadName(const std::thread::native_handle_type &thread, const char* threadName) {
 	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
@@ -1147,7 +1147,7 @@ int SetThreadName(std::thread::native_handle_type thread, const char* threadName
 }
 #else
 // Based on https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
-int SetThreadName(std::thread::native_handle_type thread, const char *name)
+int SetThreadName(const std::thread::native_handle_type &thread, const char *name)
 {
 #if defined(__linux__) || defined(__linux) || defined(linux)
 	char name_trunc[16];

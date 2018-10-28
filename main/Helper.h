@@ -76,7 +76,7 @@ uint32_t SystemUptime();
 int GenerateRandomNumber(const int range);
 int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files);
 
-int SetThreadName(std::thread::native_handle_type thread, const char *name);
+int SetThreadName(const std::thread::native_handle_type &thread, const char *name);
 
 #if !defined(WIN32)
 	bool IsDebuggerPresent(void);

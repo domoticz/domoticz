@@ -147,7 +147,7 @@ char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCou
 	ExecQueuedEvents();
 #else
 	m_EhouseTcpClientThread[tcp_client_socket_index] = std::make_shared<std::thread>(&eHouseTCP::EhouseSubmitData, this, tcp_client_socket_index);
-	SetThreadName(m_EhouseTcpClientThread[tcp_client_socket_index]->native_handle(), "EHouseTCPClient");
+	SetThreadNameInt(m_EhouseTcpClientThread[tcp_client_socket_index]->native_handle());
 
 	m_EhouseTcpClientThread[tcp_client_socket_index]->detach();
 	sleep_milliseconds(100);

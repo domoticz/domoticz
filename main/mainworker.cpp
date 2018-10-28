@@ -1075,6 +1075,7 @@ bool MainWorker::AddHardwareFromParams(
 	{
 		pHardware->HwdType = Type;
 		pHardware->m_Name = Name;
+		pHardware->m_ShortName = Hardware_Short_Desc(Type);
 		pHardware->m_DataTimeout = DataTimeout;
 		AddDomoticzHardware(pHardware);
 

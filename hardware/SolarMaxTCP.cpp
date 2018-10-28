@@ -96,7 +96,7 @@ bool SolarMaxTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&SolarMaxTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "SolarMaxTCP");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

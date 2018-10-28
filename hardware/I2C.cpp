@@ -187,7 +187,7 @@ bool I2C::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&I2C::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "I2C");
+	SetThreadNameInt(m_thread->native_handle());
 	sOnConnected(this);
 	m_bIsStarted = true;
 	return (m_thread != nullptr);

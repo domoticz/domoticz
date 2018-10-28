@@ -88,7 +88,7 @@ bool USBtin::StartHardware()
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
 	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "USBtin");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 

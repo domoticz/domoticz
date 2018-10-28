@@ -167,7 +167,7 @@ bool CEvohomeWeb::StartHardware()
 		return false;
 	Init();
 	m_thread = std::make_shared<std::thread>(&CEvohomeWeb::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "EvohomeWeb");
+	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
 	m_bIsStarted = true;
