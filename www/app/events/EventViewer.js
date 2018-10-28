@@ -122,7 +122,10 @@ define(['app', 'events/factories'], function (app) {
                             .confirm(message)
                             .then(domoticzEventsApi.deleteEvent.bind(domoticzEventsApi, vm.event.id))
                     )
-                    .then(vm.onDelete.bind(this, { event: vm.event }));
+                    .then(function() {
+                        ShowNotify($.t('Script successfully removed'), 1500);
+                        vm.onDelete({ event: vm.event });
+                    });
             }
 
             function importEvent() {
