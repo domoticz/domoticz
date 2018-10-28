@@ -2,14 +2,20 @@
     <form class="form-inline">
         <div class="btn-group">
             <button class="btn btn-default"
-                    ng-class="{'active': $ctrl.eventData.eventstatus === '1'}"
+                    ng-class="{
+                        'btn-default': $ctrl.eventData.eventstatus === '0',
+                        'btn-success active': $ctrl.eventData.eventstatus === '1'
+                    }"
                     ng-click="$ctrl.setEventState(true)"
             >
                 {{:: 'On' | translate }}
             </button>
 
             <button class="btn btn-default"
-                    ng-class="{'active': $ctrl.eventData.eventstatus === '0'}"
+                    ng-class="{
+                        'btn-default': $ctrl.eventData.eventstatus === '1',
+                        'btn-danger active': $ctrl.eventData.eventstatus === '0'
+                    }"
                     ng-click="$ctrl.setEventState(false)"
             >
                 {{:: 'Off' | translate }}

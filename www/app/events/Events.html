@@ -3,14 +3,18 @@
         <h2>{{:: 'My automation scripts' | translate }}</h2>
         <input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="Type to filter" />
         <nav class="events-editor-tree">
-            <li class="events-editor-tree__item"
+            <li class="events-editor-tree-item"
+                ng-class="{
+                    'events-editor-tree-item_disabled': event.eventstatus === '0',
+                    'events-editor-tree-item_active': event.id === $ctrl.activeEventId
+                }"
                 ng-repeat="event in $ctrl.events | filter:$ctrl.search track by event.id"
             >
-                <a class="events-editor-tree__file"
-                   ng-class="{'events-editor-tree__file_disabled': event.eventstatus === '0'}"
+                <a class="events-editor-tree-item__file"
                    href="javascript:void(0)"
                    ng-click="$ctrl.openEvent(event)"
                 >
+                    <span class="label label-important" ng-if="event.eventstatus === '0'">{{:: 'Disabled' | translate }}</span>
                     {{ event.name }}
                 </a>
             </li>
