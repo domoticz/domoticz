@@ -4522,6 +4522,17 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 307)
+					{
+						//Westinghouse
+						dtype = pTypeFan;
+						subtype = sTypeWestinghouse;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 					else if (lighttype == 400) {
 						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
@@ -5121,6 +5132,17 @@ namespace http {
 						//Lucci Air DC
 						dtype = pTypeFan;
 						subtype = sTypeLucciAirDC;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 307)
+					{
+						//Westinghouse
+						dtype = pTypeFan;
+						subtype = sTypeWestinghouse;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;

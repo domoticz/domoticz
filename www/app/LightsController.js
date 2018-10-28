@@ -677,7 +677,11 @@ define(['app'], function (app) {
 										img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 									}
 								}
-								else if ((item.SubType.indexOf("Itho") == 0) || (item.SubType.indexOf("Lucci") == 0)) {
+								else if (
+									(item.SubType.indexOf("Itho") == 0) ||
+									(item.SubType.indexOf("Lucci") == 0) ||
+									(item.SubType.indexOf("Westinghouse") == 0)
+									) {
 									img = $(id + " #img").html();
 								}
 								else {
@@ -1257,7 +1261,10 @@ define(['app'], function (app) {
 								bAddTimer = false;
 								xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciDCPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
 							}
-							else if (item.SubType.indexOf("Lucci") == 0) {
+							else if (
+								(item.SubType.indexOf("Lucci") == 0) ||
+								(item.SubType.indexOf("Westinghouse") == 0)
+								) {
 							    bAddTimer = false;
 							    xhtm += '\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected + ');"></td>\n';
 							}
@@ -1827,8 +1834,8 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #fanparams").show();
 			}
-			else if ((lighttype == 305)||(lighttype == 306)) {
-				//Fan (Lucci Air)
+			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
+				//Fan (Lucci Air/Westinghouse)
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
@@ -2036,8 +2043,8 @@ define(['app'], function (app) {
 					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
 				mParams += "&id=" + ID;
 			}
-			else if ((lighttype == 305)||(lighttype == 306)) {
-				//Fan (Lucci Air)
+			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
+				//Fan (Lucci Air/Westinghouse)
 				ID =
 					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +
 					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text() +
