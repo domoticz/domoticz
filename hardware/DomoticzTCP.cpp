@@ -80,7 +80,7 @@ bool DomoticzTCP::StopHardware()
 
 void DomoticzTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "DomoticzTCP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	if (!m_username.empty())
 	{
 		char szAuth[300];
@@ -92,14 +92,14 @@ void DomoticzTCP::OnConnect()
 
 void DomoticzTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS, "DomoticzTCP: disconnected from: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "disconnected from: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 }
 
 void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 {
 	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != 0)
 	{
-		_log.Log(LOG_ERROR, "DomoticzTCP: Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
 		return;
 	}
 	std::lock_guard<std::mutex> l(readQueueMutex);
@@ -108,7 +108,7 @@ void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 
 void DomoticzTCP::OnError(const std::exception e)
 {
-	_log.Log(LOG_ERROR, "DomoticzTCP: Error: %s", e.what());
+	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 void DomoticzTCP::OnError(const boost::system::error_code& error)
@@ -122,11 +122,11 @@ void DomoticzTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::host_not_found)
 		)
 	{
-		_log.Log(LOG_ERROR, "DomoticzTCP: Can not connect to: %s:%d (%s)", m_szIPAddress.c_str(), m_usIPPort, error.message().c_str());
+		Log(LOG_ERROR, "Can not connect to: %s:%d (%s)", m_szIPAddress.c_str(), m_usIPPort, error.message().c_str());
 	}
 	else if (error != boost::asio::error::eof)
 	{
-		_log.Log(LOG_ERROR, "DomoticzTCP: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 	}
 }
 
@@ -142,7 +142,7 @@ void DomoticzTCP::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "DomoticzTCP: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
@@ -216,7 +216,7 @@ bool DomoticzTCP::ConnectInternalProxy()
 		sOnConnected(this); // we do need this?
 	}
 	else {
-		_log.Log(LOG_STATUS, "Delaying Domoticz master login");
+		Log(LOG_STATUS, "Delaying Domoticz master login");
 	}
 	return true;
 }
@@ -274,7 +274,7 @@ void DomoticzTCP::Authenticated(const std::string &aToken, bool authenticated)
 	b_ProxyConnected = authenticated;
 	token = aToken;
 	if (authenticated) {
-		_log.Log(LOG_STATUS, "Domoticz TCP connected via Proxy.");
+		Log(LOG_STATUS, "Domoticz TCP connected via Proxy.");
 	}
 }
 

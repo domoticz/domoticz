@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Comm5SMTCP.h"
-#include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
@@ -56,7 +56,7 @@ bool Comm5SMTCP::StartHardware()
 	m_thread = std::make_shared<std::thread>(&Comm5SMTCP::Do_Work, this);
 	SetThreadNameInt(m_thread->native_handle());
 
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: Started");
+	Log(LOG_STATUS, "Started");
 
 	return (m_thread != nullptr);
 }
@@ -75,7 +75,7 @@ bool Comm5SMTCP::StopHardware()
 
 void Comm5SMTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -84,7 +84,7 @@ void Comm5SMTCP::OnConnect()
 
 void Comm5SMTCP::OnDisconnect()
 {
-	_log.Log(LOG_ERROR, "Comm5 SM-XXXX: disconected");
+	Log(LOG_ERROR, "disconected");
 }
 
 void Comm5SMTCP::Do_Work()
@@ -104,7 +104,7 @@ void Comm5SMTCP::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
 void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
@@ -168,7 +168,7 @@ void Comm5SMTCP::OnData(const unsigned char *pData, size_t length)
 
 void Comm5SMTCP::OnError(const std::exception e)
 {
-	_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Error: %s", e.what());
+	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 void Comm5SMTCP::OnError(const boost::system::error_code& error)
@@ -180,13 +180,13 @@ void Comm5SMTCP::OnError(const boost::system::error_code& error)
 	case boost::asio::error::access_denied:
 	case boost::asio::error::host_unreachable:
 	case boost::asio::error::timed_out:
-		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		break;
 	case boost::asio::error::eof:
 	case boost::asio::error::connection_reset:
-		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Connection reset!");
+		Log(LOG_ERROR, "Connection reset!");
 		break;
 	default:
-		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 	}
 }

@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Comm5Serial.h"
+#include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
-#include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 
 /*
@@ -78,9 +78,9 @@ bool Comm5Serial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"Comm5 MA-4200: Error opening serial port!");
+		Log(LOG_ERROR,"Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -88,7 +88,7 @@ bool Comm5Serial::StartHardware()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"Comm5 MA-4200: Error opening serial port!!!");
+		_log.Log(LOG_ERROR,"Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;
@@ -119,7 +119,7 @@ void Comm5Serial::Do_Work()
 	querySensorState();
 	enableNotifications();
 
-	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 
 	while (!IsStopRequested(100))
@@ -134,7 +134,7 @@ void Comm5Serial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void Comm5Serial::requestDigitalInputResponseHandler(const std::string & mframe)
@@ -213,7 +213,7 @@ void Comm5Serial::ParseData(const unsigned char* data, const size_t len)
 
 			}
 			else {
-				_log.Log(LOG_ERROR, "Comm5 MA-4200: Framing error");
+				Log(LOG_ERROR, "Framing error");
 				currentState = STSTART_OCTET1;
 			}
 			break;
@@ -225,7 +225,7 @@ void Comm5Serial::ParseData(const unsigned char* data, const size_t len)
 				currentState = STFRAME_SIZE;
 			}
 			else {
-				_log.Log(LOG_ERROR, "Comm5 MA-4200: Framing error");
+				Log(LOG_ERROR, "Framing error");
 				currentState = STSTART_OCTET1;
 			}
 			break;
@@ -328,7 +328,7 @@ void Comm5Serial::enableNotifications()
 
 void Comm5Serial::OnError(const std::exception e)
 {
-	_log.Log(LOG_ERROR, "Comm5 MA-4200: Error: %s", e.what());
+	Log(LOG_ERROR, "Error: %s", e.what());
 }
 
 

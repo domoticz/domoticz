@@ -39,7 +39,7 @@ bool CurrentCostMeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"CurrentCost Smart Meter: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS,"Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_baudRate,
@@ -50,9 +50,9 @@ bool CurrentCostMeterSerial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"CurrentCost Smart Meter: Error opening serial port!");
+		Log(LOG_ERROR,"Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -60,7 +60,7 @@ bool CurrentCostMeterSerial::StartHardware()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"CurrentCost Smart Meter: Error opening serial port!!!");
+		Log(LOG_ERROR,"Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;
@@ -100,7 +100,7 @@ void CurrentCostMeterSerial::Do_Work()
 	int sec_counter = 0;
 	int msec_counter = 0;
 
-	_log.Log(LOG_STATUS, "CurrentCost: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(200))
 	{
@@ -117,7 +117,7 @@ void CurrentCostMeterSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "CurrentCost: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 //Webserver helpers

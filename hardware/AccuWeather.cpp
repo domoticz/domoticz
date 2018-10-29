@@ -111,7 +111,7 @@ void CAccuWeather::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"AccuWeather Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CAccuWeather::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
@@ -141,13 +141,13 @@ std::string CAccuWeather::GetLocationKey()
 		bret = HTTPClient::GET(szURL, sResult);
 		if (!bret)
 		{
-			_log.Log(LOG_ERROR, "AccuWeather: Error getting http data!");
+			Log(LOG_ERROR, "Error getting http data!");
 			return "";
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "AccuWeather: Error getting http data!");
+		Log(LOG_ERROR, "Error getting http data!");
 		return "";
 	}
 #endif
@@ -161,7 +161,7 @@ std::string CAccuWeather::GetLocationKey()
 		bool ret = jReader.parse(sResult, root);
 		if (!ret)
 		{
-			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
+			Log(LOG_ERROR, "Invalid data received!");
 			return "";
 		}
 		if (!root.empty())
@@ -170,25 +170,25 @@ std::string CAccuWeather::GetLocationKey()
 				root = root[0];
 			if (!root.isObject())
 			{
-				_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+				Log(LOG_ERROR, "Invalid data received, or unknown location!");
 				return "";
 			}
 			if (root["Key"].empty())
 			{
-				_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+				Log(LOG_ERROR, "Invalid data received, or unknown location!");
 				return "";
 			}
 			return root["Key"].asString();
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, unknown location or API key!");
+			Log(LOG_ERROR, "Invalid data received, unknown location or API key!");
 			return "";
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "AccuWeather: Error parsing JSon data!");
+		Log(LOG_ERROR, "Error parsing JSon data!");
 	}
 	return "";
 }
@@ -209,13 +209,13 @@ void CAccuWeather::GetMeterDetails()
 		bret = HTTPClient::GET(szURL, sResult);
 		if (!bret)
 		{
-			_log.Log(LOG_ERROR, "AccuWeather: Error getting http data!");
+			Log(LOG_ERROR, "Error getting http data!");
 			return;
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "AccuWeather: Error getting http data!");
+		Log(LOG_ERROR, "Error getting http data!");
 		return;
 	}
 #endif
@@ -230,20 +230,20 @@ void CAccuWeather::GetMeterDetails()
 		bool ret = jReader.parse(sResult, root);
 		if (!ret)
 		{
-			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
+			Log(LOG_ERROR, "Invalid data received!");
 			return;
 		}
 
 		if (root.size() < 1)
 		{
-			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
+			Log(LOG_ERROR, "Invalid data received!");
 			return;
 		}
 		root = root[0];
 
 		if (root["LocalObservationDateTime"].empty())
 		{
-			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+			Log(LOG_ERROR, "Invalid data received, or unknown location!");
 			return;
 		}
 
@@ -453,7 +453,7 @@ void CAccuWeather::GetMeterDetails()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "AccuWeather: Error parsing JSon data!");
+		Log(LOG_ERROR, "Error parsing JSon data!");
 	}
 }
 

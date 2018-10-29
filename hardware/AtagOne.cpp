@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "AtagOne.h"
 #include "../main/Helper.h"
-#include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
 #include "../main/WebServerHelper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
@@ -148,7 +148,7 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 
 	if (!HTTPClient::GET(sURL, sResult))
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Error requesting token!");
+		Log(LOG_ERROR, "Error requesting token!");
 		return "";
 	}
 #ifdef DEBUG_AtagOneThermostat
@@ -199,7 +199,7 @@ bool CAtagOne::Login()
 			m_bDoLogin = false;
 			return true;
 		}
-		_log.Log(LOG_ERROR, "AtagOne: Error login!");
+		Log(LOG_ERROR, "Error login!");
 		return false;
 	}
 
@@ -220,7 +220,7 @@ bool CAtagOne::Login()
 	sURL = ATAGONE_URL_LOGIN;
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Error login!");
+		Log(LOG_ERROR, "Error login!");
 		return false;
 	}
 
@@ -233,7 +233,7 @@ bool CAtagOne::Login()
 	m_ThermostatID = GetFirstDeviceID(sResult);
 	if (m_ThermostatID.empty())
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Error getting device_id!");
+		Log(LOG_ERROR, "Error getting device_id!");
 		return false;
 	}
 	m_bDoLogin = false;
@@ -253,7 +253,7 @@ void CAtagOne::Logout()
 
 void CAtagOne::Do_Work()
 {
-	_log.Log(LOG_STATUS,"AtagOne: Worker started...");
+	Log(LOG_STATUS,"Worker started...");
 	int sec_counter = AtagOne_POLL_INTERVAL-5;
 	while (!IsStopRequested(1000))
 	{
@@ -267,7 +267,7 @@ void CAtagOne::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"AtagOne: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
@@ -373,7 +373,7 @@ void CAtagOne::GetMeterDetails()
 	std::string sURL = std::string(ATAGONE_URL_DIAGNOSTICS) + "?deviceId=" + CURLEncode::URLEncode(m_ThermostatID);
 	if (!HTTPClient::GET(sURL, sResult))
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Error getting thermostat data!");
+		Log(LOG_ERROR, "Error getting thermostat data!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -388,7 +388,7 @@ void CAtagOne::GetMeterDetails()
 	sret = GetHTMLPageValue(sResult, "Kamertemperatuur", "Room temperature", true);
 	if (sret.empty())
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received...");
 		return;
 	}
 	root["roomTemperature"] = static_cast<float>(atof(sret.c_str()));
@@ -415,7 +415,7 @@ void CAtagOne::GetMeterDetails()
 	stdreplace(sURL, "{0}", CURLEncode::URLEncode(m_ThermostatID));
 	if (!HTTPClient::GET(sURL, sResult))
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Error getting target setpoint data!");
+		Log(LOG_ERROR, "Error getting target setpoint data!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -428,12 +428,12 @@ void CAtagOne::GetMeterDetails()
 	bool ret = jReader.parse(sResult, root2);
 	if ((!ret) || (!root2.isObject()))
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received...");
 		return;
 	}
 	if (root2["targetTemp"].empty())
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received...");
 		return;
 	}
 	root["targetTemperature"] = static_cast<float>(atof(root2["targetTemp"].asString().c_str()));
@@ -504,7 +504,7 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 {
 	if (idx != 1)
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Currently only Room Temperature Setpoint allowed!");
+		Log(LOG_ERROR, "Currently only Room Temperature Setpoint allowed!");
 		return;
 	}
 
@@ -515,7 +515,7 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 		(dtemp>ATAGONE_TEMPERATURE_MAX)
 		)
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Temperature should be between %d and %d", ATAGONE_TEMPERATURE_MIN, ATAGONE_TEMPERATURE_MAX);
+		Log(LOG_ERROR, "Temperature should be between %d and %d", ATAGONE_TEMPERATURE_MIN, ATAGONE_TEMPERATURE_MAX);
 		return;
 	}
 	char szTemp[20];
@@ -538,7 +538,7 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 	std::string sResult;
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "AtagOne: Error setting Setpoint!");
+		Log(LOG_ERROR, "Error setting Setpoint!");
 		return;
 	}
 #ifdef DEBUG_AtagOneThermostat

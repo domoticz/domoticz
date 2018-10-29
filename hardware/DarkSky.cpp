@@ -90,7 +90,7 @@ bool CDarkSky::StopHardware()
 
 void CDarkSky::Do_Work()
 {
-	_log.Log(LOG_STATUS, "DarkSky: Started...");
+	Log(LOG_STATUS, "Started...");
 
 	int sec_counter = 290;
 	while (!IsStopRequested(1000))
@@ -104,7 +104,7 @@ void CDarkSky::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"DarkSky: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CDarkSky::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
@@ -137,13 +137,13 @@ void CDarkSky::GetMeterDetails()
 		bret = HTTPClient::GET(szURL, sResult);
 		if (!bret)
 		{
-			_log.Log(LOG_ERROR, "DarkSky: Error getting http data!.");
+			Log(LOG_ERROR, "Error getting http data!.");
 			return;
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "DarkSky: Error getting http data!");
+		Log(LOG_ERROR, "Error getting http data!");
 		return;
 	}
 #ifdef DEBUG_DarkSkyW
@@ -157,12 +157,12 @@ void CDarkSky::GetMeterDetails()
 	bool ret=jReader.parse(sResult,root);
 	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR,"DarkSky: Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
+		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
 		return;
 	}
 	if (root["currently"].empty()==true)
 	{
-		_log.Log(LOG_ERROR,"DarkSky: Invalid data received, or unknown location!");
+		Log(LOG_ERROR,"Invalid data received, or unknown location!");
 		return;
 	}
 	/*
