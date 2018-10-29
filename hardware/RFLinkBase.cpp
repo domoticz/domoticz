@@ -476,7 +476,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			std::string tswitchcmnd = "ON";
 			//Build send string
 			std::stringstream sstr;
-			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << tswitchcmnd;
+			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << tswitchcmnd << ";";
 			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 			sstr << '\n';
 			m_bTXokay = false; // clear OK flag
@@ -499,7 +499,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		std::stringstream sstr;
 		//10;MiLightv1;1234;01;5566;ON;     => protocol;address;unit number;color&brightness;action (ON/OFF/ALLON/ALLOFF etc)
 
-		sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd;
+		sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd << ";";
 		//#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 		//#endif
@@ -524,7 +524,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			//Build send string
 			sstr.str("");
 
-			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd2;
+			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd2 << ";";
 			//#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 			//#endif
