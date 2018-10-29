@@ -23,7 +23,6 @@ public:
 	void RemoveNode(const int ID);
 	void RemoveAllNodes();
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
-	void Restart();
 private:
 	void Do_Work();
 	bool StartHardware() override;

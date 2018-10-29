@@ -425,12 +425,6 @@ void CPinger::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-void CPinger::Restart()
-{
-	StopHardware();
-	StartHardware();
-}
-
 //Webserver helpers
 namespace http {
 	namespace server {

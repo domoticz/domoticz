@@ -29,12 +29,35 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 bool CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;
-	return StartHardware();
+	m_bIsStarted = StartHardware();
+	return m_bIsStarted;
 }
 
 bool CDomoticzHardwareBase::Stop()
 {
-	return StopHardware();
+	m_bIsStarted = (!StopHardware());
+	return (!m_bIsStarted);
+}
+
+bool CDomoticzHardwareBase::Restart()
+{
+	if (StopHardware())
+	{
+		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
+	}
+	return false;
+}
+
+bool CDomoticzHardwareBase::RestartWithDelay(const long seconds)
+{
+	if (StopHardware())
+	{
+		sleep_seconds(seconds);
+		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
+	}
+	return false;
 }
 
 void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
@@ -44,16 +67,21 @@ void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
 
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
-	m_stopHeartbeatrequested = false;
-	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
-	SetThreadName(m_Heartbeatthread->native_handle(), "Domoticz_HBWork");
+	StartHeartbeatThread("Domoticz_HBWork");
 }
+
+void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
+{
+	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
+	SetThreadName(m_Heartbeatthread->native_handle(), ThreadName);
+}
+
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
 {
-	m_stopHeartbeatrequested = true;
 	if (m_Heartbeatthread)
 	{
+		RequestStop();
 		m_Heartbeatthread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
@@ -65,11 +93,8 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 {
 	int secCounter = 0;
 	int hbCounter = 0;
-	while (!m_stopHeartbeatrequested)
+	while (!IsStopRequested(200))
 	{
-		sleep_milliseconds(200);
-		if (m_stopHeartbeatrequested)
-			break;
 		secCounter++;
 		if (secCounter == 5)
 		{

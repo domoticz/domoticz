@@ -835,12 +835,6 @@ void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-void CPanasonic::Restart()
-{
-	StopHardware();
-	StartHardware();
-}
-
 bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);

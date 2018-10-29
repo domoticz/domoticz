@@ -662,12 +662,6 @@ void BleBox::SetSettings(const int pollIntervalSec)
 		m_PollInterval = pollIntervalSec;
 }
 
-void BleBox::Restart()
-{
-	StopHardware();
-	StartHardware();
-}
-
 void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
 { //TODO - remove this method, when in DomoticzHardware bug is fix (15 instead 16)
 	double rlevel = (15.0 / 100.0)*Level;

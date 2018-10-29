@@ -26,7 +26,6 @@ public:
 	USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode/*,unsigned int baud_rate = USBTIN_BAUD_RATE*/);
 	~USBtin();
 	std::string m_szSerialPort;
-	void Restart();
 	unsigned int Bus_CANType;
 	unsigned long switch_id_base;
 private:

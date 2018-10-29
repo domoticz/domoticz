@@ -261,7 +261,7 @@ void USBtin::ParseData(const char *pData, int Len)
 			m_USBtinBelErrorCount++;
 			if( m_USBtinBelErrorCount > 3 ){ //If more than 3 BEL receive : restart the Gateway !
 				_log.Log(LOG_ERROR,"USBtin: 3x times BEL signal receive : restart gateway ");
-				Restart();
+				RestartWithDelay(TIME_3sec);
 			}
 			else{
 				_log.Log(LOG_ERROR,"USBtin: BEL signal (commande allready active or Gateway error) ! ");

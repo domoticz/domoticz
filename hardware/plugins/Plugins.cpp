@@ -969,12 +969,6 @@ namespace Plugins {
 		_log.Log(LOG_STATUS, "(%s) Exiting work loop.", m_Name.c_str());
 	}
 
-	void CPlugin::Restart()
-	{
-		StopHardware();
-		StartHardware();
-	}
-
 	bool CPlugin::Initialise()
 	{
 		m_bIsStarted = false;
