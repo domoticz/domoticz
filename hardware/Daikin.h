@@ -39,7 +39,6 @@ private:
 	std::string m_stemp;
 	std::string m_shum;
 	std::string m_led;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 	int m_sec_counter;            
 	std::string m_dt[8];     // Memorized Temp target for each mode. 

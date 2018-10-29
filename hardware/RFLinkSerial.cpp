@@ -19,11 +19,13 @@ CRFLinkSerial::~CRFLinkSerial()
 
 bool CRFLinkSerial::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr = RFLINK_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRFLinkSerial::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "RFLinkSerial");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

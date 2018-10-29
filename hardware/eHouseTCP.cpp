@@ -396,7 +396,6 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_socket(INVALID_SOCKET),
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
-	m_stoprequested(false),
 	m_pollInterval(pollInterval)
 {
 	m_eHouseUDPSocket = -1;			//UDP socket handler
@@ -534,6 +533,8 @@ eHouseTCP::~eHouseTCP()
 /////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StartHardware()
 {
+	RequestStart();
+
 #ifdef UDP_USE_THREAD
 	ThEhouseUDPdta.No = 1;
 	ThEhouseUDPdta.IntParam = UDP_PORT;		//udp thread setup
@@ -549,7 +550,7 @@ bool eHouseTCP::StartHardware()
 
 #endif
 	m_thread = std::make_shared<std::thread>(&eHouseTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "eHouseTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
@@ -563,15 +564,11 @@ bool eHouseTCP::StopHardware()
 	LOG(LOG_STATUS, "eHouse: Stop hardware");
 	//#endif
 	TerminateUDP();
-	ssl(1);
-	m_stoprequested = true;
-	/*#ifdef WIN32
-		WSACleanup();
-	#endif
-	*/
+	sleep_seconds(1);
 
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -605,7 +602,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		saddr.sin_addr.s_addr = IP;
 	else
 		saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
-	saddr.sin_port = htons((u_short)m_EHOUSE_TCP_PORT);
+	saddr.sin_port = htons((uint16_t)m_EHOUSE_TCP_PORT);
 	memset(&server, 0, sizeof(server));               //clear server structure
 	memset(&challange, 0, sizeof(challange));         //clear buffer
 	char line[20];
@@ -620,7 +617,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	server.sin_addr.s_addr = m_addr.sin_addr.s_addr;
 	server.sin_family = AF_INET;                    //tcp v4
-	server.sin_port = htons((u_short)m_EHOUSE_TCP_PORT);       //assign eHouse Port
+	server.sin_port = htons((uint16_t)m_EHOUSE_TCP_PORT);       //assign eHouse Port
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
 	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{

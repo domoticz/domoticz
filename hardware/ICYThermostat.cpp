@@ -29,7 +29,6 @@ m_UserName(Username),
 m_Password(Password)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	m_companymode = CMODE_UNKNOWN;
 	Init();
 }
@@ -46,10 +45,12 @@ void CICYThermostat::Init()
 
 bool CICYThermostat::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CICYThermostat::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "ICYThermostat");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -59,8 +60,9 @@ bool CICYThermostat::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -72,11 +74,9 @@ void CICYThermostat::Do_Work()
 {
 	int sec_counter = ICY_POLL_INTERVAL-5;
 	_log.Log(LOG_STATUS,"ICYThermostat: Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
-
 		if (sec_counter % 12 == 0)
 		{
 			m_LastHeartbeat = mytime(NULL);

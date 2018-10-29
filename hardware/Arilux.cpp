@@ -27,7 +27,6 @@ Arilux::Arilux(const int ID)
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
-	m_stoprequested = false;
 	m_isWhite = true;
 
 }
@@ -38,7 +37,8 @@ Arilux::~Arilux(void)
 
 bool Arilux::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	m_bDoRestart = false;
 
 	//force connect the next first time
@@ -46,24 +46,18 @@ bool Arilux::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Arilux::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Arilux");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }
 
 bool Arilux::StopHardware()
 {
-	m_stoprequested = true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -76,9 +70,8 @@ void Arilux::Do_Work()
 	_log.Log(LOG_STATUS, "Arilux Worker started...");
 
 	int sec_counter = Arilux_POLL_INTERVAL - 5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

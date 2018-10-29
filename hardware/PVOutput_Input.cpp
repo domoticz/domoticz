@@ -19,7 +19,6 @@ m_SID(SID),
 m_KEY(Key)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -33,10 +32,12 @@ void CPVOutputInput::Init()
 
 bool CPVOutputInput::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPVOutputInput::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "PVOutputInput");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -46,7 +47,7 @@ bool CPVOutputInput::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -60,10 +61,8 @@ void CPVOutputInput::Do_Work()
 {
 	int LastMinute=-1;
 	_log.Log(LOG_STATUS,"PVOutput (Input): Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-
 		time_t atime=mytime(NULL);
 		m_LastHeartbeat = atime;
 		struct tm ltime;

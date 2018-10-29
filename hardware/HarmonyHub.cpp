@@ -99,7 +99,6 @@ void CHarmonyHub::Init()
 	m_bWantAnswer = false;
 	m_bNeedEcho = false;
 	m_bReceivedMessage = false;
-	m_stoprequested = false;
 	m_bIsChangingActivity = false;
 	m_bShowConnectError = true;
 	m_szCurActivityID = "";
@@ -139,10 +138,12 @@ void CHarmonyHub::Logout()
 
 bool CHarmonyHub::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHarmonyHub::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "HarmonyHub");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -153,14 +154,13 @@ bool CHarmonyHub::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	m_bIsChangingActivity = false;
 	m_szHubSwVersion = "";
-	Logout();
 	return true;
 }
 
@@ -193,14 +193,15 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 		_log.Log(LOG_STATUS, "Harmony Hub: Received a switch command but we are not connected - attempting connect now");
 		this->m_bLoginNow = true;
 		int retrycount = 0;
-		while (retrycount < 10)
+		while ( (retrycount < 10) && (!IsStopRequested(500)) )
 		{
 			// give worker thread up to 5 seconds time to establish the connection
-			sleep_milliseconds(500);
 			if ((this->m_connectionstatus == BOUND) && (!m_szCurActivityID.empty()))
 				break;
 			retrycount++;
 		}
+		if (IsStopRequested(0))
+			return true;
 
 		if (this->m_connectionstatus == DISCONNECTED)
 		{
@@ -257,11 +258,8 @@ void CHarmonyHub::Do_Work()
 
 	m_bLoginNow = true;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(0))
 	{
-		if (m_stoprequested)
-			break;
-
 		if (m_connectionstatus == BOUND)
 		{
 			if (!m_bWantAnswer)
@@ -407,7 +405,8 @@ void CHarmonyHub::Do_Work()
 		else
 		{
 			// use a 1s poll interval
-			sleep_milliseconds(1000);
+			if (IsStopRequested(1000))
+				break;
 			pcounter++;
 			hcounter--;
 		}
@@ -419,8 +418,6 @@ void CHarmonyHub::Do_Work()
 			m_LastHeartbeat=mytime(NULL);
 		}
 	}
-
-	// be nice
 	Logout();
 
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");

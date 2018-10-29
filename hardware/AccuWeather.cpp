@@ -54,7 +54,6 @@ m_Location(Location),
 m_LocationKey("")
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -68,10 +67,13 @@ void CAccuWeather::Init()
 
 bool CAccuWeather::StartHardware()
 {
+	RequestStart();
+
 	Init();
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CAccuWeather::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "AccuWeather");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -81,7 +83,7 @@ bool CAccuWeather::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -92,9 +94,8 @@ bool CAccuWeather::StopHardware()
 void CAccuWeather::Do_Work()
 {
 	int sec_counter = 595;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

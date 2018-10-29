@@ -49,6 +49,8 @@ m_szIPAddress(IPAddress)
 
 bool Comm5TCP::StartHardware()
 {
+	RequestStart();
+
 	m_bReceiverStarted = false;
 
 	//force connect the next first time
@@ -56,7 +58,7 @@ bool Comm5TCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Comm5TCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Comm5TCP");
+	SetThreadNameInt(m_thread->native_handle());
 
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: Started");
 
@@ -94,26 +96,17 @@ void Comm5TCP::OnDisconnect()
 
 void Comm5TCP::Do_Work()
 {
-	bool bFirstTime = true;
-	int count = 0;
-	while (!IsStopRequested(40))
+	int sec_counter = 0;
+	connect(m_szIPAddress, m_usIPPort);
+	while (!IsStopRequested(1000))
 	{
-		m_LastHeartbeat = mytime(NULL);
-		if (bFirstTime)
-		{
-			bFirstTime = false;
-			if (!isConnected())
-			{
-				connect(m_szIPAddress, m_usIPPort);
-			}
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
-		else
-		{
-			update();
-			if (count++ >= 100) {
-				count = 0;
-				querySensorState();
-			}
+		if (sec_counter % 4 == 0) {
+			querySensorState();
 		}
 	}
 	terminate();

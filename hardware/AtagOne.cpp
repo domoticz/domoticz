@@ -87,16 +87,18 @@ void CAtagOne::Init()
 {
 	m_ThermostatID = "";
 	m_bDoLogin = true;
-	m_stoprequested = false;
 }
 
 bool CAtagOne::StartHardware()
 {
+	RequestStart();
+
 	Init();
+
 	m_LastMinute = -1;
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CAtagOne::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "AtagOne");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -106,7 +108,7 @@ bool CAtagOne::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -253,9 +255,8 @@ void CAtagOne::Do_Work()
 {
 	_log.Log(LOG_STATUS,"AtagOne: Worker started...");
 	int sec_counter = AtagOne_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);

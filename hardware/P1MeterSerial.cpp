@@ -52,6 +52,8 @@ P1MeterSerial::~P1MeterSerial()
 
 bool P1MeterSerial::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_FROM_FILE
 	FILE *fIn=fopen("E:\\meter.txt","rb+");
 	BYTE buffer[1400];
@@ -110,7 +112,7 @@ bool P1MeterSerial::StartHardware()
 	m_bIsStarted=true;
 
 	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "P1MeterSerial");
+	SetThreadNameInt(m_thread->native_handle());
 
 	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
@@ -134,7 +136,7 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 {
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
-	ParseData((const unsigned char*)data, static_cast<int>(len), m_bDisableCRC, m_ratelimit);
+	ParseP1Data((const unsigned char*)data, static_cast<int>(len), m_bDisableCRC, m_ratelimit);
 }
 
 bool P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)

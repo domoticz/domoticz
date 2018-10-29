@@ -68,7 +68,6 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	m_ActHome = 0;
 
-	m_stoprequested = false;
 	m_bPollThermostat = true;
 	m_bPollWeatherData = true;
 	m_bFirstTimeThermostat = true;
@@ -103,10 +102,12 @@ void CNetatmo::Init()
 
 bool CNetatmo::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CNetatmo::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Netatmo");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -116,7 +117,7 @@ bool CNetatmo::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -130,11 +131,8 @@ void CNetatmo::Do_Work()
 	bool bFirstTimeWS = true;
 	bool bFirstTimeTH = true;
 	_log.Log(LOG_STATUS, "Netatmo: Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

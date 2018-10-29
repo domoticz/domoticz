@@ -17,7 +17,6 @@ m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -55,10 +54,12 @@ void CYouLess::Init()
 
 bool CYouLess::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CYouLess::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "YouLess");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -68,7 +69,7 @@ bool CYouLess::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -80,9 +81,9 @@ void CYouLess::Do_Work()
 {
 	int sec_counter = YOULESS_POLL_INTERVAL - 2;
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "YouLess: Worker started...");
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {

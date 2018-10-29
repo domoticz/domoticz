@@ -38,7 +38,6 @@ m_Username(CURLEncode::URLEncode(username)),
 m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_bCheckedForTempDevice = false;
 	m_bIsTempDevice = false;
@@ -54,13 +53,14 @@ void KMTronicTCP::Init()
 
 bool KMTronicTCP::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&KMTronicTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "KMTronicTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
-	_log.Log(LOG_STATUS, "KMTronic: Started");
 	return (m_thread != nullptr);
 }
 
@@ -68,7 +68,7 @@ bool KMTronicTCP::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -79,12 +79,10 @@ bool KMTronicTCP::StopHardware()
 void KMTronicTCP::Do_Work()
 {
 	int sec_counter = KMTRONIC_POLL_INTERVAL - 2;
-
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker started...");
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
-
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}

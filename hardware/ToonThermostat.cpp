@@ -110,7 +110,6 @@ m_Agreement(Agreement)
 
 	m_ClientID = "";
 	m_ClientIDChecksum = "";
-	m_stoprequested = false;
 	m_lastSharedSendElectra = 0;
 	m_lastSharedSendGas = 0;
 	m_lastgasusage = 0;
@@ -139,7 +138,6 @@ void CToonThermostat::Init()
 {
 	m_ClientID = "";
 	m_ClientIDChecksum = "";
-	m_stoprequested = false;
 	m_lastSharedSendElectra = 0;
 	m_lastSharedSendGas = 0;
 	m_lastgasusage = 0;
@@ -178,10 +176,12 @@ void CToonThermostat::Init()
 
 bool CToonThermostat::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CToonThermostat::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "ToonThermostat");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -191,13 +191,11 @@ bool CToonThermostat::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
     m_bIsStarted=false;
-	if (!m_bDoLogin)
-		Logout();
     return true;
 }
 
@@ -205,9 +203,8 @@ void CToonThermostat::Do_Work()
 {
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker started...");
 	int sec_counter = 1;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		m_poll_counter--;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
@@ -225,6 +222,8 @@ void CToonThermostat::Do_Work()
 			}
 		}
 	}
+	Logout();
+
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker stopped...");
 }
 

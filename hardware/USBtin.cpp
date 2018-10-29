@@ -41,14 +41,6 @@ History :
 #define USBTIN_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
 #define USBTIN_STOP_BITS         boost::asio::serial_port_base::stop_bits::one
 
-#define	TIME_3sec				3000
-#define	TIME_1sec				1000
-#define	TIME_500ms				500
-#define	TIME_200ms				200
-#define	TIME_100ms				100
-#define	TIME_10ms				10
-#define	TIME_5ms				5
-
 #define	USBTIN_CR							0x0D
 #define	USBTIN_BELSIGNAL					0x07
 #define	USBTIN_FIRMWARE_VERSION				0x76
@@ -91,11 +83,19 @@ void USBtin::Init()
 
 bool USBtin::StartHardware()
 {
+	RequestStart();
+
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
 	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "USBtin");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
+}
+
+void USBtin::Restart()
+{
+	StopHardware();
+	StartHardware();
 }
 
 bool USBtin::StopHardware()
@@ -116,7 +116,7 @@ void USBtin::Do_Work()
 	int msec_counter = 0;
 	m_EtapeInitCan = 0;
 
-	while (!IsStopRequested(TIME_200ms))
+	while (!IsStopRequested(200))
 	{
 		msec_counter++;
 		if (msec_counter == 5)
@@ -371,7 +371,7 @@ void USBtin::GetHWVersion()
 {
 	std::string data("V");
 	writeFrame(data);
-	sleep_milliseconds(TIME_200ms);
+	sleep_milliseconds(200);
 
 }
 void USBtin::GetSerialNumber()

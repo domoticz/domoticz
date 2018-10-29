@@ -7,7 +7,10 @@
 #include "../main/localtime_r.h"
 
 CEvohomeTCP::CEvohomeTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &UserContID) :
-CEvohomeRadio(ID, UserContID), m_szIPAddress(IPAddress), m_usIPPort(usIPPort)
+
+	CEvohomeRadio(ID, UserContID),
+	m_szIPAddress(IPAddress),
+	m_usIPPort(usIPPort)
 {
 }
 
@@ -56,43 +59,20 @@ void CEvohomeTCP::Do_Work()
     nStartup = 0;
     nStarts = 0;
 
-	bool bFirstTime = true;
 	int sec_counter = 0;
 
+	_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
-		time_t atime = mytime(NULL);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat= atime;
+			m_LastHeartbeat= mytime(NULL);
 		}
 
-		if (bFirstTime)
-		{
-			bFirstTime=false;
-
-			if (isConnected())
-			{
-				disconnect();
-			}
-			_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-			connect(m_szIPAddress,m_usIPPort);
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				_log.Log(LOG_STATUS, "evohome TCP/IP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				disconnect();
-				connect(m_szIPAddress, m_usIPPort);
-			}
-            update();
-            Idle_Work();
-		}
+		Idle_Work();
 	}
-	terminate();
-
 	_log.Log(LOG_STATUS,"evohome TCP/IP: TCP/IP Worker stopped...");
 }
 

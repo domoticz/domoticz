@@ -44,7 +44,6 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigne
 	m_p1power.ID = 1;
 
 	m_HwdID = ID;
-	m_stoprequested = false;
 }
 
 EnphaseAPI::~EnphaseAPI(void)
@@ -53,9 +52,11 @@ EnphaseAPI::~EnphaseAPI(void)
 
 bool EnphaseAPI::StartHardware()
 {
+	RequestStart();
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&EnphaseAPI::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "EnphaseAPI");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -65,7 +66,7 @@ bool EnphaseAPI::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -78,9 +79,8 @@ void EnphaseAPI::Do_Work()
 	_log.Log(LOG_STATUS, "EnphaseAPI Worker started...");
 	int sec_counter = Enphase_request_INTERVAL - 5;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {

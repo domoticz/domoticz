@@ -145,7 +145,6 @@ _eNotificationTypes	CKodiNode::CKodiStatus::NotificationType()
 CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
 	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort)
 {
-	m_stoprequested = false;
 	m_Busy = false;
 	m_Stoppable = false;
 	m_PlaylistPosition = 0;
@@ -568,7 +567,7 @@ void CKodiNode::handleConnect()
 {
 	try
 	{
-		if (!m_stoprequested && !m_Socket)
+		if (!IsStopRequested(0) && !m_Socket)
 		{
 			m_iMissedPongs = 0;
 			boost::system::error_code ec;
@@ -647,7 +646,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		m_RetainedData = sData;
 
 		//ready for next read
-		if (!m_stoprequested && m_Socket)
+		if (!IsStopRequested(0) && m_Socket)
 			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 										boost::bind(&CKodiNode::handleRead,
 										shared_from_this(),
@@ -670,7 +669,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 
 void CKodiNode::handleWrite(std::string pMessage)
 {
-	if (!m_stoprequested) {
+	if (!IsStopRequested(0)) {
 		if (m_Socket)
 		{
 			_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Sending data: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -705,7 +704,7 @@ void CKodiNode::Do_Work()
 
 	try
 	{
-		while (!m_stoprequested)
+		while (!IsStopRequested(1000))
 		{
 			if (!m_Socket)
 			{
@@ -737,7 +736,6 @@ void CKodiNode::Do_Work()
 				}
 				handleWrite(sMessage);
 			}
-			sleep_milliseconds(1000);
 		}
 	}
 	catch (std::exception& e)
@@ -890,13 +888,13 @@ void CKodiNode::SetExecuteCommand(const std::string& command)
 
 std::vector<std::shared_ptr<CKodiNode> > CKodi::m_pNodes;
 
-CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false)
+CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CKodi::CKodi(const int ID) : m_stoprequested(false)
+CKodi::CKodi(const int ID)
 {
 	m_HwdID = ID;
 	SetSettings(10, 3000);
@@ -910,15 +908,17 @@ CKodi::~CKodi(void)
 bool CKodi::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 
 	StartHeartbeatThread();
 
 	//Start worker thread
-	m_stoprequested = false;
 	m_thread = std::make_shared<std::thread>(&CKodi::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Kodi");
+	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
 	return true;
@@ -929,16 +929,17 @@ bool CKodi::StopHardware()
 	StopHeartbeatThread();
 
 	try {
+		//needs to be tested by the author if we can remove the try/catch here
 		if (m_thread)
 		{
-			m_stoprequested = true;
+			RequestStop();
 			m_thread->join();
 			m_thread.reset();
 		}
 	}
 	catch (...)
 	{
-		//Don't throw from a Stop command
+
 	}
 	m_bIsStarted = false;
 	return true;
@@ -950,7 +951,7 @@ void CKodi::Do_Work()
 
 	ReloadNodes();
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
 		if (scounter++ >= (m_iPollInterval*2))
 		{
@@ -981,9 +982,7 @@ void CKodi::Do_Work()
 				SetThreadName(bt.native_handle(), "KodiIO");
 			}
 		}
-		sleep_milliseconds(500);
 	}
-
 	UnloadNodes();
 
 	_log.Log(LOG_STATUS, "Kodi: Worker stopped...");

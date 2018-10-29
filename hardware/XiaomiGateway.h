@@ -16,7 +16,7 @@ public:
 
 	int GetGatewayHardwareID(){ return m_HwdID; };
 	std::string GetGatewayIp(){ return m_GatewayIp; };
-	std::string GetGatewaySid(){ return m_GatewaySID; };
+	std::string GetGatewaySid(){ if (m_GatewaySID == "") m_GatewaySID = XiaomiGatewayTokenManager::GetInstance().GetSID(m_GatewayIp); return m_GatewaySID; };
 
 	bool IsMainGateway(){ return m_ListenPort9898; };
 	void SetAsMainGateway(){ m_ListenPort9898 = true; };
@@ -61,8 +61,8 @@ private:
 	void AddGatewayToList();
 	void RemoveFromGatewayList();
 
-	volatile bool m_stoprequested;
-
+	int get_local_ipaddr(std::vector<std::string>& ip_addrs);
+	
 	class xiaomi_udp_server
 	{
 	public:

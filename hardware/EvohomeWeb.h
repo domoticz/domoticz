@@ -124,7 +124,6 @@ private:
 	void get_v1_temps();
 private:
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 
 	std::string m_username;
 	std::string m_password;

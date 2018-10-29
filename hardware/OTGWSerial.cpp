@@ -36,16 +36,26 @@ OTGWSerial::~OTGWSerial()
 
 bool OTGWSerial::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
-	StartPollerThread();
+
+	m_thread = std::make_shared<std::thread>(&OTGWSerial::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
 
 bool OTGWSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	StopPollerThread();
-	terminate();
+
+	if (m_thread)
+	{
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
+
 	return true;
 }
 
@@ -59,22 +69,6 @@ void OTGWSerial::readCallback(const char *data, size_t len)
 		return; //receiving not enabled
 
 	ParseData((const unsigned char*)data, static_cast<int>(len));
-}
-
-void OTGWSerial::StartPollerThread()
-{
-	m_thread = std::make_shared<std::thread>(&OTGWSerial::Do_PollWork, this);
-	SetThreadName(m_thread->native_handle(), "OTGWSerial");
-}
-
-void OTGWSerial::StopPollerThread()
-{
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
 }
 
 bool OTGWSerial::OpenSerialDevice()
@@ -113,7 +107,7 @@ bool OTGWSerial::OpenSerialDevice()
 	return true;
 }
 
-void OTGWSerial::Do_PollWork()
+void OTGWSerial::Do_Work()
 {
 	bool bFirstTime=true;
 	int sec_counter = 25;

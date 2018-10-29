@@ -25,8 +25,7 @@ private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
-	sockaddr_in m_addr;
+		sockaddr_in m_addr;
 	int m_socket;
 };
 

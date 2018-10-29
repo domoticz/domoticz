@@ -44,8 +44,6 @@ private:
 	sockaddr_in 						m_addr;
 	bool								m_poll_inputs;
 	bool								m_poll_relays;
-	bool								m_reconnect;
-	bool								m_bDoRestart;
 	bool								m_setup_devices;
 	int									m_skip_relay_update;
 	int									m_poll_interval;

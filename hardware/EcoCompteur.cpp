@@ -27,7 +27,6 @@ CEcoCompteur::CEcoCompteur(const int ID, const std::string& url, const unsigned 
 	m_port = port;
 	m_HwdID = ID;
 	m_refresh = 10;	// Refresh time in sec
-	m_stoprequested = false;
 	Init();
 }
 
@@ -46,10 +45,12 @@ bool CEcoCompteur::WriteToHardware(const char* /*pdata*/, const unsigned char /*
 
 bool CEcoCompteur::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CEcoCompteur::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "EcoCompteur");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -59,7 +60,7 @@ bool CEcoCompteur::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -72,11 +73,8 @@ void CEcoCompteur::Do_Work()
 	int sec_counter = m_refresh - 5; // Start 5 sec before refresh
 
 	_log.Log(LOG_STATUS, "EcoCompteur: Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

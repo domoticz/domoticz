@@ -427,11 +427,13 @@ CEnOceanESP3::~CEnOceanESP3()
 
 bool CEnOceanESP3::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr=ENOCEAN_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CEnOceanESP3::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "EnOceanESP3");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

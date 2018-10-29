@@ -27,6 +27,9 @@ portions of this file.
 */
 
 /*
+SDK version 9.23
+	Async data subtypes changed
+
 SDK version 9.22
 	Falmec added
 	Fan LucciAir DCII added
@@ -1134,6 +1137,8 @@ SDK version 4.9
 #define sTypeASYNCconfig 0x01
 #define asyncdisable 0x0
 #define asyncreceiveP1 0x1
+#define asyncreceiveTeleinfo 0x2
+#define asyncreceiveRAW 0x3
 #define asyncbaud110 0x0
 #define asyncbaud300 0x1
 #define asyncbaud600 0x2
@@ -1158,15 +1163,10 @@ SDK version 4.9
 
 //types for Async data
 #define pTypeASYNCDATA 0x62
-#define sTypeASYNCoverrun 0xF0
-#define sTypeASYNCpacket1 0x01
-#define sTypeASYNCpacket2 0x02
-#define sTypeASYNCpacket3 0x03
-#define sTypeASYNCpacket4 0x04
-#define sTypeASYNCpacket5 0x05
-#define sTypeASYNCpacket6 0x06
-#define sTypeASYNCDpacket7 0x07
-#define sTypeASYNClast 0xF0	//mask upper nibble indicates last packet
+#define sTypeASYNCoverrun 0xFF
+#define sTypeASYNCp1 0x01
+#define sTypeASYNCteleinfo 0x02
+#define sTypeASYNCraw 0x03
 
 //RFXSensor
 #define pTypeRFXSensor 0x70

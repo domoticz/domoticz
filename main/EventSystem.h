@@ -18,8 +18,9 @@ extern "C" {
 
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
+#include "StoppableTask.h"
 
-class CEventSystem : public CLuaCommon
+class CEventSystem : public CLuaCommon, StoppableTask
 {
 	friend class CdzVents;
 	friend class CLuaHandler;
@@ -186,8 +187,9 @@ private:
 	boost::shared_mutex m_eventtriggerMutex;
 	std::mutex m_measurementStatesMutex;
 	std::mutex luaMutex;
-	volatile bool m_stoprequested;
-	std::shared_ptr<std::thread> m_thread, m_eventqueuethread;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_eventqueuethread;
+	StoppableTask m_TaskQueue;
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;

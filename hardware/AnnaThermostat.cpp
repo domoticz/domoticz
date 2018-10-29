@@ -67,15 +67,17 @@ CAnnaThermostat::~CAnnaThermostat(void)
 void CAnnaThermostat::Init()
 {
 	m_ThermostatID = "";
-	m_stoprequested = false;
 }
 
 bool CAnnaThermostat::StartHardware()
 {
+	RequestStart();
+
 	Init();
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CAnnaThermostat::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "AnnaThermostat");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -85,7 +87,7 @@ bool CAnnaThermostat::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -100,9 +102,8 @@ void CAnnaThermostat::Do_Work()
 	bool bFirstTime = true;
 	_log.Log(LOG_STATUS,"AnnaThermostat: Worker started...");
 	int sec_counter = ANNA_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{

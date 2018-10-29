@@ -28,7 +28,6 @@ private:
 	int m_retrycntr;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 	int m_bufferpos;
 	std::shared_ptr<std::thread> m_thread;
 	unsigned char m_buffer[1024];

@@ -41,7 +41,8 @@ S0MeterSerial::~S0MeterSerial()
 
 bool S0MeterSerial::StartHardware()
 {
-	StartHeartbeatThread();
+	RequestStart();
+
 	//Try to open the Serial Port
 	try
 	{
@@ -101,6 +102,9 @@ bool S0MeterSerial::StartHardware()
 		ParseData((const unsigned char*)dline.c_str(), dline.size());
 	}
 #endif
+
+	StartHeartbeatThread();
+
 	_log.Log(LOG_STATUS, "S0 Meter: Worker started...");
 
 	return true;

@@ -104,7 +104,6 @@ namespace Plugins {
 		void*				m_SettingsDict;
 		std::string			m_HomeFolder;
 		PluginDebugMask		m_bDebug;
-		bool				m_stoprequested;
 		bool				m_bIsStarting;
 		bool				m_bTracing;
 	};

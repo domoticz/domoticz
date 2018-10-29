@@ -35,6 +35,8 @@ KMTronic433::~KMTronic433()
 
 bool KMTronic433::StartHardware()
 {
+	RequestStart();
+
 	m_bDoInitialQuery = true;
 	m_iQueryState = 0;
 
@@ -42,7 +44,7 @@ bool KMTronic433::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&KMTronic433::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "KMTronic433");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 

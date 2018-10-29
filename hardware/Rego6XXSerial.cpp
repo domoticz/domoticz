@@ -133,11 +133,13 @@ CRego6XXSerial::~CRego6XXSerial()
 
 bool CRego6XXSerial::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr=Rego6XX_RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRego6XXSerial::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Rego6XXSerial");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }

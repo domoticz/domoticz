@@ -121,6 +121,43 @@ void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
 	}
 }
 
+int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_type &thread)
+{
+	return SetThreadName(thread, m_ShortName.c_str());
+}
+
+//Log Helper functions
+#define MAX_LOG_LINE_LENGTH (2048*3)
+void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogline)
+{
+	_log.Log(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+}
+
+void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...)
+{
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	_log.Log(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+}
+
+void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const std::string& sLogline)
+{
+	_log.Debug(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+}
+
+void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline, ...)
+{
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	_log.Debug(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+}
+
 //Sensor Helpers
 void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLevel, const float temperature, const std::string &defaultname, const int RssiLevel /* =12 */)
 {
@@ -650,7 +687,7 @@ void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const uint8_t Child
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
+void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeVoltage;

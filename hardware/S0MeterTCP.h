@@ -25,7 +25,6 @@ private:
 	int m_retrycntr;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 	std::shared_ptr<std::thread> m_thread;
 };
 

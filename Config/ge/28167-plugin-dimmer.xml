@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+  <!--
+
+There are multiple sources of information for this product:
+
+[ZWave Alliance]: https://products.z-wavealliance.org/products/1433
+
+[EzZWave]: https://www.ezzwave.com/sites/jasco/uploads/documents/PDFs/part2/28167_Product_Page.pdf
+
+The sources above contradict each other on multiple points.
+  -->
+  <CommandClass id="112">
+    <Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" value="1" size="1">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0" />
+      <Item label="LED on when light on" value="1" />
+      <Item label="LED always off" value="2" />
+    </Value>
+    <!--
+
+In [EzZWave], the configuration parameters from index 7 to 12 have a size of 1
+for the odd parameters and 2 for the even ones. (This translates to `byte` and
+`short` types.)
+
+[ZWave Alliance] shows a size of 1 for these parameters (i.e. all `byte`).
+
+[EzZWave] is correct. When I (@lddubeau) tested changing parameters with all
+types set to `byte`, I could not set the even-numbered parameters. After
+changing the even-numbered parameters to type `short`, I could set them.
+
+Neither source of documentation does a good job at describing the role of the
+dim step/rate parameters. I (@lddubeau) took a look at the other GE devices
+defined in this database and adopted the descriptions and explanations that fit
+best with the observed behavior.
+
+    -->
+    <Value type="byte" index="7" genre="config" label="Z-Wave Command Dim Step" units="" min="1" max="99" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value type="short" index="8" genre="config" label="Z-Wave Command Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value type="byte" index="9" genre="config" label="Local Control Dim Step" units="" min="1" max="99" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value type="short" index="10" genre="config" label="Local Control Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value type="byte" index="11" genre="config" label="ALL ON/ALL OFF Dim Step" units="" min="1" max="99" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value type="short" index="12" genre="config" label="ALL ON/ALL OFF Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="1" label="Lifeline" />
+    </Associations>
+  </CommandClass>
+</Product>

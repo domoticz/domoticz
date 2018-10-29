@@ -49,7 +49,6 @@ private:
 	void UnloadNodes();
 	bool LoadNodes();
 private:
-	volatile bool m_stoprequested;
 	int m_PollInterval;
 	std::shared_ptr<std::thread> m_thread;
 	std::map<const std::string, const int> m_devices;

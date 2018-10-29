@@ -54,7 +54,6 @@ m_bForceSingleStation(false),
 m_bFirstTime(true)
 {
 	m_HwdID = ID;
-	m_stoprequested = false;
 	Init();
 }
 
@@ -69,10 +68,12 @@ void CWunderground::Init()
 
 bool CWunderground::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CWunderground::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Wunderground");
+	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
 	m_bIsStarted=true;
@@ -84,7 +85,7 @@ bool CWunderground::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -97,9 +98,8 @@ void CWunderground::Do_Work()
 	int sec_counter = 590;
 	_log.Log(LOG_STATUS, "Wunderground: Worker started...");
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);

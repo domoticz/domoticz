@@ -419,11 +419,17 @@ void signal_handler(int sig_num
 	case SIGABRT:
 	case SIGFPE:
 #if defined(__linux__)
+#if defined(__GLIBC__)
 		pthread_getname_np(pthread_self(), thread_name, sizeof(thread_name));
+#endif
 		tid = syscall(__NR_gettid);
 #endif
 		if (fatal_handling) {
+#if defined(__GLIBC__)
 			_log.Log(LOG_ERROR, "Domoticz(pid:%d, tid:%ld('%s')) received fatal signal %d (%s) while backtracing", getpid(), tid, thread_name, sig_num
+#else
+			_log.Log(LOG_ERROR, "Domoticz(pid:%d, tid:%ld) received fatal signal %d (%s) while backtracing", getpid(), tid, sig_num
+#endif
 #ifndef WIN32
 				, strsignal(sig_num));
 #else

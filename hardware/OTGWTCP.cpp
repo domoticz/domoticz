@@ -11,7 +11,6 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 	m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
@@ -23,7 +22,7 @@ OTGWTCP::~OTGWTCP(void)
 
 bool OTGWTCP::StartHardware()
 {
-	m_bDoRestart=false;
+	RequestStart();
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
@@ -31,7 +30,7 @@ bool OTGWTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "OTGWTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 
@@ -50,7 +49,6 @@ bool OTGWTCP::StopHardware()
 void OTGWTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS,"OTGW: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
 	sOnConnected(this);
@@ -64,8 +62,8 @@ void OTGWTCP::OnDisconnect()
 
 void OTGWTCP::Do_Work()
 {
-	bool bFirstTime=true;
 	int sec_counter = 25;
+	connect(m_szIPAddress,m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -74,36 +72,18 @@ void OTGWTCP::Do_Work()
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (bFirstTime)
+		if (isConnected())
 		{
-			bFirstTime=false;
-			connect(m_szIPAddress,m_usIPPort);
-			if (isConnected())
+			if ((sec_counter % 28 == 0) && (m_bRequestVersion))
 			{
+				m_bRequestVersion = false;
+				GetVersion();
+			}
+			else if (sec_counter % 30 == 0)//updates every 30 seconds
+			{
+				SendOutsideTemperature();
+				SendTime();
 				GetGatewayDetails();
-			}
-		}
-		else
-		{
-			if ((m_bDoRestart) && (sec_counter % 30 == 0))
-			{
-				connect(m_szIPAddress,m_usIPPort);
-			}
-			update();
-			if (isConnected())
-			{
-				if ((sec_counter % 28 == 0) && (m_bRequestVersion))
-				{
-					m_bRequestVersion = false;
-					GetVersion();
-				}
-				else if (sec_counter % 30 == 0)//updates every 30 seconds
-				{
-					bFirstTime=false;
-					SendOutsideTemperature();
-					SendTime();
-					GetGatewayDetails();
-				}
 			}
 		}
 	}

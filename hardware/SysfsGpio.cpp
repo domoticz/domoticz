@@ -161,7 +161,6 @@ int CSysfsGpio::m_sysfs_req_update;
 
 CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices, const int Debounce)
 {
-	m_stoprequested = false;
 	m_bIsStarted = false;
 	m_polling_enabled = false;
 	m_interrupts_enabled = false;
@@ -178,10 +177,12 @@ CSysfsGpio::~CSysfsGpio(void)
 
 bool CSysfsGpio::StartHardware()
 {
+	RequestStart();
+
 	Init();
 
 	m_thread = std::make_shared<std::thread>(&CSysfsGpio::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "SysfsGpio");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 
 	return (m_thread != nullptr);
@@ -189,7 +190,7 @@ bool CSysfsGpio::StartHardware()
 
 bool CSysfsGpio::StopHardware()
 {
-	m_stoprequested = true;
+	RequestStop();
 
 	try
 	{
@@ -201,9 +202,8 @@ bool CSysfsGpio::StopHardware()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_STATUS, "Sysfs GPIO: Worker - error during rundown");
-	}
 
+	}
 	try
 	{
 		if (m_edge_thread)
@@ -214,11 +214,10 @@ bool CSysfsGpio::StopHardware()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection - error during rundown");
+
 	}
 
 	m_bIsStarted = false;
-
 	return true;
 }
 
@@ -251,9 +250,8 @@ void CSysfsGpio::Do_Work()
 	bool bUpdateMaster = true;
 	int counter = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(GPIO_POLL_MSEC))
 	{
-		sleep_milliseconds(GPIO_POLL_MSEC);
 		counter++;
 
 		if (counter % HEARTBEAT_COUNT == 0)	/* Heartbeat maintenance */
@@ -261,13 +259,10 @@ void CSysfsGpio::Do_Work()
 			m_LastHeartbeat = mytime(NULL);
 		}
 
-		if (!m_stoprequested)
+		if (m_polling_enabled)
 		{
-			if (m_polling_enabled)
-			{
-				PollGpioInputs(false);
-				UpdateDomoticzInputs(false);
-			}
+			PollGpioInputs(false);
+			UpdateDomoticzInputs(false);
 		}
 
 		if (bUpdateMaster)
@@ -357,7 +352,7 @@ void CSysfsGpio::EdgeDetectThread()
 
 	_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection started");
 
-	while (!m_stoprequested) /* detect gpio state changes */
+	while (!IsStopRequested(0)) /* detect gpio state changes */
 	{
 		tv.tv_sec = 1;	// Set select timeout to 1 second.
 		tv.tv_usec = 0;
@@ -368,7 +363,7 @@ void CSysfsGpio::EdgeDetectThread()
 		//
 		int retval = select(m_maxfd + 1, NULL, NULL, &tmp_fds, &tv);
 
-		if (m_stoprequested)
+		if (IsStopRequested(0))
 		{
 			break;
 		}

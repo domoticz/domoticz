@@ -24,8 +24,7 @@
 #endif //_DEBUG
 
 
-C1WireByKernel::C1WireByKernel() :
-	m_stoprequested(false)
+C1WireByKernel::C1WireByKernel()
 {
 	m_thread = std::make_shared<std::thread>(&C1WireByKernel::ThreadFunction, this);
 	SetThreadName(m_thread->native_handle(), "1WireByKernel");
@@ -34,7 +33,7 @@ C1WireByKernel::C1WireByKernel() :
 
 C1WireByKernel::~C1WireByKernel()
 {
-	m_stoprequested = true;
+	RequestStop();
 	_t1WireDevice device;
 	DeviceState deviceState(device);
 	m_PendingChanges.push_back(deviceState); // wake up thread with dummy item
@@ -64,7 +63,7 @@ void C1WireByKernel::ThreadFunction()
 {
 	try
 	{
-		while (!m_stoprequested)
+		while (!IsStopRequested(0))
 		{
 			// Read state of all devices
 			ReadStates();

@@ -49,7 +49,6 @@ private:
 	int m_Agreement;
 	std::string m_ClientID;
 	std::string m_ClientIDChecksum;
-	volatile bool m_stoprequested;
 	std::shared_ptr<std::thread> m_thread;
 
 	unsigned long m_LastUsage1;

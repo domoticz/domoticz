@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    philio / Zipato Smart Dimmer Socket E27
+    https://products.z-wavealliance.org/products/2355
+    -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="1" genre="config" label="Dimmer Level Report mode" size="1" min="0" max="1" value="1">
+            <Help>
+                Whenever dimmer on/off state changes, it will send MULTILEVEL_SWITCH_ REPORT to the nodes of group1.
+                The default setting is Enable the function.
+            </Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" index="2" genre="config" label="LED indication mode" size="1" min="1" max="3" value="1">
+            <Help>
+                Show dimmer State: When dimmer is on, LED is on. When dimmer is off, LED is off.
+                Show Night mode: When dimmer is on, LED is off. When dimmer is off, LED is on.
+                One flash mode: When dimmer on/off state changes, LED will light on one second and then off.
+            </Help>
+            <Item label="Show dimmer state" value="1"/>
+            <Item label="Show night mode" value="2"/>
+            <Item label="One flash mode" value="3"/>
+        </Value>
+        <Value type="list" index="3" genre="config" label="Restore dimmer state" size="1" min="0" max="2" value="1">
+            <Help>
+                Whenever the AC power return from lost, PAD02 will restore the switch state which could be Dimmer off, Last dimmer state, Dimmer on.
+                The default setting is Last dimmer state.
+            </Help>
+            <Item label="Dimmer off" value="0"/>
+            <Item label="Last dimmer state" value="1"/>
+            <Item label="Dimmer on" value="2"/>
+        </Value>
+    </CommandClass>
+
+    <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline" />
+            <Group index="2" max_associations="5" label="Retransmit local Control" />
+        </Associations>
+    </CommandClass>
+
+</Product>

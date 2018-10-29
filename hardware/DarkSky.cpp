@@ -52,7 +52,6 @@ m_APIKey(APIKey),
 m_Location(Location)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -66,10 +65,12 @@ void CDarkSky::Init()
 
 bool CDarkSky::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDarkSky::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Darksky");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -79,7 +80,7 @@ bool CDarkSky::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -92,9 +93,8 @@ void CDarkSky::Do_Work()
 	_log.Log(LOG_STATUS, "DarkSky: Started...");
 
 	int sec_counter = 290;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

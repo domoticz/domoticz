@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 131
+#define DB_VERSION 133
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -231,7 +231,7 @@ const char *sqlCreateHardware =
 "[Type] INTEGER NOT NULL, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
-"[SerialPort] VARCHAR(50) DEFAULT (''), "
+"[SerialPort] TEXT DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
 "[Extra] TEXT DEFAULT (''),"
@@ -623,7 +623,6 @@ CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchRowID = 0;
 	m_dbase = NULL;
-	m_stoprequested = false;
 	m_sensortimeoutcounter = 0;
 	m_bAcceptNewHardware = true;
 	m_bAllowWidgetOrdering = true;
@@ -645,12 +644,7 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_background_task_thread)
-	{
-		m_stoprequested = true;
-		m_background_task_thread->join();
-		m_background_task_thread.reset();
-	}
+	StopThread();
 	CloseDatabase();
 }
 
@@ -2351,7 +2345,7 @@ bool CSQLHelper::OpenDatabase()
 						szQuery2 << "SELECT Value1, Value2, Value3, Date FROM MultiMeter_Calendar WHERE ([DeviceRowID]=" << sd[0] << ")";
 						result3 = query(szQuery2.str());
 
-						for (const auto & itt3 :result3)
+						for (const auto & itt3 : result3)
 						{
 							std::vector<std::string> sd3 = itt3;
 							szQuery2.clear();
@@ -2558,7 +2552,7 @@ bool CSQLHelper::OpenDatabase()
 					if (EnergyMeterMode == "1")
 					{
 						uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
-						m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions("EnergyMeterMode:"+EnergyMeterMode, false));
+						m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions("EnergyMeterMode:" + EnergyMeterMode, false));
 					}
 				}
 			}
@@ -2566,6 +2560,48 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 131)
 		{
 			query("DROP TABLE IF EXISTS [EventActions]");
+		}
+		if (dbversion < 132)
+		{
+			//Patch for PhilipsHue pTypeLighting2/sTypeAC to pTypeGeneralSwitch/sSwitchGeneralSwitch
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::string> sd;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_Philips_Hue << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto & itt : result)
+				{
+					sd = itt;
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery.str());
+					if (!result2.empty())
+					{
+						for (const auto & itt2 : result2)
+						{
+							sd = itt2;
+							std::string ndeviceid = "0" + sd[1];
+
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "', [Type]=" << pTypeGeneralSwitch << ", SubType=" << sSwitchGeneralSwitch << " WHERE (ID=" << sd[0] << ")";
+							query(szQuery.str());
+						}
+					}
+				}
+			}
+		}
+		if (dbversion < 133)
+		{
+			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
+			query(sqlCreateHardware);
+			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
+			query("DROP TABLE tmp_Hardware;");
 		}
 	}
 	else if (bNewInstall)
@@ -3040,11 +3076,22 @@ void CSQLHelper::CloseDatabase()
 	}
 }
 
+void CSQLHelper::StopThread()
+{
+	if (m_thread)
+	{
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
+}
+
 bool CSQLHelper::StartThread()
 {
-	m_background_task_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
-	SetThreadName(m_background_task_thread->native_handle(), "SQLHelper");
-	return (m_background_task_thread != NULL);
+	RequestStart();
+	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "SQLHelper");
+	return (m_thread != NULL);
 }
 
 bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color)
@@ -3069,10 +3116,8 @@ void CSQLHelper::Do_Work()
 {
 	std::vector<_tTaskItem> _items2do;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(static_cast<const long>(1000.0f / timer_resolution_hz)))
 	{
-		sleep_milliseconds(static_cast<const long>(1000.0f / timer_resolution_hz));
-
 		if (m_bAcceptHardwareTimerActive)
 		{
 			m_iAcceptHardwareTimerCounter -= static_cast<float>(1. / timer_resolution_hz);
@@ -3580,7 +3625,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 
 uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions)
 {
-	uint64_t DeviceRowIdx = (uint64_t )-1;
+	uint64_t DeviceRowIdx = (uint64_t)-1;
 	char ID[20];
 	sprintf(ID, "%lu", nid);
 
@@ -5329,7 +5374,6 @@ bool CSQLHelper::UpdateCalendarMeter(
 			_log.Log(LOG_ERROR, "UpdateCalendarMeter(): incorrect date format received, YYYY-MM-DD expected!");
 			return false;
 		}
-		//insert into calendar table
 		result = safe_query(
 			"SELECT DeviceRowID FROM Meter_Calendar "
 			"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
@@ -5869,7 +5913,6 @@ void CSQLHelper::AddCalendarTemperature()
 			float setpoint_min = static_cast<float>(atof(sd[8].c_str()));
 			float setpoint_max = static_cast<float>(atof(sd[9].c_str()));
 			float setpoint_avg = static_cast<float>(atof(sd[10].c_str()));
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Temp_Avg, Chill_Min, Chill_Max, Humidity, Barometer, DewPoint, SetPoint_Min, SetPoint_Max, SetPoint_Avg, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%d', '%d', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
@@ -5965,7 +6008,6 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 			if (total_real < 1000)
 			{
-				//insert into calendar table
 				result = safe_query(
 					"INSERT INTO Rain_Calendar (DeviceRowID, Total, Rate, Date) "
 					"VALUES ('%" PRIu64 "', '%.2f', '%d', '%q')",
@@ -6089,7 +6131,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				double total_real = total_max - total_min;
 				double counter = total_max;
 
-				//insert into calendar table
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
 					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
@@ -6175,7 +6216,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		else
 		{
 			//no new meter result received in last day
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%q')",
@@ -6275,7 +6315,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				}
 			}
 
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
@@ -6362,7 +6401,6 @@ void CSQLHelper::AddCalendarUpdateWind()
 			int gust_min = atoi(sd[3].c_str());
 			int gust_max = atoi(sd[4].c_str());
 
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Wind_Calendar (DeviceRowID, Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%d', '%d', '%d', '%d', '%q')",
@@ -6417,7 +6455,6 @@ void CSQLHelper::AddCalendarUpdateUV()
 
 			float level = static_cast<float>(atof(sd[0].c_str()));
 
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
 				"VALUES ('%" PRIu64 "', '%g', '%q')",
@@ -6469,7 +6506,6 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 			float percentage_min = static_cast<float>(atof(sd[0].c_str()));
 			float percentage_max = static_cast<float>(atof(sd[1].c_str()));
 			float percentage_avg = static_cast<float>(atof(sd[2].c_str()));
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) "
 				"VALUES ('%" PRIu64 "', '%g', '%g', '%g','%q')",
@@ -6524,7 +6560,6 @@ void CSQLHelper::AddCalendarUpdateFan()
 			int speed_min = (int)atoi(sd[0].c_str());
 			int speed_max = (int)atoi(sd[1].c_str());
 			int speed_avg = (int)atoi(sd[2].c_str());
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Fan_Calendar (DeviceRowID, Speed_Min, Speed_Max, Speed_Avg, Date) "
 				"VALUES ('%" PRIu64 "', '%d', '%d', '%d','%q')",
@@ -7156,6 +7191,9 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	sqlite3_close(dbase_restore);
 	//we have a valid database!
 	std::remove(outputfile.c_str());
+
+	StopThread();
+
 	//stop database
 	sqlite3_close(m_dbase);
 	m_dbase = NULL;
@@ -8382,7 +8420,8 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::
 	return true;
 }
 
-std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string & options, const bool decode) {
+std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string & options, const bool decode)
+{
 	std::map<std::string, std::string> optionsMap;
 	if (!options.empty()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Build device options from '%s'...", options.c_str());
@@ -8408,7 +8447,8 @@ std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::str
 	return optionsMap;
 }
 
-std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::string & idx) {
+std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::string & idx)
+{
 	std::map<std::string, std::string> optionsMap;
 
 	if (idx.empty()) {
@@ -8426,7 +8466,8 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	return optionsMap;
 }
 
-std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap) {
+std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap)
+{
 	std::string options;
 	int count = optionsMap.size();
 	if (count > 0) {
@@ -8449,7 +8490,8 @@ std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::str
 	return options;
 }
 
-bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
+bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap)
+{
 	if (idx < 1) {
 		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
 		return false;
@@ -8469,4 +8511,42 @@ bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string
 		safe_query("UPDATE DeviceStatus SET Options = '%q' WHERE (ID==%" PRIu64 ")", options.c_str(), idx);
 	}
 	return true;
+}
+
+float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const float DefaultValue)
+{
+	float divider = float(DefaultValue);
+	if (divider == 0)
+	{
+		int tValue;
+		switch (metertype)
+		{
+		case MTYPE_ENERGY:
+		case MTYPE_ENERGY_GENERATED:
+			if (GetPreferencesVar("MeterDividerEnergy", tValue))
+			{
+				divider = float(tValue);
+			}
+			break;
+		case MTYPE_GAS:
+			if (GetPreferencesVar("MeterDividerGas", tValue))
+			{
+				divider = float(tValue);
+			}
+			break;
+		case MTYPE_WATER:
+			if (GetPreferencesVar("MeterDividerWater", tValue))
+			{
+				divider = float(tValue);
+			}
+			break;
+		}
+		if (dType == pTypeP1Gas)
+			divider = 1000;
+		else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+			divider *= 100.0f;
+
+		if (divider == 0) divider = 1.0f;
+	}
+	return divider;
 }

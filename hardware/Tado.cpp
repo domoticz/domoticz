@@ -43,11 +43,12 @@ m_TadoPassword(password)
 
 bool CTado::StartHardware()
 {
-	_log.Log(LOG_NORM, "Tado: StartHardware() called.");
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTado::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Tado");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -55,8 +56,6 @@ bool CTado::StartHardware()
 
 void CTado::Init()
 {
-	_log.Log(LOG_NORM, "Tado: Init() called.");
-	m_stoprequested = false;
 	m_bDoLogin = true;
 	m_bDoGetHomes = true;
 	m_bDoGetZones = false;
@@ -68,10 +67,9 @@ void CTado::Init()
 
 bool CTado::StopHardware()
 {
-	_log.Log(LOG_NORM, "Tado: StopHardware() called.");
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -477,9 +475,8 @@ void CTado::Do_Work()
 	int iSecCounter = TADO_POLL_INTERVAL - 5;
 	int iTokenCycleCount = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		iSecCounter++;
 		if (iSecCounter % 12 == 0)
 		{

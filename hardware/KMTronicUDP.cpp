@@ -14,7 +14,6 @@ KMTronicUDP::KMTronicUDP(const int ID, const std::string &IPAddress, const unsig
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 }
 
@@ -28,13 +27,14 @@ void KMTronicUDP::Init()
 
 bool KMTronicUDP::StartHardware()
 {
+	RequestStart();
+
 	Init();
  	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&KMTronicUDP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "KMTronicUDP");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
-	_log.Log(LOG_STATUS, "KMTronic: Started");
 	return (m_thread != nullptr);
 }
 
@@ -42,7 +42,7 @@ bool KMTronicUDP::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -54,9 +54,10 @@ void KMTronicUDP::Do_Work()
 {
 	int sec_counter = KMTRONIC_POLL_INTERVAL - 2;
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "KMTronic: UDP Worker started...");
+
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {

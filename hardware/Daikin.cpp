@@ -86,7 +86,6 @@ m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	m_bOutputLog = false;
 	Init();
 }
@@ -101,13 +100,14 @@ void CDaikin::Init()
 
 bool CDaikin::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CDaikin::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Daikin");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
-	_log.Log(LOG_STATUS, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());
 	return (m_thread != nullptr);
 }
 
@@ -115,11 +115,10 @@ bool CDaikin::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-	_log.Log(LOG_STATUS, "Daikin: Stopped hardware %s ...", m_szIPAddress.c_str());
 	m_bIsStarted=false;
 	return true;
 }
@@ -128,9 +127,9 @@ void CDaikin::Do_Work()
 {
 	m_sec_counter = Daikin_POLL_INTERVAL - 2; // Trigger immediatly (in 2s) a POLL after startup.
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "Daikin: Worker started %s ...", m_szIPAddress.c_str());
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		m_sec_counter++;
 
 		if (m_sec_counter % 12 == 0) {

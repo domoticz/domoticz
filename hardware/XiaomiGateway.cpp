@@ -13,6 +13,10 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
+#ifndef WIN32
+	#include <ifaddrs.h>
+#endif
+
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
 for a variety of Xiaomi sensors.
@@ -104,11 +108,73 @@ void XiaomiGateway::RemoveFromGatewayList()
 	}
 }
 
+// Use this function to get local ip addresses via getifaddrs when Boost.Asio approach fails
+// Adds the addresses found to the supplied vector and returns the count
+// Code from Stack Overflow - https://stackoverflow.com/questions/2146191
+int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
+{
+#ifdef WIN32
+	return 0;
+#else
+	struct ifaddrs *myaddrs, *ifa;
+	void *in_addr;
+	char buf[64];
+	int count = 0;
+
+	if(getifaddrs(&myaddrs) != 0)
+	{
+		_log.Log(LOG_ERROR, "getifaddrs failed! (when trying to determine local ip address)");
+		perror("getifaddrs");
+		return 0;
+	}
+
+	for (ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
+	{
+		if (ifa->ifa_addr == NULL)
+			continue;
+		if (!(ifa->ifa_flags & IFF_UP))
+			continue;
+
+		switch (ifa->ifa_addr->sa_family)
+		{
+			case AF_INET:
+			{
+				struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
+				in_addr = &s4->sin_addr;
+				break;
+			}
+
+			case AF_INET6:
+			{
+				struct sockaddr_in6 *s6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+				in_addr = &s6->sin6_addr;
+				break;
+			}
+
+			default:
+				continue;
+		}
+
+		if (!inet_ntop(ifa->ifa_addr->sa_family, in_addr, buf, sizeof(buf)))
+		{
+			_log.Log(LOG_ERROR, "Could not convert to IP address, inet_ntop failed for interface %s", ifa->ifa_name);
+		}
+		else
+		{
+			ip_addrs.push_back(buf);
+			count++;
+		}
+	}
+
+	freeifaddrs(myaddrs);
+	return count;
+#endif
+}
+
 XiaomiGateway::XiaomiGateway(const int ID)
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
-	m_stoprequested = false;
 	m_ListenPort9898 = false;
 }
 
@@ -642,7 +708,8 @@ void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::strin
 
 bool XiaomiGateway::StartHardware()
 {
-	m_stoprequested = false;
+	RequestStart();
+
 	m_bDoRestart = false;
 
 	//force connect the next first time
@@ -691,28 +758,20 @@ bool XiaomiGateway::StartHardware()
 
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
-	SetThreadName(m_thread->native_handle(), "XiaomiGateway");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }
 
 bool XiaomiGateway::StopHardware()
 {
-	m_stoprequested = true;
-
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
-	RemoveFromGatewayList();
 	return true;
 }
 
@@ -737,7 +796,38 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 	catch (std::exception& e) {
-		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address: %s", m_HwdID, e.what());
+		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address using Boost.Asio: %s", m_HwdID, e.what());
+	}
+	
+	// try finding local ip using ifaddrs when Boost.Asio fails
+	if (m_LocalIp == "") {
+		try {
+			// get first 2 octets of Xiaomi gateway ip to search for similar ip address
+			std::string compareIp = m_GatewayIp.substr(0, (m_GatewayIp.length() - 3));
+			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): XiaomiGateway IP address starts with: %s", m_HwdID, compareIp.c_str());	
+			
+			std::vector<std::string> ip_addrs;
+			if (XiaomiGateway::get_local_ipaddr(ip_addrs) > 0)
+			{
+				for(const std::string &addr : ip_addrs) 
+				{
+					std::size_t found = addr.find(compareIp);
+					if (found != std::string::npos) 
+					{
+						m_LocalIp = addr;
+						_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Using %s for local IP address.", m_HwdID, m_LocalIp.c_str());
+						break;
+					}
+				}
+			}
+			else 
+			{
+				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not find local IP address with ifaddrs", m_HwdID);	
+			}
+		}
+		catch (std::exception& e) {
+			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not find local IP address with ifaddrs: %s", m_HwdID, e.what());
+		}
 	}
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
@@ -748,9 +838,8 @@ void XiaomiGateway::Do_Work()
 	}
 
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
@@ -761,6 +850,7 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 	io_service.stop();
+	RemoveFromGatewayList();
 	_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): stopped", m_HwdID);
 }
 
@@ -919,7 +1009,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Motion;
 						name = "Aqara Motion Sensor";
 					}
-					else if (model == "switch") {
+					else if ((model == "switch") || (model == "remote.b1acn01")) {
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
@@ -957,7 +1047,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Aqara Cube";
 						type = STYPE_Selector;
 					}
-					else if (model == "86sw2") {
+					else if (model == "86sw2" || model == "remote.b286acn01" ) {
 						name = "Xiaomi Wireless Dual Wall Switch";
 						type = STYPE_Selector;
 					}
@@ -972,7 +1062,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Wired Single Wall Switch";
 						//type = STYPE_Selector;
 					}
-					else if (model == "86sw1") {
+					else if (model == "86sw1" || model == "remote.b186acn01") {
 						name = "Xiaomi Wireless Single Wall Switch";
 						type = STYPE_PushOn;
 					}
@@ -1024,7 +1114,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							if (model == "sensor_wleak.aq1" && battery != 255) {
 								level = 0;
 							}
-							if ((alarm == "1") || (status == "leak")) {
+							if ((alarm == "1") || (alarm == "2") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
@@ -1260,7 +1350,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		start_receive();
 	}
 	else {
-		_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive %d", error);
+		_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive %s", error.message().c_str());
 	}
 
 }

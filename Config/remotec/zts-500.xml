@@ -10,9 +10,9 @@
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
         <Value type="list" index="1" genre="config" label="Scale of temperature" min="0" max="1" value="1" size="1">
-                <Help>Celsius or Farienheit.</Help>
+                <Help>Celsius or Fahrenheit.</Help>
                 <Item label="Celsius" value="0" />
-                <Item label="Farienheit" value="1" />
+                <Item label="Fahrenheit" value="1" />
         </Value>
 		<Value type="byte" index="2" genre="config" label="Swing" min="0" max="4" value="2" size="1">
 			<Help>

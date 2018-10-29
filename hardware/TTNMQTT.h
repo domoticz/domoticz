@@ -49,7 +49,6 @@ protected:
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 private:
 	bool ConnectInt();
 	bool ConnectIntEx();

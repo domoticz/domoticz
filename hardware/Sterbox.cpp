@@ -20,7 +20,6 @@ m_Password(password)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	m_bOutputLog = false;
 	Init();
 }
@@ -35,10 +34,12 @@ void CSterbox::Init()
 
 bool CSterbox::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CSterbox::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Sterbox");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Sterbox: Started");
@@ -49,7 +50,7 @@ bool CSterbox::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -61,9 +62,8 @@ void CSterbox::Do_Work()
 {
 	int sec_counter = STERBOX_POLL_INTERVAL - 2;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {

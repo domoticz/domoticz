@@ -158,14 +158,11 @@ private:
 	int LoadConfig(void);
 	void LoadDefaultConfig(void);
 	void AutoCreate_piface_config(void);
-
-	void GetLastKnownValues(void);
-	void GetLastKnownValues(int BoardNr, int PinNr, CIOPort port);
 private:
 	std::shared_ptr<std::thread> m_thread;
 	std::shared_ptr<std::thread> m_queue_thread;
+	StoppableTask m_TaskQueue;
 
-	volatile bool m_stoprequested;
 	int m_InputSample_waitcntr;
 	int m_CounterEdgeSample_waitcntr;
 

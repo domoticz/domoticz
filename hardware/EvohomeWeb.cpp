@@ -161,11 +161,13 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	RequestStart();
+
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();
 	m_thread = std::make_shared<std::thread>(&CEvohomeWeb::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "EvohomeWeb");
+	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
 	m_bIsStarted = true;

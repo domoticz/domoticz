@@ -21,7 +21,6 @@ m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_socket = INVALID_SOCKET;
 	m_bufferpos = 0;
@@ -58,9 +57,9 @@ SolarMaxTCP::~SolarMaxTCP(void)
 
 bool SolarMaxTCP::StartHardware()
 {
-	m_bIsStarted = true;
+	RequestStart();
 
-	m_stoprequested = false;
+	m_bIsStarted = true;
 
 	memset(&m_addr, 0, sizeof(sockaddr_in));
 	m_addr.sin_family = AF_INET;
@@ -97,35 +96,18 @@ bool SolarMaxTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&SolarMaxTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "SolarMaxTCP");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }
 
 bool SolarMaxTCP::StopHardware()
 {
-	m_stoprequested = true;
-	try {
-		if (m_thread)
-		{
-			
-			m_thread->join();
-			m_thread.reset();
-		}
-	}
-	catch (...)
+	if (m_thread)
 	{
-		//Don't throw from a Stop command
-	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -181,19 +163,15 @@ void SolarMaxTCP::Do_Work()
 	char buf[1024];
 	bool bFirstTime = true;
 	int sec_counter = POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (
-			(m_socket == INVALID_SOCKET) &&
-			(!m_stoprequested)
-			)
+		if (m_socket == INVALID_SOCKET)
 		{
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
@@ -219,18 +197,13 @@ void SolarMaxTCP::Do_Work()
 				//so it's no good to-do the heartbeat timing here
 
 				int bread = recv(m_socket, (char*)&buf, sizeof(buf), 0);
-				if (m_stoprequested)
+				if (IsStopRequested(0))
 					break;
 				if (bread <= 0) {
-					_log.Log(LOG_ERROR, "SolarMax: TCP/IP connection closed! %s", m_szIPAddress.c_str());
-					closesocket(m_socket);
-					m_socket = INVALID_SOCKET;
-					if (!m_stoprequested)
-					{
-						_log.Log(LOG_STATUS, "SolarMax: retrying in %d seconds...", RETRY_DELAY);
-						m_retrycntr = 0;
-						continue;
-					}
+					_log.Log(LOG_ERROR, "SolarMax: TCP/IP connection closed! retrying in %d seconds...", RETRY_DELAY);
+					disconnect();
+					m_retrycntr = 0;
+					continue;
 				}
 				else
 				{
@@ -240,6 +213,8 @@ void SolarMaxTCP::Do_Work()
 		}
 
 	}
+	disconnect();
+
 	_log.Log(LOG_STATUS, "SolarMax: TCP/IP Worker stopped...");
 }
 

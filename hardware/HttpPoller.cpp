@@ -39,8 +39,6 @@ m_refresh(refresh)
 	}
 
 	m_HwdID=ID;
-
-	m_stoprequested=false;
 	Init();
 }
 
@@ -59,10 +57,12 @@ bool CHttpPoller::WriteToHardware(const char* /*pdata*/, const unsigned char /*l
 
 bool CHttpPoller::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHttpPoller::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "HttpPoller");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -72,7 +72,7 @@ bool CHttpPoller::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -84,11 +84,8 @@ void CHttpPoller::Do_Work()
 {
 	int sec_counter = 300 - 5;
 	_log.Log(LOG_STATUS, "Http: Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);

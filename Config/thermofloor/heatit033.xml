@@ -53,8 +53,8 @@
 			<Item label="33k ntc" value="4"/>
 			<Item label="47k ntc" value="5"/>
 		</Value>
-		<Value type="short" index="4" genre="config" label="DIFF l. Temperature control Hysteresis" min="3" max="30" size="1" value="5">
-			<Help>3-30 (0,2C - 3.0C)</Help>
+		<Value type="short" index="4" genre="config" label="DIFF l. Temperature control Hysteresis" min="0" max="30" size="1" value="5">
+			<Help>0-30 (0,3C - 3.0C)</Help>
 		</Value>
 		<Value type="short" index="5" genre="config" label="FLo: Floor min limit" min="50" max="400" size="2" value="50">
 			<Help>50-400 (5.0C - 40.0C)</Help>
@@ -77,7 +77,7 @@
 		<Value type="short" genre="config" instance="1" index="11" label="ECO mode setpoint" size="2" min="50" max="400" value="180">
 			<Help>50-400 (5.0C - 40.0C)</Help>
 		</Value>
-		<Value type="short" index="12" genre="config" label="P setting" min="0" max="10" size="1" value="2">
+		<Value type="byte" index="12" genre="config" label="P setting" min="0" max="10" size="1" value="2">
 			<Help>0-10</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="13" label="COOL setpoint" size="2" min="50" max="400" value="180">
@@ -99,16 +99,16 @@
 			<Item label="Display setpoint temperature" value="0"/>
 			<Item label="Display calculated temperature" value="1"/>
 		</Value>
-		<Value type="short" index="18" genre="config" label="Button brightness - Dimmed state" min="0" max="100" size="1" value="50">
+		<Value type="byte" index="18" genre="config" label="Button brightness - Dimmed state" min="0" max="100" size="1" value="50">
 			<Help>0-100 (0 - 100%)</Help>
 		</Value>
-		<Value type="short" index="19" genre="config" label="Button brightness - Active state" min="0" max="100" size="1" value="100">
+		<Value type="byte" index="19" genre="config" label="Button brightness - Active state" min="0" max="100" size="1" value="100">
 			<Help>0-100 (0 - 100%)</Help>
 		</Value>
-		<Value type="short" index="20" genre="config" label="Display brightness - Dimmed state" min="0" max="100" size="1" value="50">
+		<Value type="byte" index="20" genre="config" label="Display brightness - Dimmed state" min="0" max="100" size="1" value="50">
 			<Help>0-100 (0 - 100%)</Help>
 		</Value>
-		<Value type="short" index="21" genre="config" label="Display brightness - Active state" min="0" max="100" size="1" value="100">
+		<Value type="byte" index="21" genre="config" label="Display brightness - Active state" min="0" max="100" size="1" value="100">
 			<Help>0-100 (0 - 100%)</Help>
 		</Value>
 		<Value type="short" index="22" genre="config" label="Temperature report interval" min="0" max="32767" size="2" value="60">
@@ -134,10 +134,10 @@
 	<CommandClass id="133" name="COMMAND_CLASS_ASSOCIATION">
 		<Associations num_groups="5">
 			<Group index="1" max_associations="7" label="Lifeline"/>
-			<Group index="2" max_associations="7" label="On/Off switch of internal relay"/>
-			<Group index="3" max_associations="7" label="Multilevel sensor reports - Internal sensor"/>
-			<Group index="4" max_associations="7" label="Multilevel sensor reports - External sensor"/>
-			<Group index="5" max_associations="7" label="Multilevel sensor reports - Floor sensor"/>
+			<Group index="2" max_associations="7" label="Multilevel sensor reports - Internal sensor"/>
+			<Group index="3" max_associations="7" label="Multilevel sensor reports - External sensor"/>
+			<Group index="4" max_associations="7" label="Multilevel sensor reports - Floor sensor"/>
+			<Group index="5" max_associations="7" label="On/Off switch of internal relay"/>
 		</Associations>
 	</CommandClass>
 

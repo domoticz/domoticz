@@ -33,7 +33,6 @@
 
 // Includes for SystemUptime()
 #if defined(__linux__) || defined(__linux) || defined(linux)
-#include <sys/time.h>
 #include <sys/sysinfo.h>
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <time.h>
@@ -196,6 +195,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 #else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
+	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
 	std::string sLine = "";
@@ -305,6 +305,25 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		closedir(d);
 	}
 
+#if defined(__linux__) || defined(__linux) || defined(linux)
+	d=opendir("/dev/serial/by-id");
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while ((de = readdir(d)))
+		{
+			// Only consider symbolic links
+                        if (de->d_type == DT_LNK)
+                        {
+				std::string fname = de->d_name;
+				ret.push_back("/dev/serial/by-id/" + fname);
+			}
+		}
+		closedir(d);
+	}
+
+#endif
 #endif
 	return ret;
 }
@@ -1109,7 +1128,7 @@ typedef struct tagTHREADNAME_INFO
 	DWORD dwFlags; // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 #pragma pack(pop)
-int SetThreadName(std::thread::native_handle_type thread, const char* threadName) {
+int SetThreadName(const std::thread::native_handle_type &thread, const char* threadName) {
 	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
@@ -1128,7 +1147,7 @@ int SetThreadName(std::thread::native_handle_type thread, const char* threadName
 }
 #else
 // Based on https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
-int SetThreadName(std::thread::native_handle_type thread, const char *name)
+int SetThreadName(const std::thread::native_handle_type &thread, const char *name)
 {
 #if defined(__linux__) || defined(__linux) || defined(linux)
 	char name_trunc[16];

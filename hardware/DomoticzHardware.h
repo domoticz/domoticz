@@ -4,6 +4,9 @@
 #include "../main/RFXNames.h"
 #include "../main/StoppableTask.h"
 
+enum _eLogLevel : uint32_t;
+enum _eDebugLevel : uint32_t;
+
 //Base class with functions all notification systems should have
 class CDomoticzHardwareBase : public StoppableTask
 {
@@ -32,6 +35,7 @@ public:
 	bool m_bSkipReceiveCheck = { false };
 	unsigned long m_DataTimeout = { 0 };
 	std::string m_Name;
+	std::string m_ShortName;
 	_eHardwareTypes HwdType;
 	unsigned char m_SeqNr = { 0 };
 	bool m_bEnableReceive = { false };
@@ -39,6 +43,23 @@ public:
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
 	void *m_pUserData = { NULL };
 	bool m_bOutputLog = { true };
+
+	int SetThreadNameInt(const std::thread::native_handle_type &thread);
+
+	//Log Helper functions
+	void Log(const _eLogLevel level, const std::string& sLogline);
+	void Log(const _eLogLevel level, const char* logline, ...)
+#ifdef __GNUC__
+		__attribute__((format(printf, 3, 4)))
+#endif
+		;
+	void Debug(const _eDebugLevel level, const std::string& sLogline);
+	void Debug(const _eDebugLevel level, const char* logline, ...)
+#ifdef __GNUC__
+		__attribute__((format(printf, 3, 4)))
+#endif
+		;
+
 protected:
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
@@ -70,7 +91,7 @@ protected:
 	void SendSwitchIfNotExists(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
 	void SendRGBWSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int Level, const bool bIsRGBW, const std::string &defaultname);
 	void SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const int RssiLevel = 12);
-	void SendVoltageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
+	void SendVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
 	void SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname, const int RssiLevel = 12);
 	void SendPercentageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
 	void SendWaterflowSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname);

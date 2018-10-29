@@ -106,7 +106,6 @@ static std::string errors[4] =
 MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
-	m_stoprequested(false),
 	m_socket(NULL),
 	m_LastAlarms(0),
 	m_LastWarnings(0),
@@ -130,12 +129,14 @@ MultiFun::~MultiFun()
 
 bool MultiFun::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_MultiFun
 	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
 #endif
 
 	m_thread = std::make_shared<std::thread>(&MultiFun::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "MultiFun");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -147,16 +148,12 @@ bool MultiFun::StopHardware()
 	_log.Log(LOG_STATUS, "MultiFun: Stop hardware");
 #endif
 
-	m_stoprequested = true;
-
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
-
-	DestroySocket();
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -171,11 +168,8 @@ void MultiFun::Do_Work()
 
 	bool firstTime = true;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -192,6 +186,7 @@ void MultiFun::Do_Work()
 #endif
 		}
 	}
+	DestroySocket();
 }
 
 bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
@@ -306,14 +301,7 @@ void MultiFun::DestroySocket()
 #ifdef DEBUG_MultiFun
 		_log.Log(LOG_STATUS, "MultiFun: destroy socket");
 #endif
-		try
-		{
-			delete m_socket;
-		}
-		catch (...)
-		{
-		}
-
+		delete m_socket;
 		m_socket = NULL;
 	}
 }

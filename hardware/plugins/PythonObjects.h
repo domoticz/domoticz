@@ -118,6 +118,7 @@ namespace Plugins {
 		{ "ID",	T_INT, offsetof(CDevice, ID), READONLY, "Domoticz internal ID" },
 		{ "Name", T_OBJECT,	offsetof(CDevice, Name), READONLY, "Name" },
 		{ "DeviceID", T_OBJECT,	offsetof(CDevice, DeviceID), READONLY, "External device ID" },
+		{ "Unit",	T_INT, offsetof(CDevice, Unit), READONLY, "Numeric Unit number" },
 		{ "nValue", T_INT, offsetof(CDevice, nValue), READONLY, "Numeric device value" },
 		{ "sValue", T_OBJECT, offsetof(CDevice, sValue), READONLY, "String device value" },
 		{ "SignalLevel", T_INT, offsetof(CDevice, SignalLevel), READONLY, "Numeric signal level" },

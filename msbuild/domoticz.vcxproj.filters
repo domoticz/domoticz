@@ -1331,6 +1331,18 @@
     <None Include="..\www\secpanel\css\style.css">
       <Filter>www\secpanel\css</Filter>
     </None>
+    <None Include="..\www\app\DeviceLightEdit.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DummyController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\TemperatureCustomLogController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\TimerplanController.js">
+      <Filter>www\app</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1800,6 +1812,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TelldusFunctions.h">
+      <Filter>Devices\Tellstick</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Tellstick.h">
       <Filter>Devices\Tellstick</Filter>
@@ -2548,6 +2563,9 @@
       <Filter>Devices\SatelIntegra</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Tellstick.cpp">
+      <Filter>Devices\Tellstick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TellstickFactory.cpp">
       <Filter>Devices\Tellstick</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
