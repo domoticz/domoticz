@@ -97,7 +97,7 @@ bool CNest::StopHardware()
     return true;
 }
 
-#define NEST_POLL_INTERVAL 30
+#define NEST_POLL_INTERVAL 60
 
 void CNest::Do_Work()
 {

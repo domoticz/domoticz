@@ -74,7 +74,7 @@ bool CNestOAuthAPI::StopHardware()
     return true;
 }
 
-#define NEST_POLL_INTERVAL 30
+#define NEST_POLL_INTERVAL 60
 
 void CNestOAuthAPI::Do_Work()
 {
