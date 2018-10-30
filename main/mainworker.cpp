@@ -5736,6 +5736,9 @@ void MainWorker::decode_Fan(const int HwdID, const _eHardwareTypes HwdType, cons
 		case sTypeLucciAirDCII:
 			WriteMessage("subtype       = Lucci Air DC II");
 			break;
+		case sTypeWestinghouse:
+			WriteMessage("subtype       = Westinghouse");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
 			WriteMessage(szTmp);

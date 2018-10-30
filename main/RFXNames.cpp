@@ -2046,6 +2046,7 @@ void GetLightStatus(
 		}
 		break;
 		case sTypeLucciAir:
+		case sTypeWestinghouse:
 		{
 			switch (nValue)
 			{
@@ -3454,6 +3455,7 @@ bool GetLightCommand(
 		}
 		break;
 		case sTypeLucciAir:
+		case sTypeWestinghouse:
 		{
 			if (switchcmd == "hi")
 			{
