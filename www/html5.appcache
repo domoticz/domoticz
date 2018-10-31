@@ -472,6 +472,9 @@ i18n/domoticz-uk.json
 i18n/domoticz-zh.json
 
 # Scripts
+app/components/rgbw-picker/RgbwPicker.html
+app/components/rgbw-picker/RgbwPicker.js
+
 app/devices/deviceFactory.js
 
 app/events/blockly_blocks_domoticz.js
