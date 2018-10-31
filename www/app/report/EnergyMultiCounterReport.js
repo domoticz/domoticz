@@ -370,8 +370,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     min: 0
                 },
                 tooltip: {
-					valueDecimals: 3,
-                    valueSuffix: ' ' + vm.unit
+					formatter: function () {
+						return $.t(Highcharts.dateFormat('%A', this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + $.t(this.series.name) + ': ' + Highcharts.numberFormat(this.y,3) + ' ' + vm.unit + '<br/>Total: ' + this.point.stackTotal + ' ' + vm.unit;
+					}
                 },
                 plotOptions: {
                     column: {
