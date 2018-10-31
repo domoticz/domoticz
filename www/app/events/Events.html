@@ -1,7 +1,7 @@
 <div class="events-editor">
     <section class="events-editor__tree" ng-show="$ctrl.isListExpanded">
         <h2>{{:: 'My automation scripts' | translate }}</h2>
-        <input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="Type to filter" />
+        <input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="{{:: 'Filter' | translate }}" />
         <nav class="events-editor-tree">
             <li class="events-editor-tree-item"
                 ng-class="{
