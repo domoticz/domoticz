@@ -240,24 +240,26 @@ void CEventSystem::LoadEvents()
 			m_events.push_back(eitem);
 		}
 	}
+
+	std::vector<std::string> FileEntries;
+	std::string filename;
+
+	// Remove dzVents DB files from disk
+	DirectoryListing(FileEntries, dzv_Dir, false, true);
+	std::vector<std::string>::const_iterator itt;
+	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+	{
+		filename = dzv_Dir + *itt;
+		if (filename.find("README.md") == std::string::npos)
+			std::remove(filename.c_str());
+	}
+
 	result = m_sql.safe_query(
 		"SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster "
 		"WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
+
 	if (!result.empty())
 	{
-		std::vector<std::string> FileEntries;
-		std::string filename;
-
-		// Remove dzVents DB files from disk
-		DirectoryListing(FileEntries, dzv_Dir, false, true);
-		std::vector<std::string>::const_iterator itt;
-		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
-		{
-			filename = dzv_Dir + *itt;
-			if (filename.find("README.md") == std::string::npos)
-				std::remove(filename.c_str());
-		}
-
 		std::vector<std::vector<std::string> >::const_iterator itt2;
 		for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
 		{
