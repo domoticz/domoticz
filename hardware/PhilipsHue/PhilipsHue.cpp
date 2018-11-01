@@ -475,6 +475,7 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 
 void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string &modelid, const bool AddMissingDevice)
 {
+	_log.Log(LOG_STATUS, "Philips Hue: InsertUpdateSwitch called for device '%s' with type %u", Name.c_str(), LType);
 	if (LType == HLTYPE_RGB_W || LType == HLTYPE_CW_WW || LType == HLTYPE_RGB_CW_WW)
 	{
 		char szID[10];
@@ -523,6 +524,10 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 				_log.Log(LOG_STATUS, "Philips Hue: Updating SubType of light '%s' from %u to %u", szID, sTypeOld, sType);
 				m_sql.UpdateDeviceValue("SubType", (int)sType, sID);
 			}
+		}
+		else
+		{
+			_log.Log(LOG_STATUS, "Philips Hue: adding device '%s'", Name.c_str());
 		}
 
 		if (tstate.on && (tstate.level != 100))
@@ -623,7 +628,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
+			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change for DeviceID '%s': Level = %d", szID, tstate.level);
 
 		if (result.empty() && !AddMissingDevice)
@@ -635,6 +640,10 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
 		}
+		else
+                {
+                        _log.Log(LOG_STATUS, "Philips Hue: adding device '%s'", Name.c_str());
+                }
 
 		if (tstate.on && (tstate.level != 100))
 			cmd = gswitch_sSetLevel;
@@ -681,6 +690,7 @@ bool CPhilipsHue::GetStates()
 	SaveString2Disk(sResult, "E:\\philipshue.json");
 #endif
 
+	//_log.Log(LOG_STATUS, "Philips Hue: '%s'", sResult.c_str());
 	Json::Value root;
 
 	Json::Reader jReader;
@@ -737,6 +747,8 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 		if (!lightstate["on"].empty())
 		{
 			tlight.on = lightstate["on"].asBool();
+			if (tlight.on) tlight.level = 100; // Set default full brightness for non dimmable lights
+			_log.Log(LOG_STATUS, "On: %s", tlight.on?"true":"false");
 		}
 		if (!lightstate["colormode"].empty())
 		{
@@ -808,12 +820,14 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 		Json::Value light = *iLight;
 		if (light.isObject())
 		{
+			//_log.Log(LOG_STATUS, "Philips Hue: light: '%s'", light.asString().c_str());
 			std::string szLID = iLight.key().asString();
 			int lID = atoi(szLID.c_str());
 
 			_tHueLightState tlight;
 			_eHueLightType LType;
 			bool bDoSend = true;
+			_log.Log(LOG_STATUS, "HueBridge checking state of light '%s'", light["name"].asString().c_str());
 			LightStateFromJSON(light["state"], tlight, LType);
 
 			auto myLight = m_lights.find(lID);
@@ -825,6 +839,8 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			if (bDoSend)
 			{
 				//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
+				_log.Log(LOG_STATUS, "HueBridge state change for '%s'", 
+				         light["name"].asString().c_str());
 				m_lights[lID] = tlight;
 				std::string modelid = light["modelid"].asString();
 				InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid, true);
@@ -846,12 +862,14 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		Json::Value group = *iGroup;
 		if (group.isObject())
 		{
+			//_log.Log(LOG_STATUS, "Philips Hue: group: '%s'", group.asString().c_str());
 			std::string szGID = iGroup.key().asString();
 			int gID = atoi(szGID.c_str());
 
 			_tHueLightState tstate;
 			_eHueLightType LType;
 			bool bDoSend = true;
+			_log.Log(LOG_STATUS, "HueBridge checking state of group '%s'", group["name"].asString().c_str());
 			LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key
 
 			auto myGroup = m_groups.find(gID);
@@ -914,7 +932,10 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	_eHueLightType LType = HLTYPE_RGB_W;// HLTYPE_NORMAL;
 
 	if (!root2["action"]["on"].empty())
+	{
 		tstate.on = root2["action"]["on"].asBool();
+		if (tstate.on) tstate.level = 100; // Set default full brightness for non dimmable group
+	}
 	if (!root2["action"]["bri"].empty())
 	{
 		int tbri = root2["action"]["bri"].asInt();
