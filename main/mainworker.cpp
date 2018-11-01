@@ -84,7 +84,6 @@
 #include "../hardware/KMTronicUDP.h"
 #include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
-#include "../hardware/FroniusDataLoggerTCP.h"
 #include "../hardware/Pinger.h"
 #include "../hardware/Nest.h"
 #include "../hardware/Thermosmart.h"
@@ -1092,10 +1091,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_USBtinGateway:
 		pHardware = new USBtin(ID, SerialPort, Mode1, Mode2);
-		break;
-	case HTYPE_FRONIUSTCP:
-		//LAN
-		pHardware = new FroniusDataLoggerTCP(ID, Address, Port);
 		break;
 	case HTYPE_EnphaseAPI:
 		pHardware = new EnphaseAPI(ID, Address, Port);

@@ -270,7 +270,6 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
 		{ HTYPE_DenkoviSmartdenIPInOut, "Denkovi Smartden IP In with LAN interface" },
 		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
-		{ HTYPE_FRONIUSTCP, "FroniusDataLogger via LAN interface" },
 		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
 		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
 		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },

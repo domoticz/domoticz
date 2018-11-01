@@ -477,11 +477,17 @@
     <Filter Include="IFTTT">
       <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Fronius">
-      <UniqueIdentifier>{d9895774-e862-4688-958a-13798d756ddc}</UniqueIdentifier>
+    <Filter Include="Devices\USBtin">
+      <UniqueIdentifier>{d75dcc54-5cb3-4fef-9f27-3ecaf1484067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Enphase">
+      <UniqueIdentifier>{aa75f1cf-ae72-4163-96c8-8dc1ed3d29d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\Websocket">
+      <UniqueIdentifier>{ec8bbfd7-5375-4170-93dd-c470284d1512}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\eHouse">
-      <UniqueIdentifier>{11347006-8ec1-4bb4-a95d-33d0d4148236}</UniqueIdentifier>
+      <UniqueIdentifier>{b56cf9a6-abbb-4578-8e1a-23b4cd57a309}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1364,6 +1370,8 @@
     <None Include="..\www\styles\default\show_version_number.css">
       <Filter>www\styles\default</Filter>
     </None>
+    <None Include="..\www\js\angular-websocket.js" />
+    <None Include="..\www\views\temperatures\temperatureWidget.html" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -2089,47 +2097,44 @@
     <ClInclude Include="..\main\dzVents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\FroniusDataloggerTCP.h">
-      <Filter>Devices\Fronius</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
       <Filter>Devices\Denkovi</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\USBtin.h">
-      <Filter>Devices</Filter>
+      <Filter>Devices\USBtin</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h">
-      <Filter>Devices</Filter>
+      <Filter>Devices\USBtin</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EnphaseAPI.h">
-      <Filter>Devices</Filter>
+      <Filter>Devices\Enphase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\Push.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\WebsocketPush.h">
+      <Filter>Pushers\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationBrowser.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\Websockets.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouseTCP.h">
+      <Filter>Devices\eHouse</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\eHouse\EventsCodes.h">
-      <Filter>Devices</Filter>
+      <Filter>Devices\eHouse</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\eHouse\globals.h">
       <Filter>Devices\eHouse</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\eHouse\status.h">
       <Filter>Devices\eHouse</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\eHouseTCP.h">
-      <Filter>Devices\eHouse</Filter>
-    </ClInclude>
-    <ClInclude Include="..\notifications\NotificationBrowser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\Push.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\WebsocketPush.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\Websockets.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Comm5SMTCP.h">
       <Filter>Devices\Comm5 MA-5XXX</Filter>
@@ -2186,6 +2191,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\YouLess.cpp">
       <Filter>Devices\YouLess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DomoticzHardware.cpp">
+      <Filter>Devices</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\DomoticzInternal.cpp">
       <Filter>Devices\DomoticzInternal</Filter>
@@ -2829,23 +2837,32 @@
     <ClCompile Include="..\main\dzVents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\FroniusDataloggerTCP.cpp">
-      <Filter>Devices\Fronius</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\DomoticzHardware.cpp">
-      <Filter>Devices\ZWave</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
       <Filter>Devices\Denkovi</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\USBtin.cpp">
-      <Filter>Devices</Filter>
+      <Filter>Devices\USBtin</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp">
-      <Filter>Devices</Filter>
+      <Filter>Devices\USBtin</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EnphaseAPI.cpp">
-      <Filter>Devices</Filter>
+      <Filter>Devices\Enphase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\WebsocketPush.cpp">
+      <Filter>Pushers\Websocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\Websockets.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouseTCP.cpp">
+      <Filter>Devices\eHouse</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\eHouse\EhouseTcpClient.cpp">
       <Filter>Devices\eHouse</Filter>
