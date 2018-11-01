@@ -10445,110 +10445,112 @@ void MainWorker::decode_ASyncPort(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		}
 
-		WriteMessage("Baudrate    = ", false);
-		switch (pResponse->ASYNCPORT.baudrate)
+		if (pResponse->ASYNCPORT.cmnd != asyncdisable)
 		{
-		case asyncbaud110:
-			WriteMessage("110");
-			break;
-		case asyncbaud300:
-			WriteMessage("300");
-			break;
-		case asyncbaud600:
-			WriteMessage("600");
-			break;
-		case asyncbaud1200:
-			WriteMessage("1200");
-			break;
-		case asyncbaud2400:
-			WriteMessage("2400");
-			break;
-		case asyncbaud4800:
-			WriteMessage("4800");
-			break;
-		case asyncbaud9600:
-			WriteMessage("9600");
-			break;
-		case asyncbaud14400:
-			WriteMessage("14400");
-			break;
-		case asyncbaud19200:
-			WriteMessage("19200");
-			break;
-		case asyncbaud38400:
-			WriteMessage("38400");
-			break;
-		case asyncbaud57600:
-			WriteMessage("57600");
-			break;
-		case asyncbaud115200:
-			WriteMessage("115200");
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown baudrate type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
-			WriteMessage(szTmp);
-			break;
+			WriteMessage("Baudrate    = ", false);
+			switch (pResponse->ASYNCPORT.baudrate)
+			{
+			case asyncbaud110:
+				WriteMessage("110");
+				break;
+			case asyncbaud300:
+				WriteMessage("300");
+				break;
+			case asyncbaud600:
+				WriteMessage("600");
+				break;
+			case asyncbaud1200:
+				WriteMessage("1200");
+				break;
+			case asyncbaud2400:
+				WriteMessage("2400");
+				break;
+			case asyncbaud4800:
+				WriteMessage("4800");
+				break;
+			case asyncbaud9600:
+				WriteMessage("9600");
+				break;
+			case asyncbaud14400:
+				WriteMessage("14400");
+				break;
+			case asyncbaud19200:
+				WriteMessage("19200");
+				break;
+			case asyncbaud38400:
+				WriteMessage("38400");
+				break;
+			case asyncbaud57600:
+				WriteMessage("57600");
+				break;
+			case asyncbaud115200:
+				WriteMessage("115200");
+				break;
+			default:
+				sprintf(szTmp, "ERROR: Unknown baudrate type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+				WriteMessage(szTmp);
+				break;
+			}
+			WriteMessage("Parity      = ", false);
+			switch (pResponse->ASYNCPORT.parity)
+			{
+			case asyncParityNo:
+				WriteMessage("None");
+				break;
+			case asyncParityOdd:
+				WriteMessage("Odd");
+				break;
+			case asyncParityEven:
+				WriteMessage("Even");
+				break;
+			default:
+				sprintf(szTmp, "ERROR: Unknown partity type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+				WriteMessage(szTmp);
+				break;
+			}
+			WriteMessage("Databits    = ", false);
+			switch (pResponse->ASYNCPORT.databits)
+			{
+			case asyncDatabits7:
+				WriteMessage("7");
+				break;
+			case asyncDatabits8:
+				WriteMessage("8");
+				break;
+			default:
+				sprintf(szTmp, "ERROR: Unknown databits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+				WriteMessage(szTmp);
+				break;
+			}
+			WriteMessage("Stopbits    = ", false);
+			switch (pResponse->ASYNCPORT.stopbits)
+			{
+			case asyncStopbits1:
+				WriteMessage("1");
+				break;
+			case asyncStopbits2:
+				WriteMessage("2");
+				break;
+			default:
+				sprintf(szTmp, "ERROR: Unknown stopbits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+				WriteMessage(szTmp);
+				break;
+			}
+			WriteMessage("Polarity    = ", false);
+			switch (pResponse->ASYNCPORT.polarity)
+			{
+			case asyncPolarityNormal:
+				WriteMessage("Normal");
+				break;
+			case asyncPolarityInvers:
+				WriteMessage("Inverted");
+				break;
+			default:
+				sprintf(szTmp, "ERROR: Unknown stopbits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
+				WriteMessage(szTmp);
+				break;
+			}
 		}
-		WriteMessage("Parity      = ", false);
-		switch (pResponse->ASYNCPORT.parity)
-		{
-		case asyncParityNo:
-			WriteMessage("None");
-			break;
-		case asyncParityOdd:
-			WriteMessage("Odd");
-			break;
-		case asyncParityEven:
-			WriteMessage("Even");
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown partity type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-		WriteMessage("Databits    = ", false);
-		switch (pResponse->ASYNCPORT.databits)
-		{
-		case asyncDatabits7:
-			WriteMessage("7");
-			break;
-		case asyncDatabits8:
-			WriteMessage("8");
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown databits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-		WriteMessage("Stopbits    = ", false);
-		switch (pResponse->ASYNCPORT.stopbits)
-		{
-		case asyncStopbits1:
-			WriteMessage("1");
-			break;
-		case asyncStopbits2:
-			WriteMessage("2");
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown stopbits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-		WriteMessage("Polarity    = ", false);
-		switch (pResponse->ASYNCPORT.polarity)
-		{
-		case asyncPolarityNormal:
-			WriteMessage("Normal");
-			break;
-		case asyncPolarityInvers:
-			WriteMessage("Inverted");
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown stopbits type for Packet type= %02X:%02X", pResponse->ASYNCPORT.packettype, pResponse->ASYNCPORT.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-
 		WriteMessageEnd();
 	}
 }
