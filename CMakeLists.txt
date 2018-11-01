@@ -339,6 +339,7 @@ hardware/EvohomeTCP.cpp
 hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
 hardware/FritzboxTCP.cpp
+hardware/FroniusDataLoggerTCP.cpp
 hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp

@@ -208,6 +208,7 @@ enum _eHardwareTypes {
 	HTYPE_RaspberryMCP23017,	//109
 	HTYPE_eHouseTCP,			//110
 	HTYPE_Comm5SMTCP,			//111
+	HTYPE_FRONIUSTCP,			//112
 	HTYPE_END
 };
 
