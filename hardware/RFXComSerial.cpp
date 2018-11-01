@@ -414,6 +414,8 @@ exitfirmwareupload:
 
 	m_rxbufferpos = 0;
 	m_bInBootloaderMode = false;
+	m_FirmwareUploadPercentage = 100;
+	RequestStart();
 	OpenSerialDevice();
 	return true;
 }
