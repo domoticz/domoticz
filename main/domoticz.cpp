@@ -658,9 +658,11 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		}
 		else if (szFlag == "app_path") {
 			szStartupFolder = sLine;
+			FixFolderEnding(szStartupFolder);
 		}
 		else if (szFlag == "userdata_path") {
 			szUserDataFolder = sLine;
+			FixFolderEnding(szUserDataFolder);
 		}
 		else if (szFlag == "daemon_name") {
 			daemonname = sLine;
@@ -762,8 +764,10 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
-			if (szroot.size() != 0)
+			if (szroot.size() != 0) {
 				szStartupFolder = szroot;
+				FixFolderEnding(szStartupFolder);
+			}
 		}
 	}
 
