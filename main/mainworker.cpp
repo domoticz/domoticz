@@ -1269,15 +1269,15 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	std::string szURL;
 	if (!bIsBetaChannel)
 	{
-		szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + m_szSystemName + "&machine=" + machine;
-		m_szDomoticzUpdateURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + m_szSystemName + "&machine=" + machine;
-		m_szDomoticzUpdateChecksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + m_szSystemName + "&machine=" + machine;
+		szURL = "https://www.domoticz.com/download.php?channel=stable&type=version&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateURL = "https://www.domoticz.com/download.php?channel=stable&type=release&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateChecksumURL = "https://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + m_szSystemName + "&machine=" + machine;
 	}
 	else
 	{
-		szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + m_szSystemName + "&machine=" + machine;
-		m_szDomoticzUpdateURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + m_szSystemName + "&machine=" + machine;
-		m_szDomoticzUpdateChecksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + m_szSystemName + "&machine=" + machine;
+		szURL = "https://www.domoticz.com/download.php?channel=beta&type=version&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateURL = "https://www.domoticz.com/download.php?channel=beta&type=release&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateChecksumURL = "https://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + m_szSystemName + "&machine=" + machine;
 	}
 
 	std::string revfile;
@@ -1306,8 +1306,10 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 
 bool MainWorker::StartDownloadUpdate()
 {
+#ifndef DEBUG_DOWNLOAD
 #ifdef WIN32
 	return false; //managed by web gui
+#endif
 #endif
 
 	if (!IsUpdateAvailable(true))
