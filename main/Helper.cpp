@@ -842,6 +842,17 @@ int MStoBeaufort(const float ms)
 	return 12;
 }
 
+void FixFolderEnding(std::string &folder)
+{
+#if defined(WIN32)
+	if (folder.at(folder.length() - 1) != '\\')
+		folder += "\\";
+#else
+	if (folder.at(folder.length() - 1) != '/')
+		folder += "/";
+#endif
+}
+
 bool dirent_is_directory(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_DIR)

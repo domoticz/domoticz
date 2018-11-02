@@ -837,7 +837,10 @@ int main(int argc, char**argv)
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
 			if (szroot.size() != 0)
+			{
 				szUserDataFolder = szroot;
+				FixFolderEnding(szUserDataFolder);
+			}
 		}
 		if (cmdLine.HasSwitch("-startupdelay"))
 		{

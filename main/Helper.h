@@ -56,6 +56,8 @@ bool IsLightOrSwitch(const int devType, const int subType);
 
 int MStoBeaufort(const float ms);
 
+void FixFolderEnding(std::string &folder);
+
 struct dirent;
 bool dirent_is_directory(const std::string &dir, struct dirent *ent);
 bool dirent_is_file(const std::string &dir, struct dirent *ent);
