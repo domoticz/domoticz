@@ -1,0 +1,12 @@
+  <td id="name" class="name">
+    <a [routerLink]="nextLink"><img src="images/{{imageSrc}}" [class]="imageClass" height="16" width="16"></a>
+    {{item.Name}}
+  </td>
+  <td id="status" class="status">
+    <span [innerHTML]="status"></span>
+    <button *ngIf="((this.item.Type === 'Thermostat') && (this.item.SubType === 'SetPoint')) || (this.item.SubType === 'Smartwares')"
+      class="btn btn-mini btn-info" type="button" (click)="ShowSetpointPopup($event)">{{buttonText}}</button>
+    <span [innerHTML]="status2"></span>
+
+    <dz-setpoint-popup (set)="onSetpointSet()"></dz-setpoint-popup>
+  </td>

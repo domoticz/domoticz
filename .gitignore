@@ -47,3 +47,5 @@ install_manifest.txt
 /www/images/floorplans/*.jpg
 .vscode
 sqlite3_config.h
+/www-src/node_modules/
+/www-src/dist/

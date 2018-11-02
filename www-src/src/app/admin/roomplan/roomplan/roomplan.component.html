@@ -1,0 +1,45 @@
+<div class="container">
+
+  <a class="btnstylerev" dzBackButton>{{ 'Back' | translate }}</a>
+  <dz-page-loading-indicator *ngIf="!plans"></dz-page-loading-indicator>
+
+  <div *ngIf="plans">
+    <section>
+      <h2 class="page-header">{{ 'Room plans' | translate }}</h2>
+
+      <div class="btn-panel align-right">
+        <button class="btn btn-default" (click)="addPlan()">{{ 'Add Plan' | translate }}</button>
+      </div>
+
+      <dz-room-plans-table [plans]="plans" (update)="refreshPlans()" (select)="selectPlan($event)"></dz-room-plans-table>
+    </section>
+
+    <section *ngIf="selectedPlan">
+      <h2 class="page-header">{{ 'Devices' | translate }}</h2>
+
+      <div class="btn-panel align-right">
+        <button
+          class="btn btn-default"
+          (click)="addDeviceToPlan()">
+          {{ 'Add'|translate }}
+        </button>
+
+        <button
+          class="btn btn-default"
+          (click)="removeAllDevicesFromPlan()">
+          {{ 'Clear'|translate }}
+        </button>
+      </div>
+
+      <dz-room-plan-devices-table
+        [planId]="selectedPlan.idx"
+        [devices]="planDevices"
+        (update)="refreshPlanDevices()"
+      ></dz-room-plan-devices-table>
+    </section>
+  </div>
+
+</div>
+
+<dz-room-plan-add-modal></dz-room-plan-add-modal>
+<dz-room-plan-device-selector-modal></dz-room-plan-device-selector-modal>

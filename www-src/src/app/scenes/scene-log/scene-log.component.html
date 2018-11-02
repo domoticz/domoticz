@@ -1,0 +1,23 @@
+<div class="container">
+  <a class="btnstylerev" [routerLink]="['/Scenes']">{{ 'Back' | translate }}</a>
+  <h2 class="page-header">{{ 'Name'| translate }}: {{ pageName }}</h2>
+
+  <dz-device-text-log-table [log]="log"></dz-device-text-log-table>
+
+  <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <label>
+          <input type="checkbox" [(ngModel)]="autoRefresh">
+          {{ 'Auto refresh on device update' | translate }}
+        </label>
+      </td>
+      <td align="right">
+        <button class="btnstyle3" (click)="clearLog()" [disabled]="!log.length">
+          {{ 'Clear' | translate }}
+        </button>
+      </td>
+    </tr>
+  </table>
+
+</div>

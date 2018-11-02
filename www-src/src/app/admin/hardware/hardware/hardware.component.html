@@ -1,0 +1,1284 @@
+<div id="hardwarecontent" class="container">
+
+  <div id="hardwaremain">
+    <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%" #hardwaretable>
+      <thead>
+      <tr>
+        <th width="30" align="left">Idx</th>
+        <th width="120" align="left">{{'Name'| translate}}</th>
+        <th width="60" align="left">{{'Enabled'| translate}}</th>
+        <th width="240" align="left">{{'Type'| translate}}</th>
+        <th width="200" align="left">{{'Address'| translate}}</th>
+        <th width="80" align="center">{{'Port'| translate}}</th>
+        <th width="120" align="center">{{'Data Timeout'| translate}}</th>
+      </tr>
+      </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td>
+          <a id="hardwareupdate"
+             (click)="onUpdateHardware()"
+             [ngClass]="{'btnstyle3-dis': !hardwareupdateenabled, 'btnstyle3': hardwareupdateenabled}">{{'Update'| translate}}</a>&nbsp;&nbsp;&nbsp;
+          <a id="hardwaredelete" (click)="onDeleteHardware()"
+             [ngClass]="{'btnstyle3-dis': !hardwaredeleteenabled, 'btnstyle3': hardwaredeleteenabled}">{{'Delete'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br>
+    <table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
+      <tr>
+        <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+        <td>
+          <input type="checkbox" id="enabled" name="enabled" [(ngModel)]="selectedHardware.enabled"
+                 [disabled]="enabledDisabled"><label for="enabled"></label>
+        </td>
+      </tr>
+      <tr>
+        <td align="right" style="width:110px"><label for="hardwarename"><span>{{'Name'| translate}}</span>:</label></td>
+        <td><input type="text" id="hardwarename" name="hardwarename" [(ngModel)]="selectedHardware.name"
+                   [disabled]="hardwarenameDisabled" style="width: 250px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all"/></td>
+      </tr>
+      <tr>
+        <td align="right" style="width:110px"><label for="combotype"><span>{{'Type'| translate}}</span>:</label></td>
+        <td>
+          <select id="combotype" name="combotype" [(ngModel)]="selectedHardware.type" [disabled]="typeDisabled"
+                  style="width:410px" class="combobox ui-corner-all" (change)="UpdateHardwareParamControls()">
+            <option *ngFor="let item of hardwareTypes" [ngValue]="item.idx != 94 ? item.idx : item.key">{{item.name}}
+            </option>
+            <!-- regroup I2C sensors under index 1000 -->
+            <option [ngValue]="1000">I2C sensors</option>
+          </select>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td align="right" style="width:110px"><label
+          for="combodatatimeout"><span>{{'Data Timeout'| translate}}</span>:</label></td>
+        <td>
+          <select id="combodatatimeout" name="combodatatimeout" [(ngModel)]="selectedHardware.timeout"
+                  [disabled]="timeoutDisabled" style="width:200px" class="combobox ui-corner-all">
+            <option [ngValue]="0">{{'Disabled'| translate}}</option>
+            <option [ngValue]="60">{{'1 Minute'| translate}}</option>
+            <option [ngValue]="300">{{'5 Minutes'| translate}}</option>
+            <option [ngValue]="600">{{'10 Minutes'| translate}}</option>
+            <option [ngValue]="900">{{'15 Minutes'| translate}}</option>
+            <option [ngValue]="1800">{{'30 Minutes'| translate}}</option>
+            <option [ngValue]="3600">{{'1 Hour'| translate}}</option>
+            <option [ngValue]="7200">{{'2 Hours'| translate}}</option>
+            <option [ngValue]="10800">{{'3 Hours'| translate}}</option>
+            <option [ngValue]="14400">{{'4 Hours'| translate}}</option>
+            <option [ngValue]="18000">{{'5 Hours'| translate}}</option>
+            <option [ngValue]="21600">{{'6 Hours'| translate}}</option>
+            <option [ngValue]="25200">{{'7 Hours'| translate}}</option>
+            <option [ngValue]="28800">{{'8 Hours'| translate}}</option>
+            <option [ngValue]="32400">{{'9 Hours'| translate}}</option>
+            <option [ngValue]="36000">{{'10 Hours'| translate}}</option>
+            <option [ngValue]="39600">{{'11 Hours'| translate}}</option>
+            <option [ngValue]="43200">{{'12 Hours'| translate}}</option>
+            <option [ngValue]="46800">{{'13 Hours'| translate}}</option>
+            <option [ngValue]="50400">{{'14 Hours'| translate}}</option>
+            <option [ngValue]="54000">{{'15 Hours'| translate}}</option>
+            <option [ngValue]="57600">{{'16 Hours'| translate}}</option>
+            <option [ngValue]="61200">{{'17 Hours'| translate}}</option>
+            <option [ngValue]="64800">{{'18 Hours'| translate}}</option>
+            <option [ngValue]="68400">{{'19 Hours'| translate}}</option>
+            <option [ngValue]="72000">{{'20 Hours'| translate}}</option>
+            <option [ngValue]="75600">{{'21 Hours'| translate}}</option>
+            <option [ngValue]="79200">{{'22 Hours'| translate}}</option>
+            <option [ngValue]="82800">{{'23 Hours'| translate}}</option>
+            <option [ngValue]="86400">{{'24 Hours'| translate}}</option>
+          </select>
+          <br/>
+          <span>{{'Specifying a Data Timeout will restart the hardware device if no data is received for the specified time.'| translate}}</span>
+          <br/>
+          <strong>
+            <font class="warning-text">
+              <span>{{'Do not enable this option for devices that do not receive data!'| translate}}</span></font>
+          </strong>
+        </td>
+      </tr>
+    </table>
+    <div id="div1wire" *ngIf="div1wireDisplay">
+      <br>
+      <table class="display" id="hardwareparams1wire" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'OWFS Path'| translate}}</span>:</label></td>
+          <td><input type="text" id="owfspath" name="owfspath" [(ngModel)]="selectedHardware.owfspath"
+                     style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all"
+                     value="/mnt/1wire"/>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Sensor Poll Period'| translate}}</span>:</label></td>
+          <td>
+            <input type="text" id="OneWireSensorPollPeriod" name="OneWireSensorPollPeriod"
+                   [(ngModel)]="selectedHardware.OneWireSensorPollPeriod" style="width: 200px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all"
+                   value="300000"/>(<span>{{'milliseconds'| translate}}</span>)
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Switch Poll Period'| translate}}</span>:</label></td>
+          <td>
+            <input type="text" id="OneWireSwitchPollPeriod" name="OneWireSwitchPollPeriod"
+                   [(ngModel)]="selectedHardware.OneWireSwitchPollPeriod" style="width: 200px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all" value="100"/>(<span>{{'milliseconds'| translate}}</span>)
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divserial" *ngIf="divserialDisplay">
+      <br>
+      <table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblserialport"
+                                                       for="name"><span>{{'Serial Port'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="comboserialport" name="comboserialport" [(ngModel)]="selectedHardware.serialport"
+                    style="width:600px" class="combobox ui-corner-all">
+              <option *ngFor="let item of serialDevices" [ngValue]="item.value">{{item.name}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divusbtin" *ngIf="divusbtinDisplay">
+      <br>
+      <table class="display" id="hardwareparamsusbtin" border="0" cellpadding="0" cellspacing="20">
+        <tr valign="top">
+          <td align="right" style="width:110px"><label><span>{{'Multibloc V8'| translate}}</span>:</label></td>
+          <td>
+            <input type="checkbox" id="activateMultiblocV8" [(ngModel)]="selectedHardware.activateMultiblocV8"
+                   name="activateMultiblocV8"><label for="activateMultiblocV8"></label><br/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px"><label><span>{{'Free Can'| translate}}</span>:</label></td>
+          <td>
+            <input type="checkbox" id="activateCanFree" [(ngModel)]="selectedHardware.activateCanFree"
+                   name="activateCanFree"><label for="activateCanFree"></label><br/>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label id="lbldebugusbtin"
+                                                       for="name"><span>{{'Mode Debug'| translate}}</span>: </label>
+          </td>
+          <td>
+            <select id="combodebugusbtin" name="combodebugusbtin" [(ngModel)]="selectedHardware.debugusbtin"
+                    style="width:210px" class="combobox ui-corner-all">
+              <option [ngValue]="0">False</option>
+              <option [ngValue]="1">True</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divi2clocal" *ngIf="divi2clocalDisplay">
+      <br>
+      <table class="display" id="hardwareparamsi2clocal" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lbli2cname"
+                                                       for="name"><span>{{'SubType'| translate}}</span>:</label></td>
+          <td>
+            <select id="comboi2clocal" name="comboi2clocal" style="width:410px" class="combobox ui-corner-all"
+                    [(ngModel)]="selectedHardware.i2clocal" (change)="UpdateHardwareParamControls()">
+              <option *ngFor="let item of hardwareI2CTypes" [ngValue]="item.idx">{{item.name}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label id="lbli2cpath"
+                                                       for="name"><span>{{'Path to I2C bus:'| translate}}</span>Path to
+            I2C bus:</label></td>
+          <td>
+            <input type="text" id="i2cpath" name="i2cpath" [(ngModel)]="selectedHardware.i2cpath"
+                   style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+            <span>{{'(etc. /dev/i2c-1, or empty for autodetection)'| translate}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divi2caddress" *ngIf="divi2caddressDisplay">
+      <br>
+      <table class="display" id="hardwareparami2caddress" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lbli2caddress"
+                                                       for="name"><span>{{'I2C address:'| translate}}</span>I2C address:</label>
+          </td>
+          <td>
+            <input type="text" id="i2caddress" name="i2caddress" [(ngModel)]="selectedHardware.i2caddress"
+                   style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+            <span>{{'(decimal value)'| translate}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divi2cinvert" *ngIf="divi2cinvertDisplay">
+      <br>
+      <table class="display" id="hardwareparami2cinvert" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lbli2caddress"
+                                                       for="name"><span>{{'I2C address'| translate}}</span>Invert GPIO:</label>
+          </td>
+          <td><input type="checkbox" id="i2cinvert" name="i2cinvert" [(ngModel)]="selectedHardware.i2cinvert"><label
+            for="i2cinvert"></label></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divgpio" *ngIf="divgpioDisplay">
+      <br>
+      <table class="display" id="hardwareparamsgpio" border="0" cellpadding="0" cellspacing="20">
+        <tr valign="top">
+          <td align="right" style="width:110px"><label id="lblgpiodebounce"
+                                                       for="name"><span>{{'Debounce'| translate}}</span>Debounce:</label>
+          </td>
+          <td><input type="text" id="gpiodebounce" name="gpiodebounce" [(ngModel)]="selectedHardware.gpiodebounce"
+                     style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"
+                     [value]="50"/>&nbsp;(<span>{{'Milliseconds'| translate}}</span>)
+            <br/>
+            <span>{{'Make sure the correct pin status is read by introducing a bounce delay.'| translate}}</span>
+            <br/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px"><label id="lblgpioperiod"
+                                                       for="name"><span>{{'Period'| translate}}</span>Period:</label>
+          </td>
+          <td><input type="text" id="gpioperiod" name="gpioperiod" [(ngModel)]="selectedHardware.gpioperiod"
+                     style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"
+                     [value]="50"/>&nbsp;(<span>{{'Milliseconds'| translate}}</span>)
+            <br/>
+            <span>{{'Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).'| translate}}</span>
+            <br/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px"><label id="lblgpiopollinterval"
+                                                       for="name"><span>{{'Pollinterval'| translate}}</span>Poll
+            interval:</label></td>
+          <td><input type="text" id="gpiopollinterval" name="gpiopollinterval"
+                     [(ngModel)]="selectedHardware.gpiopollinterval" style="width: 50px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"
+                     [value]="0"/>&nbsp;<span>{{'(Seconds) 0 = Disabled'| translate}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divsysfsgpio" *ngIf="divsysfsgpioDisplay">
+      <br>
+      <table class="display" id="hardwareparamssysfsgpio" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><span>{{'Auto configure devices'| translate}}</span>:</td>
+          <td><input type="checkbox" id="sysfsautoconfigure" name="sysfsautoconfigure"
+                     [(ngModel)]="selectedHardware.sysfsautoconfigure"/><label for="sysfsautoconfigure"></label></td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px"><label
+            for="sysfsdebounce"><span>{{'sysfsdebounce'| translate}}</span>:</label></td>
+          <td><select id="sysfsdebounce" name="sysfsdebounce" [(ngModel)]="selectedHardware.sysfsdebounce"
+                      style="width:110" class="combobox ui-corner-all">
+            <option [ngValue]="50">{{'Default'| translate}}</option>
+            <option [ngValue]="1">{{'1 msec'| translate}}</option>
+            <option [ngValue]="2">{{'2 msec'| translate}}</option>
+            <option [ngValue]="5">{{'5 msec'| translate}}</option>
+            <option [ngValue]="10">{{'10 msec'| translate}}</option>
+            <option [ngValue]="25">{{'25 msec'| translate}}</option>
+            <option [ngValue]="50">{{'50 msec'| translate}}</option>
+            <option [ngValue]="75">{{'75 msec'| translate}}</option>
+            <option [ngValue]="100">{{'100 msec'| translate}}</option>
+            <option [ngValue]="150">{{'150 msec'| translate}}</option>
+            <option [ngValue]="200">{{'200 msec'| translate}}</option>
+            <option [ngValue]="250">{{'250 msec'| translate}}</option>
+            <option [ngValue]="300">{{'300 msec'| translate}}</option>
+            <option [ngValue]="350">{{'350 msec'| translate}}</option>
+            <option [ngValue]="400">{{'400 msec'| translate}}</option>
+            <option [ngValue]="450">{{'450 msec'| translate}}</option>
+            <option [ngValue]="500">{{'500 msec'| translate}}</option>
+          </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divevohome" *ngIf="divevohomeDisplay">
+      <br>
+      <table class="display" id="hardwareparamsevohome" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblbaudrateevohome"
+                                                       for="name"><span>{{'Baudrate'| translate}}</span>: </label></td>
+          <td>
+            <select id="combobaudrateevohome" name="combobaudrateevohome" [(ngModel)]="selectedHardware.baudrateevohome"
+                    style="width:210px" class="combobox ui-corner-all">
+              <option [ngValue]="115200">115200 (for genuine Honeywell HGI80/HGS80)</option>
+              <option [ngValue]="76800">76800</option>
+              <option [ngValue]="38400">38400</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Controller ID (hex)'| translate}}</span>:</label></td>
+          <td><input type="text" id="controllerid" name="controllerid" [(ngModel)]="selectedHardware.controllerid"
+                     style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divbaudratemysensors" *ngIf="divbaudratemysensorsDisplay">
+      <table class="display" id="hardwareparamsbaudratemysensors" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblbaudratemysensors"
+                                                       for="name"><span>{{'Baudrate'| translate}}</span>: </label></td>
+          <td><select id="combobaudrate" name="combobaudrate" [(ngModel)]="selectedHardware.baudrate"
+                      style="width:210px" class="combobox ui-corner-all">
+            <option [ngValue]="0">115200</option>
+            <option [ngValue]="1">38400 (SenseBender / Arduino Pro Mini 3.3V)</option>
+          </select></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divbaudratep1" *ngIf="divbaudratep1Display">
+      <table class="display" id="hardwareparamsbaudratep1" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblbaudratep1"
+                                                       for="name"><span>{{'Baudrate'| translate}}</span>: </label></td>
+          <td>
+            <select id="combobaudratep1" name="combobaudratep1" [(ngModel)]="selectedHardware.baudratep1"
+                    (ngModelChange)="onBaudratep1Change()" style="width:210px" class="combobox ui-corner-all">
+              <option [ngValue]="0">9600</option>
+              <option [ngValue]="1">115200</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divbaudrateteleinfo" *ngIf="divbaudrateteleinfoDisplay">
+      <table class="display" id="hardwareparamsbaudrateteleinfo" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblbaudrateteleinfo"
+                                                       for="name"><span>{{'Baudrate'| translate}}</span>: </label></td>
+          <td>
+            <select id="combobaudrateteleinfo" name="combobaudrateteleinfo"
+                    [(ngModel)]="selectedHardware.baudrateteleinfo" style="width:210px" class="combobox ui-corner-all">
+              <option [ngValue]="0">1200</option>
+              <option [ngValue]="1">9600</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divmodelecodevices" *ngIf="divmodelecodevicesDisplay">
+      <table class="display" id="hardwareparamsmodelecodevices" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblmodelecodevices"
+                                                       for="name"><span>{{'Model'| translate}}</span>: </label></td>
+          <td>
+            <select id="combomodelecodevices" name="combomodelecodevices" [(ngModel)]="selectedHardware.modelecodevices"
+                    style="width:210px" class="combobox ui-corner-all">
+              <option [ngValue]="0">EcoDevices</option>
+              <option [ngValue]="1">EcoDevices RT2</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divmodeldenkovidevices" *ngIf="divmodeldenkovidevicesDisplay">
+      <table class="display" id="hardwareparamsmodeldenkovidevices" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblmodeldenkovidevices"
+                                                       for="name"><span>{{'Model'| translate}}</span>: </label></td>
+          <td>
+            <select id="combomodeldenkovidevices" name="combomodeldenkovidevices"
+                    [(ngModel)]="selectedHardware.modeldenkovidevices" style="width:210px"
+                    class="combobox ui-corner-all">
+              <option [ngValue]="0">DAEnetIP4</option>
+              <option [ngValue]="1">SmartDEN IP-16R</option>
+              <option [ngValue]="2">SmartDEN IP-32IN</option>
+              <option [ngValue]="3">SmartDEN IP-Maxi</option>
+              <option [ngValue]="4">SmartDEN IP-Watchdog</option>
+              <option [ngValue]="5">SmartDEN Logger</option>
+              <option [ngValue]="6">SmartDEN Notifier</option>
+              <option [ngValue]="7">DAEnetIP3</option>
+              <option [ngValue]="8">DAEnetIP2</option>
+              <option [ngValue]="9">DAEnetIP2 8 Relay Module - LM35DZ</option>
+              <option [ngValue]="10">SmartDEN Opener</option>
+              <option [ngValue]="11">SmartDEN IP-PLC</option>
+            </select>
+            <br/>
+            <span>{{'For DAEnetIP2 boards password field must contain username:password. Example admin:admin'| translate}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divmodeldenkoviusbdevices" *ngIf="divmodeldenkoviusbdevicesDisplay">
+      <table class="display" id="hardwareparamsmodeldenkoviusbdevices" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblmodeldenkoviusbdevices"
+                                                       for="name"><span>{{'Model'| translate}}</span>: </label></td>
+          <td>
+            <select id="combomodeldenkoviusbdevices" name="combomodeldenkoviusbdevices"
+                    [(ngModel)]="selectedHardware.modeldenkoviusbdevices" style="width:210px"
+                    class="combobox ui-corner-all">
+              <option [ngValue]="0">USB 16 Relays-VCP</option>
+              <!--<option [ngValue]="1">USB 16 Relays-RTU Modbus</option>-->
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divmodeldenkovitcpdevices" *ngIf="divmodeldenkovitcpdevicesDisplay">
+      <table class="display" id="hardwareparamsmodeldenkovitcpdevices" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblmodeldenkovitcpdevices"
+                                                       for="name"><span>{{'Model'| translate}}</span>: </label></td>
+          <td>
+            <select id="combomodeldenkovitcpdevices" name="combomodeldenkovitcpdevices"
+                    [(ngModel)]="selectedHardware.modeldenkovitcpdevices" style="width:210px"
+                    class="combobox ui-corner-all"
+                    (change)="UpdateHardwareParamControls()">
+              <option [ngValue]="0">WiFi 16 Relays-VCP</option>
+              <option [ngValue]="1">WiFi 16 Relays-TCP Modbus</option>
+            </select>
+          </td>
+        </tr>
+        <tr *ngIf="denkovislaveidDisplay">
+          <td align="right" style="width:110px"><label id="lbldenkovislaveid"
+                                                       for="name"><span>{{'Slave ID'| translate}}</span>Slave ID</label>
+          </td>
+          <td><input type="text" id="denkovislaveid" name="denkovislaveid" [(ngModel)]="selectedHardware.denkovislaveid"
+                     style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divremote" *ngIf="divremoteDisplay">
+      <br>
+      <table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblremoteaddress"
+                                                       for="name"><span>{{'Remote Address'| translate}}</span>:</label>
+          </td>
+          <td><input type="text" id="tcpaddress" name="tcpaddress" [(ngModel)]="selectedHardware.tcpaddress"
+                     style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label id="lblremoteport"
+                                                       for="name"><span>{{'Port'| translate}}</span>:</label></td>
+          <td>
+            <input type="text" id="tcpport" name="tcpport" [(ngModel)]="selectedHardware.tcpport"
+                   style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divevohometcp" *ngIf="divevohometcpDisplay">
+      <br>
+      <table class="display" id="hardwareparamsevohometcp" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Controller ID (hex)'| translate}}</span>:</label></td>
+          <td><input type="text" id="controlleridevohometcp" name="controlleridevohometcp"
+                     [(ngModel)]="selectedHardware.controlleridevohometcp" style="width: 50px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divcrcp1" *ngIf="divcrcp1Display">
+      <table class="display" id="hardwareparamscrcp1" border="0" cellpadding="0" cellspacing="20">
+        <tr valign="top">
+          <td align="right" style="width:110px"><span>{{'CRC message validation'| translate}}</span>:</td>
+          <td>
+            <input type="checkbox" id="disablecrcp1" [(ngModel)]="selectedHardware.disablecrcp1"
+                   name="disablecrcp1"><label for="disablecrcp1"></label><br/>
+            <span>{{'Using CRC message validation prevents incorrect data from entering the Domoticz database.'| translate}}</span><br/>
+            <strong>
+              <font class="warning-text"><span>{{'Should normally not be disabled!'| translate}}</span></font>
+            </strong>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divratelimitp1" *ngIf="divratelimitp1Display">
+      <br>
+      <table class="display" id="hardwareparamsratelimitp1" border="0" cellpadding="0" cellspacing="20">
+        <tr valign="top">
+          <td align="right" style="width:110px"><label for="ratelimitp1"><span>{{'Rate Limit'| translate}}</span>:
+          </label>
+          </td>
+          <td><input type="text" id="ratelimitp1" name="ratelimitp1" [(ngModel)]="selectedHardware.ratelimitp1"
+                     style="width: 50px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>&nbsp;<span>{{'(Seconds) 0 = Disabled'}}</span>
+            <br/>
+            <span>{{'This limits the amount of meter updates.'| translate}}</span>
+            <br/>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divhttppoller" *ngIf="divhttppollerDisplay">
+      <br>
+      <table class="display" id="hardwareparamshttp" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblmethod" for="name"><span>{{'Method'| translate}}</span>:
+          </label></td>
+          <td>
+            <select id="combomethod" name="combomethod" [(ngModel)]="selectedHardware.method"
+                    (ngModelChange)="onMethodChange()" style="width:100px" class="combobox ui-corner-all">
+              <option [ngValue]="0">GET</option>
+              <option [ngValue]="1">POST</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label id="lblcontenttype"
+                                                       for="name"><span>{{'ContentType'| translate}}</span>: </label>
+          </td>
+          <td><input type="text" id="contenttype" name="contenttype" [(ngModel)]="selectedHardware.contenttype"
+                     style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label id="lblheaders" for="name"><span>{{'Headers'| translate}}</span>:
+          </label></td>
+          <td align="left"><textarea id="headers" name="Headers" [(ngModel)]="selectedHardware.headers" rows="4"
+                                     style="width: 356px; padding: .2em;"
+                                     class="text ui-widget-content ui-corner-all"></textarea></td>
+        </tr>
+        <tr *ngIf="postdataDisplay">
+          <td align="right" style="width:110px" id="divpostdatalabel"><label id="lblpostdata"
+                                                                             for="name"><span>{{'PostData'| translate}}</span>:
+          </label></td>
+          <td align="left" id="divpostdatatextarea"><textarea id="postdata" name="POST DATA"
+                                                              [(ngModel)]="selectedHardware.postdata" rows="4"
+                                                              style="width: 356px; padding: .2em;"
+                                                              class="text ui-widget-content ui-corner-all"></textarea>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'URL'| translate}}</span>:</label></td>
+          <td><input type="text" id="url" name="url" [(ngModel)]="selectedHardware.url"
+                     style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Command'| translate}}</span>:</label></td>
+          <td><input type="text" id="script" name="script" [(ngModel)]="selectedHardware.script"
+                     style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Refresh'| translate}}</span>:</label></td>
+          <td><input type="text" id="refresh" name="refresh" [(ngModel)]="selectedHardware.refresh"
+                     style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divpollinterval" *ngIf="divpollintervalDisplay">
+      <br>
+      <table class="display" id="hardwareparamspollinterval" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Refresh'| translate}}</span>(ms):</label></td>
+          <td>
+            <input type="text" id="pollinterval" name="pollinterval" [(ngModel)]="selectedHardware.pollinterval"
+                   style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divrelaynet" *ngIf="divrelaynetDisplay">
+      <br>
+      <table class="display" id="hardwareparamsrelaynet" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><span>{{'Poll inputs'| translate}}</span>:</td>
+          <td><input type="checkbox" id="relaynetpollinputs" name="relaynetpollinputs"
+                     [(ngModel)]="selectedHardware.relaynetpollinputs"><label for="relaynetpollinputs"></label></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><span>{{'Poll relays'| translate}}</span>:</td>
+          <td><input type="checkbox" id="relaynetpollrelays" name="relaynetpollrelays"
+                     [(ngModel)]="selectedHardware.relaynetpollrelays"><label for="relaynetpollrelays"></label></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><span>{{'Poll interval'| translate}}</span>:</td>
+          <td><input type="text" id="relaynetpollinterval" name="relaynetpollinterval"
+                     [(ngModel)]="selectedHardware.relaynetpollinterval" style="width: 25px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all" value="5"/> &nbsp; Seconds
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Input count'| translate}}</span>:</label></td>
+          <td><input type="text" id="relaynetinputcount" name="relaynetinputcount"
+                     [(ngModel)]="selectedHardware.relaynetinputcount" style="width: 15px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all" value="8"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Relay count'| translate}}</span>:</label></td>
+          <td><input type="text" id="relaynetrelaycount" name="relaynetrelaycount"
+                     [(ngModel)]="selectedHardware.relaynetrelaycount" style="width: 15px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all" value="8"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divehouse" *ngIf="divehouseDisplay">
+      <br>
+      <table class="display" id="hardwareparamsehouse" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><span>{{'Auto Discovery'| translate}}</span>:</td>
+          <td><input type="checkbox" id="ehouseautodiscovery" name="ehouseautodiscovery"
+                     [(ngModel)]="selectedHardware.ehouseautodiscovery"><label for="ehouseautodiscovery"></label></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><span>{{'Alarm Inputs'| translate}}</span>:</td>
+          <td><input type="checkbox" id="ehouseaddalarmin" name="ehouseaddalarmin"
+                     [(ngModel)]="selectedHardware.ehouseaddalarmin"><label for="ehouseaddalarmin"></label></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><span>{{'eHousePRO Enable'| translate}}</span>:</td>
+          <td><input type="checkbox" id="ehouseprodiscovery" name="ehouseprodiscovery"
+                     [(ngModel)]="selectedHardware.ehouseprodiscovery"><label for="ehouseprodiscovery"></label></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Option A'| translate}}</span>:</label></td>
+          <td><input type="text" id="ehouseopts" name="ehouseopts" [(ngModel)]="selectedHardware.ehouseopts"
+                     style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Option B'| translate}}</span>:</label></td>
+          <td><input type="text" id="ehouseopts2" name="ehouseopts2" [(ngModel)]="selectedHardware.ehouseopts2"
+                     style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divunderground" *ngIf="divundergroundDisplay">
+      <br>
+      <table class="display" id="hardwareparamsunderground" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'API Key'| translate}}</span>:</label></td>
+          <td><input type="text" id="apikey" name="apikey" [(ngModel)]="selectedHardware.apikey"
+                     style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Location'| translate}}</span>:</label></td>
+          <td><input type="text" id="location" name="location" [(ngModel)]="selectedHardware.location"
+                     style="width: 250px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/><br/><span>{{'StationLatLong'| translate}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divbuienradar" *ngIf="divbuienradarDisplay">
+      <br>
+      <table class="display" id="hardwareparamsbuienradar" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'Rain Forecast'| translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="number" min="5" max="90" step="5" id="timeframe" name="selectedHardware.timeframe"
+                   [(ngModel)]="timeframe" style="width: 50px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all"
+                   value="15"/>&nbsp;(<span>{{'Minutes'| translate}}</span>)
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'Rain Threshold'| translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="number" min="1" id="threshold" name="threshold" [(ngModel)]="selectedHardware.threshold"
+                   style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="25"/>&nbsp;(%)
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="vertical-align:top; width:110px;">
+            <label><span>{{ 'Location' | translate }}</span>:</label>
+          </td>
+          <td>
+            <input type="text" id="location"
+                   name="location"
+                   [(ngModel)]="selectedHardware.location"
+                   style="width: 250px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all"/><br/>
+            <span>{{'StationLatLong'|translate}}</span><br/>
+            <span>{{'(0 = Application default)'|translate}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divsolaredgeapi" *ngIf="divsolaredgeapiDisplay">
+      <br>
+      <table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'API Key'| translate}}</span>:</label></td>
+          <td><input type="text" id="apikey" name="apikey" [(ngModel)]="selectedHardware.apikey"
+                     style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divnestoauthapi" *ngIf="divnestoauthapiDisplay">
+      <table class="display" id="hardwareparamsnestoauthapi" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td></td>
+          <td><br>
+            <ul>
+              <li>If you enter an API key all the other fields are optional.</li>
+              <li>If you enter a Product Id, Secret and PIN but leave the API Key blank Domoticz will attempt to grab an
+                API key from Nest using that information.
+              </li>
+              <li>To obtain an API Key you will need to register with Nest. See the Domoticz Wiki (<a
+                href="http://www.domoticz.com/wiki/NestDeveloperApiKey">NestDeveloperApiKey</a>) for more information.
+              </li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'API Key'| translate}}</span>:</label></td>
+          <td><input type="text" id="apikey" name="apikey" [(ngModel)]="selectedHardware.apikey"
+                     style="width: 550px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Client Id'| translate}}</span>:</label></td>
+          <td><input type="text" id="productid" name="productid" [(ngModel)]="selectedHardware.productid"
+                     style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Client Secret'| translate}}</span>:</label></td>
+          <td><input type="text" id="productsecret" name="productsecret" [(ngModel)]="selectedHarware.productsecret"
+                     style="width: 220px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'OAuth PIN'| translate}}</span>:</label></td>
+          <td><input type="text" id="productpin" name="productpin" [(ngModel)]="selectedHardware.productpin"
+                     style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divenecotoon" *ngIf="divenecotoonDisplay">
+      <br>
+      <table class="display" id="hardwareparamsenecotoon" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Agreement'| translate}}</span>:</label></td>
+          <td><input type="text" id="agreement" name="agreement" [(ngModel)]="selectedHardware.agreement" value="0"
+                     style="width: 20px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span>{{'Toon Agreement'| translate}}</span></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divtesla" *ngIf="divteslaDisplay">
+      <br>
+      <table class="display" id="hardwareparamstesla" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'VIN'|translate}}</span>:</label></td>
+          <td>
+            <input type="text" id="vinnr" style="width: 300px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all"
+                   [(ngModel)]="selectedHardware.teslavinnr"/>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Default interval'|translate}}</span>:</label></td>
+          <td>
+            <input type="text" id="defaultinterval" style="width: 80px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all" [(ngModel)]="selectedHardware.tesladefaultinterval"/>
+            &nbsp;
+            (<span>{{'Minutes'|translate}}</span>)
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label for="activeinterval"><span>{{'Active interval'|translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="text" id="activeinterval" style="width: 80px; padding: .2em;"
+                   class="text ui-widget-content ui-corner-all" [(ngModel)]="selectedHardware.teslaactiveinterval"/>
+            &nbsp;(<span>{{'Minutes'|translate}}</span>).
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            Two interval types need to be specified:
+            <ul>
+              <li>Default interval is used when the car is not at home, or home but not charging or using climate
+                controls<br/>
+                Note that a too low interval (less than 20 minutes) will prevent the car to sleep.
+              </li>
+              <li>Active interval is used when the car is home, and charging or using climate controls</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label id="lblallowwakeup" for="name"><span>{{'Allow wake up'|translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="comboallowwakeup" style="width:60px" class="combobox ui-corner-all"
+                    [(ngModel)]="selectedHardware.teslaallowwakeup">
+              <option [value]="0">False</option>
+              <option [value]="1">True</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            If not allowed, the car will not be woken up when polled for status information to avoid battery drain.
+            Exceptions:
+            <ul>
+              <li>Commands sent to the car will always wake up the car</li>
+              <li>While the car is connected to a charger (home or not home), the car will always be woken up</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divlocation" *ngIf="divlocationDisplay">
+      <br>
+      <table class="display" id="hardwareparamslocation" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Location'| translate}}</span>:</label></td>
+          <td><input type="text" id="location" name="location" [(ngModel)]="selectedHardware.location"
+                     style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divlogin" *ngIf="divloginDisplay">
+      <br>
+      <table class="display" id="hardwareparamslogin" border="0" cellpadding="0" cellspacing="20">
+        <tr *ngIf="usernameDisplay">
+          <td align="right" style="width:110px"><label id="lblusername"
+                                                       for="name"><span>{{'Username'| translate}}</span>:</label></td>
+          <td>
+            <input type="text" id="username" name="username" [(ngModel)]="selectedHardware.username"
+                   style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+          </td>
+        </tr>
+        <tr *ngIf="passwordDisplay">
+          <td align="right" style="width:110px"><label id="lblpassword"
+                                                       for="name"><span>{{'Password'| translate}}</span>:</label></td>
+          <td><input type="password" id="password" [(ngModel)]="selectedHardware.password"
+                     style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divphilipshue" *ngIf="divphilipshueDisplay">
+      <br>
+      <table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label
+            for="pollinterval"><span>{{'Poll Interval'| translate}}</span>:</label></td>
+          <td><input type="text" id="pollinterval" name="pollinterval" [(ngModel)]="selectedHardware.pollinterval"
+                     style="width: 80px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>&nbsp;(<span>{{'Seconds'| translate}}</span>)
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label for="addgroups"><span>{{'Add Groups'| translate}}</span>:</label>
+          </td>
+          <td><input type="checkbox" id="addgroups" name="addgroups"
+                     [(ngModel)]="selectedHardware.addgroups"/>&nbsp;<label for="addgroups">&nbsp;</label></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label for="addscenes"><span>{{'Add Scenes'| translate}}</span>:</label>
+          </td>
+          <td><input type="checkbox" id="addscenes" name="addscenes"
+                     [(ngModel)]="selectedHardware.addscenes"/>&nbsp;<label for="addscenes">&nbsp;</label></td>
+        </tr>
+        <tr *ngIf="usernameDisplay">
+          <td align="right" style="width:110px"><label id="lblusername"
+                                                       for="name"><span>{{'Username'| translate}}</span>:</label></td>
+          <td>
+            <input type="text" id="username" name="username" [(ngModel)]="selectedHardware.username"
+                   style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+            <br/>
+            <span>{{'Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the \'Register on Bridge\' button.'| translate}}</span>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><span class="label label-important lcursor" (click)="RegisterPhilipsHue()">Register on Bridge</span></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divhoneywell" *ngIf="divhoneywellDisplay">
+      <br>
+      <table class="display" id="hardwareparamshoneywell" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:140px"><label><span>{{'API key'| translate}}</span>:</label></td>
+          <td><input type="text" id="hwApiKey" name="hwApiKey" [(ngModel)]="selectedHardware.hwApiKey"
+                     style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:140px"><label><span>{{'API secret'| translate}}</span>:</label></td>
+          <td><input type="text" id="hwApiSecret" name="hwApiSecret" [(ngModel)]="selectedHardware.hwApiSecret"
+                     style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:140px"><label><span>{{'Access token'| translate}}</span>:</label></td>
+          <td><input type="text" id="hwAccessToken" name="hwAccessToken" [(ngModel)]="selectedHardware.hwAccessToken"
+                     style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:140px"><label><span>{{'Refresh token'| translate}}</span>:</label></td>
+          <td><input type="text" id="hwRefreshToken" name="hwRefreshToken" [(ngModel)]="selectedHardware.hwRefreshToken"
+                     style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"></td>
+          <td>You need to sign up at Honeywell to get the API key and secret. <br/>
+            Please follow the instructions on <a href="https://www.domoticz.com/wiki/HoneywellDeveloperApiKey"
+                                                 target="_blank">domoticz.com/wiki/HoneywellDeveloperApiKey</a></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divwinddelen" *ngIf="divwinddelenDisplay">
+      <br>
+      <table class="display" id="hardwareparamswinddelen" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label
+            for="combomillselect"><span>{{'Select a Mill'| translate}}</span>:</label></td>
+          <td>
+            <select id="combomillselect" name="combomillselect" [(ngModel)]="selectedHardware.millselect"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option *ngFor="let item of millselectOptions" [ngValue]="item.value">{{item.label}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Number of winddelen'| translate}}</span>:</label></td>
+          <td><input type="text" id="nrofwinddelen" name="nrofwinddelen" [(ngModel)]="selectedHardware.nrofwinddelen"
+                     style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divgoodweweb" *ngIf="divgoodwewebDisplay">
+      <br>
+      <table class="display" id="hardwareparamsgoodweweb" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label
+            for="comboserverselect"><span>{{'Location'| translate}}</span>:</label></td>
+          <td>
+            <select id="comboserverselect" name="comboserverselect" [(ngModel)]="selectedHardware.serverselect"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option [ngValue]="0">Global</option>
+              <option [ngValue]="1">Oceania</option>
+              <option [ngValue]="2">Europe</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label><span>{{'Username'| translate}}</span>:</label></td>
+          <td><input type="text" id="username" name="username" [(ngModel)]="selectedHardware.username"
+                     style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+      </table>
+    </div>
+    <div id="divpythonplugin" *ngIf="divpythonpluginDisplay">
+      <ng-container *ngFor="let item of hardwareTypes">
+        <ng-container *ngIf="item.idx == 94">
+          <table class="display plugin" *ngIf="selectedHardware.type == item.key" [id]="item.key" border="0"
+                 cellpadding="0" cellspacing="20">
+            <tr>
+              <td></td>
+            </tr>
+            <tr *ngIf="item.wikiURL.length > 0">
+              <td align="right" style="width:110px"><span>{{'Wiki URL'| translate}}</span>:</td>
+              <td>
+                <a [href]="item.wikiURL">{{item.wikiURL}}</a>
+              </td>
+            </tr>
+            <tr *ngIf="item.externalURL.length > 0">
+              <td align="right" style="width:110px"><span>{{'Product URL'| translate}}</span>:</td>
+              <td><a [href]="item.externalURL">{{item.externalURL}}</a></td>
+            </tr>
+            <tr *ngIf="item.description.length > 0">
+              <td></td>
+              <td>{{item.description}}</td>
+            </tr>
+            <tr *ngFor="let param of item.parameters">
+              <td align="right" style="width:110px">
+                <label id="lbl{{param.field}}"><span>{{param.label| translate}}</span>:</label>
+              </td>
+              <td *ngIf="isParamSerialPort(param)">
+                <select [id]="param.field" [style.width]="param.width" class="combobox ui-corner-all">
+                  <option *ngFor="let item of serialDevices" [ngValue]="item.name">{{item.name| translate}}</option>
+                </select>
+              </td>
+              <td *ngIf="isNotParamSerialPort(param)">
+                <input [type]="isParamPassword(param) ? 'password' : 'text'" [id]="param.field"
+                       style="width: {{param.width}}; padding: .2em;" class="text ui-widget-content ui-corner-all"
+                       [value]="isParamDefault(param) ? param.default : ''" [required]="isParamRequired(param)"/>
+              </td>
+              <td *ngIf="isParamOptions(param)">
+                <select [id]="param.field" [style.width]="param.width" class="combobox ui-corner-all">
+                  <option *ngFor="let option of param.options" [value]="option.value"
+                          [selected]="isOptionDefault(option)">
+                    {{option.label| translate}}</option>
+                </select>
+              </td>
+            </tr>
+          </table>
+        </ng-container>
+      </ng-container>
+    </div>
+    <div id="divmqtt" *ngIf="divmqttDisplay">
+      <br>
+      <table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
+        <tr id="mqtt_preventloop" valign="top">
+          <td align="right" style="width:110px">
+            <label for="combopreventloop"><span>{{'Prevent Loop'|translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combopreventloop" name="combopreventloop" [(ngModel)]="selectedHardware.preventloop"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option [ngValue]="0">False</option>
+              <option [ngValue]="1">True</option>
+            </select>
+            <br/>
+            <span>
+						If 'False' this will cause the MQTT message to be echoed back. <br/>
+						In most cases this is a bad scenario and should be avoided.<br/>
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="mqtt_publishDisplay" id="mqtt_publish" valign="top">
+          <td align="right" style="width:110px"><label
+            for="combotopicselect"><span>{{'Publish Topic'| translate}}</span>:</label></td>
+          <td>
+            <select id="combotopicselect" name="combotopicselect" [(ngModel)]="selectedHardware.topicselect"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option [ngValue]="1">out</option>
+              <option [ngValue]="2"> &lt;Floor&gt;/&lt;Room&gt;</option>
+              <option [ngValue]="3">out + &lt;Floor&gt;/&lt;Room&gt;</option>
+              <option [ngValue]="0">None</option>
+            </select>
+            <br/>
+            <span>Select the Topic('s) Domoticz will use to publish outgoing messages. <br/>
+              <b>Flat</b> - publish outgoing messagen on topic domoticz/out.<br/>
+              <b>Hierarchical</b> - publish outgoing messagen on topic domoticz/out/${{'{'}}floorplan name}/${{'{'}}plan
+              name}.<br/>
+              <b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br/>
+              <b>None</b> - disable outgoing messages.<br/>
+              <br/>
+              Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px"><label id="lbfilename"
+                                                       for="filename"><span>{{'CA Filename'| translate}}</span>:</label>
+          </td>
+          <td><input type="text" id="filename" name="filename" [(ngModel)]="selectedHardware.filename"
+                     style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label id="lbltlsversion" for="combotlsversion"><span>{{'TLS Version'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combotlsversion" name="combotlsversion" [(ngModel)]="selectedHardware.tlsversion"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option [ngValue]="0">tlsv1</option>
+              <option [ngValue]="1">tlsv1.1</option>
+              <option [ngValue]="2">tlsv1.2</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divrtl433" *ngIf="divrtl433Display">
+      <br>
+      <table class="display" id="hardwareparamsrtl433" border="0" cellpadding="0" cellspacing="20">
+        <tr valign="top">
+          <td align="right" style="width:110px"><label id="lblcmdline"
+                                                       for="cmdline"><span>{{'rtl_433 parameters'| translate}}</span>:</label>
+          </td>
+          <td><input type="text" id="rtl433cmdline" name="rtl433cmdline" [(ngModel)]="selectedHardware.rtl433cmdline"
+                     style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+            <br/>
+            Add extra parameteres to rtl_433 command line. You may for instance :
+            <ul>
+              <li>specify device number (if you have more than one) : -d 1</li>
+              <li>specify other frequencies and hop time : -f 433.92e6 -f 868.24e6 -H 60</li>
+            </ul>
+            Be careful not to conflict with the options affecting output.
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divmysensorsmqtt" *ngIf="divmysensorsmqttDisplay">
+      <br>
+      <table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
+        <tr id="mqtt_preventloop" valign="top">
+          <td align="right" style="width:110px">
+            <label for="combopreventloop"><span>{{'Prevent Loop'|translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combopreventloop" name="combopreventloop" [(ngModel)]="selectedHardware.preventloop"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option [ngValue]="0">False</option>
+              <option [ngValue]="1">True</option>
+            </select>
+            <br/>
+            <span>
+						If 'False' this will cause the MQTT message to be echoed back. <br/>
+						In most cases this is a bad scenario and should be avoided.<br/>
+            </span>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px">
+            <label for="combotopicselect"><span>{{'Topic Prefix Mode'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combotopicselect" name="combotopicselect" [(ngModel)]="selectedHardware.topicselect"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option [ngValue]="0">MyMQTT (default)</option>
+              <option [ngValue]="1">Gateway Node Name</option>
+              <option [ngValue]="2">Custom Topics</option>
+            </select>
+            Select the Topic mode that Domoticz uses to send and receive messages.<br/><br/>
+            <ul>
+              <li><b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT.</li>
+              <li><b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName
+                (GatewayNodeName is specified in the Name field above).
+              </li>
+              <li><b>Custom Topics</b> - Enter custom topic prefixes below.</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label id="lbmqtttopicin" for="mqtttopicin"><span>{{'Topic In Prefix'| translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="text" id="mqtttopicin" name="mqtttopicin" [(ngModel)]="selectedHardware.mqtttopicin"
+                   style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+            &#8592;&nbsp;<span>{{'"Enter the MY_MQTT_PUBLISH_TOPIC_PREFIX value from the gateway sketch here.'| translate}}</span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label id="lbmqtttopicout" for="mqtttopicout"><span>{{'Topic Out Prefix'| translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="text" id="mqtttopicout" name="mqtttopicout" [(ngModel)]="selectedHardware.mqtttopicout"
+                   style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+            &#8592;&nbsp;<span>{{'Enter the MY_MQTT_SUBSCRIBE_TOPIC_PREFIX value from the gateway sketch here.'| translate}}</span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label id="lbfilename" for="filename"><span>{{'CA Filename'| translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="text" id="filename" name="filename" [(ngModel)]="selectedHardware.filename"
+                   style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label id="lbltlsversion" for="combotlsversion"><span>{{'TLS Version'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combotlsversion" name="combotlsversion" [(ngModel)]="selectedHardware.tlsversion"
+                    style="width:200px" class="combobox ui-corner-all">
+              <option [ngValue]="0">tlsv1</option>
+              <option [ngValue]="1">tlsv1.1</option>
+              <option [ngValue]="2">tlsv1.2</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="divevohomeweb" *ngIf="divevohomewebDisplay" style="display:none;">
+      <br/>
+      <table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">
+        <tr valign="top">
+          <td align="right" style="width:110px">
+            <label id="lblupdfreqevohomeweb"><span>{{'Poll Interval'| translate}}</span>: </label>
+          </td>
+          <td><input type="text" id="updatefrequencyevohomeweb" name="updatefrequencyevohomeweb"
+                     [(ngModel)]="selectedHardware.updatefrequencyevohomeweb" style="width: 50px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"
+                     [value]="60"/>&nbsp;<span>{{'(Seconds)'| translate}}</span><br/>
+            <span>{{'This sets the interval between status requests.'| translate}}</span><br/>
+            <strong>
+              <font class="warning-text">
+                <span>{{'If you set this to less than 60 seconds you may be in violation of Honeywell\'s usage terms and have your account suspended!'| translate}}</span>
+              </font>
+            </strong>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px"><span>{{'Synchronize installation'| translate}}</span>:</td>
+          <td>
+            <input type="checkbox" id="disableautoevohomeweb" [(ngModel)]="selectedHardware.disableautoevohomeweb"
+                   name="disableautoevohomeweb"><label for="disableautoevohomeweb"></label><br/>
+            <span>{{'When enabled this will automatically register and keep your zone names in sync with the Evohome controller.'| translate}}</span><br/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px"><span>{{'Show schedule'| translate}}</span>:</td>
+          <td>
+            <input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"
+                   [(ngModel)]="selectedHardware.showscheduleevohomeweb"><label
+            for="showscheduleevohomeweb"></label><br/>
+            <span>{{'When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.'| translate}}</span><br/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="right" style="width:110px"><span>{{'Show location'| translate}}</span>:</td>
+          <td>
+            <input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb"
+                   [(ngModel)]="selectedHardware.showlocationevohomeweb"><label for="showlocationevohomeweb"></label>
+            <span>{{'(implies synchronize installation)'| translate}}</span><br/>&nbsp;<br/>
+          </td>
+        </tr>
+
+        <tr valign="top">
+          <td align="right" style="width:110px">
+            <label id="lblshowlocevohomeweb" for="name"><span>{{'Select location'| translate}}</span>: </label>
+          </td>
+          <td>
+            <select id="comboevolocation" name="comboevolocation" [(ngModel)]="selectedHardware.comboevolocation"
+                    class="combobox ui-corner-all">
+              <option [ngValue]="0">0</option>
+              <option *ngFor="let i of range10" [ngValue]="i">{{i}}</option>
+            </select>,
+            <select id="comboevogateway" name="comboevogateway" [(ngModel)]="selectedHardware.evogateway"
+                    class="combobox ui-corner-all">
+              <option [ngValue]="0">0</option>
+              <option *ngFor="let i of range10" [ngValue]="i">{{i}}</option>
+            </select>,
+            <select id="comboevotcs" name="comboevotcs" [(ngModel)]="selectedHardware.evotcs"
+                    class="combobox ui-corner-all">
+              <option [ngValue]="0">0</option>
+              <option *ngFor="let i of range10" [ngValue]="i">{{i}}</option>
+            </select>
+            <span>{{'(keep at [0,0,0] if you only have one Evohome installation)'| translate}}</span><br/>&nbsp;<br/>
+          </td>
+        </tr>
+
+        <tr valign="top">
+          <td align="right" style="width:110px">
+            <label id="lblprecisionevohomeweb" for="name"><span>{{'Temperature precision'| translate}}</span>: </label>
+          </td>
+          <td><select id="comboevoprecision" name="comboevoprecision" [(ngModel)]="selectedHardware.evoprecision"
+                      style="width:200px" class="combobox ui-corner-all">
+            <option selected="selected" [ngValue]="0">Same as controller (quickest)</option>
+            <option [ngValue]="8">1 decimal</option>
+            <option [ngValue]="24">2 decimals</option>
+          </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div>
+      <br>
+      <table border="0" cellpadding="0" cellspacing="14">
+        <tr>
+          <td align="right" style="width:110px"></td>
+          <td><a class="btnstyle3" (click)="AddHardware()">{{'Add'| translate}}</a></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>

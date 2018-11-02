@@ -1,0 +1,39 @@
+.page-devices-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.page-devices-wrapper > .top-panel {
+    margin-bottom: 8px;
+}
+
+.page-devices {
+    display: flex;
+}
+
+.page-devices > .filters {
+    width: 200px;
+    min-width: 150px;
+    margin-right: 8px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.page-devices > .devices-table {
+    display: block;
+    flex: 1;
+}
+
+.page-devices > .splitter {
+    width: 16px;
+    margin: 0 8px 15px 0;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.page-devices > .splitter:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}

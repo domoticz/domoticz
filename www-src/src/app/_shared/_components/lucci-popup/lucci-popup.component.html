@@ -1,0 +1,25 @@
+<div id="lucci_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" [ngStyle]="style" [style.display]="display ? 'block' : 'none'">
+  <div class="ui-close" (click)="CloseLucciPopup()"></div>
+  <table class="display" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td>
+        <div style="text-align: center;">
+          <br><br>
+          <ng-container *ngIf="!isDC">
+            <button class="btn btn-info" (click)="LucciSendCommand('hi')">Hi</button><br>
+            <button class="btn btn-info" (click)="LucciSendCommand('med')">Med</button><br>
+            <button class="btn btn-info" (click)="LucciSendCommand('low')">Low</button><br>
+            <button class="btn btn-info" (click)="LucciSendCommand('off')">Off</button><br>
+          </ng-container>
+          <ng-container *ngIf="isDC">
+            <button class="btn btn-info" (click)="LucciSendCommand('pow')">Pow</button><br>
+            <button class="btn btn-info" (click)="LucciSendCommand('plus')">Plus</button><br>
+            <button class="btn btn-info" (click)="LucciSendCommand('min')">Min</button><br>
+          </ng-container>
+          <button class="btn btn-info" (click)="LucciSendCommand('light')">{{'Light'| translate}}</button><br>
+        </div>
+        <br>
+      </td>
+    </tr>
+  </table>
+</div>

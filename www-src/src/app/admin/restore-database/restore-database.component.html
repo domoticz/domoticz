@@ -1,0 +1,16 @@
+<div id="maincontent" class="container">
+  <h1 class="warning-text">
+    <span>{{'A Database restore will overwrite the actual settings/logs.'| translate}}</span><br>
+    <span>{{'Please be sure that this is what you want to do!'| translate}}</span>
+  </h1>
+  <br>
+  <form (submit)="onSubmit()">
+    <label for="dbasefile">{{'Select Database File:'| translate}}</label>
+    <input type="file" id="dbasefile" name="dbasefile" accept=".db" (change)="onFileChange($event)"/><br>
+    <br>
+    <input type="submit" value="Upload"/>
+    <br><br>
+    <span>{{'Upload might take some time, depending on your network connection.'| translate}}</span><br>
+    <span class="warning-text">{{'Wait until you will see the dashboard again!'| translate}}</span>
+  </form>
+</div>

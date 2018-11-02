@@ -1,0 +1,234 @@
+<div class="navbar navbar-inverse navbar-fixed-top" *dzHasUser>
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand hidden-phone" id="version" style="cursor:pointer;">
+        <img src="images/logo/57.png" routerLink="/dashboard">
+        <h1 routerLink="/dashboard">Domoticz</h1>
+        <h2 id="appversion" class="version-tooltip" (click)="onAppversionClick()" [tooltip]="versionTooltip" tooltipPlacement="right">V{{appversion}}</h2>
+        <tooltip-content #versionTooltip><span [innerHTML]="config.versiontooltip"></span></tooltip-content>
+      </a>
+      <ul class="nav" id="appnavbar">
+        <li *ngIf="config.EnableTabProxy" class="clDashboard">
+          <a id="cProxy" routerLink="/mydomoticz/dashboard">
+            <img src="images/proxy.png"> <span class="hidden-phone hidden-tablet">{{'Proxy'| translate}}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabDashboard" class="divider-vertical clDashboard"></li>
+        <li *ngIf="config.EnableTabDashboard" routerLinkActive="current_page_item" class="clDashboard">
+          <a id="cDashboard" routerLink="/dashboard">
+            <img src="images/desktop.png"> <span class="hidden-phone hidden-tablet">{{ 'Dashboard' | translate }}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
+        <li *ngIf="config.EnableTabFloorplans" routerLinkActive="current_page_item" class="clFloorplans">
+          <a id="cFloorplans" routerLink="/Floorplans">
+            <img src="images/house.png"> <span class="hidden-phone hidden-tablet">{{'Floorplan'| translate}}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabLights" class="divider-vertical clLightSwitches"></li>
+        <li *ngIf="config.EnableTabLights" routerLinkActive="current_page_item" class="clLightSwitches">
+          <a id="cLightSwitches" routerLink="/LightSwitches">
+            <img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet">{{'Switches'| translate}}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabScenes" class="divider-vertical clScenes"></li>
+        <li *ngIf="config.EnableTabScenes" routerLinkActive="current_page_item" class="clScenes">
+          <a id="cScenes" routerLink="/Scenes">
+            <img src="images/scenes.png"> <span class="hidden-phone hidden-tablet">{{'Scenes'| translate}}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabTemp" class="divider-vertical clTemperature"></li>
+        <li *ngIf="config.EnableTabTemp" routerLinkActive="current_page_item" class="clTemperature">
+          <a id="cTemperature" routerLink="/Temperature">
+            <img src="images/temperature.png"> <span class="hidden-phone hidden-tablet">{{'Temperature'| translate}}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabWeather" class="divider-vertical clWeather"></li>
+        <li *ngIf="config.EnableTabWeather" routerLinkActive="current_page_item" class="clWeather">
+          <a id="cWeather" routerLink="/Weather">
+            <img src="images/rain.png"> <span class="hidden-phone hidden-tablet">{{'Weather'| translate}}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabUtility" class="divider-vertical clUtility"></li>
+        <li *ngIf="config.EnableTabUtility" routerLinkActive="current_page_item" class="clUtility">
+          <a id="cUtility" routerLink="/Utility">
+            <img src="images/utility.png"> <span class="hidden-phone hidden-tablet">{{'Utility'| translate}}</span>
+          </a>
+        </li>
+        <li *ngIf="config.EnableTabCustom" class="divider-vertical clcustommenu"></li>
+        <li *ngIf="config.EnableTabCustom" class="dropdown clcustommenu">
+          <a class="dropdown-toggle lcursor" data-toggle="dropdown">
+            <img src="images/devices.png"> <span class="hidden-phone hidden-tablet">{{'Custom'| translate}}</span>
+            <b class="caret hidden-phone hidden-tablet"></b>
+          </a>
+          <ul class="dropdown-menu pull-right" id="custommenu">
+            <li *ngFor="let t of templates"><a [routerLink]="['/Custom', t.file]">{{t.name}}</a></li>
+          </ul>
+        </li>
+
+        <li class="divider-vertical" *dzHasPermission="'Admin'"></li>
+        <li class="dropdown" *dzHasPermission="'Admin'">
+          <a class="dropdown-toggle lcursor" data-toggle="dropdown">
+            <img src="images/setup.png"> <span class="hidden-phone hidden-tablet">{{'Setup'| translate}}</span>
+            <b class="caret hidden-phone hidden-tablet"></b>
+          </a>
+          <ul class="dropdown-menu pull-right">
+            <li routerLinkActive="current_page_item" id="mHardware">
+              <a id="cHardware" routerLink="/Hardware">
+                <img src="images/hardware.png"> <span>{{'Hardware'| translate}}</span>
+              </a>
+            </li>
+            <li routerLinkActive="current_page_item" id="mDevices">
+              <a id="cDevices" routerLink="/Devices">
+                <img src="images/devices.png"> <span>{{'Devices'| translate}}</span>
+              </a>
+            </li>
+            <li routerLinkActive="current_page_item" id="mSetup">
+              <a id="cSetup" routerLink="/Setup">
+                <img src="images/setup.png"> <span>{{'Settings'| translate}}</span>
+              </a>
+            </li>
+            <li id="dUpdate" class="divider"></li>
+            <li *ngIf="config.HaveUpdate && config.UseUpdate">
+              <a routerLink="/Update">
+                <img src="images/update.png"> <span>{{'Update Domoticz'| translate}}</span>
+              </a>
+            </li>
+            <li *ngIf="!config.HaveUpdate && config.UseUpdate">
+              <a class="lcursor" (click)="CheckForUpdate(true)">
+                <img src="images/update.png"> <span>{{'Check for Update'| translate}}</span>
+              </a>
+            </li>
+            <li class="dropdown-submenu">
+              <a id="cMoreOptions" tabindex="-1">{{'More options'| translate}}</a>
+              <ul class="dropdown-menu pull-left">
+                <li routerLinkActive="current_page_item" id="mCam">
+                  <a id="cCam" routerLink="/Cam">
+                    <img src="images/camera-web.png"> <span>{{'Cameras'| translate}}</span>
+                  </a>
+                </li>
+                <li routerLinkActive="current_page_item" id="mUsers">
+                  <a id="cUsers" routerLink="/Users">
+                    <img src="images/users.png"> <span>{{'Edit Users'| translate}}</span>
+                  </a>
+                </li>
+                <li routerLinkActive="current_page_item" id="mEvents">
+                  <a id="cEvents" routerLink="/Events">
+                    <img src="images/events.png"> <span>{{'Events'| translate}}</span>
+                  </a>
+                </li>
+                <li routerLinkActive="current_page_item" id="mCustomIcons">
+                  <a id="cCustomIcons" routerLink="/CustomIcons">
+                    <img src="images/customicons.png">
+                    <span>{{'Custom Icons'| translate}}</span>
+                  </a>
+                </li>
+                <li routerLinkActive="current_page_item" id="mMobile">
+                  <a id="cMobile" routerLink="/Mobile">
+                    <img src="images/customicons.png"> <span>{{'Mobile Devices'| translate}}</span>
+                  </a>
+                </li>
+                <li class="dropdown-submenu">
+                  <a id="cPlans" tabindex="-1"><img src="images/house.png"> <span>{{'Plans'| translate}}</span></a>
+                  <ul class="dropdown-menu pull-right">
+                    <li routerLinkActive="current_page_item" id="mRoomplan">
+                      <a id="cRoomplan" routerLink="/Roomplan"> <span>{{'Roomplan'| translate}}</span> </a>
+                    </li>
+                    <li routerLinkActive="current_page_item" id="mFloorplan">
+                      <a id="cFloorplan" routerLink="/Floorplanedit"> <span>{{'Floorplan'| translate}}</span> </a>
+                    </li>
+                    <li routerLinkActive="current_page_item" id="mTimerplan">
+                      <a id="cTimerplan" routerLink="/Timerplan"> <span>{{'Timerplan'| translate}}</span> </a>
+                    </li>
+                  </ul>
+                </li>
+                <li routerLinkActive="current_page_item" id="mUserVariables">
+                  <a id="cUserVariables" routerLink="/UserVariables">
+                    <img src="images/variables.png"> <span>{{'User variables'| translate}}</span>
+                  </a>
+                </li>
+                <li id="mSecurity">
+                  <a id="cSecurity" routerLink="/secpanel">
+                    <img src="images/security.png"> <span>{{'SecurityPanel'| translate}}</span>
+                  </a>
+                </li>
+                <li routerLinkActive="current_page_item" id="mNotification">
+                  <a id="cNotification" routerLink="/Notification">
+                    <img src="images/notification.png"> <span>{{'Send Notification'| translate}}</span>
+                  </a>
+                </li>
+                <li class="divider"></li>
+                <li class="dropdown-submenu">
+                  <a id="cDataPush" tabindex="-1">
+                    <img src="images/contact.png"> <span>{{'Data push'| translate}}</span></a>
+                  <ul class="dropdown-menu pull-right">
+                    <li routerLinkActive="current_page_item" id="mDPFibaro">
+                      <a id="cDPFibaro" routerLink="/DPFibaro">
+                        <span>{{'FibaroLink'| translate}}</span>
+                      </a>
+                    </li>
+                    <li routerLinkActive="current_page_item" id="mDPHttp">
+                      <a id="cDPHttp" routerLink="/DPHttp">
+                        <span>{{'HTTP'| translate}}</span>
+                      </a>
+                    </li>
+                    <li routerLinkActive="current_page_item" id="mDPGooglePubSub">
+                      <a id="cDPGooglePubSub" routerLink="/DPGooglePubSub"> <span>{{'GooglePubSub'| translate}}</span>
+                      </a>
+                    </li>
+                    <li routerLinkActive="current_page_item" id="mDPInflux">
+                      <a id="cDPInflux" routerLink="/DPInflux">
+                        <span>InfluxDB</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="divider"></li>
+                <li id="mRestart">
+                  <a id="cRestart" (click)="Restart()">
+                    <img src="images/restart.png">
+                    <span>{{'Restart System'| translate}}</span>
+                  </a>
+                </li>
+                <li id="mShutdown">
+                  <a id="cShutdown" (click)="Shutdown()">
+                    <img src="images/shutdown.png">
+                    <span>{{'Shutdown System'| translate}}</span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="divider"></li>
+            <li routerLinkActive="current_page_item" id="mLog">
+              <a id="cLog" routerLink="/Log">
+                <img src="images/log.png">
+                <span>{{'Log'| translate}}</span>
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li routerLinkActive="current_page_item" id="mAbout">
+              <a id="cAbout" routerLink="/About">
+                <img src="images/about.png">
+                <span>{{'About'| translate}}</span>
+              </a>
+            </li>
+            <li id="dLogoutSetup" class="divider" *dzHasLogin="true"></li>
+            <li id="mLogoutSetup" *dzHasLogin="true">
+              <a id="cLogout" routerLink="/Logout">
+                <img src="images/logout.png">
+                <span>{{'Logout'| translate}}</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li id="dLogout" class="divider-vertical" *dzHasLoginNoAdmin></li>
+        <li id="mLogout" *dzHasLoginNoAdmin>
+          <a id="cLogout" routerLink="/Logout">
+            <img src="images/logout.png">
+            <span class="hidden-phone hidden-tablet">{{'Logout'| translate}}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

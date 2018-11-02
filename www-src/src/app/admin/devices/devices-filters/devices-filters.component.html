@@ -1,0 +1,18 @@
+<section *ngFor="let f of filters; index as index" class="devices-filters">
+  <h3 class="devices-filters__group-title">
+    {{ f.name }}
+    <button class="btn btn-link devices-filters__group-collapse pull-right"
+      [title]="(f.collapsed ? 'Expand' : 'Collapse') | translate" (click)="f.collapsed = !f.collapsed">
+      <i [ngClass]="{'icon-chevron-down': f.collapsed, 'icon-chevron-up': !f.collapsed}"></i>
+    </button>
+  </h3>
+  <ul class="devices-filters__item-list" *ngIf="!f.collapsed">
+    <li class="devices-filters__item" *ngFor="let item of filterValues[index]">
+      <label>
+        <input type="checkbox" name="noscheck" class="noscheck" [(ngModel)]="filterValue[f.field][item]"
+          (ngModelChange)="updateFilterValue()">
+        {{ f.display ? f.display(item) : item}}
+      </label>
+    </li>
+  </ul>
+</section>

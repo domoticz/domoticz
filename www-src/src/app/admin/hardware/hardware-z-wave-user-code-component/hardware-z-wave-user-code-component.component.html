@@ -1,0 +1,36 @@
+<div class="container">
+  <a class="btnstylerev" [routerLink]="['/Hardware', idx]">{{ 'Back' | translate }}</a>
+  <h2 class="page-header">{{ 'Device' | translate}}: {{ hardware?.Name }}</h2>
+</div>
+
+<div class="container" id="hardwarecontent">
+
+  <div id="openzwaveusercodes">
+    <div class="page-header-small">
+      <h1>{{'User Codes'| translate}}</h1>
+    </div>
+    <table class="display" id="codestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th width="70" align="center">{{'Code'| translate}}</th>
+          <th align="left">{{'Value'| translate}}</th>
+          <th width="70" align="left">{{'Action'| translate}}</th>
+        </tr>
+      </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="right">
+          <a class="btnstyle3" id="nodelistrefresh" (click)="RefreshOpenZWaveUserCodesTable()">{{'Refresh'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br />
+    Please note, removing a code can take a while on battery operated devices.<br />
+    To quickly force the hardware to remove the code (after pressing the remove button)<br />
+    use the tamper switch on the back to wake up the device.
+    <input type="hidden" id="idx" name="nodeidx" [value]="nodeidx">
+  </div>
+
+
+</div>

@@ -1,0 +1,25 @@
+<section *ngIf="isSelector === false">
+    <h2>{{ 'Today' | translate }}</h2>
+    <dz-device-on-off-chart class="device-log-chart device-log-chart_sm" [log]="log" view="daily" [deviceIdx]="deviceIdx"></dz-device-on-off-chart>
+
+    <h2>{{ 'Last 7 days' | translate }}</h2>
+    <dz-device-on-off-chart class="device-log-chart device-log-chart_sm" [log]="log" view="weekly" [deviceIdx]="deviceIdx"></dz-device-on-off-chart>
+</section>
+
+<h2>{{ 'Text log' | translate }}</h2>
+<dz-device-text-log-table [log]="log"></dz-device-text-log-table>
+
+<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td></td>
+        <td align="right">
+            <button class="btnstyle3" id="clearlog" (click)="clearLog()">{{ 'Clear' | translate }}</button>
+        </td>
+    </tr>
+</table>
+
+<br>
+
+<dz-device-level-chart *ngIf="isDimmer" class="device-log-chart device-log-chart_md" [log]="log" [deviceIdx]="deviceIdx"></dz-device-level-chart>
+
+<label><input type="checkbox" [(ngModel)]="autoRefresh"> {{ 'Auto refresh on device update' | translate }}</label>

@@ -1,0 +1,32 @@
+<div id="usercontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <a class="btnstylerev" routerLink="/Users">{{ 'Back' | translate }}</a>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <div>
+    <h2>{{'User'| translate}}: {{name}}</h2>
+  </div>
+
+  <table id="userdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <select id="devices" class="multiselect" multiple="multiple" name="devices[]">
+          <option *ngFor="let item of devices;" [value]="item.value">{{item.name}}</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <br>
+        <a class="btnstyle3" (click)="SaveUserDevices()">{{'Save'| translate}}</a>
+      </td>
+    </tr>
+  </table>
+
+</div>

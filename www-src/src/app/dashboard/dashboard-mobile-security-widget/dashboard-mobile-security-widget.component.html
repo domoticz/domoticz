@@ -1,0 +1,6 @@
+  <td id="name" class="name">{{item.Name}}</td>
+  <td id="status" class="status">
+    {{status}}
+    <a *ngIf="item.SubType == 'Security Panel'" routerLink="/secpanel"><img src="images/security48.png" class="lcursor" height="16" width="16"></a>
+    <img *ngIf="item.SubType.indexOf('remote') > 0" src="images/remote.png" [title]="remoteTitle | translate" (click)="onRemoteClick()" class="lcursor" height="16" width="16">
+  </td>

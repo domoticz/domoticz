@@ -1,0 +1,7 @@
+#name {
+    transition: background .25s ease-in-out;
+}
+
+.highlight {
+    background-color: #ffff99 !important;
+}

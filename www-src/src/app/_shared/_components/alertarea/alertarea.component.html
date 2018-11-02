@@ -1,0 +1,6 @@
+<div class="alerts" style="position: absolute; right: 10px;" *ngIf="messages.length > 0">
+  <div *ngFor="let m of messages;" class="alert alert-{{(m.type)||'info'}} alert-dismissable fade in pull-right">
+    <button type="button" class="close" data-dismiss="alert">×</button><label>{{m.title}}</label>
+    <div>{{m.body}}</div>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+<div id="historycontent" class="historycontent container">
+  <div id="historydata" class="log" *ngIf="history?.result">
+
+    <ng-container *ngFor="let item of history.result;">
+      <span [ngClass]="{'logerror':item.level == 1}" [style.font-weight]="item.level == 1 ? 'bold' : ''">
+        {{item.message}}
+      </span>
+      <br>
+    </ng-container>
+
+  </div>
+</div>

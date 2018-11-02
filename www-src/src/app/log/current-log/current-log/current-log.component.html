@@ -1,0 +1,30 @@
+<div>
+    <dz-back-to-top></dz-back-to-top>
+
+    <div id="utilitycontent" class="container" *ngIf="device">
+
+      <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td>
+            <a class="btnstylerev" routerLink="/Utility">{{'Back'| translate}}</a>
+          </td>
+        </tr>
+      </table>
+      <br>
+
+      <div style="text-align:center;">
+        <h2>{{device?.Name}}</h2>
+      </div>
+
+      <h2>{{'Day'| translate}}</h2>
+      <dz-current-day-graph [idx]="idx" [switchtype]="device.displaytype"></dz-current-day-graph>
+      <br>
+      <h2>{{'Month'| translate}}</h2>
+      <dz-current-month-graph [idx]="idx" [switchtype]="device.displaytype"></dz-current-month-graph>
+      <br>
+      <h2>{{'Year'| translate}}</h2>
+      <dz-current-year-graph [idx]="idx" [switchtype]="device.displaytype"></dz-current-year-graph>
+
+    </div>
+
+  </div>

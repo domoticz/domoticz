@@ -1,0 +1,19 @@
+<div id="bstatus" class="item {{backgroundClass}}">
+  <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+    <tr>
+      <td id="name" class="name">{{item.Name}}</td>
+      <td id="bigtext" class="bigtext"><span>{{bigtext}}</span></td>
+      <td id="img" class="img img1" *ngIf="item.SubType === 'Security Panel'">
+        <a routerLink="/secpanel"><img src="images/security48.png" class="lcursor" height="40" width="40"></a>
+      </td>
+      <td id="img" class="img img1" *ngIf="item.SubType !== 'Security Panel'">
+        <img src="images/{{imageSrc}}" [title]="imageTitle | translate" (click)="onImageClick()" class="{{ imageTitle ? 'lcursor' : ''}}"
+          height="40" width="40">
+      </td>
+      <td id="status" class="status"></td>
+      <td id="lastupdate" class="lastupdate"><span>{{item.LastUpdate}}</span></td>
+    </tr>
+    </tbody>
+  </table>
+</div>

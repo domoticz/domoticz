@@ -1,0 +1,197 @@
+<div class="container js-view">
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <a class="btnstylerev" [routerLink]="['/LightSwitches']">{{ 'Back' | translate }}</a>
+      </td>
+    </tr>
+  </table>
+
+  <div style="display: none">
+    <select id="switch-types-template">
+      <option *ngFor="let item of switchTypeOptions" [ngValue]="item.value">{{item.label}}</option>
+    </select>
+  </div>
+
+  <br>
+
+  <form name="deviceInfoForm" (submit)="updateDevice()" #deviceInfoForm="ngForm">
+    <table class="display table-details" id="paramstable" *ngIf="device">
+      <tr>
+        <td>
+          <label>Idx: </label>
+        </td>
+        <td>
+          <span>{{device.idx}}</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="devicename">{{ 'Name' | translate}}: </label>
+        </td>
+        <td>
+          <input type="text" id="devicename" name="devicename" style="width: 356px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"
+                 required minlength="2" maxlength="100" [(ngModel)]="device.Name"/>
+        </td>
+      </tr>
+      <tr *ngIf="!isSecurityDevice()">
+        <td>
+          <label for="comboswitchtype">{{ 'Switch Type' | translate}}: </label>
+        </td>
+        <td>
+          <select id="comboswitchtype" name="comboswitchtype" style="width:200px" class="combobox ui-corner-all"
+                  [(ngModel)]="device.SwitchTypeVal">
+            <option *ngFor="let item of switchTypeOptions" [ngValue]="item.value">{{item.label}}</option>
+          </select>
+        </td>
+      </tr>
+      <tr *ngIf="!isSecurityDevice() && isSwitchIconAvailable()">
+        <td>{{ 'Switch Icon' | translate}}:</td>
+        <td>
+          <dz-device-icon-select name="customimage" [switchType]="device.SwitchTypeVal"
+                                  [(ngModel)]="device.CustomImage"></dz-device-icon-select>
+        </td>
+      </tr>
+      <tr *ngIf="!isSecurityDevice() && isMotionAvailable()">
+        <td>
+          <label for="motionoffdelay">{{ 'Off Delay' | translate}}:</label>
+        </td>
+        <td>
+          <input type="text" id="motionoffdelay" name="motionoffdelay" style="width: 40px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"
+                 [(ngModel)]="device.AddjValue"/>
+          <span>{{ '(Seconds) 0 = Use sensor time' | translate}}</span>
+        </td>
+      </tr>
+      <tr *ngIf="!isSecurityDevice() && isOnDelayAvailable()">
+        <td>
+          <label for="ondelay">{{ 'On Delay' | translate}}:</label>
+        </td>
+        <td>
+          <input type="text" id="ondelay" name="ondelay" style="width: 40px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"
+                 [(ngModel)]="device.AddjValue2"/>
+          <span>{{ '(Seconds) 0 = Disabled' | translate}}</span>
+        </td>
+      </tr>
+      <tr *ngIf="!isSecurityDevice() && isOffDelayAvailable()">
+        <td>
+          <label for="offdelay">{{ 'Off Delay' | translate}}:</label>
+        </td>
+        <td>
+          <input type="text" id="offdelay" name="offdelay" style="width: 40px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"
+                 [(ngModel)]="device.AddjValue"/>
+          <span>{{ '(Seconds) 0 = Disabled' | translate}}</span>
+        </td>
+      </tr>
+      <tr *ngIf="isOnActionAvailable()">
+        <td>
+          <label for="onaction">{{ 'On Action' | translate}}:</label>
+        </td>
+        <td>
+          <input type="text" id="onaction" name="onaction" style="width: 356px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"
+                 minlength="10" maxlength="500" pattern="^(http|https|script):\/\/.+" [(ngModel)]="device.StrParam1"/>
+          <span>{{ '(Should start with http://, https:// or script://)' | translate}}</span>
+        </td>
+      </tr>
+      <tr *ngIf="isOffActionAvailable()">
+        <td>
+          <label for="offaction">{{ 'Off Action' | translate}}:</label>
+        </td>
+        <td>
+          <input type="text" id="offaction" name="offaction" style="width: 356px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"
+                 minlength="10" maxlength="500" pattern="^(http|https|script):\/\/.+" [(ngModel)]="device.StrParam2"/>
+          <span>{{ '(Should start with http://, https:// or script://)' | translate}}</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {{ 'Protected' | translate}}:
+        </td>
+        <td>
+          <input type="checkbox" id="protected" name="protected" [(ngModel)]="device.Protected"/><label
+          for="protected"></label>
+        </td>
+      </tr>
+      <tr *ngIf="isColorSettingsAvailable()">
+        <td>
+          <label>{{ 'Color' | translate}}:</label>
+        </td>
+        <td>
+          <dz-device-color-settings [(device)]="device"></dz-device-color-settings>
+        </td>
+      </tr>
+      <tr *ngIf="isLevelsAvailable()">
+        <td>
+          <label>{{ 'Selector Style' | translate}}:</label>
+        </td>
+        <td>
+          <input type="radio" id="selectorstyle0" name="selectorstyle" [(ngModel)]="device.SelectorStyle" [value]="0">
+          <label for="selectorstyle0">{{ 'Button set' | translate}}</label>
+          <input type="radio" id="selectorstyle1" name="selectorstyle" [(ngModel)]="device.SelectorStyle" [value]="1">
+          <label for="selectorstyle1">{{ 'Select menu' | translate}}</label>
+        </td>
+      </tr>
+      <tr *ngIf="isLevelsAvailable()">
+        <td>
+          {{ 'Hide Off level' | translate}}:
+        </td>
+        <td>
+          <input type="checkbox" id="selectorHiddenOff" name="selectorHiddenOff"
+                 [(ngModel)]="device.LevelOffHidden"><label
+          for="selectorHiddenOff"></label>
+        </td>
+      </tr>
+      <tr *ngIf="isLevelsAvailable()">
+        <td>
+          <label>{{ 'Selector Levels' | translate}}:</label>
+        </td>
+        <td>
+          <dz-device-level-names-table name="selectorlevels" [(ngModel)]="levels"></dz-device-level-names-table>
+        </td>
+      </tr>
+      <tr *ngIf="isLevelsAvailable()">
+        <td>
+          <label>{{ 'Selector actions' | translate}}:</label>
+        </td>
+        <td>
+          <dz-device-level-actions-table name="selectoractions" [(ngModel)]="levels"></dz-device-level-actions-table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="devicedescription">{{ 'Description' | translate}}: </label>
+        </td>
+        <td>
+          <textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;"
+                    class="text ui-widget-content ui-corner-all"
+                    [(ngModel)]="device.Description">
+                </textarea>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+          <button type="submit" class="btnstyle3" [disabled]="deviceInfoForm.invalid">
+            {{ 'Save' | translate}}
+          </button>&nbsp;
+          <button type="button" class="btnstyle3" (click)="removeDevice()">
+            {{ 'Delete' | translate}}
+          </button>
+          <button type="button" class="btnstyle3" (click)="replaceDevice()">
+            {{ 'Replace' | translate}}
+          </button>
+        </td>
+      </tr>
+    </table>
+  </form>
+  <br>
+
+  <dz-device-subdevices-editor [deviceIdx]="deviceIdx"></dz-device-subdevices-editor>
+
+  <br>
+</div>

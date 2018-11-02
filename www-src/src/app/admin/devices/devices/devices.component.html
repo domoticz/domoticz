@@ -1,0 +1,23 @@
+<div id="devicescontent">
+  <dz-page-loading-indicator *ngIf="!devices"></dz-page-loading-indicator>
+
+  <div class="page-devices-wrapper" *ngIf="devices">
+    <section class="top-panel">
+      <dz-device-filter-by-usage class="btn-group" [(filter)]="filter" (filterChange)="applyFilter()">
+      </dz-device-filter-by-usage>
+
+      <button class="btn btn-default pull-right" (click)="refreshDevices()">{{ 'Refresh' | translate}}</button>
+    </section>
+
+    <section class="page-devices">
+      <dz-devices-filters class="filters" [devices]="devices" *ngIf="isListExpanded" [(filter)]="filter"
+        (filterChange)="applyFilter()"></dz-devices-filters>
+
+      <button type="button" class="splitter" (click)="isListExpanded = !isListExpanded">
+        <i [ngClass]="{'icon-chevron-left': isListExpanded, 'icon-chevron-right': !isListExpanded}"></i>
+      </button>
+
+      <dz-devices-table class="devices-table" [devices]="filteredDevices" (update)="refreshDevices()"></dz-devices-table>
+    </section>
+  </div>
+</div>

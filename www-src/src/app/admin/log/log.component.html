@@ -1,0 +1,57 @@
+<div id="logcontent" class="logcontent container">
+  <table style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="left">
+        <ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
+          <li class="active">
+            <a data-target="#taball" data-toggle="tab">{{'All'| translate}}</a>
+          </li>
+          <li>
+            <a data-target="#tabstatus" data-toggle="tab">{{'Status'| translate}}</a>
+          </li>
+          <li *ngIf="logitems_error.length>0">
+            <a data-target="#taberror" data-toggle="tab">{{'Error'| translate}}</a>
+          </li>
+          <li *ngIf="logitems_debug.length>0">
+            <a data-target="#tabdebug" data-toggle="tab">{{'Debug'| translate}}</a>
+          </li>
+        </ul>
+      </td>
+      <td align="right" valign="bottom">
+        <span>{{'Filter'| translate}}</span>: <input [(ngModel)]="filterExpr">
+        <a class="lcursor" style="color: red;font-weight: bold;" (click)="ClearLog()"><b>X</b></a>
+      </td>
+    </tr>
+  </table>
+  <div id="my-tab-content" class="tab-content">
+    <div class="tab-pane active" id="taball">
+      <div id="logdata" class="log" scroll-glue>
+        <div *ngFor="let item of logitemsFiltered; trackBy: indexFn">
+          <span class="{{item.mclass}}">{{item.text}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tabstatus">
+      <div id="logdata_status" class="log" scroll-glue>
+        <div *ngFor="let item of logitems_statusFiltered; trackBy: indexFn">
+          <span class="{{item.mclass}}">{{item.text}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="taberror">
+      <div id="logdata_error" class="log" scroll-glue>
+        <div *ngFor="let item of logitems_errorFiltered; trackBy: indexFn">
+          <span class="{{item.mclass}}">{{item.text}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tabdebug">
+      <!--style="display:none;"-->
+      <div id="logdata_debug" class="log" scroll-glue>
+        <div *ngFor="let item of logitems_debugFiltered; trackBy: indexFn">
+          <span class="{{item.mclass}}">{{item.text}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<div class="modal fade" tabindex="-1" role="dialog" #modal style="display: none;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ 'Export' | translate }}</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form" name="modalForm">
+          <p>{{ 'Copy the script body from the field below to share it:' | translate }}</p>
+          <div class="control-group">
+            <div class="controls">
+                    <textarea
+                      autofocus
+                      name="script-data"
+                      class="form-control"
+                      readonly
+                      rows="12"
+                      style="width: 100%"
+                      [(ngModel)]="scriptData"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" (click)="close()">{{ 'Ok' | translate }}</button>
+      </div>
+    </div>
+  </div>
+</div>

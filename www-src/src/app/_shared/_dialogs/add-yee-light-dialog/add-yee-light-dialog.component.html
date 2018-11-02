@@ -1,0 +1,35 @@
+<div id="dialog-addyeelight" title="Add YeeLight Light">
+  <form>
+    <table border="0" cellpadding="0" cellspacing="10">
+      <tr>
+        <td align="right" style="width: 200px">
+          <label for="name"><span>{{'Name'| translate}}</span>:</label>
+        </td>
+        <td>
+          <input type="text" id="name" name="name" [(ngModel)]="name" style="width: 240px; padding: .2em;"
+            class="text ui-widget-content ui-corner-all" />
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="ipaddress"><span>{{'IP Address'| translate}}</span>:</label>
+        </td>
+        <td>
+          <input type="text" id="ipaddress" name="ipaddress" [(ngModel)]="ipaddress" style="width: 140px; padding: .2em;"
+            class="text ui-widget-content ui-corner-all" />
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="lighttype"><span>{{'Light Type'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="lighttype" name="lighttype" [(ngModel)]="lighttype" style="width: 150px" class="combobox ui-corner-all">
+            <option value="0">{{'Mono'| translate}}</option>
+            <option value="1">{{'RGBW'| translate}}</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

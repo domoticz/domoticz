@@ -13,14 +13,20 @@ platform: x86
 #- C:\tools\vcpkg\installed -> msbuild\vcpkg-packages.txt
 #- C:\Users\appveyor\clcache -> .appveyor.yml, msbuild\**
 
+# Conf to enable remote desktop and debugging
+#environment:
+#  APPVEYOR_RDP_PASSWORD: A1Kf5!Mg8N
 #init:
 #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 #
 #on_finish:
 #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
+install:
+- ps: Install-Product node 10
+- npm install -g @angular/cli
+- cd www-src && npm install && cd ..
 # below is to build/use packaged with VCPKG, as this is currently taking to long it is disabled
-#install:
 #- cd "C:\Tools\vcpkg"
 #- git pull
 #- .\bootstrap-vcpkg.bat
@@ -34,14 +40,22 @@ before_build:
 - ps: >-
     nuget install Tools.InnoSetup
 
-- cmd: >-    
+- cmd: >-
     cd msbuild
-    
+
     appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
-    
+
     7z x WindowsLibraries.7z > NUL:
-    
+
     cd ..
+
+- cmd: >-
+    cd www-src
+
+    node --max-old-space-size=2048 node_modules/@angular/cli/bin/ng build --prod
+
+    cd ..
+- cmd: cp -r www-src/dist www
 
 build:
   parallel: true                  # enable MSBuild parallel builds

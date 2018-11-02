@@ -1,0 +1,250 @@
+<div id="dashcontent" class="container">
+
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td align="left" valign="top" id="timesun">
+        <dz-timesun></dz-timesun>
+      </td>
+      <td align="right" valign="top">
+        <dz-room-plans-selector (roomSelectedChange)="onRoomChange($event)"></dz-room-plans-selector>
+      </td>
+    </tr>
+  </table>
+
+  <ng-container *ngIf="totdevices == 0">
+    <h2> {{'No favorite devices defined ... (Or communication Lost!)'| translate}}</h2>
+    <p>
+      <br>
+      {{'If this is your first time here, please setup your'| translate}} <a
+        [routerLink]="isAdmin ? '/Hardware' : '/Dashboard'">{{'Hardware'| translate}}</a>,
+      {{'and add some'| translate}} <a [routerLink]="isAdmin ? '/Devices' : '/Dashboard'">{{'Devices'| translate}}</a>.
+    </p>
+    <p>
+      {{'Visit the Getting Started page at the'| translate}} <a
+        href="https://www.domoticz.com/wiki/Getting_started">Domoticz
+        Wiki</a>.
+    </p>
+  </ng-container>
+
+  <!-- Scenes -->
+  <section class="dashCategory" id="dashScenes" *ngIf="sceneDevices.length > 0">
+
+    <ng-container *ngIf="mobileview">
+      <br>
+      <table class="mobileitem">
+        <thead>
+          <tr>
+            <th>{{ 'Scenes' | translate }}</th>
+            <th style="text-align:right">
+              <a id="cLightSwitches" routerLink="/Scenes"><img src="images/next.png"></a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of sceneDevices; index as index; first as first" id="scene_{{item.idx}}"
+            dzDashboardMobileSceneWidget [item]="item">
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+
+    <ng-container *ngIf="!mobileview">
+      <h2>{{ 'Scenes' | translate }}:</h2>
+      <div class="row divider">
+        <ng-container *ngFor="let item of sceneDevices; index as index; first as first">
+          <div class="clearfix" *ngIf="index % rowItems == 0 && !first"></div>
+          <dz-dashboard-scene-widget class="{{spanClass}} movable" id="scene_{{item.idx}}" [item]="item" dzDragDrop
+            (drag)="onDragWidget('scene_' + item.idx)" (drop)="onDropWidget('scene_' + item.idx)">
+          </dz-dashboard-scene-widget>
+        </ng-container>
+      </div>
+
+    </ng-container>
+
+  </section>
+
+  <!-- Lights -->
+  <section class="dashCategory" id="dashSwitches" *ngIf="lightDevices.length > 0">
+
+    <ng-container *ngIf="mobileview">
+      <br>
+      <table class="mobileitem">
+        <thead>
+          <tr>
+            <th>{{ 'Light/Switch Devices' | translate }}</th>
+            <th style="text-align:right">
+              <a id="cLightSwitches" routerLink="/LightSwitches"><img src="images/next.png"></a>
+            </th>
+          </tr>
+        </thead>
+        <!-- tbody is not perfect to loop on but no other solution as widget contains multiple tr -->
+        <tbody *ngFor="let item of lightDevices; index as index; first as first"
+            dzDashboardMobileLightSwitchesWidget [item]="item">
+        </tbody>
+      </table>
+    </ng-container>
+
+    <ng-container *ngIf="!mobileview">
+      <h2>{{ 'Light/Switch Devices' | translate }}:</h2>
+      <div class="row divider">
+        <ng-container *ngFor="let item of lightDevices; index as index; first as first">
+          <div class="clearfix" *ngIf="index % rowItems == 0 && !first"></div>
+          <dz-dashboard-light-switches-widget class="{{spanClass}} movable" id="light_{{item.idx}}" [item]="item"
+            dzDragDrop (drag)="onDragWidget('light_' + item.idx)" (drop)="onDropWidget('light_' + item.idx)">
+          </dz-dashboard-light-switches-widget>
+        </ng-container>
+      </div>
+
+    </ng-container>
+
+  </section>
+
+  <!-- Temperatures -->
+  <section class="dashCategory" id="dashTemperature" *ngIf="temperatureDevices.length > 0">
+
+    <ng-container *ngIf="mobileview">
+      <br>
+      <table class="mobileitem">
+        <thead>
+          <tr>
+            <th>{{ 'Temperature Sensors' | translate }}</th>
+            <th style="text-align:right">
+              <a id="cTemperature" routerLink="/Temperature"><img src="images/next.png"></a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of temperatureDevices; index as index; first as first" id="temp_{{item.idx}}"
+            dzDashboardMobileTemperatureWidget [item]="item">
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+
+    <ng-container *ngIf="!mobileview">
+      <h2>{{ 'Temperature Sensors' | translate }}:</h2>
+      <div class="row divider">
+        <ng-container *ngFor="let item of temperatureDevices; index as index; first as first">
+          <div class="clearfix" *ngIf="index % rowItems == 0 && !first"></div>
+          <dz-dashboard-temperature-widget class="{{spanClass}} movable" id="temp_{{item.idx}}" [item]="item"
+            dzDragDrop (drag)="onDragWidget('temp_' + item.idx)" (drop)="onDropWidget('temp_' + item.idx)">
+          </dz-dashboard-temperature-widget>
+        </ng-container>
+      </div>
+
+    </ng-container>
+
+  </section>
+
+  <!-- Weather -->
+  <section class="dashCategory" id="dashWeather" *ngIf="weatherDevices.length > 0">
+
+    <ng-container *ngIf="mobileview">
+      <br>
+      <table class="mobileitem">
+        <thead>
+          <tr>
+            <th>{{ 'Weather Sensors' | translate }}</th>
+            <th style="text-align:right">
+              <a id="cWeather" routerLink="/Weather"><img src="images/next.png"></a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of weatherDevices; index as index; first as first" id="weather_{{item.idx}}"
+            dzDashboardMobileWeatherWidget [item]="item">
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+
+    <ng-container *ngIf="!mobileview">
+      <h2>{{ 'Weather Sensors' | translate }}:</h2>
+      <div class="row divider">
+        <ng-container *ngFor="let item of weatherDevices; index as index; first as first">
+          <div class="clearfix" *ngIf="index % rowItems == 0 && !first"></div>
+          <dz-dashboard-weather-widget class="{{spanClass}} movable" id="weather_{{item.idx}}" [item]="item"
+            dzDragDrop (drag)="onDragWidget('weather_' + item.idx)" (drop)="onDropWidget('weather_' + item.idx)">
+          </dz-dashboard-weather-widget>
+        </ng-container>
+      </div>
+
+    </ng-container>
+
+  </section>
+
+  <!-- Security -->
+  <section class="dashCategory" id="dashSecurity" *ngIf="securityDevices.length > 0">
+
+    <ng-container *ngIf="mobileview">
+      <br>
+      <table class="mobileitem">
+        <thead>
+          <tr>
+            <th>{{ 'Security Devices' | translate }}</th>
+            <th style="text-align:right">
+              <a id="cLightSwitches" routerLink="/LightSwitches"><img src="images/next.png"></a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of securityDevices; index as index; first as first" id="security_{{item.idx}}"
+            dzDashboardMobileSecurityWiget [item]="item">
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+
+    <ng-container *ngIf="!mobileview">
+      <h2>{{ 'Security Devices' | translate }}:</h2>
+      <div class="row divider">
+        <ng-container *ngFor="let item of securityDevices; index as index; first as first">
+          <div class="clearfix" *ngIf="index % rowItems == 0 && !first"></div>
+          <dz-dashboard-security-widget class="{{spanClass}} movable" id="security_{{item.idx}}" [item]="item"
+            dzDragDrop (drag)="onDragWidget('security_' + item.idx)" (drop)="onDropWidget('security_' + item.idx)">
+          </dz-dashboard-security-widget>
+        </ng-container>
+      </div>
+
+    </ng-container>
+
+  </section>
+
+  <!-- Utility -->
+  <section class="dashCategory" id="dashUtility" *ngIf="utilityDevices.length > 0">
+
+    <ng-container *ngIf="mobileview">
+      <br>
+      <table class="mobileitem">
+        <thead>
+          <tr>
+            <th>{{ 'Utility Sensors' | translate }}</th>
+            <th style="text-align:right">
+              <a id="cUtility" routerLink="/Utility"><img src="images/next.png"></a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of utilityDevices; index as index; first as first" id="utility_{{item.idx}}"
+            dzDashboardMobileUtilityWidget [item]="item">
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+
+    <ng-container *ngIf="!mobileview">
+      <h2>{{ 'Utility Sensors' | translate }}:</h2>
+      <div class="row divider">
+        <ng-container *ngFor="let item of utilityDevices; index as index; first as first">
+          <div class="clearfix" *ngIf="index % rowItems == 0 && !first"></div>
+          <dz-dashboard-utility-widget class="{{spanClass}} movable" id="utility_{{item.idx}}" [item]="item"
+            dzDragDrop (drag)="onDragWidget('utility_' + item.idx)" (drop)="onDropWidget('utility_' + item.idx)">
+          </dz-dashboard-utility-widget>
+        </ng-container>
+      </div>
+
+    </ng-container>
+
+  </section>
+
+</div>

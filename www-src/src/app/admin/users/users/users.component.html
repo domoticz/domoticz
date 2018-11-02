@@ -1,0 +1,100 @@
+<div id="usercontent" class="container">
+  <table class="display" id="usertable" border="0" cellpadding="0" cellspacing="0" width="100%" #usertable>
+    <thead>
+      <tr valign="middle">
+        <th width="60" align="left">{{'Enabled'| translate}}</th>
+        <th align="left">{{'Name'| translate}}</th>
+        <th width="80" align="center">{{'Rights'| translate}}</th>
+        <th width="120" align="center">{{'Sharing'| translate}}</th>
+        <th width="80" align="center">{{'Devices'| translate}}</th>
+      </tr>
+    </thead>
+  </table>
+  <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <a class="btnstyle3-dis" id="userupdate" (click)="UpdateUser()">{{'Update'| translate}}</a>&nbsp;&nbsp;&nbsp;
+        <a class="btnstyle3-dis" id="userdelete" (click)="DeleteUser()">{{'Delete'| translate}}</a>
+      </td>
+    </tr>
+  </table>
+  <br>
+  <table class="display" id="userparamstable" border="0" cellpadding="0" cellspacing="20">
+    <tr>
+      <td align="right" style="width:80px">
+        <span>{{'Enabled'| translate}}</span>:
+      </td>
+      <td>
+        <input type="checkbox" id="enabled" name="enabled" [(ngModel)]="selectedUser.Enabled"><label for="enabled"></label>
+      </td>
+    </tr>
+    <tr>
+      <td align="right" style="width:110px">
+        <label for="username"><span>{{'Username'| translate}}</span>:</label>
+      </td>
+      <td>
+        <input type="text" id="username" name="username" [(ngModel)]="selectedUser.Username"
+          style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+      </td>
+    </tr>
+    <tr>
+      <td align="right" style="width:110px">
+        <label for="userpassword"><span>{{'Password'| translate}}</span>:</label>
+      </td>
+      <td>
+        <input type="password" id="userpassword" name="userpassword" [(ngModel)]="selectedUser.Password"
+          style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+      </td>
+    </tr>
+    <tr>
+      <td align="right" style="width:110px">
+        <label for="comborights"><span>{{'Rights'| translate}}</span>:</label>
+      </td>
+      <td>
+        <select id="comborights" name="rights" [(ngModel)]="selectedUser.Rights" style="width:110px"
+          class="combobox ui-corner-all">
+          <option [ngValue]="0">{{'Viewer'| translate}}</option>
+          <option [ngValue]="1">{{'User'| translate}}</option>
+          <option [ngValue]="2">{{'Admin'| translate}}</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td align="right" style="width:80px">
+        <span>{{'Sharing'| translate}}</span>:
+      </td>
+      <td>
+        <input type="checkbox" id="enablesharing" name="sharing" [(ngModel)]="selectedUser.Sharing"> <label
+          for="enablesharing">
+          <span>{{'(Enables remote sharing of devices with this user)'| translate}}</span></label>
+      </td>
+    </tr>
+    <tr>
+      <td align="right" style="width:80px; vertical-align:top;">
+        <label><span>{{'ActiveMenus'| translate}}</span>:</label>
+      </td>
+      <td>
+        <input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans" [(ngModel)]="selectedUser.EnableTabFloorplans" />
+        <label for="EnableTabFloorplans"><span>{{'Floorplan'| translate}}</span></label><br>
+        <input type="checkbox" id="EnableTabLights" name="EnableTabLights" [(ngModel)]="selectedUser.EnableTabLights" />
+        <label for="EnableTabLights"><span>{{'Switches'| translate}}</span></label><br>
+        <input type="checkbox" id="EnableTabScenes" name="EnableTabScenes" [(ngModel)]="selectedUser.EnableTabScenes" />
+        <label for="EnableTabScenes"><span>{{'Scenes'| translate}}</span></label><br>
+        <input type="checkbox" id="EnableTabTemp" name="EnableTabTemp" [(ngModel)]="selectedUser.EnableTabTemp" />
+        <label for="EnableTabTemp"><span>{{'Temperature'| translate}}</span></label><br>
+        <input type="checkbox" id="EnableTabWeather" name="EnableTabWeather" [(ngModel)]="selectedUser.EnableTabWeather" />
+        <label for="EnableTabWeather"><span>{{'Weather'| translate}}</span></label><br>
+        <input type="checkbox" id="EnableTabUtility" name="EnableTabUtility" [(ngModel)]="selectedUser.EnableTabUtility" />
+        <label for="EnableTabUtility"><span>{{'Utility'| translate}}</span></label><br>
+        <input type="checkbox" id="EnableTabCustom" name="EnableTabCustom" [(ngModel)]="selectedUser.EnableTabCustom" />
+        <label for="EnableTabCustom"><span>{{'Custom'| translate}}</span></label><br>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <a class="btnstyle3" (click)="AddUser()">{{'Add'| translate}}</a>
+      </td>
+    </tr>
+  </table>
+</div>

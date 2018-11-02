@@ -1,0 +1,6 @@
+<button class="btn btn-default" [ngClass]="{'active': value === 1}"
+  (click)="setFilter(1)">{{ 'Used' | translate}}</button>
+<button class="btn btn-default" [ngClass]="{'active': value === undefined}"
+  (click)="setFilter()">{{ 'All Devices' | translate}}</button>
+<button class="btn btn-default" [ngClass]="{'active': value === 0}"
+  (click)="setFilter(0)">{{ 'Not Used' | translate}}</button>

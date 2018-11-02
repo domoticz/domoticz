@@ -1,0 +1,205 @@
+<table class="display settings-form" id="timerparamstable">
+  <tr>
+    <td>
+      <label for="enabled">{{ 'Enabled' | translate }}:</label>
+    </td>
+    <td>
+      <input type="checkbox" id="enabled" name="enabled" [(ngModel)]="timerSettings.active">
+      <label for="enabled"></label>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="combotype">{{ 'Type' | translate }}:</label>
+    </td>
+    <td>
+      <select id="combotype" name="combotype" style="width:180px" class="combobox ui-corner-all" [(ngModel)]="timerSettings.timertype">
+        <option *ngFor="let item of typeOptions" [ngValue]="item.value">{{item.label}}</option>
+      </select>
+    </td>
+  </tr>
+  <tr [hidden]="!isDateVisible()"> <!-- we use hidden and not ngIf to be able to setup the datepicker -->
+    <td>
+      <label for="sdate">{{ 'Date' | translate }}:</label>
+    </td>
+    <td>
+      <input id="sdate" name="sdate" type="text" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"
+        [(ngModel)]="timerSettings.date" (ngModelChange)="onTimerSettingsDateChange()">
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <label for="combotimehour">{{ 'Time' | translate }}:</label>
+    </td>
+    <td>
+      <select id="combotimehour" name="combotimehour" style="width:50px" class="combobox ui-corner-all" [(ngModel)]="timerSettings.hour">
+        <option *ngFor="let item of hourOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+      :
+      <select id="combotimemin" name="combotimemin" style="width:50px" class="combobox ui-corner-all" [(ngModel)]="timerSettings.min">
+        <option *ngFor="let item of minuteOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+
+      <span>{{ '(hour/minute)' | translate }}</span>
+    </td>
+  </tr>
+  <tr *ngIf="!isSetpointTimers">
+    <td>
+      <label for="randomness">{{ 'Randomness' | translate }}:</label>
+    </td>
+    <td>
+      <input id="randomness" name="randomness" type="checkbox" [(ngModel)]="timerSettings.randomness">
+      <label for="randomness"></label>
+    </td>
+  </tr>
+  <tr *ngIf="!(isSetpointTimers || isCommandSelectionDisabled)">
+    <td>
+      <label for="combocommand">{{ 'Command' | translate }}:</label>
+    </td>
+    <td>
+      <select id="combocommand" name="combocommand" class="combobox ui-corner-all" style="width:90px" [disabled]="isCommandSelectionDisabled"
+        [(ngModel)]="timerSettings.command">
+        <option *ngFor="let item of commandOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+    </td>
+  </tr>
+  <tr *ngIf="isSetpointTimers">
+    <td>
+      <label for="tvalue">{{ 'Value' | translate }}:</label>
+    </td>
+    <td>
+      <input type="text" id="tvalue" name="tvalue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all"
+        [(ngModel)]="timerSettings.tvalue">
+    </td>
+  </tr>
+
+  <tr *ngIf="isLevelVisible()">
+    <td>
+      <label for="combolevel">
+        <span *ngIf="!isSelector">{{ 'Level' | translate }}</span>
+        <span *ngIf="isSelector">{{ 'Level name' | translate }}</span>:
+      </label>
+    </td>
+    <td>
+      <select id="combolevel" name="combolevel" style="min-width:70px" class="combobox ui-corner-all" [(ngModel)]="timerSettings.level">
+        <option *ngFor="let item of levelOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr *ngIf="isColorSettingsAvailable">
+    <td>
+      <label>{{ 'Color' | translate }}:</label>
+    </td>
+    <td>
+      <dz-rgbw-picker
+                    [(color)]="timerSettings.color"
+                    [(level)]="timerSettings.level"
+                    [colorSettingsType]="colorSettingsType"
+                    [dimmerType]="dimmerType"
+                    [maxDimmerLevel]="100"
+            ></dz-rgbw-picker>
+    </td>
+  </tr>
+
+  <tr *ngIf="isDayScheduleVisible()">
+    <td></td>
+  </tr>
+
+  <tr *ngIf="isDayScheduleVisible()">
+    <td>
+      <label>{{ 'When' | translate }}:</label>
+    </td>
+    <td>
+      <input id="when_1" type="radio" name="when" value="Everyday" [(ngModel)]="week.type" (ngModelChange)="onWeekTypeChange()">&nbsp;
+      <label for="when_1">{{ 'Everyday' | translate }}</label>
+      <br>
+      <br>
+      <input id="when_2" type="radio" name="when" value="Weekdays" [(ngModel)]="week.type" (ngModelChange)="onWeekTypeChange()">&nbsp;
+      <label for="when_2">{{ 'Weekdays' | translate }}</label>
+      <br>
+      <br>
+      <input id="when_3" type="radio" name="when" value="Weekends" [(ngModel)]="week.type" (ngModelChange)="onWeekTypeChange()">&nbsp;
+      <label for="when_3">{{ 'Weekends' | translate }}</label>
+      <br>
+      <br>
+      <input id="when_4" type="radio" name="when" value="SelectedDays" [(ngModel)]="week.type" (ngModelChange)="onWeekTypeChange()">&nbsp;
+      <label for="when_4">{{ 'Selected Days' | translate }}</label>
+      <br>
+      <br>
+    </td>
+  </tr>
+  <tr *ngIf="isDayScheduleVisible()">
+    <td></td>
+  </tr>
+  <tr *ngIf="isDayScheduleVisible()">
+    <td>
+      <label>{{ 'Days' | translate }}:</label>
+    </td>
+    <td>
+      <input type="checkbox" id="ChkMon" name="ChkMon" [disabled]="!isDaySelectonAvailable()" [(ngModel)]="week.days.mon" (ngModelChange)="onWeekDaysChange()" />&nbsp;
+      <label for="ChkMon">{{ 'Monday' | translate }}</label>
+      <br />
+      <input type="checkbox" id="ChkTue" name="ChkTue" [disabled]="!isDaySelectonAvailable()" [(ngModel)]="week.days.tue" (ngModelChange)="onWeekDaysChange()" />&nbsp;
+      <label for="ChkTue">{{ 'Tuesday' | translate }}</label>
+      <br />
+      <input type="checkbox" id="ChkWed" name="ChkWed" [disabled]="!isDaySelectonAvailable()" [(ngModel)]="week.days.wed" (ngModelChange)="onWeekDaysChange()" />&nbsp;
+      <label for="ChkWed">{{ 'Wednesday' | translate }}</label>
+      <br />
+      <input type="checkbox" id="ChkThu" name="ChkThu" [disabled]="!isDaySelectonAvailable()" [(ngModel)]="week.days.thu" (ngModelChange)="onWeekDaysChange()" />&nbsp;
+      <label for="ChkThu">{{ 'Thursday' | translate }}</label>
+      <br />
+      <input type="checkbox" id="ChkFri" name="ChkFri" [disabled]="!isDaySelectonAvailable()" [(ngModel)]="week.days.fri" (ngModelChange)="onWeekDaysChange()" />&nbsp;
+      <label for="ChkFri">{{ 'Friday' | translate }}</label>
+      <br />
+      <input type="checkbox" id="ChkSat" name="ChkSat" [disabled]="!isDaySelectonAvailable()" [(ngModel)]="week.days.sat" (ngModelChange)="onWeekDaysChange()" />&nbsp;
+      <label for="ChkSat">{{ 'Saturday' | translate }}</label>
+      <br />
+      <input type="checkbox" id="ChkSun" name="ChkSun" [disabled]="!isDaySelectonAvailable()" [(ngModel)]="week.days.sun" (ngModelChange)="onWeekDaysChange()" />&nbsp;
+      <label for="ChkSun">{{ 'Sunday' | translate }}</label>
+    </td>
+  </tr>
+  <tr *ngIf="isRDaysVisible()">
+    <td></td>
+  </tr>
+  <tr *ngIf="isRDaysVisible()">
+    <td>
+      <label for="days">{{ 'Day' | translate }}:</label>
+    </td>
+    <td>
+      <select id="days" name="days" class="combobox ui-corner-all" style="width:50px" [(ngModel)]="timerSettings.mday">
+        <option *ngFor="let item of dayOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+    </td>
+  </tr>
+  <tr *ngIf="isROccurenceVisible()">
+    <td></td>
+  </tr>
+  <tr *ngIf="isROccurenceVisible()">
+    <td>
+      <label for="occurence">{{ 'Day' | translate }}:</label>
+    </td>
+    <td>
+      <select id="occurence" name="occurence" class="combobox ui-corner-all" style="width:90px" [(ngModel)]="timerSettings.occurence">
+        <option *ngFor="let item of occurenceOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+
+      <select id="weekdays" name="weekdays" class="combobox ui-corner-all" style="width:100px" [(ngModel)]="timerSettings.weekday">
+        <option *ngFor="let item of weekdayOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+    </td>
+  </tr>
+  <tr *ngIf="isRMonthsVisible()">
+    <td></td>
+  </tr>
+  <tr *ngIf="isRMonthsVisible()">
+    <td>
+      <label for="months">{{ 'Month' | translate }}:</label>
+    </td>
+    <td>
+      <select id="months" name="months" class="combobox ui-corner-all" style="width:90px" [(ngModel)]="timerSettings.month">
+        <option *ngFor="let item of monthOptions" [value]="item.value">{{item.label}}</option>
+      </select>
+    </td>
+  </tr>
+</table>

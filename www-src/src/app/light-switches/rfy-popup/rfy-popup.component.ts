@@ -1,0 +1,99 @@
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { ProtectionService } from '../../_shared/_services/protection.service';
+import { LightSwitchesService } from '../../_shared/_services/light-switches.service';
+
+@Component({
+  selector: 'dz-rfy-popup',
+  templateUrl: './rfy-popup.component.html',
+  styleUrls: ['./rfy-popup.component.css']
+})
+export class RfyPopupComponent implements OnInit {
+
+  @Output() switched: EventEmitter<void> = new EventEmitter<void>();
+
+  display = false;
+
+  style: { [key: string]: string; } = {};
+
+  idx: string;
+  isprotected: boolean;
+
+  constructor(
+    private protectionService: ProtectionService,
+    private lightSwitchesService: LightSwitchesService
+  ) { }
+
+  ngOnInit() {
+  }
+
+  public ShowRFYPopup(event: any, idx: string, Protected: boolean, ismobile?: boolean) {
+    event = event || window.event;
+    // If pageX/Y aren't available and clientX/Y are,
+    // calculate pageX/Y - logic taken from jQuery.
+    // (This is to support old IE)
+    if (event.pageX == null && event.clientX != null) {
+      const eventDoc = (event.target && event.target.ownerDocument) || document;
+      const doc = eventDoc.documentElement;
+      const body = eventDoc.body;
+
+      event.pageX = event.clientX +
+        (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+        (doc && doc.clientLeft || body && body.clientLeft || 0);
+      event.pageY = event.clientY +
+        (doc && doc.scrollTop || body && body.scrollTop || 0) -
+        (doc && doc.clientTop || body && body.clientTop || 0);
+    }
+    const mouseX = event.pageX;
+    const mouseY = event.pageY;
+
+    this.protectionService.HandleProtection(Protected, () => {
+      this.ShowRFYPopupInt(mouseX, mouseY, idx, Protected, ismobile);
+    });
+  }
+
+  private ShowRFYPopupInt(mouseX: number, mouseY: number, idx: string, Protected: boolean, ismobile?: boolean) {
+    this.idx = idx;
+    this.isprotected = Protected;
+
+    if (typeof ismobile === 'undefined') {
+      this.style = {
+        'top.px': mouseY.toString(),
+        'left.px': (mouseX + 15).toString(),
+        'position': 'absolute',
+        '-ms-transform': 'none',
+        '-moz-transform': 'none',
+        '-webkit-transform': 'none',
+        'transform': 'none'
+      };
+    } else {
+      this.style = {
+        'position': 'fixed',
+        'left': '50%',
+        'top': '50%',
+        '-ms-transform': 'translate(-50%,-50%)',
+        '-moz-transform': 'translate(-50%,-50%)',
+        '-webkit-transform': 'translate(-50%,-50%)',
+        'transform': 'translate(-50%,-50%)'
+      };
+    }
+
+    this.display = true;
+  }
+
+
+  RFYEnableSunWind(bDoEnable: boolean) {
+    let switchcmd = 'EnableSunWind';
+    if (bDoEnable === false) {
+      switchcmd = 'DisableSunWind';
+    }
+    this.display = false;
+    this.lightSwitchesService.SwitchLight(this.idx, switchcmd, this.isprotected).subscribe(() => {
+      this.switched.emit();
+    });
+  }
+
+  CloseRFYPopup() {
+    this.display = false;
+  }
+
+}

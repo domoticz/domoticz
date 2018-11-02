@@ -1,0 +1,29 @@
+<ng-container *ngIf="!noDataAvailable">
+  <div *ngIf="max">
+    <span>{{ 'Hottest Day' | translate }}: {{ max.date }}, {{ max.value }} °{{ degreeType }}</span>
+  </div>
+  <div *ngIf="min">
+    <span>{{ 'Coldest Day' | translate }}: {{ min.date }}, {{ min.value }} °{{ degreeType }}</span>
+  </div>
+  <div *ngIf="degreeDays">
+    <span>{{ 'Degree Days' | translate }}: </span>
+    <span id="mddays">{{ degreeDays }}</span>
+    <br>
+  </div>
+  <br>
+</ng-container>
+
+<div *ngIf="noDataAvailable" class="no-data">
+  {{ 'No data available' | translate }}
+</div>
+
+<!-- NB: we don't use ngIf because we still want a ref to the element in the code -->
+<div [style.display]="noDataAvailable ? 'none' : ''">
+  <table class="display myrighttable" id="reporttable" #reporttable></table>
+</div>
+<br>
+<div style="width: 100%">
+  <div id="usagegraph" class="device-log-chart" #usagegraph [style.display]="noDataAvailable ? 'none' : ''"></div>
+  <br>
+  <div id="variation-graph" style="height: 400px" #variationgraph [style.display]="noDataAvailable ? 'none' : ''"></div>
+</div>

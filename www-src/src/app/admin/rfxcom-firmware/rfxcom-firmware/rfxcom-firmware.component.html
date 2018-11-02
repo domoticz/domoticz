@@ -1,0 +1,53 @@
+<div id="maincontent" class="container">
+  <div id="divupload" *ngIf="!isUpdating">
+    <form>
+      <div style="text-align:center;">
+        <label for="firmwarefile">{{'Select Firmware File:'| translate}}</label>
+        <input type="file" name="firmwarefile" accept=".hex" (change)="onFileChange($event)" /><br>
+        <br>
+        <button id="addcode" class="btn btn-danger" type="button"
+          (click)="UpdateFirmware()">{{'Update'| translate}}</button><br>
+        <br>
+        <span>{{'Upgrading the firmware takes some time.'| translate}}</span><br>
+        <span class="warning-text"><span>{{'Wait until you will see the dashboard again!'| translate}}</span></span>
+        <br>
+        <div class="page-header-small"></div>
+        <span>
+          <span class="warning-text">Important information about RFXtrx/rec firmware:</span><br>
+          <br>
+          RFXtrx315 firmware can only be used in the RFXtrx315.<br>
+          <br>
+          RFXrec433 firmware is only for the RFXrec433 receiver. <br>
+          If you flash an RFXtrx433 or RFXtrx433E transceiver with this firmware you will disable all transmit
+          functionality in the transceiver!<br>
+          <br>
+          RFXtrx433-Type1 and RFXtrx433-Type2 firmware will operate in the RFXtrx433 and RFXtrx433E.<br>
+          <br>
+          RFXtrx433-Ext firmware will only operate in the RFXtrx433E.<br>
+          <br>
+          <br>
+          The firmware can be downloaded from:<br>
+          <a class="btn btn-info" href="http://www.rfxcom.com/">RFXCom Website</a>
+        </span>
+      </div>
+    </form>
+  </div>
+  <div id="divprogress" *ngIf="isUpdating" style="text-align:center;">
+    <!-- Angular 1.x directive -->
+    <!-- <div ang:round:progress data-round-progress-model="ProgressData" data-round-progress-width="340"
+      data-round-progress-height="360" data-round-progress-outer-circle-width="35"
+      data-round-progress-inner-circle-width="8" data-round-progress-outer-circle-radius="150"
+      data-round-progress-inner-circle-radius="100" data-round-progress-label-font="100pt Arial"
+      data-round-progress-outer-circle-background-color="#505769"
+      data-round-progress-outer-circle-foreground-color="#12eeb9" data-round-progress-inner-circle-color="#505769"
+      data-round-progress-label-color="#fff">
+    </div> -->
+    <div style="width: 340px; height: 360px;">
+      <round-progress [current]="progressDataPercentage" [max]="100" [color]="'#fff'" [background]="'#505769'"
+        [radius]="150" [stroke]="35" [rounded]="true" [duration]="800" [animation]="'easeInOutQuart'"
+        [animationDelay]="0" [responsive]="true"></round-progress>
+    </div>
+    <br>
+    <span [innerHTML]="bottomText"></span>
+  </div>
+</div>

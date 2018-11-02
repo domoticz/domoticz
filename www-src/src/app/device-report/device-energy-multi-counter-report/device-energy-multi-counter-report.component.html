@@ -1,0 +1,52 @@
+<div *ngIf="!isMonthView && data" style="margin-bottom: 12px">
+  <div>{{ 'Total Usage' | translate }}:
+    {{ 'T1' | translate }}: {{ data.usage1.usage.toFixed(3) }} {{ unit}},
+    {{ 'T2' | translate }}: {{ data.usage2.usage.toFixed(3) }} {{ unit}},
+    {{ 'Total' | translate }}: {{ data.totalUsage.toFixed(3) }} {{ unit}}
+  </div>
+  <div>{{ 'Counter' | translate }}:
+    {{ 'T1' | translate }}: {{ data.usage1.counter.toFixed(3) }} {{ unit}},
+    {{ 'T2' | translate }}: {{ data.usage2.counter.toFixed(3) }} {{ unit}}
+  </div>
+  <div *ngIf="hasReturn">{{ 'Total Return' | translate }}:
+    {{ 'R1' | translate }}: {{ data.return1.usage.toFixed(3) }} {{ unit}},
+    {{ 'R2' | translate }}: {{ data.return2.usage.toFixed(3) }} {{ unit}},
+    {{ 'Total' | translate }}: {{ data.totalReturn.toFixed(3) }} {{ unit}}
+  </div>
+  <div *ngIf="hasReturn">{{ 'Counter Return' | translate }}:
+    {{ 'R1' | translate }}: {{ data.return1.counter.toFixed(3) }} {{ unit}},
+    {{ 'R2' | translate }}: {{ data.return2.counter.toFixed(3) }} {{ unit}}
+  </div>
+  <div>{{ 'Year Cost' | translate }}: {{ data.cost.toFixed(2) }}</div>
+</div>
+
+<div *ngIf="isMonthView && data" style="margin-bottom: 12px">
+  <div>{{ 'Total Usage' | translate }}:
+    {{ 'T1' | translate }}: {{ data.usage1.usage.toFixed(3) }} {{ unit}},
+    {{ 'T2' | translate }}: {{ data.usage2.usage.toFixed(3) }} {{ unit}},
+    {{ 'Total' | translate }}: {{ (data.usage1.usage + data.usage2.usage).toFixed(3) }} {{ unit}}
+  </div>
+
+  <div *ngIf="hasReturn">{{ 'Total Return' | translate }}:
+    {{ 'R1' | translate }}: {{ data.return1.usage.toFixed(3) }} {{ unit}},
+    {{ 'R2' | translate }}: {{ data.return2.usage.toFixed(3) }} {{ unit}},
+    {{ 'Total' | translate }}: {{ (data.return1.usage + data.return2.usage).toFixed(3) }} {{ unit}}
+  </div>
+
+  <div *ngIf="hasReturn">
+    {{ 'Total' | translate }}: {{ data.usage.toFixed(3) }} {{ unit }}
+  </div>
+
+  <div>{{ 'Monthly Cost' | translate }}: {{ data.cost.toFixed(2) }}</div>
+</div>
+
+<div *ngIf="noDataAvailable" class="no-data">
+  {{ 'No data available' | translate}}
+</div>
+
+<!-- NB: we don't use ngIf because we still want a ref to the element in the code -->
+<div [style.display]="noDataAvailable ? 'none' : ''">
+  <table class="display myrighttable" #reporttable></table>
+</div>
+<br>
+<div #usagegraph id="usagegraph" class="device-log-chart"></div>

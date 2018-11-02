@@ -1,0 +1,64 @@
+<div id="dialog-addlightdevice">
+  <form>
+    <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="right" style="width:120px">
+          <label for="devicename">Name: </label>
+        </td>
+        <td>
+          <input type="text" id="devicename" name="devicename" [(ngModel)]="devicename" style="width: 244px; padding: .2em;"
+            class="text ui-widget-content ui-corner-all" />
+        </td>
+      <tr>
+        <td align="right">
+          <label for="comboswitchtype">Switch Type: </label>
+        </td>
+        <td>
+          <select id="comboswitchtype" name="comboswitchtype" [(ngModel)]="switchtype" style="width:150px" class="combobox ui-corner-all">
+            <!-- previously embed switchtypes -->
+            <option [ngValue]="3">Blinds</option>
+            <option [ngValue]="6">Blinds Inverted</option>
+            <option [ngValue]="13">Blinds Percentage</option>
+            <option [ngValue]="16">Blinds Percentage Inverted</option>
+            <option [ngValue]="2">Contact</option>
+            <option [ngValue]="7">Dimmer</option>
+            <option [ngValue]="11">Door Contact</option>
+            <option [ngValue]="19">Door Lock</option>
+            <option [ngValue]="20">Door Lock Inverted</option>
+            <option [ngValue]="1">Doorbell</option>
+            <option [ngValue]="12">Dusk Sensor</option>
+            <option [ngValue]="17">Media Player</option>
+            <option [ngValue]="8">Motion Sensor</option>
+            <option [ngValue]="0">On/Off</option>
+            <option [ngValue]="10">Push Off Button</option>
+            <option [ngValue]="9">Push On Button</option>
+            <option [ngValue]="18">Selector</option>
+            <option [ngValue]="5">Smoke Detector</option>
+            <option [ngValue]="15">Venetian Blinds EU</option>
+            <option [ngValue]="14">Venetian Blinds US</option>
+            <option [ngValue]="4">X10 Siren</option>
+          </select>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td align="right">
+          <label>As: </label>
+        </td>
+        <td>
+          <input type="radio" name="how" id="how_1" value="New" [(ngModel)]="how">&nbsp;Main Device&nbsp;&nbsp;
+          <input type="radio" name="how" id="how_2" value="Sub Device" [(ngModel)]="how">&nbsp;Sub/Slave Device
+        </td>
+      <tr>
+      <tr id="subdevice" *ngIf="how == 'Sub Device'">
+        <td align="right">
+          <label>Device: </label>
+        </td>
+        <td>
+          <select id="combosubdevice" name="combosubdevice" [(ngModel)]="subdevice" style="width:244px" class="combobox ui-corner-all">
+          </select>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

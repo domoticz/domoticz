@@ -1,0 +1,5 @@
+<select [id]="'selector' + item.idx" #select>
+  <ng-container *ngFor="let levelName of levelNames; first as first; index as index">
+    <option *ngIf="!(first && item.LevelOffHidden)" [value]="index * 10">{{levelName}}</option>
+  </ng-container>
+</select>

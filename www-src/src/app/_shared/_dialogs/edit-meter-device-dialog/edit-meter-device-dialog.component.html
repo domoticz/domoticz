@@ -1,0 +1,90 @@
+<div id="dialog-editmeterdevice" [title]="'Edit Device'| translate">
+  <form>
+    <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="right" style="width:120px">
+          <label>Idx: </label>
+        </td>
+        <td>
+          <span id="deviceidx">{{item.idx}}</span>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="devicename"><span>{{'Name'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="devicename" name="devicename" [(ngModel)]="item.Name"
+                 style="width: 250px; padding: .4em;"
+                 class="text ui-widget-content ui-corner-all"/>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="devicedescription"><span>{{'Description'| translate}}</span>: </label>
+        </td>
+        <td><textarea id="devicedescription" name="devicedescription" [(ngModel)]="item.Description" rows="4"
+                      style="width: 356px; padding: .2em;"
+                      class="text ui-widget-content ui-corner-all"></textarea></td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="combometertype"><span>{{'Type'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="combometertype" name="combometertype" [(ngModel)]="item.SwitchTypeVal"
+                  (ngModelChange)="onComboMeterTypeChange()" style="width:150px" class="combobox ui-corner-all">
+            <!-- FIXME it was previously replaced at build time with an embed called metertypes, I chose to hardcode the value here waiting for an API -->
+            <option [ngValue]="0">Energy</option>
+            <option [ngValue]="1">Gas</option>
+            <option [ngValue]="2">Water</option>
+            <option [ngValue]="3">Counter</option>
+            <option [ngValue]="4">Energy Generated</option>
+            <option [ngValue]="5">Time</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="meterdivider"><span>{{'Counter Divider'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="meterdivider" name="meterdivider" [(ngModel)]="item.AddjValue2"
+                 style="width: 60px; padding: .4em;"
+                 class="text ui-widget-content ui-corner-all"/>&nbsp;
+          <span>{{'(0 = Application default)'| translate}}</span>
+        </td>
+      </tr>
+      <tr id="tdmeteroffset">
+        <td align="right">
+          <label for="meteroffset"><span>{{'Meter Offset'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="meteroffset" name="meteroffset" [(ngModel)]="item.AddjValue"
+                 style="width: 120px; padding: .4em;"
+                 class="text ui-widget-content ui-corner-all"/>
+        </td>
+      </tr>
+      <tr id="customcounter" *ngIf="item.SwitchTypeVal == 3">
+        <td align="right">
+          <label for="valuequantity"><span>{{'Value Quantity (e.g. Weight)'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="valuequantity" name="valuequantity" [(ngModel)]="item.ValueQuantity"
+                 style="width: 140px; padding: .4em;"
+                 class="text ui-widget-content ui-corner-all"/>
+        </td>
+      </tr>
+      <tr id="customcounter" *ngIf="item.SwitchTypeVal == 3">
+        <td align="right">
+          <label for="valueunits"><span>{{'Value Units (e.g. Kg)'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="valueunits" name="valueunits" [(ngModel)]="item.ValueUnits"
+                 style="width: 140px; padding: .4em;"
+                 class="text ui-widget-content ui-corner-all"/>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

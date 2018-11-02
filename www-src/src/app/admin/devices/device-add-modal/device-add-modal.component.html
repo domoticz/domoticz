@@ -1,0 +1,52 @@
+<div class="modal fade" tabindex="-1" role="dialog" #modal>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h3 class="modal-title">{{ 'Add Device' | translate }}</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" name="modalForm" #modalForm="ngForm">
+          <div class="control-group" *ngIf="device">
+            <label class="control-label" for="light-device-name">{{ 'Name' | translate }}:</label>
+            <div class="controls">
+              <input type="text" id="light-device-name" name="light-device-name" class="form-control" required minlength="2" maxlength="100"
+                [(ngModel)]="device.Name" />
+            </div>
+          </div>
+          <div class="control-group" *ngIf="device && isLightDevice">
+            <label class="control-label" for="light-device-name">{{ 'As' | translate }}:</label>
+            <div class="controls">
+              <label class="radio inline">
+                <input type="radio" name="isMainDevice" [value]="true" [(ngModel)]="isMainDevice">
+                {{ 'Main Device' | translate }}
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="isMainDevice" [value]="false" [(ngModel)]="isMainDevice">
+                {{ 'Sub/Slave Device' | translate }}
+              </label>
+            </div>
+          </div>
+          <div class="control-group" *ngIf="!isMainDevice">
+            <label class="control-label" for="main-device">{{ 'Device' | translate }}:</label>
+            <div class="controls">
+              <select id="main-device" name="main-device" class="form-control" required [(ngModel)]="mainDevice">
+                <option *ngFor="let item of mainDevices" [ngValue]="item.idx">{{item.Name}}</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" [disabled]="!modalForm.valid || isSaving" (click)="addDevice()">
+          {{ 'Add Device' | translate }}
+        </button>
+
+        <button type="button" class="btn btn-default" (click)="dismiss()">
+          {{ 'Cancel' | translate }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

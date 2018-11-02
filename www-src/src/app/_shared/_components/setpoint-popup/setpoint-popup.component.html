@@ -1,0 +1,21 @@
+<div id="setpoint_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" [ngStyle]="style" [style.display]="display ? 'block' : 'none'">
+  <div class="ui-close" (click)="CloseSetpointPopup()"></div>
+  <table class="display" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="width:60px; vertical-align: center;">
+        <span>{{'Actual'| translate}}</span>:<br>
+        <span id="actual_value" style="font-size: 24px; font-weight: bold;">{{curValue}}</span>
+      </td>
+      <td align="center" style="vertical-align: center;">
+        <a id="popup_temp_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48"
+            (click)="SetpointUp()"></a><br>
+        <input id="popup_setpoint" name="popup_setpoint" [(ngModel)]="newValue" type="text" style="width: 50px; padding: .2em; margin-top: 10px; margin-bottom: 10px; font-size: 24px; font-weight: bold; border: 3px solid white; text-align: center;"
+          class="text ui-widget-content ui-corner-all" /><br>
+        <a id="popup_temp_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" (click)="SetpointDown()"></a>
+      </td>
+      <td align="center" style="vertical-align: center;">
+        <button class="btn btn-info" (click)="SetSetpoint()">{{'Set'| translate}}</button>
+      </td>
+    </tr>
+  </table>
+</div>

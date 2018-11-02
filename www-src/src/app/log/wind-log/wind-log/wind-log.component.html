@@ -1,0 +1,31 @@
+<div class="container">
+
+  <div id="weathercontent" *ngIf="device">
+
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Weather">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br>
+
+    <div style="text-align:center;">
+      <h2>{{device.Name}}</h2>
+    </div>
+
+    <h2>{{'Day'| translate}}</h2>
+    <dz-wind-day-graph [idx]="idx" [lscales]="lscales"></dz-wind-day-graph>
+    <br>
+    <dz-wind-direction-graph [idx]="idx"></dz-wind-direction-graph>
+    <br>
+    <h2>{{'Month'| translate}}</h2>
+    <dz-wind-month-graph [idx]="idx" [lscales]="lscales"></dz-wind-month-graph>
+    <br>
+    <h2>{{'Year'| translate}}</h2>
+    <dz-wind-year-graph [idx]="idx" [lscales]="lscales"></dz-wind-year-graph>
+
+  </div>
+
+</div>

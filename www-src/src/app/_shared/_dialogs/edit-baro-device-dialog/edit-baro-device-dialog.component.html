@@ -1,0 +1,44 @@
+<div id="dialog-editbarodevice">
+  <form>
+    <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="right" style="width:120px">
+          <label>Idx: </label>
+        </td>
+        <td>
+          <span id="deviceidx">{{item.idx}}</span>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="devicename"><span>{{'Name'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="devicename" name="devicename" [(ngModel)]="item.Name"
+                 style="width: 250px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"/>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="devicedescription"><span>{{'Description'| translate}}</span>: </label>
+        </td>
+        <td>
+          <textarea id="devicedescription" name="devicedescription" [(ngModel)]="item.Description" rows="4"
+                    style="width: 356px; padding: .2em;"
+                    class="text ui-widget-content ui-corner-all"></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="adjustment"><span>{{'Adjustment'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="adjustment" name="adjustment" [(ngModel)]="item.AddjValue2"
+                 style="width: 60px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"/> hPa
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

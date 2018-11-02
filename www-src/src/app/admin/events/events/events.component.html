@@ -1,0 +1,119 @@
+<div class="row" style="margin: -8px 0 0 -8px;">
+  <dz-timesun></dz-timesun>
+</div>
+
+<div class="row">
+  <div class="events-editor">
+    <section class="events-editor__tree" *ngIf="isListExpanded">
+      <h2>{{'My automation scripts' | translate }}</h2>
+      <input class="events-editor__search" type="search" name="searchName" [(ngModel)]="search.name"
+             [placeholder]="'Filter' | translate"/>
+      <nav class="events-editor-tree">
+        <li class="events-editor-tree-item"
+            *ngFor="let event of eventsFiltered"
+            [ngClass]="{'events-editor-tree-item_disabled': event.eventstatus === '0','events-editor-tree-item_active': event.id === activeEventId}"
+        >
+          <a class="events-editor-tree-item__file"
+             href="javascript:void(0)"
+             (click)="openEvent(event)"
+          >
+            <span class="label label-important" *ngIf="event.eventstatus === '0'">{{ 'Disabled' | translate }}</span>
+            <span class="label label-warning" *ngIf="event.eventstatus === '2'">{{ 'Error' | translate }}</span>
+            {{ event.name }}
+          </a>
+        </li>
+      </nav>
+    </section>
+
+    <button type="button"
+            class="events-editor__splitter"
+            (click)="isListExpanded = !isListExpanded"
+    >
+      <i [ngClass]="{'icon-chevron-left': isListExpanded, 'icon-chevron-right': !isListExpanded}"></i>
+    </button>
+
+    <section class="events-editor__editor">
+      <nav class="events-editor__file-list">
+        <a class="events-editor__file"
+           href="javascript:void(0)"
+           [ngClass]="{'events-editor__file_active': activeEventId === 'states'}"
+           (click)="setActiveEventId('states')"
+           [title]="'Devices current states' | translate"
+        >
+          <i class="icon-tasks"></i>
+        </a>
+
+        <a class="events-editor__file"
+           href="javascript:void(0)"
+           *ngFor="let event of openedEvents"
+           [ngClass]="{'events-editor__file_active': event.id === activeEventId}"
+           (click)="setActiveEventId(event.id)"
+        >
+          {{ event.name }}
+          <span *ngIf="event.isChanged">*</span>
+          <button class="events-editor__file-close" (click)="closeEvent(event)">×</button>
+        </a>
+
+        <div class="events-editor__file-create">
+          <button class="events-editor__file"
+                  [title]=" 'Add automation script' | translate"
+                  data-toggle="dropdown"
+          >
+            <i class="icon-plus"></i>
+          </button>
+          <ul class="dropdown-menu events-editor__menu">
+            <li *ngIf="isInterpreterSupported('Blockly')">
+              <a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)"
+                 (click)="createEvent('Blockly')">Blockly</a>
+            </li>
+            <li *ngIf="isInterpreterSupported('Python')">
+              <a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)"
+                 (click)="createEvent('Python')">Python</a>
+            </li>
+            <li *ngIf="isInterpreterSupported('Lua')" class="dropdown-submenu">
+              <a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)">Lua</a>
+              <ul class="dropdown-menu events-editor__menu">
+                <li *ngFor="let template of luaTemplates">
+                  <a tabindex="-1"
+                     class="events-editor__menu-item"
+                     href="javascript:void(0)"
+                     (click)="createEvent('Lua', template.id)"
+                  >
+                    {{template.name}}
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li *ngIf="isInterpreterSupported('dzVents')" class="dropdown-submenu">
+              <a class="events-editor__menu-item" tabindex="-1" href="javascript:void(0)">dzVents</a>
+              <ul class="dropdown-menu events-editor__menu">
+                <li *ngFor="let template of dzVentsTemplates">
+                  <a tabindex="-1"
+                     class="events-editor__menu-item"
+                     href="javascript:void(0)"
+                     (click)="createEvent('dzVents', template.id)"
+                  >
+                    {{template.name}}
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <dz-events-current-states *ngIf="activeEventId === 'states'"
+                                 class="events-editor-file events-editor__file-content"></dz-events-current-states>
+
+      <ng-container *ngFor="let event of openedEvents">
+        <dz-event-viewer *ngIf="event.id === activeEventId"
+                          class="events-editor-file events-editor__file-content"
+                          [event]="event"
+                          (update)="updateEvent($event)"
+                          (delete)="deleteEvent($event)"></dz-event-viewer>
+      </ng-container>
+
+    </section>
+  </div>
+</div>
+

@@ -1,0 +1,33 @@
+<div class="modal fade" tabindex="-1" role="dialog" #modal>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h3 class="modal-title">{{ 'Select Device' | translate }}</h3>
+      </div>
+      <div class="modal-body">
+        <dz-page-loading-indicator *ngIf="!devices"></dz-page-loading-indicator>
+        <dz-room-plan-device-selector
+          *ngIf="devices"
+          [devices]="devices"
+          (select)="selectDevice($event)"
+        ></dz-room-plan-device-selector>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-primary"
+                [disabled]="!selectedDevice"
+                (click)="close()">
+          {{ 'Add' | translate }}
+        </button>
+
+        <button type="button"
+                class="btn btn-default"
+                (click)="dismiss()">
+          {{ 'Cancel' | translate }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

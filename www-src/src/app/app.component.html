@@ -1,0 +1,22 @@
+<ng-container *ngIf="layout">
+  <dz-header *dzHasUser></dz-header>
+
+  <div id="holder">
+    <div class="container-fluid">
+      <dz-alertarea></dz-alertarea>
+      <dz-notification></dz-notification>
+      <div class="bannercontent">
+        <div id="main-view">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+      <div id="copyright" *dzHasUser>
+        <p>&copy; 2012-{{currentyear}} Domoticz | WWW: <a href="http://domoticz.com/"
+                                                          target="_blank">Domoticz.com</a></p>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="!layout">
+  <router-outlet></router-outlet>
+</ng-container>

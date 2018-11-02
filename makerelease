@@ -57,6 +57,10 @@ echo "Success, making release...";
 cp -f appversion.h ${version_file}
 cp -f History.txt ${history_file}
 
+# Generate the frontend code
+echo "Generating frontend code (Angular)..."
+cd www-src && npm run build --prod && cp -r dist ../www && cd ..
+
 # Generate the archive
 echo "Generating Archive: ${archive_file}..."
 

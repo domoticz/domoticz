@@ -1,0 +1,17 @@
+<div id="itho_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" [ngStyle]="style" [style.display]="display ? 'block' : 'none'">
+  <div class="ui-close" (click)="CloseIthoPopup()"></div>
+  <table class="display" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td>
+        <div style="text-align: center;">
+          <br><br>
+          <button class="btn btn-info" (click)="IthoSendCommand('1')">1</button><br>
+          <button class="btn btn-info" (click)="IthoSendCommand('2')">2</button><br>
+          <button class="btn btn-info" (click)="IthoSendCommand('3')">3</button><br>
+          <button class="btn btn-info" (click)="IthoSendCommand('timer')">{{'Timer'| translate}}</button><br>
+        </div>
+        <br>
+      </td>
+    </tr>
+  </table>
+</div>

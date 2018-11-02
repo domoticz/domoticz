@@ -1,0 +1,38 @@
+<div id="mobilecontent" class="container">
+
+  <table class="display" id="mobiletable" border="0" cellpadding="0" cellspacing="0" width="100%" #mobiletable>
+    <thead>
+      <tr valign="middle">
+        <th width="30">Idx</th>
+        <th width="60" align="left">{{'Enabled'| translate}}</th>
+        <th align="left">{{'Name'| translate}}</th>
+        <th width="260" align="left">{{'UUID'| translate}}</th>
+        <th width="110">{{'Type'| translate}}</th>
+        <th width="180" align="left">{{'Last Seen'| translate}}</th>
+      </tr>
+    </thead>
+  </table>
+  <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <a id="mobileupdate" (click)="UpdateMobile()"
+           [ngClass]="{'btnstyle3-dis': !mobileupdateenabled, 'btnstyle3': mobileupdateenabled}">{{'Update'| translate}}</a>&nbsp;&nbsp;&nbsp;
+        <a id="mobiledelete" (click)="DeleteMobile()"
+           [ngClass]="{'btnstyle3-dis': !mobiledeleteenabled, 'btnstyle3': mobiledeleteenabled}">{{'Delete'| translate}}</a>
+      </td>
+    </tr>
+  </table>
+  <br>
+  <table class="display" id="mobileparamstable" border="0" cellpadding="0" cellspacing="20">
+    <tr>
+      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+      <td><input type="checkbox" id="enabled" name="enabled" [(ngModel)]="enabled" checked><label for="enabled"></label></td>
+    </tr>
+    <tr>
+      <td align="right" style="width:110px"><label><span>{{'Name'| translate}}</span>:</label></td>
+      <td><input type="text" id="name" name="name" [(ngModel)]="name" style="width: 200px; padding: .2em;"
+          class="text ui-widget-content ui-corner-all" /></td>
+    </tr>
+  </table>
+
+</div>

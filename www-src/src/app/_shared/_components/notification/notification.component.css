@@ -1,0 +1,7 @@
+#notification {
+    /* TODO center */
+    background-color: #204060;
+}
+#notification.error {
+    background-color: red;
+}

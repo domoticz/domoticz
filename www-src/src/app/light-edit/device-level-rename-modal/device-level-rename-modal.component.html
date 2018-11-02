@@ -1,0 +1,24 @@
+<div class="modal fade" tabindex="-1" role="dialog" #modal>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Rename Level Name</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" name="modalForm" #modalForm="ngForm">
+          <div class="control-group">
+            <label class="control-label" for="selectorlevelname">{{ 'Name' | translate }}:</label>
+            <div class="controls">
+              <input type="text" id="selectorlevelname" name="selectorlevelname" class="form-control" required minlength="1" [(ngModel)]="name" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" (click)="close()" [disabled]="modalForm.invalid">{{ 'Rename' | translate }}
+        </button>
+        <button class="btn btn-default" type="button" (click)="dismiss()">{{ 'Cancel' | translate }}</button>
+      </div>
+    </div>
+  </div>
+</div>

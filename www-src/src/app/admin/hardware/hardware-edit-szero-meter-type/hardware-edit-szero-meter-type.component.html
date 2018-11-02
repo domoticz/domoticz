@@ -1,0 +1,157 @@
+<div id="hardwarecontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Hardware">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="text-align:center;">
+    <h2><span>{{'Device'| translate}}</span>: {{hardware?.Name}}</h2>
+  </div>
+
+  <div id="s0metertypeedit" style="text-align: center;" *ngIf="hardware">
+    <form id="s0metertype">
+      <br>
+      <h2><span>{{'Hardware'| translate}}</span>:</h2>
+      <br>
+      <h2>Meter 1:</h2>
+      <table>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Type'| translate}}</span>: </label>
+          </td>
+          <td>
+            <select id="combom1type" [(ngModel)]="combom1type" name="S0M1Type" style="width:100px" class="combobox ui-corner-all">
+              <option value="0">Energy</option>
+              <option value="1">Gas</option>
+              <option value="2">Water</option>
+              <option value="3">Counter</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Pulses/Hour'| translate}}</span>: </label>
+          </td>
+          <td>
+            <input type="input" id="M1PulsesPerHour" [(ngModel)]="M1PulsesPerHour" name="M1PulsesPerHour" style="width: 60px; padding: .2em;"
+              class="text ui-widget-content ui-corner-all" />
+          </td>
+        </tr>
+      </table>
+      <br>
+      <h2>Meter 2:</h2>
+      <table>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Type'| translate}}</span>: </label>
+          </td>
+          <td>
+            <select id="combom2type" [(ngModel)]="combom2type" name="S0M2Type" style="width:100px" class="combobox ui-corner-all">
+              <option value="0">Energy</option>
+              <option value="1">Gas</option>
+              <option value="2">Water</option>
+              <option value="3">Counter</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Pulses/Hour'| translate}}</span>: </label>
+          </td>
+          <td>
+            <input type="input" id="M2PulsesPerHour" [(ngModel)]="M2PulsesPerHour" name="M2PulsesPerHour" style="width: 60px; padding: .2em;"
+              class="text ui-widget-content ui-corner-all" />
+          </td>
+        </tr>
+      </table>
+      <br>
+      <h2>Meter 3:</h2>
+      <table>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Type'| translate}}</span>: </label>
+          </td>
+          <td>
+            <select id="combom3type" [(ngModel)]="combom3type" name="S0M3Type" style="width:100px" class="combobox ui-corner-all">
+              <option value="0">Energy</option>
+              <option value="1">Gas</option>
+              <option value="2">Water</option>
+              <option value="3">Counter</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Pulses/Hour'| translate}}</span>: </label>
+          </td>
+          <td>
+            <input type="input" id="M3PulsesPerHour" [(ngModel)]="M3PulsesPerHour" name="M3PulsesPerHour" style="width: 60px; padding: .2em;"
+              class="text ui-widget-content ui-corner-all" />
+          </td>
+        </tr>
+      </table>
+      <br>
+      <h2>Meter 4:</h2>
+      <table>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Type'| translate}}</span>: </label>
+          </td>
+          <td>
+            <select id="combom4type" [(ngModel)]="combom4type" name="S0M4Type" style="width:100px" class="combobox ui-corner-all">
+              <option value="0">Energy</option>
+              <option value="1">Gas</option>
+              <option value="2">Water</option>
+              <option value="3">Counter</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Pulses/Hour'| translate}}</span>: </label>
+          </td>
+          <td>
+            <input type="input" id="M4PulsesPerHour" [(ngModel)]="M4PulsesPerHour" name="M4PulsesPerHour" style="width: 60px; padding: .2em;"
+              class="text ui-widget-content ui-corner-all" />
+          </td>
+        </tr>
+      </table>
+      <br>
+      <h2>Meter 5:</h2>
+      <table>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Type'| translate}}</span>: </label>
+          </td>
+          <td>
+            <select id="combom5type" [(ngModel)]="combom5type" name="S0M5Type" style="width:100px" class="combobox ui-corner-all">
+              <option value="0">Energy</option>
+              <option value="1">Gas</option>
+              <option value="2">Water</option>
+              <option value="3">Counter</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px">
+            <label><span>{{'Pulses/Hour'| translate}}</span>: </label>
+          </td>
+          <td>
+            <input type="input" id="M5PulsesPerHour" [(ngModel)]="M5PulsesPerHour" name="M5PulsesPerHour" style="width: 60px; padding: .2em;"
+              class="text ui-widget-content ui-corner-all" />
+          </td>
+        </tr>
+      </table>
+      <br>
+      <input type="hidden" id="idx" name="idx" [value]="hardware.idx">
+      <button class="btn btn-danger" id="submitbuttons0meter" (click)="SetS0MeterType()">Set Mode</button>
+    </form>
+  </div>
+
+</div>

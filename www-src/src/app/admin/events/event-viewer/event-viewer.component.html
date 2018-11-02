@@ -1,0 +1,86 @@
+<div class="events-editor-file__header" *ngIf="eventData">
+  <form class="form-inline">
+    <div class="btn-group">
+      <button class="btn btn-default"
+              [ngClass]="{'btn-default': eventData.eventstatus === '0', 'btn-success active': eventData.eventstatus === '1' }"
+              (click)="setEventState(true)"
+      >
+        {{ 'On' | translate }}
+      </button>
+
+      <button class="btn btn-default"
+              [ngClass]="{ 'btn-default': eventData.eventstatus === '1','btn-danger active': eventData.eventstatus === '0' }"
+              (click)="setEventState(false)"
+      >
+        {{ 'Off' | translate }}
+      </button>
+    </div>
+
+    <input id="eventName"
+           name="eventName"
+           class="events-editor-file__name"
+           [(ngModel)]="eventData.name"
+           (ngModelChange)="markEventAsUpdated()"
+    >
+
+    <div class="pull-right">
+      <div class="events-editor-file__type input-prepend" *ngIf="isTriggerAvailable()">
+        <label class="add-on" for="trigger">{{ 'Trigger' | translate }}</label>
+        <select id="trigger"
+                name="trigger"
+                [(ngModel)]="eventData.type"
+                (ngModelChange)="markEventAsUpdated()">
+          <option *ngFor="let item of eventTypes" [value]="item.value">{{item.label}}</option>
+        </select>
+      </div>
+
+      <div class="btn-group" *ngIf="eventData.interpreter === 'Blockly'">
+        <button class="btn btn-default"
+                type="button"
+                (click)="importEvent()"
+        >
+          {{ 'Import' | translate}}
+        </button>
+        <button class="btn btn-default"
+                type="button"
+                (click)="exportEvent()"
+        >
+          {{ 'Export' | translate}}
+        </button>
+      </div>
+
+      <a class="btn btn-default"
+         href="https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting"
+         target="_blank"
+         [title]="'dzVents Documentation' | translate"
+         *ngIf="eventData.interpreter === 'dzVents'"
+      >
+        <i class="icon-question-sign"></i> {{ 'Help' | translate }}
+      </a>
+
+      <div class="btn-group">
+        <button class="btn btn-primary"
+                type="button"
+                (click)="saveEvent()"
+                [disabled]="!event.isChanged"
+                title="{{ 'Save' | translate}} (Ctrl + S)"
+        >
+          {{ 'Save' | translate}}
+        </button>
+
+        <button class="btn btn-danger"
+                type="button"
+                (click)="deleteEvent()"
+        >
+          {{ 'Delete' | translate}}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="events-editor-file__content js-script-content" #editor></div>
+
+<dz-export-event-modal></dz-export-event-modal>
+
+<dz-import-event-modal (import)="onImportEvent($event)"></dz-import-event-modal>

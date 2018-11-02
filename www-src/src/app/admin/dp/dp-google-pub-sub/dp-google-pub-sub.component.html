@@ -1,0 +1,215 @@
+<div id="googlepubsubmain" class="container">
+  <table class="display" id="linkgooglepubsubtable" border="0" cellpadding="0" cellspacing="0" width="100%"
+         #linkgooglepubsubtable>
+    <thead>
+    <tr>
+      <th width="120" align="left">{{'Device name'| translate}}</th>
+      <th width="60" align="left">{{'Value to send'| translate}}</th>
+      <th width="120" align="left">{{'Target type'| translate}}</th>
+      <th width="120" align="left">{{'Target variable'| translate}}</th>
+      <th width="60" align="left">{{'Target id'| translate}}</th>
+      <th width="120" align="left">{{'Target property'| translate}}</th>
+      <th width="60" align="left">{{'Include unit'| translate}}</th>
+      <th width="60" align="left">{{'Enabled'| translate}}</th>
+    </tr>
+    </thead>
+  </table>
+  <p>
+  <table width="100%">
+  <tbody>
+    <tr>
+      <td valign="top">
+        <h2>{{'Edit link'| translate}}</h2><br>
+        <table class="display" id="linkgooglepubsubparamstable" border="0" cellpadding="0" cellspacing="20">
+          <tr>
+            <td align="right" style="width:110px">
+              <label for="combotargettype"><span>{{'Target type'| translate}}</span>:</label>
+            </td>
+            <td>
+              <select id="combotargettype" name="combotargettype" [(ngModel)]="linkToEdit.targettype"
+                      style="width:160px"
+                      class="combobox ui-corner-all">
+                <option value="0">{{'Global variable'| translate}}</option>
+                <option value="1">{{'Virtual device'| translate}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="targetdevicename" *ngIf="linkToEdit.targettype == '0' || linkToEdit.targettype == '1'">
+            <td align="right" style="width:110px">
+              <label for="devicename"><span>{{'Device name'| translate}}</span>:</label>
+            </td>
+            <td>
+              <select id="devicename" name="devicename" [(ngModel)]="linkToEdit.devicename" style="width:280px"
+                      class="combobox ui-corner-all"
+                      (change)="ValueSelectorUpdate()">
+                <option *ngFor="let d of devices;" [value]="d.value">{{d.name}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="targetonoffdevicename" style="display:none;"
+              *ngIf="linkToEdit.targettype == '2' || linkToEdit.targettype == '3'">
+            <td align="right" style="width:110px">
+              <label for="onoffdevicename"><span>{{'Device name'| translate}}</span>:</label>
+            </td>
+            <td>
+              <select id="onoffdevicename" name="onoffdevicename" [(ngModel)]="linkToEdit.onoffdevicename"
+                      style="width:280px" class="combobox ui-corner-all"
+                      (change)="ValueSelectorUpdate();">
+                <option *ngFor="let d of onOffDevices;" [value]="d.value">{{d.name}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="variabletosend" *ngIf="linkToEdit.targettype == '0' || linkToEdit.targettype == '1'">
+            <td align="right" style="width:110px">
+              <label for="combosendvalue"><span>{{'Value to send'| translate}}</span>:</label>
+            </td>
+            <!--<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>-->
+            <td>
+              <select id="combosendvalue" name="combosendvalue" [(ngModel)]="linkToEdit.sendvalue" style="width:160px"
+                      class="combobox ui-corner-all">
+                <option *ngFor="let s of sendvalues;" [value]="s.Value">{{s.Wording| translate}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="scenevariabletosend" style="display:none;" *ngIf="linkToEdit.targettype == '2'">
+            <td align="right" style="width:110px">
+              <label for="sendvaluescene"><span>{{'Start scene on'| translate}}</span>:</label>
+            </td>
+            <td>
+              <select id="sendvaluescene" name="sendvaluescene" [(ngModel)]="linkToEdit.sendvaluescene"
+                      style="width:160px" class="combobox ui-corner-all">
+                <option value="0">{{'Off'| translate}}</option>
+                <option value="1">{{'On'| translate}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="rebootvariabletosend" style="display:none;" *ngIf="linkToEdit.targettype == '3'">
+            <td align="right" style="width:110px">
+              <label for="sendvaluereboot"><span>{{'Start on'| translate}}</span>:</label>
+            </td>
+            <td>
+              <select id="sendvaluereboot" name="sendvaluereboot" [(ngModel)]="linkToEdit.sendvaluereboot"
+                      style="width:160px" class="combobox ui-corner-all">
+                <option value="0">{{'Off'| translate}}</option>
+                <option value="1">{{'On'| translate}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="targetvariablerow" *ngIf="linkToEdit.targettype == '0'">
+            <td align="right" style="width:110px">
+              <label for="targetvariable"><span>{{'Target variable'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="targetvariable" name="targetvariable" [(ngModel)]="linkToEdit.targetvariable"
+                     style="width: 250px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr id="targetdeviceidrow" style="display:none;"
+              *ngIf="linkToEdit.targettype == '1' || linkToEdit.targettype == '2'">
+            <td align="right" style="width:110px">
+              <label for="targetdeviceid"><span>{{'Target device/scene id'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="targetdeviceid" name="targetdeviceid" [(ngModel)]="linkToEdit.targetdeviceid"
+                     style="width: 250px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr id="targetpropertyrow" style="display:none;" *ngIf="linkToEdit.targettype == '1'">
+            <td align="right" style="width:110px">
+              <label for="targetproperty"><span>{{'Target property'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="targetproperty" name="targetproperty" [(ngModel)]="linkToEdit.targetproperty"
+                     style="width: 250px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr id="targetincludeunit" *ngIf="linkToEdit.targettype == '0' || linkToEdit.targettype == '1'">
+            <td align="right" style="width:80px">
+              <span>{{'Include unit'| translate}}</span>:
+            </td>
+            <td>
+              <input type="checkbox" id="includeunit" name="includeunit" [(ngModel)]="linkToEdit.includeunit"><label
+              for="includeunit"></label>
+            </td>
+          </tr>
+          <tr id="targetlinkenabled">
+            <td align="right" style="width:80px">
+              <span>{{'Link active'| translate}}</span>:
+            </td>
+            <td>
+              <input type="checkbox" id="linkenabled" name="linkenabled" [(ngModel)]="linkToEdit.linkenabled"><label
+              for="linkenabled"></label>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <a class="btnstyle3" (click)="AddLink('a')">{{'Add'| translate}}</a>
+              <a class="btnstyle3-dis" id="linkupdate"
+                 (click)="linkToEdit.idx != '0' ? AddLink('u') : undefined">{{'Update'| translate}}</a>&nbsp;&nbsp;&nbsp;
+              <a class="btnstyle3-dis" id="linkdelete"
+                 (click)="linkToEdit.idx != '0' ? DeleteLink(linkToEdit.idx) : undefined">{{'Delete'| translate}}</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td valign="top">
+        <h2>{{'General settings'| translate}}</h2><br>
+        <table class="display" id="googlepubsubremote" border="0" cellpadding="0" cellspacing="20">
+          <tr>
+            <td align="right" style="width:110px">
+              <label id="lblavailablekeywords"
+                     for="availablekeywords"><span>{{'Available keywords'| translate}}</span>:</label>
+            </td>
+            <td>%v : Value --
+              %t0 : Timestamp (epoc time localtime) --
+              %t1 : Timestamp (epoc ms localtime) --
+              %t2 : Timestamp (epoc time UTC) --
+              %t3 : Timestamp (epoc ms UTC) --
+              %t4 : Timestamp : "2015-01-29T21:50:44Z" --
+              %D : Target Device id --
+              %V : Target Variable --
+              %u : Unit --
+              %n : Device name --
+              %T0 : Type --
+              %T1 : SubType --
+              %h : hostname --
+              %idx : 'Original device' id (idx)
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label id="lblremotedata" for="data"><span>{{'Data'| translate}}</span>:</label>
+            </td>
+            <td>
+              <textarea id="data" name="data" [(ngModel)]="config.data" rows="4" style="width: 450px; padding: .2em;"
+                        class="text ui-widget-content ui-corner-all"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:80px">
+              <span>{{'Active'| translate}}</span>:
+            </td>
+            <td>
+              <input type="checkbox" id="googlepubsublinkenabled" name="googlepubsublinkenabled"
+                     [(ngModel)]="config.linkenabled"><label for="googlepubsublinkenabled"></label>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:80px">
+              <span>{{'Debug to logfile'| translate}}</span>:
+            </td>
+            <td>
+              <input type="checkbox" id="debugenabled" [(ngModel)]="config.debugenabled"><label
+              for="debugenabled"></label>
+            </td>
+          </tr>
+        </table>
+        <a class="btnstyle3" (click)="SaveConfiguration()">{{'Save'| translate}}</a>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</div>

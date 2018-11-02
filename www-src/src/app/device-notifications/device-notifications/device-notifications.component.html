@@ -1,0 +1,39 @@
+<div class="container">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" dzBackButton>{{ 'Back' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+
+    <h2>{{ 'Name'| translate }}: {{ pageName }}</h2>
+
+    <dz-notifications-table [device]="device" [notifications]="notifications" (select)="selectNotification($event)"></dz-notifications-table>
+
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <button class="btnstyle3" [disabled]="!notification.idx" (click)="updateNotification()">
+                    {{ 'Update' | translate }}
+                </button>
+                &nbsp;&nbsp;
+                <button class="btnstyle3" [disabled]="!notification.idx" (click)="deleteNotification()">
+                    {{ 'Delete' | translate }}
+                </button>
+            </td>
+            <td align="right">
+                <button class="btnstyle3" (click)="clearNotifications()">{{ 'Clear' | translate }}</button>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <dz-notification-form *ngIf="isLoaded" [notificationTypes]="notificationTypes" [notifiers]="notifiers" [device]="device"
+        [(notification)]="notification"></dz-notification-form>
+
+    <br>
+
+    <button class="btnstyle3" (click)="addNotification()">{{ 'Add' | translate }}</button>
+</div>

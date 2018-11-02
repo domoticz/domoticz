@@ -1,0 +1,17 @@
+<div class="container">
+  <a class="btnstylerev" routerLink="/Hardware">{{ 'Back' | translate }}</a>
+  <h2 class="page-header">{{ 'Device' | translate}}: {{ hardware?.Name }}</h2>
+</div>
+
+<div class="container" id="hardwarecontent">
+
+  <dz-zwave-hardware *ngIf="hardware && hardware.Type === 21" [hardware]="hardware"></dz-zwave-hardware>
+  <dz-wol-hardware *ngIf="hardware && hardware.Type === 29" [hardware]="hardware"></dz-wol-hardware>
+  <dz-my-sensors *ngIf="hardware && [41, 42, 92].includes(hardware.Type)" [hardware]="hardware"></dz-my-sensors>
+  <dz-pinger *ngIf="hardware && hardware.Type === 51" [hardware]="hardware"></dz-pinger>
+  <dz-kodi *ngIf="hardware && hardware.Type === 55" [hardware]="hardware"></dz-kodi>
+  <dz-panasonic-tv-hardware *ngIf="hardware && hardware.Type === 69" [hardware]="hardware"></dz-panasonic-tv-hardware>
+  <dz-ble-box-hardware *ngIf="hardware && hardware.Type === 82" [hardware]="hardware"></dz-ble-box-hardware>
+
+</div>
+

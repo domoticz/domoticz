@@ -1,0 +1,44 @@
+.hoverable
+{
+  cursor: pointer;
+  fill: blue;
+  fill-opacity: 0.33;
+  stroke: blue;
+  stroke-width: 4;
+  stroke-linejoin: round;
+  stroke-opacity: 0.5;
+}
+
+polygon.hoverable:hover
+{
+  stroke: black;
+}
+
+polygon.nothoverable
+{
+  fill: blue;
+  fill-opacity: 0.1;
+  stroke: blue;
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-opacity: 0.5;
+}
+
+image.moveable
+{
+  cursor: move;
+}
+
+rect.popup{
+  fill: #F1F5FA;
+  font-family: Arial, Helvetica, sans-serif;
+  stroke: gray;
+  stroke-width: 0.5;
+  stroke-opacity: 0.5;
+}
+rect.header{
+  fill: #D4E1EE;
+  stroke: black;
+  stroke-width: 1;
+  font-family: Arial, Helvetica, sans-serif;
+}

@@ -1,0 +1,35 @@
+<div class="container">
+
+  <div id="weathercontent" *ngIf="device">
+
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="left">
+          <a class="btnstylerev" routerLink="/Weather">{{'Back'| translate}}</a>
+        </td>
+        <td align="right">
+          <a class="btnstyle" [routerLink]="['/RainReport', idx]">{{'Report'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br>
+
+    <div style="text-align:center;">
+      <h2>{{device.Name}}</h2>
+    </div>
+
+    <h2>{{'Day'| translate}}</h2>
+    <dz-rain-day-graph [idx]="idx"></dz-rain-day-graph>
+    <br>
+    <h2>{{'Week'| translate}}</h2>
+    <dz-rain-week-graph [idx]="idx"></dz-rain-week-graph>
+    <br>
+    <h2>{{'Month'| translate}}</h2>
+    <dz-rain-month-graph [idx]="idx"></dz-rain-month-graph>
+    <br>
+    <h2>{{'Year'| translate}}</h2>
+    <dz-rain-year-graph [idx]="idx"></dz-rain-year-graph>
+
+  </div>
+
+</div>

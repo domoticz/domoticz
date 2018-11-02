@@ -1,0 +1,40 @@
+<div class="container">
+
+  <div id="weathercontent">
+
+    <table class="display" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <a id="backbutton" class="btnstylerev" [routerLink]="['/RainLog', idx]">{{'Back'| translate}}</a>&nbsp;
+        <!-- <h1 id="theader">{{'Usage this Year'| translate}}</h1> -->
+        <h1 id="theader">{{device?.Name}} {{actYear}}</h1>
+        <td align="right">
+          <span>{{'Year'| translate}}</span>:
+          <select id="comboyear" name="comboyear" style="width:74px" class="combobox ui-corner-all" [(ngModel)]="actYear" (ngModelChange)="updateTableAndGraph()">
+            <option *ngFor="let year of years" [ngValue]="year">{{year}}</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <br>
+    <span>{{'Total Rainfall'| translate}}</span>:&nbsp;<span id="tu">{{tu}}</span>&nbsp;<span id="munit">mm</span><br>
+    <span>{{'Rainiest Month'| translate}}</span>:&nbsp;<span id="mhigh">{{mhigh}}</span><br>
+    <span>{{'Lowest Rainfall'| translate}}</span>:&nbsp;<span id="mlow">{{mlow}}</span><br>
+    <span>{{'Rainiest Day'| translate}}</span>:&nbsp;<span id="vhigh">{{vhigh}}</span><br>
+    <br>
+
+    <table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%" #reporttable>
+      <thead>
+        <tr valign="middle">
+          <th width="30" align="right" id="ftext">{{'Month'| translate}}</th>
+          <th width="60" align="right">{{'Rainfall'| translate}}</th>
+          <th width="40" align="right">&lt;&gt;</th>
+        </tr>
+      </thead>
+    </table>
+    <br>
+    <div id="usagegraph" style="height: 240px;" #usagegraph></div>
+
+
+  </div>
+
+</div>

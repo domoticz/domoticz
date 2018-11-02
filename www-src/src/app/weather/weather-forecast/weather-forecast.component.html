@@ -1,0 +1,20 @@
+<div class="container">
+
+  <dz-back-to-top></dz-back-to-top>
+
+  <div id="weathercontent">
+
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td>
+          <a class="btnstylerev" [routerLink]="['/Weather']">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br>
+
+    <iframe class="cIFrame" id="IMain" [src]="forecast_url"></iframe>
+  </div>
+
+
+</div>

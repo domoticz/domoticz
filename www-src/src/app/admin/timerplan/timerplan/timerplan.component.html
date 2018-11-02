@@ -1,0 +1,31 @@
+<div id="timerplancontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td align="left"></td>
+      <td align="right"><a class="btnstyle" (click)="AddNewTimerPlan()">{{'Add Plan'| translate}}</a></td>
+    </tr>
+  </table>
+  <br>
+  <table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0" width="100%" #timerplantable>
+    <thead>
+    <tr valign="middle">
+      <th width="40" align="center">{{'Idx'| translate}}</th>
+      <th align="left">{{'Name'| translate}}</th>
+    </tr>
+    </thead>
+  </table>
+  <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <a id="timerplanedit" (click)="selectedTimer ? EditTimerPlan() : undefined"
+           [ngClass]="{'btnstyle3-dis': !timerplaneditenabled, 'btnstyle3': timerplaneditenabled}">{{'Edit'| translate}}</a>&nbsp;&nbsp;&nbsp;
+        <a id="timerplancopy" (click)="selectedTimer ? CopyTimerPlan() : undefined"
+           [ngClass]="{'btnstyle3-dis': !timerplancopyenabled, 'btnstyle3': timerplancopyenabled}">{{'Duplicate'| translate}}</a>&nbsp;&nbsp;&nbsp;
+        <a id="timerplandelete" (click)="selectedTimer && selectedTimer.DT_RowId != '0' ? DeleteTimerPlan() : undefined"
+           [ngClass]="{'btnstyle3-dis': !timerplandeleteenabled, 'btnstyle3': timerplandeleteenabled}">{{'Delete'| translate}}</a>
+      </td>
+    </tr>
+  </table>
+
+</div>

@@ -1,0 +1,52 @@
+{
+  "/json": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "ws": true
+  },
+  "/json.htm": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/storesettings": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/*.webem": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/acttheme/": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/images/floorplans/": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/ozwcp/poll.xml": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/ozwcp/statpost.html": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/ozwcp/topopost.html": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/templates/*": {
+    "target": "http://192.168.1.19:8080",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

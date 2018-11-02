@@ -1,0 +1,1544 @@
+<div id="maindiv" class="container">
+  <div id="settingscontent">
+    <form id="settings" *ngIf="settings">
+      <div id="content">
+        <ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
+          <li class="active"><a data-target="#tabsystem" data-toggle="tab">{{'System'| translate}}</a></li>
+          <li><a data-target="#tablog" data-toggle="tab">{{'Log History'| translate}}</a></li>
+          <li><a data-target="#tabnotifications" data-toggle="tab">{{'Notifications'| translate}}</a></li>
+          <li><a data-target="#tabemail" data-toggle="tab">{{'Email'| translate}}</a></li>
+          <li><a data-target="#tabmeters" data-toggle="tab">{{'Meters/Counters'| translate}}</a></li>
+          <li><a data-target="#tabfloorplan" data-toggle="tab">{{'Floorplan'| translate}}</a></li>
+          <li><a data-target="#tabother" data-toggle="tab">{{'Other'| translate}}</a></li>
+          <li><a data-target="#tabbackuprestore" data-toggle="tab">{{'Backup/Restore'| translate}}</a></li>
+          <li class="pull-right"><a class="btn btn-danger sub-tabs-apply"
+                                    (click)="StoreSettings()">{{'Apply Settings'| translate}}</a></li>
+        </ul>
+        <div id="my-tab-content" class="tab-content">
+
+          <div class="tab-pane active" id="tabsystem">
+            <!-- System
+                ================================================== -->
+            <section id="system">
+              <div class="page-header-small">
+                <h1>{{'SystemSetup'| translate}}</h1>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'User Interface'| translate}}</span>:</h2>
+                  <table class="display" id="languagetable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:120px"><label for="combolanguage">Language: </label></td>
+                      <td>
+                        <select id="combolanguage" name="Language" [(ngModel)]="settings.Language" style="width:200px"
+                                class="combobox ui-corner-all">
+                          <option *ngFor="let l of languages;" [value]="l.code">{{l.label}}</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right">
+                        <label for="combothemes"><span>{{'Theme'| translate}}</span>:</label>
+                      </td>
+                      <td>
+                        <select id="combothemes" name="Themes" [(ngModel)]="settings.WebTheme" style="width:200px"
+                                class="combobox ui-corner-all">
+                          <option *ngFor="let t of themes" [value]="t.theme">{{t.theme}}</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right">
+                        <label><span>{{'Dashboard'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <select id="combosdashtype" name="DashboardType" [(ngModel)]="settings.DashboardType"
+                                style="width:120px"
+                                class="combobox ui-corner-all">
+                          <option value="0">{{'Normal'| translate}}</option>
+                          <option value="1">{{'Compact'| translate}}</option>
+                          <option value="2">{{'Mobile'| translate}}</option>
+                          <option value="3">{{'Floorplan'| translate}}</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"
+                                 [(ngModel)]="AllowWidgetOrdering"/> <label
+                        for="AllowWidgetOrdering">{{'AllowWidgetOrdering'| translate}}</label></td>
+                    </tr>
+                    <tr>
+                      <td align="right">
+                        <label><span>{{'Mobile'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <select id="combosmobiletype" name="MobileType" [(ngModel)]="settings.MobileType"
+                                style="width:120px"
+                                class="combobox ui-corner-all">
+                          <option value="0">{{'Mobile'| translate}}</option>
+                          <option value="1">{{'Dashboard'| translate}}</option>
+                        </select>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+                <div class="span6">
+                  <h2><span>{{'Location'| translate}}</span>:</h2>
+                  <label id="sunriseset"><br>{{'SunRise'| translate}}: {{sunRise}}, {{'SunSet'| translate}}:
+                    {{sunSet}}<br><br></label>
+                  <table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label for="Title"><span>{{'Name'| translate}}</span>:
+                      </label>
+                      </td>
+                      <td><input type="input" id="Title" name="Title" [(ngModel)]="settings.Title"
+                                 style="width: 200px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label for="Latitude"><span>{{'Latitude'| translate}}</span>:
+                      </label></td>
+                      <td><input type="text" id="Latitude" name="Latitude" [(ngModel)]="settings.Location.Latitude"
+                                 style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="Longitude"><span>{{'Longitude'| translate}}</span>: </label></td>
+                      <td>
+                        <input type="text" id="Longitude" name="Longitude" [(ngModel)]="settings.Location.Longitude"
+                               style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+                        <span>{{'ToFindGeo'| translate}}</span> <a class="norm-link" (click)="GetGeoLocation()"><span
+                        class="norm-link">{{'Here'| translate}}</span></a>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'WebsiteProtection'| translate}}</span>:</h2>
+                  <table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:120px"><label><span>{{'Username'| translate}}</span>: </label></td>
+                      <td><input type="input" id="WebUserName" name="WebUserName" [(ngModel)]="settings.WebUserName"
+                                 style="width: 200px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label><span>{{'Password'| translate}}</span>: </label></td>
+                      <td><input type="password" id="WebPassword" name="WebPassword" [(ngModel)]="WebPassword"
+                                 style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label><span>{{'Authentication'| translate}}</span>: </label></td>
+                      <td><select id="comboauthmethod" name="AuthenticationMethod"
+                                  [(ngModel)]="settings.AuthenticationMethod" style="width:200px"
+                                  class="combobox ui-corner-all">
+                        <option value="0">{{'Login Page'| translate}}</option>
+                        <option value="1">{{'Basic-Auth'| translate}}</option>
+                      </select></td>
+                    </tr>
+                    <tr style="display:none;">
+                      <td align="right" style="width:60px"><label><span>{{'Guest User'| translate}}</span>: </label>
+                      </td>
+                      <td><select id="comboguestuser" name="GuestUser" style="width:140px"
+                                  class="combobox ui-corner-all">
+                        <option value="0">{{'None'| translate}}</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                  <br>
+                </div>
+                <div class="span6">
+                  <h2><span>{{'SecurityPanel'| translate}}</span>:</h2>
+                  <table class="display" id="sectable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Password'| translate}}</span>: </label></td>
+                      <td><input type="password" id="SecPassword" name="SecPassword" [(ngModel)]="settings.SecPassword"
+                                 style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Delay'| translate}}</span>: </label></td>
+                      <td>
+                        <input type="input" id="SecOnDelay" name="SecOnDelay" [(ngModel)]="settings.SecOnDelay"
+                               style="width: 70px; padding: .2em;"
+                               class="text ui-widget-content ui-corner-all"/><br>
+                        <span>{{'(seconds, 0=no delay)'|translate}}</span>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+                <br>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Light/Switch Protection'| translate}}</span>:</h2>
+                  <table class="display" id="protectiontable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Password'| translate}}</span>: </label></td>
+                      <td><input type="password" id="ProtectionPassword" name="ProtectionPassword"
+                                 [(ngModel)]="settings.ProtectionPassword"
+                                 style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'LocalNetworks(no_username/password)'| translate}}</span>:</h2>
+                  <table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Networks'| translate}}</span>: </label></td>
+                      <td>
+                        <input type="input" id="WebLocalNetworks" name="WebLocalNetworks"
+                               [(ngModel)]="settings.WebLocalNetworks"
+                               style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+                        <span>{{'(Separate by a semicolon, For Example'| translate}}</span>: 127.0.0.*;192.168.0.*)
+                      </td>
+                    </tr>
+                  </table>
+                  <br>
+                </div>
+                <div class="span6">
+                  <h2><span>{{'RemoteSharedPortForDomoticzClients'| translate}}</span>:</h2>
+                  <table class="display" id="remotesharedtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Port'| translate}}</span>: </label></td>
+                      <td><input type="input" id="RemoteSharedPort" name="RemoteSharedPort"
+                                 [(ngModel)]="settings.RemoteSharedPort"
+                                 style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                  </table>
+                  <br>
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <div id="SoftwareUpdates" *ngIf="config.UseUpdate">
+                    <h2><span>{{'SoftwareUpdates'| translate}}</span>:</h2>
+                    <table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td colspan="2"><input type="checkbox" id="checkforupdates" name="checkforupdates"
+                                               [(ngModel)]="UseAutoUpdate"/> <label
+                          for="checkforupdates">{{'CheckForSoftwareUpdates'| translate}}</label></td>
+                      </tr>
+                      <tr>
+                        <td align="right" style="width:130px"><label><span>{{'Release Channel'| translate}}</span>:
+                        </label></td>
+                        <td><select id="comboReleaseChannel" name="ReleaseChannel" [(ngModel)]="settings.ReleaseChannel"
+                                    style="width:140px"
+                                    class="combobox ui-corner-all">
+                          <option value="0">{{'Stable'| translate}}</option>
+                          <option value="1">{{'Beta'| translate}}</option>
+                        </select></td>
+                      </tr>
+                    </table>
+                  </div>
+                  <br>
+                </div>
+                <div class="span6">
+                  <div id="AutoBackup">
+                    <h2><span>{{'AutoBackup'| translate}}</span>:</h2>
+                    <table class="display" id="autobackuptable" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td colspan="2"><input type="checkbox" id="enableautobackup" name="enableautobackup"
+                                               [(ngModel)]="UseAutoBackup"/> <label
+                          for="enableautobackup">{{'EnableAutoBackup'| translate}}</label></td>
+                      </tr>
+                    </table>
+                  </div>
+                  <br>
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'RemoteProxyIPs'| translate}}</span>:</h2>
+                  <table class="display" id="webproxytable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'IP Address'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <input type="input" id="WebRemoteProxyIPs" name="WebRemoteProxyIPs"
+                               [(ngModel)]="settings.WebRemoteProxyIPs"
+                               style="width: 300px; padding: .2em"
+                               class="text ui-widget-content ui-corner-all"/><br>
+                        <span>{{'(Separate by a semicolon, For Example'| translate}}</span>: 127.0.0.1;192.168.0.12)
+                      </td>
+                    </tr>
+                  </table>
+                  <br>
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <div id="NewHardware">
+                    <h2><span>{{'AcceptNewHardware'| translate}}</span>:</h2>
+                    <table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td colspan="2">
+                          <input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"
+                                 [(ngModel)]="AcceptNewHardware"/> <label
+                          for="AcceptNewHardware">{{'AcceptNewHardwareDevices'| translate}}</label>
+                          <button
+                            class="btn btn-danger"
+                            (click)="AllowNewHardware(5)">{{'Allow for 5 Minutes'| translate}}</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors"
+                                               name="HideDisabledHardwareSensors"
+                                               [(ngModel)]="HideDisabledHardwareSensors"/> <label
+                          for="HideDisabledHardwareSensors">{{'HideDisabledHardwareSensors'| translate}}</label></td>
+                      </tr>
+                      <tr>
+                        <td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"
+                                               [(ngModel)]="ShowUpdateEffect"/> <label
+                          for="ShowUpdateEffect">{{'Flash sensor when an update is received'| translate}}</label></td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+                <div class="span6">
+                  <div id="MyDomoticzTab" *ngIf="settings.cloudenabled">
+                    <h2><span>{{'MyDomoticzSettings'| translate}}</span>:</h2>
+                    <table class="display" id="mydomoticztable" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="right" style="width:180px"><label><span>{{'MyInstanceId'| translate}}</span>:</label>
+                        </td>
+                        <td><span id="mydomoticzinstanceidid">{{settings.MyDomoticzInstanceId}}</span></td>
+                      </tr>
+                      <tr>
+                        <td align="right" style="width:180px">MyDomoticz
+                          <label><span>{{'API Key'| translate}}</span>:</label></td>
+                        <td><span id="mydomoticzuseridid"><input type="text" name="MyDomoticzUserId"
+                                                                 [(ngModel)]="settings.MyDomoticzUserId"
+                                                                 id="MyDomoticzUserId"
+                                                                 style="width: 200px; padding: .2em;" value=""
+                                                                 class="text ui-widget-content ui-corner-all"/></span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" style="width:180px">MyDomoticz
+                          <label><span>{{'Password'| translate}}</span>:</label></td>
+                        <td><span id="mydomoticzpasswordid"><input type="password" name="MyDomoticzPassword"
+                                                                   [(ngModel)]="settings.MyDomoticzPassword"
+                                                                   id="MyDomoticzPassword"
+                                                                   style="width: 200px; padding: .2em;" value=""
+                                                                   class="text ui-widget-content ui-corner-all"/></span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="2">
+                          <input type="checkbox" name="SubsystemHttp" id="SubsystemHttp" [(ngModel)]="SubsystemHttp"
+                                 value="1"/> <label
+                          for="SubsystemHttp">{{'Enabled'| translate}}</label><br/>
+                          <input type="checkbox" name="SubsystemShared" id="SubsystemShared"
+                                 [(ngModel)]="SubsystemShared" value="2"/> <label
+                          for="SubsystemShared">{{'SharedDomoticzAllowed'| translate}}</label><br/>
+                          <input type="checkbox" name="SubsystemApps" id="SubsystemApps" [(ngModel)]="SubsystemApps"
+                                 value="4"/> <label
+                          for="SubsystemApps">{{'AppsAllowed'| translate}}</label>
+                        </td>
+                      </tr>
+                    </table>
+                    <br/>
+                    <span>{{'To register for a MyDomoticz account, click'| translate}}</span> <a
+                    href="https://my.domoticz.com/login" class="norm-link" target="_blank"><span
+                    class="norm-link">{{'Here'| translate}}</span></a>
+                  </div>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12" id="ActiveTabs">
+                  <h2><span>{{'ActiveMenus'| translate}}</span>:</h2>
+                  <table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td><input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"
+                                 [(ngModel)]="EnableTabFloorplans"/> <label
+                        for="EnableTabFloorplans">{{'Floorplan'| translate}}</label></td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"
+                                 [(ngModel)]="EnableTabLights"/> <label
+                        for="EnableTabLights">{{'Switches'| translate}}</label></td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"
+                                 [(ngModel)]="EnableTabScenes"/> <label
+                        for="EnableTabScenes">{{'Scenes'| translate}}</label></td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp" [(ngModel)]="EnableTabTemp"/>
+                        <label
+                          for="EnableTabTemp">{{'Temperature'| translate}}</label></td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"
+                                 [(ngModel)]="EnableTabWeather"/> <label
+                        for="EnableTabWeather">{{'Weather'| translate}}</label></td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"
+                                 [(ngModel)]="EnableTabUtility"/> <label
+                        for="EnableTabUtility">{{'Utility'| translate}}</label></td>
+                    </tr>
+                    <tr>
+                      <td><input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"
+                                 [(ngModel)]="EnableTabCustom"/> <label
+                        for="EnableTabCustom">{{'Custom'| translate}}</label></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-pane" id="tablog">
+            <!-- Log History
+              ================================================== -->
+            <section id="loghistory">
+              <div class="page-header-small">
+                <h1>{{'Log History'| translate}}</h1>
+              </div>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Light/Switches'| translate}}</span>:</h2>
+                  <table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Days'| translate}}</span>: </label></td>
+                      <td><input type="text" id="LightHistoryDays" name="LightHistoryDays"
+                                 [(ngModel)]="settings.LightHistoryDays"
+                                 style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Short Log Sensors'| translate}}</span>:</h2>
+                  <table class="display" id="shortlogtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Days'| translate}}</span>: </label></td>
+                      <td>
+                        <select id="comboshortlogdays" name="ShortLogDays" [(ngModel)]="settings.ShortLogDays"
+                                style="width:60px"
+                                class="combobox ui-corner-all">
+                          <option [ngValue]="1">1</option>
+                          <option [ngValue]="2">2</option>
+                          <option [ngValue]="3">3</option>
+                          <option [ngValue]="4">4</option>
+                          <option [ngValue]="5">5</option>
+                          <option [ngValue]="6">6</option>
+                          <option [ngValue]="7">7</option>
+                        </select>&nbsp;
+                        &nbsp;<button class="btn btn-danger"
+                                      (click)="CleanupShortLog()">{{'Clear'| translate}}</button>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-pane" id="tabnotifications">
+            <!-- Notification system
+						================================================== -->
+            <section id="notifications">
+              <div class="page-header-small">
+                <h1>{{'Notifications'| translate}}</h1>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'Prowl (iPhone/iPad)'| translate}}</span>:</h2>
+                  <table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="ProwlEnabled" name="ProwlEnabled"
+                                 [(ngModel)]="ProwlEnabled"/><label for="ProwlEnabled"></label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="ProwlAPI"><span>{{'API Key'| translate}}</span>: </label></td>
+                      <td><input type="input" id="ProwlAPI" name="ProwlAPI" [(ngModel)]="settings.ProwlAPI"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                        &nbsp;<button class="btn btn-info"
+                                      (click)="TestNotification('prowl')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                  </table>
+                  <span>{{'To get a free account/API key click'| translate}}</span> <a href="https://www.prowlapp.com/"
+                                                                                       class="norm-link"
+                                                                                       target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br>
+                </div>
+                <div class="span6">
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2>Pushbullet (iOS/Android/Windows):</h2>
+                  <table class="display" id="pushbullettable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="PushbulletEnabled" name="PushbulletEnabled"
+                                 [(ngModel)]="PushbulletEnabled"/><label for="PushbulletEnabled"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="PushbulletAPI"><span>{{'API Key'| translate}}</span>: </label></td>
+                      <td><input type="input" id="PushbulletAPI" name="PushbulletAPI"
+                                 [(ngModel)]="settings.PushbulletAPI" style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/>&nbsp;
+                        <button class="btn btn-info"
+                                (click)="TestNotification('pushbullet')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                  </table>
+                  <span>{{'To get a free account/API key click'| translate}}</span> <a
+                  href="https://www.pushbullet.com/"
+                  class="norm-link" target="_blank"><span class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br>
+                </div>
+                <div class="span6">
+                  <h2>Pushsafer (iOS/Android/Windows) + <span>{{'ImageURL'| translate}}</span>:</h2>
+                  <table class="display" id="pushsafertable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="PushsaferEnabled" name="PushsaferEnabled"
+                                 [(ngModel)]="PushsaferEnabled"/><label for="PushsaferEnabled"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="PushsaferAPI"><span>{{'API Key'| translate}}</span>: </label></td>
+                      <td><input type="input" id="PushsaferAPI" name="PushsaferAPI" [(ngModel)]="settings.PushsaferAPI"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;
+                        <button class="btn btn-info"
+                                (click)="TestNotification('pushsafer')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="PushsaferImage"><span>{{'ImageURL'| translate}}</span>: </label>
+                      </td>
+                      <td><input type="input" id="PushsaferImage" name="PushsaferImage"
+                                 [(ngModel)]="settings.PushsaferImage" style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                  </table>
+                  <span>{{'To get a free account/API key click'| translate}}</span> <a href="https://www.pushsafer.com/"
+                                                                                       class="norm-link"
+                                                                                       target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br>
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'Pushover (Android/iOs)'| translate}}</span>:</h2>
+                  <table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="PushoverEnabled" name="PushoverEnabled"
+                                 [(ngModel)]="PushoverEnabled"/><label
+                        for="PushoverEnabled"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="PushoverUser"><span>{{'USER KEY'| translate}}</span>: </label></td>
+                      <td><input type="input" id="PushoverUser" name="PushoverUser" [(ngModel)]="settings.PushoverUser"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="PushoverAPI"><span>{{'API Key'| translate}}</span>: </label></td>
+                      <td><input type="input" id="PushoverAPI" name="PushoverAPI" [(ngModel)]="settings.PushoverAPI"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                        &nbsp;<button class="btn btn-info"
+                                      (click)="TestNotification('pushover')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                  </table>
+                  <span>{{'To get a free account/API key click'| translate}}</span> <a class="norm-link"
+                                                                                       href="https://pushover.net"
+                                                                                       target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br>
+                </div>
+                <div class="span6">
+                  <h2><span>{{'Pushalot (Windows/Windows Phone)'| translate}}</span>:</h2>
+                  <table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="PushALotEnabled" name="PushALotEnabled"
+                                 [(ngModel)]="PushALotEnabled"/><label for="PushALotEnabled"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="PushALotAPI"><span>{{'API Key'| translate}}</span>: </label></td>
+                      <td><input type="input" id="PushALotAPI" name="PushALotAPI" [(ngModel)]="settings.PushALotAPI"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;
+                        <button class="btn btn-info"
+                                (click)="TestNotification('pushalot')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                  </table>
+                  <span>{{'To get a free account/API key click'| translate}}</span> <a class="norm-link"
+                                                                                       href="https://pushalot.com/"
+                                                                                       target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br>
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'Clickatell SMS'| translate}}</span>:</h2>
+                  <table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"
+                                 [(ngModel)]="ClickatellEnabled"/><label
+                        for="ClickatellEnabled"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="ClickatellAPI"><span>{{'API Key'| translate}}API Key</span>:
+                      </label>
+                      </td>
+                      <td><input type="input" id="ClickatellAPI" name="ClickatellAPI" [(ngModel)]="ClickatellAPI"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="ClickatellTo"><span>{{'To'| translate}}</span>: </label></td>
+                      <td><input type="input" id="ClickatellTo" name="ClickatellTo" [(ngModel)]="ClickatellTo"
+                                 style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/>&nbsp;
+                        <button class="btn btn-info"
+                                (click)="TestNotification('clickatell')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td><span>{{'(Separate by a semicolon, For Example'| translate}}</span>: +3123456789;+44567890)
+                      </td>
+                    </tr>
+                  </table>
+                  <span>{{'To get a free account/API key click'| translate}}</span> <a class="norm-link"
+                                                                                       href="http://www.clickatell.com/"
+                                                                                       target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br/>
+                  <br/>
+                  <h2><span>IFTTT</span>:</h2>
+                  <table class="display" id="ifttttable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="IFTTTEnabled" name="IFTTTEnabled"
+                                 [(ngModel)]="IFTTTEnabled"/><label
+                        for="IFTTTEnabled"></label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label><span>{{'API Key'| translate}}API Key</span>: </label></td>
+                      <td><input type="input" id="IFTTTAPI" name="IFTTTAPI" [(ngModel)]="settings.IFTTTAPI"
+                                 style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                  </table>
+                  <span>{{'Create a Maker/Webhook'| translate}}</span> <a class="norm-link"
+                                                                          href="https://ifttt.com/maker_webhooks"
+                                                                          target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br>
+                </div>
+                <div class="span6">
+                  <h2><span>{{'Custom HTTP'| translate}}</span>/<span>{{'Action'| translate}}</span>:</h2>
+                  <table class="display" id="httptable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="HTTPEnabled" name="HTTPEnabled" [(ngModel)]="HTTPEnabled"/><label
+                        for="HTTPEnabled"></label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPField1">#FIELD1: </label></td>
+                      <td><input type="input" id="HTTPField1" name="HTTPField1" [(ngModel)]="HTTPField1"
+                                 style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPField2">#FIELD2: </label></td>
+                      <td><input type="input" id="HTTPField2" name="HTTPField2" [(ngModel)]="HTTPField2"
+                                 style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPField3">#FIELD3: </label></td>
+                      <td><input type="input" id="HTTPField3" name="HTTPField3" [(ngModel)]="HTTPField3"
+                                 style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPField4">#FIELD4: </label></td>
+                      <td><input type="input" id="HTTPField4" name="HTTPField4" [(ngModel)]="HTTPField4"
+                                 style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPTo">#TO: </label></td>
+                      <td><input type="input" id="HTTPTo" name="HTTPTo" [(ngModel)]="HTTPTo"
+                                 style="width: 356px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label
+                        for="HTTPURL"><span>{{'URL'| translate}}</span>/<span>{{'Action'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <textarea id="HTTPURL" name="HTTPURL" [(ngModel)]="HTTPURL" rows="4"
+                                  style="width: 356px; padding: .2em;"
+                                  class="text ui-widget-content ui-corner-all"></textarea><br>
+                        <span>{{'(Should start with http:// or script://)'| translate}}</span><br>
+                        <span>{{'(Optional)'| translate}}</span> #SUBJECT, #MESSAGE, #PRIORITY
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPPostData">POST Data: </label></td>
+                      <td>
+                        <textarea id="HTTPPostData" name="HTTPPostData" [(ngModel)]="HTTPPostData" rows="4"
+                                  style="width: 356px; padding: .2em;"
+                                  class="text ui-widget-content ui-corner-all"></textarea><br>
+                        <span>{{'(Optional)'| translate}}</span> #SUBJECT, #MESSAGE, #PRIORITY
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPPostContentType">POST Content-Type: </label></td>
+                      <td>
+                        <input type="input" id="HTTPPostContentType" name="HTTPPostContentType"
+                               [(ngModel)]="HTTPPostContentType"
+                               style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                        &nbsp;<button class="btn btn-info"
+                                      (click)="TestNotification('http')">{{'Test'| translate}}</button>
+                        <br>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="HTTPPostHeaders">POST Headers: </label></td>
+                      <td>
+                        <textarea id="HTTPPostHeaders" name="HTTPPostHeaders" [(ngModel)]="HTTPPostHeaders" rows="4"
+                                  style="width: 356px; padding: .2em;"
+                                  class="text ui-widget-content ui-corner-all"></textarea><br>
+                      </td>
+                    </tr>
+                  </table>
+                  <br>
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'Kodi Media Player'| translate}}</span>:</h2>
+                  <table class="display" id="koditable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="KodiEnabled" name="KodiEnabled" [(ngModel)]="KodiEnabled"/><label
+                        for="KodiEnabled"></label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="KodiIPAddress"><span>{{'IP Address'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <input type="input" id="KodiIPAddress" name="KodiIPAddress" [(ngModel)]="settings.KodiIPAddress"
+                               style="width: 356px; padding: .2em;"
+                               class="text ui-widget-content ui-corner-all"/>
+                        <button class="btn btn-info" (click)="TestNotification('kodi')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:80px">
+                        <label for="KodiPort"><span>{{'Port'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <input type="input" id="KodiPort" name="KodiPort" [(ngModel)]="settings.KodiPort"
+                               style="width: 50px; padding: .2em;"
+                               class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:80px">
+                        <label for="KodiTimeToLive"><span>{{'Hops'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <input type="input" id="KodiTimeToLive" name="KodiTimeToLive"
+                               [(ngModel)]="settings.KodiTimeToLive"
+                               style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                  </table>
+                  <span>{{'Test with default settings before changing. Learn about Kodi'| translate}}</span> <a
+                  class="norm-link" href="http://kodi.tv/" target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <span>(e.g 224.0.0.1, 192.168.1.100;192.168.1.101;...)</span><br>
+                  <br>
+                </div>
+                <div class="span6">
+                  <h2><span>{{'Logitech Media Server'| translate}}</span>:</h2>
+                  <table class="display" id="lmstable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="LmsEnabled" name="LmsEnabled" [(ngModel)]="LmsEnabled"/><label
+                        for="LmsEnabled"></label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right">
+                        <label for="LmsPlayerMac"><span>{{'Player'| translate}}</span>
+                          <span>{{'Mac Address'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <input type="input" id="LmsPlayerMac" name="LmsPlayerMac" [(ngModel)]="settings.LmsPlayerMac"
+                               style="width: 356px; padding: .2em;"
+                               class="text ui-widget-content ui-corner-all"/>
+                        <button class="btn btn-info" (click)="TestNotification('lms')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:80px">
+                        <label for="LmsDuration"><span>{{'Duration'| translate}}</span>: </label>
+                      </td>
+                      <td>
+                        <input type="input" id="LmsDuration" name="LmsDuration" [(ngModel)]="settings.LmsDuration"
+                               style="width: 50px; padding: .2em;"
+                               class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                  </table>
+                  <span
+                    style="color:red">{{'This notifier only works when the Logitech Media Server hardware has been added/enabled'| translate}}</span><br>
+                  <br>
+                </div>
+              </div>
+              <div class="row-fluid">
+                <div class="span6">
+                  <h2><span>{{'Google Cloud Messaging'| translate}}</span>:</h2>
+                  <table class="display" id="gcmtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td>
+                        <input type="checkbox" id="FCMEnabled" name="FCMEnabled" [(ngModel)]="FCMEnabled"/><label for="FCMEnabled"></label>
+                      </td>
+                      <td>
+                        <button class="btn btn-info" (click)="TestNotification('fcm')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                  </table>
+                  <br>
+                </div>
+                <div class="span6">
+                  <h2><span>Telegram</span>:</h2>
+                  <table class="display" id="telegramtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="TelegramEnabled" name="TelegramEnabled"
+                                 [(ngModel)]="TelegramEnabled"/><label for="TelegramEnabled"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="TelegramAPI"><span>{{'API Key'| translate}}</span>: </label></td>
+                      <td><input type="input" id="TelegramAPI" name="TelegramAPI" [(ngModel)]="settings.TelegramAPI"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                        &nbsp;<button class="btn btn-info"
+                                      (click)="TestNotification('telegram')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label for="TelegramChat"><span>{{'Chat ID'| translate}}</span>: </label></td>
+                      <td><input type="input" id="TelegramChat" name="TelegramChat" [(ngModel)]="settings.TelegramChat"
+                                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                  </table>
+                  <span>{{'To get a free account/API key click'| translate}}</span> <a href="https://telegram.org/"
+                                                                                       class="norm-link"
+                                                                                       target="_blank"><span
+                  class="norm-link">{{'Here'| translate}}</span></a><br>
+                  <br>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Notification Intervals'| translate}}</span>:</h2>
+                  <table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Sensors'| translate}}</span>: </label></td>
+                      <td><select id="comboNotificationSensorInterval" name="NotificationSensorInterval"
+                                  [(ngModel)]="settings.NotificationSensorInterval"
+                                  style="width:100px" class="combobox ui-corner-all">
+                        <option [ngValue]="60">{{'1 Minute'| translate}}</option>
+                        <option [ngValue]="300">{{'5 Minutes'| translate}}</option>
+                        <option [ngValue]="600">{{'10 Minutes'| translate}}</option>
+                        <option [ngValue]="900">{{'15 Minutes'| translate}}</option>
+                        <option [ngValue]="1800">{{'30 Minutes'| translate}}</option>
+                        <option [ngValue]="3600">{{'1 Hour'| translate}}</option>
+                        <option [ngValue]="7200">{{'2 Hours'| translate}}</option>
+                        <option [ngValue]="10800">{{'3 Hours'| translate}}</option>
+                        <option [ngValue]="14400">{{'4 Hours'| translate}}</option>
+                        <option [ngValue]="18000">{{'5 Hours'| translate}}</option>
+                        <option [ngValue]="21600">{{'6 Hours'| translate}}</option>
+                        <option [ngValue]="25200">{{'7 Hours'| translate}}</option>
+                        <option [ngValue]="28800">{{'8 Hours'| translate}}</option>
+                        <option [ngValue]="32400">{{'9 Hours'| translate}}</option>
+                        <option [ngValue]="36000">{{'10 Hours'| translate}}</option>
+                        <option [ngValue]="39600">{{'11 Hours'| translate}}</option>
+                        <option [ngValue]="43200">{{'12 Hours'| translate}}</option>
+                        <option [ngValue]="46800">{{'13 Hours'| translate}}</option>
+                        <option [ngValue]="50400">{{'14 Hours'| translate}}</option>
+                        <option [ngValue]="54000">{{'15 Hours'| translate}}</option>
+                        <option [ngValue]="57600">{{'16 Hours'| translate}}</option>
+                        <option [ngValue]="61200">{{'17 Hours'| translate}}</option>
+                        <option [ngValue]="64800">{{'18 Hours'| translate}}</option>
+                        <option [ngValue]="68400">{{'19 Hours'| translate}}</option>
+                        <option [ngValue]="72000">{{'20 Hours'| translate}}</option>
+                        <option [ngValue]="75600">{{'21 Hours'| translate}}</option>
+                        <option [ngValue]="79200">{{'22 Hours'| translate}}</option>
+                        <option [ngValue]="82800">{{'23 Hours'| translate}}</option>
+                        <option [ngValue]="86400">{{'24 Hours'| translate}}</option>
+                      </select></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Switches'| translate}}</span>: </label></td>
+                      <td><select id="comboNotificationSwitchesInterval" name="NotificationSwitchInterval"
+                                  [(ngModel)]="settings.NotificationSwitchInterval"
+                                  style="width:120px" class="combobox ui-corner-all">
+                        <option [ngValue]="0">{{'Direct'| translate}}</option>
+                        <option [ngValue]="60">{{'1 Minute'| translate}}</option>
+                        <option [ngValue]="300">{{'5 Minutes'| translate}}</option>
+                        <option [ngValue]="600">{{'10 Minutes'| translate}}</option>
+                        <option [ngValue]="900">{{'15 Minutes'| translate}}</option>
+                        <option [ngValue]="1800">{{'30 Minutes'| translate}}</option>
+                        <option [ngValue]="3600">{{'1 Hour'| translate}}</option>
+                        <option [ngValue]="7200">{{'2 Hour'| translate}}</option>
+                        <option [ngValue]="10800">{{'3 Hour'| translate}}</option>
+                        <option [ngValue]="14400">{{'4 Hour'| translate}}</option>
+                        <option [ngValue]="18000">{{'5 Hour'| translate}}</option>
+                        <option [ngValue]="21600">{{'6 Hour'| translate}}</option>
+                        <option [ngValue]="25200">{{'7 Hour'| translate}}</option>
+                        <option [ngValue]="28800">{{'8 Hour'| translate}}</option>
+                        <option [ngValue]="32400">{{'9 Hour'| translate}}</option>
+                        <option [ngValue]="36000">{{'10 Hour'| translate}}</option>
+                        <option [ngValue]="39600">{{'11 Hour'| translate}}</option>
+                        <option [ngValue]="43200">{{'12 Hours'| translate}}</option>
+                        <option [ngValue]="46800">{{'13 Hours'| translate}}</option>
+                        <option [ngValue]="50400">{{'14 Hours'| translate}}</option>
+                        <option [ngValue]="54000">{{'15 Hours'| translate}}</option>
+                        <option [ngValue]="57600">{{'16 Hours'| translate}}</option>
+                        <option [ngValue]="61200">{{'17 Hours'| translate}}</option>
+                        <option [ngValue]="64800">{{'18 Hours'| translate}}</option>
+                        <option [ngValue]="68400">{{'19 Hours'| translate}}</option>
+                        <option [ngValue]="72000">{{'20 Hours'| translate}}</option>
+                        <option [ngValue]="75600">{{'21 Hours'| translate}}</option>
+                        <option [ngValue]="79200">{{'22 Hours'| translate}}</option>
+                        <option [ngValue]="82800">{{'23 Hours'| translate}}</option>
+                        <option [ngValue]="86400">{{'24 Hours'| translate}}</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-pane" id="tabemail">
+            <!-- Email Setup
+              ================================================== -->
+            <section id="emailsetup">
+	      <div class="page-header-small">
+	  	<h1>{{'Email Setup'|translate}}</h1>
+	      </div>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Email Setup'| translate}}</span>:</h2>
+                  <table class="display" id="emailtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:80px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="EmailEnabled" name="EmailEnabled"
+                                 [(ngModel)]="EmailEnabled"/><label
+                        for="EmailEnabled"></label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'From'| translate}}</span>: </label></td>
+                      <td><input type="email" id="EmailFrom" name="EmailFrom" [(ngModel)]="settings.EmailFrom"
+                                 style="width: 180px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'To'| translate}}</span>: </label></td>
+                      <td><input type="input" id="EmailTo" name="EmailTo" [(ngModel)]="settings.EmailTo"
+                                 style="width: 300px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td><span>{{'(Separate by a semicolon, For Example'| translate}}</span>:
+                        user@mail.com;user2@mail.com)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Server'| translate}}</span>: </label></td>
+                      <td><input type="input" id="EmailServer" name="EmailServer" [(ngModel)]="settings.EmailServer"
+                                 style="width: 200px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px; vertical-align:top"><label><span>{{'Port'| translate}}</span>:
+                      </label></td>
+                      <td><input type="input" id="EmailPort" name="EmailPort" [(ngModel)]="settings.EmailPort"
+                                 style="width: 40px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/><br>
+                        <span>{{'(default 25, StartTLS Port 587, SSL Port 465)'| translate}}</span></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Username'| translate}}</span>: </label></td>
+                      <td><input type="input" id="EmailUsername" name="EmailUsername" [(ngModel)]="EmailUsername"
+                                 style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Password'| translate}}</span>: </label></td>
+                      <td><input type="password" id="EmailPassword" name="EmailPassword" [(ngModel)]="EmailPassword"
+                                 style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+                        &nbsp;<button class="btn btn-info"
+                                      (click)="TestNotification('email')">{{'Test'| translate}}</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td><input type="checkbox" id="UseEmailInNotifications" name="UseEmailInNotifications"
+                                 [(ngModel)]="UseEmailInNotifications"/> <label
+                        for="UseEmailInNotifications">
+                        <span>{{'Send Email Notification Alerts'| translate}}</span></label></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"
+                                 [(ngModel)]="EmailAsAttachment"/> <label
+                        for="EmailAsAttachment">
+                        <span>{{'Send Camera snapshots as Attachment (Gmail)'| translate}}</span></label></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td><input type="checkbox" id="SendErrorsAsNotification" name="SendErrorsAsNotification"
+                                 [(ngModel)]="SendErrorsAsNotification"/> <label
+                        for="SendErrorsAsNotification">
+                        <span>{{'Send Errors as Notification'| translate}}</span></label></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-pane" id="tabmeters">
+            <!-- Meter Settings
+                ================================================== -->
+            <section id="metercounters">
+              <div class="page-header-small">
+                <h1>{{'Meter/Counter Setup'| translate}}</h1>
+              </div>
+              <div class="row-fluid">
+                <div class="span4">
+                  <h2><span>{{'Temperature'| translate}}</span>:</h2>
+                  <table class="display" id="temperaturetable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:240px"><label><span>{{'Display'| translate}}</span>: </label></td>
+                      <td>
+                        <select id="comboTempUnit" name="TempUnit" [(ngModel)]="settings.TempUnit" style="width:120px"
+                                class="combobox ui-corner-all">
+                          <option [ngValue]="0">Celsius</option>
+                          <option [ngValue]="1">Fahrenheit</option>
+                        </select>
+                      </td>
+                    <tr>
+                    <tr>
+                      <td align="right"><label><span>{{'Degree Days'| translate}}</span>
+                        (<span>{{'Base Temperature'| translate}}</span>): </label></td>
+                      <td><input type="input" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature"
+                                 [(ngModel)]="settings.DegreeDaysBaseTemperature"
+                                 style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                  </table>
+                </div>
+                <div class="span4">
+                  <h2><span>{{'Wind Meter'| translate}}</span>:</h2>
+                  <table class="display" id="windmetertable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Display'| translate}}</span>: </label></td>
+                      <td><select id="comboWindUnit" name="WindUnit" [(ngModel)]="settings.WindUnit" style="width:120px"
+                                  class="combobox ui-corner-all">
+                        <option [ngValue]="0">m/s</option>
+                        <option [ngValue]="1">km/h</option>
+                        <option [ngValue]="2">mph</option>
+                        <option [ngValue]="3">Knots</option>
+                        <option [ngValue]="4">Beaufort</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                </div>
+                <div class="span4">
+                  <h2><span>{{'Weight'| translate}}</span>:</h2>
+                  <table class="display" id="weighttable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Display'| translate}}</span>: </label></td>
+                      <td>
+                        <select id="comboWeightUnit" name="WeightUnit" [(ngModel)]="settings.WeightUnit"
+                                style="width:120px"
+                                class="combobox ui-corner-all">
+                          <option [ngValue]="0">Kilograms</option>
+                          <option [ngValue]="1">Pounds</option>
+                        </select>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'RFXMeter/Counter Dividers'| translate}}</span>:</h2>
+                  <table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Energy'| translate}}</span>: </label></td>
+                      <td><input type="input" id="EnergyDivider" name="EnergyDivider"
+                                 [(ngModel)]="settings.EnergyDivider"
+                                 style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+                      <td align="right" style="width:90px"><label><span>{{'Costs'| translate}}</span> T1: </label></td>
+                      <td><input type="input" id="CostEnergy" name="CostEnergy" [(ngModel)]="settings.CostEnergy"
+                                 style="width: 60px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/> / kWh
+                      </td>
+                      <td align="right" style="width:90px"><label><span>{{'Costs'| translate}}</span> T2: </label></td>
+                      <td><input type="input" id="CostEnergyT2" name="CostEnergyT2" [(ngModel)]="settings.CostEnergyT2"
+                                 style="width: 60px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/> / kWh
+                      </td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td align="right" style="width:90px"><label><span>{{'Costs'| translate}}</span> R1: </label></td>
+                      <td><input type="input" id="CostEnergyR1" name="CostEnergyR1" [(ngModel)]="settings.CostEnergyR1"
+                                 style="width: 60px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/> / kWh
+                      </td>
+                      <td align="right" style="width:90px"><label><span>{{'Costs'| translate}}</span> R2: </label></td>
+                      <td><input type="input" id="CostEnergyR2" name="CostEnergyR2" [(ngModel)]="settings.CostEnergyR2"
+                                 style="width: 60px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/> / kWh
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Gas'| translate}}</span>: </label></td>
+                      <td><input type="input" id="GasDivider" name="GasDivider" [(ngModel)]="settings.GasDivider"
+                                 style="width: 80px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                      <td align="right" style="width:60px"><label><span>{{'Costs'| translate}}</span>: </label></td>
+                      <td><input type="input" id="CostGas" name="CostGas" [(ngModel)]="settings.CostGas"
+                                 style="width: 60px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/> / m3
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Water'| translate}}</span>: </label></td>
+                      <td><input type="input" id="WaterDivider" name="WaterDivider" [(ngModel)]="settings.WaterDivider"
+                                 style="width: 80px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/></td>
+                      <td align="right" style="width:60px"><label><span>{{'Costs'| translate}}</span>: </label></td>
+                      <td><input type="input" id="CostWater" name="CostWater" [(ngModel)]="settings.CostWater"
+                                 style="width: 60px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/> / m3
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2>OWL CM113/CM180i:</h2>
+                  <table class="display" id="owl113table" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Voltage'| translate}}</span>: </label></td>
+                      <td><input type="input" id="ElectricVoltage" name="ElectricVoltage"
+                                 [(ngModel)]="settings.ElectricVoltage"
+                                 style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Display'| translate}}</span>: </label></td>
+                      <td><select id="comboscm113type" name="CM113DisplayType" [(ngModel)]="settings.CM113DisplayType"
+                                  style="width:120px"
+                                  class="combobox ui-corner-all">
+                        <option [ngValue]="0">Ampere</option>
+                        <option [ngValue]="1">Watt</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'P1 Smart Meter Type'| translate}}</span>:</h2>
+                  <table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:60px"><label><span>{{'Type'| translate}}</span>: </label></td>
+                      <td><select id="comboP1MeterType" name="SmartMeterType" [(ngModel)]="settings.SmartMeterType"
+                                  style="width:180px"
+                                  class="combobox ui-corner-all">
+                        <option [ngValue]="0">{{'With Decimals'| translate}}</option>
+                        <option [ngValue]="1">{{'No Decimals'| translate}}</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-pane" id="tabfloorplan">
+            <!-- Floorplans
+                  ================================================== -->
+            <section id="floorplans">
+              <div class="page-header-small">
+                <h1>{{'Floorplan'| translate}}</h1>
+              </div>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'General'| translate}}</span>:</h2>
+                  <table class="display" id="floorplanoptionstable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:150px; vertical-align:top">
+                        <label><span>{{'Popup Activation Delay'| translate}}</span>: </label></td>
+                      <td><input type="input" id="FloorplanPopupDelay" name="FloorplanPopupDelay"
+                                 [(ngModel)]="settings.FloorplanPopupDelay"
+                                 style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+                        (<span>{{'Milliseconds'| translate}}</span>)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:150px"><span>{{'Fullscreen Mode'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="FloorplanFullscreenMode" name="FloorplanFullscreenMode"
+                                 [(ngModel)]="FloorplanFullscreenMode"/><label
+                        for="FloorplanFullscreenMode"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:150px"><span>{{'Animate Transitions'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="FloorplanAnimateZoom" name="FloorplanAnimateZoom"
+                                 [(ngModel)]="FloorplanAnimateZoom"/><label
+                        for="FloorplanAnimateZoom"></label></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Display Values'| translate}}</span>:</h2>
+                  <table class="display" id="floorplandisplaytable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:150px; vertical-align:top"><span>{{'Sensors'| translate}}</span>:
+                      </td>
+                      <td><input type="checkbox" id="FloorplanShowSensorValues"
+                                 name="FloorplanShowSensorValues" [(ngModel)]="FloorplanShowSensorValues"/><label
+                        for="FloorplanShowSensorValues"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:150px"><span>{{'Switches'| translate}}></span>:</td>
+                      <td><input type="checkbox" id="FloorplanShowSwitchValues"
+                                 name="FloorplanShowSwitchValues" [(ngModel)]="FloorplanShowSwitchValues"/><label
+                        for="FloorplanShowSwitchValues"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:150px"><span>{{'Scenes'| translate}}></span>:</td>
+                      <td><input type="checkbox" id="FloorplanShowSceneNames" name="FloorplanShowSceneNames"
+                                 [(ngModel)]="FloorplanShowSceneNames"/><label
+                        for="FloorplanShowSceneNames"></label></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Colour Options'| translate}}</span>:</h2>
+                  <table class="display" id="floorplancolourtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:250px; vertical-align:top">
+                        <label><span>{{'Room Area Colour'| translate}}</span>: </label></td>
+                      <td><input type="input" id="FloorplanRoomColour" name="FloorplanRoomColour"
+                                 [(ngModel)]="settings.FloorplanRoomColour"
+                                 style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+                        <a href="http://www.december.com/html/spec/colorsvg.html" class="norm-link"
+                           target="HTML Colours"><span
+                          class="norm-link">{{'Colour name or HEX value'| translate}}</span></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:250px">
+                        <label><span>{{'Active Room Area Opacity'| translate}}</span>:
+                        </label></td>
+                      <td><select id="FloorplanActiveOpacity" name="FloorplanActiveOpacity"
+                                  [(ngModel)]="settings.FloorplanActiveOpacity" style="width:70px"
+                                  class="combobox ui-corner-all">
+                        <option [ngValue]="0">0%</option>
+                        <option [ngValue]="5">5%</option>
+                        <option [ngValue]="10">10%</option>
+                        <option [ngValue]="20">20%</option>
+                        <option [ngValue]="25">25%</option>
+                        <option [ngValue]="33">33%</option>
+                        <option [ngValue]="50">50%</option>
+                        <option [ngValue]="66">66%</option>
+                        <option [ngValue]="75">75%</option>
+                        <option [ngValue]="90">90%</option>
+                        <option [ngValue]="100">100%</option>
+                      </select></td>
+                    </tr>
+                    <tr>
+                      <td align="right" style="width:250px">
+                        <label><span>{{'Inactive Room Area Opacity'| translate}}</span>: </label></td>
+                      <td><select id="FloorplanInactiveOpacity" name="FloorplanInactiveOpacity"
+                                  [(ngModel)]="settings.FloorplanInactiveOpacity" style="width:70px"
+                                  class="combobox ui-corner-all">
+                        <option [ngValue]="0">0%</option>
+                        <option [ngValue]="5">5%</option>
+                        <option [ngValue]="10">10%</option>
+                        <option [ngValue]="20">20%</option>
+                        <option [ngValue]="25">25%</option>
+                        <option [ngValue]="33">33%</option>
+                        <option [ngValue]="50">50%</option>
+                        <option [ngValue]="66">66%</option>
+                        <option [ngValue]="75">75%</option>
+                        <option [ngValue]="90">90%</option>
+                        <option [ngValue]="100">100%</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-pane" id="tabother">
+            <!-- Other Settings
+                    ================================================== -->
+            <section id="othersettings">
+              <div class="page-header-small">
+                <h1>{{'Other Settings'| translate}}</h1>
+              </div>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Random Timer'| translate}}</span>:</h2>
+                  <table class="display" id="randomtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px; vertical-align:top">
+                        <label><span>{{'Spread'| translate}}</span>:
+                        </label></td>
+                      <td><input type="input" id="RandomSpread" name="RandomSpread"
+                                 [(ngModel)]="settings.RandomTimerFrame" style="width: 50px; padding: .2em;"
+                                 class="text ui-widget-content ui-corner-all"/><br>
+                        <span>{{'(Minutes +/-)'| translate}}</span></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Sensor Timeout'| translate}}</span>:</h2>
+                  <table class="display" id="timeouttable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px; vertical-align:top">
+                        <label><span>{{'Timeout'| translate}}</span>: </label></td>
+                      <td><input type="input" id="SensorTimeout" name="SensorTimeout"
+                                 [(ngModel)]="settings.SensorTimeout"
+                                 style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+                        (<span>{{'Minutes'| translate}}</span>)
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Battery Low Level'| translate}}</span>:</h2>
+                  <table class="display" id="batterytable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px; vertical-align:top">
+                        <label><span>{{'Level'| translate}}</span>:
+                        </label></td>
+                      <td><input type="input" id="BatterLowLevel" name="BatterLowLevel"
+                                 [(ngModel)]="settings.BatterLowLevel"
+                                 style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+                        (%, <span>{{'0 = Disabled'| translate}}</span>)
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Timer Plan'| translate}}</span>:</h2>
+                  <table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px"><label><span>{{'Plan'| translate}}</span>: </label></td>
+                      <td><select id="comboTimerplan" name="ActiveTimerPlan" [(ngModel)]="settings.ActiveTimerPlan"
+                                  style="width:220px"
+                                  class="combobox ui-corner-all">
+                        <option *ngFor="let tp of timerPlans" [value]="tp.idx">{{tp.Name}}</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <!-- <br> -->
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Doorbell Command'| translate}}</span>:</h2>
+                  <table class="display" id="doorbelltable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px"><label><span>{{'Command'| translate}}</span>: </label></td>
+                      <td><select id="comboDoorbellCommand" name="DoorbellCommand"
+                                  [(ngModel)]="settings.DoorbellCommand" style="width:120px"
+                                  class="combobox ui-corner-all">
+                        <option [ngValue]="0">{{'Group On'| translate}}</option>
+                        <option [ngValue]="1">{{'On'| translate}}</option>
+                      </select></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'Raspberry Pi Camera Parameters'| translate}}</span>:</h2>
+                  <table class="display" id="picamtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px; vertical-align:top;">
+                        <label><span>{{'Params'| translate}}</span>: </label></td>
+                      <td>
+                        <input type="input" id="RaspCamParams" name="RaspCamParams" [(ngModel)]="settings.RaspCamParams"
+                               style="width: 300px; padding: .2em;"
+                               class="text ui-widget-content ui-corner-all"/><br>
+                        (<span>{{'default'| translate}}</span>: -w 800 -h 600 -t 1)
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'UVC Parameters'| translate}}</span>:</h2>
+                  <table class="display" id="uvctable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px; vertical-align:top;">
+                        <label><span>{{'Params'| translate}}</span>: </label></td>
+                      <td>
+                        <input type="input" id="UVCParams" name="UVCParams" [(ngModel)]="settings.UVCParams"
+                               style="width: 300px; padding: .2em;"
+                               class="text ui-widget-content ui-corner-all"/><br>
+                        (<span>{{'default'| translate}}</span>: -S80 -B128 -C128 -G80 -x800 -y600 -q100)
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'EventSystem (Lua/Blockly/Scripts)'| translate}}</span>:</h2>
+                  <table class="display" id="eventsystemtable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="EnableEventScriptSystem" name="EnableEventScriptSystem"
+                                 [(ngModel)]="EnableEventScriptSystem"/><label
+                        for="EnableEventScriptSystem"></label></td>
+                    </tr>
+                    <tr>
+                      <td style="width:90px"></td>
+                      <td><input type="checkbox" id="LogEventScriptTrigger" name="LogEventScriptTrigger"
+                                 [(ngModel)]="LogEventScriptTrigger"/><label
+                        for="LogEventScriptTrigger">
+                        <span>{{'Log \'event script triggers\''| translate}}</span></label></td>
+                    </tr>
+                    <tr>
+                      <td style="width:90px"></td>
+                      <td><input type="checkbox" id="EventSystemLogFullURL" name="EventSystemLogFullURL"
+                                 [(ngModel)]="EventSystemLogFullURL"/><label
+                        for="EventSystemLogFullURL">
+                        <span>{{'Log \'URL calls with full URL path\''| translate}}</span></label></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <br>
+              <div class="row-fluid">
+                <div class="span12">
+                  <h2><span>{{'dzVents'| translate}}</span>:</h2>
+                  <table class="display" id="dzventstable" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="right" style="width:90px"><span>{{'Enabled'| translate}}</span>:</td>
+                      <td><input type="checkbox" id="DisableDzVentsSystem" name="DisableDzVentsSystem"
+                                 [(ngModel)]="DisableDzVentsSystem"><label
+                        for="DisableDzVentsSystem"></label></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><label>Log Level:</label></td>
+                      <td>
+                        <select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel"
+                                [(ngModel)]="settings.DzVentsLogLevel">
+                          <option [ngValue]="0">{{'Silent'| translate}}</option>
+                          <option [ngValue]="1">{{'Errors only'| translate}}</option>
+                          <option [ngValue]="2">{{'Errors + minimal execution info'| translate}}</option>
+                          <option [ngValue]="3">{{'Errors + minimal execution info + generic info'| translate}}</option>
+                          <option [ngValue]="4">{{'Debug (everything)'| translate}}</option>
+                        </select>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-pane" id="tabbackuprestore">
+            <!-- Restore Database
+                      ================================================== -->
+            <section id="restoredatabase">
+              <div class="page-header-small">
+                <h1>{{'Backup / Restore Database'| translate}}</h1>
+              </div>
+              <div class="row-fluid">
+                <div class="span12">
+                  <div style="text-align: center"><a class="btn btn-primary" href="backupdatabase.php"
+                                                     download>{{'Backup Database'| translate}}</a>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-warning"
+                                                     [routerLink]="['/RestoreDatabase']">{{'Restore Database'| translate}}</a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

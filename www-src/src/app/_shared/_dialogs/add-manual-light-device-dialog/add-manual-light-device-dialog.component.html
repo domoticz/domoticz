@@ -1,0 +1,596 @@
+<div id="dialog-addmanuallightdevice">
+  <form>
+    <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="right" style="width:120px">
+          <label for="combohardware"><span>{{'Hardware'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="combohardware" name="combohardware" [(ngModel)]="hardware" style="width:260px"
+            class="combobox ui-corner-all">
+            <option *ngFor="let h of ComboHardware;" [ngValue]="h.idx">{{h.Name}}</option>
+          </select>
+        </td>
+      <tr>
+      <tr>
+        <td align="right">
+          <label for="devicename"><span>{{'Device name'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="devicename" name="devicename" [(ngModel)]="devicename"
+            style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+        </td>
+      <tr>
+        <td align="right">
+          <label for="comboswitchtype"><span>{{'Switch Type'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="comboswitchtype" name="comboswitchtype" [(ngModel)]="switchtype" (change)="onSwitchTypeChange()"
+            style="width:210px" class="combobox ui-corner-all">
+            <!-- previously embed switchtypes -->
+            <option [ngValue]="3">Blinds</option>
+            <option [ngValue]="6">Blinds Inverted</option>
+            <option [ngValue]="13">Blinds Percentage</option>
+            <option [ngValue]="16">Blinds Percentage Inverted</option>
+            <option [ngValue]="2">Contact</option>
+            <option [ngValue]="7">Dimmer</option>
+            <option [ngValue]="11">Door Contact</option>
+            <option [ngValue]="19">Door Lock</option>
+            <option [ngValue]="20">Door Lock Inverted</option>
+            <option [ngValue]="1">Doorbell</option>
+            <option [ngValue]="12">Dusk Sensor</option>
+            <option [ngValue]="17">Media Player</option>
+            <option [ngValue]="8">Motion Sensor</option>
+            <option [ngValue]="0">On/Off</option>
+            <option [ngValue]="10">Push Off Button</option>
+            <option [ngValue]="9">Push On Button</option>
+            <option [ngValue]="18">Selector</option>
+            <option [ngValue]="5">Smoke Detector</option>
+            <option [ngValue]="15">Venetian Blinds EU</option>
+            <option [ngValue]="14">Venetian Blinds US</option>
+            <option [ngValue]="4">X10 Siren</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label><span>{{'Type'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="combolighttype" name="combolighttype" [(ngModel)]="lighttype" (change)="onLightTypeChange()"
+            style="width:210px" class="combobox ui-corner-all">
+            <option [ngValue]="0">X10</option>
+            <option [ngValue]="1">ARC</option>
+            <option [ngValue]="2">AB400D</option>
+            <option [ngValue]="3">Waveman</option>
+            <option [ngValue]="4">EMW200</option>
+            <option [ngValue]="5">Impuls</option>
+            <option [ngValue]="6">RisingSun</option>
+            <option [ngValue]="7">Philips SBC</option>
+            <option [ngValue]="8">Energenie</option>
+            <option [ngValue]="9">Energenie 5-gang</option>
+            <option [ngValue]="10">COCO GDR2</option>
+            <option [ngValue]="11">HQ COCO-20</option>
+            <option [ngValue]="20">AC</option>
+            <option [ngValue]="21">HE EU</option>
+            <option [ngValue]="22">ANSLUT</option>
+            <option [ngValue]="50">LightwaveRF</option>
+            <option [ngValue]="51">EMW100 GAO/Everflourish</option>
+            <option [ngValue]="53">MDRemote</option>
+            <option [ngValue]="55">Livolo</option>
+            <option [ngValue]="250">EV1527</option>
+            <option [ngValue]="226">Eurodomest</option>
+            <option [ngValue]="57">Aoke</option>
+            <option [ngValue]="62">MDRemote 107</option>
+            <option [ngValue]="65">IT</option>
+            <option [ngValue]="66">MDRemote 108</option>
+            <option [ngValue]="106">Blyss</option>
+            <option [ngValue]="70">EnOcean</option>
+            <option [ngValue]="68">GPIO</option>
+            <option [ngValue]="69">Sysfs GPIO</option>
+            <option [ngValue]="100">ByronSX</option>
+            <option [ngValue]="101">Harrison Curtain</option>
+            <option [ngValue]="102">RFY</option>
+            <option [ngValue]="107">RFY-2</option>
+            <option [ngValue]="105">ASA</option>
+            <option [ngValue]="103">Meiantech Security</option>
+            <option [ngValue]="104">HE105</option>
+            <option [ngValue]="205">Blinds T5 Media Mount</option>
+            <option [ngValue]="206">Blinds T6 DC106</option>
+            <option [ngValue]="207">Blinds T7 Forest</option>
+            <option [ngValue]="208">Blinds T8 Chamberlain</option>
+            <option [ngValue]="209">Blinds T9 Sunpery</option>
+            <option [ngValue]="210">Blinds T10 Dolat DLM-1</option>
+            <option [ngValue]="211">Blinds T11 ASP</option>
+            <option [ngValue]="212">Blinds T12 Confexx</option>
+            <option [ngValue]="213">Blinds T13 Screenline</option>
+            <option [ngValue]="214">Blinds T14 Hualite</option>
+            <option [ngValue]="215">Blinds T15 RFU</option>
+            <option [ngValue]="216">Blinds T16 Zemismart</option>
+            <option [ngValue]="301">Smartwares Radiator</option>
+            <option [ngValue]="302">Home Confort TEL-010</option>
+            <option [ngValue]="303">Selector Switch</option>
+            <option [ngValue]="304">Itho CVE RFT</option>
+            <option [ngValue]="305">Lucci Air</option>
+            <option [ngValue]="306">Lucci Air DC</option>
+            <option [ngValue]="307">Westinghouse</option>
+            <option [ngValue]="400">Blinds OpenWebNet Bus</option>
+            <option [ngValue]="401">Lights OpenWebNet Bus</option>
+            <option [ngValue]="402">Auxiliary OpenWebNet Bus</option>
+            <option [ngValue]="403">Blinds OpenWebNet Zigbee</option>
+            <option [ngValue]="404">Lights OpenWebNet Zigbee</option>
+            <option [ngValue]="405">Dry Contact OpenWebNet</option>
+            <option [ngValue]="406">IR Detection OpenWebNet</option>
+            <option [ngValue]="407">Custom OpenWebNet Bus</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <div id="lighting1params" *ngIf="displaylighting1params">
+      <table class="display" id="lightparams1" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'House Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combohousecode" name="combohousecode" [(ngModel)]="lighting1housecode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of lighting1housecodes;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label><span>{{'Unit Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combounitcode" name="combounitcode" [(ngModel)]="lighting1unitcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of lighting1unitcodes;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="lighting2params" *ngIf="displaylighting2params">
+      <table class="display" id="lightparams2" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'ID'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="lighting2cmd1" *ngIf="displaylighting2cmd1"
+              style="width:60px" class="combobox ui-corner-all">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="lighting2cmd2" *ngIf="displaylighting2cmd2"
+              style="width:60px" class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+            <select id="combocmd3" name="combocmd3" [(ngModel)]="lighting2cmd3" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+            <select id="combocmd4" name="combocmd4" [(ngModel)]="lighting2cmd4" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="lighting2paramsUnitCode" *ngIf="displaylighting2paramsUnitCode">
+          <td align="right">
+            <label><span>{{'Unit Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combounitcode" name="combounitcode" [(ngModel)]="lighting2unitcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of lighting2unitcodes;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="lighting3params" *ngIf="displaylighting3params">
+      <table class="display" id="lightparams3" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'ID'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="cmd1" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="cmd2" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label><span>{{'Group Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combogroupcode" name="combogroupcode" [(ngModel)]="groupcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of groupcodeValues;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label><span>{{'Unit Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combounitcode" name="combounitcode" [(ngModel)]="unitcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of lighting3unitcodes;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="lightingparams_enocean" *ngIf="displayLightingparams_enocean">
+      <table class="display" id="lightparams_enocean" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'ID'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="comboid" name="comboid" [(ngModel)]="enoceanid" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of lightingenoceanids;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label>Rocker_ID:</label>
+          </td>
+          <td>
+            <select id="combounitcode" name="combounitcode" [(ngModel)]="enoceanunitcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of lightingenoceanunitcodes;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="lightingparams_gpio" *ngIf="displayLightingparams_gpio">
+      <table class="display" id="lightparams_gpio" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label>GPIO:</label>
+          </td>
+          <td>
+            <select id="combogpio" name="combogpio" [(ngModel)]="gpio" style="width:220px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let h of ComboGpio" [ngValue]="h.idx">{{h.Name}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="lightingparams_sysfsgpio" *ngIf="displayLightingparams_sysfsgpio">
+      <table class="display" id="lightparams_sysfsgpio" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label>Sysfs GPIO:</label>
+          </td>
+          <td>
+            <select id="combosysfsgpio" name="combosysfsgpio" [(ngModel)]="sysfsgpio" style="width:220px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let h of ComboSysfsGpio" [ngValue]="h.idx">{{h.Name}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="blindsparams" *ngIf="displayBlindsparams">
+      <table class="display" id="blindparams" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'ID'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" *ngIf="displayblindsparamscombocmd1" [(ngModel)]="blindscombocmd1"
+              style="width:60px" class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="blindscombocmd2" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+            <select id="combocmd3" name="combocmd3" [(ngModel)]="blindscombocmd3" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+            <select id="combocmd4" name="combocmd4" *ngIf="displayblindsparamscombocmd4" [(ngModel)]="blindscombocmd4"
+              style="width:60px" class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues | slice:0:16;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="blindparamsUnitCode" *ngIf="displayblindparamsUnitCode">
+          <td align="right">
+            <label><span>{{'Unit Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combounitcode" name="combounitcode" [(ngModel)]="blindsunitcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues | slice:0:16" [value]="ii.val">{{ii.val}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="he105params" *ngIf="displayHe105Params">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'Unit Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combounitcode" name="combounitcode" [(ngModel)]="he105unitcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues | slice:0:32" [value]="ii.val">{{ii.val}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="homeconfortparams" *ngIf="displayhomeconfortparams">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'ID'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="homeconfortcmd1" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues | slice:0:8" [value]="ii.val">{{ii.text}}</option>
+            </select>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="homeconfortcmd2" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+            <select id="combocmd3" name="combocmd3" [(ngModel)]="homeconfortcmd3" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'House Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combohousecode" name="combohousecode" [(ngModel)]="homeconforthousecode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of combohouseCodes" [value]="ii.val">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="blindparamsUnitCode" *ngIf="displayblindparamsUnitCode">
+          <td align="right">
+            <label><span>{{'Unit Code'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combounitcode" name="combounitcode" [(ngModel)]="homeconfortunitcode" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of homeconfortUnitCodes" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="fanparams" *ngIf="displayfanparams">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px">
+            <label><span>{{'ID'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="fancmd1" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="fancmd2" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+            <select id="combocmd3" name="combocmd3" [(ngModel)]="fancmd3" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of hexaValues;" [value]="ii.text">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="openwebnetparamsBus" *ngIf="displayopenwebnetparamsBus">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr id="openwebnet_room">
+          <td align="right">
+            <label><span>{{'Room'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="openwebnetcmd1" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetcmd1Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="openwebnet_pl">
+          <td align="right">
+            <label><span>{{'Point of Load'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="openwebnetcmd2" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetcmd2Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="openwebnet_bus">
+          <td align="right">
+            <label><span>{{'Bus'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd3" name="combocmd3" [(ngModel)]="openwebnetcmd3" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetcmd3Values;" [value]="ii.val">{{ii.text}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="openwebnetparamsAUX" *ngIf="displayopenwebnetparamsAUX">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr id="openwebnet_AUX">
+          <td align="right">
+            <label><span>{{'Auxiliary'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="openwebnetAUXcmd1" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetAUXcmd1Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="openwebnetparamsCustom" *ngIf="displayopenwebnetparamsCustom">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr id="openwebnet_custom_id">
+          <td align="right">
+            <label><span>{{'Custom Device'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="openwebnetcustomcmd1" style="width:60px" class="combobox ui-corner-all">
+                <option *ngFor="let ii of openwebnetCustomcmd1Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="openwebnet_custom_bus">
+          <td align="right">
+            <label><span>{{'Bus'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="openwebnetcustomcmd2" style="width:60px" class="combobox ui-corner-all">
+              <option value="0">local bus</option>
+                <option *ngFor="let ii of openwebnetCustomcmd2Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="openwebnet_custom_cmd">
+          <td align="right">
+            <label><span>{{'OPEN Command'| translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="text" id="inputcmd1" name="inputcmd1" [(ngModel)]="openwebnetcustominputcmd1" style="width:150px" style="width: 250px; padding: .2em;"
+              class="text ui-widget-content ui-corner-all" />
+            </td>
+        </tr>
+      </table>
+    </div>
+    <div id="openwebnetparamsZigbee" *ngIf="displayopenwebnetparamsZigbee">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr id="openwebnet_zigbeeid">
+          <td align="right">
+            <label><span>{{'ZigbeeId'| translate}}</span>:</label>
+          </td>
+          <td>
+            <input type="text" id="inputcmd1" name="inputcmd1" [(ngModel)]="zigbeecmd1" style="width:60px"
+              style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+          </td>
+        </tr>
+        <tr id="openwebnet_unit">
+          <td align="right">
+            <label><span>{{'Unit'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="zigbeecmd2" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetZigbeecmd2Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="openwebnetparamsDryContact" *ngIf="displayopenwebnetparamsDryContact">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr id="openwebnet_drycontact">
+          <td align="right">
+            <label><span>{{'Zone'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="openwebnetdrycontactcmd1" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetDryContactcmd1Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div id="openwebnetparamsIRdetec" *ngIf="displayopenwebnetparamsIRdetec">
+      <table class="display" border="0" cellpadding="0" cellspacing="20">
+        <tr id="openwebnet_zoneIR">
+          <td align="right">
+            <label><span>{{'Zone'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd1" name="combocmd1" [(ngModel)]="openwebnetIRdeteccmd1" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetIRdeteccmd1Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr id="openwebnet_subzoneIR">
+          <td align="right">
+            <label><span>{{'SubZone'| translate}}</span>:</label>
+          </td>
+          <td>
+            <select id="combocmd2" name="combocmd2" [(ngModel)]="openwebnetIRdeteccmd2" style="width:60px"
+              class="combobox ui-corner-all">
+              <option *ngFor="let ii of openwebnetIRdeteccmd2Values;" [value]="ii">{{ii}}</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <br>
+    <div style="text-align:center;"><a class="btnstyle3" (click)="TestManualLight()">{{'Test'| translate}}</a></div>
+    <br>
+    <table class="display" id="howtable" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="right">
+          <label><span>{{'As'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="radio" name="how" id="how_1" value="New" [(ngModel)]="how">&nbsp;
+          <span>{{'Main Device'| translate}}</span>&nbsp;&nbsp;
+          <input type="radio" name="how" id="how_2" value="Sub Device" [(ngModel)]="how">&nbsp;
+          <span>{{'Sub/Slave Device'| translate}}</span>
+        </td>
+      <tr>
+      <tr id="subdevice" *ngIf="how == 'Sub Device'">
+        <td align="right" style="width:60px">
+          <label><span>{{'Device'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="combosubdevice" name="combosubdevice" [(ngModel)]="subdevice" style="width:250px"
+            class="combobox ui-corner-all">
+          </select>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

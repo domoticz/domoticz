@@ -1,0 +1,7 @@
+<div *ngIf="RoomPlans.length > 0">
+  <span>{{'Room'| translate}}</span>:
+  <select id="comboroom" style="width:160px" class="combobox ui-corner-all" [(ngModel)]="roomSelected" (ngModelChange)="changeRoom()">
+    <option [value]="0">{{'All'| translate}}</option>
+    <option *ngFor="let room of RoomPlans" [value]="room.idx">{{room.Name}}</option>
+  </select>
+</div>

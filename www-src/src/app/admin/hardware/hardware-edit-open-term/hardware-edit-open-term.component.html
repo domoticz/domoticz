@@ -1,0 +1,52 @@
+<div id="hardwarecontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Hardware">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="text-align:center;">
+    <h2><span>{{'Device'| translate}}</span>: {{hardware?.Name}}</h2>
+  </div>
+
+  <div id="opentherm" style="text-align: center;" *ngIf="hardware">
+    <form id="openthermform">
+      <br>
+      <div style="text-align:center;">
+        <table border="0" cellpadding="10" cellspacing="10">
+          <tr>
+            <td align="right" style="width:310px">
+              <span>{{'Outside Temperature Sensor'| translate}}</span>:
+            </td>
+            <td>
+              <select id="combooutsidesensor" [(ngModel)]="combooutsidesensor" name="combooutsidesensor" style="width:300px"
+                class="combobox ui-corner-all">
+                <option value="0">Use Build In</option>
+                <option *ngFor="let d of devices;" [value]="d.idx">{{d.Name}} ({{d.Temp}}\u00B0)</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td align="right">
+              <span>{{'Command'| translate}}</span>:
+            </td>
+            <td>
+              <input type="input" id="otgwcmnd" [(ngModel)]="otgwcmnd" name="otgwcmnd" style="width: 120px; padding: .2em;"
+                class="text ui-widget-content ui-corner-all" /> <button class="btn btn-info" id="buttonsendotgwcmnd"
+                (click)="SendOTGWCommand()">{{'Send'| translate}}</button>
+            </td>
+          </tr>
+        </table>
+        <br><br>
+        <input type="hidden" id="idx" name="idx" [value]="hardware.idx">
+        <button class="btn btn-danger" id="submitbuttonopentherm" (click)="SetOpenThermSettings()">Save</button>
+      </div>
+    </form>
+  </div>
+
+</div>

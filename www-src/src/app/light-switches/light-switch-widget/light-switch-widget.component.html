@@ -1,0 +1,130 @@
+<div class="item" [ngClass]="nbackstyle()">
+  <section>
+    <table [id]="tableId" border="0" cellpadding="0" cellspacing="0">
+      <tbody>
+      <tr>
+        <td id="name" [ngClass]="{'highlight': highlight}">{{item.Name}}</td>
+        <td id="bigtext">
+          {{bigtext}}
+          <span *ngIf="item.UsedByCamera">
+            &nbsp;<a (click)="ShowCameraLiveStream()"><img src="images/webcam.png" [title]="'Stream Video'| translate"
+                height="16" width="16"></a>
+          </span>
+          <span *dzHasPermission="'Admin'">
+            <span *ngIf="item.Type == 'RFY'">
+              &nbsp;<img src="images/devices.png" [title]="'Setup'| translate" height="16" width="16"
+                (click)="ShowRFYPopup($event)">
+            </span>
+          </span>
+        </td>
+        <td *ngIf="item.SubType == 'Security Panel'" id="img">
+          <a routerLink="/secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a>
+        </td>
+        <ng-container *ngIf="item.SubType == 'Evohome'">
+          <td id="img">
+            <a [id]="'evohome_' + item.idx">
+              <div title="Quick Actions"
+                [ngClass]="{'evoimgnorm': item.Status == 'Auto', 'evoimg': item.Status != 'Auto', 'selected': evohomeSelected}">
+                <img [src]="'images/evohome/' + item.Status + '.png'" (click)="EvohomeImgClick()" class="lcursor">
+              </div>
+            </a>
+          </td>
+          <div [id]="'evopop_' + item.idx" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop"
+            style="display: none;">
+            <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">
+              <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>
+              <li *ngFor="let obj of evohomePopupObjects">
+                <a class="ui-btn ui-btn-icon-right ui-icon-{{obj.data}}" (click)="EvoPopClick(obj)">{{obj.name}}</a>
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+        <td *ngIf="!(item.SubType == 'Security Panel' || item.SubType == 'Evohome')" id="img">
+          <img [src]="image" [title]="imageTitle | translate" (click)="onImageClick($event)"
+            [ngClass]="{'lcursor': imageCursor}" height="48" width="48">
+        </td>
+        <td *ngIf="image2" id="img2">
+          <img [src]="image2" [title]="image2Title" [style]="image2style" (click)="onImage2Click($event)"
+            [ngClass]="{'lcursor': image2Cursor}" height="48" [width]="image2 == 'images/blindsstop.png' ? '24' : '48'">
+        </td>
+        <td *ngIf="image3" id="img3">
+          <img [src]="image3" [title]="image3Title" (click)="onImage3Click($event)"
+            [ngClass]="{'lcursor': image3Cursor}" height="48" width="48">
+        </td>
+        <td id="status">{{status}}</td>
+        <td id="lastupdate">{{item.LastUpdate}}</td>
+        <td id="type">
+          {{item.Type}}, {{item.SubType}}, {{item.SwitchType}}
+          <!-- Don't show dimmer slider if the device does not support absolute dimming -->
+          <ng-container *ngIf="item.SwitchType == 'Dimmer' && !(item.DimmerType && item.DimmerType!='abs')">
+            <br>
+            <br>
+            <dz-dimmer-slider [(item)]="item" _style="margin-left:60px;" _class="dimslider" type="norm"
+              [isled]="isLED()"></dz-dimmer-slider>
+          </ng-container>
+          <ng-container *ngIf="item.SwitchType == 'TPI'">
+            <br>
+            <br>
+            <dz-dimmer-slider [(item)]="item" _style="margin-left:60px;" _class="dimslider" type="relay"
+              [disabled]="item.Unit < 64 || item.Unit > 95"></dz-dimmer-slider>
+          </ng-container>
+          <ng-container *ngIf="item.SwitchType == 'Blinds Percentage'">
+            <br>
+            <dz-dimmer-slider [(item)]="item" _style="margin-left:108px; margin-top:7px;" _class="dimslider dimsmall"
+              type="blinds"></dz-dimmer-slider>
+          </ng-container>
+          <ng-container *ngIf="item.SwitchType == 'Blinds Percentage Inverted'">
+            <br>
+            <dz-dimmer-slider [(item)]="item" _style="margin-left:108px; margin-top:7px;" _class="dimslider dimsmall"
+              type="blinds_inv"></dz-dimmer-slider>
+          </ng-container>
+          <ng-container *ngIf="item.SwitchType == 'Selector'">
+            <ng-container *ngIf="item.SelectorStyle === 0">
+              <br />
+              <div class="btn-group" style="display: block; margin-top: 4px;">
+                <ng-container *ngFor="let levelName of levelNames; first as first; index as index">
+                  <button *ngIf="!(first && item.LevelOffHidden)" type="button"
+                    [ngClass]="['btn', 'btn-small', (index * 10) == item.LevelInt ? 'btn-selected' : 'btn-default']"
+                    [id]="'lSelector' + item.idx + 'Level' + index" [name]="'selector' + item.idx + 'Level'"
+                    [value]="index * 10" (click)="SwitchSelectorLevel(levelName, index * 10)">{{levelName}}</button>
+                </ng-container>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="item.SelectorStyle === 1">
+              <br>
+              <div class="selectorlevels" style="margin-top: 0.4em;">
+                <dz-selectorlevels [(item)]="item" [levelNames]="levelNames"></dz-selectorlevels>
+              </div>
+            </ng-container>
+          </ng-container>
+        </td>
+        <td class="options">
+          <img *ngIf="item.Favorite == 0" src="images/nofavorite.png" (click)="MakeFavorite(1)" class="lcursor"
+            [title]="'Add to Dashboard'| translate">
+          <img *ngIf="item.Favorite != 0" src="images/favorite.png" (click)="MakeFavorite(0)" class="lcursor"
+            [title]="'Remove from Dashboard'| translate">
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <a class="btnsmall" [routerLink]="['/Devices', item.idx, 'Log']">{{'Log'| translate}}</a>&nbsp;
+          <ng-container *dzHasPermission="'Admin'">
+            <a class="btnsmall" [routerLink]="['/Devices', item.idx, 'LightEdit']">{{'Edit'| translate}}</a>&nbsp;
+            <a *ngIf="addTimer" [ngClass]="{'btnsmall-sel':item.Timers == 'true', 'btnsmall': item.Timers != 'true'}"
+              [routerLink]="['/Devices',item.idx,'Timers']">{{'Timers'| translate}}</a>&nbsp;
+            <a *ngIf="item.SwitchType == 'Smoke Detector'" id="resetbtn"
+              [ngClass]="{'btnsmall-sel': item.Status == 'Panic' || item.Status == 'On', 'btnsmall-dis': !(item.Status == 'Panic' || item.Status == 'On')}"
+              (click)="ResetSecurityStatus()">{{'Reset'| translate}}</a>&nbsp;
+            <a [ngClass]="{'btnsmall-sel': item.Notifications == 'true', 'btnsmall': item.Notifications != 'true'}"
+              [routerLink]="['/Devices', item.idx, 'Notifications']">{{'Notifications'| translate}}</a>
+          </ng-container>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<dz-rfy-popup *ngIf="item.Type == 'RFY'" (switched)="refreshDevice()"></dz-rfy-popup>
+<dz-rgbw-popup *ngIf="item.SwitchType == 'Dimmer' && isLED()" [item]="item" (switched)="refreshDevice()">
+</dz-rgbw-popup>
+<dz-lucci-popup [item]="item" (switched)="refreshDevice()"></dz-lucci-popup>
+<dz-itho-popup [item]="item" (switched)="refreshDevice()"></dz-itho-popup>
+<dz-therm3-popup [item]="item" (switched)="refreshDevice()"></dz-therm3-popup>

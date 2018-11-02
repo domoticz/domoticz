@@ -1,0 +1,207 @@
+<div class="container">
+
+  <dz-back-to-top></dz-back-to-top>
+
+  <div id="scenecontent" *ngIf="item">
+
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Scenes">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br>
+
+    <table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+      <tr>
+        <td align="right" style="width:120px">
+          <label>Idx: </label>
+        </td>
+        <td>
+          <span id="deviceidx">{{item.idx}}</span>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label for="devicename"><span>{{'Name'| translate}}</span>: </label>
+        </td>
+        <td>
+          <input type="text" id="devicename" name="devicename" [ngModel]="item.Name"
+                 style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <label><span>{{'Type'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="combotype" name="combotype" [(ngModel)]="type" style="width:120px" class="combobox ui-corner-all">
+            <option value="0">{{'Scene'| translate}}</option>
+            <option value="1">{{'Group'| translate}}</option>
+          </select>
+        </td>
+      </tr>
+      <tr id="ProtectionDiv">
+        <td align="right">
+          <span>{{'Protected'| translate}}</span>:
+        </td>
+        <td>
+          <input type="checkbox" id="protected" name="protected" [ngModel]="item.Protected"><label
+          for="protected"></label>
+        </td>
+      </tr>
+      <tr id="OnActionDiv">
+        <td align="right">
+          <label for="onaction"><span>{{'On Action'| translate}}</span>:</label>
+        </td>
+        <td>
+          <input type="text" id="onaction" name="onaction" [(ngModel)]="onaction" style="width: 356px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"/>&nbsp;
+          <span>{{'(Should start with http:// or script://)'| translate}}</span>
+        </td>
+      </tr>
+      <tr id="OffActionDiv">
+        <td align="right">
+          <label for="offaction"><span>{{'Off Action'| translate}}</span>:</label>
+        </td>
+        <td>
+          <input type="text" id="offaction" name="offaction" [(ngModel)]="offaction"
+                 style="width: 356px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"/>&nbsp;
+          <span>{{'(Should start with http:// or script://)'| translate}}</span>
+        </td>
+      </tr>
+      <tr>
+        <td align="right" style="width:120px">
+          <label for="devicedescription"><span>{{'Description'| translate}}</span>: </label>
+        </td>
+        <td>
+          <textarea id="devicedescription" name="devicedescription" [(ngModel)]="item.Description" rows="4"
+                    style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+          <a class="btnstyle3" (click)="SaveScene()">{{'Save'| translate}}</a>&nbsp;&nbsp;&nbsp;
+          <a class="btnstyle3" (click)="DeleteScene()">{{'Delete'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br>
+
+    <h2><span>{{'Activation Devices'| translate}}</span>:</h2>
+    <br>
+    <dz-edit-scene-activation-table [item]="item" [(removeCodeClass)]="removeCodeClass"
+                                     (select)="onActivationTableSelect($event)"></dz-edit-scene-activation-table>
+    <table id="delclract" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td>
+          <a [class]="removeCodeClass" id="removecode" (click)="RemoveCode()">{{'Remove Device'| translate}}</a>&nbsp;
+          <button id="addcode" class="btn btn-small btn-success" type="button"
+                  (click)="AddCode()">{{'Add Device'| translate}}</button>
+        </td>
+        <td align="right">
+          <a class="btnstyle3" (click)="ClearCodes()">{{'Clear'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+
+    <span id="learndevicename"></span>
+    <br>
+    <br>
+
+    <h2><span>{{'Devices'| translate}}</span>:</h2>
+    <br>
+    <dz-edit-scene-devices-table [item]="item" [(deviceUpdateDeleteClass)]="deviceUpdateDeleteClass"
+                                  (select)="onDevicesTableSelect($event)"></dz-edit-scene-devices-table>
+    <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td>
+          <a [class]="deviceUpdateDeleteClass" id="updatedelete" *ngIf="item.Type == 'Scene'"
+             (click)="UpdateDevice()">{{'Update'| translate}}</a>&nbsp;
+          <a [class]="deviceUpdateDeleteClass" id="devicedelete" (click)="DeleteDevice()">{{'Delete'| translate}}</a>
+        </td>
+        <td align="right">
+          <a class="btnstyle3" (click)="ClearDevices()">{{'Clear'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <br>
+    <table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+      <tr>
+        <td align="right" style="width:110px">
+          <label for="combodevice"><span>{{'Device'| translate}}</span>: </label>
+        </td>
+        <td>
+          <select id="combodevice" name="combodevice" [(ngModel)]="selectedDevice" style="width:250px"
+                  class="combobox ui-corner-all">
+            <option *ngFor="let ls of lightSwitches;" [ngValue]="ls">{{ls.Name}}</option>
+          </select>
+          <a class="btnstyle3" (click)="AddDevice()">{{'Add'| translate}}</a>
+        </td>
+      </tr>
+      <tr id="CommandDiv" [style.display]="item.Type == 'Scene' ? '' : 'none'">
+        <td align="right" style="width:80px">
+          <label for="combocommand"><span>{{'Command'| translate}}</span>:</label>
+        </td>
+        <td>
+          <select id="combocommand" name="combocommand" [(ngModel)]="command" style="width:90px"
+                  class="combobox ui-corner-all">
+            <option value="On">{{'On'| translate}}</option>
+            <option value="Off">{{'Off'| translate}}</option>
+            <option value="Stop">{{'Stop'| translate}}</option>
+          </select>
+        </td>
+      </tr>
+      <tr id="LevelDiv" *ngIf="displayLevelDiv">
+        <td align="right" style="width:80px">
+          <label for="combolevel"><span>{{'Level'| translate}}</span>:</label>
+        </td>
+        <td>
+          <select id="combolevel" name="combolevel" [(ngModel)]="level" style="width:70px"
+                  class="combobox ui-corner-all">
+            <option *ngFor="let l of selectedDeviceLevels" [value]="l">{{l}}%</option>
+          </select>
+        </td>
+      </tr>
+      <tr id="DelayOnDiv">
+        <td align="right" style="width:80px">
+          <label for="ondelaytime"><span>{{'On Delay'| translate}}</span>:</label>
+        </td>
+        <td>
+          <input type="text" id="ondelaytime" name="ondelaytime" [(ngModel)]="ondelaytime"
+                 style="width: 50px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"/>&nbsp;(<span>{{'Seconds'| translate}}</span>)
+        </td>
+      </tr>
+      <tr id="DelayOffDiv">
+        <td align="right" style="width:80px">
+          <label for="offdelaytime"><span>{{'Off Delay'| translate}}</span>:</label>
+        </td>
+        <td>
+          <input type="text" id="offdelaytime" name="offdelaytime" [(ngModel)]="offdelaytime"
+                 style="width: 50px; padding: .2em;"
+                 class="text ui-widget-content ui-corner-all"/>&nbsp;(<span>{{'Seconds'| translate}}</span>)
+        </td>
+      </tr>
+      <tr id="ScenesLedColor" *ngIf="displayRGBWPicker">
+        <td align="right">
+          <label>
+            <span>{{'Color'| translate}}</span>:
+          </label>
+        </td>
+        <td>
+          <!-- maxDimmerLevel: Always 100 for LED type -->
+          <dz-rgbw-picker [deviceIdx]="selectedDevice.idx" [(color)]="selectedDeviceColor" [(level)]="rgbwLevel"
+                           [dimmerType]="selectedDevice.DimmerType" [maxDimmerLevel]="100"
+                           [colorSettingsType]="selectedDevice.SubType"></dz-rgbw-picker>
+        </td>
+      </tr>
+    </table>
+    <br>
+
+  </div>
+
+</div>

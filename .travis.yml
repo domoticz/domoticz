@@ -2,8 +2,6 @@ branches:
   except:
     - /^[0-9]/
 
-language: cpp
-
 cache:
   - apt
 
@@ -30,10 +28,12 @@ before_install:
 # * Two builds
 #   1. Linux x86_64
 #   2. Apple OSX (Disabled until someone wants to correct it)
+#   3. Frontend Angular
 matrix:
   include:
   # Linux x86_64
-  - os: linux
+  - language: cpp
+    os: linux
     dist: bionic
     sudo: required
     compiler: gcc
@@ -75,7 +75,8 @@ matrix:
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
   # Apple OSX
-  # - os: osx
+  # - language: cpp
+  #   os: osx
   #   osx_image: xcode8.3
   #   #compiler:
   #   #  - gcc
@@ -93,6 +94,17 @@ matrix:
   #   script:
   #     - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
   #     - make
+  # Frontend (Angular)
+  - language: node_js
+    node_js:
+      - "10"
+    install:
+      - npm install -g @angular/cli
+      - cd www-src && npm install && cd ..
+    script:
+      - cd www-src && ng test --no-watch && cd ..
+      - cd www-src && node --max-old-space-size=8192 node_modules/@angular/cli/bin/ng build --prod && cd ..
+      - cp -r www-src/dist www
 
 # What to do with the build artifacts
 # - Upload to the Domoticz file server

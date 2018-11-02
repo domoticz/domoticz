@@ -1,0 +1,52 @@
+<div id="iconsmain">
+  <h3>{{'Custom Icons'| translate}}</h3>
+  <div class="row">
+    <div class="iconcell iconlist" style="min-height: 200px; max-height: 400px; width: 100%">
+      <div class="iconlistitem" *ngFor="let icon of iconset" [ngClass]="{ 'iconlistitemselected': icon.selected }"
+        (click)="OnIconSelected(icon)">
+        <img [src]="icon.IconFile48On">
+        <h3>{{icon.Title}}</h3>
+        <p>{{icon.Description}}</p>
+      </div>
+    </div>
+  </div>
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td align="left">
+        <input name="fileupload" id="fileupload" maxlength="409600" value="" class="inputbox autowidth"
+          [(ngModel)]="myFile" type="file" accept=".zip" />
+        <button class="btn btn-info" (click)="UploadIconSet()">{{'Upload'| translate}}</button>
+      </td>
+      <td align="right">
+        <button type="button" class="btn btn-danger" (click)="DeleteIcon()"
+          [disabled]="!selectedIcon">{{'Delete'| translate}}</button>
+      </td>
+    </tr>
+  </table>
+  <br>
+  <div *ngIf="selectedIcon">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="right" style="width:110px"><label for="iconname"><span>{{'Name'| translate}}</span>:</label></td>
+        <td><input type="text" id="iconname" [(ngModel)]="selectedIcon.Title" style="width: 200px; padding: .2em;"
+            class="text ui-widget-content ui-corner-all" /></td>
+      </tr>
+      <tr>
+        <td align="right"><label for="icondescription"><span>{{'Description'| translate}}</span>:</label></td>
+        <td><input type="text" id="icondescription" [(ngModel)]="selectedIcon.Description"
+            style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+          <button class="btn btn-info" (click)="UpdateIconTitleDescription()">{{'Update'| translate}}</button>
+        </td>
+      </tr>
+    </table>
+    <br>
+  </div>
+  <div *ngIf="selectedIcon">
+    <img [src]="selectedIcon.IconFile16" /> <img [src]="selectedIcon.IconFile48On" /> <img
+      [src]="selectedIcon.IconFile48Off" />
+  </div>
+</div>

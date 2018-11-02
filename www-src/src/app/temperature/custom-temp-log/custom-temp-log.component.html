@@ -1,0 +1,102 @@
+<div class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <a class="btnstylerev" routerLink="/Temperature">{{ 'Back' | translate }}</a>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <div id="customlog">
+    <table width="100%">
+      <tr>
+        <td width="75%">
+          <div id="customgraph" style="height: 400px; vertical-align:top;" #customgraph></div>
+        </td>
+        <td width="25%">
+          <table>
+            <tr>
+              <td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+                <span>{{'Select graph type'| translate}}</span>:
+                <select id="combocustomgraphtype" name="CustomGraphType" style="margin-top:3px; width:200px;" class="combobox ui-corner-all"
+                  (change)="ClearCustomGraph()" [(ngModel)]="customgraphtype">
+                  <option value="1">{{'Short term (5 minute values)'| translate}}</option>
+                  <option value="0">{{'Long term (daily values)'| translate}}</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+                <span>{{'Select device(s) to display'| translate}}</span>:
+                <div id="devicecontainer" style="margin-top:3px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;">
+                  <ng-container *ngFor="let d of devices">
+                    <input [name]="d.item.Name" type="checkbox" class="devicecheckbox noscheck" [(ngModel)]="d.checked"
+                      (change)="AddDeviceToGraph($event, d.item)">
+                    {{ d.item.Name }} <br />
+                  </ng-container>
+                </div>
+                <div id="controlbar" style="padding: 5px;" align="center">
+                  <table>
+                    <tr>
+                      <td align="left">
+                        <label for="graphfrom"><span>{{'From'| translate}}</span>:</label>
+                      </td>
+                      <td>
+                        <input type="text" style="width: 80px;" id="graphfrom" class="datepick" name="graphfrom"
+                          [(ngModel)]="from" (ngModelChange)="datePickerChanged()" dzDatePicker [maxDate]="to" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left">
+                        <label for="graphto"><span>{{'TO1'| translate}}</span>:</label>
+                      </td>
+                      <td>
+                        <input type="text" style="width: 80px;" id="graphto" class="datepick" name="graphto"
+                          [(ngModel)]="to" (ngModelChange)="datePickerChanged()" dzDatePicker [minDate]="from" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 2px;">
+                        <input type="checkbox" class="devicecheckbox noscheck" id="graphTemp" [(ngModel)]="graphTemp"><span>{{'Temperature'| translate}}</span>
+                      </td>
+                      <td style="padding: 2px;">
+                        <input type="checkbox" class="devicecheckbox noscheck" id="graphChill" [(ngModel)]="graphChill"><span>{{'Chill factor'| translate}}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 2px;">
+                        <input type="checkbox" class="devicecheckbox noscheck" id="graphHum" [(ngModel)]="graphHum"><span>{{'Humidity'| translate}}</span>
+                      </td>
+                      <td style="padding: 2px;">
+                        <input type="checkbox" class="devicecheckbox noscheck" id="graphBaro" [(ngModel)]="graphBaro"><span>{{'Barometer'| translate}}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 2px;">
+                        <input type="checkbox" class="devicecheckbox noscheck" id="graphDew" [(ngModel)]="graphDew"><span>{{'Dew Point'| translate}}</span>
+                      </td>
+                      <td style="padding: 2px;">
+                        &nbsp;
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 2px;">
+                        <input type="checkbox" class="devicecheckbox noscheck" id="graphSet" [(ngModel)]="graphSet"><span>{{'Set point'| translate}}</span>
+                      </td>
+                      <td style="padding: 2px;">
+                        &nbsp;
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+</div>

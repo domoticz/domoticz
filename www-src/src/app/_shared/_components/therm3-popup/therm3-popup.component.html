@@ -1,0 +1,24 @@
+<div id="thermostat3_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" [ngStyle]="style" [style.display]="display ? 'block' : 'none'">
+  <div class="ui-close" (click)="CloseTherm3Popup()"></div>
+  <table class="display" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="left" style="vertical-align: center;">
+        <a id="popup_therm_on" (click)="SwitchTherm3Popup('On')"><img src="images/Push48_On.png" class="lcursor" height="48" width="48"></a>
+        <a id="popup_therm_off" (click)="SwitchTherm3Popup('Off')"><img src="images/Push48_Off.png" class="lcursor" height="48" width="48"></a>
+      </td>
+    </tr>
+    <tr>
+      <td align="left" style="vertical-align: center;">
+        <a id="popup_therm_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" (click)="ThermUp()"></a>
+        <a id="popup_therm_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" (click)="ThermDown()"></a>
+        <a id="popup_therm_stop"><img src="images/Stop48.png" class="lcursor" height="48" width="48" (click)="ThermStop()"></a>
+      </td>
+    </tr>
+    <tr>
+      <td align="left" style="vertical-align: center;">
+        <a id="popup_therm_2up"><img src="images/Up48_2.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" (click)="ThermUp2()"></a>
+        <a id="popup_therm_2down"><img src="images/Down48_2.png" class="lcursor" height="48" width="48" (click)="ThermDown2()"></a>
+      </td>
+    </tr>
+  </table>
+</div>

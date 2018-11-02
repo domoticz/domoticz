@@ -1,0 +1,15 @@
+<div id="bstatus" class="item {{backgroundClass}}">
+  <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+    <tr>
+      <td id="name" class="name">{{item.Name}}</td>
+      <td id="bigtext" class="bigtext"><span>{{bigtext}}</span></td>
+      <td id="img" class="img img1">
+        <a [routerLink]="imageLink"><img src="images/{{imageSrc}}" class="lcursor" height="40" width="40"></a>
+      </td>
+      <td id="status" class="status">{{status}}</td>
+      <td id="lastupdate" class="lastupdate"><span>{{item.LastUpdate}}</span></td>
+    </tr>
+    </tbody>
+  </table>
+</div>

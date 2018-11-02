@@ -1,0 +1,110 @@
+<table class="display table-details table-details-lg">
+  <tr>
+    <td>
+      <label for="combotype">{{ 'Type' | translate }}:</label>
+    </td>
+    <td>
+      <select id="combotype" name="combotype" class="combobox ui-corner-all" style="width:120px" [(ngModel)]="notificationModel.type"
+        (ngModelChange)="updateViewValue()">
+        <option *ngFor="let item of notificationTypes;" [value]="item.ptag">{{item.text | translate}}</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr *ngIf="levelOptions" [hidden]="notificationModel.type !== 'S'">
+    <td>
+      <label for="combolevel">{{ 'Level' | translate }}:</label>
+    </td>
+    <td>
+      <select id="combolevel" name="combolevel" class="combobox ui-corner-all" style="min-width:50px" [(ngModel)]="notificationModel.level"
+        (ngModelChange)="updateViewValue()">
+        <option *ngFor="let item of levelOptions;" [value]="item.value">item.label</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr [hidden]="!isAdditionalOptionsAvailable()">
+    <td>
+      <label for="combowhen">{{ 'When' | translate }}:</label>
+    </td>
+    <td>
+      <select id="combowhen" name="combowhen" style="min-width:120px" class="combobox ui-corner-all" [(ngModel)]="notificationModel.condition"
+        (ngModelChange)="updateViewValue()">
+        <option *ngFor="let item of conditionOptions | keyvalue ;" [value]="item.key">{{ item.value }}</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr [hidden]="!isAdditionalOptionsAvailable()">
+    <td>
+      <label for="value">{{ 'Value' | translate }}:</label>
+    </td>
+    <td>
+      <input type="text" id="value" name="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"
+        [(ngModel)]="notificationModel.level" (ngModelChange)="updateViewValue()" />
+      <label for="value">&nbsp;{{ getValueUnit() }}</label>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <label for="combopriority">{{ 'Priority' | translate }}:</label>
+    </td>
+    <td>
+      <select id="combopriority" name="combopriority" style="width:120px" class="combobox ui-corner-all" [(ngModel)]="notificationModel.priority"
+        (ngModelChange)="updateViewValue()">
+        <option *ngFor="let item of priorityOptions; index as i" [value]="i - 2"> {{ item }}</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <label for="checkalways">{{ 'Ignore Interval' | translate }}:</label>
+    </td>
+    <td>
+      <div id="id_checkalways">
+        <input type="checkbox" id="checkalways" name="checkalways" [(ngModel)]="notificationModel.ignoreInterval"
+          (ngModelChange)="updateViewValue()" />&nbsp;
+        <label for="checkalways">({{ 'If enabled, it will bypass the Notification interval specified in the Settings page' | translate }})</label>
+      </div>
+    </td>
+  </tr>
+
+  <tr [hidden]="!isAdditionalOptionsAvailable()">
+    <td>
+      <label for="checkrecovery">{{ 'Recovery Notification' | translate }}:</label>
+    </td>
+    <td>
+      <div id="id_checkrecovery">
+        <input type="checkbox" id="checkrecovery" name="checkrecovery" [(ngModel)]="notificationModel.sendRecovery"
+          (ngModelChange)="updateViewValue()" />&nbsp;
+        <label for="checkrecovery">({{ 'If enabled, a notification will be send when given condition has been recovered' | translate }})</label>
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <label for="custommessage">{{ 'Custom Message' | translate }}:</label>
+    </td>
+    <td>
+      <input type="text" id="custommessage" name="custommessage" class="text ui-widget-content ui-corner-all" style="width: 350px; padding: .2em;"
+        [(ngModel)]="notificationModel.customMessage" (ngModelChange)="updateViewValue()" />&nbsp;
+      <span>{{ '(Optional)' | translate}}</span>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <label>{{ 'Active Systems' | translate }}:</label>
+    </td>
+    <td>
+      <div *ngFor="let item of notifiers">
+        <input type="checkbox" [id]="item.description" [name]="item.description" [(ngModel)]="notificationModel.systems[item.name]"
+          (ngModelChange)="updateViewValue()" />
+        <label for="{{ item.description}}">{{ item.name }}</label>
+      </div>
+    </td>
+  </tr>
+</table>

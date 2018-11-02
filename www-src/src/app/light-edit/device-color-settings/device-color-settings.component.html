@@ -1,0 +1,52 @@
+<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td align="left" style="width:200px">
+            <dz-rgbw-picker
+                    [(color)]="device.Color"
+                    (colorChange)="onDeviceChange()"
+                    [(level)]="device.LevelInt"
+                    (levelChange)="onDeviceChange()"
+                    [colorSettingsType]="device.SubType"
+                    [dimmerType]="device.DimmerType"
+                    [maxDimmerLevel]="device.MaxDimLevel"
+            ></dz-rgbw-picker>
+        </td>
+
+        <td align="left" style="vertical-align: top;">
+            <div class="btn-group">
+                <button class="btn btn-small" type="button" (click)="switchOn()">
+                    {{ 'On' | translate }}
+                </button>
+                 <!-- TODO: Domoticz back-end should report if the light implements fulllight  -->
+                <button class="btn btn-small" type="button" (click)="fullLight()">
+                    {{ 'Full Light' | translate }}
+                </button>
+                 <!-- TODO: Domoticz back-end should report if the light implements nightlight -->
+                <button class="btn btn-small" type="button" (click)="nightLight()">
+                    {{ 'Night Light' | translate }}
+                </button>
+                <button class="btn btn-small" type="button" (click)="switchOff()">
+                    {{ 'Off' | translate }}
+                </button>
+            </div>
+            <br><br>
+            <div class="btn-group" *ngIf="isRelativeDimmer()">
+                <button class="btn btn-small" type="button" (click)="brightnessUp()">
+                    {{ 'Brightness Up' | translate }}
+                </button>
+                <button class="btn btn-small" type="button" (click)="brightnessDown()">
+                    {{ 'Brightness Down' | translate }}
+                </button>
+            </div>
+            <br><br>
+            <div class="btn-group" *ngIf="isRelativeColorTemperature()">
+                <button class="btn btn-small" type="button" (click)="colorWarmer()">
+                    {{ 'Warmer White' | translate }}
+                </button>
+                <button class="btn btn-small" type="button" (click)="colorColder()">
+                    {{ 'Colder White' | translate }}
+                </button>
+            </div>
+        </td>
+    </tr>
+</table>

@@ -1,0 +1,24 @@
+.devices-filters__group-title {
+    border: 1px solid #333;
+    background-color: rgba(51, 51, 51, 0.7);
+    padding: 7px;
+    margin-bottom: 15px;
+
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.btn.devices-filters__group-collapse {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    line-height: 10px;
+}
+
+.devices-filters__item-list {
+    margin-left: 0;
+}
+
+.devices-filters__item {
+    list-style: none;
+}

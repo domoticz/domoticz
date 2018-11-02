@@ -1,0 +1,41 @@
+<div id="hardwarecontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Hardware">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="text-align:center;">
+    <h2><span>{{'Device'| translate}}</span>: {{hardware?.Name}}</h2>
+  </div>
+
+  <div id="limitlessmetertype" style="text-align: center;" *ngIf="hardware">
+    <form id="limitform">
+      <br>
+      <div style="text-align: center;">
+        <label><span>{{'Bridge Type'| translate}}</span>: </label>
+        <select id="CCBridgeType" [(ngModel)]="CCBridgeType" name="CCBridgeType" style="width:100px" class="combobox ui-corner-all">
+          <option value="0">V4/V5</option>
+          <option value="2">V6</option>
+        </select>
+        <br><br>
+        <label><span>{{'Type'| translate}}</span>: </label>
+        <select id="combom1type" [(ngModel)]="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
+          <option value="1">RGBW</option>
+          <option value="2">RGB</option>
+          <option value="8">White with adjustable color temperature</option>
+          <option value="4">RGBWW</option>
+        </select>
+        <br><br>
+        <input type="hidden" id="idx" name="idx" [value]="hardware.idx">
+        <button class="btn btn-danger" id="submitbuttonlimitless" (click)="SetLimitlessType()">Set Mode</button>
+      </div>
+    </form>
+  </div>
+
+</div>

@@ -1,0 +1,38 @@
+<div id="main">
+  <div class="main-border">
+    <div id="keypad">
+      <div class="keypad-header">
+        <div class="title" onClick="javascript:main.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);"><p>Domoticz
+          Security Panel</p></div>
+      </div>
+      <form name="keypadinput">
+        <input type="text" id="digitdisplay" name="digitdisplay" disabled="disabled" [(ngModel)]="digitdisplay"/>
+        <input type="hidden" id="password" [(ngModel)]="password" name="password"/>
+        <ul class="keypad-keys">
+          <li class="digit" (click)="AddDigit('1');">1</li>
+          <li class="digit" (click)="AddDigit('2');">2</li>
+          <li class="digit" (click)="AddDigit('3');">3</li>
+          <li class="disarm" (click)="SetSecStatus(0);">Disarm</li>
+        </ul>
+        <ul class="keypad-keys">
+          <li class="digit" (click)="AddDigit('4');">4</li>
+          <li class="digit" (click)="AddDigit('5');">5</li>
+          <li class="digit" (click)="AddDigit('6');">6</li>
+          <li class="arm" (click)="SetSecStatus(1);">Arm Home</li>
+        </ul>
+        <ul class="keypad-keys">
+          <li class="digit" (click)="AddDigit('7');">7</li>
+          <li class="digit" (click)="AddDigit('8');">8</li>
+          <li class="digit" (click)="AddDigit('9');">9</li>
+          <li class="arm" (click)="SetSecStatus(2);">Arm Away</li>
+        </ul>
+        <ul class="keypad-keys">
+          <li style="visibility: hidden;"></li>
+          <li class="digit" (click)="AddDigit('0');">0</li>
+          <li style="visibility: hidden;"></li>
+          <li class="cancel" (click)="beep(); ShowStatus();">Cancel</li>
+        </ul>
+      </form>
+    </div>
+  </div>
+</div>

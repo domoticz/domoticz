@@ -1,0 +1,18 @@
+<div class="container js-device-logs">
+
+    <a class="btnstylerev" dzBackButton>{{ 'Back' | translate }}</a>
+    <a class="btnstyle pull-right" *ngIf="isReportAvailable()" [routerLink]="['/Devices', deviceIdx, 'Report']">{{ 'Report' | translate }}</a>
+
+    <h2 class="page-header">{{ pageName }}</h2>
+
+    <dz-device-text-log *ngIf="isTextLog()" [deviceIdx]="deviceIdx"></dz-device-text-log>
+    <dz-device-light-log *ngIf="isLightLog()" [deviceIdx]="deviceIdx"></dz-device-light-log>
+    <dz-device-temperature-log *ngIf="isTemperatureLog()" [device]="device"></dz-device-temperature-log>
+    <dz-device-graph-log *ngIf="isGraphLog()" [device]="device"></dz-device-graph-log>
+
+    <div class="js-device-log-content">
+        <dz-smart-log *ngIf="isSmartLog()" [device]="device"></dz-smart-log>
+        <dz-counter-spline-log *ngIf="isCounterLogSpline()" [device]="device"></dz-counter-spline-log>
+        <dz-counter-log *ngIf="isCounterLog()" [device]="device"></dz-counter-log>
+    </div>
+</div>

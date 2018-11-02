@@ -1,0 +1,164 @@
+<div id="influxmain" class="container">
+  <table class="display" id="iflinktable" border="0" cellpadding="0" cellspacing="0" width="100%" #iflinktable>
+    <thead>
+    <tr>
+      <th width="60" align="left">Idx</th>
+      <th align="left">{{'Device name'| translate}}</th>
+      <th width="140" align="left">{{'Value to send'| translate}}</th>
+      <th width="120" align="left">{{'Target type'| translate}}</th>
+      <th width="60" align="left">{{'Enabled'| translate}}</th>
+    </tr>
+    </thead>
+  </table>
+  <p>
+  <table width="100%">
+  <tbody>
+    <tr>
+      <td valign="top">
+        <h2>{{'Edit link'| translate}}</h2><br>
+        <table class="display" id="linkparamstable" border="0" cellpadding="0" cellspacing="20">
+          <tr id="targetdevicename">
+            <td align="right" style="width:110px">
+              <label for="devicename"><span>{{'Device name'| translate}}</span>:</label>
+            </td>
+            <td>
+              <select id="devicename" name="devicename" [(ngModel)]="linkToEdit.devicename" style="width:280px"
+                      class="combobox ui-corner-all"
+                      (change)="ValueSelectorUpdate()">
+                <option *ngFor="let d of devices;" [value]="d.value">{{d.name}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="variabletosend">
+            <td align="right" style="width:110px">
+              <label for="combosendvalue"><span>{{'Value to send'| translate}}</span>:</label>
+            </td>
+            <!--<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>-->
+            <td>
+              <select id="combosendvalue" name="combosendvalue" [(ngModel)]="linkToEdit.sendvalue" style="width:160px"
+                      class="combobox ui-corner-all">
+                <option *ngFor="let s of sendvalues;" [value]="s.Value">{{s.Wording| translate}}</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label for="combotargettype"><span>{{'Target type'| translate}}</span>:</label>
+            </td>
+            <td>
+              <select id="combotargettype" name="combotargettype" [(ngModel)]="linkToEdit.targettype"
+                      style="width:160px" class="combobox ui-corner-all">
+                <option value="0">{{'On Value Change'| translate}}</option>
+                <option value="1">{{'Direct'| translate}}</option>
+                <!--<option value="2" data-i18n="On Interval">On Interval</option>-->
+              </select>
+            </td>
+          </tr>
+          <tr id="targetlinkenabled">
+            <td align="right" style="width:80px">
+              <span>{{'Link active'| translate}}</span>:
+            </td>
+            <td>
+              <input type="checkbox" id="linkenabled" name="linkenabled" [(ngModel)]="linkToEdit.linkenabled"><label
+              for="linkenabled"></label>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <a class="btnstyle3" (click)="AddLink('a')">{{'Add'| translate}}</a>
+              <a class="btnstyle3-dis" id="linkupdate"
+                 (click)="linkToEdit.idx != '0' ? AddLink('u') : undefined">{{'Update'| translate}}</a>&nbsp;&nbsp;&nbsp;
+              <a class="btnstyle3-dis" id="linkdelete"
+                 (click)="linkToEdit.idx != '0' ? DeleteLink(linkToEdit.idx) : undefined">{{'Delete'| translate}}</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td valign="top">
+        <h2>{{'General settings'| translate}}</h2><br>
+        <table class="display" id="influxremote" border="0" cellpadding="0" cellspacing="20">
+          <tr>
+            <td align="right" style="width:80px">
+              <span>{{'Enabled'| translate}}</span>:
+            </td>
+            <td>
+              <input type="checkbox" id="influxlinkenabled" name="influxlinkenabled"
+                     [(ngModel)]="influxConfig.linkenabled"><label for="influxlinkenabled"></label>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label><span>{{'Remote Address'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="tcpaddress" name="tcpaddress" [(ngModel)]="influxConfig.tcpaddress"
+                     style="width: 250px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label><span>{{'Port'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="tcpport" name="tcpport" [(ngModel)]="influxConfig.tcpport"
+                     style="width: 60px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label><span>{{'Path'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="path" name="path" [(ngModel)]="influxConfig.path"
+                     style="width: 150px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>&nbsp;(<span>{{'Only when using a Remote Proxy'| translate}}</span>)
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label><span>{{'Database'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="database" name="database" [(ngModel)]="influxConfig.database"
+                     style="width: 150px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label><span>{{'Username'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="username" name="username" [(ngModel)]="influxConfig.username"
+                     style="width: 150px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:110px">
+              <label><span>{{'Password'| translate}}</span>:</label>
+            </td>
+            <td>
+              <input type="text" id="password" name="password" [(ngModel)]="influxConfig.password"
+                     style="width: 150px; padding: .2em;"
+                     class="text ui-widget-content ui-corner-all"/>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="width:80px">
+              <span>{{'Debug to logfile'| translate}}</span>:
+            </td>
+            <td>
+              <input type="checkbox" id="debugenabled" name="debugenabled"
+                     [(ngModel)]="influxConfig.debugenabled"><label for="debugenabled"></label>
+            </td>
+          </tr>
+        </table>
+        <a class="btnstyle3" (click)="SaveConfiguration()">{{'Save'| translate}}</a>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</div>

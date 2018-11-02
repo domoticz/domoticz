@@ -1,0 +1,77 @@
+div#cnt {
+  width: 990px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+a, a:visited { text-decoration: none; color: #336699; }
+a:hover { text-decoration: none; color: #003366; }
+
+#frame {
+  float: left;
+  margin: 0px;
+  padding: 0px 2px 0px 2px;
+}
+
+#label_lg {
+  font-family: arial;
+  font-weight: normal;
+  color: #999;
+  font-size: 17px;
+  margin-top: -20px;
+  height: 25px;
+  line-height: 10px;
+}
+
+#itemp {
+  font-family: Orbitron, serif;
+  font-weight: bold;
+  width: 570px;
+  padding: 5px;
+  border: 1px solid #666;
+  height: 217px;
+  line-height: 210px;
+  font-size: 180px;
+  color: darkorange;
+  margin: 0px ;
+}
+
+#ihi, #ilow, #ohi, #ihum, #astat, #astatw, #otemp, #crte,
+#ohi, #rain, #ohum, #ocld, #otxt, #ctime, #cycb, #ctemp, #cyce,
+#tmpb, #tmpe, #tmpc, #crte, #ctme, #wind, #state,
+#ctmep, #sgas, #mode, #estate {
+  font-family: Orbitron, serif;
+  font-weight: bold;
+  width: 162px;
+  padding: 10px;
+  border: 1px solid #666;
+  height: 90px;
+  line-height: 75px;
+  font-size: 90px;
+  color: #999;
+}
+
+#ctime, #cycb, #cyce, #tmpb, #tmpe, #tmpc, #crte, #ctme, #ohi,
+#rain, #ohum, #ocld, #otxt, #otemp, #wind, #astat, #awatt,
+#astatw, #state, #estate, #ctmep, #sgas, #mode {
+  height: 65px;
+  line-height: 55px;
+  color: #999;
+}
+
+#state, #estate, #crte, #wind {
+  width: 184px;
+}
+
+#otxt {
+  width: 560px;
+  font-size: 40px;
+  line-height: 55px;
+  color: darkorange;
+}
+
+#al {
+  margin-left: -35px;
+  margin-top: 55px;
+  width: 1050px;height: 570px;
+}

@@ -1,0 +1,73 @@
+<div id="fibaromain" class="container">
+  <table class="display" id="uservariablestable" border="0" cellpadding="0" cellspacing="0" width="100%"
+         #uservariablestable>
+    <thead>
+    <tr>
+      <th width="30" align="left">Idx</th>
+      <th width="120" align="left">{{ 'Variable name' | translate }}</th>
+      <th width="60" align="left">{{ 'Variable type' | translate }}</th>
+      <th width="120" align="left">{{ 'Current value' | translate }}</th>
+      <th width="120" align="left">{{ 'Last update' | translate }}</th>
+    </tr>
+    </thead>
+  </table>
+  <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td align="left">
+        <a [ngClass]="{'btnstyle3-dis': !editMode, 'btnstyle3': editMode}" id="uservariableupdate"
+           (click)="editMode ? UpdateVariable(userVariable.idx) : undefined">{{'Update'| translate}}</a>&nbsp;
+        <a [ngClass]="{'btnstyle3-dis': !editMode, 'btnstyle3': editMode}" id="uservariabledelete"
+           (click)="editMode ? DeleteVariable(userVariable.idx) : undefined">{{'Delete'| translate}}</a>
+      </td>
+      <td align="right">
+        <a class="btnstyle3" (click)="RefreshUserVariablesTable()">{{'Refresh'| translate}}</a>
+      </td>
+    </tr>
+  </table>
+  <p>
+  <h2>{{'Edit variable'| translate}}</h2><br>
+  <table class="display" id="uservariablesedittable" border="0" cellpadding="0" cellspacing="20">
+    <tr id="uservariablenamerow">
+      <td align="right" style="width:110px">
+        <label
+          for="uservariablename"><span>{{'Variable name'| translate}}</span>:</label>
+      </td>
+      <td>
+        <input type="text" id="uservariablename" name="uservariablename" [(ngModel)]="userVariable.name"
+               style="width: 250px; padding: .2em;"
+               class="text ui-widget-content ui-corner-all"/>
+      </td>
+    </tr>
+    <tr>
+      <td align="right" style="width:110px">
+        <label
+          for="uservariabletype"><span>{{'Variable type'| translate}}</span>:</label>
+      </td>
+      <td>
+        <select id="uservariabletype" name="uservariabletype" [(ngModel)]="userVariable.type" style="width:160px"
+                class="combobox ui-corner-all">
+          <option value="0">{{'Integer'| translate}}</option>
+          <option value="1">{{'Float'| translate}}</option>
+          <option value="2">{{'String'| translate}}</option>
+          <option value="3">{{'Date'| translate}}</option>
+          <option value="4">{{'Time'| translate}}</option>
+        </select>
+      </td>
+    </tr>
+    <tr id="uservariablevaluerow">
+      <td align="right" style="width:110px">
+        <label for="uservariablevalue"><span>{{'Variable value'| translate}}</span>:</label>
+      </td>
+      <td>
+        <input type="text" id="uservariablevalue" name="uservariablevalue" [(ngModel)]="userVariable.value"
+               style="width: 250px; padding: .2em;"
+               class="text ui-widget-content ui-corner-all"/>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <a class="btnstyle3" (click)="AddVariable()">{{'Add'| translate}}</a>
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,88 @@
+<div id="hardwarecontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Hardware">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="text-align:center;">
+    <h2><span>{{'Device'| translate}}</span>: {{hardware?.Name}}</h2>
+  </div>
+
+  <div id="rfx868hardwaremode" style="text-align: center;" *ngIf="hardware">
+    <form id="settings">
+      <table style="text-align: left; margin: auto;">
+        <tr>
+          <td align="left" style="width:160px">
+            <span style="color:yellow;">868.30MHz</span>
+          </td>
+          <td align="left" style="width:150px">
+            <span style="color:yellow;">868.30MHz FSK</span>
+          </td>
+          <td align="left" style="width:170px">
+            <span style="color:yellow;">868.35MHz</span>
+          </td>
+          <td align="left" style="width:150px">
+            <span style="color:yellow;">868.35MHz FSK</span>
+          </td>
+          <td align="left" style="width:150px">
+            <span style="color:yellow;">868.95MHz</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input type="checkbox" id="LaCrosse" [(ngModel)]="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse (not IT+)</label>
+          </td>
+          <td>
+            <input type="checkbox" id="Alecto" [(ngModel)]="Alecto" name="Alecto">&nbsp;<label for="Alecto">Alecto</label>
+          </td>
+          <td>
+            <input type="checkbox" id="Legrand" [(ngModel)]="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand CAD</label>
+          </td>
+          <td>
+            <input type="checkbox" id="ProGuard" [(ngModel)]="Pro" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label>
+          </td>
+          <td>
+            <input type="checkbox" id="VionicPowerCode" [(ngModel)]="Vionic" name="VionicPowerCode">&nbsp;<label
+              for="VionicPowerCode">VionicPowerCode</label>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td style="vertical-align:top;">
+            <input type="checkbox" id="Hideki" [(ngModel)]="Hideki" name="Hideki">&nbsp;<label for="Hideki">Hideki<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Honeywell<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Irox<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Mebux<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Nexus</label>
+          </td>
+          <td style="vertical-align:top;">
+            <input type="checkbox" id="FHT8" [(ngModel)]="FHT8" name="FHT8">&nbsp;<label for="FHT8">FHT8</label>
+          </td>
+          <td></td>
+          <td style="vertical-align:top;">
+            <input type="checkbox" id="VionicCodeSecure" [(ngModel)]="VionicCodeSecure" name="VionicCodeSecure">&nbsp;<label
+              for="VionicCodeSecure">VionicCodeSecure</label>
+          </td>
+        </tr>
+      </table>
+      <br>
+      You can only enable protocols for the same frequency!
+      <br>
+      <br>
+      <input type="hidden" id="idx" name="idx" [value]="hardware.idx">
+      <button class="btn btn-warning" id="defaultbutton" (click)="Default()">Default</button>
+      <button class="btn btn-danger" id="submitbutton" (click)="SetRFXCOMMode()">Set Mode</button>
+      <br>
+      <br>
+      <button class="btn btn-info" id="firmwarebutton" [routerLink]="['/RFXComFirmware', hardware.idx]">Upgrade Firmware</button>
+    </form>
+  </div>
+
+</div>

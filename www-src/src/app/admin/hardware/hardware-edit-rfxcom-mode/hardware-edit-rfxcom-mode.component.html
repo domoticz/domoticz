@@ -1,0 +1,122 @@
+<div id="hardwarecontent" class="container">
+
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tbody>
+            <tr>
+                <td>
+                    <a class="btnstylerev" routerLink="/Hardware">{{'Back'| translate}}</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="text-align: center;">
+        <h2><span>{{'Device'| translate}}</span>: {{hardware?.Name}}</h2>
+    </div>
+
+    <div id="rfxhardwaremode" style="text-align: center;" *ngIf="hardware">
+        <form id="settings">
+            <table style="text-align: left; margin: auto;">
+                <tr>
+                    <td align="left" style="width:150px"><input type="checkbox" id="Keeloq" [(ngModel)]="Keeloq" name="Keeloq">&nbsp;<label
+                            for="Keeloq">Keeloq</label></td>
+                    <td align="left" style="width:160px"><input type="checkbox" id="undecon" [(ngModel)]="undecon" name="undecon">&nbsp;<label
+                            for="undecon">undec on</label></td>
+                    <td align="left" style="width:180px"><input type="checkbox" id="BlindT1T2T3T4" [(ngModel)]="BlindT1T2T3T4"
+                            name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
+                    <td align="left" style="width:150px"><input type="checkbox" id="Visonic" [(ngModel)]="Visonic" name="Visonic">&nbsp;<label
+                            for="Visonic">Visonic</label></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="HC" [(ngModel)]="HC" name="HC">&nbsp;<label for="HC">Home Confort</label></td>
+                    <td><input type="checkbox" id="ImaginTronix" [(ngModel)]="ImaginTronix" name="ImaginTronix">&nbsp;<label
+                            for="ImaginTronix">ImaginTronix</label></td>
+                    <td><input type="checkbox" id="BlindT0" [(ngModel)]="BlindT0" name="BlindT0">&nbsp;<label for="BlindT0">Blind T0</label>
+                    </td>
+                    <td><input type="checkbox" id="ATIremote" [(ngModel)]="ATIremote" name="ATIremote">&nbsp;<label
+                            for="ATIremote">ATI/Cartelectronic</label></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="checkbox" id="ByronSX" [(ngModel)]="ByronSX" name="ByronSX">&nbsp;<label for="ByronSX">Byron SX</label>
+                    </td>
+                    <td><input type="checkbox" id="ProGuard" [(ngModel)]="ProGuard" name="ProGuard">&nbsp;<label
+                            for="ProGuard">ProGuard</label></td>
+                    <td><input type="checkbox" id="OregonScientific" [(ngModel)]="OregonScientific" name="OregonScientific">&nbsp;<label
+                            for="OregonScientific">Oregon Scientific</label></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="checkbox" id="RSL" [(ngModel)]="RSL" name="RSL">&nbsp;<label for="RSL">Conrad RSL</label></td>
+                    <td><input type="checkbox" id="Legrand" [(ngModel)]="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand
+                            CAD</label></td>
+                    <td><input type="checkbox" id="Meiantech" [(ngModel)]="Meiantech" name="Meiantech">&nbsp;<label
+                            for="Meiantech">Meiantech</label></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="checkbox" id="Lighting4" [(ngModel)]="Lighting4" name="Lighting4">&nbsp;<label
+                            for="Lighting4">Lighting4</label></td>
+                    <td><input type="checkbox" id="LaCrosse" [(ngModel)]="LaCrosse" name="LaCrosse">&nbsp;<label
+                            for="LaCrosse">LaCrosse</label></td>
+                    <td><input type="checkbox" id="HomeEasyEU" [(ngModel)]="HomeEasyEU" name="HomeEasyEU">&nbsp;<label for="HomeEasyEU">HomeEasy
+                            EU</label></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="checkbox" id="FineOffsetViking" [(ngModel)]="FineOffsetViking" name="FineOffsetViking">&nbsp;<label
+                            for="FineOffsetViking">FineOffset/Viking</label></td>
+                    <td><input type="checkbox" id="HidekiUPM" [(ngModel)]="HidekiUPM" name="HidekiUPM">&nbsp;<label
+                            for="HidekiUPM">Hideki/UPM</label></td>
+                    <td><input type="checkbox" id="AC" [(ngModel)]="AC" name="AC">&nbsp;<label for="AC">AC</label></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="checkbox" id="Rubicson" [(ngModel)]="Rubicson" name="Rubicson">&nbsp;<label
+                            for="Rubicson">Rubicson</label></td>
+                    <td><input type="checkbox" id="ADLightwaveRF" [(ngModel)]="ADLightwaveRF" name="ADLightwaveRF">&nbsp;<label
+                            for="ADLightwaveRF">AD/LightwaveRF</label></td>
+                    <td><input type="checkbox" id="ARC" [(ngModel)]="ARC" name="ARC">&nbsp;<label for="ARC">ARC</label></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="checkbox" id="AEBlyss" [(ngModel)]="AEBlyss" name="AEBlyss">&nbsp;<label for="AEBlyss">AE/Blyss</label>
+                    </td>
+                    <td><input type="checkbox" id="Mertik" [(ngModel)]="Mertik" name="Mertik">&nbsp;<label for="Mertik">Mertik</label></td>
+                    <td><input type="checkbox" id="X10" [(ngModel)]="X10" name="X10">&nbsp;<label for="X10">X10</label></td>
+                </tr>
+            </table>
+            <div id="rfx_xl_settings" *ngIf="proXL">
+                <br>
+                <table>
+                    <tr>
+                        <td><label for="combo_rfx_xl_async_type">Async Type</label>:</td>
+                        <td><select id="combo_rfx_xl_async_type" name="combo_rfx_xl_async_type" style="width:200px"
+                                class="combobox ui-corner-all" [(ngModel)]="asyncType">
+                                <option [ngValue]="0">Disabled</option>
+                                <option [ngValue]="1">DSMR_1</option>
+                                <option [ngValue]="2">DSMR_2</option>
+                                <option [ngValue]="3">DSMR_3</option>
+                                <option [ngValue]="4">DSMR_4</option>
+                                <option [ngValue]="5">DSMR_5</option>
+                                <option [ngValue]="6">Teleinfo (1200)</option>
+                                <option [ngValue]="7">Teleinfo (19200)</option>
+                            </select></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>(Only for ProXL hardware devices!)</td>
+                    </tr>
+                </table>
+            </div>
+            <br>
+            <input type="hidden" id="idx" name="idx" [value]="hardware.idx">
+            <button class="btn btn-warning" id="defaultbutton" (click)="Default()">Default</button>&nbsp;
+            <button class="btn btn-danger" id="submitbutton" (click)="SetRFXCOMMode()">Set Mode</button>
+            <br>
+            <br>
+            <button class="btn btn-info" id="firmwarebutton" [routerLink]="['/RFXComFirmware', hardware.idx]">Upgrade Firmware</button>
+        </form>
+    </div>
+
+</div>

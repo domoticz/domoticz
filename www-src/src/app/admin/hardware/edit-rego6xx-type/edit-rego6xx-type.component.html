@@ -1,0 +1,42 @@
+<div id="hardwarecontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Hardware">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="text-align:center;">
+    <h2><span>{{'Device'| translate}}</span>: {{hardware?.Name}}</h2>
+  </div>
+
+  <div id="rego6xxtypeedit" style="text-align:center;" *ngIf="hardware">
+    <form id="regotype">
+      <table>
+        <tr>
+          <td>
+            <label>Rego 6XX type: </label>
+          </td>
+          <td>
+            <select id="comborego6xxtype" [(ngModel)]="comborego6xxtype" name="Rego6XXType" style="width:200px" class="combobox ui-corner-all">
+              <option value="0">600-635, 637 single language</option>
+              <option value="1">636</option>
+              <option value="2">637 multi language</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">Note: Any change will take effect after restarting Domoticz!</td>
+        </tr>
+      </table>
+      <br>
+      <input type="hidden" id="idx" name="idx" [value]="hardware.idx">
+      <button class="btn btn-danger" id="submitbuttonrego" (click)="SetRego6XXType()">Set Mode</button>
+    </form>
+  </div>
+
+</div>

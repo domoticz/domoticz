@@ -1,0 +1,5 @@
+  <td id="name" class="name">
+    <a [routerLink]="['/Devices/', item.idx, 'Log']"><img src="images/next.png" height="16" width="16"></a>
+    {{item.Name}}
+  </td>
+  <td id="status" class="status">{{status}}<br *ngIf="status2ndline">{{status2ndline}}</td>

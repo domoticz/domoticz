@@ -1,0 +1,72 @@
+<div id="hardwarecontent" class="container">
+
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td>
+          <a class="btnstylerev" routerLink="/Hardware">{{'Back'| translate}}</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="text-align:center;">
+    <h2><span>{{'Device'| translate}}</span>: {{hardware?.Name}}</h2>
+  </div>
+
+  <div id="lms" style="text-align: center;">
+    <div class="page-header-small">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td>
+            <h1>{{'Settings'| translate}}</h1>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <table class="display" id="lmssettingstable" border="0" cellpadding="0" cellspacing="20">
+      <tr>
+        <td align="right" style="width:110px">
+          <label for="pollinterval"><span>{{'Poll Interval'| translate}}</span>:</label>
+        </td>
+        <td>
+          <input type="text" id="pollinterval" [(ngModel)]="pollinterval" style="width: 80px; padding: .2em;"
+            class="text ui-widget-content ui-corner-all" />&nbsp;(<span>{{'Seconds'| translate}}</span>)
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><a class="btn btn-danger sub-tabs-apply" (click)="SetLMSSettings()">{{'Apply Settings'| translate}}</a></td>
+      </tr>
+    </table>
+    <div class="page-header-small">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td>
+            <h1>{{'Devices'| translate}}</h1>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <table class="display" id="lmsnodestable" border="0" cellpadding="0" cellspacing="0" width="100%" #lmsnodestable>
+      <thead>
+        <tr>
+          <th width="70" align="center">{{'ID'| translate}}</th>
+          <th align="left">{{'Name'| translate}}</th>
+          <th width="120" align="left">{{'Mac Address'| translate}}</th>
+          <th width="60" align="left">{{'Status'| translate}}</th>
+        </tr>
+      </thead>
+    </table>
+    <table class="display" id="lmsnodesettingstable" border="0" cellpadding="0" cellspacing="20">
+      <tr>
+        <td>
+          <a class="btn btn-danger sub-tabs-apply"
+            (click)="DeleteUnusedLMSDevices()">{{'Delete Unused Devices'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+    <input type="hidden" id="idx" name="idx" [value]="hardware.idx">
+  </div>
+
+</div>

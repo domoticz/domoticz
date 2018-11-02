@@ -1,0 +1,42 @@
+<div class="item" [ngClass]="nbackstyle()">
+  <section>
+    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">
+      <tbody>
+      <tr>
+        <td id="name" [ngClass]="{'highlight': highlight}">{{item.Name}}</td>
+        <td id="bigtext">{{bigtext}}</td>
+        <td id="img">
+          <img *ngIf="!isSetPoint()" [src]="'images/' + image" height="48" width="48">
+          <img *ngIf="isSetPoint()" [src]="'images/' + image" height="48" width="48" class="lcursor" (click)="ShowSetpointPopup($event)">
+        </td>
+        <td id="status" [innerHTML]="status"></td>
+        <td id="lastupdate">{{item.LastUpdate}}</td>
+        <td id="type">{{item.Type}}, {{item.SubType}}</td>
+        <td class="options">
+          <img *ngIf="item.Favorite == 0" src="images/nofavorite.png" (click)="MakeFavorite(1)" class="lcursor" [title]="'Add to Dashboard'| translate">
+          <img *ngIf="item.Favorite != 0" src="images/favorite.png" (click)="MakeFavorite(0)" class="lcursor" [title]="'Remove from Dashboard'| translate">
+          &nbsp;&nbsp;&nbsp;&nbsp;
+
+          <a class="btnsmall" *ngIf="logLink != null" [routerLink]="logLink">{{'Log'| translate}}</a>
+          &nbsp;
+
+          <ng-container *dzHasPermission="'Admin'">
+            <a class="btnsmall" (click)="EditUtilityDevice()">{{'Edit'| translate}}</a>
+            &nbsp;
+
+            <a *ngIf="(item.Type == 'Thermostat' && item.SubType == 'SetPoint') || item.Type == 'Radiator 1'" [ngClass]="{'btnsmall-sel': item.Timers == 'true', 'btnsmall': item.Timers != 'true'}"
+              [routerLink]="['/Devices/', item.idx, 'Timers']">{{'Timers'| translate}}</a>
+            <span *ngIf="(item.Type == 'Thermostat' && item.SubType == 'SetPoint') || item.Type == 'Radiator 1'">&nbsp;</span>
+
+            <a *ngIf="item.ShowNotifications" [ngClass]="{'btnsmall-sel': item.Notifications == 'true', 'btnsmall': item.Notifications != 'true'}"
+              class="btnsmall-sel" [routerLink]="['/Devices', item.idx, 'Notifications']">{{'Notifications'| translate}}</a>
+          </ng-container>
+
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<dz-setpoint-popup (set)="onSetpointSet()"></dz-setpoint-popup>

@@ -1,0 +1,23 @@
+<div class="device-selector">
+  <section class="device-selector__section device-selector__section_hardware">
+    <h2>{{ 'Hardware' | translate }}</h2>
+    <div class="list-group list-group-sm device-selector-group ">
+      <a href="javascript:void(0)"
+         class="list-group-item list-group-item-action"
+         [ngClass]="{'active': item === hardwareFilter}"
+         (click)="filterByHardware(item)"
+         *ngFor="let item of hardwareItems"
+      >
+        {{ item }}
+      </a>
+    </div>
+  </section>
+
+  <section class="device-selector__section device-selector__section_devices">
+    <dz-room-plan-device-selector-table
+      class="device-selector-group"
+      [devices]="filteredDevices"
+      (select)="selectDevice($event)"
+    ></dz-room-plan-device-selector-table>
+  </section>
+</div>

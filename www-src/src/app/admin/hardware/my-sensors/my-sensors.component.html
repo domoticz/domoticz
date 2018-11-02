@@ -1,0 +1,89 @@
+<div class="page-header-small">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <h1>{{'Nodes'| translate}}</h1>
+      </td>
+    </tr>
+  </table>
+</div>
+<table class="display" id="mysensorsnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+  <thead>
+    <tr>
+      <th width="80" align="center">{{'NodeID'| translate}}</th>
+      <th align="left">{{'Name'| translate}}</th>
+      <th align="left">{{'Sketch Name'| translate}}</th>
+      <th width="60" align="left">{{'Version'| translate}}</th>
+      <th width="60" align="left">{{'Childs'| translate}}</th>
+      <th width="160" align="left">{{'Last Seen'| translate}}</th>
+    </tr>
+  </thead>
+</table>
+<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td>
+      <a class="btnstyle3-dis" id="nodeupdate" (click)="nodeid != -1 ? MySensorsUpdateNode(nodeid) : null">{{'Update'| translate}}</a>&nbsp;&nbsp;&nbsp;
+      <a class="btnstyle3-dis" id="nodedelete" (click)="nodeid != -1 ? MySensorsDeleteNode(nodeid) : null">{{'Delete'| translate}}</a>
+    </td>
+    <td align="right">
+      <a class="btnstyle3" id="nodelistrefresh" (click)="RefreshMySensorsNodeTable()">{{'Refresh'| translate}}</a>
+    </td>
+  </tr>
+</table>
+<br>
+<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr id="trNodeSettings" *ngIf="displaytrNodeSettings">
+    <td align="right" style="width:110px"><label for="nodename"><span>{{'Name'| translate}}</span>:</label></td>
+    <td><input type="text" id="nodename" name="nodename" [(ngModel)]="nodename" style="width: 250px; padding: .2em;"
+        class="text ui-widget-content ui-corner-all" /></td>
+  </tr>
+</table>
+<br>
+<div class="page-header-small">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td>
+        <h1>{{'Childs'| translate}}</h1>
+      </td>
+    </tr>
+  </table>
+</div>
+<table class="display" id="mysensorsactivetable" border="0" cellpadding="0" cellspacing="0" width="100%">
+  <thead>
+    <tr valign="middle">
+      <th width="40" align="center">{{'ChildID'| translate}}</th>
+      <th width="160" align="left">{{'Type'| translate}}</th>
+      <th align="80">{{'Name'| translate}}</th>
+      <th>{{'Values'| translate}}</th>
+      <th width="80" align="left">{{'Ack'| translate}}</th>
+      <th width="100" align="left">{{'Ack Timeout'| translate}}</th>
+      <th width="160" align="left">{{'Last Seen'| translate}}</th>
+    </tr>
+  </thead>
+</table>
+<table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td>
+      <a class="btnstyle3-dis" id="activedeviceupdate" (click)="childidx ? MySensorsUpdateChild(nodeid, childidx) : null">{{'Update'| translate}}</a>&nbsp;&nbsp;&nbsp;
+      <a class="btnstyle3-dis" id="activedevicedelete" (click)="childidx ? MySensorsDeleteChild(nodeid, childidx) : null">{{'Delete'| translate}}</a>
+    </td>
+    <td align="right">
+      <a class="btnstyle3" id="nodelistrefresh" (click)="MySensorsRefreshActiveDevicesTable()">{{'Refresh'| translate}}</a>
+    </td>
+  </tr>
+</table>
+<br>
+<div id="trChildSettings" *ngIf="displaytrChildSettings">
+  <table id="mchildsettings" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td align="right" style="width:120px"><label for="Ack"><span>{{'Ack'| translate}}</span></label>:</td>
+      <td><input type="checkbox" id="Ack" name="Ack" [(ngModel)]="Ack" /></td>
+    </tr>
+    <tr>
+      <td align="right"><label for="AckTimeout"><span>{{'Ack Timeout'| translate}}</span>:</label></td>
+      <td><input type="text" id="AckTimeout" name="AckTimeout" [(ngModel)]="AckTimeout" style="width: 100px; padding: .2em;"
+          class="text ui-widget-content ui-corner-all" />&nbsp;(ms)</td>
+    </tr>
+  </table>
+</div>
+<input type="hidden" id="idx" name="idx" [value]="devIdx">

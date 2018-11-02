@@ -1,0 +1,8 @@
+<div id="dialog-replacedevice" title="{{'Replace Device'| translate}}" style="display:none;">
+  <form>
+    <label for="newdevice"><span>{{'New Device'| translate}}</span>: </label>
+    <select id="newdevice" name="newdevice" style="width:250px" class="combobox ui-corner-all" [(ngModel)]="newDeviceIdx">
+      <option *ngFor="let d of newDevices;" [value]="d.idx">{{d.Name}}</option>
+    </select>
+  </form>
+</div>

@@ -1,0 +1,28 @@
+<div id="bstatus" class="item {{backgroundClass}}">
+  <table [id]="item.Type.indexOf('Scene') == 0 ? 'itemtablesmall' : 'itemtablesmalldoubleicon'" [class]="item.Type.indexOf('Scene') == 0 ? 'itemtablesmall' : 'itemtablesmalldoubleicon'"
+    border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+    <tr>
+      <td id="name" class="name">{{item.Name}}</td>
+      <td id="bigtext" class="bigtext">
+        <span>{{bigtext}}</span>
+        <a *ngIf="item.UsedByCamera == true" (click)="ShowCameraLiveStream()"><img src="images/webcam.png" [title]="'Stream Video'| translate"
+            height="16" width="16"></a>
+      </td>
+      <td id="img1" class="img img1" *ngIf="item.Type.indexOf('Scene') == 0">
+        <img src="images/Push48_On.png" title="Activate" (click)="SwitchScene('On')" class="lcursor" height="40" width="40">
+      </td>
+      <td id="img1" class="img img1" *ngIf="item.Type.indexOf('Scene') != 0">
+        <img class="lcursor {{item.Status == 'On' ? 'transimg' : ''}}" src="images/Push48_On.png" [title]="'Turn On'| translate"
+          (click)="SwitchScene('On')" height="40" width="40">
+      </td>
+      <td id="img2" class="img2" *ngIf="item.Type.indexOf('Scene') != 0">
+        <img class="lcursor {{item.Status == 'Off' ? 'transimg' : ''}}" src="images/Push48_Off.png" [title]="'Turn Off'| translate"
+          (click)="SwitchScene('Off')" height="40" width="40">
+      </td>
+      <td id="status" class="status"></td>
+      <td id="lastupdate" class="lastupdate"><span>{{item.LastUpdate}}</span></td>
+    </tr>
+    </tbody>
+  </table>
+</div>

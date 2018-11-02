@@ -1,0 +1,60 @@
+<div id="deviceTimers" class="container js-device-timers">
+  <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+          <td>
+              <a class="btnstylerev" [routerLink]="['/Scenes']">{{'Back'| translate}}</a>
+          </td>
+      </tr>
+  </table>
+  <br>
+
+  <h2 class="page-header">{{'Name'| translate}}: {{scene?.Name}}</h2>
+
+  <dz-timesun></dz-timesun>
+
+  <dz-timers-table
+          *ngIf="isLoaded"
+          [(timerSettings)]="timerSettings"
+          [timers]="timers"
+          [(selectedTimerIdx)]="selectedTimerIdx"
+          [levelOptions]="levelOptions"
+          [isSetpointTimers]="isSetpointTimers">
+  </dz-timers-table>
+
+  <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+          <td>
+              <button id="timerupdate"
+                      class="btnstyle3"
+                      (click)="updateTimer(selectedTimerIdx)"
+                      [disabled]="!selectedTimerIdx">
+                  {{ 'Update' | translate }}
+              </button>
+              &nbsp;&nbsp;
+              <button id="timerdelete"
+                      class="btnstyle3"
+                      (click)="deleteTimer(selectedTimerIdx)"
+                      [disabled]="!selectedTimerIdx">
+                  {{ 'Delete' | translate }}
+              </button>
+          </td>
+          <td align="right">
+              <button class="btnstyle3" (click)="clearTimers()">{{ 'Clear' | translate }}</button>
+          </td>
+      </tr>
+  </table>
+  <br>
+
+  <dz-timer-form
+          *ngIf="isLoaded"
+          [(timerSettings)]="timerSettings"
+          [levelOptions]="levelOptions"
+          [colorSettingsType]="colorSettingsType"
+          [isCommandSelectionDisabled]="isCommandSelectionDisabled"
+          [isSetpointTimers]="isSetpointTimers"
+          [dimmerType]="dimmerType">
+  </dz-timer-form>
+
+  <br>
+  <button class="btnstyle3" (click)="addTimer()">{{ 'Add' | translate }}</button>
+</div>

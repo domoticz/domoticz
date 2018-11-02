@@ -1,0 +1,30 @@
+<div class="container" *ngIf="device">
+
+  <!-- <a class="btnstylerev" dzBackButton>{{ 'Back' | translate }}</a> -->
+  <a class="btnstylerev" [routerLink]="['/Devices', device.idx, 'Log']">{{ 'Back' | translate }}</a>
+
+  <div class="pull-right">
+    <label for="comboyear">{{ 'Year' | translate }}: </label>
+    <select id="comboyear" class="combobox ui-corner-all" style="width:64px" [(ngModel)]="selectedYear"
+      (ngModelChange)="selectYear()">
+      <option *ngFor="let year of yearsOptions" [value]="year">{{ year }}</option>
+    </select>
+  </div>
+
+  <h2 class="page-header" *ngIf="isMonthView">{{ device.Name }}, {{monthNames[selectedMonth - 1] | translate}} {{
+    selectedYear }}</h2>
+  <h2 class="page-header" *ngIf="!isMonthView">{{ device.Name }} {{ selectedYear }}</h2>
+
+  <dz-device-counter-report *ngIf="isCounterReport()" [device]="device" [selectedYear]="selectedYear"
+    [selectedMonth]="selectedMonth" [isOnlyUsage]="isOnlyUsage()"></dz-device-counter-report>
+
+  <dz-device-energy-multi-counter-report *ngIf="isEnergyMultiCounterReport()" [device]="device"
+    [selectedYear]="selectedYear" [selectedMonth]="selectedMonth"></dz-device-energy-multi-counter-report>
+
+  <dz-device-temperature-report *ngIf="isTemperatureReport()" [device]="device" [selectedYear]="selectedYear"
+    [selectedMonth]="selectedMonth"></dz-device-temperature-report>
+
+  <div class="no-data" *ngIf="isNoReport()">
+    {{ 'This device does not have any reports.' | translate }}
+  </div>
+</div>

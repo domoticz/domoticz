@@ -1,0 +1,40 @@
+<div class="container">
+  <dz-back-to-top></dz-back-to-top>
+
+  <div id="lightcontent">
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="left" valign="top" id="timesun">
+          <dz-timesun></dz-timesun>
+        </td>
+        <td align="right" valign="top">
+          <dz-room-plans-selector (roomSelectedChange)="onRoomChange($event)"></dz-room-plans-selector>
+        </td>
+      </tr>
+    </table>
+
+    <table *dzHasPermission="'Admin'" class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="left">
+          <a class="btnstylerev" (click)="AddManualLightDevice()">{{'Manual Light/Switch'| translate}}</a>
+        </td>
+        <td align="right">
+          <a class="btnstyle" (click)="AddLightDevice()">{{'Learn Light/Switch'| translate}}</a>
+        </td>
+      </tr>
+    </table>
+
+    <h2 *ngIf="items.length == 0">{{'No Lights/Switches found or added in the system...'| translate}}</h2>
+
+    <div class="row divider">
+        <ng-container *ngFor="let t of items; index as index; first as first">
+          <div class="clearfix" *ngIf="index % 3 == 0 && !first"></div>
+          <dz-light-switch-widget class="span4"  [id]="t.idx" [item]="t" (removeDevice)="onRemoveDevice(t.idx)"
+          (replaceDevice)="onReplaceDevice()" dzDragDrop (drag)="onDragWidget(t.idx)" (drop)="onDropWidget(t.idx)"></dz-light-switch-widget>
+        </ng-container>
+      </div>
+
+  </div>
+
+</div>

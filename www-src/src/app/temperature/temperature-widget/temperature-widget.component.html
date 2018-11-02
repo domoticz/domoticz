@@ -1,0 +1,62 @@
+<div class="item" [ngClass]="nbackstyle">
+  <section>
+    <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">
+      <tbody>
+      <tr>
+        <td id="name" [ngClass]="{'highlight': highlight}">{{item.Name}}</td>
+        <td id="bigtext" class="ng-cloak">
+          <img *ngIf="displayTrend" height="12" [src]="'images/arrow_' + trendState + '.png'">
+          <span *ngIf="item.Temp !== undefined">{{item.Temp}}&#176; {{tempsign}}</span>
+          <span *ngIf="displaySetPoint() && isSetPointOn()">({{item.SetPoint}}&#176; {{tempsign}})</span>
+          <span *ngIf="displaySetPoint() && !isSetPointOn()">(Off)</span>
+          <img *ngIf="displayState()" height="12" [src]="'images/evohome/' + item.State + '.png'">
+          <img *ngIf="displayHeat()" height="15" [src]="'images/evohome/' + imgHeat( ) +'.png'">
+
+          <span *ngIf="item.Humidity !== undefined && (item.Temp !== undefined || displaySetPoint() || displayState() || displayHeat())">&nbsp;/&nbsp;</span>
+          <span *ngIf="item.Humidity !== undefined">{{item.Humidity}}%</span>
+
+          <span *ngIf="item.Chill !== undefined && (item.Temp !== undefined || displaySetPoint() || displayState() || displayHeat())">&nbsp;/&nbsp;</span>
+          <span *ngIf="item.Chill !== undefined">{{item.Chill}}&#176; {{tempsign}}</span>
+        </td>
+        <td id="img"><img [src]="'images/' + image()" height="48" width="48"></td>
+        <td id="status" class="ng-cloak">
+          <span *ngIf="displaySetPoint()">{{'Set Point'| translate}}</span>
+          <span *ngIf="displaySetPoint() && isSetPointOn()">: {{item.SetPoint}}&#176; {{tempsign}}, </span>
+          <span *ngIf="displaySetPoint() && !isSetPointOn()">: Off, </span>
+          <span *ngIf="displayState()">{{'State'| translate}}: {{item.State}}, </span>
+          <span *ngIf="displayMode()">{{'Mode'| translate}}: {{EvoDisplayTextMode()}}</span>
+          <span *ngIf="displayUntil()">, {{'Until'| translate}}: {{dtUntil()}} </span>
+          <span *ngIf="item.HumidityStatus !== undefined">{{item.HumidityStatus | translate}}</span>
+          <span *ngIf="(displayMode() || item.HumidityStatus !== undefined) && item.Barometer !== undefined">, </span>
+          <span *ngIf="item.Barometer !== undefined">{{'Barometer'| translate}}: {{item.Barometer}} hPa</span>
+          <span *ngIf="item.ForecastStr !== undefined">, {{'Prediction'| translate}}: {{item.ForecastStr| translate}}</span>
+          <br *ngIf="item.ForecastStr !== undefined">
+          <span *ngIf="item.Direction !== undefined">{{item.Direction}} {{item.DirectionStr}}, {{'Speed'| translate}}: {{item.Speed}} {{windsign}}</span>
+          <span *ngIf="displayGust()">, {{'Gust'| translate}}: {{item.Gust}} {{windsign}}</span>
+          <span *ngIf="(displayMode() || item.HumidityStatus !== undefined) && !item.ForecastStr && item.DewPoint !== undefined">, </span>
+          <span *ngIf="item.DewPoint !== undefined">{{'Dew Point'| translate}}: {{item.DewPoint}}&#176; {{tempsign}}</span>
+        </td>
+        <td id="lastupdate">{{item.LastUpdate}}</td>
+        <td class="options">
+          <img *ngIf="item.Favorite == 0" src="images/nofavorite.png" (click)="MakeFavorite(1)" class="lcursor" title="{{'Add to Dashboard'| translate}}">
+          <img *ngIf="item.Favorite != 0" src="images/favorite.png" (click)="MakeFavorite(0)" class="lcursor" title="{{'Remove from Dashboard'| translate}}">
+          &nbsp;&nbsp;
+          <a class="btnsmall" [routerLink]="['/Devices', item.idx, 'Log']">{{ 'Log' | translate }}</a>&nbsp;
+
+          <ng-container *dzHasPermission="'Admin'">
+            <a *ngIf="item.Type=='Humidity'" class="btnsmall" (click)="EditTempDevice(false)">{{'Edit'| translate}}</a>
+            <a *ngIf="item.Type!='Humidity'" class="btnsmall" (click)="EditTempDevice(true)">{{'Edit'| translate}}</a>&nbsp;
+
+            <a [routerLink]="['/Devices', item.idx, 'Notifications']" [ngClass]="{'btnsmall-sel': item.Notifications=='true', 'btnsmall': item.Notifications!='true'}">{{'Notifications'
+              | translate }}</a>&nbsp;
+            </ng-container>
+
+          <a *ngIf="item.forecast_url" class="btnsmall" [routerLink]="['/Temperature', 'Forecast', item.idx]">{{'Forecast'| translate}}</a>
+          <a *ngIf="item.SetPoint" id="set" class="btnsmall" (click)="EditSetPoint()">{{'Set'| translate}}</a>
+          <a *ngIf="item.State" id="set" class="btnsmall" (click)="EditState()">{{'Set'| translate}}</a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

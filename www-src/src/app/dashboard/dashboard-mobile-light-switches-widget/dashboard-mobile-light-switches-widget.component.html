@@ -1,0 +1,144 @@
+<tr id="light_{{item.idx}}">
+  <td [id]="'name-' + item.idx" class="name">{{item.Name}} </td>
+  <td id="status" class="status">
+    <ng-container *ngIf="item.SwitchType == 'Doorbell'">
+      {{status}} <button class="btn btn-mini" type="button" (click)="SwitchLight('On')">{{'Ring'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Push On Button'">
+      <button class="btn btn-mini" type="button" (click)="SwitchLight('On')">{{'On'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Push Off Button'">
+      <button class="btn btn-mini" type="button" (click)="SwitchLight('Off')">{{'Off'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Door Contact'">
+      <button class="btn btn-mini {{item.InternalState == 'Open' ? 'btn-info' : ''}}" type="button">{{item.InternalState| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Door Lock'">
+      <button class="btn btn-mini {{item.InternalState == 'Unlocked' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('Off')">{{'Unlocked'| translate}}</button>
+      <button class="btn btn-mini {{item.InternalState == 'Unlocked' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('On')">{{'Locked'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Door Lock Inverted'">
+      <button class="btn btn-mini {{item.InternalState == 'Unlocked' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('On')">{{'Unlocked'| translate}}</button>
+      <button class="btn btn-mini {{item.InternalState == 'Unlocked' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('Off')">{{'Locked'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'X10 Siren'">
+      <button *ngIf="sirenOn" class="btn btn-mini btn-info" type="button">{{'SIREN'| translate}}</button>
+      <button *ngIf="!sirenOn" class="btn btn-mini" type="button">{{'Silence'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Contact'">
+      <button class="btn btn-mini {{ item.Status == 'Closed' ? '' : 'btn-info'}}" [routerLink]="['/Devices', item.idx, 'Log']">{{
+        (item.Status == 'Closed' ? 'Closed' : 'Open')| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="isBlinds">
+      <ng-container *ngIf="isBlinds3States">
+        <button class="btn btn-mini {{ item.Status == 'Closed' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('Off')">{{'Open'| translate}}</button>
+        <button class="btn btn-mini btn-danger" type="button" (click)="SwitchLight('Stop')">{{'Stop'| translate}}</button>
+        <button class="btn btn-mini {{ item.Status == 'Closed' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('On')">{{'Closed'| translate}}</button>
+      </ng-container>
+      <ng-container *ngIf="!isBlinds3States">
+        <button class="btn btn-mini {{ item.Status == 'Closed' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('Off')">{{'Open'| translate}}</button>
+        <button class="btn btn-mini {{ item.Status == 'Closed' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('On')">{{'Closed'| translate}}</button>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Blinds Inverted'">
+      <ng-container *ngIf="isBlindsInverted3States">
+        <button class="btn btn-mini  {{ item.Status == 'Closed' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('On')">{{'Open'| translate}}</button>
+        <button class="btn btn-mini btn-danger" type="button" (click)="SwitchLight('Stop')">{{'Stop'| translate}}</button>
+        <button class="btn btn-mini {{ item.Status == 'Closed' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('Off')">{{'Closed'| translate}}</button>
+      </ng-container>
+      <ng-container *ngIf="!isBlindsInverted3States">
+        <button class="btn btn-mini {{ item.Status == 'Closed' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('On')">{{'Open'| translate}}</button>
+        <button class="btn btn-mini {{ item.Status == 'Closed' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('Off')">{{'Closed'| translate}}</button>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Blinds Percentage'">
+      <button class="btn btn-mini {{ item.Status == 'Open' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('Off')">{{'Open'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'Open' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('On')">{{'Close'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Blinds Percentage Inverted'">
+      <button class="btn btn-mini {{ item.Status == 'Closed' ? '' : 'btn-info'}}" type="button" (click)="SwitchLight('On')">{{'Open'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'Closed' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('Off')">{{'Closed'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Dimmer'">
+      <label id="statustext"><button class="btn btn-mini {{ isDimmerOn ? 'btn-info' : '' }}" type="button" (click)="SwitchLight('On')">{{'On'| translate}}</button></label>
+      <label id="img"><button class="btn btn-mini {{ isDimmerOn ? '' : 'btn-info' }}" type="button" (click)="SwitchLight('Off')">{{'Off'| translate}}</button></label>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'TPI'">
+      <label id="statustext"><button class="btn btn-mini {{ item.Status == 'On' ? 'btn-info' : '' }}" type="button"
+          [disabled]="TPIRO" (click)="SwitchLight('On')">{{'On'| translate}}</button></label>
+      <label id="img"><button class="btn btn-mini {{ item.Status == 'On' ? '' : 'btn-info' }}" type="button" [disabled]="TPIRO"
+          (click)="SwitchLight('Off')">{{'Off'| translate}}</button></label>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Dusk Sensor'">
+      <button class="btn btn-mini" [routerLink]="['/Devices', item.idx, 'Log']">{{ (item.Status == 'On' ? 'Dark' : 'Sunny') | translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Motion Sensor'">
+      <button class="btn btn-mini {{ isMotionSensorOn ? 'btn-info' : '' }}" [routerLink]="['/Devices', item.idx, 'Log']">{{
+        (isMotionSensorOn ? 'Motion': 'No Motion')| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Smoke Detector'">
+      <button class="btn btn-mini {{ isSmokeDetectorOn ? 'btn-info' : '' }}" [routerLink]="['/Devices', item.idx, 'Log']">{{
+        (isSmokeDetectorOn ? 'SMOKE': 'No Smoke')| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SwitchType == 'Selector'">
+      <!-- no buttons, no status needed on mobile mode -->
+    </ng-container>
+    <ng-container *ngIf="item.SubType.indexOf('Itho') == 0">
+      <button class="btn btn-mini {{ item.Status == '1' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('1')">{{'1'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == '2' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('2')">{{'2'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == '3' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('3')">{{'3'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'timer' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('timer')">{{'Timer'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="(item.SubType.indexOf('Lucci') == 0) || (item.SubType.indexOf('Westinghouse') == 0)">
+      <button class="btn btn-mini {{ item.Status == 'hi' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('hi')">{{'hi'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'med' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('med')">{{'med'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'low' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('low')">{{'low'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'off' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('off')">{{'Off'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'light' ? 'btn-info' : ''}}" type="button" (click)="SwitchLight('light')">{{'Light'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="item.SubType.indexOf('Lucci Air DC') == 0">
+      <button class="btn btn-mini {{ item.Status == 'pow' ? 'btn-info' : '' }}" type="button" (click)="SwitchLight('pow')">{{'pow'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'plus' ? 'btn-info' : '' }}" type="button" (click)="SwitchLight('plus')">{{'plus'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'min' ? 'btn-info' : '' }}" type="button" (click)="SwitchLight('min')">{{'min'| translate}}</button>
+      <button class="btn btn-mini {{ item.Status == 'light' ? 'btn-info' : '' }}" type="button" (click)="SwitchLight('light')">{{'light'| translate}}</button>
+    </ng-container>
+    <ng-container *ngIf="default">
+      <button class="btn btn-mini {{ isDefaultOn ? 'btn-info' : '' }}" type="button" (click)="SwitchLight('On')">{{'On'}}</button>
+      <button class="btn btn-mini {{ isDefaultOn ? '' : 'btn-info' }}" type="button" (click)="SwitchLight('Off')">{{'Off'}}</button>
+    </ng-container>
+  </td>
+</tr>
+<tr *ngIf="item.SwitchType == 'Dimmer'">
+  <td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">
+    <dz-dimmer-slider id="light_{{item.idx}}_slider" [(item)]="item" _style="margin-top: -11px; margin-left: 24px;"
+      _class="dimslider dimslidernorm" type="norm" [mobileview]="true"></dz-dimmer-slider>
+  </td>
+</tr>
+<tr *ngIf="item.SwitchType == 'TPI'">
+  <td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">
+    <dz-dimmer-slider id="light_{{item.idx}}_slider" [(item)]="item" _style="margin-top: -11px; margin-left: 24px;"
+      _class="dimslider dimslidernorm" type="relay" [disabled]="TPIRO" [mobileview]="true"></dz-dimmer-slider>
+  </td>
+</tr>
+<tr *ngIf="(item.SwitchType == 'Blinds Percentage') || (item.SwitchType == 'Blinds Percentage Inverted')">
+  <td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">
+    <dz-dimmer-slider id="slider" [(item)]="item" _style="margin-top: -11px; margin-left: 24px;" _class="dimslider dimslidersmall"
+      type="blinds" [mobileview]="true"></dz-dimmer-slider>
+  </td>
+</tr>
+<tr *ngIf="item.SwitchType == 'Selector'">
+  <td colspan="2" style="border:0px solid red; padding-top:4px; padding-bottom:4px;">
+    <div style="margin: -30px -4px -5px 24px; text-align: right;" *ngIf="item.SelectorStyle === 0">
+      <div class="btn-group" style="display: block; margin-top: 4px;">
+        <ng-container *ngFor="let levelName of levelNames; first as first; index as index">
+          <button *ngIf="!(first && item.LevelOffHidden)" type="button" [ngClass]="['btn', 'btn-small', (index * 10) == item.LevelInt ? 'btn-selected' : 'btn-default']"
+            [id]="'lSelector' + item.idx + 'Level' + index" [name]="'selector' + item.idx + 'Level'" [value]="index * 10"
+            (click)="SwitchSelectorLevel(levelName, index * 10)">{{levelName}}</button>
+        </ng-container>
+      </div>
+    </div>
+    <div style="margin: -15px 0px -8px 0px; text-align: right;" class="selectorlevels" *ngIf="item.SelectorStyle === 1">
+      <dz-selectorlevels [(item)]="item" [levelNames]="levelNames"></dz-selectorlevels>
+    </div>
+  </td>
+</tr>

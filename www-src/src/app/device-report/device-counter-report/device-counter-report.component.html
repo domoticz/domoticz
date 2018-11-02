@@ -1,0 +1,26 @@
+<div *ngIf="!isMonthView && data" style="margin-bottom: 12px">
+  <div>{{ device.SwitchTypeVal === 4 ? 'Total Generated' : 'Total Usage' | translate }}
+    : {{ data.usage.toFixed(3) }} {{ unit}}</div>
+  <div *ngIf="!isOnlyUsage">{{ 'Counter' | translate }}: {{ data.counter.toFixed(3) }} {{unit}}</div>
+  <div *ngIf="data.cost">{{ device.SwitchTypeVal === 4 ? 'Year Earnings' : 'Year Cost' | translate }}
+    : {{ data.cost.toFixed(2) }}</div>
+</div>
+
+<div *ngIf="isMonthView && data" style="margin-bottom: 12px">
+  <div>{{ device.SwitchTypeVal === 4 ? 'Total Generated' : 'Total Usage' | translate }}
+    : {{ data.usage.toFixed(3) }} {{ unit}}</div>
+  <div
+    *ngIf="device.SwitchTypeVal != 3">{{ device.SwitchTypeVal === 4 ? 'Monthly Earnings' : 'Monthly Cost' | translate }}
+    : {{ data.cost.toFixed(2) }}</div>
+</div>
+
+<div *ngIf="noDataAvailable" class="no-data">
+  {{ 'No data available' | translate}}
+</div>
+
+<!-- NB: we don't use ngIf because we still want a ref to the element in the code -->
+<div [style.display]="noDataAvailable ? 'none' : ''">
+  <table class="display myrighttable" id="reporttable" #reporttable></table>
+</div>
+<br>
+<div #usagegraph id="usagegraph" class="device-log-chart"></div>
