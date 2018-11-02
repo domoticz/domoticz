@@ -92,7 +92,7 @@ define(['app'], function (app) {
 
         function get() {
             if (!toolbox) {
-                toolbox = $http.get('/app/events/blockly_toolbox.xml').then(function (response) {
+                toolbox = $http.get('app/events/blockly_toolbox.xml').then(function (response) {
                     return response.data;
                 })
             }
