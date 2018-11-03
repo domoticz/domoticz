@@ -196,9 +196,10 @@ bool USBtin_MultiblocV8::StartThread()
 	m_stoprequested = false;
   //Id Base for manual creation switch from domoticz...
 	m_V8switch_id_base = (type_SFSP_SWITCH<<SHIFT_TYPE_TRAME)+(1<<SHIFT_INDEX_MODULE)+(0<<SHIFT_CODAGE_MODULE)+0;
-
-	m_V8minCounterBase = (60*5);
-	m_V8minCounter1 = (3600*6);
+	lastconsumed = 0;
+	m_V8minCounterBase = (60*5); //every 5 minutes
+	m_V8minCounter1 = (3600*6); //every 6 hours
+	
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&USBtin_MultiblocV8::Do_Work, this)));
 	_log.Log(LOG_STATUS,"MultiblocV8: thread started");
 	return (m_thread != NULL);
@@ -249,32 +250,41 @@ void USBtin_MultiblocV8::Do_Work()
 	while( !m_stoprequested ){
 		sleep_milliseconds(TIME_100ms);
 		
-		m_V8secCounterBase++;
 		if (m_V8secCounterBase >= 10)
 		{
 			m_V8secCounterBase = 0;
-			m_V8minCounterBase--;
-			m_V8minCounter1--;
 			
 			if( m_V8minCounterBase == 0 ){
 				//each 5 minutes
-				m_V8minCounterBase = (60*5);
+				m_V8minCounterBase = (60*5); //every 5 minutes
 				m_BOOL_TaskAGo = true;
 			}
+			else m_V8minCounterBase--;
 			
 			if( m_V8minCounter1 == 0 ){
-				//each 6 hours...
+				//every 6 hours...
+				//to update stor state in domoticz
 				m_V8minCounter1 = (3600*6);
 				m_BOOL_TaskRqStorGo = true;
 			}
+			else m_V8minCounter1--;
 			
-			m_V8secCounter1++;
+			//not automatic but must be done by a button, todo...
+			//if( m_V8secCounterRqstCurrent == 0 ){
+			//	m_V8secCounterRqstCurrent = 60; //every 1 minutes
+			//	m_BOOL_RequestCurrent = true;
+			//	Calcul_Conso_Global();
+			//}
+			//else m_V8secCounterRqstCurrent--;
+			
 			if( m_V8secCounter1 >= 3 ){
 				m_V8secCounter1 = 0;
 				//each 3 seconds
 				BlocList_CheckBloc();
 			}
+			else m_V8secCounter1++;
 		}
+		else m_V8secCounterBase++;
 		
 		if( m_BOOL_SendPushOffSwitch ){ //if a Send push off switch is request
 			m_BOOL_SendPushOffSwitch = false;
@@ -329,7 +339,16 @@ void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber,unsigned int rxD
 			case type_E_ANA_5_TO_8 :
 				Traitement_E_ANA_Recu(FrameType,RefBloc,Codage,SsReseau,Buffer_Octets);
 				break;
-				
+			
+			case type_CONSO_S_TOR_1_TO_8 :
+			case type_CONSO_S_TOR_9_TO_16 :
+			case type_CONSO_S_TOR_17_TO_24 :
+			case type_CONSO_S_TOR_25_TO_32 :
+			    //_log.Log(LOG_NORM,"MultiblocV8: Current Consumption receive, ref: %#x Codage : %d S/Réseau: %d Data: %02x %02x %02x %02x %02x %02x %02x %02x",RefBloc,Codage,SsReseau,
+				//	Buffer_Octets[0],Buffer_Octets[1],Buffer_Octets[2],Buffer_Octets[3],Buffer_Octets[4],Buffer_Octets[5],Buffer_Octets[6],Buffer_Octets[7]);
+				Traitement_Courant_S_TOR_Recu(FrameType,RefBloc,Codage,SsReseau,Buffer_Octets);
+				break;
+			
 			case type_SFSP_SWITCH :
 				if( rxDLC == 5 ) Traitement_SFSP_Switch_Recu(FrameType,RefBloc,Codage,SsReseau,Buffer_Octets);
 				break;
@@ -346,11 +365,11 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	int i = 0;
 	
 	//_log.Log(LOG_NORM,"MultiblocV8: receive SFSP Switch: ID: %x Data: %x %x %x %x %x",sID, bufferdata[0], bufferdata[1],bufferdata[2], bufferdata[3], bufferdata[4]);
-	unsigned long SwitchId = (bufferdata[0]<<24)+(bufferdata[1]<<16)+(bufferdata[2]<<8)+bufferdata[3];
+	unsigned int SwitchId = (bufferdata[0]<<24)+(bufferdata[1]<<16)+(bufferdata[2]<<8)+bufferdata[3];
 	unsigned int codetouche = bufferdata[4];
 	std::string defaultname=" ";
 
-	_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, codetouche );
+	//_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, codetouche );
 	
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
@@ -539,6 +558,10 @@ void  USBtin_MultiblocV8::BlocList_CheckBloc(){
 							Rqid= (type_STATE_S_TOR_5_TO_6<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
 							SendRequest(Rqid);
 						}
+						if( m_BOOL_RequestCurrent == true ){
+							Rqid= (type_CONSO_S_TOR_1_TO_8<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+							SendRequest(Rqid);
+						}
 						break;
 				}
 				m_BlocList_CAN[i].Status = BLOC_NOTALIVE; //RAZ ici de l'info toutes les 3 sec !
@@ -547,6 +570,7 @@ void  USBtin_MultiblocV8::BlocList_CheckBloc(){
 	}
 	m_BOOL_TaskAGo = false;
 	m_BOOL_TaskRqStorGo = false;
+	m_BOOL_RequestCurrent = false;
 }
 
 //traitement sur réception trame de vie / Life frame treatment :
@@ -809,7 +833,163 @@ void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType
 			//SetOutputBlinkInDomoticz( sID,6,IsBlink);
 			break;
 	}
+	
+	//after receiving a STOR states request the currents value :
+	//m_BOOL_RequestCurrent = true;
 }
+
+void USBtin_MultiblocV8::Traitement_Courant_S_TOR_Recu(const unsigned int FrameType,const unsigned char RefeBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+{
+	char szDeviceID[10];
+	int level_value = 0;
+	unsigned int sID = (RefeBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;
+	//unsigned int sIDfordb = ( sID << 8 );
+	switch(RefeBloc){
+		case BLOC_SFSP_M :
+		case BLOC_SFSP_E :
+		//only if frame contains currents 1 to 6
+			std::string defaultname = NomRefBloc[RefeBloc].c_str();
+			if( FrameType == type_CONSO_S_TOR_1_TO_8 ){
+				sprintf(szDeviceID,"%08X",(unsigned int)( sID ));
+				defaultname += szDeviceID;
+				
+				//_log.Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
+				float current1 = bufferdata[0];
+				current1 /= 10;
+				std::string defaultnameC1 = defaultname + " current Out 1";
+				SendCurrentValue(sID,1,255,current1, defaultnameC1);
+				float current2 = bufferdata[1];
+				current2 /= 10;
+				std::string defaultnameC2 = defaultname + " current Out 2";
+				SendCurrentValue(sID,2,255,current2, defaultnameC2);
+				float current3 = bufferdata[2];
+				current3 /= 10;
+				std::string defaultnameC3 = defaultname + " current Out 3";
+				SendCurrentValue(sID,3,255,current3, defaultnameC3);
+				//std::string defaultnameC1 = defaultname + " currents Out 1 to 3";
+				//SendCurrentSensor(sIDfordb, 255, current1, current2, current3, defaultnameC1);
+				//_log.Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
+				float current4 = bufferdata[3];
+				current4 /= 10;
+				std::string defaultnameC4 = defaultname + " current Out 4";
+				SendCurrentValue(sID,4,255,current4, defaultnameC4);
+				float current5 = bufferdata[4];
+				current5 /= 10;
+				std::string defaultnameC5 = defaultname + " current Out 5";
+				SendCurrentValue(sID,5,255,current5, defaultnameC5);
+				float current6 = bufferdata[5];
+				current6 /= 10;
+				std::string defaultnameC6 = defaultname + " current Out 6";
+				SendCurrentValue(sID,6,255,current6, defaultnameC6);
+				//std::string defaultnameC2 = defaultname + " currents Out 4 to 6";
+				//SendCurrentSensor(sIDfordb+1, 255, current4, current5, current6, defaultnameC2);
+				
+				std::string defaultnameCT = defaultname + " total current";
+				//if currents is less than 1A there is offset error in the blocks (no precision on the mosfet measure).
+				//so arbitrary add 0.1Amp to the total of each
+				if( current1 > 0 && current1 < 1.0 ) current1 += 0.1;
+				if( current2 > 0 && current2 < 1.0 ) current2 += 0.1;
+				if( current3 > 0 && current3 < 1.0 ) current3 += 0.1;
+				if( current4 > 0 && current4 < 1.0 ) current4 += 0.1;
+				if( current5 > 0 && current5 < 1.0 ) current5 += 0.1;
+				if( current6 > 0 && current6 < 1.0 ) current6 += 0.1;
+				float totalcurrent = current1 + current2 + current3 + current4 + current5 + current6;
+				SendCurrentValue(sID,0,255,totalcurrent, defaultnameCT);
+				//SendCurrentSensor(sIDfordb+1, 255, current4, current5, current6, defaultnameC2);
+			}
+			break;
+	}
+	
+	std::vector<std::vector<std::string> > result;
+	float Total12VCurrent = 0;
+	int index = 0;
+	
+	for( index=0;index < MAX_NUMBER_BLOC;index++){
+		if( m_BlocList_CAN[index].BlocID > 0 ){
+			int IdFordbSearch = m_BlocList_CAN[index].BlocID;
+			int RefBloc = (IdFordbSearch & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
+			int codage = (IdFordbSearch & MSK_CODAGE_MODULE) >> SHIFT_CODAGE_MODULE;
+			int ssReseau = IdFordbSearch & MSK_SRES_MODULE;
+			//_log.Log(LOG_NORM,"MultiblocV8: bloc found %d %d %d",RefBloc,codage,ssReseau);
+			IdFordbSearch <<= 8; //to search currentinformation in db !
+			//récupération du courant total :
+			sprintf(szDeviceID,"%08X",(unsigned int)IdFordbSearch);
+			result = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", 
+			m_HwdID, szDeviceID,pTypeGeneral,sTypeCurrent, 1); //Unit = 1 = sortie n°1
+			if(!result.empty() ){
+				float current = atof(result[0][1].c_str());
+				//_log.Log(LOG_NORM,"MultiblocV8: Total current on block %s : %f Amp",szDeviceID,current );
+				Total12VCurrent += current;
+			}
+		}
+		else{
+			break;
+		}
+	}
+	//update total current consumption :
+	std::string defaultnameCTPC = "TOTAL DC Current";
+	SendCurrentValue(0,0,255,Total12VCurrent, defaultnameCTPC);	
+}
+
+void USBtin_MultiblocV8::Calcul_Conso_Global(){
+	char szDeviceID[10];
+	int index;
+	std::vector<std::vector<std::string> > result;
+	float VoltForWattPower = 0;
+	float Total12VCurrent = 0;
+	
+	for( index=0;index < MAX_NUMBER_BLOC;index++){
+		if( m_BlocList_CAN[index].BlocID > 0 ){
+			int IdFordbSearch = m_BlocList_CAN[index].BlocID;
+			int RefBloc = (IdFordbSearch & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
+			int codage = (IdFordbSearch & MSK_CODAGE_MODULE) >> SHIFT_CODAGE_MODULE;
+			int ssReseau = IdFordbSearch & MSK_SRES_MODULE;
+			sprintf(szDeviceID,"%08X",(unsigned int)IdFordbSearch);	
+			//voltage reference only with the First SFSP with coding/network = 0
+			if( ( RefBloc == BLOC_SFSP_M || RefBloc == BLOC_SFSP_E ) && codage == 0 && ssReseau == 0 ){
+				//_log.Log(LOG_NORM,"MultiblocV8: The bloc is found !!!!!! Yahoooo");
+				result = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", 
+				m_HwdID, szDeviceID,pTypeGeneral,sTypeVoltage); //Unit = 1
+				if(!result.empty() ){
+					VoltForWattPower = atof(result[0][1].c_str());
+					//_log.Log(LOG_NORM,"MultiblocV8: DC voltage is: %f",VoltForWattPower);
+				}
+				break;
+			}
+		}
+	}
+	sprintf(szDeviceID,"%08X",(unsigned int)0);	//Id = 0 = total current
+	result = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", 
+	m_HwdID, szDeviceID,pTypeGeneral,sTypeCurrent); 
+	if(!result.empty() ){
+		Total12VCurrent = atof(result[0][1].c_str());
+		//_log.Log(LOG_NORM,"MultiblocV8: DC total current is: %f",Total12VCurrent);
+	}
+				
+	//calculated every 1 minutes !
+	if( VoltForWattPower > 0 ){ //update Watt power consumption :
+		float Power = VoltForWattPower * Total12VCurrent;
+		//_log.Log(LOG_NORM,"MultiblocV8: new Watt Power value: VDC: %f Current: %f Watt: %f",VoltForWattPower,Total12VCurrent,Power);
+		SendWattMeter(0, 0, 255, Power, "TOTAL DC Watt Power ");
+		
+		//retreive last value on started up ?! : todo 
+		if( Power > 0 ){
+			lastconsumed += Power; //en watt !
+		}
+		SendKwhMeter(0, 0, 255, Power, lastconsumed / 1000.0, "TOTAL DC Power Watt/Kwh ");
+	}
+}
+
+void USBtin_MultiblocV8::SendCurrentValue(const int NodeID, const int ChildID, const int BatteryLevel, const float Current, const std::string &defaultname)
+{
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeCurrent;
+	gDevice.id = 0;
+	gDevice.intval1 = ( NodeID << 8 ) | ChildID;
+	gDevice.floatval1 = Current;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
+}
+
 
 void USBtin_MultiblocV8::SetOutputBlinkInDomoticz (unsigned long sID,int OutputNumber,bool Blink){
 	int i;
@@ -835,15 +1015,19 @@ void USBtin_MultiblocV8::SetOutputBlinkInDomoticz (unsigned long sID,int OutputN
 void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType,const unsigned char RefBloc, const char Codage, const char Ssreseau,unsigned int bufferdata[8])
 {
 	unsigned long sID = (RefBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;	
-	
-	if( m_BOOL_DebugInMultiblocV8 == true ) _log.Log(LOG_NORM,"MultiblocV8: receive ANA (alimentation) sfsp: D0: %d D1: %d# ", bufferdata[0], bufferdata[1]);
-	int VoltageLevel = bufferdata[0];
-	VoltageLevel <<= 8;
-	VoltageLevel += bufferdata[1];
-	//_log.Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
-	int percent = ((VoltageLevel * 100) / 125);
-	float voltage = (float)VoltageLevel/10;
-	SendVoltageSensor(((sID>>8)&0xffff), (sID&0xff), percent, voltage, "SFSP Voltage");
+	switch(RefBloc){
+		case BLOC_SFSP_M :
+		case BLOC_SFSP_E :
+			if( m_BOOL_DebugInMultiblocV8 == true ) _log.Log(LOG_NORM,"MultiblocV8: receive ANA (alimentation) sfsp: D0: %d D1: %d# ", bufferdata[0], bufferdata[1]);
+			int VoltageLevel = bufferdata[0];
+			VoltageLevel <<= 8;
+			VoltageLevel += bufferdata[1];
+			//_log.Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
+			int percent = ((VoltageLevel * 100) / 125);
+			float voltage = (float)VoltageLevel/10;
+			SendVoltageSensor(((sID>>8)&0xffff), (sID&0xff), percent, voltage, "SFSP Voltage");
+		break;
+	}
 }
 
 //Envoi d'une trame suite à une commande dans domoticz...

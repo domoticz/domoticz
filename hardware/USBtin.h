@@ -38,7 +38,7 @@ private:
 	unsigned int m_EtapeInitCan;
 	int m_USBtinRetrycntr;	
 	int m_USBtinBelErrorCount;
-	char m_USBtinBuffer[390]; //buffer capable de stocker 15 trames en 1 fois
+	char m_USBtinBuffer[26000]; //buffer capacity = ~1000 frame CAN
 	int m_USBtinBufferpos;
 	bool m_BOOL_USBtinDebug; //1 = activ
 	
