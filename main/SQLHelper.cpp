@@ -6335,7 +6335,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			//Check for Notification
 			if (devType == pTypeP1Power)
 			{
-				float musage = (total_real[0] + total_real[2]) / EnergyDivider;
+				float musage = (total_real[0] + total_real[4]) / EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
 			/*
