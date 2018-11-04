@@ -623,7 +623,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
+			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change for DeviceID '%s': Level = %d", szID, tstate.level);
 
 		if (result.empty() && !AddMissingDevice)
@@ -737,6 +737,7 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 		if (!lightstate["on"].empty())
 		{
 			tlight.on = lightstate["on"].asBool();
+			if (tlight.on) tlight.level = 100; // Set default full brightness for non dimmable lights
 		}
 		if (!lightstate["colormode"].empty())
 		{
@@ -914,7 +915,10 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	_eHueLightType LType = HLTYPE_RGB_W;// HLTYPE_NORMAL;
 
 	if (!root2["action"]["on"].empty())
+	{
 		tstate.on = root2["action"]["on"].asBool();
+		if (tstate.on) tstate.level = 100; // Set default full brightness for non dimmable group
+	}
 	if (!root2["action"]["bri"].empty())
 	{
 		int tbri = root2["action"]["bri"].asInt();
