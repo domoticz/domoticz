@@ -38,13 +38,12 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
+EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigned short /*usIPPort*/) :
 	m_szIPAddress(IPAddress)
 {
 	m_p1power.ID = 1;
 
 	m_HwdID = ID;
-	m_stoprequested = false;
 }
 
 EnphaseAPI::~EnphaseAPI(void)
@@ -53,20 +52,23 @@ EnphaseAPI::~EnphaseAPI(void)
 
 bool EnphaseAPI::StartHardware()
 {
+	RequestStart();
+
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&EnphaseAPI::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&EnphaseAPI::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool EnphaseAPI::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -77,9 +79,8 @@ void EnphaseAPI::Do_Work()
 	_log.Log(LOG_STATUS, "EnphaseAPI Worker started...");
 	int sec_counter = Enphase_request_INTERVAL - 5;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -94,7 +95,7 @@ void EnphaseAPI::Do_Work()
 	_log.Log(LOG_STATUS, "EnphaseAPI Worker stopped...");
 }
 
-bool EnphaseAPI::WriteToHardware(const char *pdata, const unsigned char length)
+bool EnphaseAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }

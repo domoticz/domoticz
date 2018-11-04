@@ -101,7 +101,7 @@ public:
 	std::string private_key_file_path;
 	std::string private_key_pass_phrase;
 
-	std::string options;
+	std::string ssl_options;
 	std::string tmp_dh_file_path;
 
 	bool verify_peer;
@@ -120,7 +120,7 @@ public:
 		cert_file_path(s.cert_file_path),
 		private_key_file_path(s.private_key_file_path),
 		private_key_pass_phrase(s.private_key_pass_phrase),
-		options(s.options),
+		ssl_options(s.ssl_options),
 		tmp_dh_file_path(s.tmp_dh_file_path),
 		verify_peer(s.verify_peer),
 		verify_fail_if_no_peer_cert(s.verify_fail_if_no_peer_cert),
@@ -134,7 +134,7 @@ public:
 		cert_file_path = s.cert_file_path;
 		private_key_file_path = s.private_key_file_path;
 		private_key_pass_phrase = s.private_key_pass_phrase;
-		options = s.options;
+		ssl_options = s.ssl_options;
 		tmp_dh_file_path = s.tmp_dh_file_path;
 		verify_peer = s.verify_peer;
 		verify_fail_if_no_peer_cert = s.verify_fail_if_no_peer_cert;
@@ -174,7 +174,7 @@ public:
 		std::string error_message("");
 
 		std::vector<std::string> options_array;
-		boost::split(options_array, options, boost::is_any_of(","), boost::token_compress_on);
+		boost::split(options_array, ssl_options, boost::is_any_of(","), boost::token_compress_on);
 		std::vector<std::string>::iterator itt;
 		for (itt = options_array.begin(); itt != options_array.end(); ++itt) {
 			std::string option = *itt;
@@ -189,13 +189,9 @@ public:
 			} else if (option.compare("no_tlsv1") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_tlsv1);
 			} else if (option.compare("no_tlsv1_1") == 0) {
-#if (BOOST_VERSION > 105900)
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_1);
-#endif
 			} else if (option.compare("no_tlsv1_2") == 0) {
-#if (BOOST_VERSION > 105900)
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_2);
-#endif
 			} else if (option.compare("no_compression") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_compression);
 			} else {
@@ -239,7 +235,7 @@ public:
 		private_key_file_path = server_settings::get_valid_value(private_key_file_path, ssl_settings.private_key_file_path);
 		private_key_pass_phrase = server_settings::get_valid_value(private_key_pass_phrase, ssl_settings.private_key_pass_phrase);
 
-		options = server_settings::get_valid_value(options, ssl_settings.options);
+		ssl_options = server_settings::get_valid_value(ssl_options, ssl_settings.ssl_options);
 		tmp_dh_file_path = server_settings::get_valid_value(tmp_dh_file_path, ssl_settings.tmp_dh_file_path);
 
 		verify_peer = ssl_settings.verify_peer;
@@ -247,7 +243,7 @@ public:
 		verify_file_path = server_settings::get_valid_value(verify_file_path, ssl_settings.verify_file_path);
 	}
 
-	virtual std::string to_string() const {
+	virtual std::string to_string() const  override {
 		return std::string("ssl_server_settings[") + server_settings::to_string() +
 				", ssl_method='" + ssl_method + "'" +
 				", certificate_chain_file_path='" + certificate_chain_file_path + "'" +
@@ -255,7 +251,7 @@ public:
 				", cert_file_path=" + cert_file_path + "'" +
 				", private_key_file_path='" + private_key_file_path + "'" +
 				", private_key_pass_phrase='" + private_key_pass_phrase + "'" +
-				", options='" + options + "'" +
+				", ssl_options='" + ssl_options + "'" +
 				", tmp_dh_file_path='" + tmp_dh_file_path + "'" +
 				", verify_peer=" + (verify_peer == true ? "true" : "false") +
 				", verify_fail_if_no_peer_cert=" + (verify_fail_if_no_peer_cert == true ? "true" : "false") +

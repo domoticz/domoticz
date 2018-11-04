@@ -100,6 +100,8 @@ namespace Plugins {
 		PyObject*	Options;
 		int			Used;
 		int			TimedOut;
+		PyObject*	Description;
+		PyObject*	Color;
 		CPlugin*	pPlugin;
 	} CDevice;
 
@@ -116,6 +118,7 @@ namespace Plugins {
 		{ "ID",	T_INT, offsetof(CDevice, ID), READONLY, "Domoticz internal ID" },
 		{ "Name", T_OBJECT,	offsetof(CDevice, Name), READONLY, "Name" },
 		{ "DeviceID", T_OBJECT,	offsetof(CDevice, DeviceID), READONLY, "External device ID" },
+		{ "Unit",	T_INT, offsetof(CDevice, Unit), READONLY, "Numeric Unit number" },
 		{ "nValue", T_INT, offsetof(CDevice, nValue), READONLY, "Numeric device value" },
 		{ "sValue", T_OBJECT, offsetof(CDevice, sValue), READONLY, "String device value" },
 		{ "SignalLevel", T_INT, offsetof(CDevice, SignalLevel), READONLY, "Numeric signal level" },
@@ -123,11 +126,14 @@ namespace Plugins {
 		{ "Image", T_INT, offsetof(CDevice, Image), READONLY, "Numeric image number" },
 		{ "Type", T_INT, offsetof(CDevice, Type), READONLY, "Numeric device type" },
 		{ "SubType", T_INT, offsetof(CDevice, SubType), READONLY, "Numeric device subtype" },
+		{ "SwitchType", T_INT, offsetof(CDevice, SwitchType), READONLY, "Numeric device switchtype" },
 		{ "LastLevel", T_INT, offsetof(CDevice, LastLevel), READONLY, "Previous device level" },
 		{ "LastUpdate", T_OBJECT, offsetof(CDevice, LastUpdate), READONLY, "Last update timestamp" },
 		{ "Options", T_OBJECT, offsetof(CDevice, Options), READONLY, "Device options" },
 		{ "Used", T_INT, offsetof(CDevice, Used), READONLY, "Numeric device Used flag" },
 		{ "TimedOut", T_INT, offsetof(CDevice, TimedOut), READONLY, "Is the device marked as timed out" },
+		{ "Description", T_OBJECT, offsetof(CDevice, Description), READONLY, "Description" },
+		{ "Color", T_OBJECT, offsetof(CDevice, Color), READONLY, "Color JSON dictionary" },
 		{ NULL }  /* Sentinel */
 	};
 

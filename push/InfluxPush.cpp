@@ -8,33 +8,47 @@
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../webserver/Base64.h"
 #include "../main/WebServer.h"
+#include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
 #include "../main/localtime_r.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-CInfluxPush::CInfluxPush():
+CInfluxPush::CInfluxPush() :
 	m_InfluxPort(8086),
-	m_bInfluxDebugActive(false),
-	m_stoprequested(false)
+	m_bInfluxDebugActive(false)
 {
 	m_bLinkActive = false;
 }
 
-void CInfluxPush::Start()
+bool CInfluxPush::Start()
 {
+	Stop();
+
+	RequestStart();
+
 	UpdateSettings();
+
+	m_thread = std::make_shared<std::thread>(&CInfluxPush::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "InfluxPush");
+
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CInfluxPush::OnDeviceReceived, this, _1, _2, _3, _4));
-	StartThread();
+
+	return (m_thread != NULL);
 }
 
 void CInfluxPush::Stop()
 {
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
-	StopThread();
+
+	if (m_thread)
+	{
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
 }
 
 void CInfluxPush::UpdateSettings()
@@ -46,6 +60,9 @@ void CInfluxPush::UpdateSettings()
 	m_sql.GetPreferencesVar("InfluxIP", m_InfluxIP);
 	m_sql.GetPreferencesVar("InfluxPort", m_InfluxPort);
 	m_sql.GetPreferencesVar("InfluxDatabase", m_InfluxDatabase);
+	m_sql.GetPreferencesVar("InfluxUsername", m_InfluxUsername);
+	m_sql.GetPreferencesVar("InfluxPassword", m_InfluxPassword);
+
 	int InfluxDebugActiveInt = 0;
 	m_bInfluxDebugActive = false;
 	m_sql.GetPreferencesVar("InfluxDebug", InfluxDebugActiveInt);
@@ -54,15 +71,18 @@ void CInfluxPush::UpdateSettings()
 	}
 	m_szURL = "";
 	if (
-		(m_InfluxIP == "") ||
+		(m_InfluxIP.empty()) ||
 		(m_InfluxPort == 0) ||
-		(m_InfluxDatabase == "")
+		(m_InfluxDatabase.empty())
 		)
 		return;
 	std::stringstream sURL;
 	if (m_InfluxIP.find("://") == std::string::npos)
 		sURL << "http://";
-	sURL << m_InfluxIP << ":" << m_InfluxPort << "/write?db=" << m_InfluxDatabase;
+	sURL << m_InfluxIP << ":" << m_InfluxPort << "/write?";
+	if ((!m_InfluxUsername.empty()) && (!m_InfluxPassword.empty()))
+		sURL << "u=" << m_InfluxUsername << "&p=" << base64_decode(m_InfluxPassword) << "&";
+	sURL << "db=" << m_InfluxDatabase << "&precision=s";
 	m_szURL = sURL.str();
 }
 
@@ -76,33 +96,32 @@ void CInfluxPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowId
 }
 
 void CInfluxPush::DoInfluxPush()
-{			
+{
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.Name, B.SwitchType FROM PushLink as A, DeviceStatus as B "
 		"WHERE (A.PushType==1 AND A.DeviceID == '%" PRIu64 "' AND A.Enabled==1 AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
-	if (result.size()>0)
+	if (!result.empty())
 	{
 		time_t atime = mytime(NULL);
 		std::string sendValue;
 		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
+		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			std::vector<std::string> sd=*itt;
+			std::vector<std::string> sd = *itt;
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
 			int nValue = atoi(sd[5].c_str());
 			std::string sValue = sd[6].c_str();
 			int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
-			int targetDeviceID = atoi(sd[9].c_str());
-			std::string targetProperty = sd[10].c_str();
+			//std::string targetVariable = sd[8].c_str();
+			//int targetDeviceID = atoi(sd[9].c_str());
+			//std::string targetProperty = sd[10].c_str();
 			int includeUnit = atoi(sd[11].c_str());
 			std::string name = sd[12];
 			int metertype = atoi(sd[13].c_str());
-			std::string lstatus="";
 
 			std::vector<std::string> strarray;
 			if (sValue.find(";") != std::string::npos) {
@@ -116,7 +135,7 @@ void CInfluxPush::DoInfluxPush()
 			else
 				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
-			if (sendValue !="") {
+			if (sendValue != "") {
 				std::string szKey;
 				std::string vType = CBasePush::DropdownOptionsValue(m_DeviceRowIdx, delpos);
 				stdreplace(vType, " ", "-");
@@ -140,7 +159,7 @@ void CInfluxPush::DoInfluxPush()
 					m_PushedItems[szKey] = pItem;
 				}
 
-				boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+				std::lock_guard<std::mutex> l(m_background_task_mutex);
 				if (m_background_task_queue.size() < 50)
 					m_background_task_queue.push_back(pItem);
 			}
@@ -148,34 +167,16 @@ void CInfluxPush::DoInfluxPush()
 	}
 }
 
-bool CInfluxPush::StartThread()
-{
-	StopThread();
-	m_stoprequested = false;
-	m_background_task_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CInfluxPush::Do_Work, this)));
-	return (m_background_task_thread != NULL);
-}
-
-void CInfluxPush::StopThread()
-{
-	if (m_background_task_thread)
-	{
-		m_stoprequested = true;
-		m_background_task_thread->join();
-	}
-}
-
-
 void CInfluxPush::Do_Work()
 {
 	std::vector<_tPushItem> _items2do;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
 		sleep_milliseconds(500);
 
 		{ // additional scope for lock (accessing size should be within lock too)
-			boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+			std::lock_guard<std::mutex> l(m_background_task_mutex);
 			if (m_background_task_queue.empty())
 				continue;
 			_items2do = m_background_task_queue;
@@ -190,14 +191,15 @@ void CInfluxPush::Do_Work()
 		std::vector<_tPushItem>::iterator itt = _items2do.begin();
 		while (itt != _items2do.end())
 		{
+			if (!sSendData.empty())
+				sSendData += '\n';
+
 			std::stringstream sziData;
 			sziData << itt->skey << " value=" << itt->svalue;
 			if (m_bInfluxDebugActive) {
 				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
 			}
-			//sziData << " " << (itt->stimestamp * 1000000000);
-			if (!sSendData.empty())
-				sSendData += "\n";
+			sziData << " " << itt->stimestamp;
 			sSendData += sziData.str();
 			++itt;
 		}
@@ -205,7 +207,7 @@ void CInfluxPush::Do_Work()
 		std::string sResult;
 		if (!HTTPClient::POST(m_szURL, sSendData, ExtraHeaders, sResult, true, true))
 		{
-			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
+			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database/username/password)");
 		}
 	}
 }
@@ -226,6 +228,8 @@ namespace http {
 			std::string remote = request::findValue(&req, "remote");
 			std::string port = request::findValue(&req, "port");
 			std::string database = request::findValue(&req, "database");
+			std::string username = request::findValue(&req, "username");
+			std::string password = request::findValue(&req, "password");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
 			if (
 				(linkactive == "") ||
@@ -241,6 +245,8 @@ namespace http {
 			m_sql.UpdatePreferencesVar("InfluxIP", remote.c_str());
 			m_sql.UpdatePreferencesVar("InfluxPort", atoi(port.c_str()));
 			m_sql.UpdatePreferencesVar("InfluxDatabase", database.c_str());
+			m_sql.UpdatePreferencesVar("InfluxUsername", username.c_str());
+			m_sql.UpdatePreferencesVar("InfluxPassword", base64_encode(password));
 			m_sql.UpdatePreferencesVar("InfluxDebug", idebugenabled);
 			m_influxpush.UpdateSettings();
 			root["status"] = "OK";
@@ -274,6 +280,14 @@ namespace http {
 			{
 				root["InfluxDatabase"] = sValue;
 			}
+			if (m_sql.GetPreferencesVar("InfluxUsername", sValue))
+			{
+				root["InfluxUsername"] = sValue;
+			}
+			if (m_sql.GetPreferencesVar("InfluxPassword", sValue))
+			{
+				root["InfluxPassword"] = base64_decode(sValue);
+			}
 			if (m_sql.GetPreferencesVar("InfluxDebug", nValue)) {
 				root["InfluxDebug"] = nValue;
 			}
@@ -293,7 +307,7 @@ namespace http {
 			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==1 AND A.DeviceID==B.ID)");
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
@@ -343,7 +357,7 @@ namespace http {
 					"-",
 					0,
 					atoi(linkactive.c_str())
-					);
+				);
 			}
 			else {
 				m_sql.safe_query(
@@ -353,7 +367,7 @@ namespace http {
 					targettypei,
 					atoi(linkactive.c_str()),
 					idx.c_str()
-					);
+				);
 			}
 			root["status"] = "OK";
 			root["title"] = "SaveInfluxLink";

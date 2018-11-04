@@ -2,6 +2,8 @@
 #include "WindCalculation.h"
 #include <time.h>
 #include "../main/localtime_r.h"
+#include <string.h>
+#include <math.h>
 
 #define WIND_HISTORY_MINUTES 10
 #define WIND_DEGREE_RESOLUTION 5

@@ -26,7 +26,6 @@ m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
-	m_stoprequested = false;
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
 }
@@ -40,7 +39,6 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
         :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop),
 		m_iBaudRate(baud_rate)
 {
-	m_stoprequested = false;
 }
 
 P1MeterSerial::~P1MeterSerial()
@@ -54,6 +52,8 @@ P1MeterSerial::~P1MeterSerial()
 
 bool P1MeterSerial::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_FROM_FILE
 	FILE *fIn=fopen("E:\\meter.txt","rb+");
 	BYTE buffer[1400];
@@ -61,8 +61,6 @@ bool P1MeterSerial::StartHardware()
 	fclose(fIn);
 	ParseData((const BYTE*)&buffer, ret, 1);
 #endif
-	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterSerial::Do_Work, this)));
 
 	//Try to open the Serial Port
 	try
@@ -112,6 +110,10 @@ bool P1MeterSerial::StartHardware()
 	Init();
 
 	m_bIsStarted=true;
+
+	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
+
 	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
@@ -119,27 +121,22 @@ bool P1MeterSerial::StartHardware()
 
 bool P1MeterSerial::StopHardware()
 {
-	terminate();
-	m_stoprequested = true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
-		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-		sleep_milliseconds(10);
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
-    _log.Log(LOG_STATUS, "P1 Smart Meter: Serial Worker stopped...");
-	return true;
+ 	return true;
 }
 
 
 void P1MeterSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
-
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
-	ParseData((const unsigned char*)data, static_cast<int>(len), m_bDisableCRC, m_ratelimit);
+	ParseP1Data((const unsigned char*)data, static_cast<int>(len), m_bDisableCRC, m_ratelimit);
 }
 
 bool P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
@@ -151,11 +148,9 @@ void P1MeterSerial::Do_Work()
 {
 	int sec_counter = 0;
 	int msec_counter = 0;
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "P1 Smart Meter: Worker started...");
+	while (!IsStopRequested(200))
 	{
-		sleep_milliseconds(200);
-		if (m_stoprequested)
-			break;
 		msec_counter++;
 		if (msec_counter == 5)
 		{
@@ -167,4 +162,8 @@ void P1MeterSerial::Do_Work()
 			}
 		}
 	}
+	terminate();
+
+	_log.Log(LOG_STATUS, "P1 Smart Meter: Worker stopped...");
+
 }

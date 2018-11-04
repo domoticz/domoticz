@@ -13,39 +13,51 @@
 
 CDomoticzHardwareBase::CDomoticzHardwareBase()
 {
-	m_HwdID=0; //should be uniquely assigned
-	m_bEnableReceive=false;
-	m_rxbufferpos=0;
-	m_SeqNr=0;
-	m_pUserData=NULL;
-	m_bIsStarted=false;
-	m_stopHeartbeatrequested = false;
 	mytime(&m_LastHeartbeat);
 	mytime(&m_LastHeartbeatReceive);
-	m_DataTimeout = 0;
-	m_bSkipReceiveCheck = false;
-	m_bOutputLog = true;
-	m_iHBCounter = 0;
-
-	m_baro_minuteCount = 0;
-	m_last_forecast = wsbaroforcast_unknown;
-	mytime(&m_BaroCalcLastTime);
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()
 {
 }
 
+bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::string& /*sCommand*/)
+{
+	return false;
+}
+
 bool CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;
-	return StartHardware();
+	m_bIsStarted = StartHardware();
+	return m_bIsStarted;
 }
 
 bool CDomoticzHardwareBase::Stop()
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	return StopHardware();
+	m_bIsStarted = (!StopHardware());
+	return (!m_bIsStarted);
+}
+
+bool CDomoticzHardwareBase::Restart()
+{
+	if (StopHardware())
+	{
+		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
+	}
+	return false;
+}
+
+bool CDomoticzHardwareBase::RestartWithDelay(const long seconds)
+{
+	if (StopHardware())
+	{
+		sleep_seconds(seconds);
+		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
+	}
+	return false;
 }
 
 void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
@@ -53,53 +65,27 @@ void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
 	m_bOutputLog = bEnableLog;
 }
 
-bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
-{
-	if (!m_bEnableReceive)
-		return true; //receiving not enabled
-
-	size_t ii=0;
-	while (ii<Len)
-	{
-		if (m_rxbufferpos == 0)	//1st char of a packet received
-		{
-			if (pBuffer[ii]==0) //ignore first char if 00
-				return true;
-		}
-		m_rxbuffer[m_rxbufferpos]=pBuffer[ii];
-		m_rxbufferpos++;
-		if (m_rxbufferpos>=sizeof(m_rxbuffer))
-		{
-			//something is out of sync here!!
-			//restart
-			_log.Log(LOG_ERROR,"input buffer out of sync, going to restart!....");
-			m_rxbufferpos=0;
-			return false;
-		}
-		if (m_rxbufferpos > m_rxbuffer[0])
-		{
-			sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, -1);
-			m_rxbufferpos = 0;    //set to zero to receive next message
-		}
-		ii++;
-	}
-	return true;
-}
-
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
-	m_stopHeartbeatrequested = false;
-	m_Heartbeatthread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDomoticzHardwareBase::Do_Heartbeat_Work, this)));
+	StartHeartbeatThread("Domoticz_HBWork");
 }
+
+void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
+{
+	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
+	SetThreadName(m_Heartbeatthread->native_handle(), ThreadName);
+}
+
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
 {
-	m_stopHeartbeatrequested = true;
 	if (m_Heartbeatthread)
 	{
+		RequestStop();
 		m_Heartbeatthread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
+		m_Heartbeatthread.reset();
 	}
 }
 
@@ -107,11 +93,8 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 {
 	int secCounter = 0;
 	int hbCounter = 0;
-	while (!m_stopHeartbeatrequested)
+	while (!IsStopRequested(200))
 	{
-		sleep_milliseconds(200);
-		if (m_stopHeartbeatrequested)
-			break;
 		secCounter++;
 		if (secCounter == 5)
 		{
@@ -136,6 +119,43 @@ void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
 	{
 		SetHeartbeatReceived();
 	}
+}
+
+int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_type &thread)
+{
+	return SetThreadName(thread, m_ShortName.c_str());
+}
+
+//Log Helper functions
+#define MAX_LOG_LINE_LENGTH (2048*3)
+void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogline)
+{
+	_log.Log(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+}
+
+void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...)
+{
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	_log.Log(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+}
+
+void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const std::string& sLogline)
+{
+	_log.Debug(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+}
+
+void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline, ...)
+{
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	_log.Debug(level, "%s: %s", m_ShortName.c_str(), cbuffer);
 }
 
 //Sensor Helpers
@@ -237,7 +257,7 @@ void CDomoticzHardwareBase::SendTempHumBaroSensor(const int NodeID, const int Ba
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast, const std::string &defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, const uint8_t forecast, const std::string &defaultname, const int RssiLevel /* =12 */)
 {
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
@@ -266,7 +286,7 @@ void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const i
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendTempBaroSensor(const int NodeID, const int BatteryLevel, const float temperature, const float pressure, const std::string &defaultname)
+void CDomoticzHardwareBase::SendTempBaroSensor(const uint8_t NodeID, const int BatteryLevel, const float temperature, const float pressure, const std::string &defaultname)
 {
 	_tTempBaro tsensor;
 	tsensor.id1 = NodeID;
@@ -289,7 +309,7 @@ void CDomoticzHardwareBase::SendTempBaroSensor(const int NodeID, const int Batte
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendSetPointSensor(const int NodeID, const int ChildID, const unsigned char SensorID, const float Temp, const std::string &defaultname)
+void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t NodeID, const uint8_t ChildID, const unsigned char SensorID, const float Temp, const std::string &defaultname)
 {
 	_tThermostat thermos;
 	thermos.subtype = sTypeThermSetpoint;
@@ -428,7 +448,7 @@ bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int &WindDir, f
 	return bExists;
 }
 
-void CDomoticzHardwareBase::SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname)
+void CDomoticzHardwareBase::SendWattMeter(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float musage, const std::string &defaultname)
 {
 	_tUsageMeter umeter;
 	umeter.id1 = 0;
@@ -466,13 +486,13 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bExists = false;
 		return 0;
 	}
 	result = m_sql.safe_query("SELECT MAX(Counter) FROM Meter_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		bExists = false;
 		return 0.0f;
@@ -500,7 +520,7 @@ void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID,
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux, const std::string &defaultname)
+void CDomoticzHardwareBase::SendLuxSensor(const uint8_t NodeID, const uint8_t ChildID, const uint8_t BatteryLevel, const float Lux, const std::string &defaultname)
 {
 	_tLightMeter lmeter;
 	lmeter.id1 = 0;
@@ -513,7 +533,7 @@ void CDomoticzHardwareBase::SendLuxSensor(const int NodeID, const int ChildID, c
 	sDecodeRXMessage(this, (const unsigned char *)&lmeter, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname)
+void CDomoticzHardwareBase::SendAirQualitySensor(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname)
 {
 	_tAirQualityMeter meter;
 	meter.len = sizeof(_tAirQualityMeter) - 1;
@@ -525,7 +545,7 @@ void CDomoticzHardwareBase::SendAirQualitySensor(const int NodeID, const int Chi
 	sDecodeRXMessage(this, (const unsigned char *)&meter, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendUsageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Usage, const std::string &defaultname)
+void CDomoticzHardwareBase::SendUsageSensor(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const float Usage, const std::string &defaultname)
 {
 	_tUsageMeter umeter;
 	umeter.id1 = 0;
@@ -537,7 +557,7 @@ void CDomoticzHardwareBase::SendUsageSensor(const int NodeID, const int ChildID,
 	sDecodeRXMessage(this, (const unsigned char *)&umeter, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
+void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
 {
 	//make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
@@ -550,16 +570,16 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int Ch
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		SendSwitch(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname);
 	}
 }
 
-void CDomoticzHardwareBase::SendSwitchUnchecked(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendSwitchUnchecked(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname, const int RssiLevel /* =12 */)
 {
 	double rlevel = (16.0 / 100.0)*Level;
-	int level = int(rlevel);
+	uint8_t level = (uint8_t)(rlevel);
 
 	//make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
@@ -596,7 +616,7 @@ void CDomoticzHardwareBase::SendSwitchUnchecked(const int NodeID, const int Chil
 }
 
 
-void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname, const int RssiLevel /* =12 */)
 {
 	double rlevel = (16.0 / 100.0)*Level;
 	int level = int(rlevel);
@@ -629,7 +649,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 	SendSwitchUnchecked(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname, RssiLevel);
 }
 
-void CDomoticzHardwareBase::SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendBlindSensor(const uint8_t NodeID, const uint8_t ChildID, const int BatteryLevel, const uint8_t Command, const std::string &defaultname, const int RssiLevel /* =12 */)
 {
 	//Send as Blinds
 	tRBUF lcmd;
@@ -648,26 +668,26 @@ void CDomoticzHardwareBase::SendBlindSensor(const int NodeID, const int ChildID,
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.BLINDS1, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const int Level, const bool bIsRGBW, const std::string &defaultname)
+void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int Level, const bool bIsRGBW, const std::string &defaultname)
 {
 	int level = int(Level);
-	int subType = (bIsRGBW == true) ? sTypeLimitlessRGBW : sTypeLimitlessRGB;
+	uint8_t subType = (bIsRGBW == true) ? sTypeColor_RGB_W : sTypeColor_RGB;
 	if (defaultname == "LIVCOL")
-		subType = sTypeLimitlessLivCol;
-	//Send as LimitlessLight
-	_tLimitlessLights lcmd;
+		subType = sTypeColor_LivCol;
+	//Send as ColorSwitch
+	_tColorSwitch lcmd;
 	lcmd.id = NodeID;
 	lcmd.subtype = subType;
 	if (level == 0)
-		lcmd.command = Limitless_LedOff;
+		lcmd.command = Color_LedOff;
 	else
-		lcmd.command = Limitless_LedOn;
+		lcmd.command = Color_LedOn;
 	lcmd.dunit = ChildID;
 	lcmd.value = (uint32_t)level;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
+void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeVoltage;
@@ -707,7 +727,7 @@ void CDomoticzHardwareBase::SendCurrentSensor(const int NodeID, const int Batter
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname)
+void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypePercentage;
@@ -717,7 +737,7 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int Chi
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const int ChildID)
+bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const int /*ChildID*/)
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[30];
@@ -727,7 +747,7 @@ bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const 
 	return (!result.empty());
 }
 
-void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname)
+void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeWaterflow;
@@ -737,14 +757,14 @@ void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const int Chil
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel)
+void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float CustomValue, const std::string &defaultname, const std::string &defaultLabel)
 {
 
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCustom;
 	gDevice.id = ChildID;
 	gDevice.intval1 = (NodeID << 8) | ChildID;
-	gDevice.floatval1 = Dust;
+	gDevice.floatval1 = CustomValue;
 
 	char szTmp[9];
 	sprintf(szTmp, "%08X", gDevice.intval1);
@@ -865,13 +885,15 @@ void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryL
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendGeneralSwitchSensor(const int NodeID, const int BatteryLevel, const int switchState, const char* defaultname, const int unitCode)
+void CDomoticzHardwareBase::SendGeneralSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const uint8_t SwitchState, const uint8_t Level, const std::string &defaultname, const int RssiLevel)
 {
 	_tGeneralSwitch gSwitch;
 	gSwitch.id = NodeID;
-	gSwitch.unitcode = unitCode;
-	gSwitch.cmnd = switchState;
-	sDecodeRXMessage(this, (const unsigned char *)&gSwitch, defaultname, BatteryLevel);
+	gSwitch.unitcode = ChildID;
+	gSwitch.cmnd = SwitchState;
+	gSwitch.level = Level;
+	gSwitch.rssi = (uint8_t)RssiLevel;
+	sDecodeRXMessage(this, (const unsigned char *)&gSwitch, defaultname.c_str(), BatteryLevel);
 }
 
 void CDomoticzHardwareBase::SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname)
@@ -900,7 +922,7 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const int InstanceID, const int BatteryLevel, const int aType, const int aValue, const std::string &defaultname)
+void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string &defaultname)
 {
 	uint8_t ID1 = 0;
 	uint8_t ID2 = (unsigned char)((NodeID & 0xFF00) >> 8);
@@ -917,141 +939,12 @@ void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const int Ins
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-int CDomoticzHardwareBase::CalculateBaroForecast(const double pressure)
+void CDomoticzHardwareBase::SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname)
 {
-	//From 0 to 5 min.
-	if (m_baro_minuteCount <= 5){
-		m_pressureSamples[0][m_baro_minuteCount] = pressure;
-	}
-	//From 30 to 35 min.
-	else if ((m_baro_minuteCount >= 30) && (m_baro_minuteCount <= 35)){
-		m_pressureSamples[1][m_baro_minuteCount - 30] = pressure;
-	}
-	//From 60 to 65 min.
-	else if ((m_baro_minuteCount >= 60) && (m_baro_minuteCount <= 65)){
-		m_pressureSamples[2][m_baro_minuteCount - 60] = pressure;
-	}
-	//From 90 to 95 min.
-	else if ((m_baro_minuteCount >= 90) && (m_baro_minuteCount <= 95)){
-		m_pressureSamples[3][m_baro_minuteCount - 90] = pressure;
-	}
-	//From 120 to 125 min.
-	else if ((m_baro_minuteCount >= 120) && (m_baro_minuteCount <= 125)){
-		m_pressureSamples[4][m_baro_minuteCount - 120] = pressure;
-	}
-	//From 150 to 155 min.
-	else if ((m_baro_minuteCount >= 150) && (m_baro_minuteCount <= 155)){
-		m_pressureSamples[5][m_baro_minuteCount - 150] = pressure;
-	}
-	//From 180 to 185 min.
-	else if ((m_baro_minuteCount >= 180) && (m_baro_minuteCount <= 185)){
-		m_pressureSamples[6][m_baro_minuteCount - 180] = pressure;
-	}
-	//From 210 to 215 min.
-	else if ((m_baro_minuteCount >= 210) && (m_baro_minuteCount <= 215)){
-		m_pressureSamples[7][m_baro_minuteCount - 210] = pressure;
-	}
-	//From 240 to 245 min.
-	else if ((m_baro_minuteCount >= 240) && (m_baro_minuteCount <= 245)){
-		m_pressureSamples[8][m_baro_minuteCount - 240] = pressure;
-	}
-
-
-	if (m_baro_minuteCount == 5) {
-		// Avg pressure in first 5 min, value averaged from 0 to 5 min.
-		m_pressureAvg[0] = ((m_pressureSamples[0][0] + m_pressureSamples[0][1]
-			+ m_pressureSamples[0][2] + m_pressureSamples[0][3]
-			+ m_pressureSamples[0][4] + m_pressureSamples[0][5]) / 6);
-	}
-	else if (m_baro_minuteCount == 35) {
-		// Avg pressure in 30 min, value averaged from 0 to 5 min.
-		m_pressureAvg[1] = ((m_pressureSamples[1][0] + m_pressureSamples[1][1]
-			+ m_pressureSamples[1][2] + m_pressureSamples[1][3]
-			+ m_pressureSamples[1][4] + m_pressureSamples[1][5]) / 6);
-		double change = (m_pressureAvg[1] - m_pressureAvg[0]);
-		m_dP_dt = change / 5;
-	}
-	else if (m_baro_minuteCount == 65) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[2] = ((m_pressureSamples[2][0] + m_pressureSamples[2][1]
-			+ m_pressureSamples[2][2] + m_pressureSamples[2][3]
-			+ m_pressureSamples[2][4] + m_pressureSamples[2][5]) / 6);
-		double change = (m_pressureAvg[2] - m_pressureAvg[0]);
-		m_dP_dt = change / 10;
-	}
-	else if (m_baro_minuteCount == 95) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[3] = ((m_pressureSamples[3][0] + m_pressureSamples[3][1]
-			+ m_pressureSamples[3][2] + m_pressureSamples[3][3]
-			+ m_pressureSamples[3][4] + m_pressureSamples[3][5]) / 6);
-		double change = (m_pressureAvg[3] - m_pressureAvg[0]);
-		m_dP_dt = change / 15;
-	}
-	else if (m_baro_minuteCount == 125) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[4] = ((m_pressureSamples[4][0] + m_pressureSamples[4][1]
-			+ m_pressureSamples[4][2] + m_pressureSamples[4][3]
-			+ m_pressureSamples[4][4] + m_pressureSamples[4][5]) / 6);
-		double change = (m_pressureAvg[4] - m_pressureAvg[0]);
-		m_dP_dt = change / 20;
-	}
-	else if (m_baro_minuteCount == 155) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[5] = ((m_pressureSamples[5][0] + m_pressureSamples[5][1]
-			+ m_pressureSamples[5][2] + m_pressureSamples[5][3]
-			+ m_pressureSamples[5][4] + m_pressureSamples[5][5]) / 6);
-		double change = (m_pressureAvg[5] - m_pressureAvg[0]);
-		m_dP_dt = change / 25;
-	}
-	else if (m_baro_minuteCount == 185) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[6] = ((m_pressureSamples[6][0] + m_pressureSamples[6][1]
-			+ m_pressureSamples[6][2] + m_pressureSamples[6][3]
-			+ m_pressureSamples[6][4] + m_pressureSamples[6][5]) / 6);
-		double change = (m_pressureAvg[6] - m_pressureAvg[0]);
-		m_dP_dt = change / 30;
-	}
-	else if (m_baro_minuteCount == 215) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[7] = ((m_pressureSamples[7][0] + m_pressureSamples[7][1]
-			+ m_pressureSamples[7][2] + m_pressureSamples[7][3]
-			+ m_pressureSamples[7][4] + m_pressureSamples[7][5]) / 6);
-		double change = (m_pressureAvg[7] - m_pressureAvg[0]);
-		m_dP_dt = change / 35;
-	}
-	else if (m_baro_minuteCount == 245) {
-		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
-		m_pressureAvg[8] = ((m_pressureSamples[8][0] + m_pressureSamples[8][1]
-			+ m_pressureSamples[8][2] + m_pressureSamples[8][3]
-			+ m_pressureSamples[8][4] + m_pressureSamples[8][5]) / 6);
-		double change = (m_pressureAvg[8] - m_pressureAvg[0]);
-		m_dP_dt = change / 40; // note this is for t = 4 hour
-
-		m_baro_minuteCount -= 30;
-		m_pressureAvg[0] = m_pressureAvg[1];
-		m_pressureAvg[1] = m_pressureAvg[2];
-		m_pressureAvg[2] = m_pressureAvg[3];
-		m_pressureAvg[3] = m_pressureAvg[4];
-		m_pressureAvg[4] = m_pressureAvg[5];
-		m_pressureAvg[5] = m_pressureAvg[6];
-		m_pressureAvg[6] = m_pressureAvg[7];
-		m_pressureAvg[7] = m_pressureAvg[8];
-	}
-
-	m_baro_minuteCount++;
-
-	if (m_baro_minuteCount < 36) //if time is less than 35 min
-		return wsbaroforcast_unknown; // Unknown, more time needed
-	else if (m_dP_dt < (-0.25))
-		return wsbaroforcast_heavy_rain; // Quickly falling LP, Thunderstorm, not stable
-	else if (m_dP_dt > 0.25)
-		return wsbaroforcast_unstable; // Quickly rising HP, not stable weather
-	else if ((m_dP_dt > (-0.25)) && (m_dP_dt < (-0.05)))
-		return wsbaroforcast_rain; // Slowly falling Low Pressure System, stable rainy weather
-	else if ((m_dP_dt > 0.05) && (m_dP_dt < 0.25))
-		return wsbaroforcast_sunny; // Slowly rising HP stable good weather
-	else if ((m_dP_dt >(-0.05)) && (m_dP_dt < 0.05))
-		return wsbaroforcast_stable; // Stable weather
-	else
-		return wsbaroforcast_unknown; // Unknown
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeFan;
+	gDevice.id = 1;
+	gDevice.intval1 = Idx;
+	gDevice.intval2 = FanSpeed;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }

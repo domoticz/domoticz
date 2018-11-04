@@ -67,26 +67,29 @@ CAnnaThermostat::~CAnnaThermostat(void)
 void CAnnaThermostat::Init()
 {
 	m_ThermostatID = "";
-	m_stoprequested = false;
 }
 
 bool CAnnaThermostat::StartHardware()
 {
+	RequestStart();
+
 	Init();
+
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CAnnaThermostat::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CAnnaThermostat::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CAnnaThermostat::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -97,11 +100,10 @@ bool CAnnaThermostat::StopHardware()
 void CAnnaThermostat::Do_Work()
 {
 	bool bFirstTime = true;
-	_log.Log(LOG_STATUS,"AnnaThermostat: Worker started...");
+	Log(LOG_STATUS,"Worker started...");
 	int sec_counter = ANNA_POLL_INTERVAL-5;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
@@ -116,7 +118,7 @@ void CAnnaThermostat::Do_Work()
 		}
 
 	}
-	_log.Log(LOG_STATUS,"AnnaThermostat: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -132,7 +134,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
-bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char length)
+bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if (m_UserName.size() == 0)
 		return false;
@@ -156,7 +158,7 @@ bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char len
 	return false;
 }
 
-void CAnnaThermostat::SetSetpoint(const int idx, const float temp)
+void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 {
 	if (m_UserName.size() == 0)
 		return;
@@ -196,18 +198,18 @@ void CAnnaThermostat::SetSetpoint(const int idx, const float temp)
 
 	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "AnnaThermostat: Error getting current state!");
+		Log(LOG_ERROR, "Error getting current state!");
 		return;
 	}
 
 }
 
-bool CAnnaThermostat::SetAway(const bool bIsAway)
+bool CAnnaThermostat::SetAway(const bool /*bIsAway*/)
 {
 	return false;
 }
 
-void CAnnaThermostat::SetProgramState(const int newState)
+void CAnnaThermostat::SetProgramState(const int /*newState*/)
 {
 	if (m_UserName.size() == 0)
 		return;
@@ -269,13 +271,13 @@ void CAnnaThermostat::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "AnnaThermostat: Error getting current state!");
+		Log(LOG_ERROR, "Error getting current state!");
 		return;
 	}
 #endif
 	if (sResult.empty())
 	{
-		_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
 
@@ -284,7 +286,7 @@ void CAnnaThermostat::GetMeterDetails()
 	TiXmlDocument doc;
 	if (doc.Parse(sResult.c_str()))
 	{
-		_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
 
@@ -296,7 +298,7 @@ void CAnnaThermostat::GetMeterDetails()
 	pRoot = doc.FirstChildElement("appliances");
 	if (!pRoot)
 	{
-		_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
 	pAppliance = pRoot->FirstChildElement("appliance");
@@ -307,7 +309,7 @@ void CAnnaThermostat::GetMeterDetails()
 		pElem = pAppliance->FirstChildElement("name");
 		if (pElem == NULL)
 		{
-			_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
+			Log(LOG_ERROR, "Invalid data received!");
 			return;
 		}
 		std::string ApplianceName=pElem->GetText();
@@ -329,14 +331,14 @@ void CAnnaThermostat::GetMeterDetails()
 		pElem = hAppliance.FirstChild("logs").FirstChild().Element();
 		if (!pElem)
 		{
-			_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
+			Log(LOG_ERROR, "Invalid data received!");
 			return;
 		}
 		TiXmlHandle hLogs = TiXmlHandle(pElem);
 		pElem = hAppliance.FirstChild("logs").Child("point_log", 0).ToElement();
 		if (!pElem)
 		{
-			_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
+			Log(LOG_ERROR, "Invalid data received!");
 			return;
 		}
 		for (pElem; pElem; pElem = pElem->NextSiblingElement())

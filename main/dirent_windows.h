@@ -402,61 +402,61 @@ _wopendir(
  * this function include regular files, sub-directories, pseudo-directories
  * "." and ".." as well as volume labels, hidden files and system files.
  */
-static struct _wdirent*
-_wreaddir(
-    _WDIR *dirp)
-{
-    WIN32_FIND_DATAW *datap;
-    struct _wdirent *entp;
-
-    /* Read next directory entry */
-    datap = dirent_next (dirp);
-    if (datap) {
-        size_t n;
-        DWORD attr;
-        
-        /* Pointer to directory entry to return */
-        entp = &dirp->ent;
-
-        /* 
-         * Copy file name as wide-character string.  If the file name is too
-         * long to fit in to the destination buffer, then truncate file name
-         * to PATH_MAX characters and zero-terminate the buffer.
-         */
-        n = 0;
-        while (n < PATH_MAX  &&  datap->cFileName[n] != 0) {
-            entp->d_name[n] = datap->cFileName[n];
-            n++;
-        }
-        dirp->ent.d_name[n] = 0;
-
-        /* Length of file name excluding zero terminator */
-        entp->d_namlen = n;
-
-        /* File type */
-        attr = datap->dwFileAttributes;
-        if ((attr & FILE_ATTRIBUTE_DEVICE) != 0) {
-            entp->d_type = DT_CHR;
-        } else if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-            entp->d_type = DT_DIR;
-        } else {
-            entp->d_type = DT_REG;
-        }
-
-        /* Reset dummy fields */
-        entp->d_ino = 0;
-        entp->d_reclen = sizeof (struct _wdirent);
-
-    } else {
-
-        /* Last directory entry read */
-        entp = NULL;
-
-    }
-
-    return entp;
-}
-
+//static struct _wdirent*
+//_wreaddir(
+//    _WDIR *dirp)
+//{
+//    WIN32_FIND_DATAW *datap;
+//    struct _wdirent *entp;
+//
+//    /* Read next directory entry */
+//    datap = dirent_next (dirp);
+//    if (datap) {
+//        size_t n;
+//        DWORD attr;
+//        
+//        /* Pointer to directory entry to return */
+//        entp = &dirp->ent;
+//
+//        /* 
+//         * Copy file name as wide-character string.  If the file name is too
+//         * long to fit in to the destination buffer, then truncate file name
+//         * to PATH_MAX characters and zero-terminate the buffer.
+//         */
+//        n = 0;
+//        while (n < PATH_MAX  &&  datap->cFileName[n] != 0) {
+//            entp->d_name[n] = datap->cFileName[n];
+//            n++;
+//        }
+//        dirp->ent.d_name[n] = 0;
+//
+//        /* Length of file name excluding zero terminator */
+//        entp->d_namlen = n;
+//
+//        /* File type */
+//        attr = datap->dwFileAttributes;
+//        if ((attr & FILE_ATTRIBUTE_DEVICE) != 0) {
+//            entp->d_type = DT_CHR;
+//        } else if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+//            entp->d_type = DT_DIR;
+//        } else {
+//            entp->d_type = DT_REG;
+//        }
+//
+//        /* Reset dummy fields */
+//        entp->d_ino = 0;
+//        entp->d_reclen = sizeof (struct _wdirent);
+//
+//    } else {
+//
+//        /* Last directory entry read */
+//        entp = NULL;
+//
+//    }
+//
+//    return entp;
+//}
+//
 /*
  * Close directory stream opened by opendir() function.  This invalidates the
  * DIR structure as well as any directory entry read previously by

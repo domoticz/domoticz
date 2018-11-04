@@ -101,7 +101,6 @@ namespace OpenZWave
 			~AssociationCommand();
 
 		private:
-			uint8	m_length;
 			uint8*	m_data;
 		};
 

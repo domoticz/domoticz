@@ -38,12 +38,14 @@ define(['app'], function (app) {
 			$scope.iconset = [];
 			$scope.selectedIcon = [];
 
-			$http.get("json.htm?type=command&param=getcustomiconset").
-				success(function (data, status, headers, config) {
-					if (typeof data.result != 'undefined') {
-						$scope.iconset = data.result;
-					}
-				});
+			$http({
+                url: "json.htm?type=command&param=getcustomiconset",
+            }).then(function successCallback(response) {
+                var data = response.data;
+				if (typeof data.result != 'undefined') {
+					$scope.iconset = data.result;
+				}
+			});
 		}
 
 		$scope.OnIconSelected = function (icon) {

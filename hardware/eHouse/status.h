@@ -74,7 +74,7 @@ typedef struct RMeHouse1StatusT //struct offset =0;
 	unsigned char AddrL;		//address low  byte 
 //	unsigned char DataType;		//must be 's' for status	
 	ADCs ADC[8];				//offset 3B size 8*2B		
-	struct OUT			//18		//1 bit fields	3B size 1-24 outputs
+	struct _tOUT			//18		//1 bit fields	3B size 1-24 outputs
 								//offset in struct 19
 	{				        //in some operating systems bit locations may be inverted in BYTES as  explained below
 		unsigned char o1 : 1;			//digital output 8 [0|1]
@@ -104,7 +104,7 @@ typedef struct RMeHouse1StatusT //struct offset =0;
 	} OUT;
 
 
-	struct INPUTS		///20		//INPUTS 1-16: offset 22 - size 2 bytes
+	struct _tINPUTS		///20		//INPUTS 1-16: offset 22 - size 2 bytes
 							//1 bit fields
 	{//in some operating systems bit locations may be inverted in BYTES as explained below
 		unsigned char i1 : 1;			//digital input 8 [0|1]
@@ -123,11 +123,10 @@ typedef struct RMeHouse1StatusT //struct offset =0;
 		unsigned char i14 : 1;
 		unsigned char i15 : 1;
 		unsigned char i16 : 1;			//digital input 9 [0|1]
-
 	} INPUTS;
 
 
-	struct OUT25		//22	//1 bit fields	1B size 25-32 outputs
+	struct _tOUT25		//22	//1 bit fields	1B size 25-32 outputs
 						//offset in struct 24B
 	{ //in some operating systems bit locations may be inverted in BYTES as explained below
 		unsigned char o25 : 1;    //output 32
@@ -184,7 +183,7 @@ typedef struct  	//status hm status[0]='s'			//struct offset =0;
 							//offset 3B size 8*2B
 	ADCs ADC[16];		//2		//offset 3B size 16*2B
 
-	struct 			//2+32				//1 bit fields	3B size 1-24 outputs
+	struct _tOUT 			//2+32				//1 bit fields	3B size 1-24 outputs
 									//offset in struct 35
 	{ //in some operating systems bit locations may be inverted in BYTES as explained below
 		unsigned char o1 : 1;			//digital output 8 [0|1]
@@ -213,7 +212,7 @@ typedef struct  	//status hm status[0]='s'			//struct offset =0;
 		unsigned char o24 : 1;		//digital output 17 [0|1]
 	} OUT;
 	unsigned char CURRENT_PROGRAM;		//34+3 [36] //HeatManager Program Nr. offset 40                
-	struct 			//		[37,38]	//INPUTS 1-16: offset 38 - size 2 bytes
+	struct _tINPUTS 			//		[37,38]	//INPUTS 1-16: offset 38 - size 2 bytes
 								//1 bit fields
 	{//in some operating systems bit locations may be inverted in BYTES as explained below
 		unsigned char i1 : 1;			//digital input 8 [0|1]
@@ -232,7 +231,6 @@ typedef struct  	//status hm status[0]='s'			//struct offset =0;
 		unsigned char i14 : 1;
 		unsigned char i15 : 1;
 		unsigned char i16 : 1;			//digital input 9 [0|1]
-
 	} INPUTS;
 	//WORD INPUTS;
 

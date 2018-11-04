@@ -5,7 +5,8 @@
 				<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
 					<li class="active"><a data-target="#taball" data-toggle="tab" data-i18n="All">All</a></li>
 					<li><a data-target="#tabstatus" data-toggle="tab" data-i18n="Status">Status</a></li>
-					<li><a data-target="#taberror" data-toggle="tab" data-i18n="Error">Error</a></li>
+					<li ng-show="logitems_error.length>0"><a data-target="#taberror" data-toggle="tab" data-i18n="Error">Error</a></li>
+					<li ng-show="logitems_debug.length>0"><a data-target="#tabdebug" data-toggle="tab" data-i18n="Debug">Debug</a></li>
 				</ul>
 			</td>
 			<td align="right" valign="bottom">
@@ -18,21 +19,29 @@
 		<div class="tab-pane active" id="taball">
 			<div id="logdata" class="log" scroll-glue>
 				<div ng-repeat='item in filtered = (logitems | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+					<span class="{{item.mclass}}">{{item.text}}</span>
 				</div>
 			</div>
 		</div>
 		<div class="tab-pane" id="tabstatus">
 			<div id="logdata_status" class="log" scroll-glue>
 				<div ng-repeat='item in filtered = (logitems_status | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+					<span class="{{item.mclass}}">{{item.text}}</span>
 				</div>
 			</div>
 		</div>
 		<div class="tab-pane" id="taberror">
 			<div id="logdata_error" class="log" scroll-glue>
 				<div ng-repeat='item in filtered = (logitems_error | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+					<span class="{{item.mclass}}">{{item.text}}</span>
+				</div>
+			</div>
+		</div>
+		<div class="tab-pane" id="tabdebug">
+			<!--style="display:none;"-->
+			<div id="logdata_debug" class="log" scroll-glue>
+				<div ng-repeat='item in filtered = (logitems_debug | filter:filterExpr) track by $index'>
+					<span class="{{item.mclass}}">{{item.text}}</span>
 				</div>
 			</div>
 		</div>

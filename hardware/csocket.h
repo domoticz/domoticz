@@ -3,40 +3,41 @@
 #define CSOCKET_H
 
 #include <string>
+#include <cmath>
 
 #ifdef WIN32
 	#include <winsock2.h>
-	#include <windows.h>
+//	#include <windows.h>
 #else
 	#include <netinet/in.h>
-	#include <unistd.h>
+//	#include <unistd.h>
 #endif
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <string>
 
-class csocket 
+class csocket
 {
 public:
 
-    enum SocketState 
+    enum SocketState
     {
         CLOSED,
-        CONNECTED,          
+        CONNECTED,
         ERRORED,
     };
 
 
     csocket();
-    ~csocket(); 
+    virtual ~csocket();
 
-    static int      resolveHost( const std::string& szRemoteHostName, struct hostent** pHostEnt );
+    static int      resolveHost( const std::string& szRemoteHostName, struct sockaddr_in& sa );
     int             connect( const char* remoteHost, unsigned int remotePort );
-	int             canRead(bool* readyToRead, float waitTime = -1); //-1 is Infinity
+    int             canRead( bool* readyToRead, float waitTime = INFINITY );
     virtual int     read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll );
     virtual int     write( const char* pDataBuffer, unsigned int numBytesToWrite );
     SocketState     getState( void ) const;
-	void			close();
+    void            close();
 private:
 
 

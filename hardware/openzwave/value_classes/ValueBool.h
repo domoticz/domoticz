@@ -63,7 +63,6 @@ namespace OpenZWave
 	private:
 		bool	m_value;				// the current index in the m_items vector
 		bool	m_valueCheck;			// the previous value (used for double-checking spurious value reads)
-		bool	m_newValue;				// a new value to be set on the appropriate device
 	};
 
 } // namespace OpenZWave

@@ -9,7 +9,6 @@
 //
 #include "stdafx.h"
 #include "connection.hpp"
-#include <vector>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include "connection_manager.hpp"
@@ -246,7 +245,7 @@ void connection::MyWrite(const std::string &buf)
 	case connection_http:
 	case connection_websocket:
 		// we dont send data anymore in websocket closing state
-		boost::unique_lock<boost::mutex>(writeMutex);
+		std::unique_lock<std::mutex>(writeMutex);
 		if (write_in_progress) {
 			// write in progress, add to queue
 			writeQ.push(buf);
@@ -383,7 +382,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 
 void connection::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 {
-	boost::unique_lock<boost::mutex>(writeMutex);
+	std::unique_lock<std::mutex>(writeMutex);
 	write_buffer.clear();
 	write_in_progress = false;
 	if (!error) {
@@ -442,9 +441,7 @@ void connection::reset_read_timeout() {
 /// stop connection on read timeout
 void connection::handle_read_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
-#ifdef DEBUG_WWW
-		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_address_.c_str());
-#endif
+		//_log.DEBUG(DEBUG_WEBSERVER, "%s -> handle read timeout", host_endpoint_address_.c_str());
 		connection_manager_.stop(shared_from_this());
 	}
 }

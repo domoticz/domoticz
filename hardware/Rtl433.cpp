@@ -21,7 +21,6 @@ void removeCharsFromString(std::string &str, const char* charsToRemove ) {
 }
 
 CRtl433::CRtl433(const int ID, const std::string &cmdline) :
-	m_stoprequested(false),
 	m_cmdline(cmdline)
 {
 	// Basic protection from malicious command line
@@ -36,7 +35,10 @@ CRtl433::~CRtl433()
 
 bool CRtl433::StartHardware()
 {
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CRtl433::Do_Work, this)));
+	RequestStart();
+
+	m_thread = std::make_shared<std::thread>(&CRtl433::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
@@ -47,8 +49,9 @@ bool CRtl433::StopHardware()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 
 	m_bIsStarted = false;
@@ -93,7 +96,7 @@ void CRtl433::Do_Work()
 		_log.Log(LOG_STATUS, "Rtl433: Worker started...");
 
 	bool bHaveReceivedData = false;
-	while (!m_stoprequested)
+	while (!IsStopRequested(0))
 	{
 		char line[2048];
 		std::vector<std::string> headers;
@@ -109,15 +112,18 @@ void CRtl433::Do_Work()
 #endif
 		if (m_hPipe == NULL)
 		{
-			if (!m_stoprequested) {
+			if (!IsStopRequested(0))
+			{
 				// sleep 30 seconds before retrying
 #ifdef WIN32
 				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
 #else
 				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
 #endif
-				for (int i = 0; i < 30 && !m_stoprequested; i++) {
-					sleep_milliseconds(1000);
+				for (int i = 0; i < 30; i++)
+				{
+					if (IsStopRequested(1000))
+						break;
 				}
 			}
 			continue;
@@ -132,9 +138,8 @@ void CRtl433::Do_Work()
 #endif
 		bool bFirstTime = true;
 		time_t time_last_received = time(NULL);
-		while (!m_stoprequested)
+		while (!IsStopRequested(100))
 		{
-			sleep_milliseconds(100);
 			if (m_hPipe == NULL)
 				break;
 			//size_t bread = read(fd, (char*)&line, sizeof(line));
@@ -166,7 +171,7 @@ void CRtl433::Do_Work()
 				// load field values into a map
 				std::map<std::string, std::string> data;
 				std::vector<std::string>::iterator h = headers.begin();
-				for (std::vector<std::string>::iterator vi = values.begin(); vi != values.end(); vi++)
+				for (std::vector<std::string>::iterator vi = values.begin(); vi != values.end(); ++vi)
 				{
 					std::string header = *(h++);
 					data[header] = *vi;
@@ -193,6 +198,8 @@ void CRtl433::Do_Work()
 				bool hasdepth = false;
 				float wind_str;
 				bool haswind_str = false;
+				float wind_gst;
+				bool haswind_gst = false;
 				int wind_dir;
 				bool haswind_dir = false;
 				// attempt parsing field values
@@ -277,16 +284,38 @@ void CRtl433::Do_Work()
 					hasdepth = true;
 				}
 
-				if (!data["windstrength"].empty())
+				if (!data["windstrength"].empty() || !data["wind_speed"].empty())
 				{
-					wind_str = (float)atof(data["windstrength"].c_str());
+					//Based on current knowledge it's not possible to have both windstrength and wind_speed at the same time.
+					if (!data["windstrength"].empty())
+					{
+						wind_str = (float)atof(data["windstrength"].c_str());
+					}
+					else if (!data["wind_speed"].empty())
+					{
+						wind_str = (float)atof(data["wind_speed"].c_str());
+					}
 					haswind_str = true;
 				}
 
-				if (!data["winddirection"].empty())
+				if (!data["winddirection"].empty() || !data["wind_direction"].empty())
 				{
-					wind_dir = atoi(data["winddirection"].c_str());
+					//Based on current knowledge it's not possible to have both winddirection and wind_direction at the same time.
+					if (!data["winddirection"].empty())
+					{
+						wind_dir = atoi(data["winddirection"].c_str());
+					}
+					else if (!data["wind_direction"].empty())
+					{
+						wind_dir = atoi(data["wind_direction"].c_str());
+					}
 					haswind_dir = true;
+				}
+
+				if (!data["wind_gust"].empty())
+				{
+					wind_gst = (float)atof(data["wind_gust"].c_str());
+					haswind_gst = true;
 				}
 
 				std::string model = data["model"];
@@ -317,7 +346,7 @@ void CRtl433::Do_Work()
 				{
 					bValidTempHum = !((tempC == 0) && (humidity == 0));
 				}
-				
+
 				bool bHaveSend = false;
 				if (hastempC && hashumidity && haspressure && bValidTempHum)
 				{
@@ -331,7 +360,7 @@ void CRtl433::Do_Work()
 						model);
 					bHaveSend = true;
 				}
-				else if (haswind_str && haswind_dir && hastempC)
+				else if (haswind_str && haswind_dir && !haswind_gst && hastempC)
 				{
 					SendWind(sensoridx,
 						batterylevel,
@@ -344,13 +373,39 @@ void CRtl433::Do_Work()
 						model);
 					bHaveSend = true;
 				}
-				else if (haswind_str && haswind_dir && !hastempC)
+				else if (haswind_str && haswind_dir && !haswind_gst && !hastempC)
 				{
 					SendWind(sensoridx,
 						batterylevel,
 						wind_dir,
 						wind_str,
 						0,
+						0,
+						0,
+						false,
+						model);
+					bHaveSend = true;
+				}
+				else if (haswind_str && haswind_gst && haswind_dir && hastempC)
+				{
+					SendWind(sensoridx,
+						batterylevel,
+						wind_dir,
+						wind_str,
+						wind_gst,
+						tempC,
+						0,
+						true,
+						model);
+					bHaveSend = true;
+				}
+				else if (haswind_str && haswind_gst && haswind_dir && !hastempC)
+				{
+					SendWind(sensoridx,
+						batterylevel,
+						wind_dir,
+						wind_str,
+						wind_gst,
 						0,
 						0,
 						false,
@@ -411,7 +466,7 @@ void CRtl433::Do_Work()
 				}
 				else
 				{
-					//Useful as some sensors will be skipped if temp is available  	
+					//Useful as some sensors will be skipped if temp is available
 					//_log.Log(LOG_NORM, "Rtl433: Raw Data: (%s)", line);
 				}
 			}
@@ -421,7 +476,7 @@ void CRtl433::Do_Work()
 				}
 				break; // bail out, subprocess has failed
 			}
-		} // while !m_stoprequested
+		} // while !IsStopRequested()
 		if (m_hPipe)
 		{
 #ifdef WIN32
@@ -431,7 +486,7 @@ void CRtl433::Do_Work()
 #endif
 			m_hPipe = NULL;
 		}
-		if (!m_stoprequested) {
+		if (!IsStopRequested(0)) {
 			// sleep 30 seconds before retrying
 			if (!bHaveReceivedData)
 			{
@@ -445,11 +500,13 @@ void CRtl433::Do_Work()
 			{
 				_log.Log(LOG_STATUS, "Rtl433: Failure! Retrying in 30 seconds...");
 			}
-			for (int i = 0; i < 30 && !m_stoprequested; i++) {
-				sleep_milliseconds(1000);
+			for (int i = 0; i < 30; i++)
+			{
+				if (IsStopRequested(1000))
+					break;
 			}
 		}
-	} // while !stoprequested
+	} // while !IsStopRequested()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
 }
 

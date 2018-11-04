@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "WebsocketHandler.h"
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include "../main/localtime_r.h"
 #include "../push/WebsocketPush.h"
 #include "../json/json.h"
@@ -93,7 +91,6 @@ namespace http {
 			if (cookie_header != NULL)
 			{
 				std::string sSID;
-				std::string sAuthToken;
 				std::string szTime;
 
 				// Parse session id and its expiration date
@@ -115,7 +112,7 @@ namespace http {
 				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 				{
 					sSID = scookie.substr(fpos + 4, upos - fpos - 4);
-					sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
+					//std::string sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
 					szTime = scookie.substr(ppos + 1);
 
 					time_t stime;
@@ -137,7 +134,7 @@ namespace http {
 			//When a browser was still open and polling/connecting to the websocket, and the application was started this caused a crash
 			try
 			{
-				std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
+				std::string query = "type=devices&rid=" + std::to_string(DeviceRowIdx);
 				Json::Value request;
 				Json::StyledWriter writer;
 				request["event"] = "request";

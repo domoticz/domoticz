@@ -603,9 +603,9 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					pSen->hygro);
 #endif
 				if (pSen->hygro > 0)
-					SendTempHumSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, "Temp+Hum");
+					SendTempHumSensor(pSen->idPHY^pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, "Temp+Hum");
 				else
-					SendTempSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, "Temp");
+					SendTempSensor(pSen->idPHY^pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, "Temp");
 			}
 			break;
 		case INFOS_TYPE5:
@@ -624,7 +624,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					pSen->pressure
 					);
 #endif
-				SendTempHumBaroSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, pSen->pressure, 0, "Temp+Hum+Baro");
+				SendTempHumBaroSensor(pSen->idPHY^pSen->idChannel,(pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, pSen->pressure, 0, "Temp+Hum+Baro");
 			}
 			break;
 		case INFOS_TYPE6:
@@ -647,6 +647,50 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 			break;
 		case INFOS_TYPE12:
 			// deprecated // Used by  DIGIMAX TS10 protocol
+			break;
+		case INFOS_TYPE13:
+			// Used by  Cartelectronic TIC/Pulses devices (Teleinfo/TeleCounters)
+			if (dlen == sizeof(INCOMING_RF_INFOS_TYPE13))
+			{
+				INCOMING_RF_INFOS_TYPE13 *pSen = (INCOMING_RF_INFOS_TYPE13*)(data + 8);
+#ifdef DEBUG_ZIBLUE
+				_log.Log(LOG_NORM, "ZiBlue: subtype: %d, idLsb: %04X, idMsb: %04X, qualifier: %04X, infos: %04X, counter1Lsb: %d, counter1Msb: %d, counter2Lsb: %d, counter2Msb: %d, apparentPower: %d",
+					pSen->subtype,
+					pSen->idLsb,
+					pSen->idMsb,
+					pSen->qualifier,
+					pSen->infos,
+					pSen->counter1Lsb,
+					pSen->counter1Msb,
+					pSen->counter2Lsb,
+					pSen->counter2Msb,
+					pSen->apparentPower
+				);
+#endif
+				
+				int total1 = pSen->counter1Msb;
+				total1 = total1 << 16;
+				total1 += pSen->counter1Lsb;
+				int total2 = pSen->counter2Msb;
+				total2 = total2 << 16;
+				total2 += pSen->counter2Lsb;
+				double power1 = 0;
+				double power2 = 0;
+				if (m_LastReceivedKWhMeterValue.find(pSen->idLsb^pSen->idMsb ^ 1) != m_LastReceivedKWhMeterValue.end())
+				{
+					power1 = (total1 - m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 1]) / ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 1]) / 3600.0);
+					power2 = (total2 - m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 2]) / ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 2]) / 3600.0);
+					power1 = round(power1);
+					power2 = round(power2);
+				}
+				SendKwhMeter(pSen->idLsb^pSen->idMsb, 1, (pSen->qualifier & 0x01) ? 0 : 100, power1, total1 / 1000.0, "HC");
+				SendKwhMeter(pSen->idLsb^pSen->idMsb, 2, (pSen->qualifier & 0x01) ? 0 : 100, power2, total2 / 1000.0, "HP");
+				SendWattMeter(pSen->idLsb^pSen->idMsb, 3, (pSen->qualifier & 0x01) ? 0 : 100, (float)pSen->apparentPower, "Apparent Power");
+				m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 1] = m_LastReceivedTime;
+				m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 1] = total1;
+				m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 2] = m_LastReceivedTime;
+				m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 2] = total2;
+			}
 			break;
 		}
 	}

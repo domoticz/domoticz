@@ -5,6 +5,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/WebServerHelper.h"
+#include "../webserver/proxyclient.h"
 
 #define RETRY_DELAY 30
 
@@ -14,29 +15,16 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 	m_username(username), m_password(password), m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
-	m_socket = INVALID_SOCKET;
-	m_stoprequested = false;
 	m_usIPPort = usIPPort;
-	info = NULL;
+	m_bIsStarted = false;
 #ifndef NOCLOUD
 	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	b_ProxyConnected = false;
 #endif
-	m_bIsStarted = false;
-	m_retrycntr = RETRY_DELAY;
 }
 
 DomoticzTCP::~DomoticzTCP(void)
 {
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-#endif
-	if (NULL != info) {
-		freeaddrinfo(info);
-	}
-
 }
 
 #ifndef NOCLOUD
@@ -57,67 +45,19 @@ bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)
 
 bool DomoticzTCP::StartHardware()
 {
+	RequestStart();
+
 #ifndef NOCLOUD
 	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	if (b_useProxy) {
 		return StartHardwareProxy();
 	}
-	else {
-		return StartHardwareTCP();
-	}
-#else
-	return StartHardwareTCP();
 #endif
-}
-
-bool DomoticzTCP::StartHardwareTCP()
-{
-	int rc;
-	struct addrinfo hints;
-	m_bIsStarted = true;
-
-	m_stoprequested = false;
-
-	memset(&m_addr, 0, sizeof(sockaddr_in6));
-	m_addr.sin6_family = AF_INET6;
-	m_addr.sin6_port = htons(m_usIPPort);
-
-	// RK, removed: unsigned long ip;
-	memset(&hints, 0x00, sizeof(hints));
-	hints.ai_flags = AI_NUMERICSERV;
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-
-	rc = inet_pton(AF_INET, m_szIPAddress.c_str(), &(m_addr.sin6_addr));
-	if (rc == 1)    /* valid IPv4 text address? */
-	{
-		hints.ai_family = AF_INET;
-		hints.ai_flags |= AI_NUMERICHOST;
-	}
-	else
-	{
-		rc = inet_pton(AF_INET6, m_szIPAddress.c_str(), &(m_addr.sin6_addr));
-		if (rc == 1) /* valid IPv6 text address? */
-		{
-
-			hints.ai_family = AF_INET6;
-			hints.ai_flags |= AI_NUMERICHOST;
-		}
-	}
-	char myPort[256];
-	sprintf(myPort, "%d", m_usIPPort);
-	rc = getaddrinfo(m_szIPAddress.c_str(), myPort, &hints, &info);
-	if (rc != 0)
-	{
-		return false;
-	}
-
-	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
-
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&DomoticzTCP::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&DomoticzTCP::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool DomoticzTCP::StopHardware()
@@ -126,208 +66,120 @@ bool DomoticzTCP::StopHardware()
 	if (b_useProxy) {
 		return StopHardwareProxy();
 	}
-	else {
-		return StopHardwareTCP();
-	}
-#else
-	return StopHardwareTCP();
 #endif
-}
 
-bool DomoticzTCP::StopHardwareTCP()
-{
-	if (isConnected())
+	if (m_thread)
 	{
-		try {
-			disconnectTCP();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-	else {
-		try {
-			if (m_thread)
-			{
-				m_stoprequested = true;
-				m_thread->join();
-			}
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
 }
 
-bool DomoticzTCP::ConnectInternal()
+void DomoticzTCP::OnConnect()
 {
-	m_socket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
-	if (m_socket == INVALID_SOCKET)
-	{
-		_log.Log(LOG_ERROR, "Domoticz: TCP could not create a TCP/IP socket!");
-		return false;
-	}
-	/*
-		//Set socket timeout to 2 minutes
-	#if !defined WIN32
-		struct timeval tv;
-		tv.tv_sec = 120;
-		setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
-	#else
-		unsigned long nTimeout = 120*1000;
-		setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
-	#endif
-	*/
-	// connect to the server
-	int nRet;
-	nRet = connect(m_socket, info->ai_addr, info->ai_addrlen);
-	if (nRet == SOCKET_ERROR)
-	{
-		closesocket(m_socket);
-		m_socket = INVALID_SOCKET;
-		_log.Log(LOG_ERROR, "Domoticz: TCP could not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-		return false;
-	}
-
-	_log.Log(LOG_STATUS, "Domoticz: TCP connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-
-	if (m_username != "")
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	if (!m_username.empty())
 	{
 		char szAuth[300];
 		snprintf(szAuth, sizeof(szAuth), "AUTH;%s;%s", m_username.c_str(), m_password.c_str());
 		WriteToHardware((const char*)&szAuth, (const unsigned char)strlen(szAuth));
 	}
-
 	sOnConnected(this);
-	return true;
 }
 
-void DomoticzTCP::disconnectTCP()
+void DomoticzTCP::OnDisconnect()
 {
-	m_stoprequested = true;
-	if (m_socket != INVALID_SOCKET)
+	Log(LOG_STATUS, "disconnected from: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+}
+
+void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
+{
+	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != 0)
 	{
-		closesocket(m_socket);	//will terminate the thread
-		m_socket = INVALID_SOCKET;
-		sleep_seconds(1);
+		Log(LOG_ERROR, "Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
+		return;
 	}
-	//m_thread-> join();
+	std::lock_guard<std::mutex> l(readQueueMutex);
+	onInternalMessage((const unsigned char *)pData, length, false); // Do not check validity, this might be non RFX-message
+}
+
+void DomoticzTCP::OnError(const std::exception e)
+{
+	Log(LOG_ERROR, "Error: %s", e.what());
+}
+
+void DomoticzTCP::OnError(const boost::system::error_code& error)
+{
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out) ||
+		(error == boost::asio::error::host_not_found)
+		)
+	{
+		Log(LOG_ERROR, "Can not connect to: %s:%d (%s)", m_szIPAddress.c_str(), m_usIPPort, error.message().c_str());
+	}
+	else if (error != boost::asio::error::eof)
+	{
+		Log(LOG_ERROR, "%s", error.message().c_str());
+	}
 }
 
 void DomoticzTCP::Do_Work()
 {
-	char buf[100];
+	connect(m_szIPAddress, m_usIPPort);
 	int sec_counter = 0;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		if (
-			(m_socket == INVALID_SOCKET) &&
-			(!m_stoprequested)
-			)
-		{
-			sleep_seconds(1);
-			sec_counter++;
-
-			if (sec_counter % 12 == 0) {
-				mytime(&m_LastHeartbeat);
-			}
-
-			if (m_stoprequested)
-				break;
-			m_retrycntr++;
-			if (m_retrycntr >= RETRY_DELAY)
-			{
-				m_retrycntr = 0;
-				if (!ConnectInternal())
-				{
-					_log.Log(LOG_STATUS, "Domoticz: retrying in %d seconds...", RETRY_DELAY);
-				}
-			}
-		}
-		else
-		{
-			//this could take a long time... maybe there will be no data received at all,
-			//so it's no good to-do the heartbeat timing here
-			m_LastHeartbeat = mytime(NULL);
-
-			int bread = recv(m_socket, (char*)&buf, sizeof(buf), 0);
-			if (m_stoprequested)
-				break;
-			if (bread <= 0) {
-				_log.Log(LOG_ERROR, "Domoticz: TCP/IP connection closed! %s", m_szIPAddress.c_str());
-				closesocket(m_socket);
-				m_socket = INVALID_SOCKET;
-				if (!m_stoprequested)
-				{
-					_log.Log(LOG_STATUS, "Domoticz: retrying in %d seconds...", RETRY_DELAY);
-					m_retrycntr = 0;
-					continue;
-				}
-			}
-			else
-			{
-				boost::lock_guard<boost::mutex> l(readQueueMutex);
-				onRFXMessage((const unsigned char *)&buf, bread);
-			}
-		}
-
+		sec_counter++;
+		if (sec_counter % 12 == 0)
+			mytime(&m_LastHeartbeat);
 	}
-	_log.Log(LOG_STATUS, "Domoticz: TCP/IP Worker stopped...");
-}
+	terminate();
 
-void DomoticzTCP::writeTCP(const char *data, size_t size)
-{
-	if (m_socket == INVALID_SOCKET)
-		return; //not connected!
-	send(m_socket, data, size, 0);
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 #ifndef NOCLOUD
-	if (b_useProxy) {
-		if (isConnectedProxy()) {
+	if (b_useProxy)
+	{
+		if (isConnectedProxy())
+		{
 			writeProxy(pdata, length);
 			return true;
 		}
 	}
-	else {
-		if (isConnectedTCP())
-		{
-			writeTCP(pdata, length);
-			return true;
-		}
+	else if (ASyncTCP::isConnected())
+	{
+		write(std::string((const char*)pdata, length));
+		return true;
 	}
 #else
-	if (isConnectedTCP())
+	if (ASyncTCP::isConnected())
 	{
-		writeTCP(pdata, length);
+		write(std::string((const char*)pdata, length));
 		return true;
 	}
 #endif
 	return false;
 }
 
-bool DomoticzTCP::isConnectedTCP()
-{
-	return m_socket != INVALID_SOCKET;
-}
-
 bool DomoticzTCP::isConnected()
 {
 #ifndef NOCLOUD
-	if (b_useProxy) {
+	if (b_useProxy)
 		return isConnectedProxy();
-	}
-	else {
-		return isConnectedTCP();
-	}
+	else
+		return ASyncTCP::isConnected();
 #else
-	return isConnectedTCP();
+	return ASyncTCP::isConnected();
 #endif
 }
 
@@ -353,7 +205,7 @@ bool DomoticzTCP::StartHardwareProxy()
 
 bool DomoticzTCP::ConnectInternalProxy()
 {
-	boost::shared_ptr<http::server::CProxyClient> proxy;
+	std::shared_ptr<http::server::CProxyClient> proxy;
 	const int version = 1;
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
 	// this means that we connect connect twice to the same server
@@ -364,7 +216,7 @@ bool DomoticzTCP::ConnectInternalProxy()
 		sOnConnected(this); // we do need this?
 	}
 	else {
-		_log.Log(LOG_STATUS, "Delaying Domoticz master login");
+		Log(LOG_STATUS, "Delaying Domoticz master login");
 	}
 	return true;
 }
@@ -380,7 +232,7 @@ bool DomoticzTCP::StopHardwareProxy()
 
 void DomoticzTCP::DisconnectProxy()
 {
-	boost::shared_ptr<http::server::CProxyClient> proxy;
+	std::shared_ptr<http::server::CProxyClient> proxy;
 
 	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
@@ -398,7 +250,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 {
 	/* send data to slave */
 	if (isConnectedProxy()) {
-		boost::shared_ptr<http::server::CProxyClient> proxy = m_webservers.GetProxyForMaster(this);
+		std::shared_ptr<http::server::CProxyClient> proxy = m_webservers.GetProxyForMaster(this);
 		if (proxy) {
 			proxy->WriteMasterData(token, data, size);
 		}
@@ -408,8 +260,8 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 void DomoticzTCP::FromProxy(const unsigned char *data, size_t datalen)
 {
 	/* data received from slave */
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	onRFXMessage(data, datalen);
+	std::lock_guard<std::mutex> l(readQueueMutex);
+	onInternalMessage(data, datalen);
 }
 
 std::string DomoticzTCP::GetToken()
@@ -422,7 +274,7 @@ void DomoticzTCP::Authenticated(const std::string &aToken, bool authenticated)
 	b_ProxyConnected = authenticated;
 	token = aToken;
 	if (authenticated) {
-		_log.Log(LOG_STATUS, "Domoticz TCP connected via Proxy.");
+		Log(LOG_STATUS, "Domoticz TCP connected via Proxy.");
 	}
 }
 

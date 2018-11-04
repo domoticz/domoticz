@@ -2,9 +2,7 @@
 
 #include "../hardware/DomoticzHardware.h"
 #include "TCPClient.h"
-#include "../webserver/proxyclient.h"
 #include <set>
-#include <vector>
 
 namespace tcp {
 namespace server {
@@ -62,7 +60,7 @@ protected:
 	CTCPServer *m_pRoot;
 
 	std::set<CTCPClient_ptr> connections_;
-	boost::mutex connectionMutex;
+	std::mutex connectionMutex;
 
 	friend class CTCPClient;
 	friend class CSharedClient;
@@ -72,10 +70,10 @@ class CTCPServerInt : public CTCPServerIntBase {
 public:
 	CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot);
 	~CTCPServerInt(void);
-	virtual void start();
-	virtual void stop();
+	virtual void start() override;
+	virtual void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c);
+	virtual void stopClient(CTCPClient_ptr c) override;
 private:
 
 	void handleAccept(const boost::system::error_code& error);
@@ -97,19 +95,19 @@ private:
 #ifndef NOCLOUD
 class CTCPServerProxied : public CTCPServerIntBase {
 public:
-	CTCPServerProxied(CTCPServer *pRoot, boost::shared_ptr<http::server::CProxyClient> proxy);
+	CTCPServerProxied(CTCPServer *pRoot, std::shared_ptr<http::server::CProxyClient> proxy);
 	~CTCPServerProxied(void);
-	virtual void start();
-	virtual void stop();
+	virtual void start() override;
+	virtual void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c);
+	virtual void stopClient(CTCPClient_ptr c) override;
 
 	bool OnNewConnection(const std::string &token, const std::string &username, const std::string &password);
 	bool OnDisconnect(const std::string &token);
 	bool OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred);
 	CSharedClient *FindClient(const std::string &token);
 private:
-	boost::shared_ptr<http::server::CProxyClient> m_pProxyClient;
+	std::shared_ptr<http::server::CProxyClient> m_pProxyClient;
 };
 #endif
 
@@ -122,7 +120,7 @@ public:
 
 	bool StartServer(const std::string &address, const std::string &port);
 #ifndef NOCLOUD
-	bool StartServer(boost::shared_ptr<http::server::CProxyClient> proxy);
+	bool StartServer(std::shared_ptr<http::server::CProxyClient> proxy);
 #endif
 	void StopServer();
 	void SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
@@ -130,24 +128,23 @@ public:
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
-	bool WriteToHardware(const char *pdata, const unsigned char length) { return true; };
+	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) { return true; };
 	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
 #ifndef NOCLOUD
 	CTCPServerProxied *GetProxiedServer();
 #endif
 private:
-	boost::mutex m_server_mutex;
+	std::mutex m_server_mutex;
 	CTCPServerInt *m_pTCPServer;
 #ifndef NOCLOUD
 	CTCPServerProxied *m_pProxyServer;
 #endif
 
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 	bool StartHardware() { return false; };
 	bool StopHardware() { return false; };
 
 	void Do_Work();
-	bool b_ViaProxy;
 };
 
 } // namespace server

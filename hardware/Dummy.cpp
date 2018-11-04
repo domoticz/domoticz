@@ -29,6 +29,8 @@ void CDummy::Init()
 
 bool CDummy::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -52,7 +54,7 @@ bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice*>(pdata);
 		sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 	}
-	_log.Log(LOG_STATUS, "Dummy: Received null operation for %s", sdevicetype.c_str());
+	Log(LOG_STATUS, "Received null operation for %s", sdevicetype.c_str());
 #endif
 	return true;
 }
@@ -84,6 +86,7 @@ namespace http {
 			{ 16,  0xF3, 0x04 }, //Leaf Wetness
 			{ 246, 0xF6, 0x01 }, //Lux
 			{ 250, 0xFA, 0x01 }, //P1 Smart Meter (Electric)
+			{ 1005,0xF3, 0x21 }, //Managed Counter
 			{ 2,   0xF3, 0x06 }, //Percentage
 			{ 1,   0xF3, 0x09 }, //Pressure (Bar)
 			{ 85,  0x55, 0x03 }, //Rain
@@ -110,6 +113,7 @@ namespace http {
 			{ 1001,0x56, 0x04 } //Wind+Temp+Chill
 		};
 
+		//TODO: Is this function called from anywhere, or can it be removed?
 		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{ // deprecated (for dzVents). Use RType_CreateDevice
 			if (session.rights != 2)
@@ -129,7 +133,7 @@ namespace http {
 			int sensortype = atoi(ssensortype.c_str());
 			unsigned int type = 0;
 			unsigned int subType = 0;
-			uint64_t DeviceRowIdx = -1;
+			uint64_t DeviceRowIdx = (uint64_t )-1;
 
 			for (int i = 0; i < sizeof(mappedsensorname) / sizeof(mappedsensorname[0]); i++)
 			{
@@ -146,7 +150,7 @@ namespace http {
 
 					unsigned long nid = 1; //could be the first device ever
 
-					if (result.size() > 0)
+					if (!result.empty())
 					{
 						nid = atol(result[0][0].c_str()) + 1;
 					}
@@ -164,9 +168,7 @@ namespace http {
 					{
 						root["status"] = "OK";
 						root["title"] = "CreateVirtualSensor";
-						std::stringstream ss;
-						ss << vs_idx;
-						root["idx"] = ss.str().c_str();
+						root["idx"] = std::to_string(vs_idx);
 					}
 					break;
 				}
@@ -223,7 +225,7 @@ namespace http {
 
 			unsigned long nid = 1; //could be the first device ever
 
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nid = atol(result[0][0].c_str()) + 1;
 			}
@@ -241,9 +243,7 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateSensor";
-				std::stringstream ss;
-				ss << vs_idx;
-				root["idx"] = ss.str().c_str();
+				root["idx"] = std::to_string(vs_idx);
 			}
 		}
 

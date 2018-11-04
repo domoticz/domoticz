@@ -1,8 +1,8 @@
-/*  BASE THEME 
+/*  BASE THEME
 
 Welcome to the base theme.
 
-If you want to create your own theme based on this theme, my advice is to 
+If you want to create your own theme based on this theme, my advice is to
 create another CSS file that is loaded after this one, and then work in that. That will be the 'subtheme'.
 
 
@@ -12,7 +12,7 @@ This theme generally tries not to set any colours, and leaves that to the sub-th
 - link styling. It's important for users that all links are the same colour.
 - Data tables. This theme aims to create a 'middle of the road' design of all data tables.
 - Mobile view. The mobile design follows the standard Apple design.
-- Widgets, like sliders, are partially themed. 
+- Widgets, like sliders, are partially themed.
 
 */
 
@@ -25,17 +25,8 @@ body {
 	background-attachment: fixed;
 }
 
-html, body {
-	height: 100%;
-}
-
 #main-view {
 	padding-top: 0px;
-}
-
-#holder .container-fluid {
-	margin-top: 20px;
-	padding-bottom: 20px;
 }
 
 .row-fluid .span12,
@@ -306,12 +297,12 @@ textarea:focus {
 	margin: 10px 50% 10px 0;
 }
 
-/*#protectiontable, 
-#loghistory table, 
-#notifications>table, 
-#metercounters table, 
+/*#protectiontable,
+#loghistory table,
+#notifications>table,
+#metercounters table,
 #othersettings table,
-#floorplans table, 
+#floorplans table,
 #settingscontent #ActiveTabs,
 #emailtable,*/
 #hardwarecontent > div:not(.page-header-small):not(.bannav):not(#bannav),
@@ -346,7 +337,9 @@ textarea:focus {
 @media all and (min-width: 768px) {
 	.row-fluid {
 		display: flex;
-		/*flex-wrap: wrap;*/
-		/*align-items: stretch;*/
 	}
+}
+
+.events-editor__tree {
+	padding-top: 14px !important;
 }

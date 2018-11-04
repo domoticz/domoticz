@@ -1,19 +1,28 @@
 #include "stdafx.h"
 #include "Helper.h"
+#include "Logger.h"
 #ifdef WIN32
 #include "dirent_windows.h"
 #include <direct.h>
 #else
 #include <dirent.h>
+#include <unistd.h>
+#endif
+#if !defined(WIN32)
+#include <sys/ptrace.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <fstream>
 #include <math.h>
 #include <algorithm>
 #include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/md5.h>
+#include <chrono>
+#include <limits.h>
+#include <cstring>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -33,6 +42,14 @@
 #include <time.h>
 #endif
 
+#if defined(__FreeBSD__) 
+// Check if OpenBSD or DragonFly need that at well?
+#include <pthread_np.h>
+#ifndef PTHREAD_MAX_MAMELEN_NP
+#define PTHREAD_MAX_NAMELEN_NP 32 	// Arbitrary
+#endif
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -46,6 +63,15 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	{
 		results.push_back(str);
 	}
+}
+
+uint64_t hexstrtoui64(const std::string &str)
+{
+	uint64_t ul;
+	std::stringstream ss;
+	ss << std::hex << str;
+	ss >> ul;
+	return ul;
 }
 
 void stdreplace(
@@ -67,6 +93,11 @@ void stdupper(std::string &inoutstring)
 		inoutstring[i] = toupper(inoutstring[i]);
 }
 
+void stdlower(std::string &inoutstring)
+{
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::tolower);
+}
+
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
 	bUseDirectPath=false;
@@ -85,10 +116,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	if (!ports.empty())
 	{
 		bFoundPort = true;
-		std::vector<int>::const_iterator itt;
-		for (itt = ports.begin(); itt != ports.end(); ++itt)
+		for (const auto & itt : ports)
 		{
-			sprintf(szPortName, "COM%d", *itt);
+			sprintf(szPortName, "COM%d", itt);
 			ret.push_back(szPortName);
 		}
 	}
@@ -108,11 +138,10 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			sprintf(szPortName, "COM%d", ii);
 
 			//Check if we did not already have it
-			std::vector<std::string>::const_iterator itt;
 			bool bFound = false;
-			for (itt = ret.begin(); itt != ret.end(); ++itt)
+			for (const auto & itt : ret)
 			{
-				if (*itt == szPortName)
+				if (itt == szPortName)
 				{
 					bFound = true;
 					break;
@@ -157,16 +186,16 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		EnumSerialPortsWindows(serialports);
 		if (!serialports.empty())
 		{
-			std::vector<SerialPortInfo>::const_iterator itt;
-			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+			for (const auto & itt : serialports)
 			{
-				ret.push_back(itt->szPortName); // add port
+				ret.push_back(itt.szPortName); // add port
 			}
 		}
 	}
 
 #else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
+	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
 	std::string sLine = "";
@@ -213,7 +242,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
 			}
-#if defined (__FreeBSD__) || defined (__OpenBSD__)
+#if defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
@@ -276,6 +305,25 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		closedir(d);
 	}
 
+#if defined(__linux__) || defined(__linux) || defined(linux)
+	d=opendir("/dev/serial/by-id");
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while ((de = readdir(d)))
+		{
+			// Only consider symbolic links
+                        if (de->d_type == DT_LNK)
+                        {
+				std::string fname = de->d_name;
+				ret.push_back("/dev/serial/by-id/" + fname);
+			}
+		}
+		closedir(d);
+	}
+
+#endif
 #endif
 	return ret;
 }
@@ -412,20 +460,12 @@ bool isInt(const std::string &s)
 
 void sleep_seconds(const long seconds)
 {
-#if (BOOST_VERSION < 105000)
-	boost::this_thread::sleep(boost::posix_time::seconds(seconds));
-#else
-	boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
-#endif
+	std::this_thread::sleep_for(std::chrono::seconds(seconds));
 }
 
 void sleep_milliseconds(const long milliseconds)
 {
-#if (BOOST_VERSION < 105000)
-	boost::this_thread::sleep(boost::posix_time::milliseconds(milliseconds));
-#else
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(milliseconds));
-#endif
+	std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
 int createdir(const char *szDirName, int secattr)
@@ -595,17 +635,21 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 #endif
 	}
 	else
-		localtime_r(&(*ltime), &timeinfo);
+		localtime_r(ltime, &timeinfo);
 
 	if (format > TF_Time)
 	{
+		//Date
 		sstr << (timeinfo.tm_year + 1900) << "-"
 		<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday << " ";
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday;
 	}
 
 	if (format != TF_Date)
 	{
+		//Time
+		if (format > TF_Time)
+			sstr << " ";
 		sstr
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
@@ -631,17 +675,21 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 	return mdString;
 }
 
-void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue)
+void hsb2rgb(const float hue, const float saturation, const float vlue, int &outR, int &outG, int &outB, const double maxValue/* = 100.0 */)
 {
 	double      hh, p, q, t, ff;
 	long        i;
+
+	if(saturation <= 0.0) {
+		outR = int(vlue*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(vlue*maxValue);
+	}
 	hh = hue;
 	if (hh >= 360.0) hh = 0.0;
 	hh /= 60.0;
 	i = (long)hh;
 	ff = hh - i;
-	double saturation = 1.0;
-	double vlue = 1.0;
 	p = vlue * (1.0 - saturation);
 	q = vlue * (1.0 - (saturation * ff));
 	t = vlue * (1.0 - (saturation * (1.0 - ff)));
@@ -743,7 +791,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeLighting5:
 	case pTypeLighting6:
 	case pTypeFan:
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	case pTypeSecurity1:
 	case pTypeSecurity2:
 	case pTypeCurtain:
@@ -755,6 +803,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
+	case pTypeFS20:
 		bIsLightSwitch = true;
 		break;
 	case pTypeRadiator1:
@@ -793,7 +842,18 @@ int MStoBeaufort(const float ms)
 	return 12;
 }
 
-bool dirent_is_directory(std::string dir, struct dirent *ent)
+void FixFolderEnding(std::string &folder)
+{
+#if defined(WIN32)
+	if (folder.at(folder.length() - 1) != '\\')
+		folder += "\\";
+#else
+	if (folder.at(folder.length() - 1) != '/')
+		folder += "/";
+#endif
+}
+
+bool dirent_is_directory(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_DIR)
 		return true;
@@ -810,7 +870,7 @@ bool dirent_is_directory(std::string dir, struct dirent *ent)
 	return false;
 }
 
-bool dirent_is_file(std::string dir, struct dirent *ent)
+bool dirent_is_file(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_REG)
 		return true;
@@ -1036,3 +1096,174 @@ int GenerateRandomNumber(const int range)
 	return (rand() / (RAND_MAX / range));
 }
 
+int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
+{
+	DIR* dir;
+	if ((dir = opendir(DirPath.c_str())) != NULL)
+	{
+		struct dirent *ent;
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (dirent_is_directory(DirPath, ent))
+			{
+				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
+				{
+					std::string nextdir = DirPath + ent->d_name + "/";
+					if (GetDirFilesRecursive(nextdir.c_str(), _Files))
+					{
+						closedir(dir);
+						return 1;
+					}
+				}
+			}
+			else
+			{
+				std::string fname = DirPath + ent->d_name;
+				_Files[fname] = 1;
+			}
+		}
+	}
+	closedir(dir);
+	return 0;
+}
+
+#ifdef WIN32
+// From https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+typedef struct tagTHREADNAME_INFO
+{
+	DWORD dwType; // Must be 0x1000.
+	LPCSTR szName; // Pointer to name (in user addr space).
+	DWORD dwThreadID; // Thread ID (-1=caller thread).
+	DWORD dwFlags; // Reserved for future use, must be zero.
+} THREADNAME_INFO;
+#pragma pack(pop)
+int SetThreadName(const std::thread::native_handle_type &thread, const char* threadName) {
+	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = threadName;
+	info.dwThreadID = dwThreadID;
+	info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable: 6320 6322)
+	__try{
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER){
+	}
+#pragma warning(pop)
+	return 0;
+}
+#else
+// Based on https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+int SetThreadName(const std::thread::native_handle_type &thread, const char *name)
+{
+#if defined(__linux__) || defined(__linux) || defined(linux)
+	char name_trunc[16];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	return pthread_setname_np(thread, name_trunc);
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+	// Not possible to set name of other thread: https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
+	return 0;
+#elif defined(__NetBSD__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	return pthread_setname_np(thread, "%s", (void *)name_trunc);
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	pthread_setname_np(thread, name_trunc);
+	return 0;
+#elif defined(__FreeBSD__)
+	char name_trunc[PTHREAD_MAX_NAMELEN_NP];
+	strncpy(name_trunc, name, sizeof(name_trunc));
+	name_trunc[sizeof(name_trunc)-1] = '\0';
+	pthread_set_name_np(thread, name_trunc);
+	return 0;
+#endif
+}
+#endif
+
+#if !defined(WIN32)
+bool IsDebuggerPresent(void)
+{
+#if defined(__linux__)
+	// Linux implementation: Search for 'TracerPid:' in /proc/self/status
+	char buf[4096];
+
+	const int status_fd = ::open("/proc/self/status", O_RDONLY);
+	if (status_fd == -1)
+		return false;
+
+	const ssize_t num_read = ::read(status_fd, buf, sizeof(buf) - 1);
+	if (num_read <= 0)
+		return false;
+
+	buf[num_read] = '\0';
+	constexpr char tracerPidString[] = "TracerPid:";
+	const auto tracer_pid_ptr = ::strstr(buf, tracerPidString);
+	if (!tracer_pid_ptr)
+		return false;
+
+	for (const char* characterPtr = tracer_pid_ptr + sizeof(tracerPidString) - 1; characterPtr <= buf + num_read; ++characterPtr)
+	{
+		if (::isspace(*characterPtr))
+			continue;
+		else
+			return ::isdigit(*characterPtr) != 0 && *characterPtr != '0';
+	}
+
+	return false;
+#else
+	// MacOS X / BSD: TODO
+#	ifdef _DEBUG
+	return true;
+#	else
+	return false;
+#	endif
+#endif
+}
+#endif
+
+#if defined(__linux__)
+bool IsWSL(void)
+{
+	// Detect WSL according to https://github.com/Microsoft/WSL/issues/423#issuecomment-221627364
+	bool is_wsl = false;
+
+	char buf[1024];
+
+	int status_fd = open("/proc/sys/kernel/osrelease", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	ssize_t num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	status_fd = open("/proc/version", O_RDONLY);
+	if (status_fd == -1)
+		return is_wsl;
+
+	num_read = read(status_fd, buf, sizeof(buf) - 1);
+
+	if (num_read > 0)
+	{
+		buf[num_read] = 0;
+		is_wsl |= (strstr(buf, "Microsoft") != NULL);
+		is_wsl |= (strstr(buf, "WSL") != NULL);
+	}
+
+	return is_wsl;
+}
+#endif

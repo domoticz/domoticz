@@ -1,20 +1,18 @@
 #include "stdafx.h"
 #include "ToonThermostat.h"
+#include "hardwaretypes.h"
+#include "../httpclient/HTTPClient.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../httpclient/HTTPClient.h"
-#include "../main/mainworker.h"
 #include "../json/json.h"
 
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
-
-#define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat
@@ -112,7 +110,6 @@ m_Agreement(Agreement)
 
 	m_ClientID = "";
 	m_ClientIDChecksum = "";
-	m_stoprequested = false;
 	m_lastSharedSendElectra = 0;
 	m_lastSharedSendGas = 0;
 	m_lastgasusage = 0;
@@ -141,7 +138,6 @@ void CToonThermostat::Init()
 {
 	m_ClientID = "";
 	m_ClientIDChecksum = "";
-	m_stoprequested = false;
 	m_lastSharedSendElectra = 0;
 	m_lastSharedSendGas = 0;
 	m_lastgasusage = 0;
@@ -164,7 +160,7 @@ void CToonThermostat::Init()
 	{
 		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
 		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::vector<std::string> sd = *result.begin();
 			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());
@@ -180,25 +176,26 @@ void CToonThermostat::Init()
 
 bool CToonThermostat::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CToonThermostat::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CToonThermostat::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CToonThermostat::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
-	if (!m_bDoLogin)
-		Logout();
     return true;
 }
 
@@ -206,9 +203,8 @@ void CToonThermostat::Do_Work()
 {
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker started...");
 	int sec_counter = 1;
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		m_poll_counter--;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
@@ -226,6 +222,8 @@ void CToonThermostat::Do_Work()
 			}
 		}
 	}
+	Logout();
+
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker stopped...");
 }
 
@@ -364,7 +362,7 @@ bool CToonThermostat::Login()
 	agreementIdChecksum = root["agreements"][m_Agreement]["agreementIdChecksum"].asString();
 
 	std::stringstream sstr2;
-	sstr2 << "clientId=" << m_ClientID 
+	sstr2 << "clientId=" << m_ClientID
 		 << "&clientIdChecksum=" << m_ClientIDChecksum
 		 << "&agreementId=" << agreementId
 		 << "&agreementIdChecksum=" << agreementIdChecksum
@@ -440,7 +438,7 @@ bool CToonThermostat::GetUUIDIdx(const std::string &UUID, int &idx)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [ROWID] FROM ToonDevices WHERE (HardwareID=%d) AND (UUID='%q')",
 		m_HwdID, UUID.c_str());
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	idx = atoi(sd[0].c_str());
@@ -452,7 +450,7 @@ bool CToonThermostat::GetUUIDFromIdx(const int idx, std::string &UUID)
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT [UUID] FROM ToonDevices WHERE (HardwareID=%d) AND (ROWID=%d)",
 		m_HwdID, idx);
-	if (result.size() < 1)
+	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
 	UUID = sd[0];
