@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+      Hank HKZW-MS02 Multisensor
+      http://products.z-wavealliance.org/products/2578
+      https://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/2578/HKZW-MS02-ProductManual.pdf
+      Config capabilities: https://products.z-wavealliance.org/products/2578/configs
+    -->
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" instance="1" index="12" label="Motion sensor's sensitivity" units="%" size="1" min="0" max="8" value="8">
+            <Help>
+                Level 1 to 8. The higher the value, the more sensitive the PIR sensor.
+                0 Disabled.
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="14" label="Enable/disable basic set command" size="1" min="0" max="1" value="0">
+            <Help>Enable/disable basic set command</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Value of the basic set" size="1" min="0" max="1" value="0">
+            <Help>
+                Send basic set value = 255 to nodes associated with group 2 when motion alarm is triggered. Send basic set value = 0 to nodes associated with group 2 when motion alarm is canceled.
+                Send basic set value = 0 to nodes associated with group 2 when motion alarm is triggered. Send basic set value = 255 to nodes associated with group 2 when motion alarm is canceled.</Help>
+            <Item label="Basic On" value="0"/>
+            <Item label="Basic Off" value="1"/>
+        </Value>
+         <Value type="byte" genre="config" instance="1" index="17" label="Enable/disable shock alarm" size="1" min="0" max="1" value="0">
+            <Help>when the value is 0, the product will not sends a vibration alarm after moving or shaking; when the value is 1, the product will sends a vibration alarm after moving or shaking</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="18" label="Motion alarm cancellation delay" units="lux" size="2" min="0" max="65535" value="200">
+            <Help>
+                0 Reports are not sent.
+                1 to 65535 the change in luminance level resulting in luminance report being sent to the main controller.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="32" label="Level of low battery" units="%" size="1" min="10" max="50" value="20">
+            <Help>The low level from 10% to 50%</Help>
+        </Value>
+
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Basic set command"/>
+        </Associations>
+    </CommandClass>
+
+</Product>

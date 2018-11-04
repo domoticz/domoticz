@@ -3,7 +3,7 @@
 <Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- 
   Fibaro FGD-212
-  config based on http://manuals.fibaro.com/content/manuals/en/FGD-212/FGD-212-EN-T-v1.2.pdf
+  config based on http://manuals.fibaro.com/content/manuals/en/FGD-212/FGD-212-EN-T-v1.3.pdf
   -->
   <!-- Configuration -->
   <CommandClass id="112">
@@ -16,19 +16,19 @@
     <Value type="byte" genre="config" instance="1" index="3" label="Incandescence level of dimmable compact fluorescent lamps" min="1" max="99" units="%" value="1">
       <Help>Virtual value set as a percentage level between parameters MIN (1%) and MAX. (99%). The Dimmer will set to this value after first switch on. It is required for warming up and switching dimmable compact fluorescent lamps and certain types of light sources. Options for changing parameter 1-99. Default 1.</Help>
     </Value>
-    <Value type="byte" size="1" genre="config" instance="1" index="4" label="Incandescence time of dimmable compact fluorescent lamps" min="0" max="255" units="sec" value="0">
+    <Value type="short" genre="config" instance="1" index="4" label="Incandescence time of dimmable compact fluorescent lamps" min="0" max="255" units="sec" value="0">
       <Help>This parameter determines the time required for switching compact fluorescent lamps and certain types of light sources. Setting this parameter to 0 will disable the incandescence functionality. Available settings: 0-255 (0s - 25,5s)</Help>
     </Value>
     <Value type="byte" genre="config" instance="1" index="5" label="The percentage of a dimming step at automatic control" min="1" max="99" units="%" value="1">
       <Help>Available settings: 1-99 Default: 1</Help>
     </Value>    
-    <Value type="byte" size="1" genre="config" instance="1" index="6" label="Time of a dimming step at automatic control" min="0" max="255" units="sec" value="1">
+    <Value type="short" genre="config" instance="1" index="6" label="Time of a dimming step at automatic control" min="0" max="255" units="sec" value="1">
       <Help>Available settings: 0-255 (0s - 2,55s) Default setting: 1</Help>
     </Value>
     <Value type="byte" genre="config" instance="1" index="7" label="The percentage of a dimming step at manual control" min="1" max="99" units="%" value="1">
       <Help>Available settings: 1-99 Default: 1</Help>
     </Value>
-    <Value type="byte" size="1" genre="config" instance="1" index="8" label="Time of a dimming step at manual control" min="0" max="255" units="sec" value="5">
+    <Value type="short" genre="config" instance="1" index="8" label="Time of a dimming step at manual control" min="0" max="255" units="sec" value="5">
       <Help>Available settings: 0-255 (0s - 2,55s) Default setting: 1</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="9" label="Saving state before power failure" size="1" value="1">
@@ -36,10 +36,9 @@
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
-    <Value type="short" size="2" genre="config" instance="1" index="10" label="Timer functionality (auto - off)" min="0" max="32767" units="sec" value="0">
+    <Value type="short" genre="config" instance="1" index="10" label="Timer functionality (auto - off)" min="0" max="32767" units="sec" value="0">
       <Help>Available settings: 0 - Function disabled; 1-32767 - time to turn off measured in seconds (1s - 9,1h) Default setting: 0</Help>
     </Value>
-    <!-- size of two and max 255 seems off -->
     <Value type="list" genre="config" instance="1" index="11" label="Enable/Disable ALL ON/OFF" size="2" value="255">
       <Help>Enable/Disable ALL ON/OFF. Default 255.</Help>
       <Item label="ALL ON active / ALL OFF active" value="255" />
@@ -61,7 +60,7 @@
     <Value type="byte" genre="config" instance="1" index="15" label="Burnt out bulb detection" min="1" max="99" units="%" value="30">
       <Help>Function based on the sudden power variation of a specific value, interpreted as a LOAD ERROR. Available settings: 0 - function disabled; 1-99 - percentage value of power variation, compared to standard power consumption, measured during the calibration procedure (to be interpreted as load error/burnt out bulb) Default setting: 30</Help>
     </Value>
-    <Value type="byte" size="1" genre="config" instance="1" index="16" label="Time delay of a burnt out bulb" min="0" max="255" units="%" value="5">
+    <Value type="short" genre="config" instance="1" index="16" label="Time delay of a burnt out bulb" min="0" max="255" units="%" value="5">
       <Help>Time of delay (in seconds) for power variation detection, interpreted as a LOAD ERROR or OVERLOAD detection (too much power connected to the Dimmer). Available settings: 0 - detection of a burnt out bulb disabled; 1-255 - delay time in seconds; Default setting: 5</Help>
     </Value>
     <Value type="byte" genre="config" instance="1" index="19" label="Forced switch on brightness level" min="0" max="99" units="%" value="0">
@@ -87,7 +86,7 @@
       <Item label="Disable double click" value="0"/>
       <Item label="Enable double click" value="1"/>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="24" label="Command frames sent in 2-nd and 3-rd association groups (S1 associations)" size="1" value="0">
+    <Value type="byte" genre="config" instance="1" index="24" label="Command frames sent in 2-nd and 3-rd association groups (S1 associations)" value="0">
       <Help>Parameter determines, which actions will not result in sending frames to association groups. Parameter values may be combined, e.g. 1+2=3 means that associations on switching on or off the Dimmer (single click) will not be sent.
 Available settings: 0-31
 0 - all actions send to association groups;
@@ -98,7 +97,7 @@ Available settings: 0-31
 16 - send 0xFF value on double click;
 Default setting: 0</Help>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="25" label="Command frames sent in 4-th and 5-th association groups (S2 associations)" size="1" value="0">
+    <Value type="byte" genre="config" instance="1" index="25" label="Command frames sent in 4-th and 5-th association groups (S2 associations)" value="0">
       <Help>Parameter determines, which actions will not result in sending frames to association groups. Parameter values may be combined, e.g. 1+2=3 means that associations on switching on or off the Dimmer (single click) will not be sent.
 Available settings: 0-31
 0 - all actions send to association groups;
@@ -114,7 +113,7 @@ Default setting: 0</Help>
       <Item label="3-way switch function for S2 disabled" value="0"/>
       <Item label="3-way switch function for S2 enabled" value="1"/>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="27" label="Associations in Z-Wave network security mode" size="1" value="15">
+    <Value type="byte" genre="config" instance="1" index="27" label="Associations in Z-Wave network security mode" value="15">
       <Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. Parameter is active only in Z-Wave network security mode. It does not apply to 1st Lifeline group. Parameter values may be combined, e.g. 1+2=3 means that 2nd &amp; 3rd group are sent as secure.
 Available settings: 0-15
 0 - all groups (II-V) sent as non-secure;
@@ -173,7 +172,7 @@ Default setting: 15</Help>
     <Value type="list" genre="config" instance="1" index="37" label="Behaviour of the Dimmer after OVERCURRENT or SURGE" size="1" value="1">
       <Help>Behaviour of the Dimmer after OVERCURRENT or SURGE</Help>
       <Item label="device permanently disabled until re-enabling by comand or external switch" value="0" />
-      <Item label="three atempts to turn on the load" value="1" />
+      <Item label="three attempts to turn on the load" value="1" />
     </Value>    
     <Value type="short" genre="config" instance="1" index="38" label="Brightness level correction for flickering loads" min="0" max="255" value="255">
       <Help>Correction reduces spontaneous flickering of some capacitive load (e.g. dimmable lEDs) at certain brightness levels in 2-wire installation. In countries using ripple-control, correction may cause changes in brightness. In this case it is necessary to disable correction or adjust time of correction for flickering loads. Available settings: 0 - automatic correction disabled 1-254 - duration of correction in seconds 255 - automatic correction always enabled Default setting: 255</Help>
@@ -209,7 +208,7 @@ Default setting: 15</Help>
       <Item label="ALARM DIMMER OFF - device will turn OFF upon receipt of alarm frame" value="2"/>
       <Item label="ALARM FLASHING - device will turn ON and OFF periodically" value="3"/>
     </Value>
-	<Value type="byte" size="1" genre="config" instance="1" index="44" label="Time of alarm state" min="1" max="32767" units="sec" value="600">
+	<Value type="short" genre="config" instance="1" index="44" label="Time of alarm state" min="1" max="32767" units="sec" value="600">
       <Help>Alarm state may be cancelled earlier, as a result of pressing the switches or sending the Z-Wave command frame.</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="45" label="OVERLOAD alarm report" size="1" value="1">
@@ -243,13 +242,13 @@ Default setting: 15</Help>
 1-100 (1-100%) - power report threshold;
 Default setting: 10 (10%)</Help>
     </Value>
-    <Value type="short" size="2" genre="config" instance="1" index="52" label="Periodic active power and energy reports" min="0" max="32767" units="sec" value="3600">
+    <Value type="short" genre="config" instance="1" index="52" label="Periodic active power and energy reports" min="0" max="32767" units="sec" value="3600">
       <Help>Parameter 52 defines a time period between consecutive reports. Timer is reset and counted from zero after each report. Available settings:
 0 - periodic reports disabled;
 1-32767 (1-32767 seconds);
 Default setting: 3600 (3600s)</Help>
     </Value>  
-    <Value type="byte" size="1" genre="config" instance="1" index="59" label="Energy reports" min="0" max="255" units="kWh" value="10">
+    <Value type="short" genre="config" instance="1" index="53" label="Energy reports" min="0" max="255" units="kWh" value="10">
       <Help>Energy level change which will result in sending a new energy report. Available settings:
 0 - energy reports disabled; 
 1-255 (0,01 - 2,55 kWh) - report triggering threshold;
@@ -266,7 +265,7 @@ Default setting: 10 (0,1 kWh)</Help>
       <Item label="approximation based on the calibration data" value="1" />
       <Item label="approximation based on the control angle" value="2" />
     </Value>
-    <Value type="short" size="2" genre="config" instance="1" index="53" label="Approximated power at the maximum brightness level" min="0" max="500" units="Watt" value="0">
+    <Value type="short" genre="config" instance="1" index="59" label="Approximated power at the maximum brightness level" min="0" max="500" units="Watt" value="0">
       <Help>This parameter determines the approximate value of the power that will be reported by the device at its maximum brightness level. This parameter works only when parameter 58 has a value other than 0. Available settings: 0-500 (0-500W) - power consumed by the load at the maximum brightness level. Default setting: 0</Help>
     </Value>
   </CommandClass>

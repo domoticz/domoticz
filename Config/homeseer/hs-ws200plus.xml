@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="3" genre="config" label="Sets bottom LED operation" min="0" max="1" size="1" value="1">
+            <Help>Sets bottom LED operation (in normal mode)</Help>
+            <Item label="LED on if load is off" value="0"/>
+            <Item label="LED off if load is off" value="1"/>
+        </Value>
+        <Value type="list" index="4" genre="config" label="Invert switch" min="0" max="1" size="1" value="0">
+            <Help>Change the top of the switch to OFF and the bottom of the switch to ON if the switch was installed upside down.</Help>
+            <Item label="No" value="0"/>
+            <Item label="Yes" value="1"/>
+        </Value>
+        <Value type="list" index="13" genre="config" label="LED mode" min="0" max="1" size="1" value="0">
+            <Help>Normal mode (load status) or status mode (custom status)</Help>
+            <Item label="Normal mode" value="0"/>
+            <Item label="Status mode" value="1"/>
+        </Value>
+        <Value type="list" index="14" genre="config" label="Normal mode LED color" min="0" max="6" size="1" value="0">
+            <Help>Sets the Normal mode LED color</Help>
+            <Item label="White" value="0"/>
+            <Item label="Red" value="1"/>
+            <Item label="Green" value="2"/>
+            <Item label="Blue" value="3"/>
+            <Item label="Magenta" value="4"/>
+            <Item label="Yellow" value="5"/>
+            <Item label="Cyan" value="6"/>
+        </Value>
+        <Value type="list" index="21" genre="config" label="Status mode LED color" min="0" max="7" size="1" value="0">
+            <Help>Sets the Status mode LED color</Help>
+            <Item label="Off" value="0"/>
+            <Item label="Red" value="1"/>
+            <Item label="Green" value="2"/>
+            <Item label="Blue" value="3"/>
+            <Item label="Magenta" value="4"/>
+            <Item label="Yellow" value="5"/>
+            <Item label="Cyan" value="6"/>
+            <Item label="White" value="7"/>
+        </Value>
+        <Value type="byte" index="31" genre="config" label="LED blink frequency" min="0" max="255" value="0">
+            <Help>Sets the blink frequency of the LED
+              0 = No Blink
+              1 = 100ms ON then 100ms OFF
+            </Help>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

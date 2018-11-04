@@ -138,6 +138,7 @@
    <xs:attribute name='mapping' type='xs:string' use='optional'/>
    <xs:attribute name='ignoreUnsolicitedMultiChnCapReport' type='xs:string' use='optional'/>
    <xs:attribute name='codes' type='xs:string' use='optional'/>
+   <xs:attribute name='colorchannels' type='xs:string' use='optional'/>
   </xs:complexType>
  </xs:element>
 

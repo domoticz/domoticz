@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Eurotronic Spirit Z-Wave Plus Thermostat
+Product website: https://www.eurotronic.org/produkte/spirit-z-wave-plus.html
+Tech manual: https://www.eurotronic.org/fileadmin/user_upload/eurotronic.org/Produktbilder/spirit_z_wave_plus/Spirit_Z-Wave_BAL_web_EN_view_04.pdf
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/' >
+    <!-- Multilevel switch for setting valve opening -->
+    <CommandClass id="38">
+        <Value type="byte" genre="user" index="0" label="Valve Opening" units="%" min="0" max="100" value="0" />
+    </CommandClass>
+
+    <!-- Thermostat mode -->
+    <CommandClass id="64">
+        <Instance index="1" />
+        <Value type="list" genre="user" instance="1" index="0" label="Mode">
+            <Help>
+                Off: No heating, only frost protection.
+                Heat: Room temperature will be kept at the configured setpoint.
+                Heat Eco: Energy save heating mode. Room temperature will be lowered to the configured eco setpoint in order to save energy.
+                Full Power: Full power heating. This mode is left automatically after 5 minutes.
+                Manufacturer Specific: Direct valve control mode. The valve opening percentage can be controlled using the switch multilevel command class.
+            </Help>
+            <Item label="Off" value="0" />
+            <Item label="Heat" value="1" />
+            <Item label="Heat Eco" value="11" />
+            <Item label="Full Power" value="15" />
+            <Item label="Manufacturer Specific" value="31" />
+        </Value>
+        <SupportedModes>
+            <Mode index="0" label="Off" />
+            <Mode index="1" label="Heat" />
+            <Mode index="11" label="Heat Eco" />
+            <Mode index="15" label="Full Power" />
+            <Mode index="31" label="Manufacturer Specific" />
+        </SupportedModes>
+    </CommandClass>
+
+    <!-- Setpoints typeInterpretation="A" -->
+    <CommandClass id="67" base="0" >
+        <Instance index="1"/>
+        <Value type="decimal" genre="user" instance="1" index="1" label="Heat" units="&#x00b0;C" read_only="false" write_only="false" min="8" max="28" value="20"/>
+        <Value type="decimal" genre="user" instance="1" index="11" label="Heat Eco" units="&#x00b0;C" read_only="false" write_only="false" min="8" max="28" value="16"/>
+    </CommandClass>
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Instance index="1"/>
+        <Value type="list" genre="config" instance="1" index="1" label="LCD Invert" min="0" max="1" value="0" size="1">
+            <Help>
+                Allows rotating the LCD contents by 180 degrees.
+                Default: Normal
+            </Help>
+            <Item label="Normal" value="0" />
+            <Item label="Upside Down" value="1" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="2" label="LCD Timeout" min="0" max="30" units="sec" value="0">
+            <Help>
+                0: No Timeout, LCD always on.
+                5-30: Timeout after 5-30s.
+                Default: 0 (LCD always on)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="Backlight" min="0" max="1" units="" value="1" size="1">
+            <Help>
+                Default: Backlight enabled
+            </Help>
+            <Item label="Backlight disabled" value="0" />
+            <Item label="Backlight enabled" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="4" label="Battery Report" min="0" max="1" units="" value="1" size="1">
+            <Help>
+                Default: Send once a day
+            </Help>
+            <Item label="Only send battery status as notification" value="0" />
+            <Item label="Send once a day" value="1" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="5" label="Temperature Report Threshold" min="0" max="50" units="0.1&#x00b0;C" value="5">
+            <Help>
+                0: Don't send temperature automatically.
+                1-50: Report temperature at 0.1-5.0&#x00b0;C temperature difference.
+                Default: 5 (Delta = 0.5&#x00b0;C)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="6" label="Valve Opening Percentage Report" min="0" max="100" units="" value="0">
+            <Help>
+                0: Don't send Valve opening percentage automatically.
+                1-100: Report valve opening percentage at a delta of 1-100%.
+                Default: 0
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="7" label="Open Window Detection" min="0" max="3" units="" value="2" size="1">
+            <Help>
+                Default: Medium sensibility
+            </Help>
+            <Item label="Disabled" value="0" />
+            <Item label="Low sensibility" value="1" />
+            <Item label="Medium sensibility" value="2" />
+            <Item label="High sensibility" value="3" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="8" label="Measured Temperature Offset" min="0" max="255" units="" value="0">
+            <Help>
+                206-255: -5.0 to -0.1&#x00b0;C.
+                0-50: 0&#x00b0;C-5&#x00b0;C.
+                128: External Temperature Sensor.
+                Default: 0 (0.0&#x00b0;C Offset)
+            </Help>
+        </Value>
+    </CommandClass>
+</Product>
