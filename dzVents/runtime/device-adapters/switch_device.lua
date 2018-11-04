@@ -15,7 +15,7 @@ return {
 			device.deviceType == 'Lighting 4' or
 			device.deviceType == 'Lighting 5' or
 			device.deviceType == 'Lighting 6' or
-			device.deviceType == 'Lighting Limitless/Applamp' or
+			device.deviceType == 'Color Switch' or
 			device.deviceType == 'Fan' or
 			device.deviceType == 'Curtain' or
 			device.deviceType == 'Blinds' or
