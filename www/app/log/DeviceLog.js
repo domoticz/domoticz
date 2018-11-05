@@ -45,12 +45,13 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             var isLightType = [
+				'Lighting 1', 'Lighting 2', 'Lighting 3', 'Lighting 4', 'Lighting 5',
                 'Light', 'Light/Switch', 'Color Switch', 'Chime',
                 'Security', 'RFY', 'ASA', 'Blinds'
             ].includes(vm.device.Type);
 
             var isLightSwitchType = [
-                'Contact', 'Door Contact', 'Dusk Sensor', 'Motion Sensor',
+                'Contact', 'Door Contact', 'Doorbell', 'Dusk Sensor', 'Motion Sensor',
                 'Smoke Detector', 'On/Off', 'Dimmer'
             ].includes(vm.device.SwitchType);
 
