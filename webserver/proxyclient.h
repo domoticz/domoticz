@@ -74,7 +74,6 @@ namespace http {
 			tcp::server::CTCPServerProxied *m_pDomServ;
 			bool we_locked_prefs_mutex;
 			enum status {
-				status_connecting,
 				status_httpmode,
 				status_connected
 			} connection_status;

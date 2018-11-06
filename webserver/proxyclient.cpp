@@ -27,7 +27,7 @@ namespace http {
 
 		CProxyClient::CProxyClient(http::server::cWebem *webEm) :
 			doStop(false),
-			connection_status(status_connecting),
+			connection_status(status_httpmode),
 			we_locked_prefs_mutex(false)
 		{
 			_allowed_subsystems = 0;
@@ -484,10 +484,6 @@ namespace http {
 
 		void CProxyClient::OnData(const unsigned char *pData, size_t length)
 		{
-			// data read, no need for timeouts anymore
-			if (connection_status == status_connecting || doStop) {
-				return;
-			}
 			switch (connection_status) {
 			case status_httpmode:
 				if (parse_response((const char *)pData, length)) {
@@ -546,7 +542,8 @@ namespace http {
 
 		void CProxyClient::Connect()
 		{
-			connect("proxy.mydomoticz.com", 443);
+			connect("::1", 19998); // debug
+			//connect("proxy.mydomoticz.com", 443);
 		}
 
 		void CProxyClient::Disconnect()
