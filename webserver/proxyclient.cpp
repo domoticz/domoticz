@@ -11,6 +11,7 @@
 extern std::string szAppVersion;
 
 #define TIMEOUT 60
+#define PONG "PONG"
 #define ADDPDUSTRING(value) parameters.AddPart(value)
 #define ADDPDUSTRINGBINARY(value) parameters.AddPart(value, false)
 #define ADDPDULONG(value) parameters.AddLong(value)
@@ -105,6 +106,7 @@ namespace http {
 
 		void CProxyClient::OnConnect()
 		{
+			Reset();
 			_log.Log(LOG_NORM, "Proxy: connecting", NULL);
 			WebsocketGetRequest();
 		}
@@ -490,10 +492,11 @@ namespace http {
 				}
 				break;
 			case status_connected:
-				CWebsocketFrame frame;
+				CWebsocketFrame frame, pong;
 				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:
+						write(pong.Create(opcodes::opcode_pong, PONG, sizeof(PONG)));
 						// todo: send pong
 						break;
 					case opcodes::opcode_binary:
@@ -528,7 +531,7 @@ namespace http {
 
 		void CProxyClient::OnError(const boost::system::error_code & error)
 		{
-			_log.Log(LOG_NORM, "Proxy: error", NULL);
+			_log.Log(LOG_NORM, "Proxy: Error, reconnecting", NULL);
 		}
 
 		void CProxyClient::SetSharedServer(tcp::server::CTCPServerProxied *domserv)
@@ -542,8 +545,8 @@ namespace http {
 
 		void CProxyClient::Connect(http::server::cWebem *webEm)
 		{
+			m_pWebEm = webEm;
 			SetReconnectDelay(15);
-			Reset();
 			connect("::1", 19998); // debug
 			//connect("proxy.mydomoticz.com", 443);
 		}
