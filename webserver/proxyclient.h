@@ -6,6 +6,7 @@
 #include <boost/thread.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
+#include "../hardware/ASyncTCP.h"
 
 namespace tcp {
 	namespace server {
@@ -23,34 +24,19 @@ namespace http {
 #define PDUPROTO(type) virtual void Handle##type(const char *pduname, CValueLengthPart &part);
 #define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, CValueLengthPart &part)
 
-		class CProxyClient : public std::enable_shared_from_this<CProxyClient> {
+		class CProxyClient : ASyncTCP {
 		public:
-			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
+			CProxyClient(http::server::cWebem *webEm);
 			~CProxyClient();
-
-			void Reconnect();
-			void ContinueConnect(const boost::system::error_code& error);
-			void Stop();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
 			bool SharedServerAllowed();
 			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int protocol_version);
 			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *master);
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
+			void Connect();
+			void Disconnect();
 		private:
-
-			void handle_connect(const boost::system::error_code& error,
-				boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
-
-			void handle_handshake(const boost::system::error_code& error);
-
-			void handle_read(const boost::system::error_code& error,
-				size_t bytes_transferred);
-			void handle_write(const boost::system::error_code& error,
-				size_t bytes_transferred);
-
-			void ReadMore();
-
 			void WebsocketGetRequest();
 			bool parse_response(const char *data, size_t len);
 			std::string websocket_key;
@@ -58,10 +44,6 @@ namespace http {
 			std::string SockWriteBuf;
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
 			void WS_Write(long handlerid, const std::string &packet_data);
-			void SocketWrite(ProxyPdu *pdu);
-			/// make sure we only write one packet at a time
-			std::mutex writeMutex;
-			bool write_in_progress;
 			void LoginToService();
 
 			PDUPROTO(PDU_REQUEST)
@@ -85,31 +67,24 @@ namespace http {
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
-			std::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > _socket;
 			std::string _apikey;
 			std::string _password;
-			boost::asio::streambuf _readbuf;
-			boost::asio::io_service& _io_service;
-			boost::asio::ssl::context& _context;
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
 			bool we_locked_prefs_mutex;
-			/// read timeout timer
-			boost::asio::deadline_timer timer_;
-			void handle_timeout(const boost::system::error_code& error);
-			/// timeouts (persistent and other) connections in seconds
-			int timeout_;
 			enum status {
 				status_connecting,
 				status_httpmode,
 				status_connected
 			} connection_status;
-
-			// is protected by writeMutex
-			std::queue<ProxyPdu *> writeQ;
-			/// websocket stuff
 			std::map<long, CWebsocketHandler *> websocket_handlers;
+		protected:
+			virtual void OnConnect();
+			virtual void OnData(const unsigned char *pData, size_t length);
+			virtual void OnDisconnect();
+			virtual void OnError(const std::exception e) {}; // todo
+			virtual void OnError(const boost::system::error_code& error) {}; // todo
 		};
 
 		class CProxyManager : public std::enable_shared_from_this<CProxyManager> {
@@ -118,12 +93,9 @@ namespace http {
 			~CProxyManager();
 			int Start(bool first);
 			void Stop();
-			std::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
+			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 		private:
-			void StartThread();
-			boost::asio::io_service io_service;
-			std::shared_ptr<CProxyClient> proxyclient;
-			std::shared_ptr<std::thread> m_thread;
+			CProxyClient proxyclient;
 			std::string m_pDocRoot;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServer *m_pDomServ;

@@ -95,14 +95,14 @@ namespace http {
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		std::shared_ptr<CProxyClient> CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
+		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
 			if (proxymanagerCollection.size() > 0) {
 				// todo: make this a random connection?
 				return proxymanagerCollection[0]->GetProxyForMaster(master);
 			}
 			// we are not connected yet. save this master and connect later.
 			sharedData.AddTCPClient(master);
-			return std::shared_ptr<CProxyClient>();
+			return NULL;
 		}
 
 		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {

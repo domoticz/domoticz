@@ -22,7 +22,7 @@ namespace http {
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();
-			std::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
+			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 			void RemoveMaster(DomoticzTCP *master);
 #endif
 			void SetWebCompressionMode(const _eWebCompressionMode gzmode);
