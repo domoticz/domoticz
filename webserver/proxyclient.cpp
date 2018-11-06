@@ -25,11 +25,13 @@ namespace http {
 
 		CProxySharedData sharedData;
 
-		CProxyClient::CProxyClient(http::server::cWebem *webEm) :
-			doStop(false),
-			connection_status(status_httpmode),
-			we_locked_prefs_mutex(false)
+		CProxyClient::CProxyClient()
 		{
+		}
+
+		void CProxyClient::Reset()
+		{
+			connection_status = status_httpmode;
 			_allowed_subsystems = 0;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
@@ -37,15 +39,11 @@ namespace http {
 			if (_password != "") {
 				_password = base64_decode(_password);
 			}
-			if (_apikey == "" || _password == "" || _allowed_subsystems == 0) {
-				doStop = true;
-				return;
-			}
-			m_pWebEm = webEm;
 			m_pDomServ = NULL;
+			readbuf.clear();
 		}
 
-			void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
+		void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
 		{
 			/* data from slave to master */
 			CValueLengthPart parameters;
@@ -82,7 +80,9 @@ namespace http {
 			}
 			ProxyPdu pdu(type, &parameters);
 			CWebsocketFrame frame;
-			write(frame.Create(opcode_binary, std::string((char *)pdu.content(), pdu.length()), true));
+			std::string buf = frame.Create(opcode_binary, std::string((char *)pdu.content(), pdu.length()), true);
+			write(buf);
+			_log.Log(LOG_NORM, "Proxy, writing %ld bytes", buf.size());
 		}
 
 		void CProxyClient::LoginToService()
@@ -105,6 +105,7 @@ namespace http {
 
 		void CProxyClient::OnConnect()
 		{
+			_log.Log(LOG_NORM, "Proxy: connecting", NULL);
 			WebsocketGetRequest();
 		}
 
@@ -215,6 +216,8 @@ namespace http {
 				ADDPDUSTRING(responseheaders);
 				ADDPDUSTRINGBINARY(reply_.content);
 				ADDPDULONG(requestid);
+
+				_log.Log(LOG_NORM, "Getting: %s, size: %ld", requesturl.c_str(), reply_.content.length()); // debug
 
 				// send response to proxy
 				MyWrite(PDU_RESPONSE, parameters);
@@ -378,13 +381,6 @@ namespace http {
 		PDUFUNCTION(PDU_AUTHRESP)
 		{
 			// get auth response (0 or 1)
-
-			if (we_locked_prefs_mutex) {
-				// unlock prefs mutex
-				we_locked_prefs_mutex = false;
-				sharedData.UnlockPrefsMutex();
-			}
-
 			GETPDULONG(auth);
 			GETPDUSTRING(reason);
 			_log.Log(LOG_STATUS, "PROXY: Authenticate result: %s.", auth ? "success" : reason.c_str());
@@ -484,24 +480,27 @@ namespace http {
 
 		void CProxyClient::OnData(const unsigned char *pData, size_t length)
 		{
+			readbuf.append((const char *)pData, length);
 			switch (connection_status) {
 			case status_httpmode:
-				if (parse_response((const char *)pData, length)) {
+				if (parse_response(readbuf.c_str(), readbuf.size())) {
+					readbuf.clear();
 					connection_status = status_connected;
 					LoginToService();
 				}
 				break;
 			case status_connected:
 				CWebsocketFrame frame;
-				if (frame.Parse(pData, length)) {
+				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:
 						// todo: send pong
 						break;
 					case opcodes::opcode_binary:
 					case opcodes::opcode_text:
-						ProxyPdu pdu(frame.Payload().c_str(), frame.Payload().length());
+						ProxyPdu pdu(frame.Payload().c_str(), frame.Payload().size());
 						if (!pdu.Disconnected()) {
+							readbuf.clear();
 							PduHandler(pdu);
 						}
 						break;
@@ -518,17 +517,18 @@ namespace http {
 
 		void CProxyClient::OnDisconnect()
 		{
-			if (we_locked_prefs_mutex) {
-				we_locked_prefs_mutex = false;
-				sharedData.UnlockPrefsMutex();
-			}
+			_log.Log(LOG_NORM, "Proxy: disconnected", NULL);
 			// stop and destroy all open websocket handlers
 			for (std::map<long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
 				it->second->Stop();
 				delete it->second;
 			}
 			websocket_handlers.clear();
-			doStop = true;
+		}
+
+		void CProxyClient::OnError(const boost::system::error_code & error)
+		{
+			_log.Log(LOG_NORM, "Proxy: error", NULL);
 		}
 
 		void CProxyClient::SetSharedServer(tcp::server::CTCPServerProxied *domserv)
@@ -540,8 +540,10 @@ namespace http {
 		{
 		}
 
-		void CProxyClient::Connect()
+		void CProxyClient::Connect(http::server::cWebem *webEm)
 		{
+			SetReconnectDelay(15);
+			Reset();
 			connect("::1", 19998); // debug
 			//connect("proxy.mydomoticz.com", 443);
 		}
@@ -552,12 +554,8 @@ namespace http {
 		}
 
 
-		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ):
-			m_pDocRoot(doc_root), proxyclient(webEm)
+		CProxyManager::CProxyManager()
 		{
-			m_pWebEm = webEm;
-			m_pDomServ = domServ;
-			_first = true;
 		}
 
 		CProxyManager::~CProxyManager()
@@ -565,11 +563,11 @@ namespace http {
 			Stop();
 		}
 
-		int CProxyManager::Start(bool first)
+		int CProxyManager::Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)
 		{
-			_first = first;
-			proxyclient.Connect();
-			if (_first && proxyclient.SharedServerAllowed()) {
+			m_pDomServ = domServ;
+			proxyclient.Connect(webEm);
+			if (proxyclient.SharedServerAllowed()) {
 				m_pDomServ->StartServer(&proxyclient);
 			}
 			proxyclient.SetSharedServer(m_pDomServ->GetProxiedServer());
@@ -579,6 +577,11 @@ namespace http {
 		void CProxyManager::Stop()
 		{
 			proxyclient.Disconnect();
+		}
+
+		void CProxyManager::SetWebRoot(const std::string & doc_root)
+		{
+			m_pDocRoot = doc_root;
 		}
 
 		CProxyClient *CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
@@ -623,17 +626,6 @@ namespace http {
 		{
 			m_sql.GetPreferencesVar("MyDomoticzInstanceId", _instanceid);
 			return _instanceid;
-		}
-
-		void CProxySharedData::LockPrefsMutex()
-		{
-			// todo: make this a boost::condition?
-			prefs_mutex.lock();
-		}
-
-		void CProxySharedData::UnlockPrefsMutex()
-		{
-			prefs_mutex.unlock();
 		}
 
 		bool CProxySharedData::AddConnectedIp(std::string ip)

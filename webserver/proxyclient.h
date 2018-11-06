@@ -26,22 +26,23 @@ namespace http {
 
 		class CProxyClient : ASyncTCP {
 		public:
-			CProxyClient(http::server::cWebem *webEm);
+			CProxyClient();
 			~CProxyClient();
+			void Reset();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
 			bool SharedServerAllowed();
 			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int protocol_version);
 			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *master);
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
-			void Connect();
+			void Connect(http::server::cWebem *webEm);
 			void Disconnect();
 		private:
 			void WebsocketGetRequest();
 			bool parse_response(const char *data, size_t len);
 			std::string websocket_key;
 			std::string compute_accept_header(const std::string &websocket_key);
-			std::string SockWriteBuf;
+			std::string readbuf;
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
 			void WS_Write(long handlerid, const std::string &packet_data);
 			void LoginToService();
@@ -69,10 +70,8 @@ namespace http {
 			std::string GetResponseHeaders(const http::server::reply &reply_);
 			std::string _apikey;
 			std::string _password;
-			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
-			bool we_locked_prefs_mutex;
 			enum status {
 				status_httpmode,
 				status_connected
@@ -83,22 +82,21 @@ namespace http {
 			virtual void OnData(const unsigned char *pData, size_t length);
 			virtual void OnDisconnect();
 			virtual void OnError(const std::exception e) {}; // todo
-			virtual void OnError(const boost::system::error_code& error) {}; // todo
+			virtual void OnError(const boost::system::error_code& error);
 		};
 
-		class CProxyManager : public std::enable_shared_from_this<CProxyManager> {
+		class CProxyManager {
 		public:
-			CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
+			CProxyManager();
 			~CProxyManager();
-			int Start(bool first);
+			int Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
 			void Stop();
+			void SetWebRoot(const std::string& doc_root);
 			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 		private:
 			CProxyClient proxyclient;
 			std::string m_pDocRoot;
-			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServer *m_pDomServ;
-			bool _first;
 		};
 
 		class CProxySharedData {
@@ -106,8 +104,6 @@ namespace http {
 			CProxySharedData() {};
 			void SetInstanceId(const std::string &instanceid);
 			std::string GetInstanceId();
-			void LockPrefsMutex();
-			void UnlockPrefsMutex();
 			bool AddConnectedIp(std::string ip);
 			bool AddConnectedServer(std::string ip);
 			void AddTCPClient(DomoticzTCP *master);
@@ -118,7 +114,6 @@ namespace http {
 			DomoticzTCP *findSlaveById(const std::string &instanceid);
 		private:
 			std::string _instanceid;
-			std::mutex prefs_mutex;
 			std::set<std::string> connectedips_;
 			std::set<std::string> connectedservers_;
 			std::vector<DomoticzTCP *>TCPClients;
