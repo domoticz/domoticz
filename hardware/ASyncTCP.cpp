@@ -11,10 +11,15 @@ struct hostent;
 
 #define RECONNECT_TIME 30
 
-ASyncTCP::ASyncTCP(bool secure)
-	: mIsConnected(false), mIsClosing(false), mSecure(secure), mWriteInProgress(false),
-	mContext(boost::asio::ssl::context::sslv23),
-	mSocket(mIos), mSslSocket(mIos, mContext), mReconnectTimer(mIos),
+ASyncTCP::ASyncTCP(const bool secure)
+	: mIsConnected(false), mIsClosing(false), mWriteInProgress(false),
+#ifdef WWW_ENABLE_SSL
+	mSecure(secure), mContext(boost::asio::ssl::context::sslv23),
+#endif
+	mSocket(mIos), mReconnectTimer(mIos),
+#ifdef WWW_ENABLE_SSL
+	mSslSocket(mIos, mContext),
+#endif
 	mDoReconnect(true), mIsReconnecting(false),
 	m_tcpwork(mIos),
 	mAllowCallbacks(true),
@@ -26,8 +31,10 @@ ASyncTCP::ASyncTCP(bool secure)
 	//Start IO Service worker thread
 	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
 
+#ifdef WWW_ENABLE_SSL
 	// we do not authenticate the server
 	mContext.set_verify_mode(boost::asio::ssl::verify_none);
+#endif
 }
 
 ASyncTCP::~ASyncTCP(void)
@@ -92,13 +99,16 @@ void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
 
 	mEndPoint = endpoint;
 
+#ifdef WWW_ENABLE_SSL
 	// try to connect, then call handle_connect
 	if (mSecure) {
 		mSslSocket.lowest_layer().async_connect(endpoint,
 			boost::bind(&ASyncTCP::handle_connect, this,
 				boost::asio::placeholders::error));
 	}
-	else {
+	else
+#endif
+	{
 		mSocket.async_connect(endpoint,
 			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
 	}
@@ -152,6 +162,7 @@ void ASyncTCP::read()
 	if (!mIsConnected) return;
 	if (mIsClosing) return;
 
+#ifdef WWW_ENABLE_SSL
 	if (mSecure) {
 		mSslSocket.async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
 			boost::bind(&ASyncTCP::handle_read,
@@ -159,7 +170,9 @@ void ASyncTCP::read()
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred));
 	}
-	else {
+	else
+#endif
+	{
 		mSocket.async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
 			boost::bind(&ASyncTCP::handle_read,
 				this,
@@ -193,13 +206,16 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 	if(mIsClosing) return;
 
 	if (!error) {
+#ifdef WWW_ENABLE_SSL
 		if (mSecure) {
 			// start ssl handshake to server
 			mSslSocket.async_handshake(boost::asio::ssl::stream_base::client,
 				boost::bind(&ASyncTCP::handle_handshake, this,
 					boost::asio::placeholders::error));
 		}
-		else {
+		else
+#endif
+		{
 			// we are connected!
 			mIsConnected = true;
 
@@ -238,6 +254,7 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 	}
 }
 
+#ifdef WWW_ENABLE_SSL
 void ASyncTCP::handle_handshake(const boost::system::error_code& error)
 {
 	// we are connected!
@@ -250,6 +267,7 @@ void ASyncTCP::handle_handshake(const boost::system::error_code& error)
 	//This gives some work to the io_service before it is started
 	mIos.post(boost::bind(&ASyncTCP::read, this));
 }
+#endif
 
 void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 {
@@ -331,10 +349,13 @@ void ASyncTCP::do_close()
 
 	mIsClosing = true;
 
+#ifdef WWW_ENABLE_SSL
 	if (mSecure) {
 		mSslSocket.lowest_layer().close();
 	}
-	else {
+	else
+#endif
+	{
 		mSocket.close();
 	}
 }
@@ -344,8 +365,10 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 	if(mIsConnected) return;
 	if(mIsClosing) return;
 
+#ifdef WWW_ENABLE_SSL
 	// close current socket if necessary
 	mSslSocket.lowest_layer().close();
+#endif
 	mSocket.close();
 
 	if (!mDoReconnect)
@@ -354,11 +377,14 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 	}
 	mReconnectTimer.cancel();
 	// try to reconnect, then call handle_connect
+#ifdef WWW_ENABLE_SSL
 	if (mSecure) {
 		mSslSocket.lowest_layer().async_connect(mEndPoint,
 			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
 	}
-	else {
+	else
+#endif
+	{
 		mSocket.async_connect(mEndPoint,
 			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
 	}
@@ -372,12 +398,15 @@ void ASyncTCP::do_write(const std::string &msg)
 	if (!mIsClosing)
 	{
 		mMsgBuffer = msg;
+#ifdef WWW_ENABLE_SSL
 		if (mSecure) {
 			boost::asio::async_write(mSslSocket,
 				boost::asio::buffer(mMsgBuffer.c_str(), mMsgBuffer.size()),
 				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
 		}
-		else {
+		else
+#endif
+		{
 			boost::asio::async_write(mSocket,
 				boost::asio::buffer(mMsgBuffer.c_str(), mMsgBuffer.size()),
 				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
