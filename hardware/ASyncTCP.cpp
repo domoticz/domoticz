@@ -11,9 +11,10 @@ struct hostent;
 
 #define RECONNECT_TIME 30
 
-ASyncTCP::ASyncTCP()
-	: mIsConnected(false), mIsClosing(false),
-	mSocket(mIos), mReconnectTimer(mIos),
+ASyncTCP::ASyncTCP(bool secure)
+	: mIsConnected(false), mIsClosing(false), mSecure(secure),
+	mContext(boost::asio::ssl::context::sslv23),
+	mSocket(mIos), mSslSocket(mIos, mContext), mReconnectTimer(mIos),
 	mDoReconnect(true), mIsReconnecting(false),
 	m_tcpwork(mIos),
 	mAllowCallbacks(true),
@@ -24,6 +25,9 @@ ASyncTCP::ASyncTCP()
 
 	//Start IO Service worker thread
 	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
+
+	// we do not authenticate the server
+	mContext.set_verify_mode(boost::asio::ssl::verify_none);
 }
 
 ASyncTCP::~ASyncTCP(void)
@@ -89,8 +93,15 @@ void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
 	mEndPoint = endpoint;
 
 	// try to connect, then call handle_connect
-	mSocket.async_connect(endpoint,
-        boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	if (mSecure) {
+		mSslSocket.lowest_layer().async_connect(endpoint,
+			boost::bind(&ASyncTCP::handle_connect, this,
+				boost::asio::placeholders::error));
+	}
+	else {
+		mSocket.async_connect(endpoint,
+			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	}
 }
 
 void ASyncTCP::disconnect(const bool silent)
@@ -141,11 +152,20 @@ void ASyncTCP::read()
 	if (!mIsConnected) return;
 	if (mIsClosing) return;
 
-	mSocket.async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
-		boost::bind(&ASyncTCP::handle_read,
-			this,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
+	if (mSecure) {
+		mSslSocket.async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
+			boost::bind(&ASyncTCP::handle_read,
+				this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+	}
+	else {
+		mSocket.async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
+			boost::bind(&ASyncTCP::handle_read,
+				this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+	}
 }
 
 void ASyncTCP::write(const uint8_t *pData, size_t length)
@@ -165,21 +185,30 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 	if(mIsClosing) return;
 
 	if (!error) {
-		// we are connected!
-		mIsConnected = true;
+		if (mSecure) {
+			// start ssl handshake to server
+			mSslSocket.async_handshake(boost::asio::ssl::stream_base::client,
+				boost::bind(&ASyncTCP::handle_handshake, this,
+					boost::asio::placeholders::error));
+		}
+		else {
+			// we are connected!
+			mIsConnected = true;
 
-		//Enable keep alive
-		boost::asio::socket_base::keep_alive option(true);
-		mSocket.set_option(option);
+			//Enable keep alive
+			boost::asio::socket_base::keep_alive option(true);
+			mSocket.set_option(option);
 
-		//set_tcp_keepalive();
+			//set_tcp_keepalive();
 
-		if (mAllowCallbacks)
-			OnConnect();
+			if (mAllowCallbacks)
+				OnConnect();
 
-		// Start Reading
-		//This gives some work to the io_service before it is started
-		mIos.post(boost::bind(&ASyncTCP::read, this));
+			// Start Reading
+			//This gives some work to the io_service before it is started
+			mIos.post(boost::bind(&ASyncTCP::read, this));
+		}
+
 	}
 	else {
 		// there was an error :(
@@ -199,6 +228,19 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 			StartReconnect();
 		}
 	}
+}
+
+void ASyncTCP::handle_handshake(const boost::system::error_code& error)
+{
+	// we are connected!
+	mIsConnected = true;
+
+	if (mAllowCallbacks)
+		OnConnect();
+
+	// Start Reading
+	//This gives some work to the io_service before it is started
+	mIos.post(boost::bind(&ASyncTCP::read, this));
 }
 
 void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
@@ -269,7 +311,12 @@ void ASyncTCP::do_close()
 
 	mIsClosing = true;
 
-	mSocket.close();
+	if (mSecure) {
+		mSslSocket.lowest_layer().close();
+	}
+	else {
+		mSocket.close();
+	}
 }
 
 void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
@@ -278,6 +325,7 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 	if(mIsClosing) return;
 
 	// close current socket if necessary
+	mSslSocket.lowest_layer().close();
 	mSocket.close();
 
 	if (!mDoReconnect)
@@ -286,8 +334,14 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 	}
 	mReconnectTimer.cancel();
 	// try to reconnect, then call handle_connect
-	mSocket.async_connect(mEndPoint,
-        boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	if (mSecure) {
+		mSslSocket.lowest_layer().async_connect(mEndPoint,
+			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	}
+	else {
+		mSocket.async_connect(mEndPoint,
+			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	}
 	mIsReconnecting = false;
 }
 
@@ -297,9 +351,16 @@ void ASyncTCP::do_write(const std::string &msg)
 
 	if (!mIsClosing)
 	{
-		boost::asio::async_write(mSocket,
-			boost::asio::buffer(msg.c_str(), msg.size()),
-			boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
+		if (mSecure) {
+			boost::asio::async_write(mSslSocket,
+				boost::asio::buffer(msg.c_str(), msg.size()),
+				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
+		}
+		else {
+			boost::asio::async_write(mSocket,
+				boost::asio::buffer(msg.c_str(), msg.size()),
+				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
+		}
 	}
 }
 

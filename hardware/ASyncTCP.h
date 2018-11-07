@@ -4,6 +4,8 @@
 #include <boost/asio/deadline_timer.hpp>   // for deadline_timer
 #include <boost/asio/io_service.hpp>       // for io_service
 #include <boost/asio/ip/tcp.hpp>           // for tcp, tcp::endpoint, tcp::s...
+#include <boost/asio/ssl.hpp>			   // for secure sockets
+#include <boost/asio/ssl/stream.hpp>	   // for secure sockets
 #include <boost/function.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr
 #include <exception>                       // for exception
@@ -15,7 +17,7 @@ namespace boost { namespace system { class error_code; } }
 class ASyncTCP
 {
 protected:
-	ASyncTCP();
+	ASyncTCP(bool secure = false);
 	virtual ~ASyncTCP(void);
 	// Async connect and start async read from the socket, data is delivered in OnData()
 	// No action if mIsConnected = true. If the connection is lost, it will automatically be setup again
@@ -62,6 +64,7 @@ private:
 	// Callbacks for the io_service, executed from the io_service worker thread context
 	void handle_connect(const boost::system::error_code& error);
 	void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
+	void handle_handshake(const boost::system::error_code& error);
 	void write_end(const boost::system::error_code& error);
 	void do_close();
 	void do_reconnect(const boost::system::error_code& error);
@@ -73,6 +76,7 @@ private:
 	bool							mDoReconnect;
 	bool							mIsReconnecting;
 	bool							mAllowCallbacks;
+	bool							mSecure; // true if we do ssl
 
 	// Internal
 	unsigned char 					m_rx_buffer[1024];
@@ -83,6 +87,8 @@ private:
 	std::shared_ptr<std::thread> 	m_tcpthread;
 	boost::asio::io_service::work 	m_tcpwork; // Create some work to keep IO Service alive
 
+	boost::asio::ssl::context		mContext; // ssl context
 	boost::asio::ip::tcp::socket	mSocket;
+	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> mSslSocket; // ssl socket
 	boost::asio::ip::tcp::endpoint	mEndPoint;
 };

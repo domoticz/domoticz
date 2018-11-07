@@ -26,7 +26,7 @@ namespace http {
 
 		CProxySharedData sharedData;
 
-		CProxyClient::CProxyClient()
+		CProxyClient::CProxyClient() : ASyncTCP(true)
 		{
 		}
 
@@ -547,7 +547,7 @@ namespace http {
 		{
 			m_pWebEm = webEm;
 			SetReconnectDelay(15);
-			connect("::1", 19998); // debug
+			connect("::1", 2443); // debug
 			//connect("proxy.mydomoticz.com", 443);
 		}
 
