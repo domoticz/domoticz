@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stddef.h>                        // for size_t
-#include <queue>						   // for write queue
+#include <deque>						   // for write queue
 #include <boost/asio/deadline_timer.hpp>   // for deadline_timer
 #include <boost/asio/io_service.hpp>       // for io_service
 #include <boost/asio/ip/tcp.hpp>           // for tcp, tcp::endpoint, tcp::s...
@@ -100,7 +100,7 @@ private:
 #endif
 	boost::asio::ip::tcp::socket	m_Socket;
 	boost::asio::ip::tcp::endpoint	m_EndPoint;
-	std::queue<std::string>			m_writeQ; // we need a write queue to allow concurrent writes
+	std::deque<std::string>			m_writeQ; // we need a write queue to allow concurrent writes
 	std::string						m_MsgBuffer; // we keep the message buffer static so it keeps being available in between do_write and write_end (so boost has time to send it)
 	boost::mutex					m_writeMutex; // to protect writeQ
 };
