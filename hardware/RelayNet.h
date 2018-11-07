@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
@@ -12,39 +12,12 @@ public:
 
 	RelayNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const bool pollInputs, const bool pollRelays, const int pollInterval, const int inputCount, const int relayCount);
 	~RelayNet(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-	bool isConnected() { return mIsConnected; };
-
-public:
-	// signals
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	boost::signals2::signal<void()>	sDisconnected;
-
 private:
-
-	std::string 						m_szIPAddress;
-	unsigned short 						m_usIPPort;
-	std::string 						m_username;
-	std::string 						m_password;
-	volatile bool 						m_stoprequested;
-	sockaddr_in 						m_addr;
-	bool								m_poll_inputs;
-	bool								m_poll_relays;
-	bool								m_reconnect;
-	bool								m_bDoRestart;
-	bool								m_setup_devices;
-	int									m_skip_relay_update;
-	int									m_poll_interval;
-	int									m_input_count;
-	int									m_relay_count;
-	int									m_retrycntr;
-	boost::shared_ptr<boost::thread> 	m_thread;
-	tRBUF 								m_Packet;
-
-	bool StartHardware();
-	bool StopHardware();
-
-protected:
-
+	bool isConnected() { return mIsConnected; };
+	bool StartHardware() override;
+	bool StopHardware() override;
 	void Do_Work();
 	void Init();
 	void SetupDevices();
@@ -65,5 +38,24 @@ protected:
 	void OnData(const unsigned char *pData, size_t length);
 	void OnError(const std::exception e);
 	void OnError(const boost::system::error_code& error);
+private:
+	std::string 						m_szIPAddress;
+	unsigned short 						m_usIPPort;
+	std::string 						m_username;
+	std::string 						m_password;
+	volatile bool 						m_stoprequested;
+	sockaddr_in 						m_addr;
+	bool								m_poll_inputs;
+	bool								m_poll_relays;
+	bool								m_reconnect;
+	bool								m_bDoRestart;
+	bool								m_setup_devices;
+	int									m_skip_relay_update;
+	int									m_poll_interval;
+	int									m_input_count;
+	int									m_relay_count;
+	int									m_retrycntr;
+	boost::shared_ptr<boost::thread> 	m_thread;
+	tRBUF 								m_Packet;
 };
 

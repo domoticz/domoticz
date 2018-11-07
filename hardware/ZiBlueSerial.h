@@ -11,8 +11,8 @@ public:
     ~CZiBlueSerial();
 private:
 	void Init();
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool OpenSerialDevice();
 	void Do_Work();
 	bool WriteInt(const std::string &sendString);

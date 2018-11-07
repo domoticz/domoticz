@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -312,15 +312,6 @@
     <Filter Include="www\secpanel\css">
       <UniqueIdentifier>{4be708f3-9e5c-437d-9ef1-93e70ad18339}</UniqueIdentifier>
     </Filter>
-    <Filter Include="www\secpanel\font">
-      <UniqueIdentifier>{bdb9d0d7-143b-41b2-a7e2-666e32ca0aab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\secpanel\js">
-      <UniqueIdentifier>{4f97743b-f037-4ec5-bf38-96d2904d7a95}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\secpanel\media">
-      <UniqueIdentifier>{71830b06-5a87-4cf3-b7a6-ab7f84d1d53b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="www\styles">
       <UniqueIdentifier>{88cfc333-a48a-4933-9205-bbd7cbac9cfe}</UniqueIdentifier>
     </Filter>
@@ -473,6 +464,36 @@
     </Filter>
     <Filter Include="Devices\Teleinfo\TeleinfoSerial">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IFTTT">
+      <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\USBtin">
+      <UniqueIdentifier>{d75dcc54-5cb3-4fef-9f27-3ecaf1484067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Enphase">
+      <UniqueIdentifier>{aa75f1cf-ae72-4163-96c8-8dc1ed3d29d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\Websocket">
+      <UniqueIdentifier>{ec8bbfd7-5375-4170-93dd-c470284d1512}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\eHouse">
+      <UniqueIdentifier>{b56cf9a6-abbb-4578-8e1a-23b4cd57a309}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\NestOAuthAPI">
+      <UniqueIdentifier>{879cf5f9-d3b3-4ee3-a4c1-bd157db7abe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\EcoCompteur">
+      <UniqueIdentifier>{eb6a5b30-c80f-4a3f-826b-bfcea2bfc947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Honeywell">
+      <UniqueIdentifier>{e7e4e799-6c58-424c-9ccb-6a18d44c25c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\views\temperatures">
+      <UniqueIdentifier>{2e3e6e5c-40c2-4f24-a987-8077910d7945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Tado">
+      <UniqueIdentifier>{5905109f-f97e-4e18-a1dd-8baf541d6f13}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -774,18 +795,6 @@
       <Filter>www\js</Filter>
     </None>
     <None Include="..\www\js\date.format.js.gz">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\js\domoticz.js.gz">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\js\domoticzblocks.js.gz">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\js\domoticzblocks_messages_en.js.gz">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\js\domoticzdevices.js.gz">
       <Filter>www\js</Filter>
     </None>
     <None Include="..\www\js\en_compressed.js.gz">
@@ -1148,63 +1157,6 @@
     <None Include="..\www\secpanel\index.html">
       <Filter>www\secpanel</Filter>
     </None>
-    <None Include="..\www\secpanel\css\font.less">
-      <Filter>www\secpanel\css</Filter>
-    </None>
-    <None Include="..\www\secpanel\css\reset.less">
-      <Filter>www\secpanel\css</Filter>
-    </None>
-    <None Include="..\www\secpanel\css\style.less">
-      <Filter>www\secpanel\css</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Audiowide.eot">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Audiowide.svg">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Audiowide.woff">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Digital.eot">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Digital.svg">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\font\Digital.woff">
-      <Filter>www\secpanel\font</Filter>
-    </None>
-    <None Include="..\www\secpanel\js\ion.sound.min.js.gz">
-      <Filter>www\secpanel\js</Filter>
-    </None>
-    <None Include="..\www\secpanel\js\less.js.gz">
-      <Filter>www\secpanel\js</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\arm.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\arm.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\disarm.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\disarm.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\key.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\key.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\wrongcode.aac">
-      <Filter>www\secpanel\media</Filter>
-    </None>
-    <None Include="..\www\secpanel\media\wrongcode.ogg">
-      <Filter>www\secpanel\media</Filter>
-    </None>
     <None Include="..\www\styles\default\custom.css">
       <Filter>www\styles\default</Filter>
     </None>
@@ -1242,9 +1194,6 @@
       <Filter>www\views</Filter>
     </None>
     <None Include="..\www\views\lights.html">
-      <Filter>www\views</Filter>
-    </None>
-    <None Include="..\www\views\lights_bak.html">
       <Filter>www\views</Filter>
     </None>
     <None Include="..\www\views\log.html">
@@ -1331,6 +1280,54 @@
     <None Include="..\www\views\mobile_notifications.html">
       <Filter>www\views</Filter>
     </None>
+    <None Include="..\www\views\dpgooglepubsub.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpinflux.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\app\DPGooglePubSubController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DPInfluxController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\styles\default\base.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\custom.js">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\extras_and_animations.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\navigation_main_sidebar.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\show_version_number.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\js\angular-websocket.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\views\temperatures\temperatureWidget.html">
+      <Filter>www\views\temperatures</Filter>
+    </None>
+    <None Include="..\www\js\domoticz.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzblocks.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzblocks_messages_en.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzdevices.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\secpanel\css\style.css">
+      <Filter>www\secpanel\css</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1377,6 +1374,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\YouLess.h">
       <Filter>Devices\YouLess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ColorSwitch.h">
+      <Filter>Devices</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\DomoticzHardware.h">
       <Filter>Devices</Filter>
@@ -1433,9 +1433,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\SunRiseSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\WebServer.h">
@@ -1615,7 +1612,13 @@
     <ClInclude Include="..\hardware\EvohomeBase.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeRadio.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\EvohomeSerial.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeTCP.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EvohomeWeb.h">
@@ -1629,9 +1632,6 @@
     </ClInclude>
     <ClInclude Include="..\zip\zip.h">
       <Filter>zip\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\unzip.h">
-      <Filter>zip\Main</Filter>
     </ClInclude>
     <ClInclude Include="..\main\unzip_iterator.h">
       <Filter>zip\Main</Filter>
@@ -1664,9 +1664,6 @@
       <Filter>Notifications</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationEmail.h">
-      <Filter>Notifications</Filter>
-    </ClInclude>
-    <ClInclude Include="..\notifications\NotificationNma.h">
       <Filter>Notifications</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationProwl.h">
@@ -1831,6 +1828,9 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationTelegram.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\LogitechMediaServer.h">
       <Filter>Devices\Logitech Media Server</Filter>
     </ClInclude>
@@ -1899,9 +1899,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Comm5Serial.h">
       <Filter>Devices\Comm5 MA-5XXX</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\LuaHandler.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\HttpPoller.h">
       <Filter>Devices\HttpPoller</Filter>
@@ -2017,14 +2014,8 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Devices\Python Plugins</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\LuaCommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\SysfsGPIO.h">
       <Filter>Devices\SysfsGPIO</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\EvohomeScript.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Rtl433.h">
       <Filter>Devices\RTL_433</Filter>
@@ -2037,6 +2028,87 @@
     </ClInclude>
     <ClInclude Include="..\hardware\OnkyoAVTCP.h">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\IFTTT.h">
+      <Filter>IFTTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\USBtin.h">
+      <Filter>Devices\USBtin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\USBtin_MultiblocV8.h">
+      <Filter>Devices\USBtin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EnphaseAPI.h">
+      <Filter>Devices\Enphase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\WebsocketPush.h">
+      <Filter>Pushers\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationBrowser.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\Websockets.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouseTCP.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\EventsCodes.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\globals.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\status.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Comm5SMTCP.h">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\NestOAuthAPI.h">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EcoCompteur.h">
+      <Filter>Devices\EcoCompteur</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Honeywell.h">
+      <Filter>Devices\Honeywell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\dzVents.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaCommon.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaHandler.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeScript.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\tinyxml.h">
+      <Filter>XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Tado.h">
+      <Filter>Devices\Tado</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviDevices.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketHandler.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\xpath_processor.h">
+      <Filter>XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zip\iowin32.h">
+      <Filter>zip\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zip\minizip_crypt.h">
+      <Filter>zip\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2226,6 +2298,9 @@
     <ClCompile Include="..\hardware\ASyncTCP.cpp">
       <Filter>Devices\SerialTCP</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\ColorSwitch.cpp">
+      <Filter>Devices</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>
     </ClCompile>
@@ -2280,6 +2355,9 @@
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHue.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueHelper.cpp">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
@@ -2289,7 +2367,13 @@
     <ClCompile Include="..\hardware\EvohomeBase.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeRadio.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\EvohomeSerial.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeTCP.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeWeb.cpp">
@@ -2320,9 +2404,6 @@
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationEmail.cpp">
-      <Filter>Notifications</Filter>
-    </ClCompile>
-    <ClCompile Include="..\notifications\NotificationNma.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationProwl.cpp">
@@ -2475,6 +2556,9 @@
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
+    <ClCompile Include="..\notifications\NotificationTelegram.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\LogitechMediaServer.cpp">
       <Filter>Devices\Logitech Media Server</Filter>
     </ClCompile>
@@ -2589,9 +2673,6 @@
     <ClCompile Include="..\hardware\Comm5Serial.cpp">
       <Filter>Devices\Comm5 MA-5XXX</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\LuaHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\HttpPoller.cpp">
       <Filter>Devices\HttpPoller</Filter>
     </ClCompile>
@@ -2700,14 +2781,8 @@
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
       <Filter>Devices\Python Plugins</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\LuaCommon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\SysfsGPIO.cpp">
       <Filter>Devices\SysfsGPIO</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\EvohomeScript.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Rtl433.cpp">
       <Filter>Devices\RTL_433</Filter>
@@ -2720,6 +2795,84 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\IFTTT.cpp">
+      <Filter>IFTTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
+      <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\USBtin.cpp">
+      <Filter>Devices\USBtin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp">
+      <Filter>Devices\USBtin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnphaseAPI.cpp">
+      <Filter>Devices\Enphase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\WebsocketPush.cpp">
+      <Filter>Pushers\Websocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\Websockets.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouseTCP.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseTcpClient.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseUdpListener.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Comm5SMTCP.cpp">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EcoCompteur.cpp">
+      <Filter>Devices\EcoCompteur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Honeywell.cpp">
+      <Filter>Devices\Honeywell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Tado.cpp">
+      <Filter>Devices\Tado</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaCommon.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaHandler.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeScript.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviDevices.cpp">
+      <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\ioapi.c">
+      <Filter>zip\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\iowin32.c">
+      <Filter>zip\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zip\unzip.c">
+      <Filter>zip\Base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3814,9 +3967,6 @@
     <Image Include="..\www\media\trashlid.png">
       <Filter>www\media</Filter>
     </Image>
-    <Image Include="..\www\secpanel\bg.jpg">
-      <Filter>www\secpanel</Filter>
-    </Image>
     <Image Include="..\www\styles\elemental\images\imgbg.jpg">
       <Filter>www\styles\elemental\images</Filter>
     </Image>
@@ -3846,12 +3996,6 @@
     <Font Include="..\www\css\fonts\Satisfy.ttf">
       <Filter>www\css\fonts</Filter>
     </Font>
-    <Font Include="..\www\secpanel\font\Audiowide.ttf">
-      <Filter>www\secpanel\font</Filter>
-    </Font>
-    <Font Include="..\www\secpanel\font\Digital.ttf">
-      <Filter>www\secpanel\font</Filter>
-    </Font>
     <Font Include="..\www\styles\elemental\fonts\DroidSans.ttf">
       <Filter>www\styles\elemental\fonts</Filter>
     </Font>
@@ -3877,18 +4021,6 @@
     </Media>
     <Media Include="..\www\media\delete.wav">
       <Filter>www\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\arm.mp3">
-      <Filter>www\secpanel\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\disarm.mp3">
-      <Filter>www\secpanel\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\key.mp3">
-      <Filter>www\secpanel\media</Filter>
-    </Media>
-    <Media Include="..\www\secpanel\media\wrongcode.mp3">
-      <Filter>www\secpanel\media</Filter>
     </Media>
   </ItemGroup>
 </Project>

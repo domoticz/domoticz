@@ -128,8 +128,6 @@ m_reconnect(false)
 	m_bOutputLog = false;
 	m_bDoRestart = false;
 	m_bIsStarted = false;
-	m_username = username;
-	m_password = password;
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_poll_inputs = pollInputs;
@@ -201,7 +199,7 @@ bool RelayNet::StopHardware()
 		disconnect();
 	}
 
-	try 
+	try
 	{
 		if (m_thread)
 		{
@@ -223,19 +221,11 @@ bool RelayNet::StopHardware()
 
 bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	bool bOk = true;
-
 #if RELAYNET_USE_HTTP
-
-	bOk = WriteToHardwareHttp(pdata);
-
+	return WriteToHardwareHttp(pdata);
 #else
-
-	bOk = WriteToHardwareTcp(pdata);
-
+	return WriteToHardwareTcp(pdata);
 #endif
-
-	return bOk;
 }
 
 //===========================================================================
@@ -362,10 +352,7 @@ void RelayNet::SetupDevices()
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Relay%i", m_szIPAddress.c_str(), relayNumber);
 
-				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d, '%q', %d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Relay");
+				m_sql.InsertDevice(m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, STYPE_OnOff, 0, " ", "Relay");
 			}
 		}
 	}
@@ -380,10 +367,7 @@ void RelayNet::SetupDevices()
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Input%i", m_szIPAddress.c_str(), inputNumber);
 
-				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, 100+inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input");
+				m_sql.InsertDevice(m_HwdID, szIdx, 100 + inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), 0, " ", "Input");
 			}
 		}
 	}
@@ -605,7 +589,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (!m_skip_relay_update && m_relay_count && (m_poll_relays || m_setup_devices))
 	{
-		for (int i=1; i <= m_relay_count ; i++)
+		for (uint16_t i=1; i <= m_relay_count ; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "RELAYON %d", i);
 			sChkstr = cTemp;
@@ -627,7 +611,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (m_input_count && (m_poll_inputs || m_setup_devices))
 	{
-		for (int i = 1; i <= m_input_count; i++)
+		for (uint16_t i = 1; i <= m_input_count; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "IH %d", i);
 			sChkstr = cTemp;
@@ -673,8 +657,8 @@ void RelayNet::ParseData(const unsigned char *pData, int Len)
 
 //===========================================================================
 //
-//	Alternate way of turning relays on/off using HTTP. 
-//	Currently not used. 
+//	Alternate way of turning relays on/off using HTTP.
+//	Currently not used.
 //
 bool RelayNet::WriteToHardwareHttp(const char *pdata)
 {
@@ -702,7 +686,6 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 		std::stringstream 			sLogin;
 		std::string 				sAccessToken;
 		std::stringstream			sURL;
-		std::stringstream 			szPostData;
 		std::vector<std::string>	ExtraHeaders;
 		std::string 				sResult;
 		int 						relay = pSen->LIGHTING2.unitcode;
@@ -800,7 +783,7 @@ void RelayNet::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::host_unreachable) ||
 		(error == boost::asio::error::timed_out))
 	{
-		_log.Log(LOG_ERROR, "RelayNet: OnError: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "RelayNet: OnError: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if ((error == boost::asio::error::eof) || (error == boost::asio::error::connection_reset))
 	{

@@ -13,14 +13,13 @@ define(['app'], function (app) {
 		}
 
 		$scope.SVGContainerResize = function () {
-			var svgHeight;
 			if ((typeof $("#floorplaneditor") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')) {
 				$("#floorplaneditor")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
 				$("#floorplaneditor")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
 				$("#floorplaneditor")[0].setAttribute('svgwidth', $("#svgcontainer").width());
 				var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
 				$("#floorplaneditor")[0].setAttribute('ratio', ratio);
-				svgHeight = $("#floorplaneditor").width() / ratio;
+				var svgHeight = $("#floorplaneditor").width() / ratio;
 				$("#floorplaneditor").height(svgHeight);
 			}
 		}
@@ -82,8 +81,6 @@ define(['app'], function (app) {
 		}
 
 		SetButtonStates = function () {
-
-			$('#updelclr #floorplanadd').attr("class", "btnstyle3-dis");
 			$('#updelclr #floorplanedit').attr("class", "btnstyle3-dis");
 			$('#updelclr #floorplandelete').attr("class", "btnstyle3-dis");
 			$('#floorplaneditcontent #delclractive #activeplanadd').attr("class", "btnstyle3-dis");
@@ -108,8 +105,6 @@ define(['app'], function (app) {
 						$('#floorplaneditcontent #delclractive #activeplanclear').attr("class", "btnstyle3");
 					}
 				}
-			} else {
-				$('#updelclr #floorplanadd').attr("class", "btnstyle3");
 			}
 		}
 
@@ -130,67 +125,24 @@ define(['app'], function (app) {
 			});
 		}
 
-		LoadImageNames = function () {
-			var oTable = $('#imagetable').dataTable();
-
-			oTable.fnClearTable();
-
-			$.ajax({
-				url: "json.htm?type=command&param=getfloorplanimages",
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-
-					if (typeof data.result != 'undefined') {
-						$.each(data.result, function (tag, images) {
-
-							for (var i = 0; i < images.length; i++) {
-								var addId = oTable.fnAddData({
-									"DT_RowId": i,
-									"ImageName": images[i],
-									"0": images[i]
-								});
-							}
-						});
-						$('#imagetable tbody').off();
-						/* Add a click handler to the rows - this could be used as a callback */
-						$('#imagetable tbody').on('click', 'tr', function () {
-							if ($(this).hasClass('row_selected')) {
-								$(this).removeClass('row_selected');
-								$("#dialog-add-edit-floorplan #imagename").val('');
-							}
-							else {
-								oTable.$('tr.row_selected').removeClass('row_selected');
-								$(this).addClass('row_selected');
-								var anSelected = fnGetSelected(oTable);
-								if (anSelected.length !== 0) {
-									var data = oTable.fnGetData(anSelected[0]);
-									$("#dialog-add-edit-floorplan #imagename").val('images/floorplans/' + data["ImageName"]);
-								}
-							}
-						});
-					}
-				}
-			});
-		}
-
 		AddNewFloorplan = function () {
-			LoadImageNames();
+			DeselectFloorplan();
 			$("#dialog-add-edit-floorplan #floorplanname").val('');
-			$("#dialog-add-edit-floorplan #imagename").val('');
 			$("#dialog-add-edit-floorplan #scalefactor").val('1.0');
+			$("#dialog-add-edit-floorplan #imagefile").val('');
+			$("#dialog-add-edit-floorplan #imagerow").show();
 			$("#dialog-add-edit-floorplan").dialog({
-				resizable: false,
-				width: 460,
-				height: 540,
 				modal: true,
+				width: '500',
+				height: 'auto',
+				resizable: false,
 				title: 'Add New Floorplan',
 				buttons: {
 					"Cancel": function () {
 						$(this).dialog("close");
 					},
 					"Add": function () {
-						var csettings = GetFloorplanSettings();
+						var csettings = GetFloorplanSettings(true);
 						if (typeof csettings == 'undefined') {
 							return;
 						}
@@ -205,19 +157,19 @@ define(['app'], function (app) {
 		}
 
 		EditFloorplan = function (idx) {
-			LoadImageNames();
+			$("#dialog-add-edit-floorplan #imagerow").hide();
 			$("#dialog-add-edit-floorplan").dialog({
-				resizable: false,
-				width: 460,
-				height: 540,
 				modal: true,
+				width: 'auto',
+				height: 'auto',
+				resizable: false,
 				title: 'Edit Floorplan',
 				buttons: {
 					"Cancel": function () {
 						$(this).dialog("close");
 					},
 					"Update": function () {
-						var csettings = GetFloorplanSettings();
+						var csettings = GetFloorplanSettings(false);
 						if (typeof csettings == 'undefined') {
 							return;
 						}
@@ -250,7 +202,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		GetFloorplanSettings = function () {
+		GetFloorplanSettings = function (isNew) {
 			var csettings = {};
 
 			csettings.name = $("#dialog-add-edit-floorplan #floorplanname").val();
@@ -258,27 +210,61 @@ define(['app'], function (app) {
 				ShowNotify('Please enter a Name!', 2500, true);
 				return;
 			}
-			csettings.image = $("#dialog-add-edit-floorplan #imagename").val();
-			if (csettings.image == "") {
-				ShowNotify('Please enter an image filename!', 2500, true);
-				return;
-			}
 			csettings.scalefactor = $("#dialog-add-edit-floorplan #scalefactor").val();
 			if (!$.isNumeric(csettings.scalefactor)) {
 				ShowNotify($.t('Icon Scale can only contain numbers...'), 2000, true);
 				return;
 			}
+			if (isNew) {
+				if ($("#dialog-add-edit-floorplan #imagefile").val() == '') {
+					ShowNotify('Please choose an image filename!', 2500, true);
+					return;
+				}
+			}
 			return csettings;
 		}
 
+		AddFloorplan = function () {
+			var csettings = GetFloorplanSettings(true);
+			if (typeof csettings == 'undefined') {
+				return;
+			}
+			$http({
+				method: 'POST',
+				url: 'uploadfloorplanimage.webem',
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				},
+				data: {
+					planname: csettings.name,
+					scalefactor: csettings.scalefactor,
+					imagefile: $scope.file
+				},
+				transformRequest: function (data, headersGetter) {
+					var formData = new FormData();
+					angular.forEach(data, function (value, key) {
+						formData.append(key, value);
+					});
+
+					var headers = headersGetter();
+					delete headers['Content-Type'];
+					return formData;
+				}
+			}).then(function successCallback(response) {
+				RefreshFloorPlanTable();
+			}, function errorCallback(response) {
+				ShowNotify('Problem adding Floorplan!', 2500, true);
+			});
+		}
+
 		UpdateFloorplan = function (idx) {
-			var csettings = GetFloorplanSettings();
+			var csettings = GetFloorplanSettings(false);
 			if (typeof csettings == 'undefined') {
 				return;
 			}
 
 			$.ajax({
-				url: "json.htm?type=command&param=updatefloorplan&idx=" + idx + "&name=" + csettings.name + "&image=" + csettings.image + "&scalefactor=" + csettings.scalefactor,
+				url: "json.htm?type=command&param=updatefloorplan&idx=" + idx + "&name=" + csettings.name + "&scalefactor=" + csettings.scalefactor,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -290,23 +276,20 @@ define(['app'], function (app) {
 			});
 		}
 
-		AddFloorplan = function () {
-			var csettings = GetFloorplanSettings();
-			if (typeof csettings == 'undefined') {
-				return;
+		DeselectFloorplan = function() {
+			$("#dialog-add-edit-floorplan #floorplanname").val("");
+			$("#dialog-add-edit-floorplan #scalefactor").val("1.0");
+			$("#floorplangroup").attr("scalefactor", "1.0");
+			RefreshPlanTable(-1);
+			$("#floorplanimage").attr("xlink:href", "");
+			$("#floorplanimagesize").attr("src", "");
+			if ((typeof $("#floorplaneditor") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')) {
+				$("#floorplaneditor")[0].setAttribute('naturalWidth', 1);
+				$("#floorplaneditor")[0].setAttribute('naturalHeight', 1);
+				$("#floorplaneditor")[0].setAttribute('svgwidth', 1);
+				$("#floorplaneditor").height(1);
 			}
-
-			$.ajax({
-				url: "json.htm?type=command&param=addfloorplan&name=" + csettings.name + "&image=" + csettings.image + "&scalefactor=1.0",
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					RefreshFloorPlanTable();
-				},
-				error: function () {
-					ShowNotify('Problem adding Floorplan!', 2500, true);
-				}
-			});
+			
 		}
 
 		RefreshFloorPlanTable = function () {
@@ -356,16 +339,21 @@ define(['app'], function (app) {
 								updownImg += '<img src="images/up.png" onclick="ChangeFloorplanOrder(0,' + item.idx + ');" class="lcursor" width="16" height="16"></img>';
 							}
 
+							var imgsrc = item.Image + "&dtime=" + Math.round(+new Date() / 1000);
+							var previewimg = '<img src="' + imgsrc + '" height="40"> ';
+
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
 								"Name": item.Name,
 								"Image": item.Image,
 								"ScaleFactor": item.ScaleFactor,
 								"Order": item.Order,
-								"0": item.Name,
-								"1": item.Image,
-								"2": item.ScaleFactor,
-								"3": updownImg
+								"Plans": item.Plans,
+								"0": previewimg,
+								"1": item.Name,
+								"2": (item.Plans>0)?item.Plans:"-",
+								"3": item.ScaleFactor,
+								"4": updownImg
 							});
 						});
 						// handle settings
@@ -403,13 +391,7 @@ define(['app'], function (app) {
 								ConfirmNoUpdate(this, function (param) {
 									if ($(param).hasClass('row_selected')) {
 										$(param).removeClass('row_selected');
-										$("#dialog-add-edit-floorplan #floorplanname").val("");
-										$("#dialog-add-edit-floorplan #imagename").val("");
-										$("#dialog-add-edit-floorplan #scalefactor").val("1.0");
-										$("#floorplangroup").attr("scalefactor", "1.0");
-										RefreshPlanTable(-1);
-										$("#floorplanimage").attr("xlink:href", "");
-										$("#floorplanimagesize").attr("src", "");
+										DeselectFloorplan();
 									}
 									else {
 										oTable.$('tr.row_selected').removeClass('row_selected');
@@ -422,7 +404,6 @@ define(['app'], function (app) {
 											$("#updelclr #floorplanedit").attr("href", "javascript:EditFloorplan(" + idx + ")");
 											$("#updelclr #floorplandelete").attr("href", "javascript:DeleteFloorplan(" + idx + ")");
 											$("#dialog-add-edit-floorplan #floorplanname").val(data["Name"]);
-											$("#dialog-add-edit-floorplan #imagename").val(data["Image"]);
 											$("#dialog-add-edit-floorplan #scalefactor").val(data["ScaleFactor"]);
 											$("#floorplangroup").attr("scalefactor", data["ScaleFactor"]);
 											RefreshPlanTable(idx);
@@ -491,7 +472,7 @@ define(['app'], function (app) {
 				"bProcessing": true,
 				"bStateSave": true,
 				"bJQueryUI": true,
-				"aLengthMenu": [[5, 10, 25, 100, -1], [5, 10, 25, 100, "All"]],
+				"aLengthMenu": [[10, 25, 100, -1], [10, 25, 100, "All"]],
 				"iDisplayLength": 5,
 				"sPaginationType": "full_numbers",
 				language: $.DataTableLanguage
@@ -761,7 +742,8 @@ define(['app'], function (app) {
 					Device.useSVGtags = true;
 					$http({
 						url: "json.htm?type=devices&filter=all&used=true&order=Name&plan=" + $("#floorplangroup")[0].getAttribute("planidx") + "&lastupdate=" + window.myglobals.LastUpdate
-					}).success(function (data) {
+					}).then(function successCallback(response) {
+						var data = response.data;
 						if (typeof data.ActTime != 'undefined') {
 							window.myglobals.LastUpdate = data.ActTime;
 						}
@@ -815,7 +797,7 @@ define(['app'], function (app) {
 						$scope.mytimer = $interval(function () {
 							RefreshDevices();
 						}, 10000);
-					}).error(function (data) {
+					}, function errorCallback(response) {
 						$scope.mytimer = $interval(function () {
 							RefreshDevices();
 						}, 10000);

@@ -23,7 +23,7 @@ return {
 		temperatureReadings = { history = true, maxItems = SMOOTH_FACTOR }
 	},
 	active = true,
-	execute = function(domoticz, device, triggerInfo)
+	execute = function(domoticz, item)
 
 		local avgTemp
 		local temperatureReadings = domoticz.data.temperatureReadings
@@ -33,7 +33,7 @@ return {
 		local setpoint = domoticz.devices(SETPOINT_DEVICE)
 
 		-- first check if the sensor got a new reading or the setpoint was changed:
-		if (triggerInfo.type == domoticz.EVENT_TYPE_DEVICE) then
+		if (item.isDevice) then
 
 			if (sensor.changed) then
 				-- sensor just reported a new reading
@@ -49,7 +49,7 @@ return {
 
 			elseif (domoticz.devices(SETPOINT_DEVICE).changed) then
 				-- a new setpoint was set
-				if LOGGING then domoticz.log('Setpoint was set to ' .. device.state) end
+				if LOGGING then domoticz.log('Setpoint was set to ' .. item.state) end
 			else
 				-- no business here, bail out...
 				return

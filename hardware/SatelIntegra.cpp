@@ -297,7 +297,7 @@ bool SatelIntegra::ConnectToIntegra()
 #else
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 #endif
-	_log.Log(LOG_STATUS, "Satel Integra: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
+	_log.Log(LOG_STATUS, "Satel Integra: connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }
@@ -764,10 +764,7 @@ bool SatelIntegra::ReadEvents()
 
 void SatelIntegra::ReportZonesViolation(const int Idx, const bool violation)
 {
-	if (m_mainworker.GetVerboseLevel() >= EVBL_ALL)
-	{
-		_log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", Idx, violation ? 3 : 1);
-	}
+	_log.Debug(DEBUG_HARDWARE, "Satel Integra: Report Zone %d = %d", Idx, violation ? 3 : 1);
 
 	m_zonesLastState[Idx - 1] = violation;
 
@@ -780,7 +777,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 
 	if ((Idx > 1024) || m_isOutputSwitch[Idx - 1])
 	{
-		SendGeneralSwitchSensor(Idx, 255, state ? gswitch_sOn : gswitch_sOff, NULL, 1);
+		SendGeneralSwitch(Idx, 1, 255, state ? gswitch_sOn : gswitch_sOff, 0, "");
 	}
 	else
 	{
@@ -796,7 +793,7 @@ void SatelIntegra::ReportArmState(const int Idx, const bool isArm)
 {
 	m_armLastState[Idx-1] = isArm;
 
-	SendGeneralSwitchSensor(Idx, 255, isArm ? gswitch_sOn : gswitch_sOff, NULL, 2);
+	SendGeneralSwitch(Idx, 2, 255, isArm ? gswitch_sOn : gswitch_sOff, 0, "");
 }
 
 void SatelIntegra::ReportAlarm(const bool isAlarm)
@@ -1005,7 +1002,7 @@ void SatelIntegra::UpdateZoneName(const int Idx, const unsigned char* name, cons
 	}
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=1)", m_HwdID, szTmp);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign zone name from Integra
 #ifdef DEBUG_SatelIntegra
@@ -1028,7 +1025,7 @@ void SatelIntegra::UpdateTempName(const int Idx, const unsigned char* name, cons
 	shortName = ISO2UTF8(shortName);
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=0)", m_HwdID, szTmp);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign zone name from Integra
 #ifdef DEBUG_SatelIntegra
@@ -1057,7 +1054,7 @@ void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, co
 	shortName = ISO2UTF8(shortName);
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=1)", m_HwdID, szTmp);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign output name from Integra
 #ifdef DEBUG_SatelIntegra
@@ -1074,7 +1071,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 
 	// Alarm
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Name=='Alarm') AND (Unit=2)", m_HwdID);
-	if (result.size() < 1)
+	if (result.empty())
 	{
 		//Assign name for Alarm
 #ifdef DEBUG_SatelIntegra
@@ -1091,7 +1088,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 			char szTmp[10];
 			sprintf(szTmp, "%08X", (int)i+1);
 			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Arm %d partition') AND (Unit=2)", m_HwdID, szTmp, i+1);
-			if (result.size() < 1)
+			if (result.empty())
 			{
 				//Assign name for Arm
 #ifdef DEBUG_SatelIntegra

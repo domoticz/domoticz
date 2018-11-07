@@ -4,7 +4,7 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <iostream>
+#include <iosfwd>
 #include <map>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition_variable.hpp>
@@ -16,8 +16,7 @@ class CTellstick : public CDomoticzHardwareBase
 public:
     explicit CTellstick(const int ID, int repeats, int repeatInterval);
     void SetSettings(int repeats, int repeatInterval);
-    bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
     struct Command
     {
@@ -45,12 +44,12 @@ private:
                     int timestamp, int callbackId, void *context);
     bool AddSwitchIfNotExits(const int id, const char* devname, bool isDimmer);
     void Init();
-    bool StartHardware();
-    bool StopHardware();
+    bool StartHardware() override;
+    bool StopHardware() override;
     void SendCommand(int devID, const _tGeneralSwitch &cmd);
     
     void ThreadSendCommands();
-
+private:
     int m_deviceEventId;
     int m_rawDeviceEventId;
     int m_sensorEventId;

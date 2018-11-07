@@ -189,13 +189,12 @@ void COpenWeatherMap::GetMeterDetails()
 		return;
 	}
 
-	float temp =- 999.9f;
-	int humidity = 0;
-	int barometric = 0;
-	int barometric_forecast = baroForecastNoInfo;
-
 	if (!root["main"].empty())
 	{
+		float temp = -999.9f;
+		int humidity = 0;
+		int barometric = 0;
+		int barometric_forecast = baroForecastNoInfo;
 		if (!root["main"]["temp"].empty())
 		{
 			temp = root["main"]["temp"].asFloat();
@@ -316,6 +315,16 @@ void COpenWeatherMap::GetMeterDetails()
 				gdevice.floatval1 = visibility;
 				sDecodeRXMessage(this, (const unsigned char *)&gdevice, "Visibility", 255);
 			}
+		}
+	}
+
+	//clouds
+	if (!root["clouds"].empty())
+	{
+		if (!root["clouds"]["all"].empty())
+		{
+			float clouds = root["clouds"]["all"].asFloat();
+			SendPercentageSensor(1, 0, 255, clouds, "Clouds %");
 		}
 	}
 

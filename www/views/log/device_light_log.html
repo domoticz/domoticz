@@ -1,0 +1,28 @@
+<div class="container js-device-logs">
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+            </td>
+        </tr>
+    </table>
+
+    <p>
+        <h2>{{ ::'Name'|translate }}: {{ ::vm.deviceName }}</h2>
+    </p>
+
+    <entity-log-table log="vm.log"></entity-log-table>
+
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td></td>
+            <td align="right">
+                <button class="btnstyle3" id="clearlog" ng-click="vm.clearLog()">{{ ::'Clear' | translate }}</button>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <div id="lightgraph" style="height: 200px;"></div>
+</div>

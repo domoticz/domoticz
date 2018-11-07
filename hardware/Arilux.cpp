@@ -9,7 +9,11 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+
 #include <numeric>
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 
 
 
@@ -29,9 +33,7 @@ Arilux::Arilux(const int ID)
 	m_HwdID = ID;
 	m_bDoRestart = false;
 	m_stoprequested = false;
-	cHue = 0.0;
-	brightness = 255;
-	isWhite = true;
+	m_isWhite = true;
 
 }
 
@@ -75,7 +77,6 @@ bool Arilux::StopHardware()
 void Arilux::Do_Work()
 {
 	_log.Log(LOG_STATUS, "Arilux Worker started...");
-
 	
 	int sec_counter = Arilux_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
@@ -96,7 +97,7 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	StringSplit(Location, ".", ipaddress);
 	if (ipaddress.size() != 4)
 	{
-		_log.Log(LOG_STATUS, "Arilux: Invalid location received! (No IP Address)");
+		_log.Log(LOG_ERROR, "Arilux: Invalid location received! (No IP Address)");
 		return;
 	}
 	uint32_t sID = (uint32_t)(atoi(ipaddress[0].c_str()) << 24) | (uint32_t)(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
@@ -106,24 +107,20 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	else
 		sprintf(szDeviceID, "%08X", (unsigned int)sID);
 
-	int lastLevel = 0;
-	int nvalue = 0;
 	bool tIsOn = !(bIsOn);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeLimitlessLights, YeeType);
-	if (result.size() < 1)
+	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeColorSwitch, YeeType);
+	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "Arilux: New controller added (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(ariluxBright.c_str());
-		int cmd = light1_sOn;
-		int level = 100;
+		int cmd = Color_LedOn;
+		//int level = 100;
 		if (!bIsOn) {
-			cmd = light1_sOff;
-			level = 0;
+			cmd = Color_LedOff;
+			//level = 0;
 		}
-		_tLimitlessLights ycmd;
-		ycmd.len = sizeof(_tLimitlessLights) - 1;
-		ycmd.type = pTypeLimitlessLights;
+		_tColorSwitch ycmd;
 		ycmd.subtype = YeeType;
 		ycmd.id = sID;
 		ycmd.dunit = 0;
@@ -134,22 +131,20 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	}
 	else {
 
-		nvalue = atoi(result[0][0].c_str());
+		int nvalue = atoi(result[0][0].c_str());
 		tIsOn = (nvalue != 0);
-		lastLevel = atoi(result[0][1].c_str());
+		int lastLevel = atoi(result[0][1].c_str());
 		int value = atoi(ariluxBright.c_str());
 		if ((bIsOn != tIsOn) || (value != lastLevel))
 		{
-			int cmd = Limitless_LedOn;
+			int cmd = Color_LedOn;
 			if (!bIsOn) {
-				cmd = Limitless_LedOff;
+				cmd = Color_LedOff;
 			}
 			if (value != lastLevel) {
-				cmd = Limitless_SetBrightnessLevel;
+				cmd = Color_SetBrightnessLevel;
 			}
-			_tLimitlessLights ycmd;
-			ycmd.len = sizeof(_tLimitlessLights) - 1;
-			ycmd.type = pTypeLimitlessLights;
+			_tColorSwitch ycmd;
 			ycmd.subtype = YeeType;
 			ycmd.id = sID;
 			ycmd.dunit = 0;
@@ -180,7 +175,6 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 	
 	try
 	{
-		//_log.Log(LOG_STATUS, "Arilux: Try connecting device.");
 		boost::asio::connect(sendSocket, iterator);
 	}
 	catch (const std::exception &e)
@@ -207,8 +201,8 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 
 bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_STATUS, "Arilux: WriteToHardware...............................");
-	_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
+	_log.Debug(DEBUG_HARDWARE, "Arilux: WriteToHardware...............................");
+	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 	uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
 
@@ -253,49 +247,54 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 	
 	switch (pLed->command)
 	{
-	case Limitless_LedOn:
+	case Color_LedOn:
 		commandToSend = Arilux_On_Command;
 		
 		break;
-	case Limitless_LedOff:
+	case Color_LedOff:
 		commandToSend = Arilux_Off_Command;		
 		break;
 	
-	case Limitless_SetColorToWhite:
+	case Color_SetColorToWhite:
 		sendOnFirst = true;
-		isWhite = true;
+		m_isWhite = true;
 		Arilux_RGBCommand_Command[1] = 0xff;
 		Arilux_RGBCommand_Command[2] = 0xff;
 		Arilux_RGBCommand_Command[3] = 0xff;
 		Arilux_RGBCommand_Command[4] = 0xff;
 		commandToSend = Arilux_RGBCommand_Command;
 		break;	
-	case Limitless_SetRGBColour: {
-		isWhite = false;
-		cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
-		//Sending is done by SetBrightnessLevel
-	}
-    break;
-	case Limitless_SetBrightnessLevel: {
+	case Color_SetColor:
+		if (pLed->color.mode == ColorModeWhite)
+		{
+			m_isWhite = true;
+		}
+		else if (pLed->color.mode == ColorModeRGB)
+		{
+			m_isWhite = false;
+			m_color.r = pLed->color.r;
+			m_color.g = pLed->color.g;
+			m_color.b = pLed->color.b;
+		}
+		else {
+			_log.Log(LOG_ERROR, "Arilux: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+		}
+		// No break, fall through to send combined color + brightness command
+	case Color_SetBrightnessLevel: {
 
 		int red, green, blue;
-		int BrightnessBase = 100;
-		int dMax_convert = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
-		BrightnessBase = (int)pLed->value;
+		int BrightnessBase = (int)pLed->value;
 		int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
-		hue2rgb(cHue, red, green, blue, dMax_convert);
+		red = m_color.r;
+		green = m_color.g;
+		blue = m_color.b;
 
-
-		if (isWhite)
+		if (m_isWhite) // TODO: Use m_color.mode instead
 		{
-			
-
 			Arilux_RGBCommand_Command[1] = (unsigned char)0xff;
 			Arilux_RGBCommand_Command[2] = (unsigned char)0xff;
 			Arilux_RGBCommand_Command[3] = (unsigned char)0xff;
 			Arilux_RGBCommand_Command[4] = (unsigned char)dMax_Send;
-
-			brightness = dMax_Send;
 
 			commandToSend = Arilux_RGBCommand_Command;
 		}
@@ -308,34 +307,32 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 			Arilux_RGBCommand_Command[3] = (unsigned char)blue;
 			Arilux_RGBCommand_Command[4] = (unsigned char)dMax_Send;
 
-			brightness = dMax_Send;
-
 			commandToSend = Arilux_RGBCommand_Command;
 		}
 	}
 	break;
-	case Limitless_SetBrightUp:	
+	case Color_SetBrightUp:
 		_log.Log(LOG_STATUS, "Arilux: SetBrightUp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
-	case Limitless_SetBrightDown:
+	case Color_SetBrightDown:
 		_log.Log(LOG_STATUS, "Arilux: SetBrightDown - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
-	case Limitless_WarmWhiteIncrease:
+	case Color_WarmWhiteIncrease:
 		_log.Log(LOG_STATUS, "Arilux: WarmWhiteIncrease - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
-	case Limitless_CoolWhiteIncrease:
+	case Color_CoolWhiteIncrease:
 		_log.Log(LOG_STATUS, "Arilux: CoolWhiteIncrease - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
-	case Limitless_NightMode:
+	case Color_NightMode:
 		_log.Log(LOG_STATUS, "Arilux: NightMode - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
-	case Limitless_FullBrightness: 
+	case Color_FullBrightness:
 		_log.Log(LOG_STATUS, "Arilux: FullBrightness - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
-	case Limitless_DiscoMode:
+	case Color_DiscoMode:
 		_log.Log(LOG_STATUS, "Arilux: DiscoMode - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
-	case Limitless_DiscoSpeedFasterLong:
+	case Color_DiscoSpeedFasterLong:
 		_log.Log(LOG_STATUS, "Arilux: DiscoSpeedFasterLong - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	default:
@@ -388,7 +385,7 @@ namespace http {
 			int HwdID = atoi(idx.c_str());
 
 			Arilux Arilux(HwdID);
-			Arilux.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeLimitlessRGB : sTypeLimitlessRGBW, sipaddress, false, "0", "0");
+			Arilux.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeColor_RGB : sTypeColor_RGB_W, sipaddress, false, "0", "0");
 		}
 	}
 }

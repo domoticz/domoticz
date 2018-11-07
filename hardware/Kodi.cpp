@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Kodi.h"
+#include "../json/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -42,7 +43,7 @@ std::string	CKodiNode::CKodiStatus::LogMessage()
 		if (m_sType == "episode")
 		{
 			if (m_sShowTitle.length()) sLogText = m_sShowTitle;
-			if (m_iSeason) sLogText += " [S" + SSTR(m_iSeason) + "E" + SSTR(m_iEpisode) + "]";
+			if (m_iSeason) sLogText += " [S" + std::to_string(m_iSeason) + "E" + std::to_string(m_iEpisode) + "]";
 			if (m_sTitle.length()) sLogText += ", " + m_sTitle;
 			if ((m_sLabel != m_sTitle) && (m_sLabel.length())) sLogText += ", " + m_sLabel;
 		}
@@ -149,6 +150,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	m_stoprequested = false;
 	m_Busy = false;
 	m_Stoppable = false;
+	m_PlaylistPosition = 0;
 
 	m_Ios = pIos;
 	m_HwdID = pHwdID;
@@ -163,7 +165,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 
 	m_Socket = NULL;
 
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Kodi: (%s) Created.", m_Name.c_str());
+	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
 
 	std::vector<std::vector<std::string> > result2;
 	result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, m_szDevID);
@@ -179,7 +181,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 CKodiNode::~CKodiNode(void)
 {
 	handleDisconnect();
-	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Kodi: (%s) Destroyed.", m_Name.c_str());
+	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
 }
 
 void CKodiNode::handleMessage(std::string& pMessage)
@@ -468,7 +470,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						handleWrite(ssMessage.str());
 						break;
 					case 2002: // attempt to add playlist response
-					case 2003: 
+					case 2003:
 						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"playlistid\":" << m_PlaylistType << ",\"position\":" << m_PlaylistPosition << "}},\"id\":2004}";
 						handleWrite(ssMessage.str());
 						break;
@@ -503,7 +505,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 											}
 										}
 									}
-								else 
+								else
 									_log.Log(LOG_NORM, "Kodi: (%s) No Favourites returned.", m_Name.c_str());
 							}
 						}
@@ -550,7 +552,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.OnOffRequired(m_PreviousStatus))
 	{
 		result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, m_szDevID);
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			m_sql.HandleOnOffAction(m_CurrentStatus.IsOn(), result[0][0], result[0][1]);
 		}
@@ -560,7 +562,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str(), 0);
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str());
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
@@ -653,7 +655,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		//ready for next read
 		if (!m_stoprequested && m_Socket)
 			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-										boost::bind(&CKodiNode::handleRead, 
+										boost::bind(&CKodiNode::handleRead,
 										shared_from_this(),
 										boost::asio::placeholders::error,
 										boost::asio::placeholders::bytes_transferred));
@@ -681,7 +683,7 @@ void CKodiNode::handleWrite(std::string pMessage)
 			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
 			m_sLastMessage = pMessage;
 		}
-		else 
+		else
     {
       _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
     }
@@ -793,7 +795,7 @@ void CKodiNode::SendCommand(const std::string &command)
 		std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"" + sKodiCall + "\",\"params\":{";
 		if (sKodiParam.length()) sMessage += "\"action\":\"" + sKodiParam + "\"";
 		sMessage += "},\"id\":1006}";
-		
+
 		if (m_Socket != NULL)
 		{
 			handleWrite(sMessage);
@@ -988,7 +990,7 @@ void CKodi::Do_Work()
 	UnloadNodes();
 
 	_log.Log(LOG_STATUS, "Kodi: Worker stopped...");
-} 
+}
 
 void CKodi::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 {
@@ -1061,7 +1063,7 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 	}
 
-	_log.Log(LOG_ERROR, "Kodi: (%d) Shutdown. Device not found.", DevID);
+	_log.Log(LOG_ERROR, "Kodi: (%ld) Shutdown. Device not found.", DevID);
 	return false;
 }
 
@@ -1085,10 +1087,7 @@ void CKodi::AddNode(const std::string &Name, const std::string &IPAddress, const
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also add a light (push) device
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d, '%q', 1, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
-		m_HwdID, szID, int(pTypeLighting2), int(sTypeAC), int(STYPE_Media), Name.c_str());
+	m_sql.InsertDevice(m_HwdID, szID, 1, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", Name, 12, 255, 1);
 
 	ReloadNodes();
 }
@@ -1144,7 +1143,7 @@ void CKodi::ReloadNodes()
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -1263,7 +1262,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;

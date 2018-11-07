@@ -32,23 +32,21 @@ History :
 class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 {
 	public:
-
 		CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate,
 			const bool disable_crc, const int ratelimit);
 		~CTeleinfoSerial();
-		std::string m_szSerialPort;
-
-		bool WriteToHardware(const char *pdata, const unsigned char length);
-
+		bool WriteToHardware(const char *pdata, const unsigned char length) override;
 	private:
-		Teleinfo teleinfo;
-		bool StartHardware();
-		bool StopHardware();
-		/**
-		 * Read callback, stores data in the buffer
-		 */
-
+		bool StartHardware() override;
+		bool StopHardware() override;
+		void Init();
+		void MatchLine();
+		void ParseData(const char *pData, int Len);
+		bool isCheckSumOk(int &isMode1);
 		void readCallback(const char *data, size_t len);
+private:
+		std::string m_szSerialPort;
+		Teleinfo teleinfo;
 
 		unsigned int m_iBaudRate;
 		bool m_bDisableCRC;
@@ -58,11 +56,6 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		boost::asio::serial_port_base::stop_bits m_iOptStop;
 
 		unsigned int m_counter;
-
-		void Init();
-		void MatchLine();
-		void ParseData(const char *pData, int Len);
-		bool isCheckSumOk(int &isMode1);
 
 		char m_buffer[1024];
 		int m_bufferpos;

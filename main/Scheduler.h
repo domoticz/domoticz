@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RFXNames.h"
+#include "../hardware/hardwaretypes.h"
 #include <string>
 #include <vector>
 
@@ -20,7 +21,7 @@ struct tScheduleItem
 	_eTimerType	timerType; 
 	_eTimerCommand timerCmd;
 	int Level;
-	int Hue;
+	_tColor Color;
 	float Temperature;
 	bool bUseRandomness;
 	int Days;
@@ -29,6 +30,30 @@ struct tScheduleItem
 	int Occurence;
 	//internal
 	time_t startTime;
+
+	tScheduleItem() {
+		bEnabled = false;
+		bIsScene = false;
+		bIsThermostat = false;
+		RowID = 0;
+		TimerID = 0;
+		startDay = 0;
+		startMonth = 0;
+		startYear = 0;
+		startHour = 0;
+		startMin = 0;
+		timerType = TTYPE_ONTIME;
+		timerCmd = TCMD_ON;
+		Level = 0;
+		Temperature = 0.0f;
+		bUseRandomness = false;
+		Days = 0;
+		MDay = 0;
+		Month = 0;
+		Occurence = 0;
+		//internal
+		startTime = 0;
+	}
 
 	bool operator==(const tScheduleItem &comp) const {
 		return (this->TimerID == comp.TimerID)
@@ -48,13 +73,20 @@ public:
 
 	void ReloadSchedules();
 
-	void SetSunRiseSetTimers(const std::string &sSunRise, const std::string &sSunSet);
+	void SetSunRiseSetTimers(const std::string &sSunRise, const std::string &sSunSet, const std::string &sSunAtSouth, const std::string &sCivTwStart, const std::string &sCivTwEnd, const std::string &sNautTwStart, const std::string &sNauTtwEnd, const std::string &sAstTwStart, const std::string &sAstTwEnd);
 
 	std::vector<tScheduleItem> GetScheduleItems();
 
 private:
 	time_t m_tSunRise;
 	time_t m_tSunSet;
+	time_t m_tSunAtSouth;
+	time_t m_tCivTwStart;
+	time_t m_tCivTwEnd;
+	time_t m_tNautTwStart;
+	time_t m_tNautTwEnd;
+	time_t m_tAstTwStart;
+	time_t m_tAstTwEnd;
 	boost::mutex m_mutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "OTGWBase.h"
 
@@ -16,8 +15,8 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	int m_retrycntr;
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	bool WriteInt(const unsigned char *pData, const unsigned char Len);
 protected:
 	std::string m_szIPAddress;

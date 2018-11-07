@@ -22,7 +22,7 @@
 
 #include "DomoticzHardware.h"
 #include "ASyncSerial.h"
-#include <iostream>
+#include <iosfwd>
 
 #define MAX_BUFFER_LEN  10000
 
@@ -32,15 +32,14 @@ class RAVEn : public CDomoticzHardwareBase,
 public:
 	explicit RAVEn(const int ID, const std::string& devname);
 	~RAVEn(void);
-
-	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+private:
+	bool StartHardware() override;
+	bool StopHardware() override;
+	void readCallback(const char *indata, size_t inlen);
 private:
     const std::string device_;
 	boost::shared_ptr<boost::thread> m_thread;
-
-	bool StartHardware();
-	bool StopHardware();
-	void readCallback(const char *indata, size_t inlen);
 
     char m_buffer[MAX_BUFFER_LEN];
     char* m_wptr;

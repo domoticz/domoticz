@@ -74,7 +74,9 @@ define(['app'], function (app) {
 				$(":button:contains('Cancel Override')").attr("disabled", "d‌​isabled").addClass('ui-state-disabled');
 			else
 				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass('ui-state-disabled');
-			$("#dialog-editsetpoint #until").datetimepicker();
+			$("#dialog-editsetpoint #until").datetimepicker({
+				dateFormat: window.myglobals.DateFormat,
+			});
 			if (until != "")
 				$("#dialog-editsetpoint #until").datetimepicker("setDate", (new Date(until)));
 			$("#dialog-editsetpoint").i18n();
@@ -94,7 +96,9 @@ define(['app'], function (app) {
 				$(":button:contains('Cancel Override')").attr("disabled", "d‌​isabled").addClass('ui-state-disabled');
 			else
 				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass('ui-state-disabled');
-			$("#dialog-editstate #until_state").datetimepicker();
+			$("#dialog-editstate #until_state").datetimepicker({
+				dateFormat: window.myglobals.DateFormat,
+			});
 			if (until != "")
 				$("#dialog-editstate #until_state").datetimepicker("setDate", (new Date(until)));
 			$("#dialog-editstate").i18n();
@@ -200,7 +204,6 @@ define(['app'], function (app) {
 						if (typeof data.ActTime != 'undefined') {
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
-
 						ctrl.temperatures = data.result;
 					} else {
 						ctrl.temperatures = [];
@@ -232,7 +235,6 @@ define(['app'], function (app) {
 		};
 		$scope.DropWidget = function (idx) {
 			var myid = idx;
-			$.devIdx.split(' ');
 			var roomid = ctrl.roomSelected;
 			if (typeof roomid == 'undefined') {
 				roomid = 0;
@@ -556,13 +558,11 @@ define(['app'], function (app) {
 		};
 
 	}])
-		.directive('dztemperaturewidget', ['$location', function ($location) {
+		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
-				templateUrl: 'views/temperatures/temperatureWidget.html',
-				scope: {},
-				bindToController: {
+				scope: {
 					item: '=',
 					tempsign: '=',
 					windsign: '=',
@@ -570,11 +570,12 @@ define(['app'], function (app) {
 					dragwidget: '&',
 					dropwidget: '&'
 				},
+				templateUrl: 'views/temperature_widget.html',
 				require: 'permissions',
 				controllerAs: 'ctrl',
 				controller: function ($scope, $element, $attrs, permissions) {
 					var ctrl = this;
-					var item = ctrl.item;
+					var item = $scope.item;
 
 					ctrl.sHeatMode = function () {
 						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
@@ -584,21 +585,9 @@ define(['app'], function (app) {
 						}
 					};
 
-					ctrl.nbackcolor = function () {
-						var nbackcolor = "#D4E1EE";
-						if (item.HaveTimeout == true) {
-							nbackcolor = "#DF2D3A";
-						}
-						else {
-							var BatteryLevel = parseInt(item.BatteryLevel);
-							if (BatteryLevel != 255) {
-								if (BatteryLevel <= 10) {
-									nbackcolor = "#DDDF2D";
-								}
-							}
-						}
-						nbackcolor = EvoSetPointColor(item, ctrl.sHeatMode(), nbackcolor);
-						return { 'background-color': nbackcolor };
+					ctrl.nbackstyle = function () {
+						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+						return backgroundClass;
 					};
 
 					// TODO use angular isDefined
@@ -689,54 +678,46 @@ define(['app'], function (app) {
 
 
 					ctrl.MakeFavorite = function (n) {
-						return MakeFavorite(ctrl.item.idx, n);
+						return MakeFavorite(item.idx, n);
 					};
 
 					ctrl.EditTempDeviceSmall = function () {
-						return EditTempDeviceSmall(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.AddjValue);
+						return EditTempDeviceSmall(item.idx, escape(item.Name), escape(item.Description), item.AddjValue);
 					};
 
 					ctrl.EditTempDevice = function () {
-						return EditTempDevice(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.AddjValue);
+						return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue);
 					};
 
 					ctrl.ShowForecast = function (divId, fn) {
 						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
 						$('#temptophtm').hide();
-						return ShowForecast(atob(ctrl.item.forecast_url), escape(ctrl.item.Name), divId, fn);
+						return ShowForecast(atob(item.forecast_url), escape(item.Name), divId, fn);
 					};
 
 					ctrl.EditSetPoint = function (fn) {
-						return EditSetPoint(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.SetPoint, ctrl.item.Status, ctrl.item.Until, fn);
+						return EditSetPoint(item.idx, escape(item.Name), escape(item.Description), item.SetPoint, item.Status, item.Until, fn);
 					};
 
 					ctrl.EditState = function (fn) {
-						return EditState(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.State, ctrl.item.Status, ctrl.item.Until, fn);
-					};
-
-					ctrl.ShowLog = function () {
-						$location.url('/Temperature/' + ctrl.item.idx + '/Log');
-					};
-
-					ctrl.ShowNotifications = function () {
-						$location.url('/Temperature/' + ctrl.item.idx + '/Notifications');
+						return EditState(item.idx, escape(item.Name), escape(item.Description), item.State, item.Status, item.Until, fn);
 					};
 
 					$element.i18n();
 
-					if (ctrl.ordering == true) {
+					if ($scope.ordering == true) {
 						if (permissions.hasPermission("Admin")) {
 							if (window.myglobals.ismobileint == false) {
 								$element.draggable({
 									drag: function () {
-										ctrl.dragwidget({ idx: ctrl.item.idx });
+										$scope.dragwidget({ idx: item.idx });
 										$element.css("z-index", 2);
 									},
 									revert: true
 								});
 								$element.droppable({
 									drop: function () {
-										ctrl.dropwidget({ idx: ctrl.item.idx });
+										$scope.dropwidget({ idx: item.idx });
 									}
 								});
 							}

@@ -5,16 +5,13 @@
 #include <iostream>
 #include "../main/localtime_r.h"
 
-#define RFLINK_RETRY_DELAY 30
-
 CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
 	m_szIPAddress(IPAddress)
 {
-	m_HwdID=ID;
-	m_bDoRestart=false;
-	m_stoprequested=false;
-	m_usIPPort=usIPPort;
-	m_retrycntr = RFLINK_RETRY_DELAY;
+	m_HwdID = ID;
+	m_bDoRestart = false;
+	m_stoprequested = false;
+	m_usIPPort = usIPPort;
 }
 
 CRFLinkTCP::~CRFLinkTCP(void)
@@ -27,7 +24,7 @@ bool CRFLinkTCP::StartHardware()
 	m_bDoRestart=false;
 
 	//force connect the next first time
-	m_retrycntr=RFLINK_RETRY_DELAY;
+	m_retrycntr = RFLINK_RETRY_DELAY;
 	m_bIsStarted=true;
 
 	//Start worker thread
@@ -66,7 +63,7 @@ bool CRFLinkTCP::StopHardware()
 
 void CRFLinkTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"RFLink: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"RFLink: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
@@ -176,7 +173,7 @@ void CRFLinkTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "RFLink: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "RFLink: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||

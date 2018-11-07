@@ -60,10 +60,10 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CAtagOne::CAtagOne(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+CAtagOne::CAtagOne(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6):
+m_UserName(Username),
+m_Password(Password)
 {
-	m_UserName = Username;
-	m_Password = Password;
 	stdstring_trim(m_UserName);
 	stdstring_trim(m_Password);
 	m_HwdID=ID;
@@ -319,19 +319,16 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 		m_labels.push_back(svalueLng1);
 	if (!svalueLng2.empty())
 		m_labels.push_back(svalueLng2);
-	std::vector<std::string >::const_iterator itt;
 	// HTML structure of values in page.
 	//     <label class="col-xs-6 control-label">Apparaat alias</label>
 	//     <div class="col-xs-6">
 	//         <p class="form-control-static">CV-ketel</p>
 	//     </div> 
-	size_t tpos;
-	std::string sstring;
-	for (itt = m_labels.begin(); itt != m_labels.end(); ++itt)
+	for (const auto & itt : m_labels)
 	{
 		std::string sresult = hpage;
-		sstring = ">" + *itt + "</label>";
-		tpos = sresult.find(sstring);
+		std::string sstring = ">" + itt + "</label>";
+		size_t tpos = sresult.find(sstring);
 		if (tpos==std::string::npos)
 			continue;
 		sresult = sresult.substr(tpos + sstring.size());

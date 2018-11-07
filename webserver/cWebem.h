@@ -19,13 +19,19 @@ namespace http {
 			AUTH_LOGIN=0,
 			AUTH_BASIC,
 		};
+		enum _eWebCompressionMode
+		{
+			WWW_USE_GZIP=0,
+			WWW_USE_STATIC_GZ_FILES,
+			WWW_FORCE_NO_GZIP_SUPPORT
+		};
 		typedef struct _tWebUserPassword
 		{
 			unsigned long ID;
 			std::string Username;
 			std::string Password;
-
 			_eUserRights userrights;
+			int TotSensors;
 			int ActiveTabs;
 		} WebUserPassword;
 
@@ -111,16 +117,17 @@ namespace http {
 		public:
 			/// Construct with a directory containing files to be served.
 			cWebemRequestHandler( const std::string& doc_root, cWebem* webem ) :
-				request_handler( doc_root, webem ),
-				m_doc_root ( doc_root ),
-				myWebem(webem)
+				request_handler( doc_root, webem )
 				{}
 
 			/// Handle a request and produce a reply.
-			virtual void handle_request(const request& req, reply& rep);
+			virtual void handle_request(const request& req, reply& rep) override;
 		private:
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
+			/// Websocket methods
+			bool is_upgrade_request(WebEmSession & session, const request& req, reply& rep);
+			std::string compute_accept_header(const std::string &websocket_key);
 			bool CheckAuthentication(WebEmSession & session, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
@@ -133,10 +140,7 @@ namespace http {
 			std::string generateAuthToken(const WebEmSession & session, const request & req);
 			bool checkAuthToken(WebEmSession & session);
 			void removeAuthToken(const std::string & sessionId);
-			std::string m_doc_root;
-			// Webem link to application code
-			cWebem* myWebem;
-		};
+	};
 		// forward declaration for friend declaration
 		class CProxyClient;
 		/**
@@ -196,9 +200,14 @@ namespace http {
 			void AddLocalNetworks(std::string network);
 			void ClearLocalNetworks();
 			std::vector<_tIPNetwork> m_localnetworks;
-			void SetDigistRealm(std::string realm);
+			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
-			void SetZipPassword(std::string password);
+			void SetZipPassword(const std::string &password);
+
+			//IPs that are allowed to pass proxy headers
+			std::vector < std::string > myRemoteProxyIPs;
+			void AddRemoteProxyIPs(const std::string &ipaddr);
+			void ClearRemoteProxyIPs();
 
 			// Session store manager
 			void SetSessionStore(session_store_impl_ptr sessionStore);
@@ -214,7 +223,13 @@ namespace http {
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
+			std::map<std::string, WebEmSession> m_sessions;
 			server_settings m_settings;
+			// actual theme selected
+			std::string m_actTheme;
+
+			void SetWebCompressionMode(const _eWebCompressionMode gzmode);
+			_eWebCompressionMode m_gzipmode;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
@@ -226,25 +241,21 @@ namespace http {
 			std::map < std::string, webem_page_function > myPages;
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function > myPages_w;
+			void CleanSessions();
+			session_store_impl_ptr mySessionStore; /// session store
+			/// request handler specialized to handle webem requests
+			/// Rene: Beware: myRequestHandler should be declared BEFORE myServer
+			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)
 			boost::shared_ptr<server_base> myServer;
-			// actual theme selected
-			std::string m_actTheme;
 			// root of url for reverse proxy servers
 			std::string m_webRoot;
-			/// request handler specialized to handle webem requests
-			cWebemRequestHandler myRequestHandler;
 			/// sessions management
-			std::map<std::string,WebEmSession> m_sessions;
 			boost::mutex m_sessionsMutex;
 			boost::asio::io_service m_io_service;
 			boost::asio::deadline_timer m_session_clean_timer;
 			boost::thread m_io_service_thread;
-			void CleanSessions();
-			session_store_impl_ptr mySessionStore; /// session store
 		};
 
 	}
 }
-
-

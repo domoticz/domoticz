@@ -13,9 +13,12 @@ public:
 	explicit CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
+#if defined (__linux__)
+	float GetProcessMemUsage();
+#endif
 private:
-	bool StartHardware();
-	bool StopHardware();
+	bool StartHardware() override;
+	bool StopHardware() override;
 	double m_lastquerytime;
 	void Do_Work();
 	volatile bool m_stoprequested;

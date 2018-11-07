@@ -205,11 +205,11 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 			int change;
 			if (general->cmnd == gswitch_sOn)
 			{ 
-				change = m_LastQuickAccess | (1 << (general->unitcode - 1));
+				change = m_LastQuickAccess | (general->unitcode);
 			}
 			else
 			{ 
-				change = m_LastQuickAccess & ~(1 << (general->unitcode - 1));
+				change = m_LastQuickAccess & ~(general->unitcode);
 			}
 
 			unsigned char buffer[100];
@@ -292,7 +292,7 @@ bool MultiFun::ConnectToDevice()
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
+	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }
@@ -400,7 +400,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x00:
 				{
 					dictionary::iterator it = alarmsType.begin();
-					for (; it != alarmsType.end(); it++)
+					for (; it != alarmsType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastAlarms))
 						{
@@ -422,7 +422,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x01: 
 				{
 					dictionary::iterator it = warningsType.begin();
-					for (; it != warningsType.end(); it++)
+					for (; it != warningsType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastWarnings))
 						{
@@ -444,16 +444,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x02:
 				{
 					dictionary::iterator it = devicesType.begin();
-					for (; it != devicesType.end(); it++)
+					for (; it != devicesType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastDevices))
 						{
-							SendGeneralSwitchSensor(2, 255, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitch(2, (*it).first, 255, true, 0, (*it).second.c_str());
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastDevices))
 							{
-								SendGeneralSwitchSensor(2, 255, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitch(2, (*it).first, 255, false, 0, (*it).second.c_str());
 							}
 					}
 					m_LastDevices = value;
@@ -465,7 +465,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x03:
 				{ 
 					dictionary::iterator it = statesType.begin();
-					for (; it != statesType.end(); it++)
+					for (; it != statesType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastState))
 						{
@@ -519,7 +519,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					else
 					{
-						//SendGeneralSwitchSensor(i, 255, value, name, 1); // TODO - send level (dimmer)
+						//SendGeneralSwitch(i, 1, 255, state, level, name); // TODO - send level (dimmer)
 					}					
 					break;
 				}
@@ -527,16 +527,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x21:
 				{
 					dictionary::iterator it = quickAccessType.begin();
-					for (; it != quickAccessType.end(); it++)
+					for (; it != quickAccessType.end(); ++it)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
 						{
-							SendGeneralSwitchSensor(0x21, 255, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitch(0x21, (*it).first, 255, true, 0, (*it).second.c_str());
 						}
 						else
 							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
 							{
-								SendGeneralSwitchSensor(0x21, 255, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitch(0x21, (*it).first, 255, false, 0, (*it).second.c_str());
 							}
 					}
 					m_LastQuickAccess = value;

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+    <!-- Zooz ZEN15 Power Switch 
+         Configuration Parameters -->
+  <Protocol refreshonnodeinfoframe="true"/>
+    <CommandClass id="112">
+        <Value  type="list" index="20" genre="config" label="Overload Protection" min="0" max="1" value="1" size="1">
+            <Help>Overload protection.</Help>
+            <Item value="0" label="Disabled" />
+            <Item value="1" label="Enabled" />
+        </Value>
+        <Value type="list" index="21" genre="config" label="On/Off Status Recovery After Power Failure" min="0" max="2" value="0" size="1">
+            <Help>Choose the recovery state for your Power Switch if power outage occurs.</Help>
+            <Item value="0" label="Previous state" />
+            <Item value="1" label="ON" />
+            <Item value="2" label="OFF" />
+        </Value>
+        <Value type="list" index="24" genre="config" label="On/Off Status Change Notifications" min="0" max="2" value="1" size="1">
+            <Help>Send On/Off Status Change Notifications</Help>
+            <Item value="0" label="Disabled" />
+            <Item value="1" label="Sends notification if status is changed manually or remotely" />
+            <Item value="2" label="Sends notification ONLY if status is changed manually" />
+        </Value>
+        <Value type="list" index="27" genre="config" label="LED Indicator Control" min="0" max="1" value="0" size="1">
+	        <Help>0 - LED indicator will display power consumption whenever the device is plugged in. 1 - LED indicator will display the level of power consumption for 5 seconds only whenever the device is turned on or off</Help>
+	        <Item label="Display whenever the device is plugged in (Default)" value="0" />
+	        <Item label="Display power consumption for 5 seconds" value="1" />
+        </Value>
+        <Value type="short" index="151" genre="config" label="Power Report Value Threshold" units="watts" min="1" max="65535" value="0" size="2">
+	        <Help>Number of Watts the appliance needs to go over for the change to be reported</Help>
+        </Value>
+        <Value type="int" index="152" genre="config" label="Power Report Percentage Threshold" units="%" min="1" max="255" value="10" size="4">
+	        <Help>Percentage in power usage change the appliance needs to go over for the event to be reported (Default 10)</Help>
+        </Value>
+        <Value type="int" index="171" genre="config" label="Power Report Frequency" min="5" max="2678400" value="0" size="4">
+	        <Help>Number of seconds</Help>
+        </Value>
+        <Value type="int" index="172" genre="config" label="Energy Report Frequency" min="5" max="2678400" value="0" size="4">
+	        <Help>Number of seconds</Help>
+        </Value>
+        <Value type="int" index="173" genre="config" label="Voltage Report Frequency" min="5" max="2678400" value="0" size="4">
+	        <Help>Number of seconds</Help>
+        </Value>
+        <Value type="int" index="174" genre="config" label="Electricity Report Frequency" min="5" max="2678400" value="0" size="4">
+	        <Help>Number of seconds</Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+      <Associations num_groups="1">
+        <Group index="1" label="Lifeline" max_associations="5" />
+      </Associations>
+    </CommandClass>
+</Product>

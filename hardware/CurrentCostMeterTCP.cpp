@@ -96,11 +96,11 @@ bool CurrentCostMeterTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		_log.Log(LOG_ERROR,"CurrentCost Smart Meter: could not connect to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
+		_log.Log(LOG_ERROR,"CurrentCost Smart Meter: could not connect to: %s:%d",m_szIPAddress.c_str(),m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS,"CurrentCost Smart Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"CurrentCost Smart Meter: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	Init();
 

@@ -55,10 +55,12 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetAttrString, PyObject* pObj COMMA const char*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_HasAttrString, PyObject* COMMA const char *);
 		DECLARE_PYTHON_SYMBOL(const char*, PyBytes_AsString, PyObject*);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyBytes_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsASCIIString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromString, const char*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, PyUnicode_AsWideCharString, PyObject* COMMA Py_ssize_t*);
 		DECLARE_PYTHON_SYMBOL(const char*, PyUnicode_AsUTF8, PyObject*);
+		DECLARE_PYTHON_SYMBOL(char*, PyByteArray_AsString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromKindAndData, int COMMA const void* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
@@ -66,13 +68,16 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyDict_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItemString, PyObject* COMMA const char*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItemString, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItem, PyObject* COMMA PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_Next, PyObject* COMMA Py_ssize_t* COMMA PyObject** COMMA PyObject**);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_Items, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_New, Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyList_Append, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_GetItem, PyObject* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(void*, PyModule_GetState, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyState_FindModule, struct PyModuleDef*);
@@ -102,13 +107,20 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void*, PyCapsule_Import, const char *name COMMA int);
 		DECLARE_PYTHON_SYMBOL(void*, PyType_GenericAlloc, const PyTypeObject * COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_DecodeUTF8, const char * COMMA Py_ssize_t COMMA const char *);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyUnicode_GetLength, PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyType_IsSubtype, PyTypeObject* COMMA PyTypeObject*);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyByteArray_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyErr_Occurred, );
+		DECLARE_PYTHON_SYMBOL(long, PyLong_AsLong, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsUTF8String, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_AddModule, const char*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
 #endif
-		Py_ssize_t	_Py_RefTotal;
-		PyObject	_Py_NoneStruct;
+		Py_ssize_t		_Py_RefTotal;
+		PyObject		_Py_NoneStruct;
 
 		SharedLibraryProxy() {
 			shared_lib_ = 0;
@@ -151,10 +163,12 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyObject_GetAttrString);
 					RESOLVE_PYTHON_SYMBOL(PyObject_HasAttrString);
 					RESOLVE_PYTHON_SYMBOL(PyBytes_AsString);
+					RESOLVE_PYTHON_SYMBOL(PyBytes_Size);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsASCIIString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsWideCharString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8);
+					RESOLVE_PYTHON_SYMBOL(PyByteArray_AsString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromKindAndData);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
@@ -162,14 +176,17 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Clear);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Size);
+					RESOLVE_PYTHON_SYMBOL(PyDict_GetItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_GetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_DelItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Next);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Items);
+					RESOLVE_PYTHON_SYMBOL(PyList_New);
 					RESOLVE_PYTHON_SYMBOL(PyList_Size);
-					RESOLVE_PYTHON_SYMBOL(PyList_GetItem);
+					RESOLVE_PYTHON_SYMBOL(PyList_GetItem); 
+					RESOLVE_PYTHON_SYMBOL(PyList_Append);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Clear);
@@ -201,6 +218,13 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyCapsule_Import);
 					RESOLVE_PYTHON_SYMBOL(PyType_GenericAlloc);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_DecodeUTF8);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_GetLength);
+					RESOLVE_PYTHON_SYMBOL(PyType_IsSubtype);
+					RESOLVE_PYTHON_SYMBOL(PyByteArray_Size);
+					RESOLVE_PYTHON_SYMBOL(PyErr_Occurred);
+					RESOLVE_PYTHON_SYMBOL(PyLong_AsLong);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8String);
+					RESOLVE_PYTHON_SYMBOL(PyImport_AddModule);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -211,7 +235,7 @@ namespace Plugins {
 
 #ifndef WIN32
 		private:
-			void FindLibrary(const std::string sLibrary, bool bSimple = false)
+			void FindLibrary(const std::string &sLibrary, bool bSimple = false)
 			{
 				std::string library;
 				if (bSimple)
@@ -306,11 +330,13 @@ extern	SharedLibraryProxy* pythonLib;
 #define	PyObject_GetAttrString	pythonLib->PyObject_GetAttrString
 #define	PyObject_HasAttrString	pythonLib->PyObject_HasAttrString
 #define	PyBytes_AsString		pythonLib->PyBytes_AsString
+#define	PyBytes_Size			pythonLib->PyBytes_Size
 #define PyUnicode_AsASCIIString pythonLib->PyUnicode_AsASCIIString
 #define PyUnicode_FromString	pythonLib->PyUnicode_FromString
 #define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
 #define PyUnicode_AsWideCharString	pythonLib->PyUnicode_AsWideCharString
 #define PyUnicode_AsUTF8		pythonLib->PyUnicode_AsUTF8
+#define PyByteArray_AsString	pythonLib->PyByteArray_AsString
 #define PyUnicode_FromKindAndData  pythonLib->PyUnicode_FromKindAndData
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
@@ -318,14 +344,17 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyDict_New				pythonLib->PyDict_New
 #define PyDict_Clear			pythonLib->PyDict_Clear
 #define PyDict_Size				pythonLib->PyDict_Size
+#define PyDict_GetItem			pythonLib->PyDict_GetItem
 #define PyDict_GetItemString	pythonLib->PyDict_GetItemString
 #define PyDict_SetItemString	pythonLib->PyDict_SetItemString
 #define PyDict_SetItem			pythonLib->PyDict_SetItem
 #define PyDict_DelItem			pythonLib->PyDict_DelItem
 #define PyDict_Next				pythonLib->PyDict_Next
 #define PyDict_Items			pythonLib->PyDict_Items
+#define PyList_New				pythonLib->PyList_New
 #define PyList_Size				pythonLib->PyList_Size
 #define PyList_GetItem			pythonLib->PyList_GetItem
+#define PyList_Append			pythonLib->PyList_Append
 #define PyModule_GetState		pythonLib->PyModule_GetState
 #define PyState_FindModule		pythonLib->PyState_FindModule
 #define PyErr_Clear				pythonLib->PyErr_Clear
@@ -360,4 +389,11 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyCapsule_Import		pythonLib->PyCapsule_Import
 #define PyType_GenericAlloc		pythonLib->PyType_GenericAlloc
 #define PyUnicode_DecodeUTF8	pythonLib->PyUnicode_DecodeUTF8
+#define PyUnicode_GetLength		pythonLib->PyUnicode_GetLength
+#define PyType_IsSubtype		pythonLib->PyType_IsSubtype
+#define PyByteArray_Size		pythonLib->PyByteArray_Size
+#define PyErr_Occurred			pythonLib->PyErr_Occurred
+#define PyLong_AsLong			pythonLib->PyLong_AsLong
+#define PyUnicode_AsUTF8String	pythonLib->PyUnicode_AsUTF8String
+#define PyImport_AddModule		pythonLib->PyImport_AddModule
 }
