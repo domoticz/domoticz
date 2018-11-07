@@ -330,7 +330,7 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 		}
 		else {
 			boost::unique_lock<boost::mutex> lock(writeMutex);
-			if (writeQ.size() > 0) {
+			if (!writeQ.empty()) {
 				std::string msg = writeQ.front();
 				writeQ.pop();
 				mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
