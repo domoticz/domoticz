@@ -95,12 +95,12 @@ private:
 	boost::asio::io_service::work 	m_tcpwork; // Create some work to keep IO Service alive
 
 #ifdef WWW_ENABLE_SSL
-	boost::asio::ssl::context		mContext; // ssl context
+	boost::asio::ssl::context		m_Context; // ssl context
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> mSslSocket; // the ssl socket
 #endif
-	boost::asio::ip::tcp::socket	mSocket;
-	boost::asio::ip::tcp::endpoint	mEndPoint;
-	std::queue<std::string>			writeQ; // we need a write queue to allow concurrent writes
-	std::string						mMsgBuffer; // we keep the message buffer static so it keeps being available in between do_write and write_end (so boost has time to send it)
-	boost::mutex					writeMutex; // to protect writeQ
+	boost::asio::ip::tcp::socket	m_Socket;
+	boost::asio::ip::tcp::endpoint	m_EndPoint;
+	std::queue<std::string>			m_writeQ; // we need a write queue to allow concurrent writes
+	std::string						m_MsgBuffer; // we keep the message buffer static so it keeps being available in between do_write and write_end (so boost has time to send it)
+	boost::mutex					m_writeMutex; // to protect writeQ
 };
