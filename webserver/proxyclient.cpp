@@ -531,7 +531,7 @@ namespace http {
 
 		void CProxyClient::OnError(const boost::system::error_code & error)
 		{
-			_log.Log(LOG_NORM, "Proxy: Error, reconnecting", NULL);
+			_log.Log(LOG_NORM, "Proxy: Error, reconnecting (%s)", error.message().c_str());
 		}
 
 		void CProxyClient::SetSharedServer(tcp::server::CTCPServerProxied *domserv)

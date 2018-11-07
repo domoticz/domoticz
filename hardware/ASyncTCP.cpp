@@ -3,6 +3,8 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
+// todo: remove logging
+#include "./../main/Logger.h"
 struct hostent;
 
 #ifndef WIN32
@@ -351,14 +353,15 @@ void ASyncTCP::do_write(const std::string &msg)
 
 	if (!mIsClosing)
 	{
+		mMsgBuffer = msg;
 		if (mSecure) {
 			boost::asio::async_write(mSslSocket,
-				boost::asio::buffer(msg.c_str(), msg.size()),
+				boost::asio::buffer(mMsgBuffer.c_str(), mMsgBuffer.size()),
 				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
 		}
 		else {
 			boost::asio::async_write(mSocket,
-				boost::asio::buffer(msg.c_str(), msg.size()),
+				boost::asio::buffer(mMsgBuffer.c_str(), mMsgBuffer.size()),
 				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
 		}
 	}

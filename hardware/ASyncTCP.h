@@ -91,4 +91,5 @@ private:
 	boost::asio::ip::tcp::socket	mSocket;
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> mSslSocket; // ssl socket
 	boost::asio::ip::tcp::endpoint	mEndPoint;
+	std::string						mMsgBuffer; // write buffer
 };
