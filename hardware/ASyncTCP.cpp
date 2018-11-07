@@ -3,8 +3,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
-// todo: remove logging
-#include "./../main/Logger.h"
 struct hostent;
 
 #ifndef WIN32
@@ -14,7 +12,7 @@ struct hostent;
 #define RECONNECT_TIME 30
 
 ASyncTCP::ASyncTCP(bool secure)
-	: mIsConnected(false), mIsClosing(false), mSecure(secure),
+	: mIsConnected(false), mIsClosing(false), mSecure(secure), mWriteInProgress(false),
 	mContext(boost::asio::ssl::context::sslv23),
 	mSocket(mIos), mSslSocket(mIos, mContext), mReconnectTimer(mIos),
 	mDoReconnect(true), mIsReconnecting(false),
@@ -177,7 +175,15 @@ void ASyncTCP::write(const uint8_t *pData, size_t length)
 
 void ASyncTCP::write(const std::string &msg)
 {
-	mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+	boost::unique_lock<boost::mutex> lock(writeMutex);
+	if (mWriteInProgress) {
+		writeQ.push(msg);
+	}
+	else {
+		mWriteInProgress = true;
+		//do_write(msg);
+		mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+	}
 }
 
 // callbacks
@@ -302,6 +308,18 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 			if (!mIsReconnecting)
 			{
 				StartReconnect();
+			}
+		}
+		else {
+			boost::unique_lock<boost::mutex> lock(writeMutex);
+			if (writeQ.size() > 0) {
+				std::string msg = writeQ.front();
+				writeQ.pop();
+				mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+				//do_write(msg);
+			}
+			else {
+				mWriteInProgress = false;
 			}
 		}
 	}

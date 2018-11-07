@@ -83,7 +83,6 @@ namespace http {
 			CWebsocketFrame frame;
 			std::string buf = frame.Create(opcode_binary, std::string((char *)pdu.content(), pdu.length()), true);
 			write(buf);
-			_log.Log(LOG_NORM, "Proxy, writing %ld bytes", buf.size());
 		}
 
 		void CProxyClient::LoginToService()
@@ -107,7 +106,6 @@ namespace http {
 		void CProxyClient::OnConnect()
 		{
 			Reset();
-			_log.Log(LOG_NORM, "Proxy: connecting", NULL);
 			WebsocketGetRequest();
 		}
 
@@ -219,7 +217,6 @@ namespace http {
 				ADDPDUSTRINGBINARY(reply_.content);
 				ADDPDULONG(requestid);
 
-				_log.Log(LOG_NORM, "Getting: %s, size: %ld", requesturl.c_str(), reply_.content.length()); // debug
 
 				// send response to proxy
 				MyWrite(PDU_RESPONSE, parameters);
@@ -497,7 +494,6 @@ namespace http {
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:
 						write(pong.Create(opcodes::opcode_pong, PONG, sizeof(PONG)));
-						// todo: send pong
 						break;
 					case opcodes::opcode_binary:
 					case opcodes::opcode_text:
@@ -547,8 +543,7 @@ namespace http {
 		{
 			m_pWebEm = webEm;
 			SetReconnectDelay(15);
-			connect("::1", 2443); // debug
-			//connect("proxy.mydomoticz.com", 443);
+			connect("proxy.mydomoticz.com", 443);
 		}
 
 		void CProxyClient::Disconnect()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>                        // for size_t
+#include <queue>						   // for write queue
 #include <boost/asio/deadline_timer.hpp>   // for deadline_timer
 #include <boost/asio/io_service.hpp>       // for io_service
 #include <boost/asio/ip/tcp.hpp>           // for tcp, tcp::endpoint, tcp::s...
@@ -8,6 +9,7 @@
 #include <boost/asio/ssl/stream.hpp>	   // for secure sockets
 #include <boost/function.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr
+#include <boost/thread/mutex.hpp>		   // to protect writeQ
 #include <exception>                       // for exception
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
@@ -77,6 +79,7 @@ private:
 	bool							mIsReconnecting;
 	bool							mAllowCallbacks;
 	bool							mSecure; // true if we do ssl
+	bool							mWriteInProgress; // indicates if we are already writing something
 
 	// Internal
 	unsigned char 					m_rx_buffer[1024];
@@ -89,7 +92,9 @@ private:
 
 	boost::asio::ssl::context		mContext; // ssl context
 	boost::asio::ip::tcp::socket	mSocket;
-	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> mSslSocket; // ssl socket
+	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> mSslSocket; // the ssl socket
 	boost::asio::ip::tcp::endpoint	mEndPoint;
-	std::string						mMsgBuffer; // write buffer
+	std::queue<std::string>			writeQ; // we need a write queue to allow concurrent writes
+	std::string						mMsgBuffer; // we keep the message buffer static so it keeps being available in between do_write and write_end (so boost has time to send it)
+	boost::mutex					writeMutex; // to protect writeQ
 };
