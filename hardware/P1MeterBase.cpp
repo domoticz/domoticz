@@ -395,6 +395,11 @@ bool P1MeterBase::MatchLine()
 				if (temp_volt < 300)
 					m_voltagel2 = temp_volt; //Voltage L2;
 				break;
+			case P1TYPE_VOLTAGEL3:
+				temp_volt = strtof(value,&validate);
+				if (temp_volt < 300)
+					m_voltagel3 = temp_volt; //Voltage L3;
+				break;
 			case P1TYPE_AMPERAGEL1:
 				temp_ampere = strtof(value,&validate);
 				if (temp_ampere < 100)
