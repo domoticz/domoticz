@@ -733,8 +733,8 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
 						$rootScope.config.EnableTabProxy = data.result.EnableTabProxy,
-							$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
-							$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
+						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
+						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;
 						$rootScope.config.EnableTabScenes = data.result.EnableTabScenes;
 						$rootScope.config.EnableTabTemp = data.result.EnableTabTemp;
