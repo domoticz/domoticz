@@ -33,7 +33,7 @@ enum _eP1MatchType {
 #define P1VOLTL3	"1-0:72.7.0"	// voltage L3 (DSMRv5)
 #define P1AMPEREL1	"1-0:31.7.0"	// amperage L1 (DSMRv5)
 #define P1AMPEREL2	"1-0:51.7.0"	// amperage L2 (DSMRv5)
-#define P1AMPEREL3	"1-0:71.7.0"	// amerage L3 (DSMRv5)
+#define P1AMPEREL3	"1-0:71.7.0"	// amperage L3 (DSMRv5)
 #define P1GTS		"0-n:24.3.0"	// DSMR2 timestamp gas usage sample
 #define P1GUDSMR2	"("		// DSMR2 gas usage sample
 #define P1GUDSMR4	"0-n:24.2.1"	// DSMR4 gas usage sample
