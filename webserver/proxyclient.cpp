@@ -80,8 +80,7 @@ namespace http {
 				return;
 			}
 			ProxyPdu pdu(type, &parameters);
-			CWebsocketFrame frame;
-			std::string buf = frame.Create(opcode_binary, std::string((char *)pdu.content(), pdu.length()), true);
+			std::string buf = CWebsocketFrame::Create(opcode_binary, std::string((char *)pdu.content(), pdu.length()), true);
 			write(buf);
 		}
 
@@ -489,11 +488,11 @@ namespace http {
 				}
 				break;
 			case status_connected:
-				CWebsocketFrame frame, pong;
+				CWebsocketFrame frame;
 				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:
-						write(pong.Create(opcodes::opcode_pong, PONG, sizeof(PONG)));
+						write(CWebsocketFrame::Create(opcodes::opcode_pong, PONG, sizeof(PONG)));
 						break;
 					case opcodes::opcode_binary:
 					case opcodes::opcode_text:
