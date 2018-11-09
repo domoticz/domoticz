@@ -1,0 +1,94 @@
+PROXYPDU(PDU_NONE,
+	NOARG
+)
+
+PROXYPDU(PDU_AUTHENTICATE,
+	PDUSTRING(apikey)
+	PDUSTRING(instanceid)
+	PDUSTRING(password)
+	PDUSTRING(szAppVersion)
+	PDULONG(allowed_subsystems)
+	PDULONG(protocol_version)
+)
+
+PROXYPDU(PDU_AUTHRESP,
+	PDULONG(auth)
+	PDUSTRING(reason)
+)
+
+PROXYPDU(PDU_ASSIGNKEY,
+	PDUSTRING(newapi)
+)
+
+PROXYPDU(PDU_ENQUIRE,
+	NOARG
+)
+
+PROXYPDU(PDU_REQUEST,
+	PDUSTRING(originatingip)
+	PDULONG(subsystem)
+	PDUSTRING(requesturl)
+	PDUSTRING(requestheaders)
+	PDUSTRING(requestbody)
+	PDULONG(requestid)
+)
+
+PROXYPDU(PDU_RESPONSE,
+	PDULONG(status)
+	PDUSTRING(responseheaders)
+	PDUSTRING(content)
+	PDULONG(requestid)
+)
+
+PROXYPDU(PDU_SERV_CONNECT,
+	PDUSTRING(tokenparam)
+	PDUSTRING(usernameparam)
+	PDUSTRING(passwordparam)
+	PDULONG(protocol_version)
+	PDUSTRING(ipparam)
+)
+
+PROXYPDU(PDU_SERV_CONNECTRESP,
+	PDUSTRING(tokenparam)
+	PDUSTRING(instanceid)
+	PDULONG(authenticated)
+	PDUSTRING(reason)
+)
+
+PROXYPDU(PDU_SERV_RECEIVE,
+	PDUSTRING(tokenparam)
+	PDUSTRING(data)
+)
+
+PROXYPDU(PDU_SERV_SEND,
+	PDUSTRING(token)
+	PDUSTRING(data)
+)
+
+PROXYPDU(PDU_SERV_DISCONNECT,
+	PDUSTRING(tokenparam)
+	PDULONG(reason)
+)
+
+PROXYPDU(PDU_SERV_ROSTERIND,
+	PDUSTRING(c_slave)
+)
+
+PROXYPDU(PDU_WS_OPEN,
+	PDUSTRING(request_url)
+	PDULONG(requestid)
+)
+
+PROXYPDU(PDU_WS_CLOSE,
+	PDULONG(requestid)
+)
+
+PROXYPDU(PDU_WS_SEND,
+	PDUSTRING(packet_data)
+	PDULONG(requestid)
+)
+
+PROXYPDU(PDU_WS_RECEIVE,
+	PDUSTRING(packet_data)
+	PDULONG(requestid)
+)

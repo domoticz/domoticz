@@ -1343,6 +1343,9 @@
     <None Include="..\www\app\TimerplanController.js">
       <Filter>www\app</Filter>
     </None>
+    <None Include="..\webserver\proxydef.def">
+      <Filter>Webserver</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -2146,6 +2149,9 @@
     <ClInclude Include="..\hardware\TeleinfoBase.h">
       <Filter>Devices\Teleinfo</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\proxycereal.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2921,6 +2927,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\TeleinfoBase.cpp">
       <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\proxycereal.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

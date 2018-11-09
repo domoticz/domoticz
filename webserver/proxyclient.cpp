@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #ifndef NOCLOUD
 #include "proxyclient.h"
+#include "proxycereal.h"
 #include "../hardware/DomoticzTCP.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
