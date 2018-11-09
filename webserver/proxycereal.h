@@ -14,6 +14,7 @@
 #include "../cereal/types/polymorphic.hpp"
 // the archiver
 #include "../cereal/archives/portable_binary.hpp"
+#include "../cereal/archives/json.hpp"
 #include <string>
 #include <memory>
 
@@ -29,15 +30,17 @@ ePDU_END
 #undef PDULONG
 #undef PROXYPDU
 
+/* base class */
 class CProxyPduBase {
 public:
-	pdu_enum myEnum;
-	CProxyPduBase() { myEnum = ePDU_NONE; };
-	virtual pdu_enum pdu_type() { return myEnum; };
+	pdu_enum mPduEnum;
+	CProxyPduBase() { mPduEnum = ePDU_NONE; };
+	virtual pdu_enum pdu_type() { return mPduEnum; };
 	virtual std::string pdu_name() { return "NONE"; };
 	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { };
 };
 
+/* base classes with the pdu member variables */
 #define PDUSTRING(name) std::string m_##name = "";
 #define PDULONG(name) long m_##name = 0;
 #define PROXYPDU(name, members) class ProxyPdu_##name##_onlymembers : public CProxyPduBase { public: members };
@@ -46,25 +49,47 @@ public:
 #undef PDULONG
 #undef PROXYPDU
 
+/* ProxuPdu_* classes */
 #define PDUSTRING(name) ar & CEREAL_NVP(m_##name);
 #define PDULONG(name) ar & CEREAL_NVP(m_##name);
 #define PROXYPDU(name, members) class ProxyPdu_##name : public ProxyPdu_##name##_onlymembers { public: \
-    ProxyPdu_##name() { myEnum = ePDU_##name ; }; \
+	ProxyPdu_##name() { mPduEnum = ePDU_##name ; }; \
 	virtual pdu_enum pdu_type() { return ePDU_##name; }; \
 	virtual std::string pdu_name() { return #name; }; \
 	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { members }; \
-	std::string ToString() { \
+	std::string ToBinary() { \
 		std::stringstream os; { /* start a new scope */ \
 		cereal::PortableBinaryOutputArchive oarchive(os); \
 		std::shared_ptr<ProxyPdu_##name##> pt(std::shared_ptr<ProxyPdu_##name##>(this, [](ProxyPdu_##name## *) {})); \
-		oarchive(myEnum); \
+		oarchive(mPduEnum); \
+		oarchive(pt); } \
+		return os.str(); \
+	}; \
+	std::string ToJson() { \
+		std::stringstream os; { /* start a new scope */ \
+		cereal::JSONOutputArchive oarchive(os); \
+		std::shared_ptr<ProxyPdu_##name##> pt(std::shared_ptr<ProxyPdu_##name##>(this, [](ProxyPdu_##name## *) {})); \
+		oarchive(mPduEnum); \
 		oarchive(pt); } \
 		return os.str(); \
 	}; \
 };
-
 #include "proxydef.def"
+#undef PDUSTRING
+#undef PDULONG
+#undef PROXYPDU
 
+/* Algorithm execution class */
+#define PDUSTRING(name)
+#define PDULONG(name)
+#define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name##> pdu);
+class CPduExec {
+public:
+	CPduExec(std::shared_ptr<CProxyPduBase> pdu) : m_pdu(pdu) {};
+	virtual void Exec();
+	std::shared_ptr<CProxyPduBase> m_pdu;
+#include "proxydef.def"
+};
 #undef PDUSTRING
 #undef PDULONG
 #undef PROXYPDU
