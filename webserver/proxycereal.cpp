@@ -1,5 +1,6 @@
 // for doing the actual serialization
 #include "stdafx.h"
+#ifndef NOCLOUD
 #include "proxycereal.h"
 
 #define PDUSTRING(name)
@@ -119,3 +120,4 @@ void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_WS_SEND> pdu)
 void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_WS_RECEIVE> pdu)
 {
 }
+#endif

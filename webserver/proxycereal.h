@@ -1,4 +1,5 @@
 #pragma once
+#ifndef NOCLOUD
 
 #include <string>
 #include <sstream>
@@ -93,3 +94,5 @@ public:
 #undef PDUSTRING
 #undef PDULONG
 #undef PROXYPDU
+
+#endif
