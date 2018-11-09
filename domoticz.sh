@@ -15,12 +15,14 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 DESC="Domoticz Home Automation System"
 NAME=domoticz
 USERNAME=pi
-PIDFILE=/var/run/$NAME.pid
+# Use this PID file to run as regular user
+PIDFILE=/tmp/$NAME-$USERNAME.pid
+
 SCRIPTNAME=/etc/init.d/$NAME
 
 DAEMON=/home/$USERNAME/domoticz/$NAME
 DAEMON_ARGS="-daemon"
-#DAEMON_ARGS="$DAEMON_ARGS -daemonname $NAME -pidfile $PIDFILE"
+DAEMON_ARGS="$DAEMON_ARGS -daemonname $NAME -pidfile $PIDFILE"
 DAEMON_ARGS="$DAEMON_ARGS -www 8080"
 DAEMON_ARGS="$DAEMON_ARGS -sslwww 443"
 #DAEMON_ARGS="$DAEMON_ARGS -log /tmp/domoticz.txt"
@@ -59,8 +61,9 @@ do_start()
         #   2 if daemon could not be started
         start-stop-daemon --chuid $USERNAME --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
                 || return 1
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
-                $DAEMON_ARGS \
+
+        start-stop-daemon --chuid $USERNAME --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
+		$DAEMON_ARGS > /dev/null \
                 || return 2
 }
 
