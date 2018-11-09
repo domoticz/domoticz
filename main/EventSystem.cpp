@@ -2445,7 +2445,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		}
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
-			OpenURL(doWhat);
+			OpenURL(0.2f, doWhat);
 			actionsDone = true;
 			continue;
 		}
@@ -3539,7 +3539,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	else if (lCommand == "OpenURL")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
-		OpenURL(luaString);
+		_tActionParseResults result;
+		result.fAfterSec = 0.2f;
+		ParseActionString(luaString, result);
+		OpenURL(result.fAfterSec, result.sCommand);
 		scriptTrue = true;
 	}
 	else if (lCommand == "UpdateDevice")
@@ -3827,11 +3830,11 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		_log.Log(LOG_ERROR, "EventSystem: UpdateDevice IDX %" PRIu64 " not found!", idx);
 }
 
-void CEventSystem::OpenURL(const std::string &URL)
+void CEventSystem::OpenURL(const float delay, const std::string &URL)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
 
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL"));
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delay, URL, "OpenURL"));
 	// maybe do something with sResult in the future.
 }
 
