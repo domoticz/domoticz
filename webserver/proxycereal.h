@@ -1,6 +1,5 @@
 #pragma once
 #ifndef NOCLOUD
-
 #include <string>
 #include <sstream>
 // type support
@@ -18,6 +17,10 @@
 #include "../cereal/archives/json.hpp"
 #include <string>
 #include <memory>
+
+#define SUBSYSTEM_HTTP 0x01
+#define SUBSYSTEM_SHAREDDOMOTICZ 0x02
+#define SUBSYSTEM_APPS 0x04
 
 #define NOARG
 #define PDUSTRING(name)
@@ -39,6 +42,7 @@ public:
 	virtual pdu_enum pdu_type() { return mPduEnum; };
 	virtual std::string pdu_name() { return "NONE"; };
 	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { };
+	static std::shared_ptr<CProxyPduBase> FromString(const std::string &str);
 };
 
 /* base classes with the pdu member variables */

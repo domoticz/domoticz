@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
-#include "proxycommon.h"
+#include "proxycereal.h"
 #include "cWebem.h"
 #include "../hardware/ASyncTCP.h"
 
@@ -20,9 +20,7 @@ class DomoticzTCP;
 namespace http {
 	namespace server {
 
-#define ONPDU(type) case type: Handle##type(#type, part); break;
-#define PDUPROTO(type) virtual void Handle##type(const char *pduname, CValueLengthPart &part);
-#define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, CValueLengthPart &part)
+#define PDUFUNCTION(type) void CProxyClient::OnPduReceived(std::shared_ptr<ProxyPdu_##type##> pdu)
 
 		class CProxyClient : ASyncTCP {
 		public:
@@ -43,28 +41,22 @@ namespace http {
 			std::string websocket_key;
 			std::string compute_accept_header(const std::string &websocket_key);
 			std::string readbuf;
-			void MyWrite(pdu_type type, CValueLengthPart &parameters);
+			void MyWrite(const std::string &msg);
 			void WS_Write(long handlerid, const std::string &packet_data);
 			void LoginToService();
-
-			PDUPROTO(PDU_REQUEST)
-			PDUPROTO(PDU_ASSIGNKEY)
-			PDUPROTO(PDU_ENQUIRE)
-			PDUPROTO(PDU_AUTHRESP)
-			PDUPROTO(PDU_SERV_CONNECT)
-			PDUPROTO(PDU_SERV_DISCONNECT)
-			PDUPROTO(PDU_SERV_CONNECTRESP)
-			PDUPROTO(PDU_SERV_RECEIVE)
-			PDUPROTO(PDU_SERV_SEND)
-			PDUPROTO(PDU_SERV_ROSTERIND)
-			PDUPROTO(PDU_WS_OPEN)
-			PDUPROTO(PDU_WS_CLOSE)
-			PDUPROTO(PDU_WS_RECEIVE)
 
 			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
 
-			void PduHandler(ProxyPdu &pdu);
+			void PduHandler(const CProxyPduBase *pdu);
+			/* Algorithm execution class */
+#define PDUSTRING(name)
+#define PDULONG(name)
+#define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name##> pdu);
+#include "proxydef.def"
+#undef PDUSTRING
+#undef PDULONG
+#undef PROXYPDU
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);

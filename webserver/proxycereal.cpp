@@ -6,7 +6,7 @@
 #define PDUSTRING(name)
 #define PDULONG(name)
 #define PROXYPDU(name, members) case ePDU_##name##: { /* start a new scope */ std::shared_ptr<ProxyPdu_##name> pdu(new ProxyPdu_##name()); iarchive(pdu); base = pdu; } break;
-std::shared_ptr<CProxyPduBase> FromString(const std::string &str) {
+std::shared_ptr<CProxyPduBase> CProxyPduBase::FromString(const std::string &str) {
 	std::stringstream stream(str);
 	cereal::PortableBinaryInputArchive iarchive(stream);
 	std::shared_ptr<CProxyPduBase> base;
@@ -31,7 +31,7 @@ void a() {
 	std::string s = b.ToBinary();
 	std::string json = b.ToJson();
 	int l = s.length();
-	std::shared_ptr<CProxyPduBase> base2 = FromString(s);
+	std::shared_ptr<CProxyPduBase> base2 = CProxyPduBase::FromString(s);
 	std::string r = base2->pdu_name();
 	CerealHandler exec(base2);
 	exec.Exec();
