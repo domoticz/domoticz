@@ -83,9 +83,9 @@ public:
 #define PDUSTRING(name)
 #define PDULONG(name)
 #define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name##> pdu);
-class CPduExec {
+class CerealHandler {
 public:
-	CPduExec(std::shared_ptr<CProxyPduBase> pdu) : m_pdu(pdu) {};
+	CerealHandler(std::shared_ptr<CProxyPduBase> pdu) : m_pdu(pdu) {};
 	virtual void Exec();
 	std::shared_ptr<CProxyPduBase> m_pdu;
 #include "proxydef.def"

@@ -32,11 +32,11 @@ void a() {
 	int l = s.length();
 	std::shared_ptr<CProxyPduBase> base2 = FromString(s);
 	std::string r = base2->pdu_name();
-	CPduExec exec(base2);
+	CerealHandler exec(base2);
 	exec.Exec();
 }
 
-void CPduExec::Exec()
+void CerealHandler::Exec()
 {
 	switch (m_pdu->pdu_type()) {
 #define PDUSTRING(name)
@@ -52,70 +52,70 @@ void CPduExec::Exec()
 #undef PROXYPDU
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_NONE> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_NONE> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_AUTHENTICATE> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_AUTHENTICATE> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_AUTHRESP> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_AUTHRESP> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_ASSIGNKEY> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_ASSIGNKEY> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_ENQUIRE> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_ENQUIRE> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_REQUEST> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_REQUEST> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_RESPONSE> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_RESPONSE> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_CONNECT> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_CONNECT> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_CONNECTRESP> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_CONNECTRESP> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_RECEIVE> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_RECEIVE> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_SEND> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_SEND> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_DISCONNECT> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_DISCONNECT> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_ROSTERIND> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_SERV_ROSTERIND> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_WS_OPEN> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_WS_OPEN> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_WS_CLOSE> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_WS_CLOSE> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_WS_SEND> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_WS_SEND> pdu)
 {
 }
 
-void CPduExec::OnPduReceived(std::shared_ptr<ProxyPdu_WS_RECEIVE> pdu)
+void CerealHandler::OnPduReceived(std::shared_ptr<ProxyPdu_WS_RECEIVE> pdu)
 {
 }
