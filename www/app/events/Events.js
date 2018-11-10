@@ -83,7 +83,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 
                 var event = {
                     id: name,
-                    eventstatus: '0',
+                    eventstatus: '1',
                     name: name,
                     interpreter: interpreter,
                     type: eventtype || 'All',
