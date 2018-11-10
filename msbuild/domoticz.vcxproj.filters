@@ -1810,9 +1810,6 @@
     <ClInclude Include="..\webserver\proxyclient.h">
       <Filter>Webserver</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\proxycommon.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
     </ClInclude>
@@ -2149,7 +2146,7 @@
     <ClInclude Include="..\hardware\TeleinfoBase.h">
       <Filter>Devices\Teleinfo</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\proxycereal.h">
+    <ClInclude Include="..\webserver\proxycereal.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2560,9 +2557,6 @@
       <Filter>Devices\Winddelen</Filter>
     </ClCompile>
     <ClCompile Include="..\webserver\proxyclient.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\proxycommon.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\SatelIntegra.cpp">

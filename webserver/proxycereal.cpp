@@ -1,7 +1,7 @@
 // for doing the actual serialization
 #include "stdafx.h"
 #ifndef NOCLOUD
-#include "proxycereal.h"
+#include "proxycereal.hpp"
 
 #define PDUSTRING(name)
 #define PDULONG(name)

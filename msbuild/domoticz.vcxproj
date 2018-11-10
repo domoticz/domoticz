@@ -634,9 +634,8 @@
     <ClInclude Include="..\push\BasePush.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
-    <ClInclude Include="..\webserver\proxycereal.h" />
+    <ClInclude Include="..\webserver\proxycereal.hpp" />
     <ClInclude Include="..\webserver\proxyclient.h" />
-    <ClInclude Include="..\webserver\proxycommon.h" />
     <ClInclude Include="..\webserver\WebsocketHandler.h" />
     <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\zip\ioapi.h" />
@@ -1022,7 +1021,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\webserver\proxyclient.cpp" />
-    <ClCompile Include="..\webserver\proxycommon.cpp" />
     <ClCompile Include="..\webserver\reply.cpp" />
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />

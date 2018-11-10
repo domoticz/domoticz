@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
-#include "proxycereal.h"
+#include "proxycereal.hpp"
 #include "cWebem.h"
 #include "../hardware/ASyncTCP.h"
 
