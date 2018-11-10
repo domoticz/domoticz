@@ -3,20 +3,12 @@
 #include <string>
 #include <sstream>
 // type support
-#include "../cereal/types/common.hpp"
-#include "../cereal/types/map.hpp"
-#include "../cereal/types/vector.hpp"
 #include "../cereal/types/string.hpp"
-#include "../cereal/types/map.hpp"
-#include "../cereal/types/complex.hpp"
 #include "../cereal/types/memory.hpp"
-// Include the polymorphic serialization and registration mechanisms
-#include "../cereal/types/polymorphic.hpp"
 // the archiver
 #include "../cereal/archives/portable_binary.hpp"
 #include "../cereal/archives/json.hpp"
 #include <string>
-#include <memory>
 
 #define SUBSYSTEM_HTTP 0x01
 #define SUBSYSTEM_SHAREDDOMOTICZ 0x02
@@ -80,21 +72,6 @@ public:
 	}; \
 };
 #include "proxydef.def"
-#undef PDUSTRING
-#undef PDULONG
-#undef PROXYPDU
-
-/* Algorithm execution class */
-#define PDUSTRING(name)
-#define PDULONG(name)
-#define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name##> pdu);
-class CerealHandler {
-public:
-	CerealHandler(std::shared_ptr<CProxyPduBase> pdu) : m_pdu(pdu) {};
-	virtual void Exec();
-	std::shared_ptr<CProxyPduBase> m_pdu;
-#include "proxydef.def"
-};
 #undef PDUSTRING
 #undef PDULONG
 #undef PROXYPDU
