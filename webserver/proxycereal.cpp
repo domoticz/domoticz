@@ -5,21 +5,21 @@
 
 #define PDUSTRING(name)
 #define PDULONG(name)
-#define PROXYPDU(name, members) case ePDU_##name##: pdu.reset(new ProxyPdu_##name()); iarchive(pdu); break;
+#define PROXYPDU(name, members) case ePDU_##name##: { /* start a new scope */ std::shared_ptr<ProxyPdu_##name> pdu(new ProxyPdu_##name()); iarchive(pdu); base = pdu; } break;
 std::shared_ptr<CProxyPduBase> CProxyPduBase::FromString(const std::string &str) {
 	std::stringstream stream(str);
 	cereal::PortableBinaryInputArchive iarchive(stream);
-	std::shared_ptr<CProxyPduBase> pdu;
+	std::shared_ptr<CProxyPduBase> base;
 	pdu_enum theEnum;
 	iarchive(theEnum);
 	switch (theEnum) {
 #include "proxydef.def"
 	default:
 		// pdu type not found
-		pdu.reset();
+		base = NULL;
 		break;
 	}
-	return pdu;
+	return base;
 };
 #undef PDUSTRING
 #undef PDULONG
