@@ -14,6 +14,7 @@
 #define SUBSYSTEM_SHAREDDOMOTICZ 0x02
 #define SUBSYSTEM_APPS 0x04
 
+/* typedef proxy pdu numbers. These numbers align with mydomoticz. */
 #define NOARG
 #define PDUSTRING(name)
 #define PDULONG(name)
@@ -26,14 +27,14 @@ ePDU_END
 #undef PDULONG
 #undef PROXYPDU
 
-/* base class */
+/* base pdu class */
 class CProxyPduBase {
 public:
 	pdu_enum mPduEnum;
 	CProxyPduBase() { mPduEnum = ePDU_NONE; };
 	virtual pdu_enum pdu_type() { return mPduEnum; };
 	virtual std::string pdu_name() { return "NONE"; };
-	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { };
+	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { ar & CEREAL_NVP(mPduEnum);  };
 	static std::shared_ptr<CProxyPduBase> FromString(const std::string &str);
 };
 
