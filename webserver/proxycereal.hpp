@@ -18,7 +18,7 @@
 #define NOARG
 #define PDUSTRING(name)
 #define PDULONG(name)
-#define PDULONG(name)
+#define PDULONGLONG(name)
 #define PROXYPDU(name, members) ePDU_##name,
 typedef enum enum_pdu {
 #include "proxydef.def"

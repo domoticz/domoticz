@@ -411,6 +411,7 @@ namespace http {
 						switch (pdu->pdu_type()) {
 #define PDUSTRING(name)
 #define PDULONG(name)
+#define PDULONGLONG(name)
 #define PROXYPDU(name, members) case ePDU_##name##: OnPduReceived(std::dynamic_pointer_cast<ProxyPdu_##name##>(pdu)); break;
 #include "proxydef.def"
 						default:
@@ -419,6 +420,7 @@ namespace http {
 						}
 #undef PDUSTRING
 #undef PDULONG
+#undef PDULONGLONG
 #undef PROXYPDU
 						break;
 					}
