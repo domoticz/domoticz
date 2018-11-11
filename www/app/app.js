@@ -983,6 +983,22 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 			}
 			return backgroundClass;
 		}
+		$rootScope.DisplayTrend = function (trend) {
+			alert(item.Name);
+			//0=Unknown, 1=Stable, 2=Up, 3=Down
+			if (typeof trend != 'undefined') {
+				if (trend > 1)
+					return true;
+			}
+			return false;
+		};
+		$rootScope.TrendState = function (trend) {
+			if (trend == 0) return "unk";
+			if (trend == 1) return "stable";
+			if (trend == 2) return "up";
+			if (trend == 3) return "down";
+			return "unk";
+		};
 
 	});
 
