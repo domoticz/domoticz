@@ -984,7 +984,6 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 			return backgroundClass;
 		}
 		$rootScope.DisplayTrend = function (trend) {
-			alert(item.Name);
 			//0=Unknown, 1=Stable, 2=Up, 3=Down
 			if (typeof trend != 'undefined') {
 				if (trend > 1)
