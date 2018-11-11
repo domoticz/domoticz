@@ -590,6 +590,9 @@ define(['app'], function (app) {
 						return backgroundClass;
 					};
 
+					ctrl.displayTrend = $rootScope.DisplayTrend;
+					ctrl.trendState  = $rootScope.TrendState;
+
 					// TODO use angular isDefined
 					ctrl.displayTemp = function () {
 						return typeof item.Temp != 'undefined';
@@ -620,22 +623,6 @@ define(['app'], function (app) {
 						return typeof item.Chill != 'undefined';
 					};
 					
-					ctrl.DisplayTrend = function () {
-						//0=Unknown, 1=Stable, 2=Up, 3=Down
-						if (typeof item.trend != 'undefined') {
-							if (item.trend > 1)
-								return true;
-						}
-						return false;
-					};
-					ctrl.TrendState = function () {
-						if (item.trend == 0) return "unk";
-						if (item.trend == 1) return "stable";
-						if (item.trend == 2) return "up";
-						if (item.trend == 3) return "down";
-						return "unk";
-					};
-
 					ctrl.image = function () {
 						if (typeof item.Temp != 'undefined') {
 							return GetTemp48Item(item.Temp);
