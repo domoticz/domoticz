@@ -42,7 +42,7 @@ namespace http {
 			std::string compute_accept_header(const std::string &websocket_key);
 			std::string readbuf;
 			void MyWrite(const std::string &msg);
-			void WS_Write(long handlerid, const std::string &packet_data);
+			void WS_Write(unsigned long long handlerid, const std::string &packet_data);
 			void LoginToService();
 
 			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
@@ -68,7 +68,7 @@ namespace http {
 				status_httpmode,
 				status_connected
 			} connection_status;
-			std::map<long, CWebsocketHandler *> websocket_handlers;
+			std::map<unsigned long long, CWebsocketHandler *> websocket_handlers;
 		protected:
 			virtual void OnConnect();
 			virtual void OnData(const unsigned char *pData, size_t length);

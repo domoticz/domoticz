@@ -18,6 +18,7 @@
 #define NOARG
 #define PDUSTRING(name)
 #define PDULONG(name)
+#define PDULONG(name)
 #define PROXYPDU(name, members) ePDU_##name,
 typedef enum enum_pdu {
 #include "proxydef.def"
@@ -25,6 +26,7 @@ typedef enum enum_pdu {
 } pdu_enum;
 #undef PDUSTRING
 #undef PDULONG
+#undef PDULONGLONG
 #undef PROXYPDU
 
 /* base pdu class */
@@ -41,15 +43,18 @@ public:
 /* base classes with the pdu member variables */
 #define PDUSTRING(name) std::string m_##name = "";
 #define PDULONG(name) long m_##name = 0;
+#define PDULONGLONG(name) unsigned long long m_##name = 0;
 #define PROXYPDU(name, members) class ProxyPdu_##name##_onlymembers : public CProxyPduBase { public: members };
 #include "proxydef.def"
 #undef PDUSTRING
 #undef PDULONG
+#undef PDULONGLONG
 #undef PROXYPDU
 
 /* ProxuPdu_* classes */
 #define PDUSTRING(name) ar & CEREAL_NVP(m_##name);
 #define PDULONG(name) ar & CEREAL_NVP(m_##name);
+#define PDULONGLONG(name) ar & CEREAL_NVP(m_##name);
 #define PROXYPDU(name, members) class ProxyPdu_##name : public ProxyPdu_##name##_onlymembers { public: \
 	ProxyPdu_##name() { mPduEnum = ePDU_##name ; }; \
 	virtual pdu_enum pdu_type() { return ePDU_##name; }; \
@@ -75,6 +80,7 @@ public:
 #include "proxydef.def"
 #undef PDUSTRING
 #undef PDULONG
+#undef PDULONGLONG
 #undef PROXYPDU
 
 #endif

@@ -30,14 +30,14 @@ PROXYPDU(REQUEST,
 	PDUSTRING(requesturl)
 	PDUSTRING(requestheaders)
 	PDUSTRING(requestbody)
-	PDULONG(requestid)
+	PDULONGLONG(requestid)
 )
 
 PROXYPDU(RESPONSE,
 	PDULONG(status)
 	PDUSTRING(responseheaders)
 	PDUSTRING(content)
-	PDULONG(requestid)
+	PDULONGLONG(requestid)
 )
 
 PROXYPDU(SERV_CONNECT,
@@ -76,19 +76,19 @@ PROXYPDU(SERV_ROSTERIND,
 
 PROXYPDU(WS_OPEN,
 	PDUSTRING(request_url)
-	PDULONG(requestid)
+	PDULONGLONG(requestid)
 )
 
 PROXYPDU(WS_CLOSE,
-	PDULONG(requestid)
+	PDULONGLONG(requestid)
 )
 
 PROXYPDU(WS_SEND,
 	PDUSTRING(packet_data)
-	PDULONG(requestid)
+	PDULONGLONG(requestid)
 )
 
 PROXYPDU(WS_RECEIVE,
 	PDUSTRING(packet_data)
-	PDULONG(requestid)
+	PDULONGLONG(requestid)
 )

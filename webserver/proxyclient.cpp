@@ -54,7 +54,7 @@ namespace http {
 			MyWrite(response.ToBinary());
 		}
 
-		void CProxyClient::WS_Write(long requestid, const std::string &packet_data)
+		void CProxyClient::WS_Write(unsigned long long requestid, const std::string &packet_data)
 		{
 			ProxyPdu_WS_SEND response;
 			response.m_packet_data = packet_data;
@@ -403,7 +403,7 @@ namespace http {
 				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:
-						write(CWebsocketFrame::Create(opcodes::opcode_pong, PONG, sizeof(PONG)));
+						write(CWebsocketFrame::Create(opcodes::opcode_pong, PONG, true));
 						break;
 					case opcodes::opcode_binary:
 					case opcodes::opcode_text:
@@ -436,7 +436,7 @@ namespace http {
 		{
 			_log.Log(LOG_NORM, "Proxy: disconnected", NULL);
 			// stop and destroy all open websocket handlers
-			for (std::map<long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
+			for (std::map<unsigned long long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
 				it->second->Stop();
 				delete it->second;
 			}
