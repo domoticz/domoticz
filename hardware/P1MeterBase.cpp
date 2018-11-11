@@ -255,7 +255,7 @@ bool P1MeterBase::MatchLine()
 						SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 				}
 				if (m_amperagel1 || m_amperagel2 || m_amperagel3 ) {
-					SendCurrentSensor(0, 255, m_amperagel1, m_amperagel2, m_amperagel3, "Amperage" );
+					SendCurrentSensor(1, 255, m_amperagel1, m_amperagel2, m_amperagel3, "Amperage" );
 				}
 				if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
 				{
