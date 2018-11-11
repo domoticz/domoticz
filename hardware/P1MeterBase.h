@@ -38,6 +38,10 @@ private:
 	float m_voltagel2;
 	float m_voltagel3;
 
+	float m_amperagel1;
+	float m_amperagel2;
+	float m_amperagel3;
+
 	unsigned char m_gasmbuschannel;
 	std::string m_gasprefix;
 	std::string m_gastimestamp;
