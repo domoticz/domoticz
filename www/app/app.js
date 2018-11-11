@@ -36,10 +36,9 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 		return {
 			setPermissions: function (permissions) {
 				permissionList = permissions;
-				window.my_config =
-					{
-						userrights: permissionList.rights
-					};
+				window.my_config = {
+					userrights: permissionList.rights
+				};
 				$rootScope.$broadcast('permissionsChanged');
 			},
 			hasPermission: function (permission) {
@@ -242,14 +241,11 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 
 		function sendCommand(command, data) {
 			var commandParams = { type: 'command', param: command };
-			return sendRequest(Object.assign({}, commandParams, data))
-				.then(errorHandler);
+			return sendRequest(Object.assign({}, commandParams, data)).then(errorHandler);
 		}
 
 		function errorHandler(response) {
-            return response && response.status !== 'OK'
-                ? $q.reject(response)
-                : response;
+            return response && response.status !== 'OK' ? $q.reject(response) : response;
         }
 	}]);
 
@@ -390,7 +386,6 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
                     if (result !== true) {
                         reject();
                     }
-
                     resolve();
                 });
 			});
