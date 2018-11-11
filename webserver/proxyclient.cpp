@@ -461,7 +461,8 @@ namespace http {
 		{
 			m_pWebEm = webEm;
 			SetReconnectDelay(15);
-			connect("proxy.mydomoticz.com", 443);
+			connect("::1", 2443);
+			// connect("proxy.mydomoticz.com", 443);
 		}
 
 		void CProxyClient::Disconnect()

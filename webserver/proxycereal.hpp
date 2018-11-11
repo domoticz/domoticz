@@ -21,7 +21,7 @@
 #define PROXYPDU(name, members) ePDU_##name,
 typedef enum enum_pdu {
 #include "proxydef.def"
-ePDU_END
+	ePDU_END
 } pdu_enum;
 #undef PDUSTRING
 #undef PDULONG
@@ -34,7 +34,7 @@ public:
 	CProxyPduBase() { mPduEnum = ePDU_NONE; };
 	virtual pdu_enum pdu_type() { return mPduEnum; };
 	virtual std::string pdu_name() { return "NONE"; };
-	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { ar & CEREAL_NVP(mPduEnum);  };
+	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { ar & CEREAL_NVP(mPduEnum); };
 	static std::shared_ptr<CProxyPduBase> FromString(const std::string &str);
 };
 
@@ -58,7 +58,7 @@ public:
 	std::string ToBinary() { \
 		std::stringstream os; { /* start a new scope */ \
 		cereal::PortableBinaryOutputArchive oarchive(os); \
-		std::shared_ptr<ProxyPdu_##name##> pt(std::shared_ptr<ProxyPdu_##name##>(this, [](ProxyPdu_##name## *) {})); \
+		std::shared_ptr< ProxyPdu_##name > pt(std::shared_ptr< ProxyPdu_##name >(this, [](ProxyPdu_##name *) {})); \
 		oarchive(mPduEnum); \
 		oarchive(pt); } \
 		return os.str(); \
@@ -66,7 +66,7 @@ public:
 	std::string ToJson() { \
 		std::stringstream os; { /* start a new scope */ \
 		cereal::JSONOutputArchive oarchive(os); \
-		std::shared_ptr<ProxyPdu_##name##> pt(std::shared_ptr<ProxyPdu_##name##>(this, [](ProxyPdu_##name## *) {})); \
+		std::shared_ptr< ProxyPdu_##name > pt(std::shared_ptr< ProxyPdu_##name >(this, [](ProxyPdu_##name *) {})); \
 		oarchive(mPduEnum); \
 		oarchive(pt); } \
 		return os.str(); \
