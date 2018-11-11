@@ -36,10 +36,9 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 		return {
 			setPermissions: function (permissions) {
 				permissionList = permissions;
-				window.my_config =
-					{
-						userrights: permissionList.rights
-					};
+				window.my_config = {
+					userrights: permissionList.rights
+				};
 				$rootScope.$broadcast('permissionsChanged');
 			},
 			hasPermission: function (permission) {
@@ -228,7 +227,8 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 	app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
 		return {
 			sendRequest: sendRequest,
-			sendCommand: sendCommand
+			sendCommand: sendCommand,
+            errorHandler: errorHandler
 		};
 
 		function sendRequest(data) {
@@ -241,13 +241,12 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 
 		function sendCommand(command, data) {
 			var commandParams = { type: 'command', param: command };
-			return sendRequest(Object.assign({}, commandParams, data))
-				.then(function (response) {
-					return response && response.status !== 'OK'
-						? $q.reject(response)
-						: response;
-				});
+			return sendRequest(Object.assign({}, commandParams, data)).then(errorHandler);
 		}
+
+		function errorHandler(response) {
+            return response && response.status !== 'OK' ? $q.reject(response) : response;
+        }
 	}]);
 
 	app.factory('utils', function () {
@@ -387,7 +386,6 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
                     if (result !== true) {
                         reject();
                     }
-
                     resolve();
                 });
 			});
