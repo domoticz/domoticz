@@ -272,13 +272,13 @@ bool P1MeterBase::MatchLine()
 			{
 				m_lastUpdateTime = atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_power, "Power", 255);
-				if (m_voltagel1) {				{
+				if (m_voltagel1) {			
 					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
 				}
-				else if (m_voltagel2) {
+				if (m_voltagel2) {
 					SendVoltageSensor(0, 2, 255, m_voltagel2, "Voltage L2");
 				}
-				else if (m_voltagel3) {
+				if (m_voltagel3) {
 					SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 				}
 				if (m_amperagel1 || m_amperagel2 || m_amperagel3 ) {
@@ -288,11 +288,11 @@ bool P1MeterBase::MatchLine()
 		  		if (m_powerusel1) {
 					SendWattMeter(0, 1, 255, m_powerusel1, "Power Use L1");
 				}
-				else if (m_powerusel2)
+				if (m_powerusel2)
 				{
 					SendWattMeter(0, 1, 255, m_powerusel2, "Power Use L2");
 				}
-				else if (m_powerusel3)
+				if (m_powerusel3)
 				{
 					SendWattMeter(0, 1, 255, m_powerusel3, "Power Use L3");
 				}
@@ -300,11 +300,11 @@ bool P1MeterBase::MatchLine()
 		  		if (m_powerdell1) {
 					SendWattMeter(0, 1, 255, m_powerdell1, "Power Del L1");
 				}
-				else if (m_powerdell2)
+				if (m_powerdell2)
 				{
 					SendWattMeter(0, 1, 255, m_powerdell1, "Power Del L2");
 				}
-				else if (m_powerdell3)
+				if (m_powerdell3)
 				{
 					SendWattMeter(0, 1, 255, m_powerdell1, "Power Del L3");
 				}
