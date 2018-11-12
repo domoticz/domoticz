@@ -584,6 +584,7 @@
     <ClInclude Include="..\main\mainstructs.h" />
     <ClInclude Include="..\main\Noncopyable.h" />
     <ClInclude Include="..\main\StoppableTask.h" />
+    <ClInclude Include="..\main\TrendCalculator.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
     <ClInclude Include="..\main\WebServerHelper.h" />
@@ -888,6 +889,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\main\SunRiseSet.cpp" />
+    <ClCompile Include="..\main\TrendCalculator.cpp" />
     <ClCompile Include="..\main\WebServerHelper.cpp" />
     <ClCompile Include="..\main\WindCalculation.cpp" />
     <ClCompile Include="..\MQTT\logging_mosq.c">

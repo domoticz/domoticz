@@ -5235,7 +5235,7 @@ void CSQLHelper::UpdateWindLog()
 			int speed = atoi(splitresults[2].c_str());
 			int gust = atoi(splitresults[3].c_str());
 
-			std::map<unsigned short, _tWindCalculationStruct>::iterator ittWC = m_mainworker.m_wind_calculator.find(DeviceID);
+			std::map<unsigned short, _tWindCalculator>::iterator ittWC = m_mainworker.m_wind_calculator.find(DeviceID);
 			if (ittWC != m_mainworker.m_wind_calculator.end())
 			{
 				int speed_max, gust_max, speed_min, gust_min;

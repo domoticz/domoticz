@@ -590,6 +590,9 @@ define(['app'], function (app) {
 						return backgroundClass;
 					};
 
+					ctrl.displayTrend = $rootScope.DisplayTrend;
+					ctrl.trendState  = $rootScope.TrendState;
+
 					// TODO use angular isDefined
 					ctrl.displayTemp = function () {
 						return typeof item.Temp != 'undefined';
@@ -619,7 +622,7 @@ define(['app'], function (app) {
 					ctrl.displayChill = function () {
 						return typeof item.Chill != 'undefined';
 					};
-
+					
 					ctrl.image = function () {
 						if (typeof item.Temp != 'undefined') {
 							return GetTemp48Item(item.Temp);

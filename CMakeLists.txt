@@ -318,6 +318,7 @@ main/Scheduler.cpp
 main/SignalHandler.cpp
 main/SQLHelper.cpp
 main/SunRiseSet.cpp
+main/TrendCalculator.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
