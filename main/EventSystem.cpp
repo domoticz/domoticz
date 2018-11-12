@@ -2303,6 +2303,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			_tActionParseResults parseResult;
 			parseResult.fAfterSec = 0;
 			ParseActionString(doWhat, parseResult);
+			StripQuotes(parseResult.sCommand);
 
 			doWhat = ProcessVariableArgument(parseResult.sCommand);
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
@@ -2330,6 +2331,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			_tActionParseResults parseResult;
 			parseResult.fAfterSec = 0;
 			ParseActionString(doWhat, parseResult);
+			StripQuotes(parseResult.sCommand);
 
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 				UpdateDevice(atoi(variableName.c_str()), 0, parseResult.sCommand, false, false);
@@ -3856,6 +3858,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 		_tActionParseResults parseResult;
 		parseResult.fAfterSec = 0;
 		ParseActionString(Action, parseResult);
+		StripQuotes(parseResult.sCommand);
 
 		std::string subject = parseResult.sCommand;
 		if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
