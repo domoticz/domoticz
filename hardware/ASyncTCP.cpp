@@ -9,6 +9,8 @@ struct hostent;
 	#include <unistd.h> //gethostbyname
 #endif
 
+#define Q_UNUSED(x) (void)x;
+
 #define RECONNECT_TIME 30
 
 ASyncTCP::ASyncTCP(const bool secure)
@@ -72,6 +74,7 @@ void ASyncTCP::connect(const std::string &ip, unsigned short port)
 	}
 	catch (const std::exception &e)
 	{
+		Q_UNUSED(e);
 		if (!mAllowCallbacks)
 			return;
 		OnError(boost::system::error_code(boost::asio::error::host_not_found));

@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include <deque>
 #include "WindCalculation.h"
+#include "TrendCalculator.h"
 #include "StoppableTask.h"
 #include "../tcpserver/TCPServer.h"
 #include "concurrent_queue.h"
@@ -132,7 +133,8 @@ public:
 	std::vector<int> m_SunRiseSetMins;
 	std::string m_DayLength;
 	std::vector<std::string> m_webthemes;
-	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
+	std::map<unsigned short, _tWindCalculator> m_wind_calculator;
+	std::map<uint64_t, _tTrendCalculator> m_trend_calculator;
 
 	time_t m_LastHeartbeat = 0;
 private:

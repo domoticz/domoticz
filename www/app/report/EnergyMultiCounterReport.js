@@ -83,7 +83,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     usage2: {
                         usage: parseFloat(item.v2),
                         cost: parseFloat(item.v2) * costs.CostEnergyT2 / 10000,
-                        counter: parseFloat(item.c2)
+                        counter: parseFloat(item.c3)
                     },
                 };
 
@@ -91,7 +91,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     dayRecord.return1 = {
                         usage: parseFloat(item.r1),
                         cost: parseFloat(item.r1) * costs.CostEnergyR1 / 10000,
-                        counter: parseFloat(item.c3)
+                        counter: parseFloat(item.c2)
                     };
 
                     dayRecord.return2 = {
@@ -256,7 +256,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 if (!checkDataKey(data, item[0])) {
                     return;
                 }
-
                 if (vm.isMonthView) {
                     columns.push({ title: $.t(item[2]), data: item[0]+'.counter', render: counterRenderer });
                 }

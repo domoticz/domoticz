@@ -2146,6 +2146,9 @@
     <ClInclude Include="..\hardware\TeleinfoBase.h">
       <Filter>Devices\Teleinfo</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\TrendCalculator.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="..\webserver\proxycereal.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
@@ -2921,6 +2924,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\TeleinfoBase.cpp">
       <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\TrendCalculator.cpp">
+      <Filter>Helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\webserver\proxycereal.cpp">
       <Filter>Webserver</Filter>

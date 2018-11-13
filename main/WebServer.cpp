@@ -8088,6 +8088,7 @@ namespace http {
 							// assume results are ordered such that same device is adjacent
 							// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 							std::string thisIdx = sd[0];
+
 							if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 								std::string typeOfThisOne = root["result"][ii]["Type"].asString();
 								if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -8586,6 +8587,8 @@ namespace http {
 					// assume results are ordered such that same device is adjacent
 					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 					std::string thisIdx = sd[0];
+					int devIdx = atoi(thisIdx.c_str());
+
 					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
 						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -9168,6 +9171,14 @@ namespace http {
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeThermostat1)
 					{
@@ -9190,6 +9201,13 @@ namespace http {
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["TypeImg"] = "temperature";
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeHUM)
 					{
@@ -9220,6 +9238,14 @@ namespace http {
 
 							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_HUM_BARO)
@@ -9270,6 +9296,14 @@ namespace http {
 							}
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_BARO)
@@ -9292,6 +9326,14 @@ namespace http {
 							);
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeUV)
@@ -9308,6 +9350,14 @@ namespace http {
 
 								root["result"][ii]["Temp"] = tvalue;
 								sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
 							}
 							else
 							{
@@ -9364,6 +9414,15 @@ namespace http {
 								}
 								double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
 								root["result"][ii]["Chill"] = tvalue;
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
+
 							}
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -9412,7 +9471,7 @@ namespace http {
 								total_real *= AddjMulti;
 								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
-								sprintf(szTmp, "%.3f", total_real);
+								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
 								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
@@ -10253,6 +10312,13 @@ namespace http {
 							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "temperature";
 							root["result"][ii]["Type"] = "temperature";
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 						else if (dSubType == sTypePercentage)
 						{
