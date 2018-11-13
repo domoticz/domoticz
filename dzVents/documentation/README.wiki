@@ -429,8 +429,14 @@ There are several options for time triggers. It is important to know that Domoti
            'on mon,tue',                -- on Mondays and Tuesdays
            'every hour on sat',         -- you guessed it correctly
            'at sunset',                 -- uses sunset/sunrise info from Domoticz
-           'at sunrise',
+           'at sunrise',           
+           'at civiltwilightstart',     -- uses civil twilight start/end info from Domoticz
+           'at civiltwilightend',
            'at sunset on sat,sun',
+           'xx minutes before civiltwilightstart',
+           'xx minutes after civiltwilightstart',
+           'xx minutes before civiltwilightend',
+           'xx minutes after civiltwilightend',
            'xx minutes before sunset',
            'xx minutes after sunset',
            'xx minutes before sunrise',
@@ -439,6 +445,8 @@ There are several options for time triggers. It is important to know that Domoti
                                         -- aa/bb can be sunrise/sunset
                                         -- aa/bb can be 'xx minutes before/after
                                            sunrise/sunset'
+           'at civildaytime',           -- between civil twilight start and civil twilight end
+           'at civilnighttime',         -- between civil twilight end and civil twilight start
            'at nighttime',              -- between sunset and sunrise
            'at daytime',                -- between sunrise and sunset
            'at daytime on mon,tue',     -- between sunrise and sunset
@@ -513,11 +521,15 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.
 * '''systemUptime''': ''Number''. Number of seconds the system is up.
 * '''time''': ''[[#Time_object|Time Object]]'': Current system time. Additional to Time object attributes:
-** '''isDayTime'''
-** '''isNightTime'''
+** '''isDayTime''': ''Boolean''
+** '''isNightTime''': ''Boolean''
+** '''isCivilDayTime''': ''Boolean''. <sup>2.4.7</sup>
+** '''isCivilNightTime''': ''Boolean''. <sup>2.4.7</sup>
 ** '''isToday''': ''Boolean''. Indicates if the device was updated today
 ** '''sunriseInMinutes''': ''Number''. Number of minutes since midnight when the sun will rise.
 ** '''sunsetInMinutes''': ''Number''. Number of minutes since midnight when the sun will set.
+** '''civTwilightStartInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
+** '''civTwilightEndInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
 * '''utils''': <sup>2.4.0</sup>. A subset of handy utilities:
 * _: Lodash. This is an entire collection with very handy Lua functions. Read more about [[#Lodash_for_Lua|Lodash]]. E.g.: <code>domoticz.utils._.size({'abc', 'def'}))</code> Returns 2.
 * '''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.
@@ -602,7 +614,7 @@ The domoticz object has these constants available for use in your code e.g. <cod
 * '''HUM_COMFORTABLE''', '''HUM_DRY''', '''HUM_NORMAL''', '''HUM_WET''': constant for humidity status.
 * '''INTEGER''', '''FLOAT''', '''STRING''', '''DATE''', '''TIME''': variable types.
 * '''LOG_DEBUG''', '''LOG_ERROR''', '''LOG_INFO''', '''LOG_FORCE''': for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
-* '''NSS_GOOGLE_CLOUD_MESSAGING''', '''NSS_HTTP''', '''NSS_KODI''', '''NSS_LOGITECH_MEDIASERVER''', '''NSS_NMA''','''NSS_PROWL''', '''NSS_PUSHALOT''', '''NSS_PUSHBULLET''', '''NSS_PUSHOVER''', '''NSS_PUSHSAFER''': for notification subsystem
+* '''NSS_GOOGLE_CLOUD_MESSAGING''', '''NSS_HTTP''', '''NSS_KODI''', '''NSS_LOGITECH_MEDIASERVER''', '''NSS_NMA''','''NSS_PROWL''', '''NSS_PUSHALOT''', '''NSS_PUSHBULLET''', '''NSS_PUSHOVER''', '''NSS_PUSHSAFER''', '''NSS_TELEGRAM''': for notification subsystem
 * '''PRIORITY_LOW''', '''PRIORITY_MODERATE''', '''PRIORITY_NORMAL''', '''PRIORITY_HIGH''', '''PRIORITY_EMERGENCY''': for notification priority.
 * '''SECURITY_ARMEDAWAY''', '''SECURITY_ARMEDHOME''', '''SECURITY_DISARMED''': for security state.
 * '''SOUND_ALIEN''' , '''SOUND_BIKE''', '''SOUND_BUGLE''', '''SOUND_CASH_REGISTER''', '''SOUND_CLASSICAL''', '''SOUND_CLIMB''' , '''SOUND_COSMIC''', '''SOUND_DEFAULT''' , '''SOUND_ECHO''', '''SOUND_FALLING''' , '''SOUND_GAMELAN''', '''SOUND_INCOMING''', '''SOUND_INTERMISSION''', '''SOUND_MAGIC''' , '''SOUND_MECHANICAL''', '''SOUND_NONE''', '''SOUND_PERSISTENT''', '''SOUND_PIANOBAR''' , '''SOUND_SIREN''' , '''SOUND_SPACEALARM''', '''SOUND_TUGBOAT''' , '''SOUND_UPDOWN''': for notification sounds.
@@ -2025,6 +2037,12 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you're good to go.
 
 = Change log =
+
+[2.4.8] - Added telegram as option for domoticz.notify
+
+== [2.4.7] ==
+
+* Added support for civil twilight in rules
 
 == [2.4.6] ==
 
