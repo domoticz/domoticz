@@ -624,7 +624,7 @@ The domoticz object has these constants available for use in your code e.g. `dom
  - **INTEGER**, **FLOAT**, **STRING**, **DATE**, **TIME**: variable types.
  - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**, **LOG_FORCE**: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
  - **NSS_GOOGLE_CLOUD_MESSAGING**, **NSS_HTTP**,
-**NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**: for notification subsystem
+**NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_fOVER**, **NSS_PUSHSAFER**, **NSS_TELEGRAM** : for notification subsystem
  - **PRIORITY_LOW**, **PRIORITY_MODERATE**, **PRIORITY_NORMAL**, **PRIORITY_HIGH**, **PRIORITY_EMERGENCY**: for notification priority.
  - **SECURITY_ARMEDAWAY**, **SECURITY_ARMEDHOME**, **SECURITY_DISARMED**: for security state.
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: for notification sounds.
@@ -1210,7 +1210,7 @@ For example, send a notification if a switch has been activated 5 times:
        },
         execute = function(domoticz, switch)
           if (domoticz.data.counter == 5) then
-             domoticz.notify('The switch was pressed 5 times!')
+             domoticz.('The switch was pressed 5 times!')
              domoticz.data.counter = 0 -- reset the counter
           else
              domoticz.data.counter = domoticz.data.counter + 1
@@ -1954,6 +1954,9 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # Change log
 
+##[2.4.8]
+- Added NSS_TELEGRAM (telegram) as option for domoticz.notify 
+
 ##[2.4.7]
 - Added support for civil twilight in rules
 
@@ -2116,7 +2119,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Timer rules for `every xx minutes` or `every xx hours` are now limited to intervals that will reach *:00 minutes or hours. So for minutes you can only do these intervals: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30. Likewise for hours.
  - The Time object (e.g. domoticz.time) now has a method `matchesRule(rule)`. `rule` is a string same as you use for timer options: `if (domoticz.time.matchesRule('at 16:32-21:33 on mon,tue,wed')) then ... end`. The rule matches if the current system time matches with the rule.
  - A device trigger can have a time-rule constraint: ` on = { devices = { ['myDevice'] = 'at nighttime' } }`. This only triggers the script when myDevice was changed **and** the time is after sunset and before sunrise.
- - Add support for subsystem selection for domoticz.notify function.
+ - Add support for subsystem selection for domoticz. function.
  - Fixed a bug where a new persistent variable wasn't picked up when that variable was added to an already existing data section.
 
 ##[1.1.2]
