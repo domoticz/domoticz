@@ -492,7 +492,7 @@ namespace http {
 				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:
-						write(CWebsocketFrame::Create(opcodes::opcode_pong, PONG, sizeof(PONG)));
+						write(CWebsocketFrame::Create(opcodes::opcode_pong, PONG, true));
 						break;
 					case opcodes::opcode_binary:
 					case opcodes::opcode_text:
