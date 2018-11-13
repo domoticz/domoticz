@@ -66,6 +66,7 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
             }
             return ['Power', 'Energy', 'RFXMeter'].includes(vm.device.Type)
                 || ['kWh'].includes(vm.device.SubType)
+                || ['YouLess counter'].includes(vm.device.SubType)
                 || ['Counter Incremental'].includes(vm.device.SubType)
                 || (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType !== 'Energy');
         }

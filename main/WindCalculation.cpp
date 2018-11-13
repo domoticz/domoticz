@@ -13,12 +13,12 @@
 
 #define RAD 57.2957795
 
-_tWindCalculationStruct::_tWindCalculationStruct()
+_tWindCalculator::_tWindCalculator()
 {
 	Init();
 }
 
-void _tWindCalculationStruct::Init()
+void _tWindCalculator::Init()
 {
 	//clear buffer
 	memset(&m_minute_counter,0,sizeof(m_minute_counter));
@@ -33,7 +33,7 @@ void _tWindCalculationStruct::Init()
 	m_MinGust = -1;
 }
 
-double _tWindCalculationStruct::AddValueAndReturnAvarage(double degree)
+double _tWindCalculator::AddValueAndReturnAvarage(const double degree)
 {
 	double dirresult=degree;
 	if (m_bHaveLastDirection)
@@ -85,7 +85,7 @@ double _tWindCalculationStruct::AddValueAndReturnAvarage(double degree)
 */
 }
 
-double _tWindCalculationStruct::CalculateAvarage()
+double _tWindCalculator::CalculateAvarage()
 {
 	int highpos=0;
 	int highestval=0;
@@ -101,7 +101,7 @@ double _tWindCalculationStruct::CalculateAvarage()
 	return highpos*WIND_DEGREE_RESOLUTION;
 }
 
-void _tWindCalculationStruct::SetSpeedGust(const int Speed, const int Gust)
+void _tWindCalculator::SetSpeedGust(const int Speed, const int Gust)
 {
 	if ((Speed > m_MaxSpeed) || (m_MaxSpeed == -1))
 	{
@@ -122,7 +122,7 @@ void _tWindCalculationStruct::SetSpeedGust(const int Speed, const int Gust)
 }
 
 //Get min/max and reset
-void _tWindCalculationStruct::GetMMSpeedGust(int &MinSpeed, int &MaxSpeed, int &MinGust, int &MaxGust)
+void _tWindCalculator::GetMMSpeedGust(int &MinSpeed, int &MaxSpeed, int &MinGust, int &MaxGust)
 {
 	MinSpeed = m_MinSpeed;
 	MaxSpeed = m_MaxSpeed;
