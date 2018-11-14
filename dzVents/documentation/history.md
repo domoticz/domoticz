@@ -1,3 +1,6 @@
+[2.4.8]
+- Added telegram as option for domoticz.notify
+
 [2.4.7]
 - Added support for civil twilight in rules
 
