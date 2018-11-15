@@ -254,9 +254,12 @@ bool P1MeterBase::MatchLine()
 					if (m_voltagel3)
 						SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 				}
+				/* The ampere is rounded to whole numbers and therefor not accurate enough
+				//we could calculate this ourselfs I=P/U I1=(m_power.powerusage1/m_voltagel1)
 				if (m_amperagel1 || m_amperagel2 || m_amperagel3 ) {
 					SendCurrentSensor(1, 255, m_amperagel1, m_amperagel2, m_amperagel3, "Amperage" );
 				}
+				*/
 				if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
 				{
 					//only update gas when there is a new value, or 5 minutes are passed
