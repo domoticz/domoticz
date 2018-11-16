@@ -29,6 +29,7 @@
         <block type="trigger_ifttt"></block>
         <block type="text"></block>
         <block type="open_url"></block>
+        <block type="open_url_after"></block>
         <block type="url_text"></block>
         <block type="start_script"></block>
     </category>
