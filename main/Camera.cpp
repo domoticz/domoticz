@@ -135,7 +135,6 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
 		s_str << szURLPreFix << "://" << pCamera->Address << ":" << pCamera->Port;
-
 	return s_str.str();
 }
 
