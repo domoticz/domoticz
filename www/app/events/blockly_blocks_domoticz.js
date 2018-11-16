@@ -1032,12 +1032,27 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
             this.setPreviousStatement(true);
             this.setNextStatement(true);
             this.appendValueInput('urlToOpen')
-                .appendField("Open url:");
+                .appendField("Open URL:");
             this.setInputsInline(true);
             this.setTooltip(Blockly.DOMOTICZ_LOGIC_OPENURL_TOOLTIP);
-
         }
     };
+        Blockly.Blocks['open_url_after'] = {
+            // Comparison operator.
+            init: function () {
+                this.setColour(120);
+                this.setPreviousStatement(true);
+                this.setNextStatement(true);
+                this.appendValueInput('urlToOpen')
+                    .appendField("Open URL:")
+                this.setInputsInline(true);
+                this.appendDummyInput()
+                    .appendField(Blockly.DOMOTICZCONTROLS_MSG_AFTER)
+                    .appendField(new Blockly.FieldTextInput('0'), 'urlAfter')
+                    .appendField(Blockly.DOMOTICZCONTROLS_MSG_SECONDS);
+                this.setTooltip(Blockly.DOMOTICZ_LOGIC_OPENURL_TOOLTIP);
+            }
+        };
 
     Blockly.Blocks['url_text'] = {
         // Text value.
