@@ -132,9 +132,14 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
 
 	if ((!bHaveUPinURL) && ((pCamera->Username != "") || (pCamera->Password != "")))
-		s_str << szURLPreFix << "://" << CURLEncode::URLEncode((pCamera->Username).c_str()).c_str() << ":" << CURLEncode::URLEncode((pCamera->Password).c_str()).c_str() << "@" << pCamera->Address << ":" << pCamera->Port;
+// v_ok
+//		s_str << szURLPreFix << "://" << CURLEncode::URLEncode((pCamera->Username).c_str()).c_str() << ":" << CURLEncode::URLEncode((pCamera->Password).c_str()).c_str() << "@" << pCamera->Address << ":" << pCamera->Port;
+		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;
+//v_2		s_str << szURLPreFix << "://" << CURLEncode::URLEncode((pCamera->Username).c_str()).c_str() << ":" << CURLEncode::URLEncode((pCamera->Password).c_str()).c_str() << "@" << pCamera->Address << ":" << pCamera->Port;
+//v_3		s_str << szURLPreFix << "://" << CURLEncode::URLEncode((pCamera->Username).c_str()).c_str() << ":" << CURLEncode::URLEncode((pCamera->Password).c_str()).c_str() << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
 		s_str << szURLPreFix << "://" << pCamera->Address << ":" << pCamera->Port;
+
 	return s_str.str();
 }
 
