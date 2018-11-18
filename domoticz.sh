@@ -19,12 +19,14 @@ USERNAME=pi
 PIDFILE=/tmp/$NAME-$USERNAME.pid
 
 SCRIPTNAME=/etc/init.d/$NAME
+SSLCERT=/home/$USERNAME/domoticz/server_cert.pem
+
 
 DAEMON=/home/$USERNAME/domoticz/$NAME
 DAEMON_ARGS="-daemon"
 DAEMON_ARGS="$DAEMON_ARGS -daemonname $NAME -pidfile $PIDFILE"
 DAEMON_ARGS="$DAEMON_ARGS -www 8080"
-DAEMON_ARGS="$DAEMON_ARGS -sslwww 443"
+DAEMON_ARGS="$DAEMON_ARGS -sslwww 10443 -sslcert $SSLCERT"
 #DAEMON_ARGS="$DAEMON_ARGS -log /tmp/domoticz.txt"
 #DAEMON_ARGS="$DAEMON_ARGS -syslog"
 
