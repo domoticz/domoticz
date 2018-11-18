@@ -425,6 +425,14 @@ define(function () {
                 var setString = 'commandArray["OpenURL"]="' + $(urlText).text() + '"';
                 setArray.push(setString);
             }
+            else if ($(this).attr('type') == 'open_url_after') {
+                var urlBlock = $(this).find('value[name=\'urlToOpen\']')[0];
+                var urlText = $(urlBlock).find('field[name=\'TEXT\']')[0];
+                var urlAfter = $(this).children('field[name=\'urlAfter\']')[0];
+                var setString = 'commandArray["OpenURL"]="' + $(urlText).text();
+                setString += ' AFTER ' + $(urlAfter).text() + '"';
+                setArray.push(setString);
+            }
             else if ($(this).attr('type') == 'writetolog') {
                 var logBlock = $(this).find('value[name=\'writeToLog\']')[0];
                 var blockInfo = $(logBlock).children('block:first');
