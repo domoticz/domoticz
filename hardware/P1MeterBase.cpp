@@ -288,27 +288,22 @@ bool P1MeterBase::MatchLine()
 		  		if (m_powerusel1) {
 					SendWattMeter(0, 1, 255, m_powerusel1, "Power Use L1");
 				}
-				if (m_powerusel2)
-				{
-					SendWattMeter(0, 1, 255, m_powerusel2, "Power Use L2");
+				if (m_powerusel2) {
+					SendWattMeter(0, 2, 255, m_powerusel2, "Power Use L2");
 				}
-				if (m_powerusel3)
-				{
-					SendWattMeter(0, 1, 255, m_powerusel3, "Power Use L3");
+				if (m_powerusel3) {
+					SendWattMeter(0, 3, 255, m_powerusel3, "Power Use L3");
 				}
 
 		  		if (m_powerdell1) {
-					SendWattMeter(0, 1, 255, m_powerdell1, "Power Del L1");
+					SendWattMeter(0, 4, 255, m_powerdell1, "Power Del L1");
 				}
-				if (m_powerdell2)
-				{
-					SendWattMeter(0, 1, 255, m_powerdell1, "Power Del L2");
+				if (m_powerdell2) {
+					SendWattMeter(0, 5, 255, m_powerdell2, "Power Del L2");
 				}
-				if (m_powerdell3)
-				{
-					SendWattMeter(0, 1, 255, m_powerdell1, "Power Del L3");
+				if (m_powerdell3) {
+					SendWattMeter(0, 6, 255, m_powerdell3, "Power Del L3");
 				}
-
 						  
 				if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
 				{
@@ -399,6 +394,7 @@ bool P1MeterBase::MatchLine()
 			unsigned long temp_usage = 0;
 			float temp_volt = 0;
 			float temp_ampere = 0;
+			float temp_power = 0;
 			char *validate = value + ePos;
 
 			switch (t->type)
@@ -484,7 +480,7 @@ bool P1MeterBase::MatchLine()
 				temp_ampere = strtof(value,&validate);
 				if (temp_ampere < 100)
 					m_amperagel3 = temp_ampere; //Amperage L3;
-				
+				break;				
 			case P1TYPE_POWERUSEL1:
 				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
@@ -499,7 +495,7 @@ bool P1MeterBase::MatchLine()
 				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerusel3 = temp_power; //Power Used L3;
-
+				break;
 			case P1TYPE_POWERDELL1:
 				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
@@ -514,8 +510,7 @@ bool P1MeterBase::MatchLine()
 				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerdell3 = temp_power; //Power Used L3;
-
-				
+				break;
 			case P1TYPE_GASTIMESTAMP:
 				m_gastimestamp = std::string(value);
 				break;
