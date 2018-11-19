@@ -136,6 +136,7 @@ local function Domoticz(settings)
 		['NSS_PUSHBULLET'] = 'pushbullet',
 		['NSS_PUSHOVER'] = 'pushover',
 		['NSS_PUSHSAFER'] = 'pushsafer',
+		['NSS_TELEGRAM'] = 'telegram',
 		['BASETYPE_DEVICE'] = 'device',
 		['BASETYPE_SCENE'] = 'scene',
 		['BASETYPE_GROUP'] = 'group',

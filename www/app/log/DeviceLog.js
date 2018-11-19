@@ -41,7 +41,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             if (vm.device.Type === 'Heating') {
-                return (vm.device.SubType != 'Zone');
+                return ((vm.device.SubType != 'Zone') && (vm.device.SubType != 'Hot Water'));
             }
 
             var isLightType = [
@@ -64,7 +64,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             if (vm.device.Type === 'Heating') {
-                return (vm.device.SubType === 'Zone');
+                return ((vm.device.SubType === 'Zone') || (vm.device.SubType === 'Hot Water'));
             }
 
             //This goes wrong (when we also use this log call from the weather tab), for wind sensors
