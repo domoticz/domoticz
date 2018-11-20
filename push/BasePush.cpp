@@ -293,8 +293,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
-
-		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeARC, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeAB400D, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeWaveman, "Status" },
