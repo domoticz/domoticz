@@ -290,7 +290,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohome, sTypeEvohome, "Status" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
-		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
+		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status,Valve position" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeARC, "Status" },
@@ -686,6 +686,10 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	{
 		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
 	}
+	else if (vType == "Valve position")
+	{
+		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+	}
 	else if (vType == "Lux")
 	{
 		sprintf(szData, "%.0f", atof(rawsendValue.c_str()));
@@ -866,6 +870,10 @@ std::string CBasePush::getUnit(const int delpos, const int metertypein)
 	else if (vType == "Pressure")
 	{
 		strcpy(szData, "Bar");
+	}
+	else if (vType == "Valve position")
+	{
+		strcpy(szData, "%");
 	}
 	else if (vType == "Lux")
 	{
