@@ -286,26 +286,25 @@ bool P1MeterBase::MatchLine()
 				if (m_amperagel1 || m_amperagel2 || m_amperagel3 ) {
 					SendCurrentSensor(1, 255, m_amperagel1, m_amperagel2, m_amperagel3, "Amperage" );
 				}
-        */
-					  
-		  	if (m_powerusel1) {
-					SendWattMeter(0, 1, 255, m_powerusel1, "Power Use L1");
+				*/
+				if (m_powerusel1) {
+					SendWattMeter(0, 1, 255, m_powerusel1, "Usage L1");
 				}
 				if (m_powerusel2) {
-					SendWattMeter(0, 2, 255, m_powerusel2, "Power Use L2");
+					SendWattMeter(0, 2, 255, m_powerusel2, "Usage L2");
 				}
 				if (m_powerusel3) {
-					SendWattMeter(0, 3, 255, m_powerusel3, "Power Use L3");
+					SendWattMeter(0, 3, 255, m_powerusel3, "Usage L3");
 				}
 
 		  		if (m_powerdell1) {
-					SendWattMeter(0, 4, 255, m_powerdell1, "Power Del L1");
+					SendWattMeter(0, 4, 255, m_powerdell1, "Delivery L1");
 				}
 				if (m_powerdell2) {
-					SendWattMeter(0, 5, 255, m_powerdell2, "Power Del L2");
+					SendWattMeter(0, 5, 255, m_powerdell2, "Delivery L2");
 				}
 				if (m_powerdell3) {
-					SendWattMeter(0, 6, 255, m_powerdell3, "Power Del L3");
+					SendWattMeter(0, 6, 255, m_powerdell3, "Delivery L3");
 				}
 						  
 				if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
