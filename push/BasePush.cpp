@@ -290,7 +290,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohome, sTypeEvohome, "Status" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
-		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
+		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status,Value" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeARC, "Status" },
@@ -645,7 +645,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Value")
 	{
-		sprintf(szData, "%d", atoi(rawsendValue.c_str())); //??
+		sprintf(szData, "%d", atoi(rawsendValue.c_str()));
 	}
 	else if (vType == "Visibility")
 	{
