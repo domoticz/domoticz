@@ -121,8 +121,16 @@ private:
 	uint8_t GetUnit_by_ID(unsigned long evoID);
 	std::string local_to_utc(const std::string &local_time);
 
+	// Evohome v1 API
 	bool v1_login(const std::string &user, const std::string &password);
 	void get_v1_temps();
+
+	// HTTP helpers
+	std::string send_receive_data(std::string url, std::vector<std::string> &headers);
+	std::string send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers);
+	std::string put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers);
+	std::string process_response(std::string &response);
+
 private:
 	std::shared_ptr<std::thread> m_thread;
 
