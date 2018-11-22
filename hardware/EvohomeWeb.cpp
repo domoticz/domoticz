@@ -100,7 +100,15 @@ bool CEvohomeWeb::StartSession()
 	if (!m_bequiet)
 		_log.Log(LOG_STATUS, "(%s) connect to Evohome server", m_Name.c_str());
 	m_loggedon = false;
-	if (!login(m_username, m_password))
+
+	if (!m_v2refresh_token.empty())
+	{
+		if (!renew_login())
+		{
+			return false;
+		}
+	}
+	else if (!login(m_username, m_password))
 	{
 		m_logonfailures++;
 		if (m_logonfailures > LOGONFAILTRESHOLD)
@@ -109,6 +117,14 @@ bool CEvohomeWeb::StartSession()
 			m_logonfailures--;
 		return false;
 	}
+
+	m_sessiontimer = mytime(NULL) + 3599; // Honeywell will invalidate our session ID after an hour
+	m_loggedon = true;
+	m_logonfailures = 0;
+
+
+	// (re)initialize Evohome installation info
+	m_zones[0] = 0;
 	if (!full_installation())
 	{
 		_log.Log(LOG_ERROR, "(%s) failed to retrieve installation info from server", m_Name.c_str());
@@ -147,13 +163,6 @@ bool CEvohomeWeb::StartSession()
 			m_awaysetpoint = 15; // use default 'Away' setpoint value
 	}
 
-	if (m_showhdtemps)
-		v1_login(m_username, m_password);
-
-	m_zones[0] = 0;
-	m_loggedon = true;
-	m_logonfailures = 0;
-	m_sessiontimer = mytime(NULL) + 3600 - m_refreshrate; // Honeywell will drop our session after an hour
 	m_bequiet = false;
 	return true;
 }
@@ -853,7 +862,14 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 		return false;
 	}
 
-	if (s_res.find("<title>") != std::string::npos) // got an HTML page
+	if (s_res[0] == '[') // received unnamed array as reply
+	{
+		s_res[0] = ' ';
+		size_t len = s_res.size();
+		len--;
+		s_res[len] = ' ';
+	}
+	else if (s_res.find("<title>") != std::string::npos) // received an HTML page
 	{
 		int i = s_res.find("<title>");
 		char* html = &s_res[i];
@@ -874,7 +890,10 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 	Json::Reader jReader;
 	bool ret = jReader.parse(s_res.c_str(), j_login);
 	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "(%s) failed parsing response from login to portal", m_Name.c_str());
 		return false;
+	}
 
 	std::string szError = "";
 	if (j_login.isMember("error"))
@@ -887,7 +906,7 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 		return false;
 	}
 
-
+	m_v2refresh_token = j_login["refresh_token"].asString();
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
@@ -899,6 +918,94 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 	m_SessionHeaders.push_back("charsets: utf-8");
 
 	return user_account();
+}
+
+
+/* 
+ * Renew the Authorization token
+ */
+bool CEvohomeWeb::renew_login()
+{
+	if (m_v2refresh_token.empty())
+		return false;
+
+	std::vector<std::string> LoginHeaders;
+	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
+	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
+	LoginHeaders.push_back("charsets: utf-8");
+
+	std::stringstream pdata;
+	pdata << "installationInfo-Type=application%2Fx-www-form-urlencoded;charset%3Dutf-8";
+	pdata << "&Host=rs.alarmnet.com%2F";
+	pdata << "&Cache-Control=no-store%20no-cache";
+	pdata << "&Pragma=no-cache";
+	pdata << "&grant_type=refresh_token";
+	pdata << "&scope=EMEA-V1-Basic%20EMEA-V1-Anonymous";
+	pdata << "&refresh_token=" << m_v2refresh_token;
+	pdata << "&Connection=Keep-Alive";
+
+	std::string s_res;
+	if (!HTTPClient::POST(EVOHOME_HOST"/Auth/OAuth/Token", pdata.str(), LoginHeaders, s_res))
+	{
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at renew login!", m_Name.c_str());
+		return false;
+	}
+
+	if (s_res[0] == '[') // received unnamed array as reply
+	{
+		s_res[0] = ' ';
+		size_t len = s_res.size();
+		len--;
+		s_res[len] = ' ';
+	}
+	else if (s_res.find("<title>") != std::string::npos) // received an HTML page
+	{
+		int i = s_res.find("<title>");
+		char* html = &s_res[i];
+		i = 7;
+		char c = html[i];
+		std::stringstream edata;
+		while (c != '<')
+		{
+			edata << c;
+			i++;
+			c = html[i];
+		}
+		_log.Log(LOG_ERROR, "(%s) renewing login failed with message: %s", m_Name.c_str(), edata.str().c_str());
+		return false;
+	}
+
+	Json::Value j_login;
+	Json::Reader jReader;
+	if (!jReader.parse(s_res.c_str(), j_login))
+	{
+		_log.Log(LOG_ERROR, "(%s) failed parsing response from renewing login", m_Name.c_str());
+		return false;
+	}
+
+	std::string szError = "";
+	if (j_login.isMember("error"))
+		szError = j_login["error"].asString();
+	if (j_login.isMember("message"))
+		szError = j_login["message"].asString();
+	if (!szError.empty())
+	{
+		_log.Log(LOG_ERROR, "(%s) renewing login failed with message: %s", m_Name.c_str(), szError.c_str());
+		return false;
+	}
+
+	m_v2refresh_token = j_login["refresh_token"].asString();
+	std::stringstream atoken;
+	atoken << "Authorization: bearer " << j_login["access_token"].asString();
+
+	m_SessionHeaders.clear();
+	m_SessionHeaders.push_back(atoken.str());
+	m_SessionHeaders.push_back("applicationId: b013aa26-9724-4dbd-8897-048b9aada249");
+	m_SessionHeaders.push_back("accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
+	m_SessionHeaders.push_back("content-type: application/json");
+	m_SessionHeaders.push_back("charsets: utf-8");
+
+	return true;
 }
 
 
@@ -1029,7 +1136,7 @@ bool CEvohomeWeb::full_installation()
 		return false;
 	}
 
-	// evohome API does not correctly format the json output
+	// evohome API returns an unnamed json array which is not accepted by our parser
 	std::stringstream ss_jdata;
 	ss_jdata << "{\"locations\": " << s_res << "}";
 	Json::Reader jReader;
@@ -1070,8 +1177,9 @@ bool CEvohomeWeb::full_installation()
 
 bool CEvohomeWeb::get_status(const std::string &locationId)
 {
-	if (m_locations.size() == 0)
+	if ((m_locations.size() == 0) && !full_installation())
 		return false;
+
 	for (size_t i = 0; i < m_locations.size(); i++)
 	{
 		if (m_locations[i].locationId == locationId)
@@ -1082,7 +1190,9 @@ bool CEvohomeWeb::get_status(const std::string &locationId)
 bool CEvohomeWeb::get_status(int location)
 {
 	Json::Value *j_loc, *j_gw, *j_tcs;
-	if ((m_locations.size() == 0) || m_locations[location].locationId.empty())
+	if ((m_locations.size() == 0) && !full_installation())
+		return false;
+	if (m_locations[location].locationId.empty())
 		return false;
 
 	bool valid_json = true;
@@ -1162,8 +1272,9 @@ bool CEvohomeWeb::get_status(int location)
 
 CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(const std::string &zoneId)
 {
-	if (m_locations.size() == 0)
-		full_installation();
+	if ((m_locations.size() == 0) && !full_installation())
+		return NULL;
+
 	for (size_t l = 0; l < m_locations.size(); l++)
 	{
 		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
@@ -1482,7 +1593,7 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 		return false;
 	}
 
-	if (s_res.find("<title>") != std::string::npos) // got an HTML page
+	if (s_res.find("<title>") != std::string::npos) // received an HTML page
 	{
 		int i = s_res.find("<title>");
 		char* html = &s_res[i];
@@ -1499,7 +1610,7 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 		return false;
 	}
 
-	if (s_res[0] == '[') // got unnamed array as reply
+	if (s_res[0] == '[') // received unnamed array as reply
 	{
 		s_res[0] = ' ';
 		size_t len = s_res.size();
@@ -1548,6 +1659,9 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 
 void CEvohomeWeb::get_v1_temps()
 {
+	if (m_v1uid.empty() && !v1_login(m_username, m_password))
+		return;
+
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/api/locations/?userId=" << m_v1uid << "&allData=True";
 	std::string s_res;
@@ -1557,7 +1671,7 @@ void CEvohomeWeb::get_v1_temps()
 		return;
 	}
 
-	// evohome old API does not correctly format the json output
+	// evohome old API returns an unnamed json array which is not accepted by our parser
 	std::stringstream ss_jdata;
 	ss_jdata << "{\"locations\": " << s_res << "}";
 	Json::Reader jReader;

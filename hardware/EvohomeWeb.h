@@ -79,6 +79,7 @@ private:
 
 	// evohome client library - don't ask about naming convention - these are imported from another project
 	bool login(const std::string &user, const std::string &password);
+	bool renew_login();
 	bool user_account();
 
 	void get_gateways(int location);
@@ -127,6 +128,7 @@ private:
 
 	std::string m_username;
 	std::string m_password;
+	std::string m_v2refresh_token;
 	bool m_updatedev;
 	bool m_showschedule;
 	int m_refreshrate;
