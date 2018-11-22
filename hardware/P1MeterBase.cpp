@@ -34,6 +34,12 @@ enum _eP1MatchType {
 #define P1AMPEREL1	"1-0:31.7.0"	// amperage L1 (DSMRv5)
 #define P1AMPEREL2	"1-0:51.7.0"	// amperage L2 (DSMRv5)
 #define P1AMPEREL3	"1-0:71.7.0"	// amperage L3 (DSMRv5)
+#define P1POWUSL1       "1-0:21.7.0"    // Power used L1 (DSMRv5)
+#define P1POWUSL2       "1-0:41.7.0"    // Power used L2 (DSMRv5)
+#define P1POWUSL3       "1-0:61.7.0"    // Power used L3 (DSMRv5)
+#define P1POWDLL1       "1-0:22.7.0"    // Power delivered L1 (DSMRv5)
+#define P1POWDLL2       "1-0:42.7.0"    // Power delivered L2 (DSMRv5)
+#define P1POWDLL3       "1-0:62.7.0"    // Power delivered L3 (DSMRv5)
 #define P1GTS		"0-n:24.3.0"	// DSMR2 timestamp gas usage sample
 #define P1GUDSMR2	"("		// DSMR2 gas usage sample
 #define P1GUDSMR4	"0-n:24.2.1"	// DSMR4 gas usage sample
@@ -56,6 +62,12 @@ enum _eP1Type {
 	P1TYPE_AMPERAGEL1,
 	P1TYPE_AMPERAGEL2,
 	P1TYPE_AMPERAGEL3,
+	P1TYPE_POWERUSEL1,
+	P1TYPE_POWERUSEL2,
+	P1TYPE_POWERUSEL3,
+	P1TYPE_POWERDELL1,
+	P1TYPE_POWERDELL2,
+	P1TYPE_POWERDELL3,
 	P1TYPE_MBUSDEVICETYPE,
 	P1TYPE_GASUSAGEDSMR4,
 	P1TYPE_GASTIMESTAMP,
@@ -87,6 +99,12 @@ P1Match matchlist[] = {
 	{STD,		P1TYPE_AMPERAGEL1,		P1AMPEREL1,	"amperagel1",		11,  3},
 	{STD,		P1TYPE_AMPERAGEL2,		P1AMPEREL2,	"amperagel2",		11,  3},
 	{STD,		P1TYPE_AMPERAGEL3,		P1AMPEREL3,	"amperagel3",		11,  3},
+	{STD,		P1TYPE_POWERUSEL1,		P1POWUSL1,	"powerusel1",		11,  6},
+	{STD,		P1TYPE_POWERUSEL2,		P1POWUSL2,	"powerusel2",		11,  6},
+	{STD,		P1TYPE_POWERUSEL3,		P1POWUSL3,	"powerusel3",		11,  6},
+	{STD,		P1TYPE_POWERDELL1,		P1POWDLL1,	"powerdell1",		11,  6},
+	{STD,		P1TYPE_POWERDELL2,		P1POWDLL2,	"powerdell2",		11,  6},
+	{STD,		P1TYPE_POWERDELL3,		P1POWDLL3,	"powerdell3",		11,  6},
 	{DEVTYPE,	P1TYPE_MBUSDEVICETYPE,		P1MBTYPE,	"mbusdevicetype",	11,  3},
 	{GAS,		P1TYPE_GASUSAGEDSMR4,		P1GUDSMR4,	"gasusage",	 	26,  8},
 	{LINE17,	P1TYPE_GASTIMESTAMP,		P1GTS,		"gastimestamp",		11, 12},
@@ -126,6 +144,14 @@ void P1MeterBase::Init()
 	m_amperagel1=0;
 	m_amperagel2=0;
 	m_amperagel3=0;
+
+	m_powerusel1 = 0;
+	m_powerusel2 = 0;
+	m_powerusel3 = 0;
+
+	m_powerdell1 = 0;
+	m_powerdell2 = 0;
+	m_powerdell3 = 0;
 
 	memset(&m_buffer, 0, sizeof(m_buffer));
 	memset(&l_buffer, 0, sizeof(l_buffer));
@@ -246,13 +272,14 @@ bool P1MeterBase::MatchLine()
 			{
 				m_lastUpdateTime = atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_power, "Power", 255);
-				if (m_voltagel1)
-				{
+				if (m_voltagel1) {			
 					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
-					if (m_voltagel2)
-						SendVoltageSensor(0, 2, 255, m_voltagel2, "Voltage L2");
-					if (m_voltagel3)
-						SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
+				}
+				if (m_voltagel2) {
+					SendVoltageSensor(0, 2, 255, m_voltagel2, "Voltage L2");
+				}
+				if (m_voltagel3) {
+					SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 				}
 				/* The ampere is rounded to whole numbers and therefor not accurate enough
 				//we could calculate this ourselfs I=P/U I1=(m_power.powerusage1/m_voltagel1)
@@ -260,6 +287,26 @@ bool P1MeterBase::MatchLine()
 					SendCurrentSensor(1, 255, m_amperagel1, m_amperagel2, m_amperagel3, "Amperage" );
 				}
 				*/
+				if (m_powerusel1) {
+					SendWattMeter(0, 1, 255, m_powerusel1, "Usage L1");
+				}
+				if (m_powerusel2) {
+					SendWattMeter(0, 2, 255, m_powerusel2, "Usage L2");
+				}
+				if (m_powerusel3) {
+					SendWattMeter(0, 3, 255, m_powerusel3, "Usage L3");
+				}
+
+		  		if (m_powerdell1) {
+					SendWattMeter(0, 4, 255, m_powerdell1, "Delivery L1");
+				}
+				if (m_powerdell2) {
+					SendWattMeter(0, 5, 255, m_powerdell2, "Delivery L2");
+				}
+				if (m_powerdell3) {
+					SendWattMeter(0, 6, 255, m_powerdell3, "Delivery L3");
+				}
+						  
 				if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
 				{
 					//only update gas when there is a new value, or 5 minutes are passed
@@ -349,6 +396,7 @@ bool P1MeterBase::MatchLine()
 			unsigned long temp_usage = 0;
 			float temp_volt = 0;
 			float temp_ampere = 0;
+			float temp_power = 0;
 			char *validate = value + ePos;
 
 			switch (t->type)
@@ -434,6 +482,37 @@ bool P1MeterBase::MatchLine()
 				temp_ampere = strtof(value,&validate);
 				if (temp_ampere < 100)
 					m_amperagel3 = temp_ampere; //Amperage L3;
+				break;				
+			case P1TYPE_POWERUSEL1:
+				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				if (temp_power < 10000)
+					m_powerusel1 = temp_power; //Power Used L1;
+				break;
+			case P1TYPE_POWERUSEL2:
+				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				if (temp_power < 10000)
+					m_powerusel2 = temp_power; //Power Used L2;
+				break;
+			case P1TYPE_POWERUSEL3:
+				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				if (temp_power < 10000)
+					m_powerusel3 = temp_power; //Power Used L3;
+				break;
+			case P1TYPE_POWERDELL1:
+				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				if (temp_power < 10000)
+					m_powerdell1 = temp_power; //Power Used L1;
+				break;
+			case P1TYPE_POWERDELL2:
+				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				if (temp_power < 10000)
+					m_powerdell2 = temp_power; //Power Used L2;
+				break;
+			case P1TYPE_POWERDELL3:
+				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				if (temp_power < 10000)
+					m_powerdell3 = temp_power; //Power Used L3;
+				break;
 			case P1TYPE_GASTIMESTAMP:
 				m_gastimestamp = std::string(value);
 				break;
