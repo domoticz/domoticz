@@ -610,7 +610,7 @@ The domoticz object has these constants available for use in your code e.g. <cod
 * '''BASETYPE_DEVICE''', '''BASETYPE_SCENE''', '''BASETYPE_GROUP''', '''BASETYPE_VARIABLE''', '''BASETYPE_SECURITY''', '''BASETYPE_TIMER''', '''BASETYPE_HTTP_RESPONSE''': indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object: <code>if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end</code>.
 * '''BARO_CLOUDY''', '''BARO_CLOUDY_RAIN''', '''BARO_STABLE''', '''BARO_SUNNY''', '''BARO_THUNDERSTORM''', '''BARO_NOINFO''', '''BARO_UNSTABLE''': for updating barometric values.
 * '''EVENT_TYPE_DEVICE''', '''EVENT_TYPE_VARIABLE''', '''EVENT_TYPE_SECURITY''', '''EVENT_TYPE_HTTPRESPONSE'''<sup>2.4.0</sup>, '''EVENT_TYPE_TIMER''': triggerInfo types passed to the execute function in your scripts.
-* '''EVOHOME_MODE_AUTO''', '''EVOHOME_MODE_TEMPORARY_OVERRIDE''', '''EVOHOME_MODE_PERMANENT_OVERRIDE''': mode for EvoHome system.
+* '''EVOHOME_MODE_AUTO''', '''EVOHOME_MODE_TEMPORARY_OVERRIDE''', '''EVOHOME_MODE_PERMANENT_OVERRIDE''', '''EVOHOME_MODE_FOLLOW_SCHEDULE''' <sup>2.4.9</sup>: mode for EvoHome system.
 * '''HUM_COMFORTABLE''', '''HUM_DRY''', '''HUM_NORMAL''', '''HUM_WET''': constant for humidity status.
 * '''INTEGER''', '''FLOAT''', '''STRING''', '''DATE''', '''TIME''': variable types.
 * '''LOG_DEBUG''', '''LOG_ERROR''', '''LOG_INFO''', '''LOG_FORCE''': for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
@@ -715,10 +715,19 @@ Note that if you do not find your specific device type here you can always inspe
 * '''WhActual''': ''Number''. Current Watt usage.
 * '''updateEnergy(energy)''': ''Function''. In Watt. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
-==== Evohome ====
+==== Evohome (zones) ====
 
 * '''setPoint''': ''Number''.
-* '''updateSetPoint(setPoint, mode, until)''': ''Function''. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''mode''': ''string'' <sup>2.4.9</sup>.
+* '''untilDate''': ''string in ISO 8601 format'' or n/a <sup>2.4.9</sup>.
+* '''updateSetPoint(setPoint, mode, until)''': ''Function''. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE <sup>2.4.9</sup> or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+
+==== Evohome (hotWater) <sup>2.4.9</sup>. ====
+
+* '''state''': ''string'' ('On' or 'Off')
+* '''mode''': ''string''
+* '''untilDate''': ''string in ISO 8601 format'' or n/a.
+* '''setHotWater(state, mode, until)''': ''Function''. set HotWater Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE You can provide an until date (in ISO 8601 format for domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>).
 
 ==== Gas ====
 
@@ -960,9 +969,11 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''chill''': ''Number''.
 * '''direction''': ''Number''. Degrees.
 * '''directionString''': ''String''. Formatted wind direction like N, SE.
-* '''gust''': ''Number''.
+* '''gust''': ''Number''. ( in meters / second, might change in future releases to Meters/Counters settings for Wind Meter )
+* '''gustMs''': ''Number''. Gust ( in meters / second ) <sup>2.4.9</sup>
 * '''temperature''': ''Number''
-* '''speed''': ''Number''.
+* '''speed''': ''Number''. Windspeed ( in the unit set in Meters/Counters settings for Wind Meter )
+* '''speedMs''': ''Number''. Windspeed ( in meters / second ) <sup>2.4.9</sup>
 * '''updateWind(bearing, direction, speed, gust, temperature, chill)''': ''Function''. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Youless meter <sup>2.4.6</sup> ====
@@ -2038,7 +2049,18 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = Change log =
 
-[2.4.8] - Added telegram as option for domoticz.notify
+== [2.4.9] ==
+
+* Added evohome hotwater device (state, mode, untilDate and setHotWater function)
+* Added mode and untilDate for evohome zone devices
+* Added EVOHOME_MODE_FOLLOW_SCHEDULE as mode for evohome devices
+* Add speedMs and gustMs from wind devices
+* bugfix for youless device (0 handling)
+* bugfix for time ( twilightstart and twilightend handling)
+
+== [2.4.8] ==
+
+* Added telegram as option for domoticz.notify
 
 == [2.4.7] ==
 

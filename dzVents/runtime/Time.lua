@@ -923,13 +923,13 @@ local function Time(sDate, isUTC, _testMS)
 
 		-- check at civiltwilightstart
 		local twilightstart = string.match(moment, 'civiltwilightstart')
-		if (twilight) then
+		if (twilightstart) then
 			return minutesToTime(getCivilTwilightStart())
 		end
 
 		-- check at civiltwilightend
 		local twilightend = string.match(moment, 'civiltwilightend')
-		if (twilight) then
+		if (twilightend) then
 			return minutesToTime(getCivilTwilightEnd())
 		end
 
