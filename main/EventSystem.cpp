@@ -2300,17 +2300,13 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		else if (deviceName.find("Variable:") == 0)
 		{
 			std::string variableNo = deviceName.substr(9);
-			float afterTimerSeconds = 0;
-			size_t aFind = doWhat.find(" AFTER ");
-			if ((aFind > 0) && (aFind != std::string::npos)) {
-				std::string delayString = doWhat.substr(aFind + 7);
-				std::string newAction = doWhat.substr(0, aFind);
-				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-				doWhat = newAction;
-				StripQuotes(doWhat);
-			}
-			doWhat = ProcessVariableArgument(doWhat);
-			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0;
+			ParseActionString(doWhat, parseResult);
+			StripQuotes(parseResult.sCommand);
+
+			doWhat = ProcessVariableArgument(parseResult.sCommand);
+			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == '%q')", variableNo.c_str());
@@ -2324,37 +2320,24 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				}
 			}
 			else
-			{
-				float DelayTime = afterTimerSeconds;
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
-			}
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
+
 			actionsDone = true;
 			continue;
 		}
 		else if (deviceName.find("Text:") == 0)
 		{
 			std::string variableName = deviceName.substr(5);
-			float afterTimerSeconds = 0;
-			size_t aFind = doWhat.find(" AFTER ");
-			if ((aFind > 0) && (aFind != std::string::npos)) {
-				std::string delayString = doWhat.substr(aFind + 7);
-				std::string newAction = doWhat.substr(0, aFind);
-				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-				doWhat = newAction;
-				StripQuotes(doWhat);
-			}
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0;
+			ParseActionString(doWhat, parseResult);
+			StripQuotes(parseResult.sCommand);
 
-			std::vector<std::vector<std::string> > result;
-
-			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
-			{
-				UpdateDevice(atoi(variableName.c_str()), 0, doWhat, false, false);
-			}
+			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
+				UpdateDevice(atoi(variableName.c_str()), 0, parseResult.sCommand, false, false);
 			else
-			{
-				float DelayTime = afterTimerSeconds;
-				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(DelayTime, (const uint64_t)atol(variableName.c_str()), 0, doWhat, false, false));
-			}
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, (const uint64_t)atol(variableName.c_str()), 0, parseResult.sCommand, false, false));
+
 			actionsDone = true;
 		}
 		else if (deviceName.find("SendCamera:") == 0)
@@ -2445,7 +2428,10 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		}
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
-			OpenURL(doWhat);
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0.2f;
+			ParseActionString(doWhat, parseResult);
+			OpenURL(parseResult.fAfterSec, parseResult.sCommand);
 			actionsDone = true;
 			continue;
 		}
@@ -2519,15 +2505,10 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		else if (deviceName.find("CustomCommand:") == 0)
 		{
 			int idx = atoi(deviceName.substr(14).c_str());
-			float afterTimerSeconds = 0;
-			size_t aFind = doWhat.find(" AFTER ");
-			if ((aFind > 0) && (aFind != std::string::npos)) {
-				std::string delayString = doWhat.substr(aFind + 7);
-				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-				doWhat = doWhat.substr(0, aFind);
-				StripQuotes(doWhat);
-			}
-			m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, doWhat));
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0;
+			ParseActionString(doWhat, parseResult);
+			m_sql.AddTaskItem(_tTaskItem::CustomCommand(parseResult.fAfterSec, idx, doWhat));
 			actionsDone = true;
 			continue;
 		}
@@ -2646,17 +2627,14 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 		std::vector<std::string> sd = result[0];
 
 		std::string doWhat = std::string(Action);
-		float afterTimerSeconds = 0;
-		size_t aFind = doWhat.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = doWhat.substr(aFind + 7);
-			doWhat = doWhat.substr(0, aFind);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-		}
-		doWhat = ProcessVariableArgument(doWhat);
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(doWhat, parseResult);
+
+		doWhat = ProcessVariableArgument(parseResult.sCommand);
 
 		uint64_t idx = atol(sd[0].c_str());
-		m_sql.AddTaskItem(_tTaskItem::SetVariable(afterTimerSeconds, idx, doWhat, false));
+		m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, idx, doWhat, false));
 
 		return true;
 	}
@@ -2687,15 +2665,10 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 	else if (ID.find("CustomCommand:") == 0) {
 		int idx = atoi(ID.substr(14).c_str());
 		std::string doWhat = std::string(Action);
-		float afterTimerSeconds = 0;
-		size_t aFind = Action.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = doWhat.substr(aFind + 7);
-			doWhat = doWhat.substr(0, aFind);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			StripQuotes(doWhat);
-		}
-		m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, doWhat));
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(doWhat, parseResult);
+		m_sql.AddTaskItem(_tTaskItem::CustomCommand(parseResult.fAfterSec, idx, doWhat));
 		return true;
 	}
 	return ScheduleEvent(ID, Action, eventName);
@@ -3539,7 +3512,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	else if (lCommand == "OpenURL")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
-		OpenURL(luaString);
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0.2f;
+		ParseActionString(luaString, parseResult);
+		OpenURL(parseResult.fAfterSec, parseResult.sCommand);
 		scriptTrue = true;
 	}
 	else if (lCommand == "UpdateDevice")
@@ -3571,23 +3547,17 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		std::vector<std::vector<std::string> > result;
 
-		float afterTimerSeconds = 0;
-		size_t aFind = variableValue.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos))
-		{
-			std::string delayString = variableValue.substr(aFind + 7);
-			std::string newAction = variableValue.substr(0, aFind);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			variableValue = newAction;
-		}
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(variableValue, parseResult);
 
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
-			variableValue = ProcessVariableArgument(variableValue);
+			variableValue = ProcessVariableArgument(parseResult.sCommand);
 
-			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
+			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
 				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
 				if (updateResult != "OK") {
@@ -3596,9 +3566,8 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			}
 			else
 			{
-				float DelayTime = afterTimerSeconds;
 				uint64_t idx = std::stoull(sd[0]);
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, false));
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, idx, variableValue, false));
 			}
 			scriptTrue = true;
 		}
@@ -3632,15 +3601,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	{
 		int idx = atoi(lCommand.substr(14).c_str());
 		std::string luaString = lua_tostring(lua_state, -1);
-		float afterTimerSeconds = 0;
-		size_t aFind = luaString.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = luaString.substr(aFind + 7);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			luaString = luaString.substr(0, aFind);
-			StripQuotes(luaString);
-		}
-		m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, luaString));
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(luaString, parseResult);
+		m_sql.AddTaskItem(_tTaskItem::CustomCommand(parseResult.fAfterSec, idx, luaString));
 	}
 	else
 	{
@@ -3827,11 +3791,14 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		_log.Log(LOG_ERROR, "EventSystem: UpdateDevice IDX %" PRIu64 " not found!", idx);
 }
 
-void CEventSystem::OpenURL(const std::string &URL)
+void CEventSystem::OpenURL(const float delay, const std::string &URL)
 {
-	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
+	if (!delay)
+		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s...", URL.c_str());
+	else
+		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s after %.1f seconds...", URL.c_str(), delay);
 
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL"));
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delay, URL, "OpenURL"));
 	// maybe do something with sResult in the future.
 }
 
@@ -3888,25 +3855,18 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 		if (result.empty())
 			return false;
 
-		std::string cAction = Action;
-		float delay = 0;
-		size_t aFind = Action.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = Action.substr(aFind + 7);
-			std::string newAction = Action.substr(0, aFind);
-			delay = static_cast<float>(atof(delayString.c_str()));
-			cAction = newAction;
-		}
-		StripQuotes(cAction);
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(Action, parseResult);
+		StripQuotes(parseResult.sCommand);
 
-
-		std::string subject = cAction;
-		if (delay < (1. / timer_resolution_hz / 2))
+		std::string subject = parseResult.sCommand;
+		if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 		{
 			m_mainworker.m_cameras.EmailCameraSnapshot(deviceName, subject);
 		}
 		else
-			m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(delay, deviceName, subject));
+			m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(parseResult.fAfterSec, deviceName, subject));
 		return true;
 	}
 
