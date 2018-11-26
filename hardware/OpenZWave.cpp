@@ -1743,7 +1743,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					else
 						_device.scaleID = SCALEID_POWER;
 					_device.scaleMultiply = 1;
-					if (vUnits == "kWh")
+					if ((vUnits == "kWh") || (vUnits == "kVAh"))
 					{
 						_device.scaleMultiply = 1000;
 						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
@@ -1928,7 +1928,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					else
 						_device.scaleID = SCALEID_POWER;
 					_device.scaleMultiply = 1;
-					if (vUnits == "kWh")
+					if ((vUnits == "kWh") || (vUnits == "kVAh"))
 					{
 						_device.scaleMultiply = 1000;
 						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
