@@ -957,7 +957,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTado(ID, Username, Password);
 		break;
 	case HTYPE_Honeywell:
-		pHardware = new CHoneywell(ID, Username, Password);
+		pHardware = new CHoneywell(ID, Username, Password, Extra);
 		break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1, Mode2);
