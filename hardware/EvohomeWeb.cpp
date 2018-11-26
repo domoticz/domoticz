@@ -858,6 +858,11 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 
 	std::string sz_response = send_receive_data(EVOHOME_HOST"/Auth/OAuth/Token", sz_postdata, LoginHeaders);
 
+	if (sz_response.empty())
+	{
+		_log.Log(LOG_ERROR, "(%s) login attempt did not return any response", m_Name.c_str());
+		return false;
+	}
 
 	if (sz_response[0] == '[') // response is an unnamed array - likely an error message
 	{
@@ -875,10 +880,20 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 		return false;
 	}
 
-	if (j_login.isMember("message"))
+	if (!j_login.isMember("access_token"))
 	{
-		std::string szError = j_login["message"].asString();
-		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), szError.c_str());
+		std::string szError;
+		if (j_login.isMember("error"))
+			szError = j_login["error"].asString();
+		if (j_login.isMember("message"))
+			szError = j_login["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) login returned unknown data", m_Name.c_str());
 		return false;
 	}
 
@@ -914,7 +929,7 @@ bool CEvohomeWeb::renew_login()
 	sz_postdata.append("&Host=rs.alarmnet.com%2F");
 	sz_postdata.append("&Cache-Control=no-store%20no-cache");
 	sz_postdata.append("&Pragma=no-cache");
-	sz_postdata.append("&grant_type=password");
+	sz_postdata.append("&grant_type=refresh_token");
 	sz_postdata.append("&scope=EMEA-V1-Basic%20EMEA-V1-Anonymous");
 	sz_postdata.append("&refresh_token=");
 	sz_postdata.append(m_v2refresh_token);
@@ -938,10 +953,23 @@ bool CEvohomeWeb::renew_login()
 		return false;
 	}
 
-	if (j_login.isMember("message"))
+	if (!j_login.isMember("access_token"))
 	{
-		std::string szError = j_login["message"].asString();
-		_log.Log(LOG_ERROR, "(%s) renewing login failed with message: %s", m_Name.c_str(), szError.c_str());
+		std::string szError;
+		if (j_login.isMember("error"))
+			szError = j_login["error"].asString();
+		if (j_login.isMember("message"))
+			szError = j_login["message"].asString();
+		if (!szError.empty())
+		{
+			if (szError == "invalid_grant") // refresh token is no longer valid
+				m_v2refresh_token = "";
+
+			_log.Log(LOG_ERROR, "(%s) renewing login failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) renewing login returned unknown data", m_Name.c_str());
 		return false;
 	}
 
@@ -1103,30 +1131,38 @@ bool CEvohomeWeb::full_installation()
 	Json::Reader jReader;
 	m_j_fi.clear();
 
-	// evohome v1 API returns an unnamed json array which is not accepted by our parser
-	std::string sz_jdata = "{\"locations\": ";
-	if (sz_response[0] == '{') // unexpected response
+	bool parseOK;
+	if (sz_response[0] == '[')
 	{
-		sz_jdata.append("[");
+		// evohome v1 API returns an unnamed json array which is not accepted by our parser
+		std::string sz_jdata = "{\"locations\": ";
 		sz_jdata.append(sz_response);
-		sz_jdata.append("]");
+		sz_jdata.append("}");
+		parseOK = jReader.parse(sz_jdata, m_j_fi);
 	}
 	else
-	{
-		sz_jdata.append(sz_response);
-	}
-	sz_jdata.append("}");
+		parseOK = jReader.parse(sz_response, m_j_fi);
 
-	if (!jReader.parse(sz_jdata, m_j_fi))
+	if (!parseOK)
 	{
 		_log.Log(LOG_ERROR, "(%s) cannot parse return data from retrieve installation info", m_Name.c_str());
 		return false;
 	}
 
-	if (!m_j_fi["locations"].isArray())
+	if (!m_j_fi.isMember("locations"))
 	{
-		std::string szError = m_j_fi["locations"].asString();
-		_log.Log(LOG_ERROR, "(%s) retrieve installation info returned message: %s", m_Name.c_str(), szError.c_str());
+		std::string szError;
+		if (m_j_fi.isMember("error"))
+			szError = m_j_fi["error"].asString();
+		if (m_j_fi.isMember("message"))
+			szError = m_j_fi["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) retrieve installation info failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) retrieve installation info returned an unhandled response", m_Name.c_str());
 		return false;
 	}
 
@@ -1206,10 +1242,20 @@ bool CEvohomeWeb::get_status(int location)
 		return false;
 	}
 
-	if (m_j_stat.isMember("message"))
+	if (!m_j_stat.isMember("gateways"))
 	{
-		std::string szError = m_j_stat["message"].asString();
-		_log.Log(LOG_ERROR, "(%s) status request failed with message: %s", m_Name.c_str(), szError.c_str());
+		std::string szError;
+		if (m_j_stat.isMember("error"))
+			szError = m_j_stat["error"].asString();
+		if (m_j_stat.isMember("message"))
+			szError = m_j_stat["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) status request failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) status request returned an unhandled response", m_Name.c_str());
 		return false;
 	}
 
@@ -1729,16 +1775,20 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 		return false;
 	}
 
-	if (j_login.isMember("message"))
-	{
-		std::string szError = j_login["message"].asString();
-		_log.Log(LOG_ERROR, "(%s) v1 login failed with message: %s", m_Name.c_str(), szError.c_str());
-		return false;
-	}
-
 	if (!j_login.isMember("sessionId") || !j_login.isMember("userInfo") || !j_login["userInfo"].isObject() || !j_login["userInfo"].isMember("userID"))
 	{
-		_log.Log(LOG_ERROR, "(%s) v1 login returned unknown data", m_Name.c_str());
+		std::string szError;
+		if (j_login.isMember("error"))
+			szError = j_login["error"].asString();
+		if (j_login.isMember("message"))
+			szError = j_login["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) v1 login failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) v1 login returned an unhandled response", m_Name.c_str());
 		return false;
 	}
 
@@ -1769,40 +1819,44 @@ void CEvohomeWeb::get_v1_temps()
 
 	Json::Reader jReader;
 	Json::Value j_fi;
-
-	// evohome old API returns an unnamed json array which is not accepted by our parser
-	std::string sz_jdata = "{\"locations\": ";
-	if (sz_response[0] == '{') // unexpected response
+	bool parseOK;
+	if (sz_response[0] == '[')
 	{
-		sz_jdata.append("[");
+		// evohome old API returns an unnamed json array which is not accepted by our parser
+		std::string sz_jdata = "{\"locations\": ";
 		sz_jdata.append(sz_response);
-		sz_jdata.append("]");
+		sz_jdata.append("}");
+		parseOK = jReader.parse(sz_jdata, j_fi);
 	}
 	else
-	{
-		sz_jdata.append(sz_response);
-	}
-	sz_jdata.append("}");
+		parseOK = jReader.parse(sz_response, j_fi);
 
-	if (!jReader.parse(sz_jdata, j_fi))
+	if (!parseOK)
 	{
 		_log.Log(LOG_ERROR, "(%s) cannot parse return data from v1 get temps", m_Name.c_str());
 		return;
 	}
 
-	if (!j_fi["locations"].isArray())
+	if (!j_fi.isMember("locations"))
 	{
-		std::string szError = j_fi["locations"].asString();
-		_log.Log(LOG_ERROR, "(%s) v1 get temps failed with message: %s", m_Name.c_str(), szError.c_str());
+		std::string szError;
+		if (j_fi.isMember("error"))
+			szError = j_fi["error"].asString();
+		else if (j_fi.isMember("message"))
+			szError = j_fi["message"].asString();
+		if (!szError.empty())
+		{
+			if (j_fi.isMember("code") && (j_fi["code"].asString() == "401")) // session is no longer valid
+				m_v1uid = "";
+
+			_log.Log(LOG_ERROR, "(%s) v1 get temps failed with message: %s", m_Name.c_str(), szError.c_str());
+			return;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) v1 get temps returned an unhandled response", m_Name.c_str());
 		return;
 	}
 
-	if (j_fi["locations"][0].isMember("message"))
-	{
-		std::string szError = j_fi["locations"][0]["message"].asString();
-		_log.Log(LOG_ERROR, "(%s) v1 get temps failed with message: %s", m_Name.c_str(), szError.c_str());
-		return;
-	}
 
 	size_t l = j_fi["locations"].size();
 	for (size_t i = 0; i < l; ++i)
@@ -1844,59 +1898,102 @@ void CEvohomeWeb::get_v1_temps()
 
 std::string CEvohomeWeb::send_receive_data(std::string url, std::vector<std::string> &headers)
 {
-	std::string sz_response;
-	bool httpOK = HTTPClient::GET(url, headers, sz_response);
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> vHeaderData;
 
-	if (!httpOK)
-		return "{\"message\":\"HTTP client error\"}";
-	else
-		return process_response(sz_response);
+	bool httpOK = HTTPClient::GETBinary(url, headers, vHTTPResponse, vHeaderData, -1);
+
+	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
+
+
 std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers)
 {
-	std::string sz_response;
-	bool httpOK = HTTPClient::POST(url, postdata, headers, sz_response);
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> vHeaderData;
 
+	bool httpOK = HTTPClient::POSTBinary(url, postdata, headers, vHTTPResponse, vHeaderData);
 
-	if (!httpOK)
-		return "{\"message\":\"HTTP client error\"}";
-	else
-		return process_response(sz_response);
+	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
+
+
 std::string CEvohomeWeb::put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers)
 {
-	std::string sz_response;
-	bool httpOK = HTTPClient::PUT(url, putdata, headers, sz_response);
 
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> vHeaderData;
 
-	if (!httpOK)
-		return "{\"message\":\"HTTP client error\"}";
-	else
-		return process_response(sz_response);
-}
-std::string CEvohomeWeb::process_response(std::string &response)
-{
-	if ((response[0] == '[') || (response[0] == '{')) // okay, appears to be json
-		return response;
+	bool httpOK = HTTPClient::PUTBinary(url, putdata, headers, vHTTPResponse);
 
-	if (response.find("<title>") != std::string::npos) // received an HTML page
+	if (!httpOK && (vHTTPResponse.size() == 0))
 	{
-		std::stringstream ss_err;
-		ss_err << "{\"message\":\"";
-		int i = response.find("<title>");
-		char* html = &response[i];
+		// PUTBinary does not return header data
+		return "{\"error\":\"failed sending command to Evohome portal\"}";
+	}
+
+	return process_response(vHTTPResponse, vHeaderData, httpOK);
+}
+
+
+std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPResponse, std::vector<std::string> vHeaderData, bool httpOK)
+{
+	std::string sz_response;
+	std::string sz_retcode;
+
+	sz_response.insert(sz_response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+
+	if (!httpOK && (vHeaderData.size() > 0))
+	{
+		if (vHeaderData[0][0] == 'H')
+		{
+			size_t pos = vHeaderData[0].find(" ");
+			sz_retcode = vHeaderData[0].substr(pos+1, 3);
+		}
+		else if (vHeaderData[0].size() > 2)
+			sz_retcode = vHeaderData[0];
+		else // sz_retcode is a Curl status code
+			_log.Debug(DEBUG_NORM, "(%s) Attempt to connect to Evohome portal returned Curl status: %s", m_Name.c_str(), sz_retcode.c_str());
+	}
+
+	if (sz_response.empty())
+	{
+		if (sz_retcode.empty()) // networking error
+			return "{\"error\":\"unable to connect to Evohome portal\"}";
+
+		std::string sz_response = "{\"error\":\"HTTP ";
+		sz_response.append(sz_retcode);
+		sz_response.append("\",\"code\":\"");
+		sz_response.append(sz_retcode);
+		sz_response.append("\"}");
+		return sz_response;
+	}
+
+	if ((sz_response[0] == '[') || (sz_response[0] == '{')) // okay, appears to be json
+		return sz_response;
+
+	if (sz_response.find("<title>") != std::string::npos) // received an HTML page
+	{
+		std::stringstream ss_error;
+		ss_error << "{\"message\":\"";
+		int i = sz_response.find("<title>");
+		char* html = &sz_response[i];
 		i = 7;
 		char c = html[i];
 		while (c != '<')
 		{
-			ss_err << c;
+			ss_error << c;
 			i++;
 			c = html[i];
 		}
-		ss_err << "\"}";
-		return ss_err.str();
+		if (!sz_retcode.empty())
+		{
+			ss_error << "\",\"code\":\"" << sz_retcode;
+		}
+		ss_error << "\"}";
+		return ss_error.str();
 	}
 
-	return response;
+	return "{\"error\":\"unhandled response\"}";
 }
 

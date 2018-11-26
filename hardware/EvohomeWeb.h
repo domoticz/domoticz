@@ -129,7 +129,7 @@ private:
 	std::string send_receive_data(std::string url, std::vector<std::string> &headers);
 	std::string send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers);
 	std::string put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers);
-	std::string process_response(std::string &response);
+	std::string process_response(std::vector<unsigned char> vHTTPResponse, std::vector<std::string> vHeaderData, bool httpOK);
 
 private:
 	std::shared_ptr<std::thread> m_thread;
