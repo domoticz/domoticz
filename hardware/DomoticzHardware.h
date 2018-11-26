@@ -3,6 +3,11 @@
 #include <boost/signals2.hpp>
 #include "../main/RFXNames.h"
 #include "../main/StoppableTask.h"
+// type support
+#include "../cereal/types/string.hpp"
+#include "../cereal/types/memory.hpp"
+// the archiver
+#include "../cereal/archives/portable_binary.hpp"
 
 enum _eLogLevel : uint32_t;
 enum _eDebugLevel : uint32_t;
@@ -19,7 +24,7 @@ public:
 	bool Stop();
 	bool Restart();
 	bool RestartWithDelay(const long seconds);
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
+	virtual bool WriteToHardware(const char *pdata, const unsigned char length) = 0;
 	virtual bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void EnableOutputLog(const bool bEnableLog);
