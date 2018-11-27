@@ -164,12 +164,12 @@ local testAmpere1 = function(name)
 	local dev = dz.devices(name)
 	local res = true
 
-	res = res and expectEql(64, math.floor(dev.current * 10))
+	res = res and expectEql(0, dev.current)
 
 	res = res and checkAttributes(dev, {
 		["id"] = 5,
 		["name"] = name,
-		["state"] = "6.4",
+		["state"] = "0.0",
 		["deviceSubType"] = "Current";
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
