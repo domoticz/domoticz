@@ -1085,7 +1085,81 @@ describe('Time', function()
 
 
 				end)
+                
+                describe('twilight stuff', function()
 
+					it('between civiltwilightend and civiltwilightstart', function()
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360 , -- 06:00
+							['CivTwilightEndInMinutes'] = 1080
+						}
+
+						-- time between 18:00 and 06:00
+						local t = Time('2017-01-01 01:04:00')
+						assert.is_true(t.ruleMatchesBetweenRange('between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:00:00')
+						assert.is_false(t.ruleMatchesBetweenRange('between civiltwilightend and civiltwilightstart'))
+					end)
+
+					it('every x minute between civiltwilightend and civiltwilightstart', function()
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360 , -- 06:00
+							['CivTwilightEndInMinutes'] = 1080
+						}
+
+						-- time between 18:00 and 06:00
+						t = Time('2017-01-01 01:01:00')
+						assert.is_false(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 01:01:00')
+						assert.is_true(t.matchesRule('every 1 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 01:02:00')
+						assert.is_true(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:00:00')
+						assert.is_false(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:01:00')
+						assert.is_false(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:01:00')
+						assert.is_false(t.matchesRule('every 1 minutes between civiltwilightend and civiltwilightstart'))
+					end)
+
+					it('between civiltwilightstart and civiltwilightend', function()
+
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360, -- 06:00
+							['CivTwilightEndInMinutes'] = 1080
+						}
+
+						-- time between 06:00 and 18:00
+						local t = Time('2017-01-01 11:04:00')
+
+						assert.is_true(t.ruleMatchesBetweenRange('between civiltwilightstart and civiltwilightend'))
+					end)
+
+					it('between 10 minutes before civiltwilightstart and 10 minutes after civiltwilightend', function()
+
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360, -- 06:00
+							['CivTwilightEndInMinutes'] = 1080 -- 18:00
+						}
+
+						local rule = 'between 10 minutes before civiltwilightstart and 10 minutes after civiltwilightend'
+						-- time between 06:00 and 18:00
+						local t = Time('2017-01-01 05:55:00')
+
+						assert.is_true(t.ruleMatchesBetweenRange(rule))
+
+						local t = Time('2017-01-01 18:06:00')
+
+						assert.is_true(t.ruleMatchesBetweenRange(rule))
+					end)
+				end)
+                
 				describe('sun stuff', function()
 
 					it('between sunset and sunrise', function()
@@ -1178,23 +1252,6 @@ describe('Time', function()
 						assert.is_true(t.ruleMatchesBetweenRange(rule))
 					end)
 
-                    it('between sunset and civiltwilightend',function()
-                    	_G.timeofday = {
-							['CivTwilightStartInMinutes'] = 1070, -- 17:50
-							['CivTwilightEndInMinutes'] = 1090, -- 18:10
-							['SunsetInMinutes'] = 1080,
-                            ['Civildaytime'] = true,
-                            ['Civilnighttime'] = false    -- 18:00
-                                        } 
-						local rule = 'between sunset and civiltwilightend'
-
-						local t = Time('2017-01-01 18:05:00')
-						assert.is_true(t.ruleMatchesBetweenRange(rule))
-
-						local t = Time('2017-01-01 23:12:00')
-						assert.is_false(t.ruleMatchesBetweenRange(rule))
-					end)
-                    
 					it('between sunset and 22:33', function()
 						_G.timeofday = {
 							['SunriseInMinutes'] = 360, -- 06:00
