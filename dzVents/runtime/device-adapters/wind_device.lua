@@ -18,8 +18,8 @@ return {
         --              speed (in the unit set in Meters / Counters Wind Meter unit), 
         --              directionString
 
-		device.speedMs = domoticz.utils.round(tonumber(device.rawData[3]) / 10,1)
-		device.gustMs = domoticz.utils.round(tonumber(device.rawData[4]) / 10,1)
+		device.speedMs = adapterManager.round(tonumber(device.rawData[3]) / 10,1)
+		device.gustMs = adapterManager.round(tonumber(device.rawData[4]) / 10,1)
 
         device.gust = tonumber(device.rawData[4]) / 10     -- Until gust is in data ( like speed already is ) we take it from sValues
 		device.temperature = tonumber(device.rawData[5])
