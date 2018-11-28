@@ -1178,6 +1178,23 @@ describe('Time', function()
 						assert.is_true(t.ruleMatchesBetweenRange(rule))
 					end)
 
+                    it('between sunset and civiltwilightend',function()
+                    	_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 1070, -- 17:50
+							['CivTwilightEndInMinutes'] = 1090, -- 18:10
+							['SunsetInMinutes'] = 1080,
+                            ['Civildaytime'] = true,
+                            ['Civilnighttime'] = false    -- 18:00
+                                        } 
+						local rule = 'between sunset and civiltwilightend'
+
+						local t = Time('2017-01-01 18:05:00')
+						assert.is_true(t.ruleMatchesBetweenRange(rule))
+
+						local t = Time('2017-01-01 23:12:00')
+						assert.is_false(t.ruleMatchesBetweenRange(rule))
+					end)
+                    
 					it('between sunset and 22:33', function()
 						_G.timeofday = {
 							['SunriseInMinutes'] = 360, -- 06:00
