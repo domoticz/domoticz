@@ -29,7 +29,7 @@ private:
 	std::string mApiSecret;
 	std::string mAccessToken;
 	std::string mRefreshToken;
-	std::time_t mTokenExpires;
+	time_t mTokenExpires = { 0 };
 	std::string mThermostatID;
 	int mOutsideTemperatureIdx;
 	bool mIsStarted;

@@ -63,7 +63,7 @@ CHoneywell::~CHoneywell(void)
 
 void CHoneywell::Init()
 {
-	mTokenExpires = std::time(0);
+	mTokenExpires = mytime(NULL);
 }
 
 bool CHoneywell::StartHardware()
@@ -159,7 +159,7 @@ bool CHoneywell::refreshToken()
 	if (mRefreshToken.empty())
 		return false;
 
-	if (mTokenExpires > std::time(0))
+	if (mTokenExpires > mytime(NULL))
 		return true;
 
 	std::string sResult;
@@ -199,7 +199,7 @@ bool CHoneywell::refreshToken()
 	std::string ei = root["expires_in"].asString();
 	if (at.length() && rt.length() && ei.length()) {
 		int expires_in = std::stoi(ei);
-		mTokenExpires = std::time(0) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
+		mTokenExpires = mytime(NULL) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
 		mAccessToken = at;
 		mRefreshToken = rt;
 		_log.Log(LOG_NORM, "Honeywell: Storing received access & refresh token. Token expires after %d seconds.",expires_in);
