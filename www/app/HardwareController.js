@@ -922,8 +922,12 @@ define(['app'], function (app) {
 				});
 			}
 			else if (text.indexOf("Honeywell") >= 0) {
+				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
+				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
 				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
 				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				var extra = btoa(apiKey) + "|" + btoa(apiSecret);
+
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&name=" + encodeURIComponent(name) +
@@ -932,6 +936,7 @@ define(['app'], function (app) {
 					"&Mode1=" + Mode1 +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
+					"&extra=" + extra +
 					"&datatimeout=" + datatimeout +
 					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
@@ -1884,14 +1889,19 @@ define(['app'], function (app) {
 				});
 			}
 			else if (text.indexOf("Honeywell") >= 0) {
+				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
+				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
 				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
 				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				var extra = btoa(apiKey) + "|" + btoa(apiSecret);
+
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(accessToken) +
 					"&password=" + encodeURIComponent(refreshToken) +
 					"&enabled=" + bEnabled +
+					"&extra=" + extra +
 					"&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
@@ -5598,6 +5608,12 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Honeywell") >= 0) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
+							var tmp = data["Extra"];
+							var tmparray = tmp.split("|");
+							if (tmparray.length == 2) {
+								$("#hardwarecontent #hardwareparamshoneywell #hwApiKey").val(atob(tmparray[0]));
+								$("#hardwarecontent #hardwareparamshoneywell #hwApiSecret").val(atob(tmparray[1]));
+							}
 						}
 						else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamsgoodweweb #comboserverselect").val(data["Mode1"]);
