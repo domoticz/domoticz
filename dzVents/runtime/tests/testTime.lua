@@ -1085,7 +1085,7 @@ describe('Time', function()
 
 
 				end)
-                
+
                 describe('twilight stuff', function()
 
 					it('between civiltwilightend and civiltwilightstart', function()
@@ -1159,7 +1159,7 @@ describe('Time', function()
 						assert.is_true(t.ruleMatchesBetweenRange(rule))
 					end)
 				end)
-                
+
 				describe('sun stuff', function()
 
 					it('between sunset and sunrise', function()
@@ -1435,7 +1435,7 @@ describe('Time', function()
 					local t = Time('2017-06-20 02:04:00')
 					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
 
-					t = Time('2017-05-20 02:04:00')
+					local t = Time('2017-05-20 02:04:00')
 					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
 
 					t = Time('2017-05-21 02:04:00')
@@ -1561,6 +1561,11 @@ describe('Time', function()
 
 			end)
 
+			it('on date 20/10-31/10', function()
+				local t = Time('2018-10-19 16:00:00') -- on monday, wk43
+				assert.is_false(t.matchesRule('on 20/10-31/10'))
+			end)
+
 			it('at 08:00-15:00 on 21/4-30/4', function()
 				local t = Time('2017-04-21 08:04:00')
 				assert.is_true(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
@@ -1611,7 +1616,7 @@ describe('Time', function()
 			it('every 10 minutes between 2 minutes after sunset and 22:33 on 20/11-20/12 in week 49 on mon,fri', function()
 				_G.timeofday = {
 					['SunriseInMinutes'] = 360, -- 06:00
-					['SunsetInMinutes'] = 1080
+					['SunsetInMinutes'] = 1080 -- 18:00
 				}
 
 				local rule = 'every 10 minutes between 2 minutes after sunset and 22:33 on 20/11-20/12 in week 49 on mon,fri'
@@ -1620,9 +1625,9 @@ describe('Time', function()
 				assert.is_false(t.matchesRule(rule))
 
 				t = Time('2017-11-24 18:10:00') -- on fri, week 47
-				assert.is_false(t.matchesRule(rule))
+				assert.is_false(t.matchesRule(rule)) -- should fail because t is in week 47
 
-				t = Time('2017-12-08 18:10:00') -- on fri, week 49
+				local t = Time('2017-12-08 18:10:00') -- on fri, week 49
 				assert.is_true(t.matchesRule(rule))
 
 				t = Time('2017-12-04 18:10:00') -- on mon, week 49
