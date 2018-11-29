@@ -125,6 +125,7 @@ ENDIF(USE_BUILTIN_SQLITE)
 
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
 IF(USE_PYTHON)
+  find_package(PythonInterp 3.4)
   find_package(PythonLibs 3.4)
   IF(PYTHONLIBS_FOUND)
     MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
