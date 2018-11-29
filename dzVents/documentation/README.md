@@ -1969,6 +1969,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Add speedMs and gustMs from wind devices 
 - bugfix for youless device (0 handling)
 - bugfix for time ( twilightstart and twilightend handling)
+- Fixed some date-range rule checking
 
 ##[2.4.8]
 - Added telegram as option for domoticz.notify

@@ -2057,6 +2057,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Add speedMs and gustMs from wind devices
 * bugfix for youless device (0 handling)
 * bugfix for time ( twilightstart and twilightend handling)
+* Fixed some date-range rule checking
 
 == [2.4.8] ==
 

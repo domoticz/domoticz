@@ -6,6 +6,7 @@
 - bugfix for youless device (0 handling)
 - bugfix for time ( twilightstart and twilightend handling)
 - Added tests for twilight and device functions (hotwater) and attributes (evohome- and wind devices)
+- Fixed some date-range rule checking
 
 [2.4.8]
 - Added telegram as option for domoticz.notify
