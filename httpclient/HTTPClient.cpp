@@ -20,6 +20,13 @@ long		HTTPClient::m_iConnectionTimeout = 10;
 long		HTTPClient::m_iTimeout = 90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
 
+
+/************************************************************************
+ *									*
+ * Curl writeback functions						*
+ *									*
+ ************************************************************************/
+
 size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *userp) // called once for each header
 {
 	size_t realsize = size * nmemb;
@@ -60,6 +67,13 @@ size_t write_curl_data_single_line(void *contents, size_t size, size_t nmemb, vo
 	return realsize;
 }
 
+
+/************************************************************************
+ *									*
+ * Private functions							*
+ *									*
+ ************************************************************************/
+
 bool HTTPClient::CheckIfGlobalInitDone()
 {
 	if (!m_bCurlGlobalInitialized)
@@ -99,28 +113,6 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, domocookie.c_str());
 }
 
-//Configuration functions
-void HTTPClient::SetConnectionTimeout(const long timeout)
-{
-	m_iConnectionTimeout = timeout;
-}
-
-void HTTPClient::SetTimeout(const long timeout)
-{
-	m_iTimeout = timeout;
-}
-
-void HTTPClient::SetSecurityOptions(const bool verifypeer, const bool verifyhost)
-{
-	m_bVerifyPeer = verifypeer;
-	m_bVerifyHost = verifyhost;
-}
-
-void HTTPClient::SetUserAgent(const std::string &useragent)
-{
-	m_sUserAgent = useragent;
-}
-
 void HTTPClient::LogError(const long response_code)
 {
 	switch (response_code)
@@ -149,11 +141,40 @@ void HTTPClient::LogError(const long response_code)
 	}
 }
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
+
+/************************************************************************
+ *									*
+ * Configuration functions						*
+ *									*
+ ************************************************************************/
+
+void HTTPClient::SetConnectionTimeout(const long timeout)
 {
-	std::vector<std::string> vHeaderData;
-	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut);
+	m_iConnectionTimeout = timeout;
 }
+
+void HTTPClient::SetTimeout(const long timeout)
+{
+	m_iTimeout = timeout;
+}
+
+void HTTPClient::SetSecurityOptions(const bool verifypeer, const bool verifyhost)
+{
+	m_bVerifyPeer = verifypeer;
+	m_bVerifyHost = verifyhost;
+}
+
+void HTTPClient::SetUserAgent(const std::string &useragent)
+{
+	m_sUserAgent = useragent;
+}
+
+
+/************************************************************************
+ *									*
+ * binary methods with access to return header data			*
+ *									*
+ ************************************************************************/
 
 bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const int TimeOut)
 {
@@ -225,40 +246,6 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 	return false;
 }
 
-bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outputfile)
-{
-	try
-	{
-		if (!CheckIfGlobalInitDone())
-			return false;
-
-		//open the output file for writing
-		std::ofstream outfile;
-		outfile.open(outputfile.c_str(), std::ios::out|std::ios::binary|std::ios::trunc);
-		if (!outfile.is_open())
-			return false;
-
-		CURL *curl = curl_easy_init();
-		if (!curl)
-			return false;
-
-		CURLcode res;
-		SetGlobalOptions(curl);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
-		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
-
-		outfile.close();
-
-		return (res==CURLE_OK);
-	}
-	catch (...)
-	{
-		return false;
-	}
-}
 
 bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
 {
@@ -321,12 +308,6 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		return false;
 	}
 	return false;
-}
-
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
-{
-	std::vector<std::string> vHeaderData;
-	return POSTBinary(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect);
 }
 
 bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect)
@@ -392,7 +373,8 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 	}
 }
 
-bool HTTPClient::PUTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
+std::vector<std::string> &vHeaderData)
 {
 	try
 	{
@@ -425,7 +407,7 @@ bool HTTPClient::PUTBinary(const std::string &url, const std::string &postdata, 
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
 
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 
@@ -442,7 +424,8 @@ bool HTTPClient::PUTBinary(const std::string &url, const std::string &postdata, 
 	}
 }
 
-bool HTTPClient::DeleteBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
+std::vector<std::string> &vHeaderData)
 {
 	try
 	{
@@ -475,7 +458,7 @@ bool HTTPClient::DeleteBinary(const std::string &url, const std::string &postdat
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
 
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 
@@ -493,27 +476,42 @@ bool HTTPClient::DeleteBinary(const std::string &url, const std::string &postdat
 }
 
 
-bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
-{
-	response = "";
-	std::vector<unsigned char> vHTTPResponse;
-	std::vector<std::string> ExtraHeaders;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, -1))
-		return false;
-	if (!bIgnoreNoDataReturned)
-	{
-		if (vHTTPResponse.empty())
-			return false;
-	}
-	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
-	return true;
-}
+/************************************************************************
+ *									*
+ * binary methods without access to return header data			*
+ *									*
+ ************************************************************************/
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
 {
 	std::vector<std::string> vHeaderData;
-	return GET(url, ExtraHeaders, response, vHeaderData, bIgnoreNoDataReturned);
+	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut);
 }
+
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
+{
+	std::vector<std::string> vHeaderData;
+	return POSTBinary(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect);
+}
+
+bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
+{
+	std::vector<std::string> vHeaderData;
+	return PUTBinary(url, putdata, ExtraHeaders, response, vHeaderData);
+}
+
+bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
+{
+	std::vector<std::string> vHeaderData;
+	return DeleteBinary(url, putdata, ExtraHeaders, response, vHeaderData);
+}
+
+
+/************************************************************************
+ *									*
+ * methods with access to the return headers				*
+ *									*
+ ************************************************************************/
 
 bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bIgnoreNoDataReturned)
 {
@@ -521,35 +519,10 @@ bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &Ext
 	std::vector<unsigned char> vHTTPResponse;
 	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1))
 		return false;
-	if (!bIgnoreNoDataReturned)
-	{
-		if (vHTTPResponse.empty())
-			return false;
-	}
-	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
-	return true;
-}
-
-bool HTTPClient::GETSingleLine(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
-{
-	response = "";
-	std::vector<unsigned char> vHTTPResponse;
-	std::vector<std::string> ExtraHeaders;
-	if (!GETBinarySingleLine(url, ExtraHeaders, vHTTPResponse))
+	if (!bIgnoreNoDataReturned && vHTTPResponse.empty())
 		return false;
-	if (!bIgnoreNoDataReturned)
-	{
-		if (vHTTPResponse.empty())
-			return false;
-	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
-}
-
-bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
-{
-	std::vector<std::string> vHeaderData;
-	return POST(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect, bIgnoreNoDataReturned);
 }
 
 bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
@@ -558,41 +531,114 @@ bool HTTPClient::POST(const std::string &url, const std::string &postdata, const
 	std::vector<unsigned char> vHTTPResponse;
 	if (!POSTBinary(url, postdata, ExtraHeaders, vHTTPResponse, vHeaderData, bFollowRedirect))
 		return false;
-	if (!bIgnoreNoDataReturned)
-	{
-		if (vHTTPResponse.empty())
-			return false;
-	}
+	if (!bIgnoreNoDataReturned && vHTTPResponse.empty())
+		return false;
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
+
+/************************************************************************
+ *									*
+ * methods with optional headers					*
+ *									*
+ ************************************************************************/
+
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
+{
+	std::vector<std::string> vHeaderData;
+	return GET(url, ExtraHeaders, response, vHeaderData, bIgnoreNoDataReturned);
+}
+
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
+{
+	std::vector<std::string> vHeaderData;
+	return POST(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect, bIgnoreNoDataReturned);
+}
+
+bool HTTPClient::PUT(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!PUTBinary(url, postdata, ExtraHeaders, vHTTPResponse))
+	if (!PUTBinary(url, putdata, ExtraHeaders, vHTTPResponse))
 		return false;
-	if (!bIgnoreNoDataReturned)
-	{
-		if (vHTTPResponse.empty())
-			return false;
-	}
+	if (!bIgnoreNoDataReturned && vHTTPResponse.empty())
+		return false;
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::Delete(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
+bool HTTPClient::Delete(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!DeleteBinary(url, postdata, ExtraHeaders, vHTTPResponse))
+	if (!DeleteBinary(url, putdata, ExtraHeaders, vHTTPResponse))
 		return false;
-	if (!bIgnoreNoDataReturned)
-	{
-		if (vHTTPResponse.empty())
-			return false;
-	}
+	if (!bIgnoreNoDataReturned && vHTTPResponse.empty())
+		return false;
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
+
+
+/************************************************************************
+ *									*
+ * simple access methods						*
+ *									*
+ ************************************************************************/
+
+bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
+{
+	std::vector<std::string> ExtraHeaders;
+	return GET(url, ExtraHeaders, response, bIgnoreNoDataReturned);
+}
+
+
+bool HTTPClient::GETSingleLine(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
+{
+	response = "";
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> ExtraHeaders;
+	if (!GETBinarySingleLine(url, ExtraHeaders, vHTTPResponse))
+		return false;
+	if (!bIgnoreNoDataReturned && vHTTPResponse.empty())
+		return false;
+	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+	return true;
+}
+
+bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outputfile)
+{
+	try
+	{
+		if (!CheckIfGlobalInitDone())
+			return false;
+
+		//open the output file for writing
+		std::ofstream outfile;
+		outfile.open(outputfile.c_str(), std::ios::out|std::ios::binary|std::ios::trunc);
+		if (!outfile.is_open())
+			return false;
+
+		CURL *curl = curl_easy_init();
+		if (!curl)
+			return false;
+
+		CURLcode res;
+		SetGlobalOptions(curl);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+
+		outfile.close();
+
+		return (res==CURLE_OK);
+	}
+	catch (...)
+	{
+		return false;
+	}
+}
+
