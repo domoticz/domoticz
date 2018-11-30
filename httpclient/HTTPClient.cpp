@@ -176,7 +176,7 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const int TimeOut)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut)
 {
 	try
 	{
@@ -189,9 +189,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		CURLcode res;
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
-		{
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
-		}
 
 		struct curl_slist *headers = NULL;
 		if (ExtraHeaders.size() > 0)
@@ -243,7 +241,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 }
 
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect, const long TimeOut)
 {
 	try
 	{
@@ -255,10 +253,10 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 
 		CURLcode res;
 		SetGlobalOptions(curl);
+		if (TimeOut != -1)
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 		if (!bFollowRedirect)
-		{
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
-		}
 
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
@@ -312,7 +310,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 }
 
 bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
-std::vector<std::string> &vHeaderData)
+std::vector<std::string> &vHeaderData, const long TimeOut)
 {
 	try
 	{
@@ -324,6 +322,9 @@ std::vector<std::string> &vHeaderData)
 
 		CURLcode res;
 		SetGlobalOptions(curl);
+		if (TimeOut != -1)
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
+
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		//curl_easy_setopt(curl, CURLOPT_PUT, 1);
@@ -375,7 +376,7 @@ std::vector<std::string> &vHeaderData)
 }
 
 bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
-std::vector<std::string> &vHeaderData)
+std::vector<std::string> &vHeaderData, const long TimeOut)
 {
 	try
 	{
@@ -387,11 +388,13 @@ std::vector<std::string> &vHeaderData)
 
 		CURLcode res;
 		SetGlobalOptions(curl);
+		if (TimeOut != -1)
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
+
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		//curl_easy_setopt(curl, CURLOPT_PUT, 1);
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-
 
 		struct curl_slist *headers = NULL;
 		if (ExtraHeaders.size() > 0)
@@ -445,13 +448,13 @@ std::vector<std::string> &vHeaderData)
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
 	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut);
 }
 
-bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
+bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	try
 	{
@@ -514,22 +517,22 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 	return false;
 }
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
-	return POSTBinary(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect);
+	return POSTBinary(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect, TimeOut);
 }
 
-bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
-	return PUTBinary(url, putdata, ExtraHeaders, response, vHeaderData);
+	return PUTBinary(url, putdata, ExtraHeaders, response, vHeaderData, TimeOut);
 }
 
-bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
-	return DeleteBinary(url, putdata, ExtraHeaders, response, vHeaderData);
+	return DeleteBinary(url, putdata, ExtraHeaders, response, vHeaderData, TimeOut);
 }
 
 
