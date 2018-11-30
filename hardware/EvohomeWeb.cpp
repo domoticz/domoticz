@@ -25,6 +25,7 @@
 #define LOGONFAILTRESHOLD 3
 #define MINPOLINTERVAL 10
 #define MAXPOLINTERVAL 3600
+#define HTTPTIMEOUT 30
 
 #ifdef _WIN32
 #define gmtime_r(timep, result) gmtime_s(result, timep)
@@ -1907,7 +1908,7 @@ std::string CEvohomeWeb::send_receive_data(std::string url, std::vector<std::str
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
 
-	bool httpOK = HTTPClient::GETBinary(url, headers, vHTTPResponse, vHeaderData, -1);
+	bool httpOK = HTTPClient::GETBinary(url, headers, vHTTPResponse, vHeaderData, HTTPTIMEOUT);
 
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
@@ -1918,7 +1919,7 @@ std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
 
-	bool httpOK = HTTPClient::POSTBinary(url, postdata, headers, vHTTPResponse, vHeaderData);
+	bool httpOK = HTTPClient::POSTBinary(url, postdata, headers, vHTTPResponse, vHeaderData, HTTPTIMEOUT);
 
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
@@ -1930,13 +1931,7 @@ std::string CEvohomeWeb::put_receive_data(std::string url, std::string putdata, 
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
 
-	bool httpOK = HTTPClient::PUTBinary(url, putdata, headers, vHTTPResponse);
-
-	if (!httpOK && (vHTTPResponse.size() == 0))
-	{
-		// PUTBinary does not return header data
-		return "{\"error\":\"failed sending command to Evohome portal\"}";
-	}
+	bool httpOK = HTTPClient::PUTBinary(url, putdata, headers, vHTTPResponse, vHeaderData, HTTPTIMEOUT);
 
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }
