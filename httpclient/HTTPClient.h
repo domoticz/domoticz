@@ -31,8 +31,8 @@ public:
 	 *									*
 	 ************************************************************************/
 	
-	static void SetConnectionTimeout(const long timeout);
-	static void SetTimeout(const long timeout);
+	static void SetConnectionTimeout(const float timeout);
+	static void SetTimeout(const float timeout);
 	static void SetUserAgent(const std::string &useragent);
 	static void SetSecurityOptions(const bool verifypeer, const bool verifyhost);
 
@@ -85,11 +85,11 @@ public:
 	 *									*
 	 ************************************************************************/
 
-	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut = -1);
-	static bool GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut = -1);
-	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect = true, const long TimeOut = -1);
-	static bool PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut = -1);
-	static bool DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut = -1);
+	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut = -1);
+	static bool GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut = -1);
+	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect = true, const float TimeOut = -1);
+	static bool PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut = -1);
+	static bool DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut = -1);
 
 
 	/************************************************************************
@@ -98,12 +98,12 @@ public:
 	 *									*
 	 ************************************************************************/
 
-	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut = -1);
-	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect = true, const long TimeOut = -1);
+	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const float TimeOut = -1);
+	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect = true, const float TimeOut = -1);
 	static bool PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
-std::vector<std::string> &vHeaderData, const long TimeOut = -1);
+std::vector<std::string> &vHeaderData, const float TimeOut = -1);
 	static bool DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
-std::vector<std::string> &vHeaderData, const long TimeOut = -1);
+std::vector<std::string> &vHeaderData, const float TimeOut = -1);
 
 
 
