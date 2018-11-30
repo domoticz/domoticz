@@ -208,16 +208,16 @@ void CEvohomeWeb::Do_Work()
 	{
 		sec_counter++;
 		m_lastconnect++;
-		if (sec_counter % 10 == 0) {
+		if (sec_counter % 10 == 0)
 			m_LastHeartbeat = mytime(NULL);
+
+		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect >= MINPOLINTERVAL))
+		{
 			if (m_loggedon && (m_LastHeartbeat > m_sessiontimer)) // discard our session with the honeywell server
 			{
 				m_loggedon = false;
 				m_bequiet = true;
 			}
-		}
-		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect>=MINPOLINTERVAL))
-		{
 			GetStatus();
 			pollcounter = LOGONFAILTRESHOLD;
 			m_lastconnect=0;
@@ -839,6 +839,8 @@ std::string CEvohomeWeb::local_to_utc(const std::string &local_time)
 
 bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 {
+	_log.Debug(DEBUG_HARDWARE, "(%s) logon to v2 API", m_Name.c_str());
+
 	std::vector<std::string> LoginHeaders;
 	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
 	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
@@ -919,6 +921,8 @@ bool CEvohomeWeb::renew_login()
 {
 	if (m_v2refresh_token.empty())
 		return false;
+
+	_log.Debug(DEBUG_HARDWARE, "(%s) refresh v2 session token", m_Name.c_str());
 
 	std::vector<std::string> LoginHeaders;
 	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
@@ -1747,6 +1751,8 @@ bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode
 
 bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 {
+	_log.Debug(DEBUG_HARDWARE, "(%s) logon to v1 API", m_Name.c_str());
+
 	std::vector<std::string> LoginHeaders;
 	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
 	LoginHeaders.push_back("content-type: application/json");
@@ -1952,8 +1958,8 @@ std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPRespon
 		}
 		else if (vHeaderData[0].size() > 2)
 			sz_retcode = vHeaderData[0];
-		else // sz_retcode is a Curl status code
-			_log.Debug(DEBUG_NORM, "(%s) Attempt to connect to Evohome portal returned Curl status: %s", m_Name.c_str(), sz_retcode.c_str());
+		else // vHeaderData contains a Curl status code
+			_log.Debug(DEBUG_HARDWARE, "(%s) attempt to communicate to Evohome portal returned Curl status: %s", m_Name.c_str(), vHeaderData[0].c_str());
 	}
 
 	if (sz_response.empty())
