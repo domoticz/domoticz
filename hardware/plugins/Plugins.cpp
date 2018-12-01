@@ -1432,6 +1432,12 @@ Error:
 			}
 		}
 
+		// Make sure there is a protocol to encode the data
+		if (!pConnection->pProtocol)
+		{
+			pConnection->pProtocol = new CPluginProtocol();
+		}
+
 		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
 		WriteDebugBuffer(vWriteData, false);
 
