@@ -1206,6 +1206,8 @@ bool MainWorker::Stop()
 
 		//    m_cameras.StopCameraGrabber();
 
+		HTTPClient::Cleanup();
+
 		RequestStop();
 		m_thread->join();
 		m_thread.reset();

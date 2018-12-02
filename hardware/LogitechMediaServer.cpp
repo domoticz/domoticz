@@ -42,7 +42,7 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) :
 		m_Pwd = result[0][3];
 	}
 
-	SetSettings(10, 3000);
+	SetSettings(10);
 }
 
 CLogitechMediaServer::~CLogitechMediaServer(void)
