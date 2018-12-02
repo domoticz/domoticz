@@ -16,8 +16,8 @@ extern std::string szUserDataFolder;
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
 bool		HTTPClient::m_bVerifyHost = false;
 bool		HTTPClient::m_bVerifyPeer = false;
-long		HTTPClient::m_iConnectionTimeout = 10000;
-long		HTTPClient::m_iTimeout = 90000; //max, time that a download has to be finished?
+long		HTTPClient::m_iConnectionTimeout = 10;
+long		HTTPClient::m_iTimeout = 90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
 
 
@@ -103,8 +103,8 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_UNRESTRICTED_AUTH, 1L);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_sUserAgent.c_str());
-	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, m_iConnectionTimeout);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, m_iTimeout);
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, m_iTimeout);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, m_bVerifyPeer ? 1L : 0);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, m_bVerifyHost ? 2L : 0); //allow self signed certificates
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
@@ -148,14 +148,14 @@ void HTTPClient::LogError(const long response_code)
  *									*
  ************************************************************************/
 
-void HTTPClient::SetConnectionTimeout(const float timeout)
+void HTTPClient::SetConnectionTimeout(const long timeout)
 {
-	m_iConnectionTimeout = static_cast<long>(timeout * 1000);
+	m_iConnectionTimeout = timeout;
 }
 
-void HTTPClient::SetTimeout(const float timeout)
+void HTTPClient::SetTimeout(const long timeout)
 {
-	m_iTimeout = static_cast<long>(timeout * 1000);
+	m_iTimeout = timeout;
 }
 
 void HTTPClient::SetSecurityOptions(const bool verifypeer, const bool verifyhost)
@@ -176,7 +176,7 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const float TimeOut)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut)
 {
 	try
 	{
@@ -189,7 +189,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		CURLcode res;
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
-			curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, static_cast<long>(TimeOut * 1000));
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
 		struct curl_slist *headers = NULL;
 		if (ExtraHeaders.size() > 0)
@@ -241,7 +241,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 }
 
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect, const float TimeOut)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect, const long TimeOut)
 {
 	try
 	{
@@ -254,7 +254,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		CURLcode res;
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
-			curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, static_cast<long>(TimeOut * 1000));
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 		if (!bFollowRedirect)
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
 
@@ -310,7 +310,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 }
 
 bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
-std::vector<std::string> &vHeaderData, const float TimeOut)
+std::vector<std::string> &vHeaderData, const long TimeOut)
 {
 	try
 	{
@@ -323,7 +323,7 @@ std::vector<std::string> &vHeaderData, const float TimeOut)
 		CURLcode res;
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
-			curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, static_cast<long>(TimeOut * 1000));
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -376,7 +376,7 @@ std::vector<std::string> &vHeaderData, const float TimeOut)
 }
 
 bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
-std::vector<std::string> &vHeaderData, const float TimeOut)
+std::vector<std::string> &vHeaderData, const long TimeOut)
 {
 	try
 	{
@@ -389,7 +389,7 @@ std::vector<std::string> &vHeaderData, const float TimeOut)
 		CURLcode res;
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
-			curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, static_cast<long>(TimeOut * 1000));
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -448,13 +448,13 @@ std::vector<std::string> &vHeaderData, const float TimeOut)
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
 	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut);
 }
 
-bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut)
+bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	try
 	{
@@ -467,7 +467,9 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		CURLcode res;
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
-			curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, static_cast<long>(TimeOut * 1000));
+		{
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
+		}
 
 		struct curl_slist *headers = NULL;
 		if (ExtraHeaders.size() > 0)
@@ -512,19 +514,19 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 	return false;
 }
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect, const float TimeOut)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
 	return POSTBinary(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect, TimeOut);
 }
 
-bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut)
+bool HTTPClient::PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
 	return PUTBinary(url, putdata, ExtraHeaders, response, vHeaderData, TimeOut);
 }
 
-bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const float TimeOut)
+bool HTTPClient::DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)
 {
 	std::vector<std::string> vHeaderData;
 	return DeleteBinary(url, putdata, ExtraHeaders, response, vHeaderData, TimeOut);
@@ -676,4 +678,3 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 		return false;
 	}
 }
-
