@@ -850,7 +850,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_LogitechMediaServer:
 		//Logitech Media Server
-		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1, Mode2);
+		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1);
 		break;
 	case HTYPE_Sterbox:
 		//LAN
