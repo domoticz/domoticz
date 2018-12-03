@@ -3664,14 +3664,10 @@ define(['app'], function (app) {
 			var Mode1 = parseInt($("#hardwarecontent #lmssettingstable #pollinterval").val());
 			if (Mode1 < 1)
 				Mode1 = 30;
-			var Mode2 = parseInt($("#hardwarecontent #lmssettingstable #pingtimeout").val());
-			if (Mode2 < 500)
-				Mode2 = 500;
 			$.ajax({
 				url: "json.htm?type=command&param=lmssetmode" +
 				"&idx=" + $.devIdx +
-				"&mode1=" + Mode1 +
-				"&mode2=" + Mode2,
+				"&mode1=" + Mode1,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3693,7 +3689,6 @@ define(['app'], function (app) {
 			$('#hardwarecontent').i18n();
 
 			$("#hardwarecontent #lmssettingstable #pollinterval").val(Mode1);
-			$("#hardwarecontent #lmssettingstable #pingtimeout").val(Mode2);
 
 			var oTable = $('#lmsnodestable').dataTable({
 				"sDom": '<"H"lfrC>t<"F"ip>',
