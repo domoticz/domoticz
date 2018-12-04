@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+GE Plug-in Smart Switch, Single Outlet 28169
+http://products.z-wavealliance.org/products/2533
+ -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<CommandClass id="112">
+		<Value type="list" index="3" genre="config" label="LED Light" size="1" value="0">
+			<Help>
+				When shipped from the factory, the LED is set to turn ON when the connected light is turned OFF. 
+				This is the default setting and can be changed if your primary controller supports the node configuration function. 
+				To make the LED turn ON when the light is turned ON, change parameter 3s value to 1. 
+				To turn the LED OFF at all times, change parameter 3s value to 2.
+			</Help>
+			<Item label="LED Light on when Z-Wave turned OFF" value="0" />
+			<Item label="LED Light on when Z-Wave turned ON" value="1" />
+			<Item label="LED Light Always Off" value="2" />
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Lifeline" />
+		</Associations>
+	</CommandClass>
+</Product>
