@@ -838,8 +838,42 @@ namespace Plugins {
 			}
 			if (!SuppressTriggers)
 			{
-				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+				// Translate from iType, iSubType and iSwitchType if we have Temp+Hm+Baro, Temp+Hum or Temp
 
+				_log.Log(LOG_NORM, "(%s) %d/%d/%d Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), iType, iSubType, iSwitchType, self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
+
+				if ((iType == pTypeTEMP_HUM_BARO  ) and ( iSubType == sTypeTHB1 ))
+				{ // Temp+Hum+Baro: sValue = "0.0;50;1;1010;1"
+					int temp, hum, baro, nforecast;
+
+					sscanf( sValue, "%d;%d;%d;%d;%d", &temp, &hum, &baro, &nforecast);
+               				SendTempHumBaroSensorFloat((const unsigned char)self->Unit, iBatteryLevel, temp, hum, baro, nforecast, sName, iSignalLevel);
+				}
+				else if ((iType == pTypeTEMP_HUM) and (iSubType == sTypeTH1))
+				{ // Temp+Hum : sValue = "0.0;50;1
+					int temp, hum, dum;
+
+					sscanf( sValue, "%d;%d;%d", &temp, &hum, &dum);
+       					SendTempHumSensor((const unsigned char)self->Unit, iBatteryLevel, temp, hum, sName, iSignalLevel);
+				}
+				/*
+				else if iType == pTypeHUM and iSubType = sTypeHUM1
+				{ // Humidity
+					sprintf( sValue, "%d", hum)
+       					SendHumSensor((const unsigned char)self->Unit, iBatteryLevel, temp, sName, iSignalLevel);
+				}
+				*/
+				else if ((iType == pTypeTEMP) and (iSubType == sTypeTEMP5))
+				{ // Temperature
+					int temp;
+
+					sscanf( sValue, "%d", &temp);
+       					SendTempSensor((const unsigned char)self->Unit, iBatteryLevel, temp, sName, iSignalLevel);
+				}
+				else
+				{
+					DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+				}
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType = sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
