@@ -121,6 +121,7 @@ local function Domoticz(settings)
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
+		['EVOHOME_MODE_FOLLOW_SCHEDULE'] = 'FollowSchedule',
 		['INTEGER'] = 'integer',
 		['FLOAT'] = 'float',
 		['STRING'] = 'string',

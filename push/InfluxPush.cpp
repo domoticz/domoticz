@@ -173,8 +173,6 @@ void CInfluxPush::Do_Work()
 
 	while (!IsStopRequested(500))
 	{
-		sleep_milliseconds(500);
-
 		{ // additional scope for lock (accessing size should be within lock too)
 			std::lock_guard<std::mutex> l(m_background_task_mutex);
 			if (m_background_task_queue.empty())

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!--
+  Coolcam NAS-PD02ZE Motion Sensor (PIR) Version 2
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="1" label="Motion detection sensitivity" value="12" min="8" max="255" size="1">
+      <Help>Adapt the sensitivity of the motion detection.</Help>
+      <Item label="High Sensitivity" value="8" />
+      <Item label="Normal Sensitivity" value="12" />
+      <Item label="Lower Sensitivity" value="128" />
+      <Item label="Lowest Sensitivity" value="255" />
+    </Value>
+    
+    <Value type="short" genre="config" instance="1" index="2" label="Motion detection ON time" units="second" value="30" min="5" max="600" size="2">
+      <Help>This parameter can be determined how long the associated devices should stay ON status.
+        For instance, this parameter is set to 30(second), the PIR detector will send a BASIC_SET Command to an associated device with value basic set level if PIR detector is triggered and the associated device will be turned on 30(second) before it is turned off.
+        This Parameter value must be large than Parameter 6#.
+        If user set this parameter to default by Configure CC, the parameter #6 will be set to default value.
+        Available Settings:5 to 600(second).
+      </Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="3" label="Basic Set Level" value="255" min="0" max="255" size="1">
+      <Help>Basic Set Command will be sent, on the associated devices (group 2), where contains a value when PIR detector is triggered, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
+        This Parameter is used to some associated devices.
+        Available Settings: 0, 1 to 99 or 255.
+      </Help>
+    </Value>
+    
+    <Value type="list" genre="config" instance="1" index="4" label="Motion detection function" value="1" size="1">
+      <Help>
+        Enable the motion detection (PIR) function.
+        This parameter does not effect the luminance reporting.
+      </Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="255" />
+     </Value>
+    
+    <Value type="short" genre="config" instance="1" index="5" label="Ambient Illumination Lux Level" units="lux" value="100" min="0" max="1000" size="2">
+      <Help>
+        Define the illumination level value which determines when the 'Illumination switch ON function' is activated.
+        If the illumination level falls below this value and a person moves across or within the detected area, the motion sensor will switch on the associated device (group 2).
+        0 to 1000(Lux).
+      </Help>
+    </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="6" label="Motion detection blind time" units="second" value="8" min="1" max="8" size="1">
+      <Help>
+        Period after motion detection in which the sensor is insensitive for new motion detection.
+        This value must be less than the 'Motion detection ON time'.
+        Available Settings: 1 to 8(s).
+      </Help>
+    </Value>
+    
+    <Value type="short" genre="config" instance="1" index="7" label="Illumination reporting interval" units="second" value="180" min="60" max="36000" size="2">
+      <Help>
+        Determine the time between illumination reports, even when value has not changed.
+        NOTE: This Value Must Be less than Wakeup Interval Time.
+        Available Settings: 60 ~ 36000(second).
+      </Help>
+    </Value>
+    
+    <Value type="list" genre="config" instance="1" index="8" label="Illumination function" value="0" size="1">
+      <Help>
+        Enable the function to switch on a associated device (group 2) once motion has been detected and the illumination level will be less than the value specified in 'Illumination switch ON level'.
+      </Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+    </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="9" label="Illumination report threshold" units="lux" value="20" min="0" max="255" size="1">
+      <Help>This parameter defines by how much Lux Level must change, in lux, to be reported to the main controller.</Help>
+    </Value>
+	
+    <Value type="list" genre="config" instance="1" index="10" label="Motion detection LED indication" value="1" size="1">
+      <Help>Enable LED/PIR to blink red when motion detected.</Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+    </Value>
+ 
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="4" label="Lifeline" />
+      <Group index="2" max_associations="4" label="Control Commands BASIC_SET" />
+      <Group index="3" max_associations="4" label="Send Notification Report" />
+      <Group index="4" max_associations="4" label="Send Sensor Binary Report" />
+    </Associations>
+  </CommandClass>
+</Product>
