@@ -11,7 +11,7 @@
 #include "../notifications/NotificationHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec) :
 	m_IP(IPAddress),
 	m_User(User),
 	m_Pwd(Pwd),
@@ -21,10 +21,10 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAd
 	m_Port = Port;
 	m_bShowedStartupMessage = false;
 	m_iMissedQueries = 0;
-	SetSettings(PollIntervalsec, PingTimeoutms);
+	SetSettings(PollIntervalsec);
 }
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID) : 
+CLogitechMediaServer::CLogitechMediaServer(const int ID) :
 	m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
@@ -42,7 +42,7 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) :
 		m_Pwd = result[0][3];
 	}
 
-	SetSettings(10, 3000);
+	SetSettings(10);
 }
 
 CLogitechMediaServer::~CLogitechMediaServer(void)
@@ -65,7 +65,7 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 
 	sPostData << sPostdata;
 
-	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
+	HTTPClient::SetTimeout(5);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
 
 	if (!bRetVal)
@@ -492,16 +492,13 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	ReloadNodes();
 }
 
-void CLogitechMediaServer::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
+void CLogitechMediaServer::SetSettings(const int PollIntervalsec)
 {
 	//Defaults
 	m_iPollInterval = 30;
-	m_iPingTimeoutms = 1000;
 
 	if (PollIntervalsec > 1)
 		m_iPollInterval = PollIntervalsec;
-	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
-		m_iPingTimeoutms = PingTimeoutms;
 }
 
 bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned char length)
@@ -811,11 +808,9 @@ namespace http {
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
-			std::string mode2 = request::findValue(&req, "mode2");
 			if (
 				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
+				(mode1 == "")
 				)
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -830,10 +825,9 @@ namespace http {
 			root["title"] = "LMSSetMode";
 
 			int iMode1 = atoi(mode1.c_str());
-			int iMode2 = atoi(mode2.c_str());
 
-			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')", iMode1, iMode2, hwid.c_str());
-			pHardware->SetSettings(iMode1, iMode2);
+			m_sql.safe_query("UPDATE Hardware SET Mode1=%d WHERE (ID == '%q')", iMode1, hwid.c_str());
+			pHardware->SetSettings(iMode1);
 			pHardware->Restart();
 		}
 

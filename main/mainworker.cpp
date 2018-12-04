@@ -850,7 +850,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_LogitechMediaServer:
 		//Logitech Media Server
-		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1, Mode2);
+		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1);
 		break;
 	case HTYPE_Sterbox:
 		//LAN
@@ -957,7 +957,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTado(ID, Username, Password);
 		break;
 	case HTYPE_Honeywell:
-		pHardware = new CHoneywell(ID, Username, Password);
+		pHardware = new CHoneywell(ID, Username, Password, Extra);
 		break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1, Mode2);
@@ -1205,6 +1205,8 @@ bool MainWorker::Stop()
 #endif
 
 		//    m_cameras.StopCameraGrabber();
+
+		HTTPClient::Cleanup();
 
 		RequestStop();
 		m_thread->join();
