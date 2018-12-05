@@ -464,7 +464,7 @@ void CRtl433::Do_Work()
 				if (!bHaveSend)
 				{
 					// this is also logged when parsed data is invalid
-					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s|%s)", headerLine.c_str(), line.c_str());
+					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s|%s)", headerLine.c_str(), line);
 				}
 				else
 				{
