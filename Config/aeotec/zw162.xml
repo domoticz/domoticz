@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ZW162 Doorbell 6
+-->
+<Product xmlns="http://code.google.com/p/open-zwave/">
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="int" index="2" genre="config" label="Browse Siren Alerts" value="872873984">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="3" genre="config" label="Chime #1 Remote Configuration" value="151456020">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="4" genre="config" label="Chime #2 Remote Configuration" value="419891476">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="5" genre="config" label="Chime #3 Remote Configuration" value="688326932">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="6" genre="config" label="Chime #1 Siren Configuration" value="2298939924">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="7" genre="config" label="Chime #2 Siren Configuration" value="2433157652">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="8" genre="config" label="Chime Instant Configuration" value="2030502676">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="10" genre="config" label="Light Effect 0" value="2519864323">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="11" genre="config" label="Light Effect 1" value="1684275203">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="12" genre="config" label="Light Effect 2" value="4325635">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="13" genre="config" label="Light Effect 3" value="1107296259">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="14" genre="config" label="Light Effect 4" value="10">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="15" genre="config" label="Light Effect 5" value="2560">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="int" index="16" genre="config" label="Light Effect 6" value="1107296257">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="17" label="Vibration Sensor Alarm Volume" value="8" size="1">
+      <Help>Volume of the Vibration Sensor Alarm</Help>
+      <Item label="Mute" value="0"/>
+      <Item label="1" value="1"/>
+      <Item label="2" value="2"/>
+      <Item label="3" value="3"/>
+      <Item label="4" value="4"/>
+      <Item label="5" value="5"/>
+      <Item label="6" value="6"/>
+      <Item label="7" value="7"/>
+    </Value>
+    <Value type="list" genre="config" index="32" label="Communication Quality Report" read_only="true" size="1">
+      <Help>Communication Quality Report</Help>
+      <Item label="Weak" value="0"/>
+      <Item label="Good" value="15"/>
+      <Item label="Great" value="255"/>
+    </Value>
+    <Value type="int" genre="config" index="33" label="Button #1 Information" read_only="true" size="4">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6</Help>
+    </Value>
+    <Value type="int" genre="config" index="34" label="Button #2 Information" read_only="true" size="4">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6</Help>
+    </Value>
+    <Value type="int" genre="config" index="35" label="Button #3 Information" read_only="true" size="4">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6</Help>
+    </Value>
+    <Value type="byte" genre="config" index="36" label="Pair/Unpair a Button" size="1">
+      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6</Help>
+    </Value>
+    <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="8">
+      <Group index="1" max_associations="5" label="Lifeline"/>
+      <Group index="2" max_associations="5" label="Browse Alerts"/>
+      <Group index="3" max_associations="5" label="Remote #1"/>
+      <Group index="4" max_associations="5" label="Remote #2"/>
+      <Group index="5" max_associations="5" label="Remote #3"/>
+      <Group index="6" max_associations="5" label="Siren #1"/>
+      <Group index="7" max_associations="5" label="Siren #2"/>
+      <Group index="8" max_associations="5" label="Instant"/>
+    </Associations>
+  </CommandClass>
+</Product>
