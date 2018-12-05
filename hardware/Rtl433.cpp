@@ -100,6 +100,7 @@ void CRtl433::Do_Work()
 	{
 		char line[2048];
 		std::vector<std::string> headers;
+		std::string headerLine = "";
 		std::string sLastLine = "";
 
 		std::string szFlags = "-F csv -q -I 2 " + m_cmdline; // -f 433.92e6 -f 868.24e6 -H 60 -d 0
@@ -151,6 +152,7 @@ void CRtl433::Do_Work()
 				if (bFirstTime)
 				{
 					bFirstTime = false;
+					headerLine = line;
 					headers = ParseCSVLine(line);
 					continue;
 				}
@@ -462,7 +464,7 @@ void CRtl433::Do_Work()
 				if (!bHaveSend)
 				{
 					// this is also logged when parsed data is invalid
-					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", line);
+					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s|%s)", headerLine.c_str(), line.c_str());
 				}
 				else
 				{
