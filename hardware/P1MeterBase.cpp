@@ -484,32 +484,32 @@ bool P1MeterBase::MatchLine()
 					m_amperagel3 = temp_ampere; //Amperage L3;
 				break;				
 			case P1TYPE_POWERUSEL1:
-				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerusel1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERUSEL2:
-				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerusel2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERUSEL3:
-				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerusel3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_POWERDELL1:
-				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerdell1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERDELL2:
-				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerdell2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERDELL3:
-				temp_power = (unsigned long)(strtod(value, &validate)*1000.0f);
+				temp_power = static_cast<float>(strtod(value, &validate)*1000.0f);
 				if (temp_power < 10000)
 					m_powerdell3 = temp_power; //Power Used L3;
 				break;
