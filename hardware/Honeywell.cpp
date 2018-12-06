@@ -53,7 +53,7 @@ CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::str
 	if (Username.empty() || Password.empty()) {
 		_log.Log(LOG_ERROR, "Honeywell: Please update your access token/request token!...");
 	}
-
+	mLastMinute = -1;
 	Init();
 }
 
