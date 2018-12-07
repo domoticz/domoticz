@@ -14,10 +14,10 @@
 #include <stdio.h>
 #include "Rtl433.h"
 
-void removeCharsFromString(std::string &str, const char* charsToRemove ) {
-   for ( unsigned int i = 0; i < strlen(charsToRemove); ++i ) {
-      str.erase( remove(str.begin(), str.end(), charsToRemove[i]), str.end() );
-   }
+void removeCharsFromString(std::string &str, const char* charsToRemove) {
+	for (unsigned int i = 0; i < strlen(charsToRemove); ++i) {
+		str.erase(remove(str.begin(), str.end(), charsToRemove[i]), str.end());
+	}
 }
 
 CRtl433::CRtl433(const int ID, const std::string &cmdline) :
@@ -27,17 +27,16 @@ CRtl433::CRtl433(const int ID, const std::string &cmdline) :
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
 	m_hPipe = NULL;
-
-#ifdef _DEBUG
-	std::string headerline = "time,msg,codes,model,button,id,channel,battery,temperature_C,mic,rid,humidity,state,status,brand,rain_rate,rain_total,gust,average,direction,pressure_hPa,uv,power_W,energy_kWh,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,dipswitch,rbutton,device,temperature_F,rc,brandmodelidtemperature_C,setpoint_C,switch,cmd,cmd_id,modelidcmd,tristate,direction_str,direction_deg,speed,rain,msg_type,signal,hours,minutes,seconds,year,month,day,sensor_code,uv_status,uv_index,lux,wm,fc,ws_id,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,sensor_id,battery_low,sequence_num,message_type,wind_speed_mph,wind_dir_deg,wind_dir,rainfall_accumulation_inch,raincounter_raw,windstrength,winddirection,flags,maybetemp,binding_countdown,depth,dev_id,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,address,button1,button2,button3,button4,data,sid,transmit,moisture,type,pressure_PSI,battery_mV,pressure_bar,pulses,energy,device id,code,len,to,from,payload,event,heartbeat,brandmodelidstatus,temperature_C1,temperature_C2,test,probe,water,ptemperature_C,phumidity,newbattery,heating,heating_temp,uvi,light_lux,counter,alarm,depth_cm,repeat,temperature_1_C,temperature_2_C,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,seq,extradata,house_id,module_id,sensor_type,sensor_count,alarms,sensor_value,battery_voltage,failed,pressure_kPa";
-	headerline = "time,model,button,id,channel,battery,temperature_C,mic,rid,humidity,state,brand,rain_rate,rain_total,gust,average,direction,pressure_hPa,uv,power_W,energy_kWh,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,dipswitch,rbutton,device,temperature_F,status,rc,brandmodelidtemperature_C,setpoint_C,switch,direction_str,direction_deg,speed,rain,msg_type,signal,hours,minutes,seconds,year,month,day,sensor_code,uv_status,uv_index,lux,wm,fc,ws_id,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,windstrength,winddirection,flags,maybetemp,binding_countdown,depth,dev_id,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,sid,transmit,moisture,type,pressure_PSI,battery_mV,pressure_bar,code,pulses,energy,device id,len,to,from,payload,event,heartbeat,brandmodelidstatus,temperature_C1,temperature_C2,test,newbattery,heating,heating_temp,water,wind_dir_deg,uvi,light_lux,counter,alarm,depth_cm,repeat,temperature_1_C,temperature_2_C,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,seq,extradata,house_id,module_id,sensor_type,sensor_count,alarms,sensor_value,battery_voltage,data,failed,pressure_kPa";
-	std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
-	//std::string line = "2018-12-06 07:56:17,,,WGR800,,1,0,OK,,,,,,,OS,,,4.500,5.300,292.500,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
-	//std::string line = "2018-12-06 07:56:16,,,PCR800,,2,0,OK,,,,,,,OS,0.000,9.850,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
-	std::string line = "2018-12-06 18:35:52,HIDEKI TS04 sensor,,,3,OK,10.900,,,83,,,,,,,,,,,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
-	ParseLine(headers, line.c_str());
-#endif
-
+	m_time_last_received = 0;
+/*
+	#ifdef _DEBUG
+		std::string headerline = "time,msg,codes,model,button,id,channel,battery,temperature_C,mic,rid,humidity,state,status,brand,rain_rate,rain_total,gust,average,direction,pressure_hPa,uv,power_W,energy_kWh,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,dipswitch,rbutton,device,temperature_F,rc,brandmodelidtemperature_C,setpoint_C,switch,cmd,cmd_id,modelidcmd,tristate,direction_str,direction_deg,speed,rain,msg_type,signal,hours,minutes,seconds,year,month,day,sensor_code,uv_status,uv_index,lux,wm,fc,ws_id,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,sensor_id,battery_low,sequence_num,message_type,wind_speed_mph,wind_dir_deg,wind_dir,rainfall_accumulation_inch,raincounter_raw,windstrength,winddirection,flags,maybetemp,binding_countdown,depth,dev_id,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,address,button1,button2,button3,button4,data,sid,transmit,moisture,type,pressure_PSI,battery_mV,pressure_bar,pulses,energy,device id,code,len,to,from,payload,event,heartbeat,brandmodelidstatus,temperature_C1,temperature_C2,test,probe,water,ptemperature_C,phumidity,newbattery,heating,heating_temp,uvi,light_lux,counter,alarm,depth_cm,repeat,temperature_1_C,temperature_2_C,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,seq,extradata,house_id,module_id,sensor_type,sensor_count,alarms,sensor_value,battery_voltage,failed,pressure_kPa";
+		std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
+		//std::string line = "2018-12-06 07:56:17,,,WGR800,,1,0,OK,,,,,,,OS,,,4.500,5.300,292.500,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
+		//std::string line = "2018-12-06 07:56:16,,,PCR800,,2,0,OK,,,,,,,OS,0.000,9.850,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
+		ParseLine(headers, line.c_str());
+	#endif
+*/
 }
 
 CRtl433::~CRtl433()
@@ -133,32 +132,42 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		h++;
 	}
 	int id = 0;
+
+	bool haveUnit = false;
 	int unit = 0;
-	bool hasunit = false;
+
+	bool haveChannel = false;
 	int channel = 0;
-	bool haschannel = false;
+
+	bool haveBattery = false;
 	int batterylevel = 255;
-	bool hasbattery = false;
-	float tempC;
-	bool hastempC = false;
-	int humidity;
-	bool hashumidity = false;
-	float pressure;
-	bool haspressure = false;
-	float rain;
-	bool hasrain = false;
-	float depth_cm;
-	bool hasdepth_cm = false;
-	float depth;
-	bool hasdepth = false;
-	float wind_str;
-	bool haswind_str = false;
-	float wind_gst;
-	bool haswind_gst = false;
-	int wind_dir;
-	bool haswind_dir = false;
-	// attempt parsing field values
-	//atoi/f functions return 0 if string conv fails.
+
+	bool haveTemp = false;
+	float tempC = 0;
+
+	bool haveHumidity = false;
+	int humidity = 0;
+
+	bool havePressure = false;
+	float pressure = 0;
+
+	bool haveRain = false;
+	float rain = 0;
+
+	bool haveDepth_CM = false;
+	float depth_cm = 0;
+
+	bool haveDepth = false;
+	float depth = 0;
+
+	bool haveWind_Strength = false;
+	float wind_strength = 0;
+
+	bool haveWind_Gust = false;
+	float wind_gust = 0;
+
+	bool haveWind_Dir = false;
+	int wind_dir = 0;
 
 	if (!data["id"].empty())
 	{
@@ -173,29 +182,29 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	if (FindField(data, "unit"))
 	{
 		unit = atoi(data["unit"].c_str());
-		hasunit = true;
+		haveUnit = true;
 	}
 	if (FindField(data, "channel"))
 	{
 		channel = atoi(data["channel"].c_str());
-		haschannel = true;
+		haveChannel = true;
 	}
 	if (FindField(data, "battery"))
 	{
 		if (data["battery"] == "LOW") {
 			batterylevel = 10;
-			hasbattery = true;
+			haveBattery = true;
 		}
 		else if (data["battery"] == "OK") {
 			batterylevel = 100;
-			hasbattery = true;
+			haveBattery = true;
 		}
 	}
 
 	if (FindField(data, "temperature_C"))
 	{
 		tempC = (float)atof(data["temperature_C"].c_str());
-		hastempC = true;
+		haveTemp = true;
 	}
 
 	if (FindField(data, "humidity"))
@@ -203,71 +212,71 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		if (data["humidity"] == "HH")
 		{
 			humidity = 90;
-			hashumidity = true;
+			haveHumidity = true;
 		}
 		else if (data["humidity"] == "LL")
 		{
 			humidity = 10;
-			hashumidity = true;
+			haveHumidity = true;
 		}
 		else
 		{
 			humidity = atoi(data["humidity"].c_str());
-			hashumidity = true;
+			haveHumidity = true;
 		}
 	}
 
 	if (FindField(data, "pressure_hPa"))
 	{
 		pressure = (float)atof(data["pressure_hPa"].c_str());
-		haspressure = true;
+		havePressure = true;
 	}
 
 	if (FindField(data, "rain"))
 	{
 		rain = (float)atof(data["rain"].c_str());
-		hasrain = true;
+		haveRain = true;
 	}
 	if (FindField(data, "rain_total"))
 	{
 		rain = (float)atof(data["rain_total"].c_str());
-		hasrain = true;
+		haveRain = true;
 	}
 
 	if (FindField(data, "depth_cm"))
 	{
 		depth_cm = (float)atof(data["depth_cm"].c_str());
-		hasdepth_cm = true;
+		haveDepth_CM = true;
 	}
 
 	if (FindField(data, "depth"))
 	{
 		depth = (float)atof(data["depth"].c_str());
-		hasdepth = true;
+		haveDepth = true;
 	}
 
 	if (FindField(data, "windstrength") || FindField(data, "wind_speed"))
 	{
-		//Based on current knowledge it's not possible to have both windstrength and wind_speed at the same time.
+		//Based on current knowledge it's not possible to have both wind strength and wind_speed at the same time.
 		if (FindField(data, "windstrength"))
 		{
-			wind_str = (float)atof(data["windstrength"].c_str());
+			wind_strength = (float)atof(data["windstrength"].c_str());
 		}
 		else if (FindField(data, "wind_speed"))
 		{
-			wind_str = (float)atof(data["wind_speed"].c_str());
+			wind_strength = (float)atof(data["wind_speed"].c_str());
 		}
-		haswind_str = true;
+		haveWind_Strength = true;
 	}
 	else if (FindField(data, "average"))
 	{
-		wind_str = (float)atof(data["average"].c_str());
-		haswind_str = true;
+		wind_strength = (float)atof(data["average"].c_str());
+		haveWind_Strength = true;
 	}
 
 	if (FindField(data, "winddirection") || FindField(data, "wind_direction"))
 	{
-		//Based on current knowledge it's not possible to have both winddirection and wind_direction at the same time.
+		//Based on current knowledge it's not possible to have both wind direction and wind_direction at the same time.
 		if (FindField(data, "winddirection"))
 		{
 			wind_dir = atoi(data["winddirection"].c_str());
@@ -276,23 +285,23 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		{
 			wind_dir = atoi(data["wind_direction"].c_str());
 		}
-		haswind_dir = true;
+		haveWind_Dir = true;
 	}
 	else if (FindField(data, "direction"))
 	{
 		wind_dir = atoi(data["direction"].c_str());
-		haswind_dir = true;
+		haveWind_Dir = true;
 	}
 
 	if (FindField(data, "wind_gust"))
 	{
-		wind_gst = (float)atof(data["wind_gust"].c_str());
-		haswind_gst = true;
+		wind_gust = (float)atof(data["wind_gust"].c_str());
+		haveWind_Gust = true;
 	}
 	else if (FindField(data, "gust"))
 	{
-		wind_gst = (float)atof(data["gust"].c_str());
-		haswind_gst = true;
+		wind_gust = (float)atof(data["gust"].c_str());
+		haveWind_Gust = true;
 	}
 
 	std::string model = data["model"];
@@ -318,125 +327,56 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 
 	unsigned int sensoridx = (id & 0xff) | ((channel & 0xff) << 8);
 
-	bool bValidTempHum = false;
-	if (hastempC && hashumidity)
+	if (haveTemp && haveHumidity)
 	{
-		bValidTempHum = !((tempC == 0) && (humidity == 0));
+		//Check if it is valid
+		bool bValidTempHum = !((tempC == 0) && (humidity == 0));
+		if (!bValidTempHum)
+			return false; //invalid temp+hum
 	}
 
-	bool bHaveSend = false;
-	if (hastempC && hashumidity && haspressure && bValidTempHum)
+	if (haveTemp && haveHumidity && havePressure)
 	{
 		int iForecast = 0;
-		SendTempHumBaroSensor(sensoridx,
-			batterylevel,
-			tempC,
-			humidity,
-			pressure,
-			iForecast,
-			model);
-		bHaveSend = true;
+		SendTempHumBaroSensor(sensoridx, batterylevel, tempC, humidity, pressure, iForecast, model);
+		return true;
 	}
-	else if (haswind_str && haswind_dir && !haswind_gst && hastempC)
+	if (haveTemp && haveHumidity)
 	{
-		SendWind(sensoridx,
-			batterylevel,
-			wind_dir,
-			wind_str,
-			0,
-			tempC,
-			0,
-			true,
-			model);
-		bHaveSend = true;
+		SendTempHumSensor(sensoridx, batterylevel, tempC, humidity, model);
+		return true;
 	}
-	else if (haswind_str && haswind_dir && !haswind_gst && !hastempC)
+	if (haveWind_Strength || haveWind_Gust || haveWind_Dir)
 	{
-		SendWind(sensoridx,
-			batterylevel,
-			wind_dir,
-			wind_str,
-			0,
-			0,
-			0,
-			false,
-			model);
-		bHaveSend = true;
+		SendWind(sensoridx, batterylevel, wind_dir, wind_strength, wind_gust, tempC, 0, haveTemp, false, model);
+		return true;
 	}
-	else if (haswind_str && haswind_gst && haswind_dir && hastempC)
+	if (haveTemp)
 	{
-		SendWind(sensoridx,
-			batterylevel,
-			wind_dir,
-			wind_str,
-			wind_gst,
-			tempC,
-			0,
-			true,
-			model);
-		bHaveSend = true;
+		SendTempSensor(sensoridx, batterylevel, tempC, model);
+		return true;
 	}
-	else if (haswind_str && haswind_gst && haswind_dir && !hastempC)
+	if (haveHumidity)
 	{
-		SendWind(sensoridx,
-			batterylevel,
-			wind_dir,
-			wind_str,
-			wind_gst,
-			0,
-			0,
-			false,
-			model);
-		bHaveSend = true;
+		SendHumiditySensor(sensoridx, batterylevel, humidity, model);
+		return true;
 	}
-	else if (hastempC && hashumidity && bValidTempHum)
+	if (haveRain)
 	{
-		SendTempHumSensor(sensoridx,
-			batterylevel,
-			tempC,
-			humidity,
-			model);
-		bHaveSend = true;
+		SendRainSensor(sensoridx, batterylevel, rain, model);
+		return true;
 	}
-	else if (hastempC && !hashumidity)
+	if (haveDepth_CM)
 	{
-		SendTempSensor(sensoridx,
-			batterylevel,
-			tempC,
-			model);
-		bHaveSend = true;
+		SendDistanceSensor(sensoridx, unit, batterylevel, depth_cm, model);
+		return true;
 	}
-	else if (!hastempC && hashumidity)
+	if (haveDepth)
 	{
-		SendHumiditySensor(sensoridx,
-			batterylevel,
-			humidity,
-			model);
-		bHaveSend = true;
+		SendDistanceSensor(sensoridx, unit, batterylevel, depth, model);
+		return true;
 	}
-
-	if (hasrain)
-	{
-		SendRainSensor(sensoridx,
-			batterylevel,
-			rain,
-			model);
-		bHaveSend = true;
-	}
-	if (hasdepth_cm)
-	{
-		SendDistanceSensor(sensoridx, unit,
-			batterylevel, depth_cm, model);
-		bHaveSend = true;
-	}
-	if (hasdepth)
-	{
-		SendDistanceSensor(sensoridx, unit,
-			batterylevel, depth, model);
-		bHaveSend = true;
-	}
-
-	return bHaveSend;
+	return false; //not handled (Yet!)
 }
 
 void CRtl433::Do_Work()
@@ -515,7 +455,7 @@ void CRtl433::Do_Work()
 				}
 			}
 			else { //fgets
-				if ((errno == EWOULDBLOCK)|| (errno == EAGAIN)) {
+				if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
 					continue;
 				}
 				break; // bail out, subprocess has failed
@@ -548,9 +488,9 @@ void CRtl433::Do_Work()
 			{
 				if (IsStopRequested(1000))
 					break;
-			}
 		}
-	} // while !IsStopRequested()
+	}
+} // while !IsStopRequested()
 	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
 }
 

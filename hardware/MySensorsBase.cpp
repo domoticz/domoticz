@@ -563,7 +563,7 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &s
 		}
 	}
 	int cNode = (nodeID << 8) | ChildID;
-	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp, sname);
+	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp, true, sname);
 }
 
 void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pChild, const _eSetType vType)
