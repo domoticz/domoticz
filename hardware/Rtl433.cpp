@@ -27,15 +27,17 @@ CRtl433::CRtl433(const int ID, const std::string &cmdline) :
 	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
 	m_hPipe = NULL;
-/*
+
 #ifdef _DEBUG
 	std::string headerline = "time,msg,codes,model,button,id,channel,battery,temperature_C,mic,rid,humidity,state,status,brand,rain_rate,rain_total,gust,average,direction,pressure_hPa,uv,power_W,energy_kWh,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,dipswitch,rbutton,device,temperature_F,rc,brandmodelidtemperature_C,setpoint_C,switch,cmd,cmd_id,modelidcmd,tristate,direction_str,direction_deg,speed,rain,msg_type,signal,hours,minutes,seconds,year,month,day,sensor_code,uv_status,uv_index,lux,wm,fc,ws_id,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,sensor_id,battery_low,sequence_num,message_type,wind_speed_mph,wind_dir_deg,wind_dir,rainfall_accumulation_inch,raincounter_raw,windstrength,winddirection,flags,maybetemp,binding_countdown,depth,dev_id,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,address,button1,button2,button3,button4,data,sid,transmit,moisture,type,pressure_PSI,battery_mV,pressure_bar,pulses,energy,device id,code,len,to,from,payload,event,heartbeat,brandmodelidstatus,temperature_C1,temperature_C2,test,probe,water,ptemperature_C,phumidity,newbattery,heating,heating_temp,uvi,light_lux,counter,alarm,depth_cm,repeat,temperature_1_C,temperature_2_C,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,seq,extradata,house_id,module_id,sensor_type,sensor_count,alarms,sensor_value,battery_voltage,failed,pressure_kPa";
+	headerline = "time,model,button,id,channel,battery,temperature_C,mic,rid,humidity,state,brand,rain_rate,rain_total,gust,average,direction,pressure_hPa,uv,power_W,energy_kWh,unit,group_call,command,dim,dim_value,wind_speed,wind_gust,wind_direction,dipswitch,rbutton,device,temperature_F,status,rc,brandmodelidtemperature_C,setpoint_C,switch,direction_str,direction_deg,speed,rain,msg_type,signal,hours,minutes,seconds,year,month,day,sensor_code,uv_status,uv_index,lux,wm,fc,ws_id,rainfall_mm,wind_speed_ms,gust_speed_ms,current,interval,learn,windstrength,winddirection,flags,maybetemp,binding_countdown,depth,dev_id,power0,power1,power2,node,ct1,ct2,ct3,ct4,Vrms/batt,temp1_C,temp2_C,temp3_C,temp4_C,temp5_C,temp6_C,pulse,sid,transmit,moisture,type,pressure_PSI,battery_mV,pressure_bar,code,pulses,energy,device id,len,to,from,payload,event,heartbeat,brandmodelidstatus,temperature_C1,temperature_C2,test,newbattery,heating,heating_temp,water,wind_dir_deg,uvi,light_lux,counter,alarm,depth_cm,repeat,temperature_1_C,temperature_2_C,device_type,raw_message,switch1,switch2,switch3,switch4,switch5,seq,extradata,house_id,module_id,sensor_type,sensor_count,alarms,sensor_value,battery_voltage,data,failed,pressure_kPa";
+	std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
 	//std::string line = "2018-12-06 07:56:17,,,WGR800,,1,0,OK,,,,,,,OS,,,4.500,5.300,292.500,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
 	//std::string line = "2018-12-06 07:56:16,,,PCR800,,2,0,OK,,,,,,,OS,0.000,9.850,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
-	std::vector<std::string> headers = ParseCSVLine(headerline.c_str());
+	std::string line = "2018-12-06 18:35:52,HIDEKI TS04 sensor,,,3,OK,10.900,,,83,,,,,,,,,,,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
 	ParseLine(headers, line.c_str());
 #endif
-*/
+
 }
 
 CRtl433::~CRtl433()
@@ -158,10 +160,14 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	// attempt parsing field values
 	//atoi/f functions return 0 if string conv fails.
 
-	if (data["id"].empty())
-		return false; //we should have at least an ID
-
-	id = atoi(data["id"].c_str());
+	if (!data["id"].empty())
+	{
+		id = atoi(data["id"].c_str());
+	}
+	else if (!data["rc"].empty())
+	{
+		id = atoi(data["rc"].c_str());
+	}
 
 
 	if (FindField(data, "unit"))
