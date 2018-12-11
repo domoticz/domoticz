@@ -38,6 +38,7 @@ private:
 	float m_voltagel2;
 	float m_voltagel3;
 
+	bool m_bReceivedAmperage;
 	float m_amperagel1;
 	float m_amperagel2;
 	float m_amperagel3;
