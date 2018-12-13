@@ -1063,7 +1063,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Wired Dual Wall Switch";
 						//type = STYPE_Selector;
 					}
-					else if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") { {
+					else if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
 						name = "Xiaomi RGB Gateway";
 					}
 					else if (model == "ctrl_neutral1" || model == "ctrl_ln1" || model == "ctrl_ln1.aq1") {
