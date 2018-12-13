@@ -2476,6 +2476,8 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			}
 			else if (aParam.size() == 5)
 			{
+				priority = aParam[2];
+				sound = aParam[3];
 				subsystem = aParam[4];
 			}
 			m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, std::string(""), atoi(priority.c_str()), sound, subsystem));
