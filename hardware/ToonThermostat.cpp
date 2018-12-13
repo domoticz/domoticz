@@ -304,7 +304,7 @@ bool CToonThermostat::Login()
 	}
 	m_ClientID = "";
 	std::stringstream sstr;
-	sstr << "username=" << m_UserName << "&password=" << m_Password;
+	sstr << "username=" << m_UserName << "&password=" << CURLEncode::URLEncode(m_Password);
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
