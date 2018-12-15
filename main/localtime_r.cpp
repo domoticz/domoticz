@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "localtime_r.h"
 
+#include <string.h>
+
 time_t m_lasttime=time(NULL);
 std::mutex TimeMutex_;
 

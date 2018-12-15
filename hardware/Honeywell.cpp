@@ -14,29 +14,46 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-const std::string HONEYWELL_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
-const std::string HONEYWELL_APISECRET = "TXDzy2aHpAJw6YiO";
+const std::string HONEYWELL_DEFAULT_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
+const std::string HONEYWELL_DEFAULT_APISECRET = "TXDzy2aHpAJw6YiO";
 const std::string HONEYWELL_LOCATIONS_PATH = "https://api.honeywell.com/v2/locations?apikey=[apikey]";
 const std::string HONEYWELL_UPDATE_THERMOSTAT = "https://api.honeywell.com/v2/devices/thermostats/[deviceid]?apikey=[apikey]&locationId=[locationid]";
 const std::string HONEYWELL_TOKEN_PATH = "https://api.honeywell.com/oauth2/token";
 
 const std::string kHeatSetPointDesc = "Target temperature ([devicename])";
 const std::string kHeatingDesc = "Heating ([devicename])";
+const std::string kOperationStatusDesc = "Heating state ([devicename])";
 const std::string kOutdoorTempDesc = "Outdoor temperature ([devicename])";
 const std::string kRoomTempDesc = "Room temperature ([devicename])";
+const std::string kAwayDesc = "Away ([name])";
 
 extern http::server::CWebServerHelper m_webservers;
 
-CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::string &Password)
+CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::string &Password, const std::string &Extra)
 {
 	m_HwdID = ID;
 	mAccessToken = Username;
 	mRefreshToken = Password;
 	stdstring_trim(mAccessToken);
 	stdstring_trim(mRefreshToken);
+
+        // get the data from the extradata field
+        std::vector<std::string> strextra;
+        StringSplit(Extra, "|", strextra);
+	if (strextra.size() == 2)
+	{
+		mApiKey = base64_decode(strextra[0]);
+		mApiSecret = base64_decode(strextra[1]);
+	}
+	if (mApiKey.empty()) {
+		_log.Log(LOG_STATUS, "Honeywell: No API key was set. Using default API key. This will result in many errors caused by quota limitations.");
+		mApiKey = HONEYWELL_DEFAULT_APIKEY;
+		mApiSecret = HONEYWELL_DEFAULT_APISECRET;
+	}
 	if (Username.empty() || Password.empty()) {
 		_log.Log(LOG_ERROR, "Honeywell: Please update your access token/request token!...");
 	}
+	mLastMinute = -1;
 	Init();
 }
 
@@ -46,7 +63,7 @@ CHoneywell::~CHoneywell(void)
 
 void CHoneywell::Init()
 {
-	mNeedsTokenRefresh = true;
+	mTokenExpires = mytime(NULL);
 }
 
 bool CHoneywell::StartHardware()
@@ -57,7 +74,7 @@ bool CHoneywell::StartHardware()
 	mLastMinute = -1;
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHoneywell::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Honeywell");
+	SetThreadNameInt(m_thread->native_handle());
 	mIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -77,6 +94,7 @@ bool CHoneywell::StopHardware()
 }
 
 #define HONEYWELL_POLL_INTERVAL 300 // 5 minutes
+#define HWAPITIMEOUT 30 // 30 seconds
 
 //
 // worker thread
@@ -93,7 +111,7 @@ void CHoneywell::Do_Work()
 		}
 		if (sec_counter % HONEYWELL_POLL_INTERVAL == 0)
 		{
-			GetMeterDetails();
+			GetThermostatData();
 		}
 	}
 	_log.Log(LOG_STATUS, "Honeywell: Worker stopped...");
@@ -141,14 +159,17 @@ bool CHoneywell::refreshToken()
 	if (mRefreshToken.empty())
 		return false;
 
+	if (mTokenExpires > mytime(NULL))
+		return true;
+
 	std::string sResult;
 
 	std::string postData = "grant_type=refresh_token&refresh_token=[refreshToken]";
 	stdreplace(postData, "[refreshToken]", mRefreshToken);
 
-	std::string auth = HONEYWELL_APIKEY;
+	std::string auth = mApiKey;
 	auth += ":";
-	auth += HONEYWELL_APISECRET;
+	auth += mApiSecret;
 	std::string encodedAuth = base64_encode(auth);
 
 
@@ -158,9 +179,10 @@ bool CHoneywell::refreshToken()
 	headers.push_back(authHeader);
 	headers.push_back("Content-Type: application/x-www-form-urlencoded");
 
+	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
+	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::POST(HONEYWELL_TOKEN_PATH, postData, headers, sResult)) {
 		_log.Log(LOG_ERROR, "Honeywell: Error refreshing token");
-		mNeedsTokenRefresh = true;
 		return false;
 	}
 
@@ -169,18 +191,19 @@ bool CHoneywell::refreshToken()
 	bool ret = jReader.parse(sResult, root);
 	if (!ret) {
 		_log.Log(LOG_ERROR, "Honeywell: Invalid/no data received...");
-		mNeedsTokenRefresh = true;
 		return false;
 	}
 
 	std::string at = root["access_token"].asString();
 	std::string rt = root["refresh_token"].asString();
-	if (at.length() && rt.length()) {
+	std::string ei = root["expires_in"].asString();
+	if (at.length() && rt.length() && ei.length()) {
+		int expires_in = std::stoi(ei);
+		mTokenExpires = mytime(NULL) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
 		mAccessToken = at;
 		mRefreshToken = rt;
-		_log.Log(LOG_NORM, "Honeywell: Storing received access & refresh token");
+		_log.Log(LOG_NORM, "Honeywell: Storing received access & refresh token. Token expires after %d seconds.",expires_in);
 		m_sql.safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE (ID==%d)", mAccessToken.c_str(), mRefreshToken.c_str(), m_HwdID);
-		mNeedsTokenRefresh = false;
 		mSessionHeaders.clear();
 		mSessionHeaders.push_back("Authorization:Bearer " + mAccessToken);
 		mSessionHeaders.push_back("Content-Type: application/json");
@@ -194,19 +217,19 @@ bool CHoneywell::refreshToken()
 //
 // Get honeywell data through Honeywell API
 //
-void CHoneywell::GetMeterDetails()
+void CHoneywell::GetThermostatData()
 {
-	if (mNeedsTokenRefresh) {
-		if (!refreshToken())
-			return;
-	}
+	if (!refreshToken())
+		return;
 
 	std::string sResult;
 	std::string sURL = HONEYWELL_LOCATIONS_PATH;
-	stdreplace(sURL, "[apikey]", HONEYWELL_APIKEY);
+	stdreplace(sURL, "[apikey]", mApiKey);
+	
+	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
+	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::GET(sURL, mSessionHeaders, sResult)) {
 		_log.Log(LOG_ERROR, "Honeywell: Error getting thermostat data!");
-		mNeedsTokenRefresh = true;
 		return;
 	}
 
@@ -215,7 +238,6 @@ void CHoneywell::GetMeterDetails()
 	bool ret = jReader.parse(sResult, root);
 	if (!ret) {
 		_log.Log(LOG_ERROR, "Honeywell: Invalid/no data received...");
-		mNeedsTokenRefresh = true;
 		return;
 	}
 
@@ -255,6 +277,30 @@ void CHoneywell::GetMeterDetails()
 			stdreplace(desc, "[devicename]", deviceName);
 			SendSetPointSensor((uint8_t)(10 * devNr + 4), temperature, desc);
 			devNr++;
+			
+			std::string operationstatus = device["operationStatus"]["mode"].asString();
+			bool bStatus = (operationstatus != "EquipmentOff");
+			desc = kOperationStatusDesc;
+			stdreplace(desc, "[devicename]", deviceName);
+			SendSwitch(10 * devNr + 5, 1, 255, bStatus, 0, desc);
+		}
+		
+		bool geoFenceEnabled = location["geoFenceEnabled"].asBool();
+		if (geoFenceEnabled) {
+			
+			Json::Value geofences = location["geoFences"];
+			bool bAway = true;
+			for (int geofCnt = 0; geofCnt < (int)geofences.size(); geofCnt++)
+			{
+				int withinFence = geofences[geofCnt]["geoOccupancy"]["withinFence"].asInt();
+				if (withinFence > 0) {
+					bAway = false;
+					break;
+				}
+			}
+			std::string desc = kAwayDesc;
+			stdreplace(desc, "[name]", location["name"].asString());
+			SendSwitch(10 * devNr + 6, 1, 255, bAway, 0, desc);
 		}
 	}
 }
@@ -282,11 +328,16 @@ void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, c
 //
 void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int /*nodeid*/)
 {
+	if (!refreshToken()) {
+		_log.Log(LOG_ERROR,"Honeywell: No token available. Failed setting thermostat data");
+		return;
+	}
+
 	std::string url = HONEYWELL_UPDATE_THERMOSTAT;
 	std::string deviceID = mDeviceList[idx]["deviceID"].asString();
 
 	stdreplace(url, "[deviceid]", deviceID);
-	stdreplace(url, "[apikey]", HONEYWELL_APIKEY);
+	stdreplace(url, "[apikey]", mApiKey);
 	stdreplace(url, "[locationid]", mLocationList[idx]);
 
 	Json::Value reqRoot;
@@ -297,6 +348,8 @@ void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int /*nodeid
 	Json::FastWriter writer;
 
 	std::string sResult;
+	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
+	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::POST(url, writer.write(reqRoot), mSessionHeaders, sResult, true, true)) {
 		_log.Log(LOG_ERROR, "Honeywell: Error setting thermostat data!");
 		return;
@@ -312,11 +365,16 @@ void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int /*nodeid
 //
 void CHoneywell::SetSetpoint(const int idx, const float temp, const int /*nodeid*/)
 {
+	if (!refreshToken()) {
+		_log.Log(LOG_ERROR, "Honeywell: No token available. Error setting thermostat data!");
+		return;
+	}
+
 	std::string url = HONEYWELL_UPDATE_THERMOSTAT;
 	std::string deviceID = mDeviceList[idx]["deviceID"].asString();
 
 	stdreplace(url, "[deviceid]", deviceID);
-	stdreplace(url, "[apikey]", HONEYWELL_APIKEY);
+	stdreplace(url, "[apikey]", mApiKey);
 	stdreplace(url, "[locationid]", mLocationList[idx]);
 
 	Json::Value reqRoot;
@@ -327,6 +385,8 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int /*nodeid
 	Json::FastWriter writer;
 
 	std::string sResult;
+	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
+	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::POST(url, writer.write(reqRoot), mSessionHeaders, sResult, true, true)) {
 		_log.Log(LOG_ERROR, "Honeywell: Error setting thermostat data!");
 		return;

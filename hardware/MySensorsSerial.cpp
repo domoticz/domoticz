@@ -53,7 +53,7 @@ bool MySensorsSerial::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MySensorsSerial::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "MySensorsSerial");
+	SetThreadNameInt(m_thread->native_handle());
 	StartSendQueue();
 	return (m_thread != nullptr);
 }

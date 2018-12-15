@@ -265,6 +265,7 @@ const char *BMP_Forecast_Desc(const unsigned char Forecast);
 const char *Timer_Type_Desc(const int tType);
 const char *Timer_Cmd_Desc(const int tCmd);
 const char *Hardware_Type_Desc(int hType);
+const char *Hardware_Short_Desc(int hType);
 const char *Security_Status_Desc(const unsigned char status);
 const char *Notification_Type_Desc(const int nType, const unsigned char snum);
 const char *Notification_Type_Label(const int nType);

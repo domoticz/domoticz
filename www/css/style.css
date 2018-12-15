@@ -27,6 +27,10 @@
 	padding: 0;
 }
 
+html, body {
+	height: 100%;
+}
+
 body {
 	background: #202020 url(images/img01.jpg) repeat;
 	font-family: Arial, Helvetica, sans-serif;
@@ -109,21 +113,27 @@ strong {
 #copyright {
 	border-top: 1px solid #303030;
 	text-align: center;
+
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }
 
-	#copyright p {
-		font-family: Arial, Helvetica, sans-serif;
-		font-size: 1.125em;
-		color: #6A6A6A;
-	}
+#copyright p {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1.125em;
+	color: #6A6A6A;
+	margin: 0;
+}
 
-	#copyright a {
-		color: #43A4D3;
-	}
+#copyright a {
+	color: #43A4D3;
+}
 
-		#copyright a:hover {
-			text-decoration: none;
-		}
+#copyright a:hover {
+	text-decoration: none;
+}
 
 #disimg {
 	opacity: 0.3;
@@ -810,27 +820,21 @@ table.mobileitem {
 		border-radius: 25px;
 	}
 
-html, body {
-	height: 99%;
-}
-
 #holder {
 	min-height: 100%;
 	position: relative;
 }
 
-.bannercontent {
-	padding-top: 26px;
-	padding-bottom: 22px;
+#holder > .container-fluid {
+	padding-top: 43px;
+	padding-bottom: 20px;
 }
 
-#copyright {
-	position: absolute;
-	bottom: 0;
-	height: 22px;
-	left: 0;
-	right: 0;
+.bannercontent {
+	padding-top: 20px;
+	padding-bottom: 20px;
 }
+
 /* Lastly, apply responsive CSS fixes as necessary */
 @media (max-width: 979px) {
 	.bannercontent {

@@ -73,7 +73,7 @@ bool CWunderground::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CWunderground::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Wunderground");
+	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
 	m_bIsStarted=true;

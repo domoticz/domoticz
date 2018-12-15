@@ -2,7 +2,7 @@
 //
 //	ZWavePlusInfo.h
 //
-//	Implementation of the Z-Wave COMMAND_CLASS_ZWAVE_PLUS_INFO
+//	Implementation of the Z-Wave COMMAND_CLASS_ZWAVEPLUS_INFO
 //
 //	Copyright (c) 2015
 //
@@ -32,7 +32,7 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_ZWAVE_PLUS_INFO (0x5E), a Z-Wave device command class.
+	/** \brief Implements COMMAND_CLASS_ZWAVEPLUS_INFO (0x5E), a Z-Wave device command class.
 	 */
 	class ZWavePlusInfo: public CommandClass
 	{
@@ -41,7 +41,7 @@ namespace OpenZWave
 		virtual ~ZWavePlusInfo(){}
 
 		static uint8 const StaticGetCommandClassId(){ return 0x5E; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_ZWAVE_PLUS_INFO"; }
+		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_ZWAVEPLUS_INFO"; }
 
 		// From CommandClass
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );

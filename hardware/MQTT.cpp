@@ -51,7 +51,7 @@ bool MQTT::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "MQTT");
+	SetThreadNameInt(m_thread->native_handle());
 
 	StartHeartbeatThread();
 	return (m_thread != nullptr);
@@ -227,8 +227,8 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		else if (szCommand == "switchlight")
 		{
 			std::string switchcmd = root["switchcmd"].asString();
-			if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level"))
-				goto mqttinvaliddata;
+			//if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level") && (switchcmd != "Stop"))
+			//	goto mqttinvaliddata;
 			int level = 0;
 			if (!root["level"].empty())
 			{

@@ -49,7 +49,7 @@ bool COpenWebNetUSB::StartHardware()
 
 								   //Start worker thread
 	m_thread = std::make_shared<std::thread>(&COpenWebNetUSB::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "OpenWebNetUSB");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 

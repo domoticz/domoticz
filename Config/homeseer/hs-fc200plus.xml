@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    HomeSeer HS-FC200+ Z-Wave Plus RGB Smart Fan Speed Controller Switch
+    https://products.z-wavealliance.org/products/2957
+    https://homeseer.com/wp-content/uploads/2018/09/HS-FC200-Manual-Online-072318.pdf
+    -->
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="3" genre="config" label="Bottom LED operation" min="0" max="1" size="1" value="1">
+            <Help>Sets bottom LED operation (in normal mode)</Help>
+            <Item label="Bottom LED on if load is off" value="0"/>
+            <Item label="Bottom LED off if load is off" value="1"/>
+        </Value>
+        <Value type="list" index="4" genre="config" label="Paddle load orientation" min="0" max="1" size="1" value="0">
+            <Help>Sets paddle's load orientation</Help>
+            <Item label="Top of paddle turns load ON" value="0"/>
+            <Item label="Bottom of paddle turns load ON" value="1"/>
+        </Value>
+        <Value type="list" index="5" genre="config" label="Fan type" min="0" max="1" size="1" value="0">
+            <Help>Sets fan type</Help>
+            <Item label="3-speed" value="0"/>
+            <Item label="4-speed" value="1"/>
+        </Value>
+        <Value type="list" index="13" genre="config" label="LED indicator mode" min="0" max="1" size="1" value="0">
+            <Help>Sets LED indicator mode of operation</Help>
+            <Item label="Normal mode (load status)" value="0"/>
+            <Item label="Status mode (custom status)" value="1"/>
+        </Value>
+        <Value type="list" index="14" genre="config" label="Normal mode LED color" min="0" max="6" size="1" value="0">
+            <Help>Sets the Normal mode LED color</Help>
+            <Item label="White" value="0"/>
+            <Item label="Red" value="1"/>
+            <Item label="Green" value="2"/>
+            <Item label="Blue" value="3"/>
+            <Item label="Magenta" value="4"/>
+            <Item label="Yellow" value="5"/>
+            <Item label="Cyan" value="6"/>
+        </Value>        
+        <Value type="list" index="21" genre="config" label="Status mode LED 1 (bottom) color" min="0" max="7" size="1" value="0">
+            <Help>Sets the Status mode LED 1 (bottom) color</Help>
+            <Item label="Off" value="0"/>
+            <Item label="Red" value="1"/>
+            <Item label="Green" value="2"/>
+            <Item label="Blue" value="3"/>
+            <Item label="Magenta" value="4"/>
+            <Item label="Yellow" value="5"/>
+            <Item label="Cyan" value="6"/>
+            <Item label="White" value="7"/>
+        </Value>        
+        <Value type="list" index="22" genre="config" label="Status mode LED 2 color" min="0" max="7" size="1" value="0">
+            <Help>Sets the Status mode LED 2 color</Help>
+            <Item label="Off" value="0"/>
+            <Item label="Red" value="1"/>
+            <Item label="Green" value="2"/>
+            <Item label="Blue" value="3"/>
+            <Item label="Magenta" value="4"/>
+            <Item label="Yellow" value="5"/>
+            <Item label="Cyan" value="6"/>
+            <Item label="White" value="7"/>
+        </Value>        
+        <Value type="list" index="23" genre="config" label="Status mode LED 3 color" min="0" max="7" size="1" value="0">
+            <Help>Sets the Status mode LED 3 color</Help>
+            <Item label="Off" value="0"/>
+            <Item label="Red" value="1"/>
+            <Item label="Green" value="2"/>
+            <Item label="Blue" value="3"/>
+            <Item label="Magenta" value="4"/>
+            <Item label="Yellow" value="5"/>
+            <Item label="Cyan" value="6"/>
+            <Item label="White" value="7"/>
+        </Value>        
+        <Value type="list" index="24" genre="config" label="Status mode LED 4 color" min="0" max="7" size="1" value="0">
+            <Help>Sets the Status mode LED 4 color</Help>
+            <Item label="Off" value="0"/>
+            <Item label="Red" value="1"/>
+            <Item label="Green" value="2"/>
+            <Item label="Blue" value="3"/>
+            <Item label="Magenta" value="4"/>
+            <Item label="Yellow" value="5"/>
+            <Item label="Cyan" value="6"/>
+            <Item label="White" value="7"/>
+        </Value>        
+        <Value type="byte" index="30" genre="config" label="Blink frequency for all LEDs in Status mode" min="0" max="255" value="0">
+            <Help>Sets the blink frequency for all LEDs in Status mode. Possible values: 0, 1-255
+              0 = No blink
+              1 = 100ms ON then 100ms OFF
+            </Help>
+        </Value> 
+        <Value type="byte" index="31" genre="config" label="LEDs to blink in status mode" min="0" max="15" value="0">
+          <Help>Sets LEDs 1-4 to blink in Status mode. Bitmask defines specific LEDs to enable for blinking. Note: this decimal value is derived from a hex code calculation based on the following: 
+              Bit 0 = LED 1
+              Bit 1 = LED 2
+              Bit 2 = LED 3
+              Bit 3 = LED 4
+              IE: value of 1 = first LED, 8 = LED 4
+            </Help>
+        </Value>        
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+
+    <!-- Central Scene Reports -->
+    <CommandClass id="91" name="COMMAND_CLASS_CENTRAL_SCENE" version="1" request_flags="4" scenecount="0">
+      <Value type="int" genre="system" instance="1" index="0" label="Scene Count" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="2" />
+      <Value type="int" genre="user" instance="1" index="1" label="Top Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
+      <Value type="int" genre="user" instance="1" index="2" label="Bottom Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
+    </CommandClass>
+</Product>

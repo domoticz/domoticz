@@ -1,3 +1,16 @@
+[2.4.9]
+- Added evohome hotwater device (state, mode, untilDate and setHotWater function)
+- Added mode and untilDate for evohome zone devices 
+- Added EVOHOME_MODE_FOLLOW_SCHEDULE as mode for evohome devices
+- Add speedMs and gustMs from wind devices 
+- bugfix for youless device (0 handling)
+- bugfix for time ( twilightstart and twilightend handling)
+- Added tests for twilight and device functions (hotwater) and attributes (evohome- and wind devices)
+- Fixed some date-range rule checking
+
+[2.4.8]
+- Added telegram as option for domoticz.notify
+
 [2.4.7]
 - Added support for civil twilight in rules
 

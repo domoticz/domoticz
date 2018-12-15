@@ -95,7 +95,7 @@ bool CTTNMQTT::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTTNMQTT::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "TTN_MQTT");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 

@@ -26,7 +26,7 @@ bool P1MeterTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&P1MeterTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "P1MeterTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 
@@ -91,7 +91,7 @@ void P1MeterTCP::OnDisconnect()
 
 void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData((const unsigned char*)pData, length, m_bDisableCRC, m_ratelimit);
+	ParseP1Data((const unsigned char*)pData, length, m_bDisableCRC, m_ratelimit);
 }
 
 

@@ -95,7 +95,7 @@ bool CPhilipsHue::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPhilipsHue::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "PhilipsHue");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -623,7 +623,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
+			m_HwdID, int(unitcode), pTypeGeneralSwitch, sSwitchGeneralSwitch, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change for DeviceID '%s': Level = %d", szID, tstate.level);
 
 		if (result.empty() && !AddMissingDevice)
@@ -635,8 +635,13 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
 		}
+		else
+ 		{
+ 			_log.Log(LOG_STATUS, "Philips Hue: adding device '%s'", Name.c_str());
+ 		}
 
-		if (tstate.on && (tstate.level != 100))
+		//Change command to SetLevel for dimmer type switch
+		if (LType == HLTYPE_DIM && tstate.on && (tstate.level != 100))
 			cmd = gswitch_sSetLevel;
 
 		_tGeneralSwitch lcmd;
@@ -777,11 +782,10 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 		{
 			//Lamp with color temperature control
 			hasTemp = true;
-			int ct = lightstate["ct"].asInt();
+			tlight.ct = lightstate["ct"].asInt();
 			// Clamp to conform to HUE API
-			ct = std::max(153, ct);
-			ct = std::min(500, ct);
-			tlight.ct = int((float(ct)-153.0)/(500.0-153.0));
+			tlight.ct = std::max(153, tlight.ct);
+			tlight.ct = std::min(500, tlight.ct);
 		}
 		if (!lightstate["xy"].empty())
 		{
@@ -914,7 +918,10 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	_eHueLightType LType = HLTYPE_RGB_W;// HLTYPE_NORMAL;
 
 	if (!root2["action"]["on"].empty())
+	{
 		tstate.on = root2["action"]["on"].asBool();
+		if (tstate.on) tstate.level = 100; // Set default full brightness for non dimmable group
+	}
 	if (!root2["action"]["bri"].empty())
 	{
 		int tbri = root2["action"]["bri"].asInt();

@@ -567,6 +567,7 @@ describe('device', function()
 					"play",
 					"playFavorites",
 					"setDiscoMode",
+					"setHotWater",
 					"setKelvin",
 					'setNightMode',
 					'setRGB',
@@ -621,16 +622,48 @@ describe('device', function()
 				['type'] = 'Thermostat',
 				['subType'] = 'Zone',
 				['hardwareTypeValue'] = 39,
-				['rawData'] = { [1] = 12.5 }
+				['rawData'] = { [1] = 12.5;
+                                [3] = "TemporaryOverride"; 
+                                [4] = "2016-05-29T06:32:58Z" }  
 			})
 
 			assert.is_same(12.5, device.setPoint)
+            assert.is_same('TemporaryOverride', device.mode)
+			assert.is_same('2016-05-29T06:32:58Z', device.untilDate)
 
 			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
 
 			assert.is_same({ { ['SetSetPoint:1'] = '14#Permanent#2016-04-29T06:32:58Z'} }, commandArray)
 		end)
+		
+        it('should detect an evohome hotWater device', function()
 
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Thermostat',
+				['subType'] = 'Hot Water',
+				['hardwareTypeValue'] = 39,
+				['rawData'] = { 
+                                [2] = "On"; 
+                                [3] = "TemporaryOverride"; 
+                                [4] = "2016-04-29T06:32:58Z" } 
+                               })
+			
+            local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+			
+            assert.is_same('On', device.state)
+			assert.is_same('TemporaryOverride', device.mode)
+			assert.is_same('2016-04-29T06:32:58Z', device.untilDate)
+
+			device.setHotWater('Off', 'Permanent')
+            
+            assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&idx=1&setpoint=&state=Off&mode=Permanent&used=true', res)
+		end)
+        
 		it('should detect an opentherm gateway device', function()
 
 			local device = getDevice(domoticz, {
@@ -695,6 +728,8 @@ describe('device', function()
 				}
 			})
 			assert.is.same(12, device.gust)
+			assert.is.same(12, device.gustMs)
+			assert.is.same(66, device.speedMs)
 			assert.is.same(33, device.temperature)
 			assert.is.same(32, device.chill)
 

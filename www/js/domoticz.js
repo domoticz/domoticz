@@ -7486,6 +7486,14 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 			}
 		}
 
+		$(selector + ' .pickerrgbcolorrow').hide();
+		// Show RGB hex input
+		if (LEDType.bHasRGB) {
+			if (mode == "color" || mode == "color_no_master") {
+				$(selector + ' .pickerrgbcolorrow').show();
+			}
+		}
+
 		$(selector + ' #popup_picker').wheelColorPicker('refreshWidget');
 		$(selector + ' #popup_picker').wheelColorPicker('updateSliders');
 		$(selector + ' #popup_picker').wheelColorPicker('redrawSliders');
@@ -7561,9 +7569,6 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		}
 	}
 
-	// Update color picker controls
-	UpdateColorPicker(colorPickerMode);
-
 	$(selector + ' .pickermodergb').off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
@@ -7585,10 +7590,17 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	$(selector + ' #popup_picker').wheelColorPicker('setRgb', color_r/255, color_g/255, color_b/255);
 	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt/MaxDimLevel);
 
+	var rgbhex = $(selector + ' #popup_picker').wheelColorPicker('getValue', 'hex').toUpperCase();
+	$(selector + ' .pickerrgbcolorinput').val(rgbhex);
+
+	// Update color picker controls
+	UpdateColorPicker(colorPickerMode);
+
 	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
 		clearTimeout($.setColValue);
 
 		var color = $(this).wheelColorPicker('getColor');
+		var rgbhex = $(this).wheelColorPicker('getValue', 'hex').toUpperCase();
 		var dimlevel = Math.round((color.m*99)+1); // 1..100
 		var JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
 		//TODO: Rate limit instead of debounce
@@ -7596,6 +7608,10 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 			var fn = callback || SetColValue;
 			fn(devIdx, JSONColor, dimlevel);
 		}, 400);
+		$(selector + ' .pickerrgbcolorinput').val(rgbhex);
+	});
+	$(selector + ' .pickerrgbcolorinput').off('input').on('input', function() {
+		$(selector + ' #popup_picker').wheelColorPicker('setValue', this.value)
 	});
 }
 

@@ -498,8 +498,6 @@ local function Time(sDate, isUTC, _testMS)
 			return true
 		end
 
-
-
 		-- wildcards
 		for set, day, month in string.gmatch(dates, '(([0-9%*]*)/([0-9%*]*))') do
 			if (day == '*' and month ~= '*') then
@@ -537,12 +535,20 @@ local function Time(sDate, isUTC, _testMS)
 
 				toDay, toMonth = getParts(toSet)
 				fromDay, fromMonth = getParts(fromSet)
-
+				--local _ = require('lodash');
+				--_.print('sm', self.month, 'sd', self.day, 'fm', fromMonth, 'tm', toMonth, 'fd', fromDay, 'td', toDay)
+				--_.print('( self.month > fromMonth and self.month < toMonth )', (self.month > fromMonth and self.month < toMonth))
+				--_.print('( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or', (fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay))
+				--_.print('( self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay ) or', (self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay) )
+				--_.print('( self.month == toMonth and toMonth < fromMonth and  self.day <= toDay )', (self.month == toMonth and toMonth < fromMonth and self.day <= toDay))
+				--_.print('( self.month == toMonth and toMonth > fromMonth and self.day <= toDay )', (self.month == toMonth and toMonth > fromMonth and self.day <= toDay))
 				if (
 					( self.month > fromMonth and self.month < toMonth ) or
 					( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or
-					( self.month == fromMonth and self.day >= fromDay ) or
-					( self.month == toMonth and self.day <= toDay )
+					( self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay ) or
+					( self.month == fromMonth and toMonth > fromMonth and self.day >= fromDay ) or
+					( self.month == toMonth and toMonth < fromMonth and  self.day <= toDay ) or
+					( self.month == toMonth and toMonth > fromMonth and self.day <= toDay )
 				) then
 					return true
 				end
@@ -923,13 +929,13 @@ local function Time(sDate, isUTC, _testMS)
 
 		-- check at civiltwilightstart
 		local twilightstart = string.match(moment, 'civiltwilightstart')
-		if (twilight) then
+		if (twilightstart) then
 			return minutesToTime(getCivilTwilightStart())
 		end
 
 		-- check at civiltwilightend
 		local twilightend = string.match(moment, 'civiltwilightend')
-		if (twilight) then
+		if (twilightend) then
 			return minutesToTime(getCivilTwilightEnd())
 		end
 
@@ -993,6 +999,7 @@ local function Time(sDate, isUTC, _testMS)
 			-- on any of the specified weeks
 			return false
 		end
+
 		updateTotal(res)
 
 		res = self.ruleIsOnDate(rule)
@@ -1002,6 +1009,8 @@ local function Time(sDate, isUTC, _testMS)
 			return false
 		end
 		updateTotal(res)
+
+
 
 		res = self.ruleIsOnDay(rule) -- range
 		if (res == false) then

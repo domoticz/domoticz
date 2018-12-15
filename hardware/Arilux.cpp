@@ -46,7 +46,7 @@ bool Arilux::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&Arilux::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Arilux");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
 }
@@ -67,7 +67,7 @@ bool Arilux::StopHardware()
 
 void Arilux::Do_Work()
 {
-	_log.Log(LOG_STATUS, "Arilux Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	int sec_counter = Arilux_POLL_INTERVAL - 5;
 	while (!IsStopRequested(1000))
@@ -77,7 +77,7 @@ void Arilux::Do_Work()
 			m_LastHeartbeat = mytime(NULL);
 		}
 	}
-	_log.Log(LOG_STATUS, "Arilux stopped");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 
@@ -87,7 +87,7 @@ void Arilux::InsertUpdateSwitch(const std::string &/*nodeID*/, const std::string
 	StringSplit(Location, ".", ipaddress);
 	if (ipaddress.size() != 4)
 	{
-		_log.Log(LOG_ERROR, "Arilux: Invalid location received! (No IP Address)");
+		Log(LOG_ERROR, "Invalid location received! (No IP Address)");
 		return;
 	}
 	uint32_t sID = (uint32_t)(atoi(ipaddress[0].c_str()) << 24) | (uint32_t)(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
@@ -102,7 +102,7 @@ void Arilux::InsertUpdateSwitch(const std::string &/*nodeID*/, const std::string
 	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeColorSwitch, YeeType);
 	if (result.empty())
 	{
-		_log.Log(LOG_STATUS, "Arilux: New controller added (%s/%s)", Location.c_str(), lightName.c_str());
+		Log(LOG_STATUS, "New controller added (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(ariluxBright.c_str());
 		int cmd = Color_LedOn;
 		//int level = 100;
@@ -147,7 +147,7 @@ void Arilux::InsertUpdateSwitch(const std::string &/*nodeID*/, const std::string
 
 bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 {
-	_log.Log(LOG_STATUS, "Arilux: Sending data to device");
+	Log(LOG_STATUS, "Sending data to device");
 
 	//Add checksum calculation
 	int sum = std::accumulate(command.begin(), command.end(), 0);
@@ -169,15 +169,15 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 	}
 	catch (const std::exception &e)
 	{
-		_log.Log(LOG_ERROR, "Arilux: Exception: %s", e.what());
+		Log(LOG_ERROR, "Exception: %s", e.what());
 		return false;
 	}
 
-	//_log.Log(LOG_STATUS, "Arilux: Connection OK");
+	//Log(LOG_STATUS, "Connection OK");
 	sleep_milliseconds(50);
 
 	boost::asio::write(sendSocket, boost::asio::buffer(command, command.size()));
-	//_log.Log(LOG_STATUS, "Arilux: Command sent");
+	//Log(LOG_STATUS, "Command sent");
 	sleep_milliseconds(50);
 
 	/*sendSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
@@ -191,7 +191,7 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 
 bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
-	_log.Debug(DEBUG_HARDWARE, "Arilux: WriteToHardware...............................");
+	Debug(DEBUG_HARDWARE, "WriteToHardware...............................");
 	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 	//uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
@@ -267,7 +267,7 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 			m_color.b = pLed->color.b;
 		}
 		else {
-			_log.Log(LOG_ERROR, "Arilux: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+			Log(LOG_ERROR, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 		}
 		// No break, fall through to send combined color + brightness command
 	case Color_SetBrightnessLevel: {
@@ -290,7 +290,7 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 		}
 		else
 		{
-			//_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d, Brightness:%03d", red, green, blue, dMax_Send);
+			//Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d, Brightness:%03d", red, green, blue, dMax_Send);
 
 			Arilux_RGBCommand_Command[1] = (unsigned char)red;
 			Arilux_RGBCommand_Command[2] = (unsigned char)green;
@@ -302,28 +302,28 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 	}
 	break;
 	case Color_SetBrightUp:
-		_log.Log(LOG_STATUS, "Arilux: SetBrightUp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "SetBrightUp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Color_SetBrightDown:
-		_log.Log(LOG_STATUS, "Arilux: SetBrightDown - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "SetBrightDown - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Color_WarmWhiteIncrease:
-		_log.Log(LOG_STATUS, "Arilux: WarmWhiteIncrease - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "WarmWhiteIncrease - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Color_CoolWhiteIncrease:
-		_log.Log(LOG_STATUS, "Arilux: CoolWhiteIncrease - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "CoolWhiteIncrease - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Color_NightMode:
-		_log.Log(LOG_STATUS, "Arilux: NightMode - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "NightMode - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Color_FullBrightness:
-		_log.Log(LOG_STATUS, "Arilux: FullBrightness - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "FullBrightness - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Color_DiscoMode:
-		_log.Log(LOG_STATUS, "Arilux: DiscoMode - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "DiscoMode - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Color_DiscoSpeedFasterLong:
-		_log.Log(LOG_STATUS, "Arilux: DiscoSpeedFasterLong - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+		Log(LOG_STATUS, "DiscoSpeedFasterLong - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	default:
 

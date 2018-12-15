@@ -4,6 +4,9 @@
 #include "../main/RFXNames.h"
 #include "../main/StoppableTask.h"
 
+enum _eLogLevel : uint32_t;
+enum _eDebugLevel : uint32_t;
+
 //Base class with functions all notification systems should have
 class CDomoticzHardwareBase : public StoppableTask
 {
@@ -14,6 +17,8 @@ public:
 
 	bool Start();
 	bool Stop();
+	bool Restart();
+	bool RestartWithDelay(const long seconds);
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
 	virtual bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
@@ -30,6 +35,7 @@ public:
 	bool m_bSkipReceiveCheck = { false };
 	unsigned long m_DataTimeout = { 0 };
 	std::string m_Name;
+	std::string m_ShortName;
 	_eHardwareTypes HwdType;
 	unsigned char m_SeqNr = { 0 };
 	bool m_bEnableReceive = { false };
@@ -37,12 +43,30 @@ public:
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
 	void *m_pUserData = { NULL };
 	bool m_bOutputLog = { true };
+
+	int SetThreadNameInt(const std::thread::native_handle_type &thread);
+
+	//Log Helper functions
+	void Log(const _eLogLevel level, const std::string& sLogline);
+	void Log(const _eLogLevel level, const char* logline, ...)
+#ifdef __GNUC__
+		__attribute__((format(printf, 3, 4)))
+#endif
+		;
+	void Debug(const _eDebugLevel level, const std::string& sLogline);
+	void Debug(const _eDebugLevel level, const char* logline, ...)
+#ifdef __GNUC__
+		__attribute__((format(printf, 3, 4)))
+#endif
+		;
+
 protected:
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
 
     //Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
+	void StartHeartbeatThread(const char* ThreadName);
 	void StopHeartbeatThread();
 	void HandleHBCounter(const int iInterval);
 
@@ -74,7 +98,7 @@ protected:
 	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname, const int RssiLevel = 12);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
 	bool GetWindSensorValue(const int NodeID, int &WindDir, float &WindSpeed, float &WindGust, float &twindtemp, float &windchill, bool bHaveWindTemp, bool &bExists);
-	void SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname, const int RssiLevel = 12);
+	void SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const bool bHaveWindChill, const std::string &defaultname, const int RssiLevel = 12);
 	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const std::string &defaultname);
 	void SendSolarRadiationSensor(const unsigned char NodeID, const int BatteryLevel, const float radiation, const std::string &defaultname);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string &defaultname);

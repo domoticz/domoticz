@@ -6,7 +6,7 @@
 class RFXComTCP : public CRFXBase, ASyncTCP
 {
 public:
-	RFXComTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
+	RFXComTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const _eRFXAsyncType AsyncType);
 	~RFXComTCP(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:

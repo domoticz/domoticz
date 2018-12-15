@@ -563,7 +563,7 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &s
 		}
 	}
 	int cNode = (nodeID << 8) | ChildID;
-	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp, sname);
+	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp, true, sname);
 }
 
 void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pChild, const _eSetType vType)
@@ -1079,13 +1079,12 @@ void MySensorsBase::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit)
+void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char NodeID, const int ChildID)
 {
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	sprintf(szIdx, "%08X", NodeID);
 	std::vector<std::vector<std::string> > result;
-	// LLEMARINEL : #1312  Changed pTypeLighting2 to pTypeGeneralSwitch
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, ChildID, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
 	if (result.empty())
 		return; //not found!
 	time_t now = time(0);

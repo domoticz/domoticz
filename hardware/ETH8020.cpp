@@ -37,7 +37,7 @@ bool CETH8020::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CETH8020::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "ETH8020");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "ETH8020: Started");

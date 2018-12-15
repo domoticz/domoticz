@@ -25,7 +25,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
 
                 var includeReturn = typeof stats.delivered !== 'undefined';
-                var data = getGroupedData(stats.result, costs);
+                var data = getGroupedData(stats.result, costs,includeReturn);
                 var source = month
                     ? data.years[year].months.find(function (item) {
                         return (new Date(item.date)).getMonth() + 1 === month;
@@ -83,7 +83,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     usage2: {
                         usage: parseFloat(item.v2),
                         cost: parseFloat(item.v2) * costs.CostEnergyT2 / 10000,
-                        counter: parseFloat(item.c2)
+                        counter: parseFloat(item.c3)
                     },
                 };
 
@@ -91,7 +91,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     dayRecord.return1 = {
                         usage: parseFloat(item.r1),
                         cost: parseFloat(item.r1) * costs.CostEnergyR1 / 10000,
-                        counter: parseFloat(item.c3)
+                        counter: parseFloat(item.c2)
                     };
 
                     dayRecord.return2 = {
@@ -104,8 +104,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 dayRecord.usage = dayRecord.usage1.usage + dayRecord.usage2.usage -
                     (includeReturn ? dayRecord.return1.usage + dayRecord.return2.usage : 0);
                 dayRecord.cost = dayRecord.usage1.cost + dayRecord.usage2.cost -
-                    (includeReturn ? dayRecord.return1.cost - dayRecord.return2.cost : 0);
-
+                    (includeReturn ? (dayRecord.return1.cost + dayRecord.return2.cost) : 0);
                 result.years[year].months[month].days[day] = dayRecord
             });
 
@@ -238,6 +237,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             } else {
                 columns.push({
                     title: $.t('Month'),
+                    width: 150,
                     data: 'date',
                     render: function (data) {
                         var date = new Date(data);
@@ -256,7 +256,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 if (!checkDataKey(data, item[0])) {
                     return;
                 }
-
                 if (vm.isMonthView) {
                     columns.push({ title: $.t(item[2]), data: item[0]+'.counter', render: counterRenderer });
                 }
@@ -370,7 +369,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     min: 0
                 },
                 tooltip: {
-                    valueSuffix: ' ' + vm.unit
+					formatter: function () {
+						return $.t(Highcharts.dateFormat('%A', this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + $.t(this.series.name) + ': ' + Highcharts.numberFormat(this.y,3) + ' ' + vm.unit + '<br/>Total: ' + this.point.stackTotal + ' ' + vm.unit;
+					}
                 },
                 plotOptions: {
                     column: {

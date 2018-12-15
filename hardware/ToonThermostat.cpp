@@ -181,7 +181,7 @@ bool CToonThermostat::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CToonThermostat::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "ToonThermostat");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -304,7 +304,7 @@ bool CToonThermostat::Login()
 	}
 	m_ClientID = "";
 	std::stringstream sstr;
-	sstr << "username=" << m_UserName << "&password=" << m_Password;
+	sstr << "username=" << m_UserName << "&password=" << CURLEncode::URLEncode(m_Password);
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;

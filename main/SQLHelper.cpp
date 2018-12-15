@@ -644,12 +644,7 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_thread)
-	{
-		RequestStop();
-		m_thread->join();
-		m_thread.reset();
-	}
+	StopThread();
 	CloseDatabase();
 }
 
@@ -3081,8 +3076,19 @@ void CSQLHelper::CloseDatabase()
 	}
 }
 
+void CSQLHelper::StopThread()
+{
+	if (m_thread)
+	{
+		RequestStop();
+		m_thread->join();
+		m_thread.reset();
+	}
+}
+
 bool CSQLHelper::StartThread()
 {
+	RequestStart();
 	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
 	SetThreadName(m_thread->native_handle(), "SQLHelper");
 	return (m_thread != NULL);
@@ -5084,11 +5090,14 @@ void CSQLHelper::UpdateTemperatureLog()
 				}
 				break;
 			case pTypeWIND:
-				if ((dSubType != sTypeWIND4) && (dSubType != sTypeWINDNoTemp))
+				if (dSubType == sTypeWINDNoTempNoChill)
 					continue;
 				if (splitresults.size() >= 6)
 				{
-					temp = static_cast<float>(atof(splitresults[4].c_str()));
+					if (dSubType != sTypeWINDNoTemp)
+					{
+						temp = static_cast<float>(atof(splitresults[4].c_str()));
+					}
 					chill = static_cast<float>(atof(splitresults[5].c_str()));
 				}
 				break;
@@ -5229,7 +5238,7 @@ void CSQLHelper::UpdateWindLog()
 			int speed = atoi(splitresults[2].c_str());
 			int gust = atoi(splitresults[3].c_str());
 
-			std::map<unsigned short, _tWindCalculationStruct>::iterator ittWC = m_mainworker.m_wind_calculator.find(DeviceID);
+			std::map<unsigned short, _tWindCalculator>::iterator ittWC = m_mainworker.m_wind_calculator.find(DeviceID);
 			if (ittWC != m_mainworker.m_wind_calculator.end())
 			{
 				int speed_max, gust_max, speed_min, gust_min;
@@ -5368,7 +5377,6 @@ bool CSQLHelper::UpdateCalendarMeter(
 			_log.Log(LOG_ERROR, "UpdateCalendarMeter(): incorrect date format received, YYYY-MM-DD expected!");
 			return false;
 		}
-		//insert into calendar table
 		result = safe_query(
 			"SELECT DeviceRowID FROM Meter_Calendar "
 			"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
@@ -5908,7 +5916,6 @@ void CSQLHelper::AddCalendarTemperature()
 			float setpoint_min = static_cast<float>(atof(sd[8].c_str()));
 			float setpoint_max = static_cast<float>(atof(sd[9].c_str()));
 			float setpoint_avg = static_cast<float>(atof(sd[10].c_str()));
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Temp_Avg, Chill_Min, Chill_Max, Humidity, Barometer, DewPoint, SetPoint_Min, SetPoint_Max, SetPoint_Avg, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%d', '%d', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
@@ -6004,7 +6011,6 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 			if (total_real < 1000)
 			{
-				//insert into calendar table
 				result = safe_query(
 					"INSERT INTO Rain_Calendar (DeviceRowID, Total, Rate, Date) "
 					"VALUES ('%" PRIu64 "', '%.2f', '%d', '%q')",
@@ -6128,7 +6134,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				double total_real = total_max - total_min;
 				double counter = total_max;
 
-				//insert into calendar table
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
 					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
@@ -6214,7 +6219,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		else
 		{
 			//no new meter result received in last day
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%q')",
@@ -6314,7 +6318,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				}
 			}
 
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
@@ -6335,7 +6338,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			//Check for Notification
 			if (devType == pTypeP1Power)
 			{
-				float musage = (total_real[0] + total_real[2]) / EnergyDivider;
+				float musage = (total_real[0] + total_real[4]) / EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
 			/*
@@ -6401,7 +6404,6 @@ void CSQLHelper::AddCalendarUpdateWind()
 			int gust_min = atoi(sd[3].c_str());
 			int gust_max = atoi(sd[4].c_str());
 
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Wind_Calendar (DeviceRowID, Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date) "
 				"VALUES ('%" PRIu64 "', '%.2f', '%d', '%d', '%d', '%d', '%q')",
@@ -6456,7 +6458,6 @@ void CSQLHelper::AddCalendarUpdateUV()
 
 			float level = static_cast<float>(atof(sd[0].c_str()));
 
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
 				"VALUES ('%" PRIu64 "', '%g', '%q')",
@@ -6508,7 +6509,6 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 			float percentage_min = static_cast<float>(atof(sd[0].c_str()));
 			float percentage_max = static_cast<float>(atof(sd[1].c_str()));
 			float percentage_avg = static_cast<float>(atof(sd[2].c_str()));
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) "
 				"VALUES ('%" PRIu64 "', '%g', '%g', '%g','%q')",
@@ -6563,7 +6563,6 @@ void CSQLHelper::AddCalendarUpdateFan()
 			int speed_min = (int)atoi(sd[0].c_str());
 			int speed_max = (int)atoi(sd[1].c_str());
 			int speed_avg = (int)atoi(sd[2].c_str());
-			//insert into calendar table
 			result = safe_query(
 				"INSERT INTO Fan_Calendar (DeviceRowID, Speed_Min, Speed_Max, Speed_Avg, Date) "
 				"VALUES ('%" PRIu64 "', '%d', '%d', '%d','%q')",
@@ -7195,6 +7194,9 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	sqlite3_close(dbase_restore);
 	//we have a valid database!
 	std::remove(outputfile.c_str());
+
+	StopThread();
+
 	//stop database
 	sqlite3_close(m_dbase);
 	m_dbase = NULL;
@@ -8551,3 +8553,4 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 	}
 	return divider;
 }
+

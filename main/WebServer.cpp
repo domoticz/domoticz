@@ -118,6 +118,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "sl", "Slovenian" },
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
+	{ "zh_TW", "Taiwanese" },
 	{ "tr", "Turkish" },
 	{ "uk", "Ukrainian" },
 	{ NULL, NULL }
@@ -1395,6 +1396,27 @@ namespace http {
 					iDataTimeout
 				);
 			}
+			else if (
+				(htype == HTYPE_RFXtrx433)||
+				(htype == HTYPE_RFXtrx868)
+				)
+			{
+				//No Extra field here, handled in CWebServer::SetRFXCOMMode
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					mode1, mode2, mode3, mode4, mode5, mode6,
+					iDataTimeout
+				);
+				extra = "0";
+			}
 			else {
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1751,6 +1773,31 @@ namespace http {
 						iDataTimeout,
 						idx.c_str()
 					);
+				}
+				else if (
+					(htype == HTYPE_RFXtrx433) ||
+					(htype == HTYPE_RFXtrx868)
+					)
+				{
+					//No Extra field here, handled in CWebServer::SetRFXCOMMode
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(bEnabled == true) ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						mode1, mode2, mode3, mode4, mode5, mode6,
+						iDataTimeout,
+						idx.c_str()
+					);
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE ID=%q", idx.c_str());
+					if (!result.empty())
+						extra = result[0][0];
 				}
 				else {
 					m_sql.safe_query(
@@ -2511,7 +2558,7 @@ namespace http {
 			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 			bool bIsBetaChannel = (nValue != 0);
 
-			std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history";
+			std::string szHistoryURL = "https://www.domoticz.com/download.php?channel=stable&type=history";
 			if (bIsBetaChannel)
 			{
 				utsname my_uname;
@@ -2529,9 +2576,9 @@ namespace http {
 				}
 
 				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64") && (machine != "aarch64")) || (strstr(my_uname.release, "ARCH+") != NULL))
-					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history";
+					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history";
 				else
-					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
+					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
 			}
 			if (!HTTPClient::GET(szHistoryURL, historyfile))
 			{
@@ -3569,7 +3616,8 @@ namespace http {
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
 
-						if ((Type == HTYPE_RFXLAN) ||
+						if (
+							(Type == HTYPE_RFXLAN) ||
 							(Type == HTYPE_RFXtrx315) ||
 							(Type == HTYPE_RFXtrx433) ||
 							(Type == HTYPE_RFXtrx868) ||
@@ -4474,6 +4522,17 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 307)
+					{
+						//Westinghouse
+						dtype = pTypeFan;
+						subtype = sTypeWestinghouse;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 					else if (lighttype == 400) {
 						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
@@ -5073,6 +5132,17 @@ namespace http {
 						//Lucci Air DC
 						dtype = pTypeFan;
 						subtype = sTypeLucciAirDC;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 307)
+					{
+						//Westinghouse
+						dtype = pTypeFan;
+						subtype = sTypeWestinghouse;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;
@@ -8018,6 +8088,7 @@ namespace http {
 							// assume results are ordered such that same device is adjacent
 							// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 							std::string thisIdx = sd[0];
+
 							if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 								std::string typeOfThisOne = root["result"][ii]["Type"].asString();
 								if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -8516,6 +8587,8 @@ namespace http {
 					// assume results are ordered such that same device is adjacent
 					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 					std::string thisIdx = sd[0];
+					int devIdx = atoi(thisIdx.c_str());
+
 					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
 						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -9098,6 +9171,14 @@ namespace http {
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeThermostat1)
 					{
@@ -9120,6 +9201,13 @@ namespace http {
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["TypeImg"] = "temperature";
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeHUM)
 					{
@@ -9150,6 +9238,14 @@ namespace http {
 
 							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_HUM_BARO)
@@ -9200,6 +9296,14 @@ namespace http {
 							}
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_BARO)
@@ -9222,6 +9326,14 @@ namespace http {
 							);
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeUV)
@@ -9238,6 +9350,14 @@ namespace http {
 
 								root["result"][ii]["Temp"] = tvalue;
 								sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
 							}
 							else
 							{
@@ -9294,6 +9414,14 @@ namespace http {
 								}
 								double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
 								root["result"][ii]["Chill"] = tvalue;
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
 							}
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -9342,7 +9470,7 @@ namespace http {
 								total_real *= AddjMulti;
 								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
-								sprintf(szTmp, "%.3f", total_real);
+								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
 								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
@@ -9553,7 +9681,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%" PRIu64 " %s", static_cast<uint64_t>(meteroffset + dvalue), ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -10183,6 +10311,13 @@ namespace http {
 							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "temperature";
 							root["result"][ii]["Type"] = "temperature";
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 						else if (dSubType == sTypePercentage)
 						{
@@ -11037,6 +11172,8 @@ namespace http {
 
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
+						continue;
+					if (hType == HTYPE_RESERVED_FOR_YOU_1)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -13082,7 +13219,6 @@ namespace http {
 								(dType == pTypeTEMP_HUM_BARO) ||
 								(dType == pTypeTEMP_BARO) ||
 								((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-								((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								(dType == pTypeThermostat1) ||
 								(dType == pTypeRadiator1) ||
@@ -14674,7 +14810,7 @@ namespace http {
 								bool bOK = true;
 								if (dType == pTypeWIND)
 								{
-									bOK = ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp));
+									bOK = ((dSubType != sTypeWINDNoTemp) && (dSubType != sTypeWINDNoTempNoChill));
 								}
 								if (bOK)
 								{
@@ -14757,7 +14893,6 @@ namespace http {
 							((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1)) ||
 							((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
 							)
 						{
@@ -16206,7 +16341,6 @@ namespace http {
 						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
 						((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 							((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)

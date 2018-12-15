@@ -2,6 +2,7 @@
 
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
+#include <map>
 
 #define ENOCEAN3_READ_BUFFER_SIZE 65*1024
 
@@ -13,6 +14,13 @@ class CEnOceanESP3: public AsyncSerial, public CDomoticzHardwareBase
 		ERS_HEADER,
 		ERS_DATA,
 		ERS_CHECKSUM
+	};
+	struct _tVLDNode
+	{
+		int idx;
+		int manufacturer;
+		uint8_t profile;
+		uint8_t type;
 	};
 public:
 	CEnOceanESP3(const int ID, const std::string& devname, const int type);
@@ -35,6 +43,8 @@ private:
 
 	void ParseRadioDatagram();
 	void readCallback(const char *data, size_t len);
+
+	void ReloadVLDNodes();
 private:
 	_eEnOcean_Receive_State m_receivestate;
 	int m_wantedlength;
@@ -52,6 +62,8 @@ private:
     unsigned char m_buffer[ENOCEAN3_READ_BUFFER_SIZE];
 	int m_bufferpos;
 	int m_retrycntr;
+
+	std::map<uint32_t, _tVLDNode> m_VLDNodes;
 
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;

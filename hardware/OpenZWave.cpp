@@ -347,6 +347,7 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_HwdID = ID;
 	m_controllerID = 0;
 	m_controllerNodeId = 0;
+	m_LastControllerConfigWrite = 0;
 	m_bIsShuttingDown = false;
 	m_initFailed = false;
 	m_allNodesQueried = false;
@@ -1743,7 +1744,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					else
 						_device.scaleID = SCALEID_POWER;
 					_device.scaleMultiply = 1;
-					if (vUnits == "kWh")
+					if ((vUnits == "kWh") || (vUnits == "kVAh"))
 					{
 						_device.scaleMultiply = 1000;
 						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
@@ -1928,7 +1929,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					else
 						_device.scaleID = SCALEID_POWER;
 					_device.scaleMultiply = 1;
-					if (vUnits == "kWh")
+					if ((vUnits == "kWh") || (vUnits == "kVAh"))
 					{
 						_device.scaleMultiply = 1000;
 						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;

@@ -29,12 +29,35 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 bool CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;
-	return StartHardware();
+	m_bIsStarted = StartHardware();
+	return m_bIsStarted;
 }
 
 bool CDomoticzHardwareBase::Stop()
 {
-	return StopHardware();
+	m_bIsStarted = (!StopHardware());
+	return (!m_bIsStarted);
+}
+
+bool CDomoticzHardwareBase::Restart()
+{
+	if (StopHardware())
+	{
+		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
+	}
+	return false;
+}
+
+bool CDomoticzHardwareBase::RestartWithDelay(const long seconds)
+{
+	if (StopHardware())
+	{
+		sleep_seconds(seconds);
+		m_bIsStarted = StartHardware();
+		return m_bIsStarted;
+	}
+	return false;
 }
 
 void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
@@ -44,16 +67,21 @@ void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
 
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
-	m_stopHeartbeatrequested = false;
-	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
-	SetThreadName(m_Heartbeatthread->native_handle(), "Domoticz_HBWork");
+	StartHeartbeatThread("Domoticz_HBWork");
 }
+
+void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
+{
+	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
+	SetThreadName(m_Heartbeatthread->native_handle(), ThreadName);
+}
+
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
 {
-	m_stopHeartbeatrequested = true;
 	if (m_Heartbeatthread)
 	{
+		RequestStop();
 		m_Heartbeatthread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
@@ -65,11 +93,8 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 {
 	int secCounter = 0;
 	int hbCounter = 0;
-	while (!m_stopHeartbeatrequested)
+	while (!IsStopRequested(200))
 	{
-		sleep_milliseconds(200);
-		if (m_stopHeartbeatrequested)
-			break;
 		secCounter++;
 		if (secCounter == 5)
 		{
@@ -94,6 +119,43 @@ void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
 	{
 		SetHeartbeatReceived();
 	}
+}
+
+int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_type &thread)
+{
+	return SetThreadName(thread, m_ShortName.c_str());
+}
+
+//Log Helper functions
+#define MAX_LOG_LINE_LENGTH (2048*3)
+void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogline)
+{
+	_log.Log(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+}
+
+void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...)
+{
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	_log.Log(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+}
+
+void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const std::string& sLogline)
+{
+	_log.Debug(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+}
+
+void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline, ...)
+{
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	_log.Debug(level, "%s: %s", m_ShortName.c_str(), cbuffer);
 }
 
 //Sensor Helpers
@@ -724,16 +786,20 @@ void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t Chi
 }
 
 //wind direction is in steps of 22.5 degrees (360/16)
-void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname, const int RssiLevel /* =12 */)
+void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const bool bHaveWindChill, const std::string &defaultname, const int RssiLevel /* =12 */)
 {
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
 	tsen.WIND.packetlength = sizeof(tsen.WIND) - 1;
 	tsen.WIND.packettype = pTypeWIND;
-	if (!bHaveWindTemp)
+
+	if ((!bHaveWindTemp) && (!bHaveWindChill))
+		tsen.WIND.subtype = sTypeWINDNoTempNoChill;
+	else if (!bHaveWindTemp)
 		tsen.WIND.subtype = sTypeWINDNoTemp;
 	else
 		tsen.WIND.subtype = sTypeWIND4;
+
 	tsen.WIND.battery_level = BatteryLevel;
 	tsen.WIND.rssi = RssiLevel;
 	tsen.WIND.id1 = (NodeID & 0xFF00) >> 8;

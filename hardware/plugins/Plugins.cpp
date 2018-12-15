@@ -32,6 +32,7 @@
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
 extern std::string szWWWFolder;
+extern std::string szStartupFolder;
 extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
@@ -969,12 +970,6 @@ namespace Plugins {
 		_log.Log(LOG_STATUS, "(%s) Exiting work loop.", m_Name.c_str());
 	}
 
-	void CPlugin::Restart()
-	{
-		StopHardware();
-		StartHardware();
-	}
-
 	bool CPlugin::Initialise()
 	{
 		m_bIsStarted = false;
@@ -1134,6 +1129,7 @@ Error:
 					std::vector<std::string> sd = *itt;
 					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
 					ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
 					ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);
@@ -1436,6 +1432,12 @@ Error:
 				_log.Log(LOG_ERROR, "(%s) No transport, write directive to '%s' ignored.", m_Name.c_str(), sConnection.c_str());
 				return;
 			}
+		}
+
+		// Make sure there is a protocol to encode the data
+		if (!pConnection->pProtocol)
+		{
+			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);

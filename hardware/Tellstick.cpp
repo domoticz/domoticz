@@ -149,7 +149,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
         pos = message.find(";", pos+1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
-        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, "Wind");
+        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, false, "Wind");
     }
 }
 
@@ -222,7 +222,7 @@ bool CTellstick::StartHardware()
     _log.Log(LOG_NORM, "Tellstick: StartHardware");
     //Start worker thread
 	m_thread = std::make_shared<std::thread>(&CTellstick::ThreadSendCommands, this);
-	SetThreadName(m_thread->native_handle(), "Tellstick");
+	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
 

@@ -37,7 +37,7 @@ bool CPVOutputInput::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPVOutputInput::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "PVOutputInput");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -55,7 +55,7 @@ bool CPVOutputInput::StopHardware()
     return true;
 }
 
-#define PVOUTPUT_POLL_INTERVAL 5
+#define PVOUTPUT_POLL_INTERVAL 10
 
 void CPVOutputInput::Do_Work()
 {

@@ -80,7 +80,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeWIND, sTypeWIND6, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND7, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND8, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
-		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Chill" },
+		{ pTypeWIND, sTypeWINDNoTempNoChill, "Direction,Direction string,Speed,Gust" },
 
 		{ pTypeUV, sTypeUV1, "UV,Temperature" },
 		{ pTypeUV, sTypeUV2, "UV,Temperature" },
@@ -290,9 +291,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohome, sTypeEvohome, "Status" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
-		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
-
-		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
+		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status,Value" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeARC, "Status" },
@@ -647,7 +646,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Value")
 	{
-		sprintf(szData, "%d", atoi(rawsendValue.c_str())); //??
+		sprintf(szData, "%d", atoi(rawsendValue.c_str()));
 	}
 	else if (vType == "Visibility")
 	{

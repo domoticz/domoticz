@@ -107,7 +107,7 @@ bool CNetatmo::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CNetatmo::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Netatmo");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -572,7 +572,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 
 	if (bHaveWind)
 	{
-		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, name, rssiLevel);
+		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, false, name, rssiLevel);
 	}
 	return true;
 }

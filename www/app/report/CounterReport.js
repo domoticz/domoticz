@@ -211,7 +211,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             }
 
             columns.push({ title: $.t('Usage'), data: 'usage', render: counterRenderer });
-            columns.push({ title: $.t('Costs'), data: 'cost', render: costRenderer });
+
+			if (!['Counter Incremental'].includes(vm.device.SubType))
+				columns.push({ title: $.t('Costs'), data: 'cost', render: costRenderer });
 
             columns.push({
                 title: '<>',

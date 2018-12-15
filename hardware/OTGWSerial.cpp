@@ -41,7 +41,7 @@ bool OTGWSerial::StartHardware()
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
 	m_thread = std::make_shared<std::thread>(&OTGWSerial::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "OTGWSerial");
+	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
 

@@ -619,6 +619,10 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall/rotate
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|rotate", false));
 				}
+				else if (Name == "Aqara Vibration Sensor") {
+					// tilt/vibrate/free fall
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Tilt|Vibrate|Free Fall", false));
+				}
 				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
 					//for Aqara wireless switch, 2 buttons support
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both_Click", false));
@@ -758,16 +762,9 @@ bool XiaomiGateway::StartHardware()
 
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
-	SetThreadName(m_thread->native_handle(), "XiaomiGateway");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
-}
-
-
-void XiaomiGateway::Restart()
-{
-    StopHardware();
-    StartHardware();
 }
 
 bool XiaomiGateway::StopHardware()
@@ -1058,11 +1055,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Wireless Dual Wall Switch";
 						type = STYPE_Selector;
 					}
+					else if (model == "vibration") {
+						name = "Aqara Vibration Sensor";
+						type = STYPE_Selector;
+					}
 					else if (model == "ctrl_neutral2" || model == "ctrl_ln2" || model == "ctrl_ln2.aq1") {
 						name = "Xiaomi Wired Dual Wall Switch";
 						//type = STYPE_Selector;
 					}
-					else if (model == "gateway") {
+					else if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
 						name = "Xiaomi RGB Gateway";
 					}
 					else if (model == "ctrl_neutral1" || model == "ctrl_ln1" || model == "ctrl_ln1.aq1") {
@@ -1139,15 +1140,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 0;
 							on = false;
 						}
-						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click")) {
+						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click") || (status == "tilt")) {
 							level = 10;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click")) {
+						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") || (status == "free_fall")) {
 							level = 30;
 							on = true;
 						}
@@ -1324,7 +1325,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				showmessage = false;
 			}
 			else if (cmd == "iam") {
-				if (model == "gateway") {
+				if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
 					std::string ip = root["ip"].asString();
 					// Only add in the gateway that matches the IP address for this hardware.
 					if (ip == TrueGateway->GetGatewayIp()) 

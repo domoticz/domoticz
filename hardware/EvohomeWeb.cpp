@@ -25,6 +25,7 @@
 #define LOGONFAILTRESHOLD 3
 #define MINPOLINTERVAL 10
 #define MAXPOLINTERVAL 3600
+#define HTTPTIMEOUT 30
 
 #ifdef _WIN32
 #define gmtime_r(timep, result) gmtime_s(result, timep)
@@ -100,7 +101,15 @@ bool CEvohomeWeb::StartSession()
 	if (!m_bequiet)
 		_log.Log(LOG_STATUS, "(%s) connect to Evohome server", m_Name.c_str());
 	m_loggedon = false;
-	if (!login(m_username, m_password))
+
+	if (!m_v2refresh_token.empty())
+	{
+		if (!renew_login())
+		{
+			return false;
+		}
+	}
+	else if (!login(m_username, m_password))
 	{
 		m_logonfailures++;
 		if (m_logonfailures > LOGONFAILTRESHOLD)
@@ -109,6 +118,14 @@ bool CEvohomeWeb::StartSession()
 			m_logonfailures--;
 		return false;
 	}
+
+	m_sessiontimer = mytime(NULL) + 3599; // Honeywell will invalidate our session ID after an hour
+	m_loggedon = true;
+	m_logonfailures = 0;
+
+
+	// (re)initialize Evohome installation info
+	m_zones[0] = 0;
 	if (!full_installation())
 	{
 		_log.Log(LOG_ERROR, "(%s) failed to retrieve installation info from server", m_Name.c_str());
@@ -147,13 +164,6 @@ bool CEvohomeWeb::StartSession()
 			m_awaysetpoint = 15; // use default 'Away' setpoint value
 	}
 
-	if (m_showhdtemps)
-		v1_login(m_username, m_password);
-
-	m_zones[0] = 0;
-	m_loggedon = true;
-	m_logonfailures = 0;
-	m_sessiontimer = mytime(NULL) + 3600 - m_refreshrate; // Honeywell will drop our session after an hour
 	m_bequiet = false;
 	return true;
 }
@@ -167,7 +177,7 @@ bool CEvohomeWeb::StartHardware()
 		return false;
 	Init();
 	m_thread = std::make_shared<std::thread>(&CEvohomeWeb::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "EvohomeWeb");
+	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
 	m_bIsStarted = true;
@@ -199,16 +209,16 @@ void CEvohomeWeb::Do_Work()
 	{
 		sec_counter++;
 		m_lastconnect++;
-		if (sec_counter % 10 == 0) {
+		if (sec_counter % 10 == 0)
 			m_LastHeartbeat = mytime(NULL);
+
+		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect >= MINPOLINTERVAL))
+		{
 			if (m_loggedon && (m_LastHeartbeat > m_sessiontimer)) // discard our session with the honeywell server
 			{
 				m_loggedon = false;
 				m_bequiet = true;
 			}
-		}
-		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect>=MINPOLINTERVAL))
-		{
 			GetStatus();
 			pollcounter = LOGONFAILTRESHOLD;
 			m_lastconnect=0;
@@ -830,64 +840,67 @@ std::string CEvohomeWeb::local_to_utc(const std::string &local_time)
 
 bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 {
-	std::stringstream pdata;
-	pdata << "installationInfo-Type=application%2Fx-www-form-urlencoded;charset%3Dutf-8";
-	pdata << "&Host=rs.alarmnet.com%2F";
-	pdata << "&Cache-Control=no-store%20no-cache";
-	pdata << "&Pragma=no-cache";
-	pdata << "&grant_type=password";
-	pdata << "&scope=EMEA-V1-Basic%20EMEA-V1-Anonymous%20EMEA-V1-Get-Current-User-Account";
-	pdata << "&Username=" << CURLEncode::URLEncode(user);
-	pdata << "&Password=" << CURLEncode::URLEncode(password);
-	pdata << "&Connection=Keep-Alive";
+	_log.Debug(DEBUG_HARDWARE, "(%s) logon to v2 API", m_Name.c_str());
 
 	std::vector<std::string> LoginHeaders;
 	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
 	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
 	LoginHeaders.push_back("charsets: utf-8");
 
-	std::string s_res;
-	if (!HTTPClient::POST(EVOHOME_HOST"/Auth/OAuth/Token", pdata.str(), LoginHeaders, s_res))
+	std::string sz_postdata = "installationInfo-Type=application%2Fx-www-form-urlencoded;charset%3Dutf-8";
+	sz_postdata.append("&Host=rs.alarmnet.com%2F");
+	sz_postdata.append("&Cache-Control=no-store%20no-cache");
+	sz_postdata.append("&Pragma=no-cache");
+	sz_postdata.append("&grant_type=password");
+	sz_postdata.append("&scope=EMEA-V1-Basic%20EMEA-V1-Anonymous%20EMEA-V1-Get-Current-User-Account");
+	sz_postdata.append("&Username=");
+	sz_postdata.append(CURLEncode::URLEncode(user));
+	sz_postdata.append("&Password=");
+	sz_postdata.append(CURLEncode::URLEncode(password));
+	sz_postdata.append("&Connection=Keep-Alive");
+
+	std::string sz_response = send_receive_data(EVOHOME_HOST"/Auth/OAuth/Token", sz_postdata, LoginHeaders);
+
+	if (sz_response.empty())
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at login!", m_Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) login attempt did not return any response", m_Name.c_str());
 		return false;
 	}
 
-	if (s_res.find("<title>") != std::string::npos) // got an HTML page
+	if (sz_response[0] == '[') // response is an unnamed array - likely an error message
 	{
-		int i = s_res.find("<title>");
-		char* html = &s_res[i];
-		i = 7;
-		char c = html[i];
-		std::stringstream edata;
-		while (c != '<')
-		{
-			edata << c;
-			i++;
-			c = html[i];
-		}
-		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), edata.str().c_str());
-		return false;
+		sz_response[0] = ' ';
+		size_t len = sz_response.size();
+		len--;
+		sz_response[len] = ' ';
 	}
 
 	Json::Value j_login;
 	Json::Reader jReader;
-	bool ret = jReader.parse(s_res.c_str(), j_login);
-	if (!ret)
-		return false;
-
-	std::string szError = "";
-	if (j_login.isMember("error"))
-		szError = j_login["error"].asString();
-	if (j_login.isMember("message"))
-		szError = j_login["message"].asString();
-	if (!szError.empty())
+	if (!jReader.parse(sz_response.c_str(), j_login))
 	{
-		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), szError.c_str());
+		_log.Log(LOG_ERROR, "(%s) failed parsing response from login to portal", m_Name.c_str());
 		return false;
 	}
 
+	if (!j_login.isMember("access_token"))
+	{
+		std::string szError;
+		if (j_login.isMember("error"))
+			szError = j_login["error"].asString();
+		if (j_login.isMember("message"))
+			szError = j_login["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
 
+		_log.Log(LOG_ERROR, "(%s) login returned unknown data", m_Name.c_str());
+		return false;
+	}
+
+	m_v2refresh_token = j_login["refresh_token"].asString();
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
@@ -902,25 +915,119 @@ bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 }
 
 
+/* 
+ * Renew the Authorization token
+ */
+bool CEvohomeWeb::renew_login()
+{
+	if (m_v2refresh_token.empty())
+		return false;
+
+	_log.Debug(DEBUG_HARDWARE, "(%s) refresh v2 session token", m_Name.c_str());
+
+	std::vector<std::string> LoginHeaders;
+	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
+	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
+	LoginHeaders.push_back("charsets: utf-8");
+
+	std::string sz_postdata = "installationInfo-Type=application%2Fx-www-form-urlencoded;charset%3Dutf-8";
+	sz_postdata.append("&Host=rs.alarmnet.com%2F");
+	sz_postdata.append("&Cache-Control=no-store%20no-cache");
+	sz_postdata.append("&Pragma=no-cache");
+	sz_postdata.append("&grant_type=refresh_token");
+	sz_postdata.append("&scope=EMEA-V1-Basic%20EMEA-V1-Anonymous");
+	sz_postdata.append("&refresh_token=");
+	sz_postdata.append(m_v2refresh_token);
+	sz_postdata.append("&Connection=Keep-Alive");
+
+	std::string sz_response = send_receive_data(EVOHOME_HOST"/Auth/OAuth/Token", sz_postdata, LoginHeaders);
+
+	if (sz_response[0] == '[') // response is an unnamed array - likely an error message
+	{
+		sz_response[0] = ' ';
+		size_t len = sz_response.size();
+		len--;
+		sz_response[len] = ' ';
+	}
+
+	Json::Value j_login;
+	Json::Reader jReader;
+	if (!jReader.parse(sz_response.c_str(), j_login))
+	{
+		_log.Log(LOG_ERROR, "(%s) failed parsing response from renewing login", m_Name.c_str());
+		return false;
+	}
+
+	if (!j_login.isMember("access_token"))
+	{
+		std::string szError;
+		if (j_login.isMember("error"))
+			szError = j_login["error"].asString();
+		if (j_login.isMember("message"))
+			szError = j_login["message"].asString();
+		if (!szError.empty())
+		{
+			if (szError == "invalid_grant") // refresh token is no longer valid
+				m_v2refresh_token = "";
+
+			_log.Log(LOG_ERROR, "(%s) renewing login failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) renewing login returned unknown data", m_Name.c_str());
+		return false;
+	}
+
+	m_v2refresh_token = j_login["refresh_token"].asString();
+	std::stringstream atoken;
+	atoken << "Authorization: bearer " << j_login["access_token"].asString();
+
+	m_SessionHeaders.clear();
+	m_SessionHeaders.push_back(atoken.str());
+	m_SessionHeaders.push_back("applicationId: b013aa26-9724-4dbd-8897-048b9aada249");
+	m_SessionHeaders.push_back("accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
+	m_SessionHeaders.push_back("content-type: application/json");
+	m_SessionHeaders.push_back("charsets: utf-8");
+
+	return true;
+}
+
+
 /*
  * Retrieve evohome user info
  */
 bool CEvohomeWeb::user_account()
 {
-	std::string s_res;
-	if (!HTTPClient::GET(EVOHOME_HOST"/WebAPI/emea/api/v1/userAccount", m_SessionHeaders, s_res))
+	std::string sz_response = send_receive_data(EVOHOME_HOST"/WebAPI/emea/api/v1/userAccount", m_SessionHeaders);
+
+	if (sz_response[0] == '[') // response is an unnamed array - likely an error message
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve user account info!", m_Name.c_str());
-		return false;
+		sz_response[0] = ' ';
+		size_t len = sz_response.size();
+		len--;
+		sz_response[len] = ' ';
 	}
+
 	Json::Value j_account;
 	Json::Reader jReader;
-	bool ret = jReader.parse(s_res.c_str(), j_account);
-	if (!ret)
+	if (!jReader.parse(sz_response.c_str(), j_account))
+	{
+		_log.Log(LOG_ERROR, "(%s) failed parsing response from retrieve user account info", m_Name.c_str());
 		return false;
+	}
+
+	if (j_account.isMember("message"))
+	{
+		std::string szError = j_account["message"].asString();
+		_log.Log(LOG_ERROR, "(%s) retrieve user account info failed with message: %s", m_Name.c_str(), szError.c_str());
+		return false;
+	}
 
 	if (!j_account.isMember("userId"))
+	{
+		_log.Log(LOG_ERROR, "(%s) retrieve user account info did not return an ID", m_Name.c_str());
 		return false;
+	}
 
 	m_evouid = j_account["userId"].asString();
 	return true;
@@ -1019,36 +1126,64 @@ void CEvohomeWeb::get_gateways(int location)
 bool CEvohomeWeb::full_installation()
 {
 	std::vector<location>().swap(m_locations);
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/installationInfo?userId=" << m_evouid << "&includeTemperatureControlSystems=True";
 
-	std::string s_res;
-	if (!HTTPClient::GET(url.str(), m_SessionHeaders, s_res))
+	std::string sz_url = EVOHOME_HOST"/WebAPI/emea/api/v1/location/installationInfo?userId=";
+	sz_url.append(m_evouid);
+	sz_url.append("&includeTemperatureControlSystems=True");
+
+	std::string sz_response = send_receive_data(sz_url, m_SessionHeaders);
+
+	Json::Reader jReader;
+	m_j_fi.clear();
+
+	bool parseOK;
+	if (sz_response[0] == '[')
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve installation!", m_Name.c_str());
+		// evohome v1 API returns an unnamed json array which is not accepted by our parser
+		std::string sz_jdata = "{\"locations\": ";
+		sz_jdata.append(sz_response);
+		sz_jdata.append("}");
+		parseOK = jReader.parse(sz_jdata, m_j_fi);
+	}
+	else
+		parseOK = jReader.parse(sz_response, m_j_fi);
+
+	if (!parseOK)
+	{
+		_log.Log(LOG_ERROR, "(%s) cannot parse return data from retrieve installation info", m_Name.c_str());
 		return false;
 	}
 
-	// evohome API does not correctly format the json output
-	std::stringstream ss_jdata;
-	ss_jdata << "{\"locations\": " << s_res << "}";
-	Json::Reader jReader;
-	m_j_fi.clear();
-	bool ret = jReader.parse(ss_jdata.str(), m_j_fi);
-	if (!ret)
-		return false;
+	if (!m_j_fi.isMember("locations"))
+	{
+		std::string szError;
+		if (m_j_fi.isMember("error"))
+			szError = m_j_fi["error"].asString();
+		if (m_j_fi.isMember("message"))
+			szError = m_j_fi["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) retrieve installation info failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
 
-	if (!m_j_fi["locations"].isArray())
-		return false; // invalid return
+		_log.Log(LOG_ERROR, "(%s) retrieve installation info returned an unhandled response", m_Name.c_str());
+		return false;
+	}
 
 	size_t l = m_j_fi["locations"].size();
 	if (l == 0)
-		return false; // invalid return
-	if (m_j_fi["locations"][0].isMember("message"))
 	{
-		_log.Log(LOG_ERROR, "(%s) retrieve installation returned message: %s", m_Name.c_str(), m_j_fi["locations"][0]["message"].asString().c_str());
+		_log.Log(LOG_ERROR, "(%s) retrieve installation info returned an empty set", m_Name.c_str());
 		return false;
 	}
+	if (m_j_fi["locations"][0].isMember("message"))
+	{
+		std::string szError = m_j_fi["locations"][0]["message"].asString();
+		_log.Log(LOG_ERROR, "(%s) retrieve installation info returned message: %s", m_Name.c_str(), szError.c_str());
+		return false;
+	}
+
 	for (size_t i = 0; i < l; ++i)
 	{
 		location newloc = location();
@@ -1070,8 +1205,9 @@ bool CEvohomeWeb::full_installation()
 
 bool CEvohomeWeb::get_status(const std::string &locationId)
 {
-	if (m_locations.size() == 0)
+	if ((m_locations.size() == 0) && !full_installation())
 		return false;
+
 	for (size_t i = 0; i < m_locations.size(); i++)
 	{
 		if (m_locations[i].locationId == locationId)
@@ -1081,25 +1217,52 @@ bool CEvohomeWeb::get_status(const std::string &locationId)
 }
 bool CEvohomeWeb::get_status(int location)
 {
-	Json::Value *j_loc, *j_gw, *j_tcs;
-	if ((m_locations.size() == 0) || m_locations[location].locationId.empty())
+	if ((m_locations.size() == 0) && !full_installation())
+		return false;
+	if (m_locations[location].locationId.empty())
 		return false;
 
+	Json::Value *j_loc, *j_gw, *j_tcs;
 	bool valid_json = true;
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/" << m_locations[location].locationId << "/status?includeTemperatureControlSystems=True";
-	std::string s_res;
-	if (!HTTPClient::GET(url.str(), m_SessionHeaders, s_res))
+
+	std::string sz_url = EVOHOME_HOST"/WebAPI/emea/api/v1/location/";
+	sz_url.append(m_locations[location].locationId);
+	sz_url.append("/status?includeTemperatureControlSystems=True");
+
+	std::string sz_response = send_receive_data(sz_url, m_SessionHeaders);
+
+	if (sz_response[0] == '[') // response is an unnamed array - likely an error message
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at get status!", m_Name.c_str());
-		return false;
+		sz_response[0] = ' ';
+		size_t len = sz_response.size();
+		len--;
+		sz_response[len] = ' ';
 	}
 
 	Json::Reader jReader;
 	m_j_stat.clear();
-	bool ret = jReader.parse(s_res, m_j_stat);
-	if (!ret)
+	if (!jReader.parse(sz_response, m_j_stat))
+	{
+		_log.Log(LOG_ERROR, "(%s) cannot parse return data from status request", m_Name.c_str());
 		return false;
+	}
+
+	if (!m_j_stat.isMember("gateways"))
+	{
+		std::string szError;
+		if (m_j_stat.isMember("error"))
+			szError = m_j_stat["error"].asString();
+		if (m_j_stat.isMember("message"))
+			szError = m_j_stat["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) status request failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) status request returned an unhandled response", m_Name.c_str());
+		return false;
+	}
 
 	m_locations[location].status = &m_j_stat;
 	j_loc = m_locations[location].status;
@@ -1162,8 +1325,9 @@ bool CEvohomeWeb::get_status(int location)
 
 CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(const std::string &zoneId)
 {
-	if (m_locations.size() == 0)
-		full_installation();
+	if ((m_locations.size() == 0) && !full_installation())
+		return NULL;
+
 	for (size_t l = 0; l < m_locations.size(); l++)
 	{
 		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
@@ -1203,16 +1367,23 @@ bool CEvohomeWeb::get_dhw_schedule(const std::string &dhwId)
 }
 bool CEvohomeWeb::get_zone_schedule(const std::string &zoneId, const std::string &zoneType)
 {
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/" << zoneType << "/" << zoneId << "/schedule";
-	std::string s_res;
-	if ((!HTTPClient::GET(url.str(), m_SessionHeaders, s_res)) || (!s_res.find("\"id\"")))
+	std::string sz_url = EVOHOME_HOST"/WebAPI/emea/api/v1/";
+	sz_url.append(zoneType);
+	sz_url.append("/");
+	sz_url.append(zoneId);
+	sz_url.append("/schedule");
+
+	std::string sz_response = send_receive_data(sz_url, m_SessionHeaders);
+
+	if (!sz_response.find("\"id\"")) // ignore errors - a schedule may simply not exist
 		return false;
-	Json::Reader jReader;
+
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL)
 		return false;
-	bool ret = jReader.parse(s_res, hz->schedule);
+
+	Json::Reader jReader;
+	bool ret = jReader.parse(sz_response, hz->schedule);
 	if (ret)
 	{
 		(hz->schedule)["zoneId"] = zoneId;
@@ -1357,7 +1528,6 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
  *									*
  ************************************************************************/
 
-
 bool CEvohomeWeb::verify_datetime(const std::string &datetime)
 {
 	if (datetime.length() < 19)
@@ -1385,47 +1555,126 @@ bool CEvohomeWeb::verify_datetime(const std::string &datetime)
 
 bool CEvohomeWeb::set_system_mode(const std::string &systemId, int mode)
 {
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureControlSystem/" << systemId << "/mode";
-	std::stringstream data;
-	data << "{\"SystemMode\":" << mode << ",\"TimeUntil\":null,\"Permanent\":true}";
-	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
-		return true;
-	return false;
+	std::string sz_url = EVOHOME_HOST"/WebAPI/emea/api/v1/temperatureControlSystem/";
+	sz_url.append(systemId);
+	sz_url.append("/mode");
+
+	std::string sz_putdata = "{\"SystemMode\":";
+	sz_putdata.append(std::to_string(mode));
+	sz_putdata.append(",\"TimeUntil\":null,\"Permanent\":true}");
+
+	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
+	if (!sz_response.find("\"id\""))
+	{
+		if (sz_response[0] == '[') // response is an unnamed array - likely an error message
+		{
+			sz_response[0] = ' ';
+			size_t len = sz_response.size();
+			len--;
+			sz_response[len] = ' ';
+		}
+	
+		Json::Value j_response;
+		Json::Reader jReader;
+		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		{
+			std::string szError = j_response["message"].asString();
+			_log.Log(LOG_ERROR, "(%s) set system mode failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) set system mode returned an unhandled response", m_Name.c_str());
+		return false;
+	}
+	return true;
 }
 
 
 bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &temperature, const std::string &time_until)
 {
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureZone/" << zoneId << "/heatSetpoint";
-	std::stringstream data;
-	data << "{\"HeatSetpointValue\":" << temperature;
+	std::string sz_url = EVOHOME_HOST"/WebAPI/emea/api/v1/temperatureZone/";
+	sz_url.append(zoneId);
+	sz_url.append("/heatSetpoint");
+
+	std::string sz_putdata = "{\"HeatSetpointValue\":";
+	sz_putdata.append(temperature);
 	if (time_until == "")
-		data << ",\"SetpointMode\":1,\"TimeUntil\":null}";
+		sz_putdata.append(",\"SetpointMode\":1,\"TimeUntil\":null}");
 	else
 	{
 		if (!verify_datetime(time_until))
+		{
+			_log.Log(LOG_ERROR, "(%s) ignored zone temperature override because of invalid 'time_until' value", m_Name.c_str());
 			return false;
-		data << ",\"SetpointMode\":2,\"TimeUntil\":\"" << time_until.substr(0, 10) << "T" << time_until.substr(11, 8) << "Z\"}";
+		}
+		sz_putdata.append(",\"SetpointMode\":2,\"TimeUntil\":\"");
+		sz_putdata.append(time_until.substr(0, 10));
+		sz_putdata.append("T");
+		sz_putdata.append(time_until.substr(11, 8));
+		sz_putdata.append("Z\"}");
 	}
-	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
-		return true;
-	return false;
+
+	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
+
+	if (!sz_response.find("\"id\""))
+	{
+		if (sz_response[0] == '[') // response is an unnamed array - likely an error message
+		{
+			sz_response[0] = ' ';
+			size_t len = sz_response.size();
+			len--;
+			sz_response[len] = ' ';
+		}
+	
+		Json::Value j_response;
+		Json::Reader jReader;
+		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		{
+			std::string szError = j_response["message"].asString();
+			_log.Log(LOG_ERROR, "(%s) set zone temperature override failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) set zone temperature override returned an unhandled response", m_Name.c_str());
+		return false;
+	}
+	return true;
 }
 
 
 bool CEvohomeWeb::cancel_temperature_override(const std::string &zoneId)
 {
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureZone/" << zoneId << "/heatSetpoint";
-	std::string s_data = "{\"HeatSetpointValue\":0.0,\"SetpointMode\":0,\"TimeUntil\":null}";
-	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), s_data, m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
-		return true;
-	return false;
+	std::string sz_url = EVOHOME_HOST"/WebAPI/emea/api/v1/temperatureZone/";
+	sz_url.append(zoneId);
+	sz_url.append("/heatSetpoint");
+
+	std::string sz_putdata = "{\"HeatSetpointValue\":0.0,\"SetpointMode\":0,\"TimeUntil\":null}";
+
+	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
+
+	if (!sz_response.find("\"id\""))
+	{
+		if (sz_response[0] == '[') // response is an unnamed array - likely an error message
+		{
+			sz_response[0] = ' ';
+			size_t len = sz_response.size();
+			len--;
+			sz_response[len] = ' ';
+		}
+	
+		Json::Value j_response;
+		Json::Reader jReader;
+		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		{
+			std::string szError = j_response["message"].asString();
+			_log.Log(LOG_ERROR, "(%s) cancel zone temperature override failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) cancel zone temperature override returned an unhandled response", m_Name.c_str());
+		return false;
+	}
+	return true;
 }
 
 
@@ -1437,98 +1686,116 @@ bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 
 bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode, const std::string &time_until)
 {
-	std::stringstream data;
+	std::string sz_url = EVOHOME_HOST"/WebAPI/emea/api/v1/domesticHotWater/";
+	sz_url.append(dhwId);
+	sz_url.append("/state");
+
+	std::string sz_putdata = "{\"State\":";
 	if (mode == "auto")
-		data << "{\"State\":0,\"Mode\":0,\"UntilTime\":null}";
+		sz_putdata.append("0,\"Mode\":0,\"UntilTime\":null}");
 	else
 	{
-		data << "{\"State\":";
 		if (mode == "on")
-			data << 1;
+			sz_putdata.append("1");
 		else
-			data << 0;
+			sz_putdata.append("0");
 		if (time_until == "")
-			data << ",\"Mode\":1,\"UntilTime\":null}";
+			sz_putdata.append(",\"Mode\":1,\"UntilTime\":null}");
 		else
 		{
 			if (!verify_datetime(time_until))
+			{
+				_log.Log(LOG_ERROR, "(%s) ignored hot water override because of invalid 'time_until' value", m_Name.c_str());
 				return false;
-			data << ",\"Mode\":2,\"UntilTime\":\"" << time_until.substr(0, 10) << "T" << time_until.substr(11, 8) << "Z\"}";
+			}
+			sz_putdata.append(",\"Mode\":2,\"UntilTime\":\"");
+			sz_putdata.append(time_until.substr(0, 10));
+			sz_putdata.append("T");
+			sz_putdata.append(time_until.substr(11, 8));
+			sz_putdata.append("Z\"}");
 		}
 	}
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/domesticHotWater/" << dhwId << "/state";
-	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
-		return true;
-	return false;
+
+	std::string sz_response = put_receive_data(sz_url, sz_putdata, m_SessionHeaders);
+
+	if (!sz_response.find("\"id\""))
+	{
+		if (sz_response[0] == '[') // response is an unnamed array - likely an error message
+		{
+			sz_response[0] = ' ';
+			size_t len = sz_response.size();
+			len--;
+			sz_response[len] = ' ';
+		}
+	
+		Json::Value j_response;
+		Json::Reader jReader;
+		if (jReader.parse(sz_response.c_str(), j_response) && (j_response.isMember("message")))
+		{
+			std::string szError = j_response["message"].asString();
+			_log.Log(LOG_ERROR, "(%s) set hot water override failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) set hot water override returned an unhandled response", m_Name.c_str());
+		return false;
+	}
+	return true;
 }
 
 
+/************************************************************************
+ *									*
+ *	v1 API								*
+ *									*
+ ************************************************************************/
+
 bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 {
-	std::stringstream pdata;
-	pdata << "{'Username': '" << user << "', 'Password': '" << password << "'";
-	pdata << ", 'ApplicationId': '91db1612-73fd-4500-91b2-e63b069b185c'}";
+	_log.Debug(DEBUG_HARDWARE, "(%s) logon to v1 API", m_Name.c_str());
 
 	std::vector<std::string> LoginHeaders;
 	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
 	LoginHeaders.push_back("content-type: application/json");
 
-	std::string s_res;
-	if (!HTTPClient::POST(EVOHOME_HOST"/WebAPI/api/Session", pdata.str(), LoginHeaders, s_res))
-	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at login!", m_Name.c_str());
-		return false;
-	}
+	std::string sz_postdata = "{'Username': '";
+	sz_postdata.append(user);
+	sz_postdata.append("', 'Password': '");
+	sz_postdata.append(password);
+	sz_postdata.append("', 'ApplicationId': '91db1612-73fd-4500-91b2-e63b069b185c'}");
 
-	if (s_res.find("<title>") != std::string::npos) // got an HTML page
-	{
-		int i = s_res.find("<title>");
-		char* html = &s_res[i];
-		i = 7;
-		char c = html[i];
-		std::stringstream edata;
-		while (c != '<')
-		{
-			edata << c;
-			i++;
-			c = html[i];
-		}
-		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", m_Name.c_str(), edata.str().c_str());
-		return false;
-	}
+	std::string sz_response = send_receive_data(EVOHOME_HOST"/WebAPI/api/Session", sz_postdata, LoginHeaders);
 
-	if (s_res[0] == '[') // got unnamed array as reply
+	if (sz_response[0] == '[') // response is an unnamed array - likely an error message
 	{
-		s_res[0] = ' ';
-		size_t len = s_res.size();
+		sz_response[0] = ' ';
+		size_t len = sz_response.size();
 		len--;
-		s_res[len] = ' ';
+		sz_response[len] = ' ';
 	}
 
 	Json::Value j_login;
 	Json::Reader jReader;
-	if (!jReader.parse(s_res.c_str(), j_login))
+	if (!jReader.parse(sz_response.c_str(), j_login))
 	{
 		_log.Log(LOG_ERROR, "(%s) cannot parse return data from v1 login", m_Name.c_str());
 		return false;
 	}
 
-	std::string szError = "";
-	if (j_login.isMember("error"))
-		szError = j_login["error"].asString();
-	if (j_login.isMember("message"))
-		szError = j_login["message"].asString();
-	if (!szError.empty())
-	{
-		_log.Log(LOG_ERROR, "(%s) v1 login failed with message: %s", m_Name.c_str(), szError.c_str());
-		return false;
-	}
-
 	if (!j_login.isMember("sessionId") || !j_login.isMember("userInfo") || !j_login["userInfo"].isObject() || !j_login["userInfo"].isMember("userID"))
 	{
-		_log.Log(LOG_ERROR, "(%s) v1 login returned unknown data", m_Name.c_str());
+		std::string szError;
+		if (j_login.isMember("error"))
+			szError = j_login["error"].asString();
+		if (j_login.isMember("message"))
+			szError = j_login["message"].asString();
+		if (!szError.empty())
+		{
+			_log.Log(LOG_ERROR, "(%s) v1 login failed with message: %s", m_Name.c_str(), szError.c_str());
+			return false;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) v1 login returned an unhandled response", m_Name.c_str());
 		return false;
 	}
 
@@ -1548,26 +1815,57 @@ bool CEvohomeWeb::v1_login(const std::string &user, const std::string &password)
 
 void CEvohomeWeb::get_v1_temps()
 {
-	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/api/locations/?userId=" << m_v1uid << "&allData=True";
-	std::string s_res;
-	if (!HTTPClient::GET(url.str(), m_v1SessionHeaders, s_res))
+	if (m_v1uid.empty() && !v1_login(m_username, m_password))
+		return;
+
+	std::string sz_url = EVOHOME_HOST"/WebAPI/api/locations/?userId=";
+	sz_url.append(m_v1uid);
+	sz_url.append("&allData=True");
+
+	std::string sz_response = send_receive_data(sz_url, m_v1SessionHeaders);
+
+	Json::Reader jReader;
+	Json::Value j_fi;
+	bool parseOK;
+	if (sz_response[0] == '[')
 	{
-		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve of v1 temperatures!", m_Name.c_str());
+		// evohome old API returns an unnamed json array which is not accepted by our parser
+		std::string sz_jdata = "{\"locations\": ";
+		sz_jdata.append(sz_response);
+		sz_jdata.append("}");
+		parseOK = jReader.parse(sz_jdata, j_fi);
+	}
+	else
+		parseOK = jReader.parse(sz_response, j_fi);
+
+	if (!parseOK)
+	{
+		_log.Log(LOG_ERROR, "(%s) cannot parse return data from v1 get temps", m_Name.c_str());
 		return;
 	}
 
-	// evohome old API does not correctly format the json output
-	std::stringstream ss_jdata;
-	ss_jdata << "{\"locations\": " << s_res << "}";
-	Json::Reader jReader;
-	Json::Value j_fi;
-	if (!jReader.parse(ss_jdata.str(), j_fi))
-		return;
+	if (!j_fi.isMember("locations"))
+	{
+		std::string szError;
+		if (j_fi.isMember("error"))
+			szError = j_fi["error"].asString();
+		else if (j_fi.isMember("message"))
+			szError = j_fi["message"].asString();
+		if (!szError.empty())
+		{
+			if (j_fi.isMember("code") && (j_fi["code"].asString() == "401")) // session is no longer valid
+				m_v1uid = "";
 
-	size_t l = 0;
-	if (j_fi["locations"].isArray())
-		l = j_fi["locations"].size();
+			_log.Log(LOG_ERROR, "(%s) v1 get temps failed with message: %s", m_Name.c_str(), szError.c_str());
+			return;
+		}
+
+		_log.Log(LOG_ERROR, "(%s) v1 get temps returned an unhandled response", m_Name.c_str());
+		return;
+	}
+
+
+	size_t l = j_fi["locations"].size();
 	for (size_t i = 0; i < l; ++i)
 	{
 		Json::Value *j_loc = &j_fi["locations"][(int)(i)];
@@ -1596,5 +1894,107 @@ void CEvohomeWeb::get_v1_temps()
 			}
 		}
 	}
+}
+
+
+/************************************************************************
+ *									*
+ *	HTTP helpers							*
+ *									*
+ ************************************************************************/
+
+std::string CEvohomeWeb::send_receive_data(std::string url, std::vector<std::string> &headers)
+{
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> vHeaderData;
+
+	bool httpOK = HTTPClient::GETBinary(url, headers, vHTTPResponse, vHeaderData, HTTPTIMEOUT);
+
+	return process_response(vHTTPResponse, vHeaderData, httpOK);
+}
+
+
+std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers)
+{
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> vHeaderData;
+
+	bool httpOK = HTTPClient::POSTBinary(url, postdata, headers, vHTTPResponse, vHeaderData, true, HTTPTIMEOUT);
+
+	return process_response(vHTTPResponse, vHeaderData, httpOK);
+}
+
+
+std::string CEvohomeWeb::put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers)
+{
+
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> vHeaderData;
+
+	bool httpOK = HTTPClient::PUTBinary(url, putdata, headers, vHTTPResponse, vHeaderData, HTTPTIMEOUT);
+
+	return process_response(vHTTPResponse, vHeaderData, httpOK);
+}
+
+
+std::string CEvohomeWeb::process_response(std::vector<unsigned char> vHTTPResponse, std::vector<std::string> vHeaderData, bool httpOK)
+{
+	std::string sz_response;
+	std::string sz_retcode;
+
+	sz_response.insert(sz_response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+
+	if (!httpOK && (vHeaderData.size() > 0))
+	{
+		if (vHeaderData[0][0] == 'H')
+		{
+			size_t pos = vHeaderData[0].find(" ");
+			sz_retcode = vHeaderData[0].substr(pos+1, 3);
+		}
+		else if (vHeaderData[0].size() > 2)
+			sz_retcode = vHeaderData[0];
+		else // vHeaderData contains a Curl status code
+			_log.Debug(DEBUG_HARDWARE, "(%s) attempt to communicate to Evohome portal returned Curl status: %s", m_Name.c_str(), vHeaderData[0].c_str());
+	}
+
+	if (sz_response.empty())
+	{
+		if (sz_retcode.empty()) // networking error
+			return "{\"error\":\"unable to connect to Evohome portal\"}";
+
+		std::string sz_response = "{\"error\":\"HTTP ";
+		sz_response.append(sz_retcode);
+		sz_response.append("\",\"code\":\"");
+		sz_response.append(sz_retcode);
+		sz_response.append("\"}");
+		return sz_response;
+	}
+
+	if ((sz_response[0] == '[') || (sz_response[0] == '{')) // okay, appears to be json
+		return sz_response;
+
+	if (sz_response.find("<title>") != std::string::npos) // received an HTML page
+	{
+		std::stringstream ss_error;
+		ss_error << "{\"message\":\"";
+		int i = sz_response.find("<title>");
+		char* html = &sz_response[i];
+		i = 7;
+		char c = html[i];
+		while (c != '<')
+		{
+			ss_error << c;
+			i++;
+			c = html[i];
+		}
+		if (!sz_retcode.empty())
+		{
+			ss_error << "\",\"code\":\"" << sz_retcode;
+		}
+		ss_error << "\"}";
+		return ss_error.str();
+	}
+
+	return "{\"error\":\"unhandled response\"}";
 }
 
