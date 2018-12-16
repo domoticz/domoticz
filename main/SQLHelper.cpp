@@ -5090,11 +5090,14 @@ void CSQLHelper::UpdateTemperatureLog()
 				}
 				break;
 			case pTypeWIND:
-				if ((dSubType != sTypeWIND4) && (dSubType != sTypeWINDNoTemp))
+				if (dSubType == sTypeWINDNoTempNoChill)
 					continue;
 				if (splitresults.size() >= 6)
 				{
-					temp = static_cast<float>(atof(splitresults[4].c_str()));
+					if (dSubType != sTypeWINDNoTemp)
+					{
+						temp = static_cast<float>(atof(splitresults[4].c_str()));
+					}
 					chill = static_cast<float>(atof(splitresults[5].c_str()));
 				}
 				break;
@@ -8550,3 +8553,4 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 	}
 	return divider;
 }
+

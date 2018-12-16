@@ -9422,7 +9422,6 @@ namespace http {
 									tstate = m_mainworker.m_trend_calculator[tID].m_state;
 								}
 								root["result"][ii]["trend"] = (int)tstate;
-
 							}
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -13220,7 +13219,6 @@ namespace http {
 								(dType == pTypeTEMP_HUM_BARO) ||
 								(dType == pTypeTEMP_BARO) ||
 								((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-								((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								(dType == pTypeThermostat1) ||
 								(dType == pTypeRadiator1) ||
@@ -14812,7 +14810,7 @@ namespace http {
 								bool bOK = true;
 								if (dType == pTypeWIND)
 								{
-									bOK = ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp));
+									bOK = ((dSubType != sTypeWINDNoTemp) && (dSubType != sTypeWINDNoTempNoChill));
 								}
 								if (bOK)
 								{
@@ -14895,7 +14893,6 @@ namespace http {
 							((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1)) ||
 							((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
 							)
 						{
@@ -16344,7 +16341,6 @@ namespace http {
 						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
 						((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 							((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)

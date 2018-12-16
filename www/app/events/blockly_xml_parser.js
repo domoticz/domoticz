@@ -228,7 +228,7 @@ define(function () {
                     setString += '=' + dtext + '';
                     setArray.push(setString);
                 }
-                if (blockA.attr('type').indexOf('textvariables') >= 0) {
+                else if (blockA.attr('type').indexOf('textvariables') >= 0) {
                     var setString = 'commandArray[Text:' + $(fieldA).text() + ']';
                     var valueB = $(this).find('value[name=\'B\']')[0];
                     var fieldB = $(valueB).find('field')[0];

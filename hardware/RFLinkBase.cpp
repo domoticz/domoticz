@@ -1039,7 +1039,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		if (!bHaveWindTemp) windtemp = twindtemp;
 		if (!bHaveWindChill) windchill = twindchill;
 
-		SendWind(ID, BatteryLevel, twindir, windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
+		SendWind(ID, BatteryLevel, twindir, windspeed, windgust, windtemp, windchill, bHaveWindTemp, bHaveWindChill, tmp_Name);
 	}
 
 	if (bHaveCO2)
