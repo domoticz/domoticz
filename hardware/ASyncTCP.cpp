@@ -3,6 +3,9 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
+#include <boost/lexical_cast.hpp>
+#include "../main/Logger.h"
+
 struct hostent;
 
 #ifndef WIN32
@@ -15,6 +18,8 @@ struct hostent;
 
 ASyncTCP::ASyncTCP(const bool secure)
 	: mIsConnected(false), mIsClosing(false), mWriteInProgress(false),
+	m_tcpwork(std::make_shared<boost::asio::io_service::work>(mIos)),
+	m_Resolver(mIos),
 #ifdef WWW_ENABLE_SSL
 	mSecure(secure), m_Context(boost::asio::ssl::context::sslv23),
 #endif
@@ -23,13 +28,9 @@ ASyncTCP::ASyncTCP(const bool secure)
 	mSslSocket(mIos, m_Context),
 #endif
 	mDoReconnect(true), mIsReconnecting(false),
-	m_tcpwork(mIos),
 	mAllowCallbacks(true),
 	m_reconnect_delay(RECONNECT_TIME)
 {
-	// Reset IO Service
-	mIos.reset();
-
 	//Start IO Service worker thread
 	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
 
@@ -46,7 +47,7 @@ ASyncTCP::~ASyncTCP(void)
 	// tell the IO service to stop
 	// we dont call mIos.stop() because our stop handlers wont be called anymore
 	// in stead, empty the work object and wait for all handlers to complete
-	m_tcpwork = boost::none;
+	m_tcpwork.reset();
 	if (m_tcpthread)
 	{
 		m_tcpthread->join();
@@ -61,61 +62,47 @@ void ASyncTCP::SetReconnectDelay(int Delay)
 
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
 {
-	std::stringstream fip;
+	_log.Log(LOG_NORM, "Connecting to %s", ip.c_str());
+	m_Ip = ip;
+	m_Port = port;
+	std::string port_str = boost::lexical_cast<std::string>(port);
 	// resolve hostname
-	try
-	{
-		boost::asio::ip::tcp::resolver resolver(mIos);
-		boost::asio::ip::tcp::resolver::query query(ip, "");
-		for(auto i = resolver.resolve(query); i != boost::asio::ip::tcp::resolver::iterator(); ++i)
-		{
-			boost::asio::ip::tcp::endpoint end = *i;
-			fip << end.address();
-			break; // only retrieve the first address
-		}
-	}
-	catch (const std::exception &e)
-	{
-		Q_UNUSED(e);
+	boost::asio::ip::tcp::resolver::query query(ip, port_str);
+	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
+}
+
+void ASyncTCP::handle_resolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+{
+	if (err) {
 		if (!mAllowCallbacks)
 			return;
 		OnError(boost::system::error_code(boost::asio::error::host_not_found));
+		return;
 	}
-
-	// connect socket
-	try
-	{
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(fip.str()), port);
-		connect(endpoint);
-	}
-	catch(const std::exception &e)
-	{
-		if (mAllowCallbacks)
-			OnError(e);
-	}
+	connect(endpoint_iterator);
 }
 
-void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
+void ASyncTCP::connect(boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 {
 	if(mIsConnected) return;
 	if(mIsClosing) return;
+	_log.Log(LOG_NORM, "Connecting to endpoint");
 
 	mAllowCallbacks = true;
 
-	m_EndPoint = endpoint;
+	m_EndPoint = *endpoint_iterator++;
 
 #ifdef WWW_ENABLE_SSL
 	// try to connect, then call handle_connect
 	if (mSecure) {
-		mSslSocket.lowest_layer().async_connect(endpoint,
-			boost::bind(&ASyncTCP::handle_connect, this,
-				boost::asio::placeholders::error));
+		_log.Log(LOG_NORM, "starting async_connect");
+		mSslSocket.lowest_layer().async_connect(m_EndPoint,
+			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error, endpoint_iterator));
 	}
 	else
 #endif
 	{
-		m_Socket.async_connect(endpoint,
-			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+		m_Socket.async_connect(m_EndPoint, boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error, endpoint_iterator));
 	}
 }
 
@@ -207,10 +194,12 @@ void ASyncTCP::write(const std::string &msg)
 
 // callbacks
 
-void ASyncTCP::handle_connect(const boost::system::error_code& error)
+void ASyncTCP::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 {
+	_log.Log(LOG_NORM, "in handle_connect");
 	if(mIsClosing) return;
 
+	_log.Log(LOG_NORM, "mIsClosing == false");
 	if (!error) {
 #ifdef WWW_ENABLE_SSL
 		if (mSecure) {
@@ -241,6 +230,12 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 
 	}
 	else {
+		if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator()) {
+			// The connection failed. Try the next endpoint in the list.
+			connect(endpoint_iterator);
+			return;
+		}
+		_log.Log(LOG_NORM, "Error occurred");
 		// there was an error :(
 		mIsConnected = false;
 
@@ -263,6 +258,7 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 #ifdef WWW_ENABLE_SSL
 void ASyncTCP::handle_handshake(const boost::system::error_code& error)
 {
+	_log.Log(LOG_NORM, "In handle_handshake");
 	// we are connected!
 	mIsConnected = true;
 
@@ -382,17 +378,10 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& err)
 	}
 	mReconnectTimer.cancel();
 	// try to reconnect, then call handle_connect
-#ifdef WWW_ENABLE_SSL
-	if (mSecure) {
-		mSslSocket.lowest_layer().async_connect(m_EndPoint,
-			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
-	}
-	else
-#endif
-	{
-		m_Socket.async_connect(m_EndPoint,
-			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
-	}
+	std::string port_str = boost::lexical_cast<std::string>(m_Port);
+	// resolve hostname
+	boost::asio::ip::tcp::resolver::query query(m_Ip, port_str);
+	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 	mIsReconnecting = false;
 }
 
