@@ -10,6 +10,7 @@
 #include <boost/function.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr
 #include <boost/thread/mutex.hpp>		   // to protect writeQ
+#include <boost/optional.hpp>			   // so we can reset m_tcpwork
 #include <exception>                       // for exception
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
@@ -92,7 +93,7 @@ private:
 	boost::asio::deadline_timer		mReconnectTimer;
 
 	std::shared_ptr<std::thread> 	m_tcpthread;
-	boost::asio::io_service::work 	m_tcpwork; // Create some work to keep IO Service alive
+	boost::optional<boost::asio::io_service::work> 	m_tcpwork; // Create some work to keep IO Service alive
 
 #ifdef WWW_ENABLE_SSL
 	boost::asio::ssl::context		m_Context; // ssl context
