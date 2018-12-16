@@ -676,8 +676,8 @@ typedef struct {
 typedef struct {
 	BYTE	id1;
 	BYTE	id2;
-	BYTE	temperatureh_tempsign;
-	BYTE	temperature;
+	BYTE	temperatureh_tempsign1;
+	BYTE	temperature1;
 	BYTE	raintotal1;
 	BYTE	raintotal2;
 	BYTE	batterylevel_filler;
