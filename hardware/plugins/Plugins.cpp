@@ -32,6 +32,7 @@
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
 extern std::string szWWWFolder;
+extern std::string szStartupFolder;
 extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
@@ -1128,6 +1129,7 @@ Error:
 					std::vector<std::string> sd = *itt;
 					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
 					ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
 					ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);

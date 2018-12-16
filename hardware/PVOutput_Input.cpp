@@ -55,7 +55,7 @@ bool CPVOutputInput::StopHardware()
     return true;
 }
 
-#define PVOUTPUT_POLL_INTERVAL 5
+#define PVOUTPUT_POLL_INTERVAL 10
 
 void CPVOutputInput::Do_Work()
 {

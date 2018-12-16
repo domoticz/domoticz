@@ -598,6 +598,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeWIND, sTypeWIND7, "Alecto WS4500" },
 	{ pTypeWIND, sTypeWIND8, "Alecto ACH2010" },
 	{ pTypeWIND, sTypeWINDNoTemp, "Weather Station" },
+	{ pTypeWIND, sTypeWINDNoTempNoChill, "Wind" },
 
 	{ pTypeUV, sTypeUV1, "UVN128,UV138" },
 	{ pTypeUV, sTypeUV2, "UVN800" },

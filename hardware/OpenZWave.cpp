@@ -347,6 +347,7 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_HwdID = ID;
 	m_controllerID = 0;
 	m_controllerNodeId = 0;
+	m_LastControllerConfigWrite = 0;
 	m_bIsShuttingDown = false;
 	m_initFailed = false;
 	m_allNodesQueried = false;
