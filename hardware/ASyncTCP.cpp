@@ -44,6 +44,8 @@ ASyncTCP::~ASyncTCP(void)
 	disconnect();
 
 	// tell the IO service to stop
+	// we dont call mIos.stop() because our stop handlers wont be called anymore
+	// in stead, empty the work object and wait for all handlers to complete
 	m_tcpwork = boost::none;
 	if (m_tcpthread)
 	{
@@ -366,7 +368,7 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& err)
 {
 	if(mIsConnected) return;
 	if(mIsClosing) return;
-	if (err) return;
+	if (err) return; // timer was cancelled
 
 #ifdef WWW_ENABLE_SSL
 	// close current socket if necessary
