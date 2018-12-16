@@ -515,7 +515,7 @@ namespace http {
 
 		void CProxyClient::OnDisconnect()
 		{
-			_log.Log(LOG_NORM, "Proxy: disconnected", NULL);
+			_log.Log(LOG_NORM, "Proxy: disconnected");
 			// stop and destroy all open websocket handlers
 			for (std::map<long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
 				it->second->Stop();
