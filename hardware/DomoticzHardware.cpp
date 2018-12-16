@@ -8,6 +8,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
+#include "HardwareCereal.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -175,10 +176,6 @@ void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLe
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
-
-	_tTempBaro deleteme;
-	std::string serialized = Serialize<_tTempBaro>(deleteme);
-	deleteme = Deserialize<_tTempBaro>(serialized);
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), BatteryLevel);
 }
 

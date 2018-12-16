@@ -1,6 +1,15 @@
 #pragma once
 #include "../main/RFXtrx.h"
 
+#if 0
+// usage example:
+
+	_tTempBaro temperature;
+	std::string serialized = domoticztypes::Serialize<_tTempBaro>(temperature);
+	temperature = domoticztypes::Deserialize<_tTempBaro>(serialized);
+
+#endif
+
 namespace domoticztypes {
 typedef unsigned char BYTE;
 
@@ -667,8 +676,8 @@ typedef struct {
 typedef struct {
 	BYTE	id1;
 	BYTE	id2;
-	BYTE	temperatureh_tempsignl
-		BYTE	temperaturel;
+	BYTE	temperatureh_tempsign;
+	BYTE	temperature;
 	BYTE	raintotal1;
 	BYTE	raintotal2;
 	BYTE	batterylevel_filler;
@@ -720,8 +729,8 @@ typedef struct {
 typedef struct {
 	BYTE	id1;
 	BYTE	id2;
-	BYTE	temperatureh_tempsignl
-		BYTE	temperaturel;
+	BYTE	temperatureh_tempsign1;
+	BYTE	temperature1;
 	BYTE	humidity;
 	BYTE	humidity_status;
 	BYTE	batterylevel_filler;
@@ -758,8 +767,8 @@ typedef struct {
 typedef struct {
 	BYTE	id1;
 	BYTE	id2;
-	BYTE	temperatureh_tempsignl
-		BYTE	temperaturel;
+	BYTE	temperatureh_tempsignl;
+	BYTE	temperaturel;
 	BYTE	humidity;
 	BYTE	humidity_status;
 	BYTE	baroh;
@@ -812,8 +821,8 @@ typedef struct {
 	BYTE	av_speedl;
 	BYTE	gusth;
 	BYTE	gustl;
-	BYTE	temperatureh_tempsignl
-		BYTE	temperaturel;
+	BYTE	temperatureh_tempsignl;
+	BYTE	temperaturel;
 	BYTE	chillh_chillsign;
 	BYTE	chilll;
 	BYTE	batterylevel_filler;
@@ -839,8 +848,8 @@ typedef struct {
 	BYTE	id1;
 	BYTE	id2;
 	BYTE	uv;
-	BYTE	temperatureh_tempsignl
-		BYTE	temperaturel;
+	BYTE	temperatureh_tempsignl;
+	BYTE	temperaturel;
 	BYTE	batterylevel_filler;
 	template <class Archive>
 	void serialize(Archive &ar) {
