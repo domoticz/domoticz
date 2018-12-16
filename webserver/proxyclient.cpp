@@ -412,7 +412,7 @@ namespace http {
 #define PDUSTRING(name)
 #define PDULONG(name)
 #define PDULONGLONG(name)
-#define PROXYPDU(name, members) case ePDU_##name##: OnPduReceived(std::dynamic_pointer_cast<ProxyPdu_##name##>(pdu)); break;
+#define PROXYPDU(name, members) case ePDU_##name: OnPduReceived(std::dynamic_pointer_cast<ProxyPdu_##name>(pdu)); break;
 #include "proxydef.def"
 						default:
 							// pdu enum not found
@@ -436,7 +436,7 @@ namespace http {
 
 		void CProxyClient::OnDisconnect()
 		{
-			_log.Log(LOG_NORM, "Proxy: disconnected", NULL);
+			_log.Log(LOG_NORM, "Proxy: disconnected");
 			// stop and destroy all open websocket handlers
 			for (std::map<unsigned long long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
 				it->second->Stop();

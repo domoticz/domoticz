@@ -20,7 +20,7 @@ class DomoticzTCP;
 namespace http {
 	namespace server {
 
-#define PDUFUNCTION(type) void CProxyClient::OnPduReceived(std::shared_ptr<ProxyPdu_##type##> pdu)
+#define PDUFUNCTION(type) void CProxyClient::OnPduReceived(std::shared_ptr<ProxyPdu_##type> pdu)
 
 		class CProxyClient : ASyncTCP {
 		public:
@@ -52,7 +52,7 @@ namespace http {
 			/* Algorithm execution class */
 #define PDUSTRING(name)
 #define PDULONG(name)
-#define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name##> pdu);
+#define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name> pdu);
 #include "proxydef.def"
 #undef PDUSTRING
 #undef PDULONG
