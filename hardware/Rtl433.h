@@ -13,9 +13,13 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	static std::vector<std::string> ParseCSVLine(const char *input);
+	bool ParseLine(const std::vector<std::string> &headers, const char *line);
+	bool FindField(const std::map<std::string, std::string> &data, const std::string &field);
 private:
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_pipe_mutex;
 	FILE *m_hPipe;
 	std::string m_cmdline;
+	std::string m_sLastLine;
+	time_t m_time_last_received;
 };

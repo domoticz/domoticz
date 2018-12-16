@@ -841,7 +841,7 @@ namespace Plugins {
 				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
 
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
-				if ((self->Type == pTypeSecurity1) && (self->SubType = sTypeDomoticzSecurity) && (self->nValue != nValue))
+				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
 					switch (nValue)
 					{
@@ -1090,7 +1090,9 @@ namespace Plugins {
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) CConnection Type is not ready.", self->pPlugin->m_Name.c_str());
+			//!Giz: self = NULL here!!
+			//_log.Log(LOG_ERROR, "(%s) CConnection Type is not ready.", self->pPlugin->m_Name.c_str());
+			_log.Log(LOG_ERROR, "(Python plugin) CConnection Type is not ready!");
 		}
 
 		try

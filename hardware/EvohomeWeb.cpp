@@ -1919,7 +1919,7 @@ std::string CEvohomeWeb::send_receive_data(std::string url, std::string postdata
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> vHeaderData;
 
-	bool httpOK = HTTPClient::POSTBinary(url, postdata, headers, vHTTPResponse, vHeaderData, HTTPTIMEOUT);
+	bool httpOK = HTTPClient::POSTBinary(url, postdata, headers, vHTTPResponse, vHeaderData, true, HTTPTIMEOUT);
 
 	return process_response(vHTTPResponse, vHeaderData, httpOK);
 }

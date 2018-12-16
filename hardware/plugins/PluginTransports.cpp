@@ -416,6 +416,8 @@ namespace Plugins {
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return;
 		if (!e)
 		{
 			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
@@ -433,9 +435,11 @@ namespace Plugins {
 		}
 		else
 		{
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
+			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((e == boost::asio::error::operation_aborted) || (e == boost::asio::error::eof)))
+			{
 				_log.Log(LOG_NORM, "(%s) Queued asyncronous secure read aborted.", pPlugin->m_Name.c_str());
+			}
 			else
 			{
 				if ((e.value() != boost::asio::error::eof) &&
@@ -447,6 +451,7 @@ namespace Plugins {
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
+
 			m_bDisconnectQueued = true;
 		}
 	}
@@ -582,7 +587,7 @@ namespace Plugins {
 					(ec.value() != 125) &&	// Operation canceled
 					(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 					(ec.value() != 1236))	// local disconnect cause by hardware reload
-					_log.Log(LOG_ERROR, "(%s): Async UDP Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->m_Name.c_str(), ec.value(), ec.message().c_str());
+					_log.Log(LOG_ERROR, "(%s): Async UDP Read Exception: %d, %s", pPlugin->m_Name.c_str(), ec.value(), ec.message().c_str());
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection, false));
@@ -764,6 +769,8 @@ namespace Plugins {
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return;
 
 		if (!ec)
 		{
@@ -804,7 +811,7 @@ namespace Plugins {
 		}
 		else
 		{
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
+			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((ec == boost::asio::error::operation_aborted) || (ec == boost::asio::error::eof)))
 				_log.Log(LOG_NORM, "(%s) Queued asyncronous ICMP read aborted (%s).", pPlugin->m_Name.c_str(), m_IP.c_str());
 			else
@@ -814,7 +821,7 @@ namespace Plugins {
 					(ec.value() != 125) &&	// Operation canceled
 					(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 					(ec.value() != 1236))	// local disconnect cause by hardware reload
-						_log.Log(LOG_ERROR, "(%s): Async Receive From Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->m_Name.c_str(), ec.value(), ec.message().c_str());
+						_log.Log(LOG_ERROR, "(%s): Async Receive From Exception: %d, %s", pPlugin->m_Name.c_str(), ec.value(), ec.message().c_str());
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection, false));
