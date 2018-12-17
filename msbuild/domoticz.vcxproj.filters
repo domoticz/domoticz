@@ -2149,6 +2149,9 @@
     <ClInclude Include="..\main\TrendCalculator.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\HardwareCereal.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
