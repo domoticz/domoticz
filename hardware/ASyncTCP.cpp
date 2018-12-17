@@ -31,9 +31,6 @@ ASyncTCP::ASyncTCP(const bool secure)
 	mAllowCallbacks(true),
 	m_reconnect_delay(RECONNECT_TIME)
 {
-	//Start IO Service worker thread
-	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
-
 #ifdef WWW_ENABLE_SSL
 	// we do not authenticate the server
 	m_Context.set_verify_mode(boost::asio::ssl::verify_none);
@@ -62,21 +59,39 @@ void ASyncTCP::SetReconnectDelay(int Delay)
 
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
 {
+	if (!m_tcpthread) {
+		//Start IO Service worker thread
+		m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
+	}
+
 	_log.Log(LOG_NORM, "Connecting to %s", ip.c_str());
 	m_Ip = ip;
 	m_Port = port;
 	std::string port_str = boost::lexical_cast<std::string>(port);
 	// resolve hostname
 	boost::asio::ip::tcp::resolver::query query(ip, port_str);
+	_log.Log(LOG_NORM, "Starting async_resolve");
 	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 }
 
 void ASyncTCP::handle_resolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 {
+	_log.Log(LOG_NORM, "In handle_resolve");
 	if (err) {
-		if (!mAllowCallbacks)
+		_log.Log(LOG_NORM, "handle_resolve error");
+		if (mAllowCallbacks) {
+			OnError(boost::system::error_code(err));
+		}
+		if (!mDoReconnect)
+		{
+			if (mAllowCallbacks)
+				OnDisconnect();
 			return;
-		OnError(boost::system::error_code(boost::asio::error::host_not_found));
+		}
+		if (!mIsReconnecting)
+		{
+			StartReconnect();
+		}
 		return;
 	}
 	connect(endpoint_iterator);
@@ -135,6 +150,15 @@ void ASyncTCP::StartReconnect()
 {
 	if (m_reconnect_delay != 0)
 	{
+#ifdef WWW_ENABLE_SSL
+		if (mSecure) {
+			mSslSocket.lowest_layer().close();
+		}
+		else
+#endif
+		{
+			m_Socket.close();
+		}
 		mIsReconnecting = true;
 		// schedule a timer to reconnect after xx seconds
 		mReconnectTimer.expires_from_now(boost::posix_time::seconds(m_reconnect_delay));
@@ -259,6 +283,22 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error, boost::asi
 void ASyncTCP::handle_handshake(const boost::system::error_code& error)
 {
 	_log.Log(LOG_NORM, "In handle_handshake");
+	if (error) {
+		if (mAllowCallbacks) {
+			OnError(boost::system::error_code(error));
+		}
+		if (!mDoReconnect)
+		{
+			if (mAllowCallbacks)
+				OnDisconnect();
+			return;
+		}
+		if (!mIsReconnecting)
+		{
+			StartReconnect();
+		}
+		return;
+	}
 	// we are connected!
 	mIsConnected = true;
 
@@ -381,6 +421,7 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& err)
 	std::string port_str = boost::lexical_cast<std::string>(m_Port);
 	// resolve hostname
 	boost::asio::ip::tcp::resolver::query query(m_Ip, port_str);
+	_log.Log(LOG_NORM, "Starting async_resolve");
 	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 	mIsReconnecting = false;
 }
