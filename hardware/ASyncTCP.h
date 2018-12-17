@@ -10,7 +10,6 @@
 #include <boost/function.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr
 #include <boost/thread/mutex.hpp>		   // to protect writeQ
-#include <boost/optional.hpp>			   // so we can reset m_tcpwork
 #include <exception>                       // for exception
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
@@ -58,15 +57,16 @@ protected:
 
 private:
 	// Internal helper functions
-	void connect(boost::asio::ip::tcp::endpoint& endpoint);
+	void connect(boost::asio::ip::tcp::resolver::iterator &endpoint_iterator);
 	void close();
 	void read();
 	void OnErrorInt(const boost::system::error_code& error);
 	void StartReconnect();
 
 	// Callbacks for the io_service, executed from the io_service worker thread context
-	void handle_connect(const boost::system::error_code& error);
+	void handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator &endpoint_iterator);
 	void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
+	void handle_resolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 #ifdef WWW_ENABLE_SSL
 		void handle_handshake(const boost::system::error_code& error);
 #endif
@@ -93,7 +93,7 @@ private:
 	boost::asio::deadline_timer		mReconnectTimer;
 
 	std::shared_ptr<std::thread> 	m_tcpthread;
-	boost::optional<boost::asio::io_service::work> 	m_tcpwork; // Create some work to keep IO Service alive
+	std::shared_ptr<boost::asio::io_service::work> 	m_tcpwork; // Create some work to keep IO Service alive
 
 #ifdef WWW_ENABLE_SSL
 	boost::asio::ssl::context		m_Context; // ssl context
@@ -101,7 +101,10 @@ private:
 #endif
 	boost::asio::ip::tcp::socket	m_Socket;
 	boost::asio::ip::tcp::endpoint	m_EndPoint;
+	boost::asio::ip::tcp::resolver	m_Resolver;
 	std::deque<std::string>			m_writeQ; // we need a write queue to allow concurrent writes
 	std::string						m_MsgBuffer; // we keep the message buffer static so it keeps being available in between do_write and write_end (so boost has time to send it)
 	boost::mutex					m_writeMutex; // to protect writeQ
+	std::string	m_Ip;
+	unsigned short	m_Port;
 };
