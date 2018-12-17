@@ -46,6 +46,8 @@ bool CNotificationTelegram::SendMessageImplementation(
 	json["chat_id"] = _chatid;
 	json["text"] = CURLEncode::URLDecode(Text);
 	//json["body"] = CURLEncode::URLDecode(Text);
+	if ( Priority < 0 )
+		json["disable_notification"] = 1;
 	sPostData = jsonWriter.write(json);
 
 	//Add the required Content Type
