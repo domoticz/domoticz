@@ -8,6 +8,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
+#include "HardwareCereal.h"
 
 #define round(a) ( int ) ( a + .5 )
 
