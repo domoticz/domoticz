@@ -401,6 +401,7 @@ namespace http {
 			case status_connected:
 				CWebsocketFrame frame;
 				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
+					readbuf.clear();
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:
 						write(CWebsocketFrame::Create(opcodes::opcode_pong, PONG, true));
@@ -463,7 +464,8 @@ namespace http {
 		{
 			m_pWebEm = webEm;
 			SetReconnectDelay(15);
-			connect("proxy.mydomoticz.com", 443);
+			connect("::1", 2443);
+			//connect("proxy.mydomoticz.com", 443);
 		}
 
 		void CProxyClient::Disconnect()
