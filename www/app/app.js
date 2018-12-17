@@ -201,6 +201,26 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 			}
 		}
 	});
+	app.directive('gzBackToTop', function(){
+		return {
+			restrict: 'E'
+			, replace: true
+			, template: '<div class="gz-back-to-top"></div>'
+			, link: function($scope, element, attrs) {
+				$(window).scroll(function() {
+					if ($(window).scrollTop() <= 0) {
+						$(element).fadeOut();
+					}
+					else {
+						$(element).fadeIn();
+					}
+				});
+				$(element).on('click', function(){
+					$('html, body').animate({ scrollTop: 0 }, 'fast');
+				});
+			}
+		}
+	});
 	app.filter('translate', function() {
 		return function(input) {
 			return $.t(input);

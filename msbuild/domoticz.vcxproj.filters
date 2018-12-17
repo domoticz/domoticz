@@ -2152,6 +2152,9 @@
     <ClInclude Include="..\webserver\proxycereal.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\HardwareCereal.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

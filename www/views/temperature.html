@@ -76,9 +76,8 @@
 </div>
 
 <div class="container">
-
+<gz-back-to-top></gz-back-to-top>
 	<div id="tempcontent"></div>
-
 	<div id="temptophtm">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
@@ -104,7 +103,6 @@
 			</tr>
 		</table>
 	</div>
-
 	<div id="tempwidgets" class="row divider">
 		<h2 ng-show="ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
 		<div ng-repeat-start="t in ctrl.temperatures" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
