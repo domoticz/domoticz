@@ -7916,9 +7916,7 @@ std::string CSQLHelper::AddUserVariable(const std::string &varname, const std::s
 	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')", varname.c_str(), typei, szVarValue.c_str());
 
 	if (m_bEnableEventSystem)
-	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
-	}
 	return "OK";
 }
 
