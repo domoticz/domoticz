@@ -391,8 +391,6 @@ public:
 	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
 	std::string GetDeviceValue(const char * FieldName , const char *Idx );
 
-	float getTemperatureFromSValue(const char * sValue);
-
 	bool GetPreferencesVar(const std::string &Key, double &Value);
 	void UpdatePreferencesVar(const std::string &Key, const double Value);
 	void DeletePreferencesVar(const std::string &Key);

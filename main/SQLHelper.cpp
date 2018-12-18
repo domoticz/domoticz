@@ -8162,17 +8162,6 @@ void CSQLHelper::UpdateDeviceValue(const char * FieldName, float Value, std::str
 	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(NULL, TF_DateTime).c_str(), Idx.c_str());
 }
 
-//return temperature value from Svalue : is code temperature;humidity;???
-float CSQLHelper::getTemperatureFromSValue(const char * sValue)
-{
-	std::vector<std::string> splitresults;
-	StringSplit(sValue, ";", splitresults);
-	if (splitresults.size() < 1)
-		return 0;
-	else
-		return (float)atof(splitresults[0].c_str());
-}
-
 bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)
 {
 	//write file to disk
