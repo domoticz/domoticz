@@ -7978,25 +7978,6 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	return "OK";
 }
 
-bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger)
-{
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
-	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
-	safe_query(
-		"UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
-		szVarValue.c_str(),
-		szLastUpdate.c_str(),
-		idx
-	);
-	if (m_bEnableEventSystem)
-	{
-		if (eventtrigger)
-			m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, -1, szLastUpdate);
-	}
-	return true;
-}
-
 std::string CSQLHelper::CheckUserVariableName(const std::string &varname)
 {
 	std::vector<std::vector<std::string> > result;
