@@ -7897,12 +7897,10 @@ std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
 	}
-
 	return "OK";
-
 }
 
-std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
+std::string CSQLHelper::AddUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
 {
 	int typei = atoi(vartype.c_str());
 	std::string dupeName = CheckUserVariableName(varname);
@@ -7915,18 +7913,12 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	std::vector<std::vector<std::string> > result;
-	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')",
-		varname.c_str(),
-		typei,
-		szVarValue.c_str()
-	);
+	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')", varname.c_str(), typei, szVarValue.c_str());
 
 	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
-		result = safe_query("SELECT ID, LastUpdate FROM UserVariables WHERE (Name == '%q')",
-			varname.c_str()
-		);
+		result = safe_query("SELECT ID, LastUpdate FROM UserVariables WHERE (Name == '%q')", varname.c_str());
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];

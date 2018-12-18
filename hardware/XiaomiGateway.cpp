@@ -650,7 +650,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		else if (switchtype == STYPE_OnOff && Name == "Xiaomi Gateway MP3") {
-			m_sql.SaveUserVariable("XiaomiMP3", "0", "10001");
+			m_sql.AddUserVariable("XiaomiMP3", "0", "10001");
 		}
 	}
 	else {

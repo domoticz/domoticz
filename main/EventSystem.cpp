@@ -1342,29 +1342,29 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(ulDevID);
-	if (itt != m_uservariables.end())
+	if (itt == m_uservariables.end())
+		return; //not found
+
+	_tUserVariable replaceitem = itt->second;
+
+	if (!varName.empty())
+		replaceitem.variableName = varName;
+	if (!varValue.empty())
+		replaceitem.variableValue = varValue;
+	if (varType != -1)
+		replaceitem.variableType = varType;
+
+	if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 	{
-		_tUserVariable replaceitem = itt->second;
-		if (!varName.empty())
-			replaceitem.variableName = varName;
-		if (!varValue.empty())
-			replaceitem.variableValue = varValue;
-		if (varType != -1)
-			replaceitem.variableType = varType;
-
-		if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
-		{
-			_tEventQueue item;
-			item.reason = REASON_USERVARIABLE;
-			item.id = ulDevID;
-			item.sValue = varValue;
-			item.lastUpdate = itt->second.lastUpdate;
-			m_eventqueue.push(item);
-		}
-		replaceitem.lastUpdate = lastUpdate;
-		itt->second = replaceitem;
-
+		_tEventQueue item;
+		item.reason = REASON_USERVARIABLE;
+		item.id = ulDevID;
+		item.sValue = varValue;
+		item.lastUpdate = itt->second.lastUpdate;
+		m_eventqueue.push(item);
 	}
+	replaceitem.lastUpdate = lastUpdate;
+	itt->second = replaceitem;
 }
 
 std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)

@@ -1905,8 +1905,8 @@ namespace http {
 				)
 				return;
 
-			root["status"] = m_sql.SaveUserVariable(variablename, variabletype, variablevalue);
-			root["title"] = "SaveUserVariable";
+			root["status"] = m_sql.AddUserVariable(variablename, variabletype, variablevalue);
+			root["title"] = "AddUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
