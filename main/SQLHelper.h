@@ -380,7 +380,6 @@ public:
 	std::string DeleteUserVariable(const std::string &idx);
 	std::string SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
 	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);
-	bool SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
 	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
@@ -388,8 +387,6 @@ public:
 	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
 	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;
 	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
-	double ConvertTemperature(double tempcelcius);
-	double ConvertTemperatureUnit(double tempcelcius);
 	std::string GetDeviceValue(const char * FieldName , const char *Idx );
 
 	float getTemperatureFromSValue(const char * sValue);
