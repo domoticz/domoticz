@@ -7918,14 +7918,6 @@ std::string CSQLHelper::AddUserVariable(const std::string &varname, const std::s
 	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
-		result = safe_query("SELECT ID, LastUpdate FROM UserVariables WHERE (Name == '%q')", varname.c_str());
-		if (!result.empty())
-		{
-			std::vector<std::string> sd = result[0];
-			uint64_t vId = std::strtoull(sd[0].c_str(), nullptr, 10);
-			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", szVarValue, typei, sd[1]);
-		}
 	}
 	return "OK";
 }
