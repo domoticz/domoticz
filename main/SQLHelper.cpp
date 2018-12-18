@@ -7955,7 +7955,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		uint64_t vId = std::strtoull(idx.c_str(), nullptr, 10);
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, szLastUpdate);
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, szLastUpdate);
 	}
 	return "OK";
 }

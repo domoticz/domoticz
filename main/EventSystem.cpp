@@ -1334,7 +1334,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 }
 
 
-void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate)
+void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
@@ -1347,12 +1347,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 
 	_tUserVariable replaceitem = itt->second;
 
-	if (!varName.empty())
-		replaceitem.variableName = varName;
-	if (!varValue.empty())
-		replaceitem.variableValue = varValue;
-	if (varType != -1)
-		replaceitem.variableType = varType;
+	replaceitem.variableValue = varValue;
 
 	if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 	{
