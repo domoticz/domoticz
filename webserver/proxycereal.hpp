@@ -42,8 +42,8 @@ public:
 
 /* base classes with the pdu member variables */
 #define PDUSTRING(name) std::string m_##name = "";
-#define PDULONG(name) long m_##name = 0;
-#define PDULONGLONG(name) unsigned long long m_##name = 0;
+#define PDULONG(name) int32_t m_##name = 0;
+#define PDULONGLONG(name) uint64_t m_##name = 0;
 #define PROXYPDU(name, members) class ProxyPdu_##name##_onlymembers : public CProxyPduBase { public: members };
 #include "proxydef.def"
 #undef PDUSTRING
