@@ -1923,7 +1923,6 @@ namespace http {
 			std::string variabletype = request::findValue(&req, "vtype");
 
 			if (
-				(idx.empty()) ||
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
@@ -1931,7 +1930,15 @@ namespace http {
 				return;
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE Name='%q'", variablename.c_str());
+			if (idx.empty())
+			{
+				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", variablename.c_str());
+				if (result.empty())
+					return;
+				idx = result[0][0];
+			}
+
+			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE ID='%q'", idx.c_str());
 			if (result.empty())
 				return;
 
