@@ -135,8 +135,8 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.createVariable(name, type, value)
 		-- todo, encode value
-    	--type=command&param=saveuservariable&vname=myint&vtype=0&vvalue=1
-    	local url = "param=saveuservariable&type=command&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
+    	--type=command&param=adduservariable&vname=myint&vtype=0&vvalue=1
+    	local url = "param=adduservariable&type=command&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
 
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 
