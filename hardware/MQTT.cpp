@@ -166,7 +166,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		else if (szCommand == "setuservariable")
 		{
 			idx = (uint64_t)root["idx"].asInt64();
-			result = m_sql.safe_query("SELECT Name, VarType FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
+			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
 				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
