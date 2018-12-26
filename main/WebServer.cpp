@@ -475,9 +475,9 @@ namespace http {
 			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1, _2, _3));
 			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1, _2, _3));
 
-			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
-			RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::Cmd_SaveUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("adduservariable", boost::bind(&CWebServer::Cmd_AddUserVariable, this, _1, _2, _3));
 			RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
 			RegisterCommandCode("getuservariables", boost::bind(&CWebServer::Cmd_GetUserVariables, this, _1, _2, _3));
 			RegisterCommandCode("getuservariable", boost::bind(&CWebServer::Cmd_GetUserVariable, this, _1, _2, _3));
 
@@ -1888,7 +1888,7 @@ namespace http {
 			root["title"] = "DeleteUserVariable";
 		}
 
-		void CWebServer::Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
@@ -1905,8 +1905,8 @@ namespace http {
 				)
 				return;
 
-			root["status"] = m_sql.SaveUserVariable(variablename, variabletype, variablevalue);
-			root["title"] = "SaveUserVariable";
+			root["status"] = m_sql.AddUserVariable(variablename, variabletype, variablevalue);
+			root["title"] = "AddUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
@@ -1916,32 +1916,46 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
+
 			std::string idx = request::findValue(&req, "idx");
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 
-			if (idx.empty())
-			{
-				//Get idx from valuename
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'",
-					variablename.c_str());
-				if (result.empty())
-					return;
-				idx = result[0][0];
-			}
-
 			if (
-				(idx.empty()) ||
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
 				return;
 
-			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
+			std::vector<std::vector<std::string> > result;
+			if (idx.empty())
+			{
+				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", variablename.c_str());
+				if (result.empty())
+					return;
+				idx = result[0][0];
+			}
+
+			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE ID='%q'", idx.c_str());
+			if (result.empty())
+				return;
+
+			bool bTypeNameChanged = false;
+			if (variablename != result[0][0])
+				bTypeNameChanged = true; //new name
+			else if (variabletype != result[0][1])
+				bTypeNameChanged = true; //new type
+
+			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, !bTypeNameChanged);
 			root["title"] = "UpdateUserVariable";
+
+			if (bTypeNameChanged)
+			{
+				if (m_sql.m_bEnableEventSystem)
+					m_mainworker.m_eventsystem.GetCurrentUserVariables();
+			}
 		}
 
 

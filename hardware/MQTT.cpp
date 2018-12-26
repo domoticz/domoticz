@@ -125,8 +125,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	Json::Value root;
 	Json::Reader jReader;
 	std::string szCommand = "udevice";
+
 	std::vector<std::vector<std::string> > result;
+	
 	uint64_t idx = 0;
+	std::string Var1,Var2;
+
 	bool ret = jReader.parse(qMessage, root);
 	if ((!ret) || (!root.isObject()))
 		goto mqttinvaliddata;
@@ -137,6 +141,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			szCommand = root["command"].asString();
 		}
 
+		//Checks
 		if ((szCommand == "udevice") || (szCommand == "switchlight") || (szCommand == "getdeviceinfo"))
 		{
 			idx = (uint64_t)root["idx"].asInt64();
@@ -161,14 +166,17 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		else if (szCommand == "setuservariable")
 		{
 			idx = (uint64_t)root["idx"].asInt64();
-			result = m_sql.safe_query("SELECT Name FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
+			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
 				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
+			Var1 = result[0][0];
+			Var2 = result[0][1];
 		}
-
+		
+		//Perform Actions
 		if (szCommand == "udevice")
 		{
 			int HardwareID = atoi(result[0][0].c_str());
@@ -383,7 +391,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		else if (szCommand == "setuservariable")
 		{
 			std::string varvalue = root["value"].asString();
-			m_sql.SetUserVariable(idx, varvalue, true);
+			m_sql.UpdateUserVariable(root["idx"].asString(), Var1, Var2, varvalue, true);
 		}
 		else if (szCommand == "addlogmessage")
 		{
@@ -411,8 +419,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				sound = root["sound"].asString();
 			}
 			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, subject, body, std::string(""), priority, sound, true);
-			std::string varvalue = root["value"].asString();
-			m_sql.SetUserVariable(idx, varvalue, true);
 		}
 		else if (szCommand == "getdeviceinfo")
 		{
