@@ -7,6 +7,7 @@
 - bugfix for time ( twilightstart and twilightend handling)
 - Added tests for twilight and device functions (hotwater) and attributes (evohome- and wind devices)
 - Fixed some date-range rule checking
+- Fixed integration tests by changing API call for creating a domoticz variable (saveuservariable was changed to adduservariable)
 
 [2.4.8]
 - Added telegram as option for domoticz.notify

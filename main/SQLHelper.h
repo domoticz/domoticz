@@ -377,10 +377,11 @@ public:
 	void safe_exec_no_return(const char *fmt, ...);
 	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
-	std::string DeleteUserVariable(const std::string &idx);
-	std::string SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
+	std::string AddUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
 	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);
-	bool SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger);
+	std::string DeleteUserVariable(const std::string &idx);
+	std::string CheckUserVariable(const int vartype, const std::string &varvalue);
+	std::string CheckUserVariableName(const std::string &varname);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
 	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
@@ -388,11 +389,7 @@ public:
 	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
 	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;
 	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
-	double ConvertTemperature(double tempcelcius);
-	double ConvertTemperatureUnit(double tempcelcius);
 	std::string GetDeviceValue(const char * FieldName , const char *Idx );
-
-	float getTemperatureFromSValue(const char * sValue);
 
 	bool GetPreferencesVar(const std::string &Key, double &Value);
 	void UpdatePreferencesVar(const std::string &Key, const double Value);
@@ -487,8 +484,6 @@ private:
 	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
 	void CleanupShortLog();
-	std::string CheckUserVariable(const int vartype, const std::string &varvalue);
-	std::string CheckUserVariableName(const std::string &varname);
 	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
 	bool CheckDateSQL(const std::string &sDate);
 	bool CheckDateTimeSQL(const std::string &sDateTime);
