@@ -1152,25 +1152,29 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (status == "long_click_release")) {
-							level = 40;
-							on = true;
+						else if ((status == "tap_twice") || (status == "long_click_release") || (aqara_wireless1 == "double_click")) {
+						    level = 40;
+						    on = true;
 						}
-						else if (status == "shake_air") {
-							level = 50;
-							on = true;
+						else if ((status == "shake_air") || (aqara_wireless2 == "double_click")) {
+						    level = 50;
+						    on = true;
 						}
-						else if (status == "swing") {
-							level = 60;
-							on = true;
+						else if ((status == "swing") || (aqara_wireless3 == "double_both_click")) {
+						    level = 60;
+						    on = true;
 						}
-						else if (status == "alert") {
-							level = 70;
-							on = true;
+						else if ((status == "alert") || (aqara_wireless1 == "long_click")) {
+						    level = 70;
+						    on = true;
 						}
-						else if (status == "free_fall") {
-							level = 80;
-							on = true;
+						else if ((status == "free_fall") || (aqara_wireless2 == "long_click")) {
+						    level = 80;
+						    on = true;
+						}
+						else if (aqara_wireless3 == "long_both_click") {
+						    level = 90;
+						    on = true;
 						}
 						std::string rotate = root2["rotate"].asString();
 						if (rotate != "") {
