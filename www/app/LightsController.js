@@ -425,10 +425,10 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Contact") {
 									if (item.Status == 'Closed') {
-										img = '<img src="images/contact48.png" height="48" width="48">';
+										img = '<img src="images/' + item.Image + '48_Off.png" height="48" width="48">';
 									}
 									else {
-										img = '<img src="images/contact48_open.png" height="48" width="48">';
+										img = '<img src="images/' + item.Image + '48_On.png" height="48" width="48">';
 									}
 								}
 								else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
@@ -998,10 +998,10 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Contact") {
 								if (item.Status == 'Closed') {
-									xhtm += '\t      <td id="img"><img src="images/contact48.png" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += '\t      <td id="img"><img src="images/contact48_open.png" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								}
 								bAddTimer = false;
 							}

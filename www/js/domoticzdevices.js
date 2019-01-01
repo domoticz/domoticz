@@ -1336,9 +1336,7 @@ Counter.inheritsFrom(UtilitySensor);
 function Contact(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        if (item.CustomImage == 0) {
-            this.image = (this.status == "Closed") ? "images/contact48.png" : this.image = "images/contact48_open.png";
-        }
+		this.image = (this.status == "Closed") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         this.data = '';
         this.smallStatus = this.status;
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";

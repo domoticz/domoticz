@@ -1946,7 +1946,7 @@ Error:
 				szTypeImage = "doorbell48";
 				break;
 			case STYPE_Contact:
-				szTypeImage = "contact48";
+				szTypeImage = "Contact48";
 				break;
 			case STYPE_Blinds:
 			case STYPE_BlindsPercentage:

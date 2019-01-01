@@ -8941,6 +8941,11 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Contact)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Contact";
+							}
+
 							root["result"][ii]["TypeImg"] = "contact";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							if (bIsOn) {

@@ -42,7 +42,8 @@
                             style="width:200px"
                             class="combobox ui-corner-all"
                             ng-options="item.value as item.label for item in ::vm.switchTypeOptions"
-                            ng-model="vm.device.SwitchTypeVal">
+                            ng-model="vm.device.SwitchTypeVal"
+                            ng-change="vm.updateSwitchType()">
                     </select>
                 </td>
             </tr>

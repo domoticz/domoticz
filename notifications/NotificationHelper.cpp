@@ -1018,7 +1018,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						break;
 					case STYPE_Contact:
 						notValue = "Open";
-						szExtraData += "Image=contact48_open|";
+						szExtraData += "Image=Contact48_On|";
 						break;
 					case STYPE_DoorContact:
 						notValue = "Open";
