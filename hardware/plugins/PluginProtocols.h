@@ -88,4 +88,19 @@ namespace Plugins {
 		};
 	};
 
+	class CPluginProtocolWS : CPluginProtocol
+	{
+	private:
+		std::string		m_Username;
+		std::string		m_Password;
+	public:
+		CPluginProtocolWS(bool Secure) { m_Secure = Secure; };
+		virtual void				ProcessInbound(const ReadEvent* Message);
+		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+		void						AuthenticationDetails(const std::string &Username, const std::string &Password)
+		{
+			m_Username = Username;
+			m_Password = Password;
+		};
+	};
 }

@@ -34,6 +34,12 @@ namespace Plugins {
 			pProtocol->AuthenticationDetails(sUsername, sPassword);
 			return (CPluginProtocol*)pProtocol;
 		}
+		else if ((sProtocol == "WS") || (sProtocol == "WSS"))
+		{
+			CPluginProtocolWS*	pProtocol = new CPluginProtocolWS(sProtocol == "WSS");
+			pProtocol->AuthenticationDetails(sUsername, sPassword);
+			return (CPluginProtocol*)pProtocol;
+		}
 		else return new CPluginProtocol();
 	}
 
@@ -745,21 +751,50 @@ namespace Plugins {
 		PyObject *pLength = NULL;
 		if (pHeaders)
 			pLength = PyDict_GetItemString(pHeaders, "Content-Length");
-		if (!pLength && pData && PyUnicode_Check(pData))
+		if (!pLength && pData)
 		{
-			Py_ssize_t iLength = PyUnicode_GetLength(pData);
+			Py_ssize_t iLength = 0;
+			if (PyUnicode_Check(pData))
+				iLength = PyUnicode_GetLength(pData);
+			else if (pData->ob_type->tp_name == std::string("bytearray"))
+				iLength = PyByteArray_Size(pData);
+			else if (PyBytes_Check(pData))
+				iLength = PyBytes_Size(pData);
 			sHttp += "Content-Length: " + std::to_string(iLength) + "\r\n";
 		}
 
 		sHttp += "\r\n";
 
-		// Append data if supplied (for POST)
+		// Append data if supplied (for POST) or Response
 		if (pData && PyUnicode_Check(pData))
 		{
 			sHttp += PyUnicode_AsUTF8(pData);
+			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
 		}
-
-		retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
+		else if (pData && (pData->ob_type->tp_name == std::string("bytearray")))
+		{
+			retVal.reserve(sHttp.length() + PyByteArray_Size(pData));
+			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
+			const char* pByteArray = PyByteArray_AsString(pData);
+			int iStop = PyByteArray_Size(pData);
+			for (int i = 0; i < iStop; i++)
+			{
+				retVal.push_back(pByteArray[i]);
+			}
+		}
+		else if (pData && PyBytes_Check(pData))
+		{
+			retVal.reserve(sHttp.length() + PyBytes_Size(pData));
+			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
+			const char* pBytes = PyBytes_AsString(pData);
+			int iStop = PyBytes_Size(pData);
+			for (int i = 0; i < iStop; i++)
+			{
+				retVal.push_back(pBytes[i]);
+			}
+		}
+		else
+			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
 
 		return retVal;
 	}
@@ -1556,6 +1591,39 @@ namespace Plugins {
 		retVal.insert(retVal.end(), vPayload.begin(), vPayload.end());
 
 		return retVal;
+	}
+
+	/*
+
+	See: https://tools.ietf.org/html/rfc6455#section-5.2
+
+	  0                   1                   2                   3
+	  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	 +-+-+-+-+-------+-+-------------+-------------------------------+
+	 |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
+	 |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
+	 |N|V|V|V|       |S|             |   (if payload len==126/127)   |
+	 | |1|2|3|       |K|             |                               |
+	 +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+	 |     Extended payload length continued, if payload len == 127  |
+	 + - - - - - - - - - - - - - - - +-------------------------------+
+	 |                               |Masking-key, if MASK set to 1  |
+	 +-------------------------------+-------------------------------+
+	 | Masking-key (continued)       |          Payload Data         |
+	 +-------------------------------- - - - - - - - - - - - - - - - +
+	 :                     Payload Data continued ...                :
+	 + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+	 |                     Payload Data continued ...                |
+	 +---------------------------------------------------------------+
+	 */
+	
+	void CPluginProtocolWS::ProcessInbound(const ReadEvent * Message)
+	{
+	}
+
+	std::vector<byte> CPluginProtocolWS::ProcessOutbound(const WriteDirective * WriteMessage)
+	{
+		return std::vector<byte>();
 	}
 }
 #endif
