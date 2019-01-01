@@ -625,7 +625,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
 					//for Aqara wireless switch, 2 buttons support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both_Click", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both Click|Switch 1 Double Click|Switch 2 Double Click|Both Double Click|Switch 1 Long Click|Switch 2 Long Click|Both Long Click", false));
 				}
 				else if (Name == "Xiaomi Wired Single Wall Switch") {
 					//for Aqara wired switch, single button support
@@ -1152,25 +1152,29 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (status == "long_click_release")) {
-							level = 40;
-							on = true;
+						else if ((status == "tap_twice") || (status == "long_click_release") || (aqara_wireless1 == "double_click")) {
+						    level = 40;
+						    on = true;
 						}
-						else if (status == "shake_air") {
-							level = 50;
-							on = true;
+						else if ((status == "shake_air") || (aqara_wireless2 == "double_click")) {
+						    level = 50;
+						    on = true;
 						}
-						else if (status == "swing") {
-							level = 60;
-							on = true;
+						else if ((status == "swing") || (aqara_wireless3 == "double_both_click")) {
+						    level = 60;
+						    on = true;
 						}
-						else if (status == "alert") {
-							level = 70;
-							on = true;
+						else if ((status == "alert") || (aqara_wireless1 == "long_click")) {
+						    level = 70;
+						    on = true;
 						}
-						else if (status == "free_fall") {
-							level = 80;
-							on = true;
+						else if ((status == "free_fall") || (aqara_wireless2 == "long_click")) {
+						    level = 80;
+						    on = true;
+						}
+						else if (aqara_wireless3 == "long_both_click") {
+						    level = 90;
+						    on = true;
 						}
 						std::string rotate = root2["rotate"].asString();
 						if (rotate != "") {
