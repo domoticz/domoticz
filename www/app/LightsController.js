@@ -1664,9 +1664,14 @@ define(['app'], function (app) {
 				bIsType5 = 1;
 				totunits = 4;
 			}
-			else if ((lighttype == 55) || (lighttype == 57)) {
+			else if (lighttype == 57) {
+				//Aoke
+				bIsType5 = 1;
+			}
+			else if (lighttype == 55) {
 				//Livolo
 				bIsType5 = 1;
+				totunits = 128;
 			}
 			else if (lighttype == 100) {
 				//Chime/ByronSX
@@ -1933,6 +1938,12 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").show();
+					if (lighttype == 55) {
+						$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
+						for (ii = 1; ii < totunits + 1; ii++) {
+							$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));
+						}
+					}
 				}
 				$("#dialog-addmanuallightdevice #lighting2params #combocmd2").show();
 				if (bIsType5 == 0) {
@@ -1940,9 +1951,10 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-					if ((lighttype == 55) || (lighttype == 57) || (lighttype == 65) || (lighttype == 100)) {
+					if ((lighttype == 57) || (lighttype == 65) || (lighttype == 100) || (lighttype == 55)) {
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
-						if ((lighttype != 65) && (lighttype != 100)) {
+						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").val(0);
+						if ((lighttype != 65) && (lighttype != 100) && (lighttype != 55)) {
 							$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
 						}
 					}
@@ -2134,7 +2146,7 @@ define(['app'], function (app) {
 						$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
 				}
 				else {
-					if ((lighttype != 55) && (lighttype != 57) && (lighttype != 100)) {
+					if ((lighttype != 57) && (lighttype != 100)) {
 						ID =
 							$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text() +
 							$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text() +
