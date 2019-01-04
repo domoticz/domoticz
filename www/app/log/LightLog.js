@@ -11,11 +11,6 @@ define(['app', 'log/components'], function (app) {
             },
             marginRight: 10
         },
-        credits: {
-            enabled: true,
-            href: "http://www.domoticz.com",
-            text: "Domoticz.com"
-        },
         title: {
             text: null
         },
