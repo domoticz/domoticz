@@ -412,6 +412,11 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             });
 
             chartElement.highcharts({
+                credits: {
+                    enabled: true,
+                    href: "http://www.domoticz.com",
+                    text: "Domoticz.com"
+                },
                 title: {
                     text: data.isOnlyHumidity
                         ? $.t('Humidity Variation')
