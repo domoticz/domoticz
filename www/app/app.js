@@ -924,13 +924,7 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
                 enabled: true,
                 href: "http://www.domoticz.com",
                 text: "Domoticz.com"
-            },
-            title: {
-                style: {
-                    textTransform: 'none',
-                    fontSize: '16px',
-                }
-            },
+            }
 		});
 
 			/* this doesnt run, for some reason */
