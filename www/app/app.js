@@ -920,6 +920,11 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 		permissions.setPermissions(permissionList);
 
 		Highcharts.setOptions({
+			chart: {
+				style: {
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif'
+				}
+			},
             credits: {
                 enabled: true,
                 href: "http://www.domoticz.com",
