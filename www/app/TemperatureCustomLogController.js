@@ -43,11 +43,6 @@ define(['app'], function (app) {
                             hideDuration: 1000,
                             showDuration: 1000
                         },
-                        credits: {
-                            enabled: true,
-                            href: "http://www.domoticz.com",
-                            text: "Domoticz.com"
-                        },
                         title: {
                             text: $.t('Custom Temperature Graph')
                         },

@@ -571,7 +571,11 @@ js/blockly/blockly_compressed.js
 js/blockly/blocks_compressed.js
 js/blockly/msg/en.js
 
-js/modules/exporting.js
+js/highcharts/highcharts.js
+js/highcharts/highcharts-more.js
+js/highcharts/modules/exporting.js
+js/highcharts/modules/xrange.js
+js/highcharts/themes/dark-unica.js
 
 js/noty/jquery.noty.js
 js/noty/layouts/top.js
@@ -601,9 +605,7 @@ js/domoticz.js
 js/domoticzdevices.js
 js/export-csv.js
 js/FileSaver.js
-js/highcharts-more.js
 js/highcharts-ng.min.js
-js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
 js/jquery-3.3.1.min.js
@@ -623,8 +625,6 @@ js/ngDraggable.js
 js/ngload.min.js
 js/require.js
 js/respond.min.js
-js/themes/dark-blue.js
-js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
