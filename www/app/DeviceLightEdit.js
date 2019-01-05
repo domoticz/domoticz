@@ -1,14 +1,41 @@
 define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
+    var iconByDeviceSwitchType = {
+        0: 'Light48_On.png',        // On/Off
+        1: 'doorbell48.png',        // Doorbell
+        2: 'Contact48_On.png',      // Contact
+        3: 'blinds48.png',          // Blinds,
+        4: 'Alarm48_On.png',        // X10 Siren
+        5: 'smoke48on.png',         // Smoke Detector
+        6: 'blinds48.png',          // Blinds Inverted
+        7: 'Dimmer48_On.png',       // Dimmer
+        8: 'motion48-on.png',       // Motion Sensor
+        9: 'push48.png',            // Push On Button
+        10: 'pushoff48.png',        // Push Off Button
+        11: 'door48.png',           // Door Contact
+        12: 'Water48_On.png',       // Dusk Sensor
+        13: 'blinds48.png',         // Blinds Percentage
+        14: 'blinds48.png',         // Venetian Blinds US
+        15: 'blinds48.png',         // Venetian Blinds EU
+        16: 'blinds48.png',         // Blinds Percentage Inverted
+        17: 'Media48_On.png',       // Media Player
+        18: 'Generic48_On.png',     // Selector
+        19: 'lock_closed.png',      // Door Lock
+        20: 'lock_closed.png',      // Door Lock Inverted
+    };
+
     app.component('deviceIconSelect', {
         template: '<select id="icon-select"></select>',
+        bindings: {
+            switchType: '<'
+        },
         require: {
             ngModelCtrl: 'ngModel'
         },
         controller: function ($element, domoticzApi) {
             var vm = this;
             var switch_icons = [];
-            
+
             vm.$onInit = function () {
                 // TODO: Add caching mechanism for this request
                 domoticzApi.sendRequest({
@@ -20,7 +47,9 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                             value: item.idx,
                             selected: false,
                             description: item.description,
-                            imageSrc: 'images/' + item.imageSrc + '48_On.png'
+                            imageSrc: item.idx === 0 && iconByDeviceSwitchType[vm.switchType]
+                                ? 'images/' + iconByDeviceSwitchType[vm.switchType]
+                                : 'images/' + item.imageSrc + '48_On.png'
                         };
                     });
 
@@ -468,7 +497,6 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         vm.isOffActionAvailable = isOffActionAvailable;
         vm.isColorSettingsAvailable = isColorSettingsAvailable;
         vm.isWhiteSettingsAvailable = isWhiteSettingsAvailable;
-        vm.updateSwitchType = updateSwitchType;
 
         init();
 
@@ -589,42 +617,6 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
         function isWhiteSettingsAvailable() {
             return vm.device.SubType === 'White';
-        }
-        
-        function updateSwitchType() {
-			//need to change default icon (with value 0) to the correct icon based on vm.device.SwitchTypeVal
-/*
-                    if (switchtype==0) {
-						//On/Off
-                    } else if (switchtype == 1) {
-						//Doorbell
-                    } else if (switchtype == 2) {
-						//Contact
-                    } else if (switchtype == 7) {
-						//Dimmer
-                    } else if (switchtype == 9) {
-						//Push On
-                    } else if (switchtype == 10) {
-						//Push Off
-                    } else if (switchtype == 11) {
-						//Door Contact
-                    } else if (switchtype == 17) {
-						//Media
-                    } else if (switchtype == 18) {
-						//Selector
-                    } else if (switchtype == 19) {
-						//Door Lock
-                    } else if (switchtype == 20) {
-						//Door Lock Inverted
-                    }
-
-					switch_icons.forEach(function (item, index) {
-						if (item.value === 0) {
-							item.imageSrc = 'images/' + imageSrc + '.png';
-						}
-					});
-
-*/			
         }
     });
 });
