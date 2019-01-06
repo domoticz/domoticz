@@ -10,9 +10,9 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         6: 'blinds48.png',          // Blinds Inverted
         7: 'Dimmer48_On.png',       // Dimmer
         8: 'motion48-on.png',       // Motion Sensor
-        9: 'push48.png',            // Push On Button
-        10: 'pushoff48.png',        // Push Off Button
-        11: 'door48.png',           // Door Contact
+        9: 'Push48_On.png',         // Push On Button
+        10: 'Push48_Off.png',       // Push Off Button
+        11: 'Door48_On.png',        // Door Contact
         12: 'Water48_On.png',       // Dusk Sensor
         13: 'blinds48.png',         // Blinds Percentage
         14: 'blinds48.png',         // Venetian Blinds US
@@ -20,8 +20,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         16: 'blinds48.png',         // Blinds Percentage Inverted
         17: 'Media48_On.png',       // Media Player
         18: 'Generic48_On.png',     // Selector
-        19: 'lock_closed.png',      // Door Lock
-        20: 'lock_closed.png',      // Door Lock Inverted
+        19: 'Door48_On.png',      // Door Lock
+        20: 'Door48_On.png',      // Door Lock Inverted
     };
 
     app.component('deviceIconSelect', {
@@ -36,7 +36,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
             var vm = this;
             var switch_icons = [];
 
-            function updateSelector() {
+            function updateSelector(bFromUser) {
                 switch_icons[0].imageSrc = iconByDeviceSwitchType[vm.switchType]
                     ? 'images/' + iconByDeviceSwitchType[vm.switchType]
                     : 'images/Generic48_On.png';
@@ -52,6 +52,9 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                         vm.ngModelCtrl.$setViewValue(data.selectedData.value);
                     }
                 });
+                if (bFromUser) {
+					$element.find('#icon-select').ddslick('select', { index: 0 });
+				}
 
                 vm.ngModelCtrl.$render();
             }
@@ -82,7 +85,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                         description: 'Default icon'
                     });
 
-                    updateSelector();
+                    updateSelector(false);
                 });
 
                 vm.ngModelCtrl.$render = function () {
@@ -98,7 +101,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
             vm.$onChanges = function (changes) {
                 if (changes.switchType && switch_icons.length > 0) {
-                    updateSelector();
+                    updateSelector(true);
                 }
             }
         }
@@ -628,7 +631,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         }
 
         function isSwitchIconAvailable() {
-            return [0, 2, 7, 17, 18].includes(vm.device.SwitchTypeVal);
+            return [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(vm.device.SwitchTypeVal);
         }
 
         function isLevelsAvailable() {

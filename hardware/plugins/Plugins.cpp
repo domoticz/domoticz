@@ -1940,7 +1940,8 @@ Error:
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
-				else szTypeImage = "Light48";
+				else 
+					szTypeImage = "Light48";
 				break;
 			case STYPE_Doorbell:
 				szTypeImage = "doorbell48";
@@ -1969,19 +1970,19 @@ Error:
 				szTypeImage = "motion48";
 				break;
 			case STYPE_PushOn:
-				szTypeImage = "pushon48";
+				szTypeImage = "Push48";
 				break;
 			case STYPE_PushOff:
-				szTypeImage = "pushon48";
+				szTypeImage = "Push48";
 				break;
 			case STYPE_DoorContact:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLock:
-				szTypeImage = "door48open";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLockInverted:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_Media:
 				if (posCustom >= 0)
@@ -1989,7 +1990,8 @@ Error:
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
-				else szTypeImage = "Media48";
+				else
+					szTypeImage = "Media48";
 				break;
 			default:
 				szTypeImage = "logo";

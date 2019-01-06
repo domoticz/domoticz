@@ -157,8 +157,8 @@ images/devices.png
 images/Dimmer48_Off.png
 images/Dimmer48_On.png
 images/door.png
-images/door48.png
-images/door48open.png
+images/Door48_Off.png
+images/Door48_On.png
 images/doorbell.png
 images/doorbell48.png
 images/down.png
@@ -259,9 +259,9 @@ images/program.png
 images/program_mini.png
 images/proxy.png
 images/push.png
-images/push48.png
+images/Push48_On.png
+images/Push48_Off.png
 images/pushoff.png
-images/pushoff48.png
 images/pushon.png
 images/pushon48.png
 images/PV48.png

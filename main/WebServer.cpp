@@ -8883,6 +8883,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorContact)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
@@ -8896,6 +8900,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorLock)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
@@ -8909,6 +8917,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorLockInverted)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
@@ -8922,12 +8934,21 @@ namespace http {
 						}
 						else if (switchtype == STYPE_PushOn)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Push";
+							}
 							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
 							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 						}
 						else if (switchtype == STYPE_PushOff)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Push";
+							}
+							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
 							root["result"][ii]["TypeImg"] = "pushoff";
 						}
@@ -8945,7 +8966,6 @@ namespace http {
 							{
 								root["result"][ii]["Image"] = "Contact";
 							}
-
 							root["result"][ii]["TypeImg"] = "contact";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							if (bIsOn) {
