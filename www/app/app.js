@@ -922,7 +922,7 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 		Highcharts.setOptions({
 			chart: {
 				style: {
-                    fontFamily: 'Trebuchet MS, Verdana, sans-serif'
+                    fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif'
 				}
 			},
             credits: {
@@ -933,9 +933,17 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
             title: {
                 style: {
                     textTransform: 'none',
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif',
                     fontSize: '16px',
+					fontWeight: 'bold'
                 }
             },
+            legend: {
+                itemStyle: {
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif',
+                    fontWeight: 'normal'
+                }
+            }
 		});
 
 			/* this doesnt run, for some reason */
