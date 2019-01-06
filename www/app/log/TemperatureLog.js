@@ -135,7 +135,12 @@ define(['app', 'log/factories'], function (app) {
 											}
 										}
 									}
-								}
+								},
+                                areasplinerange: {
+                                    marker: {
+                                        enabled: false
+                                    }
+                                }
                             },
                             title: {
                                 text: getChartTitle()
