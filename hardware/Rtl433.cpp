@@ -395,7 +395,7 @@ void CRtl433::Do_Work()
 		std::string headerLine = "";
 		m_sLastLine = "";
 
-		std::string szFlags = "-F csv -q -I 2 " + m_cmdline; // -f 433.92e6 -f 868.24e6 -H 60 -d 0
+		std::string szFlags = "-F csv " + m_cmdline; // -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		m_hPipe = _popen(szCommand.c_str(), "r");
