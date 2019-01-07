@@ -1664,14 +1664,14 @@ define(['app'], function (app) {
 				bIsType5 = 1;
 				totunits = 4;
 			}
-			else if (lighttype == 57) {
-				//Aoke
-				bIsType5 = 1;
-			}
 			else if (lighttype == 55) {
 				//Livolo
 				bIsType5 = 1;
 				totunits = 128;
+			}
+			else if (lighttype == 57) {
+				//Aoke
+				bIsType5 = 1;
 			}
 			else if (lighttype == 100) {
 				//Chime/ByronSX
