@@ -7047,6 +7047,8 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 		//Set new Scene status
 		safe_query("UPDATE Scenes SET nValue=%d WHERE (ID == %" PRIu64 ")",
 			int(newValue), Idx);
+		if (m_sql.m_bEnableEventSystem)  // Only when eventSystem is active
+			m_mainworker.m_eventsystem.GetCurrentScenesGroups(); 
 	}
 }
 
