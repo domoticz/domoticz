@@ -1951,7 +1951,7 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-					if ((lighttype == 57) || (lighttype == 65) || (lighttype == 100) || (lighttype == 55)) {
+					if ((lighttype == 55) || (lighttype == 57) || (lighttype == 65) || (lighttype == 100)) {
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").val(0);
 						if ((lighttype != 65) && (lighttype != 100) && (lighttype != 55)) {
