@@ -59,7 +59,7 @@ define(['app', 'events/factories'], function (app) {
             }
 
             function isTriggerAvailable() {
-                return vm.eventData && ['Lua', 'Python'].includes(vm.eventData.interpreter);
+                return vm.eventData && ['Blockly', 'Lua', 'Python'].includes(vm.eventData.interpreter);
             }
 
             function markEventAsUpdated() {
