@@ -1,8 +1,9 @@
-define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/EnergyMultiCounterReport'], function (app) {
+define(['app', 'report/CounterReport', 'report/ManagedCounterReport', 'report/TemperatureReport', 'report/EnergyMultiCounterReport'], function (app) {
     app.controller('DeviceReportController', function ($route, $routeParams, $location, deviceApi) {
         var vm = this;
         vm.isTemperatureReport = isTemperatureReport;
         vm.isCounterReport = isCounterReport;
+        vm.isManagedCounterReport = isManagedCounterReport;
         vm.isEnergyMultiCounterReport = isEnergyMultiCounterReport;
         vm.isNoReport = isNoReport;
         vm.getYearsOptions = getYearsOptions;
@@ -71,6 +72,13 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
                 || (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType !== 'Energy');
         }
 
+        function isManagedCounterReport() {
+            if (!vm.device) {
+                return undefined;
+            }
+            return ['Managed Counter'].includes(vm.device.SubType);
+        }
+
         function isEnergyMultiCounterReport() {
             if (!vm.device) {
                 return undefined;
@@ -84,7 +92,7 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
                 return undefined;
             }
 
-            return !isTemperatureReport() && !isCounterReport() && !isEnergyMultiCounterReport()
+            return !isTemperatureReport() && !isCounterReport() && !isManagedCounterReport() && !isEnergyMultiCounterReport()
         }
     });
 });

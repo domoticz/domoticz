@@ -114,6 +114,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
 
             return ['Power', 'Energy'].includes(vm.device.Type)
                 || ['kWh'].includes(vm.device.SubType)
+                || ['Managed Counter'].includes(vm.device.SubType)
                 || (vm.device.Type == 'YouLess Meter' && [0, 4].includes(vm.device.SwitchTypeVal));
         }
 

@@ -509,6 +509,8 @@ app/notifications/factories.js
 
 app/report/CounterReport.html
 app/report/CounterReport.js
+app/report/ManagedCounterReport.html
+app/report/ManagedCounterReport.js
 app/report/DeviceReport.html
 app/report/DeviceReport.js
 app/report/EnergyMultiCounterReport.html

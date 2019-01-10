@@ -28,6 +28,13 @@
             selected-month="::vm.selectedMonth"
     />
 
+    <device-managed-counter-report
+            ng-if="::vm.isManagedCounterReport()"
+            device="::vm.device"
+            selected-year="::vm.selectedYear"
+            selected-month="::vm.selectedMonth"
+    />
+
     <device-energy-multi-counter-report
             ng-if="::vm.isEnergyMultiCounterReport()"
             device="::vm.device"
