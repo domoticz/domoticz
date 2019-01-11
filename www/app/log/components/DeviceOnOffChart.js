@@ -86,6 +86,7 @@ define(['app', 'luxon'], function (app, luxon) {
                     dataLabels: {
                         enabled: false
                     },
+                    minPointLength: 2,
                     turboThreshold: 0
                 }]
             });
