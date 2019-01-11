@@ -32,7 +32,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 return undefined;
             }
 
-            return ['Text', 'Alert'].includes(vm.device.SubType) || vm.device.SwitchType === 'Media Player';
+            return ['Text', 'Alert'].includes(vm.device.SubType)
+                || vm.device.SwitchType === 'Media Player';
         }
 
         function isLightLog() {
@@ -55,7 +56,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 'Smoke Detector', 'On/Off', 'Dimmer'
             ].includes(vm.device.SwitchType);
 
-            return isLightType || isLightSwitchType;
+            return (isLightType || isLightSwitchType) && !isTextLog();
         }
 
         function isTemperatureLog() {

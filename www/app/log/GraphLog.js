@@ -1,4 +1,4 @@
-define(['app', 'log/factories', 'log/components'], function (app) {
+define(['app', 'log/factories'], function (app) {
     app.component('deviceGraphLog', {
         bindings: {
             device: '<'

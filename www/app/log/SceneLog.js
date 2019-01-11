@@ -1,4 +1,4 @@
-define(['app', 'scenes/factories', 'log/components'], function (app) {
+define(['app', 'scenes/factories', 'log/components/DeviceTextLogTable'], function (app) {
     app.controller('SceneLogController', function ($routeParams, sceneApi) {
         var vm = this;
 

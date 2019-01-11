@@ -494,13 +494,19 @@ app/events/EventViewer.html
 app/events/EventViewer.js
 app/events/factories.js
 
-app/log/components.js
+app/log/components/DeviceLevelChart.js
+app/log/components/DeviceOnOffChart.js
+app/log/components/DeviceTextLogTable.js
+app/log/DeviceLog.html
 app/log/DeviceLog.js
 app/log/factories.js
 app/log/GraphLog.js
+app/log/LightLog.html
 app/log/LightLog.js
+app/log/SceneLog.html
 app/log/SceneLog.js
 app/log/TemperatureLog.js
+app/log/TextLog.html
 app/log/TextLog.js
 
 app/notifications/constants.js
@@ -618,6 +624,7 @@ js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
 js/jquery.wheelcolorpicker.js
+js/luxon.min.js
 js/md5.js
 js/ng-grid-flexible-height.js
 js/ng-grid.min.js
@@ -642,11 +649,7 @@ secpanel/js/ion.sound.min.js
 
 # HTML pages
 views/log/device_graph_log.html
-views/log/device_light_log.html
-views/log/device_log.html
 views/log/device_temperature_log.html
-views/log/device_text_log.html
-views/log/scene_log.html
 views/about.html
 views/cam.html
 views/customicons.html

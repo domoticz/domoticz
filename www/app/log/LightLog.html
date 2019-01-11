@@ -1,0 +1,23 @@
+<section ng-if="vm.isSelector === false">
+    <h2>{{:: 'Today' | translate }}</h2>
+    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="daily" />
+
+    <h2>{{:: 'Last 7 days' | translate }}</h2>
+    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="weekly" />
+</section>
+
+<h2>{{:: 'Text log' | translate }}</h2>
+<device-text-log-table log="vm.log"></device-text-log-table>
+
+<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td></td>
+        <td align="right">
+            <button class="btnstyle3" id="clearlog" ng-click="vm.clearLog()">{{ ::'Clear' | translate }}</button>
+        </td>
+    </tr>
+</table>
+
+<br>
+
+<device-level-chart ng-if="vm.isDimmer" class="device-log-chart device-log-chart_md" log="vm.log"/>
