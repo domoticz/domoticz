@@ -133,7 +133,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         bindings: {
             device: '<',
             selectedYear: '<',
-            selectedMonth: '<'
+            selectedMonth: '<',
+            isOnlyUsage: '<',
         },
         templateUrl: 'app/report/CounterReport.html',
         controller: DeviceCounterReportController
@@ -206,7 +207,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 });
             }
 
-            if (vm.isMonthView) {
+            if (vm.isMonthView && !vm.isOnlyUsage) {
                 columns.push({ title: $.t('Counter'), data: 'counter', render: counterRenderer });
             }
 
