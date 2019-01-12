@@ -27,9 +27,11 @@ local TIMED_OPTIONS = {
 		_checkState = false
 	},
 	setpoint =  {
-	 _silent = true,
-	 _triggerMode = 'NOTRIGGER'
- }
+        _silent = true,
+        _after = true,      -- 20180112 Added
+        _within = true,     -- 20180112 Added
+        _triggerMode = 'NOTRIGGER'
+    }
 }
 
 return TIMED_OPTIONS

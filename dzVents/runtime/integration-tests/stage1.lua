@@ -866,7 +866,7 @@ local testThermostatSetpoint = function(name)
 		["timedOut"] = false;
 	})
 
-	dev.updateSetPoint(22)
+	dev.updateSetPoint(22).afterSec(1)  --  20190112 Add afterSec
 	tstMsg('Test thermostat device', res)
 	return res
 end
