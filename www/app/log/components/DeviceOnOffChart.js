@@ -38,15 +38,13 @@ define(['app', 'luxon'], function (app, luxon) {
                     return min === undefined || Date.parse(point.Date) >= min
                 })
                 .forEach(function (point, index, points) {
-                    if (point.Status !== 'On' || (point.Status === 'Set Level' && point.Level === 0)) {
-                        return;
+                    if (point.Status === 'On' || (point.Status.includes('Set Level') && point.Level > 0)) {
+                        chartData.push({
+                            x: Date.parse(point.Date),
+                            x2: points[index + 1] ? Date.parse(points[index + 1].Date) : Date.now(),
+                            y: 0
+                        });
                     }
-
-                    chartData.push({
-                        x: Date.parse(point.Date),
-                        x2: points[index + 1] ? Date.parse(points[index + 1].Date) : Date.now(),
-                        y: 0
-                    });
                 });
 
             $element.highcharts({
@@ -86,6 +84,7 @@ define(['app', 'luxon'], function (app, luxon) {
                     dataLabels: {
                         enabled: false
                     },
+                    minPointLength: 2,
                     turboThreshold: 0
                 }]
             });
