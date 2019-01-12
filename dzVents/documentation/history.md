@@ -1,3 +1,7 @@
+[2.4.10]
+- Added option to use afterXnn() and within() functions to updateSetPoint()
+- Changed parm from i to modeString in call to device.update in function updateMode of device adapter zwave_thermostat_mode_device
+
 [2.4.9]
 - Added evohome hotwater device (state, mode, untilDate and setHotWater function)
 - Added mode and untilDate for evohome zone devices 
