@@ -842,7 +842,7 @@ local testText = function(name)
 	})
 
 	dev.updateText("Oh my Darwin, what a lot of tests!").afterSec(3)
-	dev.updateText("This change should not happen").afterSec(30) -- is cancelled in vdCancelledRepeatSwitch
+	dev.updateText("This change should not happen").afterSec(10) -- is cancelled in vdCancelledRepeatSwitch
 	tstMsg('Test text device', res)
 	return res
 end
@@ -1102,7 +1102,7 @@ local testVariableString = function(name)
 	var.set('Zork is a dork').withinSec(3)
 
 	local varCancelled = dz.variables('varCancelled')
-	varCancelled.set(2).afterSec(7) -- this one will be cancelled in varString.lua!
+	varCancelled.set(2).afterSec(5) -- this one will be cancelled in varString.lua!
 
 	tstMsg('Test variable: string', res)
 	return res
