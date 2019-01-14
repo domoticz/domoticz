@@ -23,29 +23,43 @@ define(['app', 'luxon'], function (app, luxon) {
             if (vm.view === 'daily') {
                 return DateTime.local().startOf('day').valueOf();
             } else if (vm.view === 'weekly') {
-                return DateTime.local().minus({days: 6}).startOf('day').valueOf();
+                return DateTime.local().minus({ days: 6 }).startOf('day').valueOf();
             } else {
                 return undefined;
             }
         }
 
-        function renderChart(data) {
-            var chartData = [];
+        function getFilteredData(data) {
             var min = getMinValue();
 
-            data
-                .filter(function(point) {
-                    return min === undefined || Date.parse(point.Date) >= min
+            var firstIndex = min === undefined
+                ? data.findIndex(function (point) {
+                    return Date.parse(point.Date) >= min
                 })
-                .forEach(function (point, index, points) {
-                    if (point.Status === 'On' || (point.Status.includes('Set Level') && point.Level > 0)) {
-                        chartData.push({
-                            x: Date.parse(point.Date),
-                            x2: points[index + 1] ? Date.parse(points[index + 1].Date) : Date.now(),
-                            y: 0
-                        });
-                    }
-                });
+                : 0;
+
+            // Add one point out of the range to properly render initial value
+            if (firstIndex > 0) {
+                firstIndex -= 1;
+            }
+
+            return firstIndex === -1
+                ? []
+                : data.slice(firstIndex);
+        }
+
+        function renderChart(data) {
+            var chartData = [];
+
+            getFilteredData(data).forEach(function (point, index, points) {
+                if (point.Status === 'On' || (point.Status.includes('Set Level') && point.Level > 0)) {
+                    chartData.push({
+                        x: Date.parse(point.Date),
+                        x2: points[index + 1] ? Date.parse(points[index + 1].Date) : Date.now(),
+                        y: 0
+                    });
+                }
+            });
 
             $element.highcharts({
                 chart: {
@@ -59,7 +73,7 @@ define(['app', 'luxon'], function (app, luxon) {
                 },
                 xAxis: {
                     type: 'datetime',
-                    min: min,
+                    min: getMinValue(),
                     max: DateTime.local().endOf('day').valueOf(),
                     startOnTick: true,
                     endOnTick: true
