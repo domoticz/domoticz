@@ -72,20 +72,24 @@ define(['app'], function (app) {
                 title: {
                     text: null
                 },
+                legend: {
+                    enabled: false
+                },
                 xAxis: {
                     type: 'datetime'
                 },
                 yAxis: {
+                    min: 0,
                     max: 100,
                     title: {
                         text: $.t('Percentage') + ' (%)'
                     }
                 },
+                time: {
+                    useUTC: false,
+                },
                 tooltip: {
-                    formatter: function () {
-                        return '' +
-                            $.t(Highcharts.dateFormat('%A', this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + ', ' + this.y + ' %';
-                    }
+                    valueSuffix: '%'
                 },
                 plotOptions: {
                     line: {
@@ -109,9 +113,7 @@ define(['app'], function (app) {
                     }
                 },
                 series: [{
-                    id: 'percent',
-                    showInLegend: false,
-                    name: 'percent',
+                    name: 'Level',
                     step: 'left',
                     data: chartData
                 }],
