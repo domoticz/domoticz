@@ -33,6 +33,9 @@
 
 extern std::string szWWWFolder;
 extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
+extern std::string szWebRoot;
+extern std::string dbasefile;
 extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
@@ -1130,6 +1133,9 @@ Error:
 					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "WebRoot", szWebRoot);
+					ADD_STRING_TO_DICT(pParamsDict, "Database", dbasefile);
 					ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
 					ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
 					ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);
