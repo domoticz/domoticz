@@ -1134,7 +1134,7 @@ Error:
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);
-					ADD_STRING_TO_DICT(pParamsDict, "WebRoot", szWebRoot);
+					ADD_STRING_TO_DICT(pParamsDict, "WWWFolder", szWWWFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "Database", dbasefile);
 					ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
 					ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
