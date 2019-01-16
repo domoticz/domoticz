@@ -422,8 +422,8 @@ describe('device', function()
 			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14)
-			assert.is_same({ { ['SetSetPoint:1'] = '14'} }, commandArray)
-
+            assert.is_same( { { ["UpdateDevice"] = { idx=1, nValue=0, sValue="14", _trigger=true } } }, commandArray)
+      
 		end)
 
 		it('should detect a text device', function()
