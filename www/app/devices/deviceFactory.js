@@ -69,9 +69,11 @@ define(function () {
                 return 'kWh';
             } else if (this.Type === 'General' && this.SubType === 'Managed Counter') {
                 switch (this.SwitchTypeVal) {
-                    case 0: return 'kWh';
+                    case 0: 
+                    case 4: return 'kWh';
                     case 1:
                     case 2: return 'm3';
+                    case 3: return this.ValueUnits;
                     case 5: return 's';
                     default: return '?';
                 }                
