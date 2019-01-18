@@ -494,6 +494,21 @@ app/events/EventViewer.html
 app/events/EventViewer.js
 app/events/factories.js
 
+app/hardware/Hardware.html
+app/hardware/Hardware.js
+app/hardware/HardwareSetup.html
+app/hardware/HardwareSetup.js
+app/hardware/setup/Kodi.html
+app/hardware/setup/Kodi.js
+app/hardware/setup/MySensors.html
+app/hardware/setup/MySensors.js
+app/hardware/setup/Pinger.html
+app/hardware/setup/Pinger.js
+app/hardware/setup/WakeOnLan.html
+app/hardware/setup/WakeOnLan.js
+app/hardware/setup/ZWave.html
+app/hardware/setup/ZWave.js
+
 app/log/components/DeviceLevelChart.js
 app/log/components/DeviceOnOffChart.js
 app/log/components/DeviceTextLogTable.js
@@ -547,7 +562,6 @@ app/FloorplanController.js
 app/FloorplanEditController.js
 app/ForecastController.js
 app/FrontpageController.js
-app/HardwareController.js
 app/HistoryController.js
 app/LightsController.js
 app/LogController.js
@@ -663,7 +677,6 @@ views/dpgooglepubsub.html
 views/frontpage_example.html
 views/floorplanedit.html
 views/floorplans.html
-views/hardware.html
 views/history.html
 views/lights.html
 views/log.html
