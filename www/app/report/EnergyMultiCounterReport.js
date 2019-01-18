@@ -25,7 +25,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
 
                 var includeReturn = typeof stats.delivered !== 'undefined';
-                var data = getGroupedData(stats.result, costs,includeReturn);
+                var data = getGroupedData(stats.result, costs, includeReturn);
                 var source = month
                     ? data.years[year].months.find(function (item) {
                         return (new Date(item.date)).getMonth() + 1 === month;
@@ -34,14 +34,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                 if (!source) {
                     return null;
-                }
-
-                source.usage1.counter = parseFloat(costs.CounterT1);
-                source.usage2.counter = parseFloat(costs.CounterT2);
-
-                if (includeReturn) {
-                    source.return1.counter = parseFloat(costs.CounterR1);
-                    source.return2.counter = parseFloat(costs.CounterR2);
                 }
 
                 return Object.assign({}, source, {
@@ -98,11 +90,14 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         usage: parseFloat(item.r2),
                         cost: parseFloat(item.r2) * costs.CostEnergyR2 / 10000,
                         counter: parseFloat(item.c4)
-                    }
+                    };
+
+                    dayRecord.totalReturn = dayRecord.return1.usage + dayRecord.return2.usage;
                 }
 
-                dayRecord.usage = dayRecord.usage1.usage + dayRecord.usage2.usage -
-                    (includeReturn ? dayRecord.return1.usage + dayRecord.return2.usage : 0);
+                dayRecord.totalUsage = dayRecord.usage1.usage + dayRecord.usage2.usage;
+                dayRecord.usage = dayRecord.totalUsage -
+                    (includeReturn ? dayRecord.totalReturn : 0);
                 dayRecord.cost = dayRecord.usage1.cost + dayRecord.usage2.cost -
                     (includeReturn ? (dayRecord.return1.cost + dayRecord.return2.cost) : 0);
                 result.years[year].months[month].days[day] = dayRecord
@@ -151,8 +146,11 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                     acc[key].usage = (acc[key].usage || 0) + item[key].usage;
                     acc[key].cost = (acc[key].cost || 0) + item[key].cost;
+                    acc[key].counter = Math.max(acc[key].counter || 0, item[key].counter)
                 });
 
+                acc.totalUsage = (acc.totalUsage || 0) + item.totalUsage;
+                acc.totalReturn = (acc.totalReturn || 0) + item.totalReturn;
                 acc.usage = (acc.usage || 0) + item.usage;
                 acc.cost = (acc.cost || 0) + item.cost;
                 return acc;
@@ -359,7 +357,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     text: ''
                 },
                 xAxis: {
-                    type: 'datetime'
+                    type: 'datetime',
+                    minTickInterval: vm.isMonthView ? 24 * 3600 * 1000 : 28 * 24 * 3600 * 1000
                 },
                 yAxis: {
                     title: {
