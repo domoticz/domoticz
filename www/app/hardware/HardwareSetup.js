@@ -1,5 +1,6 @@
 define([
     'app',
+    'hardware/setup/BleBox',
     'hardware/setup/Kodi',
     'hardware/setup/MySensors',
     'hardware/setup/Pinger',

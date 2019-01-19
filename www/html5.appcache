@@ -498,6 +498,8 @@ app/hardware/Hardware.html
 app/hardware/Hardware.js
 app/hardware/HardwareSetup.html
 app/hardware/HardwareSetup.js
+app/hardware/setup/BleBox.html
+app/hardware/setup/BleBox.js
 app/hardware/setup/Kodi.html
 app/hardware/setup/Kodi.js
 app/hardware/setup/MySensors.html
