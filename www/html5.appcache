@@ -504,6 +504,8 @@ app/hardware/setup/Kodi.html
 app/hardware/setup/Kodi.js
 app/hardware/setup/MySensors.html
 app/hardware/setup/MySensors.js
+app/hardware/setup/PanasonicTV.html
+app/hardware/setup/PanasonicTV.js
 app/hardware/setup/Pinger.html
 app/hardware/setup/Pinger.js
 app/hardware/setup/WakeOnLan.html

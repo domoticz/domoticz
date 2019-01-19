@@ -3,6 +3,7 @@ define([
     'hardware/setup/BleBox',
     'hardware/setup/Kodi',
     'hardware/setup/MySensors',
+    'hardware/setup/PanasonicTV',
     'hardware/setup/Pinger',
     'hardware/setup/WakeOnLan',
     'hardware/setup/ZWave',
