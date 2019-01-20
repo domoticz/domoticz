@@ -1486,7 +1486,7 @@ function Hardware(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
 
-        if (this.subtype === 'General') {
+        if (this.subtype === 'General' || this.subtype === 'Percentage') {
             this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         } else {
             this.LogLink = this.onClick = "Show" + this.subtype + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
