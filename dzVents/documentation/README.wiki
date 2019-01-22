@@ -518,7 +518,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ** '''webRoot''': <code>webroot</code> value as specified when starting the Domoticz service.
 ** '''serverPort''': webserver listening port.
 * '''sms(message)''': ''Function''. Sends an sms if it is configured in Domoticz.
-* '''snapshot(cameraID,subject)''':<sup>2.4.11</sup>. ''Function''. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
+* '''snapshot(cameraID,subject)''': ''Function''. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
 * '''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.
 * '''systemUptime''': ''Number''. Number of seconds the system is up.
 * '''time''': ''[[#Time_object|Time Object]]'': Current system time. Additional to Time object attributes:
@@ -1045,7 +1045,7 @@ or issue these two commands ''both'' as they are mutually exclusive:
 light.switchOn().checkFirst().forMin(5)</pre>
 ==== Availability ====
 
-Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices silent()
+Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices and snapshot command silent() is not available. See table below
 
 {|
 ! option

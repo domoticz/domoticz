@@ -1011,7 +1011,7 @@ light.switchOn().checkFirst().forMin(5)
 ```
 
 ####Availability
-Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices silent() 
+Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  See table below   
 
 | option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  |
 |--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|
