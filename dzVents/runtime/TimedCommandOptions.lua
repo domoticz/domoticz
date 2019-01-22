@@ -32,9 +32,10 @@ local TIMED_OPTIONS = {
         _within = true,     -- 20190112 Added
         _triggerMode = 'NOTRIGGER'
     },
-    camera =  {
-        _silent = true,
+    camera =  {          -- 20190122 Added
+        _silent = false, 
         _after = true,  
+        _within = true,    
         _triggerMode = ''
     }
 }
