@@ -1013,15 +1013,15 @@ light.switchOn().checkFirst().forMin(5)
 ####Availability
 Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices silent() 
 
-| option                   | state changes            | update commands | user variables | updateSetpoint | snapshot |
-|--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:--------:|
-| `afterXXX()`             |  •                       |  •              | •              | •              | •        |
-| `forXXX()`               |  •                       |  n/a            | n/a            | n/a            | n/a      |
-| `withinXXX()`            |  •                       |  •              | •              | •              | •        |
-| `silent()`               |  •                       |  •              | •              | n/a            | n/a      |
-| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            | n/a            | n/a      |
-| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a      |
-| `cancelQueuedCommands()` |  •                       |  •              | •              | •              | •        |
+| option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  |
+|--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|
+| `afterXXX()`             |  •                       |  •              | •              | •              | •          |
+| `forXXX()`               |  •                       |  n/a            | n/a            | n/a            | n/a        |
+| `withinXXX()`            |  •                       |  •              | •              | •              | •          |
+| `silent()`               |  •                       |  •              | •              | n/a            | n/a        |
+| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            | n/a            | n/a        |
+| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a        |
+| `cancelQueuedCommands()` |  •                       |  •              | •              | n/a            | n/a        |
 
 **Note**: XXX is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
 **Note**: for `domoticz.openURL()` only `afterXXX()` and `withinXXX()` is available.
