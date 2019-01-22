@@ -28,9 +28,14 @@ local TIMED_OPTIONS = {
 	},
 	setpoint =  {
         _silent = true,
-        _after = true,      -- 20180112 Added
-        _within = true,     -- 20180112 Added
+        _after = true,      -- 20190112 Added
+        _within = true,     -- 20190112 Added
         _triggerMode = 'NOTRIGGER'
+    },
+    camera =  {
+        _silent = true,
+        _after = true,  
+        _triggerMode = ''
     }
 }
 
