@@ -521,6 +521,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **webRoot**: `webroot` value as specified when starting the Domoticz service.
     - **serverPort**: webserver listening port.
  - **sms(message)**: *Function*. Sends an sms if it is configured in Domoticz.
+ - **snapshot(cameraID,subject)**: *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
@@ -1010,23 +1011,23 @@ light.switchOn().checkFirst().forMin(5)
 ```
 
 ####Availability
-Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
+Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  See table below   
 
-| option                   | state changes            | update commands | user variables |
-|--------------------------|:------------------------:|:---------------:|:--------------:|
-| `afterXXX()`             |  •                       |  •              | •              |
-| `forXXX()`               |  •                       |  n/a            | n/a            |
-| `withinXXX()`            |  •                       |  •              | •              |
-| `silent()`               |  •                       |  •              | •              |
-| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            |
-| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            |
-| `cancelQueuedCommands()` |  •                       |  •              | •              |
+| option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  |
+|--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|
+| `afterXXX()`             |  •                       |  •              | •              | •              | •          |
+| `forXXX()`               |  •                       |  n/a            | n/a            | n/a            | n/a        |
+| `withinXXX()`            |  •                       |  •              | •              | •              | •          |
+| `silent()`               |  •                       |  •              | •              | n/a            | n/a        |
+| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            | n/a            | n/a        |
+| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a        |
+| `cancelQueuedCommands()` |  •                       |  •              | •              | n/a            | n/a        |
 
 **Note**: XXX is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
 **Note**: for `domoticz.openURL()` only `afterXXX()` and `withinXXX()` is available.
 
 #### Follow-up event triggers
-Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands.
+Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands (exception is updateSetPoint).
 
 ### Create your own device adapter
 If your device is not recognized by dzVents, you can still operate it using the generic device attributes and methods. It is much nicer, however, to have device specific attributes and methods. Existing recognized adapters are in `/path/to/domoticz/dzVents/runtime/device-adapters`.  Copy an existing adapter and adapt it to your needs. You can turn debug logging on and inspect the file `domoticzData.lua` in the dzVents folder. There you will find the unique signature for your device type. Usually it is a combination of deviceType and deviceSubType, but you can use any of the device attributes in the `matches` function. The matches function checks if the device type is suitable for your adapter and the `process` function actually creates your specific attributes and methods.
@@ -1963,9 +1964,12 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.11]
+- Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+
 ##[2.4.10]
-- Added option to use afterXXX() and withinXXX() functions to updateSetPoint()
-- Changed function updateMode to diplay mode as string in domoticz log
+- Added option to use afterXXX() and withinXXX() functions to updateSetPoint() <sup>needs domoticz V4.10360 or newer</sup>
+- Changed function updateMode to display mode as string in domoticz log
 
 ##[2.4.9]
 - Added evohome hotwater device (state, mode, untilDate and setHotWater function)

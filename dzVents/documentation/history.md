@@ -1,6 +1,9 @@
+[2.4.11]
+- Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+
 [2.4.10]
-- Added option to use afterXnn() and within() functions to updateSetPoint()
-- Changed parm from i to modeString in call to device.update in function updateMode of device adapter zwave_thermostat_mode_device
+- Added option to use afterXXX() and withinXXX() functions to updateSetPoint()
+- Changed parm from integer to string in call to device.update in function updateMode of device adapter zwave_thermostat_mode_device
 
 [2.4.9]
 - Added evohome hotwater device (state, mode, untilDate and setHotWater function)
