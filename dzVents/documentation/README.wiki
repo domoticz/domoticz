@@ -518,6 +518,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ** '''webRoot''': <code>webroot</code> value as specified when starting the Domoticz service.
 ** '''serverPort''': webserver listening port.
 * '''sms(message)''': ''Function''. Sends an sms if it is configured in Domoticz.
+* '''snapshot(cameraID,subject)''': ''Function''. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
 * '''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.
 * '''systemUptime''': ''Number''. Number of seconds the system is up.
 * '''time''': ''[[#Time_object|Time Object]]'': Current system time. Additional to Time object attributes:
@@ -1044,55 +1045,71 @@ or issue these two commands ''both'' as they are mutually exclusive:
 light.switchOn().checkFirst().forMin(5)</pre>
 ==== Availability ====
 
-Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>.
+Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices and snapshot command silent() is not available. See table below
 
 {|
 ! option
 !align="center"| state changes
 !align="center"| update commands
 !align="center"| user variables
+!align="center"| updateSetpoint
+! snapshot
 |-
 | <code>afterXXX()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| •
+| •
 |-
 | <code>forXXX()</code>
 |align="center"| •
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
+| n/a
 |-
 | <code>withinXXX()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| •
+| •
 |-
 | <code>silent()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| n/a
+| n/a
 |-
 | <code>repeatAfterXXX()</code>
 |align="center"| •
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
+| n/a
 |-
 | <code>checkFirst()</code>
 |align="center"| • (switch-like devices)
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
+| n/a
 |-
 | <code>cancelQueuedCommands()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| n/a
+| n/a
 |}
 
 '''Note''': XXX is a placeholder for <code>Min/Sec/Hour</code> affix e.g. <code>afterMin()</code>. '''Note''': for <code>domoticz.openURL()</code> only <code>afterXXX()</code> and <code>withinXXX()</code> is available.
 
 ==== Follow-up event triggers ====
 
-Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add <code>.silent()</code> to your commands.
+Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add <code>.silent()</code> to your commands (exception is updateSetPoint).
 
 === Create your own device adapter ===
 
@@ -2050,10 +2067,14 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = Change log =
 
+== [2.4.11] ==
+
+* Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+
 == [2.4.10] ==
 
-* Added option to use afterXXX() and withinXXX() functions to updateSetPoint()
-* Changed function updateMode to diplay mode as string in domoticz log
+* Added option to use afterXXX() and withinXXX() functions to updateSetPoint() <sup>needs domoticz V4.10360 or newer</sup>
+* Changed function updateMode to display mode as string in domoticz log
 
 == [2.4.9] ==
 

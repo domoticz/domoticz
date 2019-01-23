@@ -154,6 +154,15 @@ describe('Integration test', function ()
 			assert.is_true(ok)
 		end)
 	end)
+    
+    describe('Camera', function()
+		it('should create a camera', function()
+			local ok
+			ok = TestTools.createCamera('dummy', DUMMY_HW)
+			assert.is_true(ok)
+		end)
+	end)
+    
 
 	describe('Devices', function()
 
