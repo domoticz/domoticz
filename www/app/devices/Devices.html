@@ -1,0 +1,137 @@
+<div id="devicescontent">
+    <page-loading-indicator ng-hide="::$ctrl.devices" />
+
+    <div class="page-devices" ng-if="::$ctrl.devices">
+        <devices-filters
+                class="filters"
+                devices="$ctrl.devices"
+                ng-show="$ctrl.isListExpanded"
+                ng-model="$ctrl.filter"
+                ng-change="$ctrl.applyFilter($ctrl.filter)"
+        />
+
+        <button type="button"
+                class="splitter"
+                ng-click="$ctrl.isListExpanded = !$ctrl.isListExpanded"
+        >
+            <i ng-class="{'icon-chevron-left': $ctrl.isListExpanded, 'icon-chevron-right': !$ctrl.isListExpanded}"></i>
+        </button>
+
+        <devices-table class="devices-table" devices="$ctrl.filteredDevices" on-update="$ctrl.refreshDevices()"/>
+    </div>
+</div>
+
+<script type="text/ng-template" id="app/devices/deviceFilters.html">
+    <section ng-repeat="filter in $ctrl.filters" class="devices-filters">
+        <h3 class="devices-filters__group-title">{{:: filter.name }}</h3>
+        <ul class="devices-filters__item-list">
+            <li class="devices-filters__item" ng-repeat="item in $ctrl.filterValues[$index]">
+                <label>
+                    <input type="checkbox"
+                           class="noscheck"
+                           ng-model="$ctrl.filterValue[filter.field][item]"
+                           ng-change="$ctrl.updateFilterValue($ctrl.filterValue)">
+                    {{:: filter.display ? filter.display(item) : item}}
+                </label>
+            </li>
+        </ul>
+    </section>
+</script>
+
+<script type="text/ng-template" id="app/devices/deviceAddModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">{{:: 'Add Device' | translate }}</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" name="modalForm">
+            <div class="control-group">
+                <label class="control-label" for="light-device-name">{{:: 'Name' | translate }}:</label>
+                <div class="controls">
+                    <input type="text"
+                           id="light-device-name"
+                           class="form-control"
+                           required
+                           minlength="2"
+                           maxlength="100"
+                           ng-model="$ctrl.device.Name"
+                    />
+                </div>
+            </div>
+            <div class="control-group" ng-if="::$ctrl.isLightDevice">
+                <label class="control-label" for="light-device-name">{{:: 'As' | translate }}:</label>
+                <div class="controls">
+                    <label class="radio inline">
+                        <input type="radio" name="isMainDevice" ng-value="true" ng-model="$ctrl.isMainDevice">
+                        {{:: 'Main Device' | translate }}
+                    </label>
+                    <label class="radio inline">
+                        <input type="radio" name="isMainDevice" ng-value="false" ng-model="$ctrl.isMainDevice">
+                        {{:: 'Sub/Slave Device' | translate }}
+                    </label>
+                </div>
+            </div>
+            <div class="control-group" ng-if="$ctrl.isMainDevice === false">
+                <label class="control-label" for="main-device">{{:: 'Device' | translate }}:</label>
+                <div class="controls">
+                    <select id="main-device"
+                            class="form-control"
+                            required
+                            ng-model="$ctrl.mainDevice"
+                            ng-options="item.idx as item.Name for item in ::$ctrl.mainDevices"
+                    />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button"
+                class="btn btn-default"
+                ng-disabled="modalForm.$invalid || $ctrl.isSaving"
+                ng-click="$ctrl.addDevice()">
+            {{:: 'Add Device' | translate }}
+        </button>
+
+        <button type="button"
+                class="btn btn-default"
+                ng-click="$dismiss()">
+            {{:: 'Cancel' | translate }}
+        </button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="app/devices/deviceRenameModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">{{:: 'Rename Device' | translate }}</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" name="modalForm">
+            <div class="control-group">
+                <label class="control-label" for="device-name">{{:: 'Name' | translate }}:</label>
+                <div class="controls">
+                    <input type="text"
+                           id="device-name"
+                           class="form-control"
+                           required
+                           minlength="2"
+                           maxlength="100"
+                           ng-model="$ctrl.device.Name"
+                    />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button"
+                class="btn btn-default"
+                ng-disabled="modalForm.$invalid || $ctrl.isSaving"
+                ng-click="$ctrl.renameDevice()">
+            {{:: 'Rename' | translate }}
+        </button>
+
+        <button type="button"
+                class="btn btn-default"
+                ng-click="$dismiss()">
+            {{:: 'Cancel' | translate }}
+        </button>
+    </div>
+</script>

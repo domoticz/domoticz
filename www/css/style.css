@@ -208,6 +208,15 @@ a.btn, a.btn-link {
 	text-decoration: none;
 }
 
+.btn.btn-icon {
+	border: none;
+	box-shadow: none;
+	background: transparent;
+	padding: 0;
+	margin: 0;
+	line-height: 0;
+}
+
 .button-style2 a {
 	display: inline-block;
 	height: 2.60em;
@@ -1948,6 +1957,13 @@ tspan {
 	font-style: italic;
 }
 
+.page-spinner {
+	background-color: rgba(0, 0, 0, 0.25);
+	padding: 10px;
+	margin-top: 24px;
+	margin-bottom: 24px;
+}
+
 #container-speed > .highcharts-container {
     overflow: visible !important;
 }
@@ -1967,3 +1983,15 @@ tspan {
 		cursor: pointer;
 	}
 }
+
+table td.actions-column {
+	padding-left: 5px;
+	padding-right: 5px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
+	padding-right: 0;
+}
+
