@@ -11,8 +11,6 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-bool bNetatmoLocalConnected = true;
-
 #ifdef _DEBUG
 //#define DEBUG_NetatmoWeatherStationR
 #endif
@@ -437,8 +435,6 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	int co2;
 	float rain;
 	int sound;
-	std::time_t NetatmoLastUpdate = 0;
-	std::time_t DeviceLastUpdate = 0;
 
 	int wind_angle = 0;
 	int wind_gust_angle = 0;
@@ -446,48 +442,37 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	float wind_gust = 0;
 
 	int batValue = GetBatteryLevel(ModuleType, battery_percent);
-	
-	// Check when dashboard data was last updated
-	if (!root["time_utc"].empty())
-	{
-		NetatmoLastUpdate = root["time_utc"].asUInt();
-	}
-	//_log.Log(LOG_STATUS, "Debug Netatmo: Netatmo last refresh = %d", NetatmoLastUpdate);
 
-	// check when domoticz device was last updated
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%d')", m_HwdID, ID & 0xFFFF);
-	if (!result.empty())
+	std::time_t tNetatmoLastUpdate = 0;
+	std::time_t tNow = time(NULL);
+
+	// initialize the relevant device flag
+	if ( m_bNetatmoRefreshed.count(ID) == 0 )
 	{
-		std::string sLastUpdate = result[0][0];
-		DeviceLastUpdate = std::time(nullptr);
-		std::tm tLastUpdate = *std::localtime(&DeviceLastUpdate);
-		std::istringstream tempcstr;
-		tempcstr.str(sLastUpdate);
-		tempcstr >> std::get_time(&tLastUpdate, "%Y-%m-%d %H:%M:%S");
-		DeviceLastUpdate = std::mktime(&tLastUpdate);
-		//_log.Log(LOG_ERROR, "Debug Netatmo: domoticz last refresh = %d", DeviceLastUpdate);
+		m_bNetatmoRefreshed[ID] = true;
 	}
-	
-	// check if Netatmo data was updated more recently than the domoticz device
-	if ( NetatmoLastUpdate > DeviceLastUpdate )
+	// Check when dashboard data was last updated
+	if ( !root["time_utc"].empty() )
 	{
-		if (!bNetatmoLocalConnected)
+		tNetatmoLastUpdate = root["time_utc"].asUInt();
+	}
+	_log.Debug(DEBUG_HARDWARE, "Netatmo: Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
+	// check if Netatmo data was updated in the past 10 mins (+1 min for sync time lags)... if not means sensors failed to send to cloud
+	if (tNetatmoLastUpdate > (tNow - 660))
+	{
+		if (!m_bNetatmoRefreshed[ID])
 		{
-			_log.Log(LOG_STATUS, "Netatmo local connection resumed");
-			bNetatmoLocalConnected = true;
+			_log.Log(LOG_STATUS, "Netatmo module [%s]: Clould data is now updated again", name.c_str());
+			m_bNetatmoRefreshed[ID] = true;
 		}
 	}
 	else
 	{
-		if ( bNetatmoLocalConnected )
-			_log.Log(LOG_ERROR, "Netatmo local connection could be dead. Please check !");
-		bNetatmoLocalConnected = false;
+		if (m_bNetatmoRefreshed[ID])
+			_log.Log(LOG_ERROR, "Netatmo module [%s]: cloud data no longer updated (module possibly disconnected)", name.c_str());
+		m_bNetatmoRefreshed[ID] = false;
 		return false;
 	}
-
-	// check if last Netatmo update was more recent than last domoticz update
-	// TO DO
 
 	if (!root["Temperature"].empty())
 	{
