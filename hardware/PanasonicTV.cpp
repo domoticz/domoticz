@@ -773,7 +773,7 @@ bool CPanasonic::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPanasonic::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Panasonic");
+	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Started");
 
 	return true;
@@ -833,12 +833,6 @@ void CPanasonic::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
-}
-
-void CPanasonic::Restart()
-{
-	StopHardware();
-	StartHardware();
 }
 
 bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)

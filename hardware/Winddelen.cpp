@@ -80,7 +80,7 @@ bool CWinddelen::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CWinddelen::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Winddelen");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -244,7 +244,7 @@ void CWinddelen::GetMeterDetails()
 			else if (szWD == "NNW")
 				windDir = static_cast<int>(rint(15 * 22.5f));
 
-			SendWind(m_usMillID, 255, windDir, windSpeed, windSpeed, 0, 0, false, "Wind");
+			SendWind(m_usMillID, 255, windDir, windSpeed, windSpeed, 0, 0, false, false, "Wind");
 		}
 
 		if (!root["diameter"].empty())

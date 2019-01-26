@@ -30,7 +30,7 @@ public:
 		int				refID;
 		std::string		Name;
 	};
-	CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
+	CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec);
 	explicit CLogitechMediaServer(const int ID);
 	~CLogitechMediaServer(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
@@ -38,8 +38,7 @@ public:
 	bool UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Port);
 	void RemoveNode(const int ID);
 	void RemoveAllNodes();
-	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
-	void Restart();
+	void SetSettings(const int PollIntervalsec);
 	bool SendCommand(const int ID, const std::string &command, const std::string &param = "");
 	std::vector<LMSPlaylistNode> GetPlaylists();
 	void SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration);
@@ -64,7 +63,6 @@ private:
 
 	int m_iThreadsRunning;
 	int m_iPollInterval;
-	int m_iPingTimeoutms;
 	std::string	m_IP;
 	int	m_Port;
 	std::string m_User;

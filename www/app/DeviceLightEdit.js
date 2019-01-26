@@ -1,63 +1,118 @@
-define(['app'], function (app) {
+define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
+
+    var iconByDeviceSwitchType = {
+        0: 'Light48_On.png',        // On/Off
+        1: 'doorbell48.png',        // Doorbell
+        2: 'Contact48_On.png',      // Contact
+        3: 'blinds48.png',          // Blinds,
+        4: 'Alarm48_On.png',        // X10 Siren
+        5: 'smoke48on.png',         // Smoke Detector
+        6: 'blinds48.png',          // Blinds Inverted
+        7: 'Dimmer48_On.png',       // Dimmer
+        8: 'motion48-on.png',       // Motion Sensor
+        9: 'Push48_On.png',         // Push On Button
+        10: 'Push48_Off.png',       // Push Off Button
+        11: 'Door48_On.png',        // Door Contact
+        12: 'Water48_On.png',       // Dusk Sensor
+        13: 'blinds48.png',         // Blinds Percentage
+        14: 'blinds48.png',         // Venetian Blinds US
+        15: 'blinds48.png',         // Venetian Blinds EU
+        16: 'blinds48.png',         // Blinds Percentage Inverted
+        17: 'Media48_On.png',       // Media Player
+        18: 'Generic48_On.png',     // Selector
+        19: 'Door48_On.png',      // Door Lock
+        20: 'Door48_On.png',      // Door Lock Inverted
+    };
 
     app.component('deviceIconSelect', {
         template: '<select id="icon-select"></select>',
+        bindings: {
+            switchType: '<'
+        },
         require: {
             ngModelCtrl: 'ngModel'
         },
         controller: function ($element, domoticzApi) {
             var vm = this;
-            var icons = [];
+            var switch_icons = [];
+
+            function updateSelector(bFromUser) {
+                switch_icons[0].imageSrc = iconByDeviceSwitchType[vm.switchType]
+                    ? 'images/' + iconByDeviceSwitchType[vm.switchType]
+                    : 'images/Generic48_On.png';
+
+                $element.find('#icon-select').ddslick('destroy');
+                $element.find('#icon-select').ddslick({
+                    data: switch_icons,
+                    width: 260,
+                    height: 390,
+                    selectText: 'Select Switch Icon',
+                    imagePosition: 'left',
+                    onSelected: function (data) {
+                        vm.ngModelCtrl.$setViewValue(data.selectedData.value);
+                    }
+                });
+                if (bFromUser) {
+					$element.find('#icon-select').ddslick('select', { index: 0 });
+				}
+
+                vm.ngModelCtrl.$render();
+            }
 
             vm.$onInit = function () {
                 // TODO: Add caching mechanism for this request
                 domoticzApi.sendRequest({
                     type: 'custom_light_icons'
                 }).then(function (data) {
-                    icons = (data.result || []).map(function (item) {
-                        return {
-                            text: item.text,
-                            value: item.idx,
-                            selected: false,
-                            description: item.description,
-                            imageSrc: 'images/' + item.imageSrc + '48_On.png'
-                        };
+                    switch_icons = (data.result || [])
+                        .filter(function (item) {
+                            return item.idx !== 0;
+                        })
+                        .map(function (item) {
+                            return {
+                                text: item.text,
+                                value: item.idx,
+                                selected: false,
+                                description: item.description,
+                                imageSrc: 'images/' + item.imageSrc + '48_On.png'
+                            };
+                        });
+
+                    switch_icons.unshift({
+                        text: 'Default',
+                        value: 0,
+                        selected: false,
+                        description: 'Default icon'
                     });
 
-                    $element.find('#icon-select').ddslick({
-                        data: icons,
-                        width: 260,
-                        height: 390,
-                        selectText: "Select Switch Icon",
-                        imagePosition: "left",
-                        onSelected: function (data) {
-                            vm.ngModelCtrl.$setViewValue(data.selectedData.value);
-                        }
-                    });
-
-                    vm.ngModelCtrl.$render();
+                    updateSelector(false);
                 });
 
                 vm.ngModelCtrl.$render = function () {
                     var value = vm.ngModelCtrl.$modelValue;
 
-                    icons.forEach(function (item, index) {
+                    switch_icons.forEach(function (item, index) {
                         if (item.value === value) {
-                            $element.find('#icon-select').ddslick('select', {index: index});
+                            $element.find('#icon-select').ddslick('select', { index: index });
                         }
                     });
                 };
             };
+
+            vm.$onChanges = function (changes) {
+                if (changes.switchType && switch_icons.length > 0) {
+                    updateSelector(true);
+                }
+            }
         }
     });
 
-    // TODO: Try to reuse this component
-    app.component('rgbwPicker', {
+    app.component('deviceColorSettings', {
         templateUrl: 'views/rgbwPicker.html',
         bindings: {
             device: '='
         },
-        controller: function ($element, domoticzApi, deviceLightApi) {
+        controller: function ($scope, domoticzApi, deviceLightApi) {
             var $ctrl = this;
 
             $ctrl.$onInit = init;
@@ -73,21 +128,17 @@ define(['app'], function (app) {
             $ctrl.colorColder = withDevice(deviceLightApi.colorColder);
 
             function init() {
-                var maxDimLevel = 100;
-                var className = 'js-rgbwPicker-' + (+new Date());
-                $element.addClass(className);
+                var getColor = function () {
+                    return $ctrl.device.Color + $ctrl.device.LevelInt;
+                };
 
-                ShowRGBWPicker(
-                    '.' + className,
-                    $ctrl.device.idx,
-                    $ctrl.device.Protected,
-                    $ctrl.device.MaxDimLevel || maxDimLevel,
-                    $ctrl.device.LevelInt || 0,
-                    $ctrl.device.Color,
-                    $ctrl.device.SubType,
-                    $ctrl.device.DimmerType,
-                    updateColor
-                )
+                $scope.$watch(getColor, function (newValue, oldValue) {
+                    if (oldValue === newValue) {
+                        return;
+                    }
+
+                    deviceLightApi.setColor($ctrl.device.idx, $ctrl.device.Color, $ctrl.device.LevelInt)
+                });
             }
 
             function withDevice(fn) {
@@ -98,23 +149,14 @@ define(['app'], function (app) {
 
             // returns true if the light does not support absolute dimming, used to control display of Brightness Up / Brightness Down buttons
             function isRelativeDimmer() {
-                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === "rel";
+                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === 'rel';
             }
 
             // returns true if the light does not support absolute color temperature, used to control display of Warmer White / Colder White buttons
             function isRelativeColorTemperature() {
                 var ledType = getLEDType($ctrl.device.SubType);
 
-                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === "rel" && ledType.bHasTemperature;
-            }
-
-            function updateColor(deviceIdx, JSONColor, dimlevel) {
-                deviceLightApi
-                    .setColor(deviceIdx, JSONColor, dimlevel)
-                    .then(function() {
-                        $ctrl.device.Color = JSONColor;
-                        $ctrl.device.LevelInt = dimlevel;
-                    });
+                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === 'rel' && ledType.bHasTemperature;
             }
         }
     });
@@ -138,7 +180,7 @@ define(['app'], function (app) {
                 table = $element.find('#subdevicestable').dataTable(Object.assign({}, dataTableDefaultSettings, {
                     sDom: '<"H"frC>t<"F"i>',
                     columns: [
-                        {title: $.t('Name'), data: 'Name'}
+                        { title: $.t('Name'), data: 'Name' }
                     ],
                     select: {
                         className: 'row_selected',
@@ -182,7 +224,7 @@ define(['app'], function (app) {
             }
 
             function deleteSubDevice() {
-                bootbox.confirm($.t("Are you sure to delete this Sub/Slave Device?\n\nThis action can not be undone..."), function (result) {
+                bootbox.confirm($.t('Are you sure to delete this Sub/Slave Device?\n\nThis action can not be undone...'), function (result) {
                     if (result !== true) {
                         return
                     }
@@ -194,7 +236,7 @@ define(['app'], function (app) {
             }
 
             function clearSubDevices() {
-                bootbox.confirm($.t("Are you sure to delete ALL Sub/Slave Devices?\n\nThis action can not be undone!"), function (result) {
+                bootbox.confirm($.t('Are you sure to delete ALL Sub/Slave Devices?\n\nThis action can not be undone!'), function (result) {
                     if (result !== true) {
                         return;
                     }
@@ -226,10 +268,10 @@ define(['app'], function (app) {
                     searching: false,
                     paging: false,
                     columns: [
-                        {title: $.t('Level'), data: 'level', render: levelRenderer},
-                        {title: $.t('Level name'), data: 'name'},
-                        {title: $.t('Order'), data: 'level', render: orderRenderer},
-                        {title: '', data: 'level', render: actionsRenderer},
+                        { title: $.t('Level'), data: 'level', render: levelRenderer },
+                        { title: $.t('Level name'), data: 'name' },
+                        { title: $.t('Order'), data: 'level', render: orderRenderer },
+                        { title: '', data: 'level', render: actionsRenderer },
                     ],
                 });
 
@@ -254,7 +296,7 @@ define(['app'], function (app) {
                     $modal.open({
                         templateUrl: 'views/device/levelRenameModal.html',
                         scope: scope
-                    }).result.then(function(name) {
+                    }).result.then(function (name) {
                         setLevelName(row.level, name);
                     });
                 });
@@ -304,7 +346,7 @@ define(['app'], function (app) {
 
             function addLevel() {
                 var levels = vm.ngModelCtrl.$modelValue;
-                var levelName = vm.newLevelName.replace(/[:;|<>]/g, "").trim();
+                var levelName = vm.newLevelName.replace(/[:;|<>]/g, '').trim();
 
                 var newItem = {
                     level: levels.length,
@@ -323,7 +365,7 @@ define(['app'], function (app) {
                         return item.level !== index;
                     })
                     .map(function (item, index) {
-                        return Object.assign({}, item, {level: index});
+                        return Object.assign({}, item, { level: index });
                     });
 
                 vm.ngModelCtrl.$setViewValue(levels);
@@ -379,9 +421,9 @@ define(['app'], function (app) {
                     info: false,
                     paging: false,
                     columns: [
-                        {title: $.t('Level'), data: 'level', render: levelRenderer},
-                        {title: $.t('Action'), data: 'action', render: actionRenderer},
-                        {title: '', data: null, render: actionsRenderer}
+                        { title: $.t('Level'), data: 'level', render: levelRenderer },
+                        { title: $.t('Action'), data: 'action', render: actionRenderer },
+                        { title: '', data: null, render: actionsRenderer }
                     ]
                 });
 
@@ -400,7 +442,7 @@ define(['app'], function (app) {
                     $modal.open({
                         templateUrl: 'views/device/editSelectorActionModal.html',
                         scope: scope
-                    }).result.then(function(action) {
+                    }).result.then(function (action) {
                         setLevelAction(row.level, action);
                     });
                 });
@@ -433,23 +475,24 @@ define(['app'], function (app) {
             function levelRenderer(level) {
                 return level * 10;
             }
-            
-            var escapeHTML = function(unsafe) {
-				return unsafe.replace(/[&<"']/g, function(m) {
-					switch (m) {
-						case '&':
-							return '&amp;';
-						case '<':
-							return '&lt;';
-						case '"':
-							return '&quot;';
-						default:
-							return '&#039;';
-						}
-					});
-			};
+
+            var escapeHTML = function (unsafe) {
+                return unsafe.replace(/[&<"']/g, function (m) {
+                    switch (m) {
+                        case '&':
+                            return '&amp;';
+                        case '<':
+                            return '&lt;';
+                        case '"':
+                            return '&quot;';
+                        default:
+                            return '&#039;';
+                    }
+                });
+            };
+
             function actionRenderer(action) {
-				return escapeHTML(action);
+                return escapeHTML(action);
             }
 
             function actionsRenderer() {
@@ -524,7 +567,7 @@ define(['app'], function (app) {
                         names: acc.names.concat(level.name),
                         actions: acc.actions.concat(level.action)
                     };
-                }, {names: [], actions: []});
+                }, { names: [], actions: [] });
 
                 options.push('LevelNames:' + levelParams.names.join('|'));
                 options.push('LevelActions:' + levelParams.actions.join('|'));
@@ -557,7 +600,7 @@ define(['app'], function (app) {
                     return;
                 }
 
-                deviceApi.removeDevice(vm.deviceIdx).then(function() {
+                deviceApi.removeDevice(vm.deviceIdx).then(function () {
                     $window.history.back();
                 });
             });
@@ -588,7 +631,7 @@ define(['app'], function (app) {
         }
 
         function isSwitchIconAvailable() {
-            return [0, 7, 17, 18].includes(vm.device.SwitchTypeVal);
+            return [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(vm.device.SwitchTypeVal);
         }
 
         function isLevelsAvailable() {

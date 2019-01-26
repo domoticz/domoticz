@@ -4,7 +4,7 @@ define(['app'], function (app) {
             function ($routeParams, $scope, $location) {
                 var ctrl = this;
 
-                ctrl.init = function() {
+                ctrl.init = function () {
 
                     $('#modal').show();
 
@@ -42,11 +42,6 @@ define(['app'], function (app) {
                         loading: {
                             hideDuration: 1000,
                             showDuration: 1000
-                        },
-                        credits: {
-                            enabled: true,
-                            href: "http://www.domoticz.com",
-                            text: "Domoticz.com"
                         },
                         title: {
                             text: $.t('Custom Temperature Graph')
@@ -109,6 +104,8 @@ define(['app'], function (app) {
                                 var baseName = this.series.name.split(':')[1];
                                 if (baseName == $.t("Humidity")) {
                                     unit = '%'
+                                } else if (baseName == $.t("Barometer")) {
+                                    unit = ' hPa';
                                 } else {
                                     unit = '\u00B0 ' + $scope.config.TempSign
                                 }
@@ -144,8 +141,7 @@ define(['app'], function (app) {
                     $('#modal').hide();
                 };
 
-                ctrl.SelectGraphDevices = function()
-                {
+                ctrl.SelectGraphDevices = function () {
                     if (typeof $scope.mytimer != 'undefined') {
                         $interval.cancel($scope.mytimer);
                         $scope.mytimer = undefined;
@@ -155,56 +151,54 @@ define(['app'], function (app) {
                         url: "json.htm?type=devices&filter=temp&used=true&order=Name",
                         async: false,
                         dataType: 'json',
-                        success: function(data) {
+                        success: function (data) {
                             if (typeof data.result != 'undefined') {
-                                $.each(data.result, function(i,item){
-                                    $("#customlog #devicecontainer").append('<input type="checkbox" class="devicecheckbox noscheck" id="'+item.idx+'" value="'+item.Name+'" onChange="AddDeviceToGraph(this)">'+item.Name+'<br />');
+                                $.each(data.result, function (i, item) {
+                                    $("#customlog #devicecontainer").append('<input type="checkbox" class="devicecheckbox noscheck" id="' + item.idx + '" value="' + item.Name + '" onChange="AddDeviceToGraph(this)">' + item.Name + '<br />');
                                 });
                             }
                         }
                     });
                 };
                 // Not in the controller FIXME (update above Angular way)
-                AddDeviceToGraph = function(cb)
-                {
-                    if (cb.checked==true) {
+                AddDeviceToGraph = function (cb) {
+                    if (cb.checked == true) {
                         $.ajax({
-                            url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#customlog #graphfrom").val()+"T"+$("#customlog #graphto").val()+"&graphtype="+$("#customlog #combocustomgraphtype").val()+
-                            "&graphTemp="+$("#customlog #graphTemp").prop("checked")+"&graphChill="+$("#customlog #graphChill").prop("checked")+"&graphHum="+$("#customlog #graphHum").prop("checked")+"&graphBaro="+$("#customlog #graphBaro").prop("checked")+"&graphDew="+$("#customlog #graphDew").prop("checked")+"&graphSet="+$("#customlog #graphSet").prop("checked"),
+                            url: "json.htm?type=graph&sensor=temp&idx=" + cb.id + "&range=" + $("#customlog #graphfrom").val() + "T" + $("#customlog #graphto").val() + "&graphtype=" + $("#customlog #combocustomgraphtype").val() +
+                            "&graphTemp=" + $("#customlog #graphTemp").prop("checked") + "&graphChill=" + $("#customlog #graphChill").prop("checked") + "&graphHum=" + $("#customlog #graphHum").prop("checked") + "&graphBaro=" + $("#customlog #graphBaro").prop("checked") + "&graphDew=" + $("#customlog #graphDew").prop("checked") + "&graphSet=" + $("#customlog #graphSet").prop("checked"),
                             async: false,
                             dataType: 'json',
-                            success: function(data) {
-                                ctrl.AddMultipleDataToTempChart(data,$.CustomChart.highcharts(),$("#customlog #combocustomgraphtype").val(),cb.id,cb.value);
+                            success: function (data) {
+                                ctrl.AddMultipleDataToTempChart(data, $.CustomChart.highcharts(), $("#customlog #combocustomgraphtype").val(), cb.id, cb.value);
                             }
                         });
                     }
                     else {
-                        ctrl.RemoveMultipleDataFromTempChart($.CustomChart.highcharts(),cb.id);
+                        ctrl.RemoveMultipleDataFromTempChart($.CustomChart.highcharts(), cb.id);
                     }
                 };
 
-                ctrl.datePickerChanged = function(dpicker)
-                {
-                    if ($("#graphfrom").val()!='') {
-                        $("#customlog #graphfrom").datepicker("setDate",$("#graphfrom").val());
+                ctrl.datePickerChanged = function (dpicker) {
+                    if ($("#graphfrom").val() != '') {
+                        $("#customlog #graphfrom").datepicker("setDate", $("#graphfrom").val());
                     }
                     else {
-                        $("#customlog #graphto").datepicker("setDate",$("#graphto").val());
+                        $("#customlog #graphto").datepicker("setDate", $("#graphto").val());
                     }
-                    $( "#customlog #graphfrom" ).datepicker('option', 'maxDate', $("#customlog #graphto").val());
-                    $( "#customlog #graphto" ).datepicker('option', 'minDate', $("#customlog #graphfrom").val());
+                    $("#customlog #graphfrom").datepicker('option', 'maxDate', $("#customlog #graphto").val());
+                    $("#customlog #graphto").datepicker('option', 'minDate', $("#customlog #graphfrom").val());
 
-                    $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
-                        ctrl.RemoveMultipleDataFromTempChart($.CustomChart.highcharts(),$(this).attr('id'));
+                    $('div[id="devicecontainer"] input:checkbox:checked').each(function () {
+                        ctrl.RemoveMultipleDataFromTempChart($.CustomChart.highcharts(), $(this).attr('id'));
                         $.ajax({
-                            url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#customlog #graphfrom").val()+"T"+$("#customlog #graphto").val()+"&graphtype="+$("#customlog #combocustomgraphtype").val()+
-                            "&graphTemp="+$("#customlog #graphTemp").prop("checked")+"&graphChill="+$("#customlog #graphChill").prop("checked")+"&graphHum="+$("#customlog #graphHum").prop("checked")+"&graphBaro="+$("#customlog #graphBaro").prop("checked")+"&graphDew="+$("#customlog #graphDew").prop("checked")+"&graphSet="+$("#customlog #graphSet").prop("checked"),
+                            url: "json.htm?type=graph&sensor=temp&idx=" + $(this).attr('id') + "&range=" + $("#customlog #graphfrom").val() + "T" + $("#customlog #graphto").val() + "&graphtype=" + $("#customlog #combocustomgraphtype").val() +
+                            "&graphTemp=" + $("#customlog #graphTemp").prop("checked") + "&graphChill=" + $("#customlog #graphChill").prop("checked") + "&graphHum=" + $("#customlog #graphHum").prop("checked") + "&graphBaro=" + $("#customlog #graphBaro").prop("checked") + "&graphDew=" + $("#customlog #graphDew").prop("checked") + "&graphSet=" + $("#customlog #graphSet").prop("checked"),
                             async: false,
                             dataType: 'json',
                             graphid: $(this).attr('id'),
                             graphval: $(this).val(),
-                            success: function(data) {
-                                ctrl.AddMultipleDataToTempChart(data,$.CustomChart.highcharts(),$("#customlog #combocustomgraphtype").val(),this.graphid,this.graphval);
+                            success: function (data) {
+                                ctrl.AddMultipleDataToTempChart(data, $.CustomChart.highcharts(), $("#customlog #combocustomgraphtype").val(), this.graphid, this.graphval);
                             }
                         });
                     });
@@ -254,8 +248,7 @@ define(['app'], function (app) {
                     }
                 };
 
-                ctrl.AddMultipleDataToTempChart = function(data,chart,isday,deviceid,devicename)
-                {
+                ctrl.AddMultipleDataToTempChart = function (data, chart, isday, deviceid, devicename) {
                     var datatablete = [];
                     var datatabletm = [];
                     var datatablehu = [];
@@ -267,184 +260,176 @@ define(['app'], function (app) {
                     var datatablesm = [];
                     var datatablesx = [];
 
-                    $.each(data.result, function(i,item)
-                    {
-                        if (isday==1) {
+                    $.each(data.result, function (i, item) {
+                        if (isday == 1) {
                             if (typeof item.te != 'undefined') {
-                                datatablete.push( [GetUTCFromString(item.d), parseFloat(item.te) ] );
+                                datatablete.push([GetUTCFromString(item.d), parseFloat(item.te)]);
                             }
                             if (typeof item.hu != 'undefined') {
-                                datatablehu.push( [GetUTCFromString(item.d), parseFloat(item.hu) ] );
+                                datatablehu.push([GetUTCFromString(item.d), parseFloat(item.hu)]);
                             }
                             if (typeof item.ch != 'undefined') {
-                                datatablech.push( [GetUTCFromString(item.d), parseFloat(item.ch) ] );
+                                datatablech.push([GetUTCFromString(item.d), parseFloat(item.ch)]);
                             }
                             if (typeof item.dp != 'undefined') {
-                                datatabledp.push( [GetUTCFromString(item.d), parseFloat(item.dp) ] );
+                                datatabledp.push([GetUTCFromString(item.d), parseFloat(item.dp)]);
                             }
                             if (typeof item.ba != 'undefined') {
-                                datatableba.push( [GetUTCFromString(item.d), parseFloat(item.ba) ] );
+                                datatableba.push([GetUTCFromString(item.d), parseFloat(item.ba)]);
                             }
                             if (typeof item.se != 'undefined') {
-                                datatablese.push( [GetUTCFromString(item.d), parseFloat(item.se) ] );
+                                datatablese.push([GetUTCFromString(item.d), parseFloat(item.se)]);
                             }
                         } else {
                             if (typeof item.te != 'undefined') {
-                                datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
-                                datatabletm.push( [GetDateFromString(item.d), parseFloat(item.tm) ] );
+                                datatablete.push([GetDateFromString(item.d), parseFloat(item.te)]);
+                                datatabletm.push([GetDateFromString(item.d), parseFloat(item.tm)]);
                             }
                             if (typeof item.hu != 'undefined') {
-                                datatablehu.push( [GetDateFromString(item.d), parseFloat(item.hu) ] );
+                                datatablehu.push([GetDateFromString(item.d), parseFloat(item.hu)]);
                             }
                             if (typeof item.ch != 'undefined') {
-                                datatablech.push( [GetDateFromString(item.d), parseFloat(item.ch) ] );
-                                datatablecm.push( [GetDateFromString(item.d), parseFloat(item.cm) ] );
+                                datatablech.push([GetDateFromString(item.d), parseFloat(item.ch)]);
+                                datatablecm.push([GetDateFromString(item.d), parseFloat(item.cm)]);
                             }
                             if (typeof item.dp != 'undefined') {
-                                datatabledp.push( [GetDateFromString(item.d), parseFloat(item.dp) ] );
+                                datatabledp.push([GetDateFromString(item.d), parseFloat(item.dp)]);
                             }
                             if (typeof item.ba != 'undefined') {
-                                datatableba.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
+                                datatableba.push([GetDateFromString(item.d), parseFloat(item.ba)]);
                             }
                             if (typeof item.se != 'undefined') {
-                                datatablese.push( [GetDateFromString(item.d), parseFloat(item.se) ] );
-                                datatablesm.push( [GetDateFromString(item.d), parseFloat(item.sm) ] );
-                                datatablesx.push( [GetDateFromString(item.d), parseFloat(item.sx) ] );
+                                datatablese.push([GetDateFromString(item.d), parseFloat(item.se)]);
+                                datatablesm.push([GetDateFromString(item.d), parseFloat(item.sm)]);
+                                datatablesx.push([GetDateFromString(item.d), parseFloat(item.sx)]);
                             }
                         }
                     });
                     var series;
 
-                    if (datatablehu.length!=0)
-                    {
+                    if (datatablehu.length != 0) {
                         chart.addSeries(
                             {
-                                id: 'humidity'+deviceid,
-                                name: devicename+':'+$.t('Humidity'),
+                                id: 'humidity' + deviceid,
+                                name: devicename + ':' + $.t('Humidity'),
                                 yAxis: 1
                             }
                         );
-                        series = chart.get('humidity'+deviceid);
+                        series = chart.get('humidity' + deviceid);
                         series.setData(datatablehu);
                     }
 
-                    if (datatablech.length!=0)
-                    {
+                    if (datatablech.length != 0) {
                         chart.addSeries(
                             {
-                                id: 'chill'+deviceid,
-                                name: devicename+':'+$.t('Chill'),
+                                id: 'chill' + deviceid,
+                                name: devicename + ':' + $.t('Chill'),
                                 yAxis: 0
                             }
                         );
-                        series = chart.get('chill'+deviceid);
+                        series = chart.get('chill' + deviceid);
                         series.setData(datatablech);
 
-                        if (isday==0) {
+                        if (isday == 0) {
                             chart.addSeries(
                                 {
-                                    id: 'chillmin'+deviceid,
-                                    name: devicename+':'+$.t('Chill')+'_min',
+                                    id: 'chillmin' + deviceid,
+                                    name: devicename + ':' + $.t('Chill') + '_min',
                                     yAxis: 0
                                 }
                             );
-                            series = chart.get('chillmin'+deviceid);
+                            series = chart.get('chillmin' + deviceid);
                             series.setData(datatablecm);
                         }
                     }
-                    if (datatablete.length!=0)
-                    {
+                    if (datatablete.length != 0) {
                         //Add Temperature series
                         chart.addSeries(
                             {
-                                id: 'temperature'+deviceid,
-                                name: devicename+':'+$.t('Temperature'),
+                                id: 'temperature' + deviceid,
+                                name: devicename + ':' + $.t('Temperature'),
                                 yAxis: 0
                             }
                         );
-                        series = chart.get('temperature'+deviceid);
+                        series = chart.get('temperature' + deviceid);
                         series.setData(datatablete);
-                        if (isday==0) {
+                        if (isday == 0) {
                             chart.addSeries(
                                 {
-                                    id: 'temperaturemin'+deviceid,
-                                    name: devicename+':'+$.t('Temperature')+'_min',
+                                    id: 'temperaturemin' + deviceid,
+                                    name: devicename + ':' + $.t('Temperature') + '_min',
                                     yAxis: 0
                                 }
                             );
-                            series = chart.get('temperaturemin'+deviceid);
+                            series = chart.get('temperaturemin' + deviceid);
                             series.setData(datatabletm);
                         }
                     }
 
-                    if (datatablese.length!=0)
-                    {
+                    if (datatablese.length != 0) {
                         //Add Temperature series
                         chart.addSeries(
                             {
-                                id: 'setpoint'+deviceid,
-                                name: devicename+':'+$.t('SetPoint'),
+                                id: 'setpoint' + deviceid,
+                                name: devicename + ':' + $.t('SetPoint'),
                                 yAxis: 0
                             }
                         );
-                        series = chart.get('setpoint'+deviceid);
+                        series = chart.get('setpoint' + deviceid);
                         series.setData(datatablese);
-                        if (isday==0) {
+                        if (isday == 0) {
                             chart.addSeries(
                                 {
-                                    id: 'setpointmin'+deviceid,
-                                    name: devicename+':'+$.t('SetPoint')+'_min',
+                                    id: 'setpointmin' + deviceid,
+                                    name: devicename + ':' + $.t('SetPoint') + '_min',
                                     yAxis: 0
                                 }
                             );
-                            series = chart.get('setpointmin'+deviceid);
+                            series = chart.get('setpointmin' + deviceid);
                             series.setData(datatablesm);
 
                             chart.addSeries(
                                 {
-                                    id: 'setpointmax'+deviceid,
-                                    name: devicename+':'+$.t('SetPoint')+'_max',
+                                    id: 'setpointmax' + deviceid,
+                                    name: devicename + ':' + $.t('SetPoint') + '_max',
                                     yAxis: 0
                                 }
                             );
-                            series = chart.get('setpointmax'+deviceid);
+                            series = chart.get('setpointmax' + deviceid);
                             series.setData(datatablesx);
                         }
                     }
 
-                    if (datatabledp.length!=0)
-                    {
+                    if (datatabledp.length != 0) {
                         chart.addSeries(
                             {
-                                id: 'dewpoint'+deviceid,
-                                name: devicename+':'+$.t('Dew Point'),
+                                id: 'dewpoint' + deviceid,
+                                name: devicename + ':' + $.t('Dew Point'),
                                 yAxis: 0
                             }
                         );
-                        series = chart.get('dewpoint'+deviceid);
+                        series = chart.get('dewpoint' + deviceid);
                         series.setData(datatabledp);
                     }
 
-                    if (datatableba.length!=0)
-                    {
+                    if (datatableba.length != 0) {
                         chart.addSeries(
                             {
-                                id: 'baro'+deviceid,
-                                name: devicename+':'+$.t('Barometer'),
+                                id: 'baro' + deviceid,
+                                name: devicename + ':' + $.t('Barometer'),
                                 yAxis: 2
                             }
                         );
-                        series = chart.get('baro'+deviceid);
+                        series = chart.get('baro' + deviceid);
                         series.setData(datatableba);
                     }
 
                 };
 
                 //FIXME not in controller
-                ClearCustomGraph = function()
-                {
-                    $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
-                        ctrl.RemoveMultipleDataFromTempChart($.CustomChart.highcharts(),$(this).attr('id'));
+                ClearCustomGraph = function () {
+                    $('div[id="devicecontainer"] input:checkbox:checked').each(function () {
+                        ctrl.RemoveMultipleDataFromTempChart($.CustomChart.highcharts(), $(this).attr('id'));
                         $(this).prop("checked", false);
                     });
                 };

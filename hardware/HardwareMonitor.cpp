@@ -26,7 +26,6 @@
 	#include <fstream>
 	#include <string>
 	#include <limits>
-	#include <sys/time.h>
 	#include <unistd.h>
 
 	struct _tDUsageStruct
@@ -114,7 +113,7 @@ bool CHardwareMonitor::StartHardware()
 #endif
 	m_lastquerytime = 0;
 	m_thread = std::make_shared<std::thread>(&CHardwareMonitor::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "HardwareMonitor");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
@@ -350,7 +349,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1300;
 		float volt = static_cast<float>(atof(devValue.c_str()));
-		SendVoltageSensor(0, (uint8_t)(doffset + dindex), 255, volt, devName);
+		SendVoltageSensor(0, (uint32_t)(doffset + dindex), 255, volt, devName);
 	}
 	else if (qType == "Current")
 	{

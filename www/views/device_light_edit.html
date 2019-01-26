@@ -49,7 +49,7 @@
             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isSwitchIconAvailable()">
                 <td>{{ :: 'Switch Icon' | translate}}:</td>
                 <td>
-                    <device-icon-select ng-model="vm.device.CustomImage"></device-icon-select>
+                    <device-icon-select ng-model="vm.device.CustomImage" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
                 </td>
             </tr>
             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isMotionAvailable()">
@@ -140,7 +140,7 @@
                     <label>{{ :: 'Color' | translate}}:</label>
                 </td>
                 <td>
-                    <rgbw-picker device="vm.device"></rgbw-picker>
+                    <device-color-settings device="vm.device"></device-color-settings>
                 </td>
             </tr>
             <tr ng-if="vm.isLevelsAvailable()">
@@ -368,43 +368,15 @@
     <table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
         <tr>
             <td align="left" style="width:200px">
-                <table class="display" border="0" cellpadding="0" cellspacing="0">
-                    <tr id="ColorMode">
-                        <td style="padding-left:0px">
-                            <a> <img src="images/RGB48.png" class="lcursor pickermodergb unselected"
-                                     height="48" width="48"> </a>
-                            <a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected"
-                                    height="48" width="48"></a>
-                            <a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected"
-                                    height="48" width="48"></a>
-                            <a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected"
-                                    height="48" width="48"></a>
-                            <a><img src="images/White48.png" class="lcursor pickermodewhite unselected"
-                                    height="48" width="48"></a>
-                            <a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected"
-                                    height="48" width="48"></a>
-                            <a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected"
-                                    height="48" width="48"></a>
-                            <a><img src="images/Customw48_Sel.png"
-                                    class="lcursor pickermodecustomw selected" height="48" width="48"></a>
-                            <a><img src="images/Customww48.png"
-                                    class="lcursor pickermodecustomww unselected" height="48"
-                                    width="48"></a>
-                            <a><img src="images/Customww48_Sel.png"
-                                    class="lcursor pickermodecustomww selected" height="48" width="48"></a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="left" style="width:200px;padding-left:0px">
-                            <input type="text"
-                                   id="popup_picker"
-                                   data-wheelcolorpicker=""
-                                   data-wcp-layout="block"
-                                   data-wcp-sliders="wvkl"/>
-                        </td>
-                    </tr>
-                </table>
+                <rgbw-picker
+                        color="$ctrl.device.Color"
+                        level="$ctrl.device.LevelInt"
+                        color-settings-type="$ctrl.device.SubType"
+                        dimmer-type="$ctrl.device.DimmerType"
+                        max-dimmer-level="$ctrl.device.MaxDimLevel"
+                ></rgbw-picker>
             </td>
+
             <td align="left" style="vertical-align: top;">
                 <div class="btn-group">
                     <button class="btn btn-small" type="button" ng-click="$ctrl.switchOn()">

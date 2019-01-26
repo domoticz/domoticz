@@ -66,6 +66,9 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 					if (!m_bIsLoggedIn)
 					{
 						//Wrong username/password
+						boost::asio::async_write(*socket_, boost::asio::buffer("NOAUTH", 6),
+							boost::bind(&CTCPClient::handleWrite, shared_from_this(),
+							boost::asio::placeholders::error));
 						pConnectionManager->stopClient(shared_from_this());
 						return;
 					}

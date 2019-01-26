@@ -23,6 +23,11 @@ define(['app'], function (app) {
 				}
 			});
 		}
+		
+		function hideAndRefreshHardwareTable() {
+			HideNotify();
+			RefreshHardwareTable();
+		}
 
 		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
 			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
@@ -288,7 +293,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
@@ -367,7 +377,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
@@ -907,8 +922,12 @@ define(['app'], function (app) {
 				});
 			}
 			else if (text.indexOf("Honeywell") >= 0) {
+				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
+				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
 				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
 				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				var extra = btoa(apiKey) + "|" + btoa(apiSecret);
+
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&name=" + encodeURIComponent(name) +
@@ -917,6 +936,7 @@ define(['app'], function (app) {
 					"&Mode1=" + Mode1 +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
+					"&extra=" + extra +
 					"&datatimeout=" + datatimeout +
 					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
@@ -1260,7 +1280,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
@@ -1465,7 +1490,12 @@ define(['app'], function (app) {
 					async: false,
 					dataType: 'json',
 					success: function (data) {
-						RefreshHardwareTable();
+						if ((bEnabled)&&(text.indexOf("RFXCOM") >= 0)) {
+							ShowNotify($.t('Please wait. Updating ....!'), 2500);
+							setTimeout(hideAndRefreshHardwareTable, 3000)
+						} else {
+							RefreshHardwareTable();
+						}
 					},
 					error: function () {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
@@ -1859,14 +1889,19 @@ define(['app'], function (app) {
 				});
 			}
 			else if (text.indexOf("Honeywell") >= 0) {
+				var apiKey = $("#hardwarecontent #divhoneywell #hwApiKey").val();
+				var apiSecret = $("#hardwarecontent #divhoneywell #hwApiSecret").val();
 				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
 				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				var extra = btoa(apiKey) + "|" + btoa(apiSecret);
+
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(accessToken) +
 					"&password=" + encodeURIComponent(refreshToken) +
 					"&enabled=" + bEnabled +
+					"&extra=" + extra +
 					"&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
@@ -2062,7 +2097,7 @@ define(['app'], function (app) {
 			}
 		}
 
-		EditRFXCOMMode = function (idx, name, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
+		EditRFXCOMMode = function (idx, name, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Extra, version) {
 			cursordefault();
 			var htmlcontent = '';
 			htmlcontent = '<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
@@ -2107,9 +2142,21 @@ define(['app'], function (app) {
 			$('#hardwarecontent #RSL').prop('checked', ((Mode3 & 0x10) != 0));
 			$('#hardwarecontent #ByronSX').prop('checked', ((Mode3 & 0x20) != 0));
 			$('#hardwarecontent #ImaginTronix').prop('checked', ((Mode3 & 0x40) != 0));
+			
+			$('#hardwarecontent #comborego6xxtype').val(Mode1);
+			
+			var ASyncType = 0;
+			if (version.indexOf("Pro XL")==0) {
+				var ASyncType = (Extra=="")?0:parseInt(Extra);
+				$('#hardwarecontent #rfx_xl_settings').show();
+			} else {
+				$('#hardwarecontent #rfx_xl_settings').hide();
+			}
+			$('#hardwarecontent #combo_rfx_xl_async_type').val(ASyncType);
 
 			$('#hardwarecontent #defaultbutton').click(function (e) {
 				e.preventDefault();
+				$('#hardwarecontent #combo_rfx_xl_async_type').val(0);
 				$('#hardwarecontent #Keeloq').prop('checked', false);
 				$('#hardwarecontent #HC').prop('checked', false);
 				$('#hardwarecontent #undecon').prop('checked', false);
@@ -3617,14 +3664,10 @@ define(['app'], function (app) {
 			var Mode1 = parseInt($("#hardwarecontent #lmssettingstable #pollinterval").val());
 			if (Mode1 < 1)
 				Mode1 = 30;
-			var Mode2 = parseInt($("#hardwarecontent #lmssettingstable #pingtimeout").val());
-			if (Mode2 < 500)
-				Mode2 = 500;
 			$.ajax({
 				url: "json.htm?type=command&param=lmssetmode" +
 				"&idx=" + $.devIdx +
-				"&mode1=" + Mode1 +
-				"&mode2=" + Mode2,
+				"&mode1=" + Mode1,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3646,7 +3689,6 @@ define(['app'], function (app) {
 			$('#hardwarecontent').i18n();
 
 			$("#hardwarecontent #lmssettingstable #pollinterval").val(Mode1);
-			$("#hardwarecontent #lmssettingstable #pingtimeout").val(Mode2);
 
 			var oTable = $('#lmsnodestable').dataTable({
 				"sDom": '<"H"lfrC>t<"F"ip>',
@@ -5093,7 +5135,7 @@ define(['app'], function (app) {
 									HwTypeStr += ' <span class="label label-info lcursor" onclick="EditRFXCOMMode868(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
 								}
 								else {
-									HwTypeStr += ' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
+									HwTypeStr += ' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ',\'' + item.Extra + '\'' + ',\'' + item.version + '\');">' + $.t("Set Mode") + '</span>';
 								}
 							}
 							else if (HwTypeStr.indexOf("S0 Meter") >= 0) {
@@ -5561,6 +5603,12 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Honeywell") >= 0) {
 							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
+							var tmp = data["Extra"];
+							var tmparray = tmp.split("|");
+							if (tmparray.length == 2) {
+								$("#hardwarecontent #hardwareparamshoneywell #hwApiKey").val(atob(tmparray[0]));
+								$("#hardwarecontent #hardwareparamshoneywell #hwApiSecret").val(atob(tmparray[1]));
+							}
 						}
 						else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamsgoodweweb #comboserverselect").val(data["Mode1"]);

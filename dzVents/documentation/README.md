@@ -521,6 +521,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **webRoot**: `webroot` value as specified when starting the Domoticz service.
     - **serverPort**: webserver listening port.
  - **sms(message)**: *Function*. Sends an sms if it is configured in Domoticz.
+ - **snapshot(cameraID,subject)**: *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
@@ -534,14 +535,14 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **civTwilightStartInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
     - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
-   - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
-   - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
-   - **fromJSON(json)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1.
-   - **osExecute(cmd)**: *Function*:  Execute an os command.
-   - **round(number, decimalPlaces)**: *Function*. Helper function to round numbers.
-   - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
-   - **toJSON(luaTable)**: *Function*. <sup>2.4.0</sup> Converts a Lua table to a json string.
-   - **urlEncode(s, [strSub])**: *Functon*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
+    - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
+    - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
+    - **fromJSON(json)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1.
+    - **osExecute(cmd)**: *Function*:  Execute an os command.
+    - **round(number, decimalPlaces)**: *Function*. Helper function to round numbers.
+    - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
+    - **toJSON(luaTable)**: *Function*. <sup>2.4.0</sup> Converts a Lua table to a json string.
+    - **urlEncode(s, [strSub])**: *Functon*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
  - **variables(idx/name)**: *Function*. A function returning a variable by it's name or idx. See  [Variable object API](#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). **Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`**.
 
 ### Looping through the collections: iterators
@@ -619,12 +620,11 @@ The domoticz object has these constants available for use in your code e.g. `dom
  - **BASETYPE_DEVICE**, **BASETYPE_SCENE**, **BASETYPE_GROUP**, **BASETYPE_VARIABLE**, **BASETYPE_SECURITY**, **BASETYPE_TIMER**, **BASETYPE_HTTP_RESPONSE**: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object: `if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end`.
  - **BARO_CLOUDY**, **BARO_CLOUDY_RAIN**, **BARO_STABLE**, **BARO_SUNNY**, **BARO_THUNDERSTORM**, **BARO_NOINFO**, **BARO_UNSTABLE**: for updating barometric values.
  - **EVENT_TYPE_DEVICE**, **EVENT_TYPE_VARIABLE**, **EVENT_TYPE_SECURITY**,  **EVENT_TYPE_HTTPRESPONSE**<sup>2.4.0</sup>, **EVENT_TYPE_TIMER**: triggerInfo types passed to the execute function in your scripts.
- - **EVOHOME_MODE_AUTO**, **EVOHOME_MODE_TEMPORARY_OVERRIDE**, **EVOHOME_MODE_PERMANENT_OVERRIDE**: mode for EvoHome system.
+ - **EVOHOME_MODE_AUTO**, **EVOHOME_MODE_TEMPORARY_OVERRIDE**, **EVOHOME_MODE_PERMANENT_OVERRIDE**, **EVOHOME_MODE_FOLLOW_SCHEDULE** <sup>2.4.9</sup>: mode for EvoHome system.
  - **HUM_COMFORTABLE**, **HUM_DRY**, **HUM_NORMAL**, **HUM_WET**: constant for humidity status.
  - **INTEGER**, **FLOAT**, **STRING**, **DATE**, **TIME**: variable types.
  - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**, **LOG_FORCE**: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
- - **NSS_GOOGLE_CLOUD_MESSAGING**, **NSS_HTTP**,
-**NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**: for notification subsystem
+ - **NSS_GOOGLE_CLOUD_MESSAGING**, **NSS_HTTP**, **NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**, **NSS_TELEGRAM** <sup>2.4.8</sup>: for notification subsystem
  - **PRIORITY_LOW**, **PRIORITY_MODERATE**, **PRIORITY_NORMAL**, **PRIORITY_HIGH**, **PRIORITY_EMERGENCY**: for notification priority.
  - **SECURITY_ARMEDAWAY**, **SECURITY_ARMEDHOME**, **SECURITY_DISARMED**: for security state.
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: for notification sounds.
@@ -713,10 +713,18 @@ Note that if you do not find your specific device type here you can always inspe
  - **WhActual**: *Number*. Current Watt usage.
  - **updateEnergy(energy)**: *Function*. In Watt. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
-#### Evohome
+#### Evohome (zones)
  - **setPoint**: *Number*.
- - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **mode**: *string* <sup>2.4.9</sup>.
+ - **untilDate**: *string in ISO 8601 format* or n/a <sup>2.4.9</sup>.
+ - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE <sup>2.4.9</sup> or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
+#### Evohome (hotWater) <sup>2.4.9</sup>.
+ - **state**: *string*  ('On' or 'Off')
+ - **mode**: *string* 
+ - **untilDate**: *string in ISO 8601 format* or n/a.
+ - **setHotWater(state, mode, until)**: *Function*. set HotWater Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE You can provide an until date (in ISO 8601 format for domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE e.g.: `os.date("!%Y-%m-%dT%TZ")`). 
+ 
 #### Gas
  - **counter**: *Number*. Value in m<sup>3</sup>
  - **counterToday**: *Number*. Value in m<sup>3</sup>
@@ -923,9 +931,11 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **chill**: *Number*.
  - **direction**: *Number*. Degrees.
  - **directionString**: *String*. Formatted wind direction like N, SE.
- - **gust**: *Number*.
+ - **gust**: *Number*. ( in meters / second, might change in future releases to Meters/Counters settings for Wind Meter ) 
+ - **gustMs**: *Number*. Gust ( in meters / second ) <sup>2.4.9</sup>
  - **temperature**: *Number*
- - **speed**: *Number*.
+ - **speed**: *Number*. Windspeed ( in the unit set in Meters/Counters settings for Wind Meter )
+ - **speedMs**: *Number*. Windspeed ( in meters / second ) <sup>2.4.9</sup>
  - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Youless meter <sup>2.4.6</sup>
@@ -1001,23 +1011,23 @@ light.switchOn().checkFirst().forMin(5)
 ```
 
 ####Availability
-Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
+Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  See table below   
 
-| option                   | state changes            | update commands | user variables |
-|--------------------------|:------------------------:|:---------------:|:--------------:|
-| `afterXXX()`             |  •                       |  •              | •              |
-| `forXXX()`               |  •                       |  n/a            | n/a            |
-| `withinXXX()`            |  •                       |  •              | •              |
-| `silent()`               |  •                       |  •              | •              |
-| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            |
-| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            |
-| `cancelQueuedCommands()` |  •                       |  •              | •              |
+| option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  |
+|--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|
+| `afterXXX()`             |  •                       |  •              | •              | •              | •          |
+| `forXXX()`               |  •                       |  n/a            | n/a            | n/a            | n/a        |
+| `withinXXX()`            |  •                       |  •              | •              | •              | •          |
+| `silent()`               |  •                       |  •              | •              | n/a            | n/a        |
+| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            | n/a            | n/a        |
+| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a        |
+| `cancelQueuedCommands()` |  •                       |  •              | •              | n/a            | n/a        |
 
 **Note**: XXX is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
 **Note**: for `domoticz.openURL()` only `afterXXX()` and `withinXXX()` is available.
 
 #### Follow-up event triggers
-Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands.
+Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands (exception is updateSetPoint).
 
 ### Create your own device adapter
 If your device is not recognized by dzVents, you can still operate it using the generic device attributes and methods. It is much nicer, however, to have device specific attributes and methods. Existing recognized adapters are in `/path/to/domoticz/dzVents/runtime/device-adapters`.  Copy an existing adapter and adapt it to your needs. You can turn debug logging on and inspect the file `domoticzData.lua` in the dzVents folder. There you will find the unique signature for your device type. Usually it is a combination of deviceType and deviceSubType, but you can use any of the device attributes in the `matches` function. The matches function checks if the device type is suitable for your adapter and the `process` function actually creates your specific attributes and methods.
@@ -1094,7 +1104,7 @@ local utcTime = Time('2017-12-31 22:19:15', true)
 ```
 
  - **compare(time)**: *Function*. Compares the current time object with another time object. *Make sure you pass a Time object!* Returns a table (all values are *positive*, use the compare property to see if *time* is in the past or future):
-   + **milliSeconds**: Total difference in milliseconds.
+   + **milliseconds**: Total difference in milliseconds.
    + **seconds**: Total difference in whole seconds.
    + **minutes**: Total difference in whole minutes.
    + **hours**: Total difference in whole hours.
@@ -1108,10 +1118,11 @@ local utcTime = Time('2017-12-31 22:19:15', true)
  - **isToday**: *Boolean*. Indicates if the device was updated today
  - **isUTC**: *Boolean*.
  - **matchesRule(rule) **: *Function*. Returns true if the rule matches with the time. See [time trigger rules](#timer_trigger_rules) for rule examples.
+ - **millisecondsAgo**: *Number*. Number of milliseconds since the last update.
  - **minutes**: *Number*
  - **minutesAgo**: *Number*. Number of minutes since the last update.
  - **month**: *Number*
- - **milliSecondsAgo**: *Number*. Number of milliseconds since the last update.
+ - **msAgo**: *Number*. Number of milliseconds since the last update.
  - **raw**: *String*. Generated by Domoticz
  - **rawDate**: *String*. Returns the date part of the raw data.
  - **rawTime**: *String*. Returns the time part of the raw data.
@@ -1953,6 +1964,24 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.11]
+- Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+
+##[2.4.10]
+- Added option to use afterXXX() and withinXXX() functions to updateSetPoint() <sup>needs domoticz V4.10360 or newer</sup>
+- Changed function updateMode to display mode as string in domoticz log
+
+##[2.4.9]
+- Added evohome hotwater device (state, mode, untilDate and setHotWater function)
+- Added mode and untilDate for evohome zone devices 
+- Added EVOHOME_MODE_FOLLOW_SCHEDULE as mode for evohome devices
+- Add speedMs and gustMs from wind devices 
+- bugfix for youless device (0 handling)
+- bugfix for time ( twilightstart and twilightend handling)
+- Fixed some date-range rule checking
+
+##[2.4.8]
+- Added telegram as option for domoticz.notify
 
 ##[2.4.7]
 - Added support for civil twilight in rules

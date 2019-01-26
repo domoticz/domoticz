@@ -136,7 +136,7 @@ bool MultiFun::StartHardware()
 #endif
 
 	m_thread = std::make_shared<std::thread>(&MultiFun::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "MultiFun");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);

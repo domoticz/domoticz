@@ -566,7 +566,7 @@ bool CHEOS::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CHEOS::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "HEOS");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 

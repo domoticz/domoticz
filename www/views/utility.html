@@ -54,6 +54,10 @@
             <!--#embed metertypes -->
           </select></td>
 		</tr>
+        <tr>
+          <td align="right"><label for="meterdivider"><span data-i18n="Counter Divider">Counter Divider</span>: </label></td>
+          <td><input type="text" id="meterdivider" style="width: 60px; padding: .4em;" class="text ui-widget-content ui-corner-all" />&nbsp;<span data-i18n="(0 = Application default)">(0 = Application default)</span></td>
+		</tr>
 		<tr id="tdmeteroffset">
           <td align="right"><label for="meteroffset"><span data-i18n="Meter Offset">Meter Offset</span>: </label></td>
           <td><input type="text" id="meteroffset" style="width: 120px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -211,7 +215,9 @@
     </form>
 </div>
 
-<div id="utilitycontent" class="container">
+<div>
+	<gz-back-to-top></gz-back-to-top>
+	<div id="utilitycontent" class="container"></div>
 </div>
 
 <div id="percentagelog" style="display:none;">

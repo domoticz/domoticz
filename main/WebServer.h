@@ -163,7 +163,7 @@ private:
 	void Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetUserVariables(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetUserVariable(WebEmSession & session, const request& req, Json::Value &root);
@@ -280,6 +280,7 @@ private:
 	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DuplicateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_AddCamera(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateCamera(WebEmSession & session, const request& req, Json::Value &root);
@@ -372,9 +373,7 @@ private:
 	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;
 #endif
-#ifdef WITH_TELLDUSCORE
     void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
-#endif
 	std::shared_ptr<std::thread> m_thread;
 
 	std::map < std::string, webserver_response_function > m_webcommands;

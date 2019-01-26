@@ -37,9 +37,7 @@
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
-#ifdef WITH_TELLDUSCORE
 #include "../hardware/Tellstick.h"
-#endif
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/json.h"
@@ -120,6 +118,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "sl", "Slovenian" },
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
+	{ "zh_TW", "Taiwanese" },
 	{ "tr", "Turkish" },
 	{ "uk", "Ukrainian" },
 	{ NULL, NULL }
@@ -476,9 +475,9 @@ namespace http {
 			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1, _2, _3));
 			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1, _2, _3));
 
-			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
-			RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::Cmd_SaveUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("adduservariable", boost::bind(&CWebServer::Cmd_AddUserVariable, this, _1, _2, _3));
 			RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
 			RegisterCommandCode("getuservariables", boost::bind(&CWebServer::Cmd_GetUserVariables, this, _1, _2, _3));
 			RegisterCommandCode("getuservariable", boost::bind(&CWebServer::Cmd_GetUserVariable, this, _1, _2, _3));
 
@@ -500,6 +499,7 @@ namespace http {
 			RegisterCommandCode("addtimerplan", boost::bind(&CWebServer::Cmd_AddTimerPlan, this, _1, _2, _3));
 			RegisterCommandCode("updatetimerplan", boost::bind(&CWebServer::Cmd_UpdateTimerPlan, this, _1, _2, _3));
 			RegisterCommandCode("deletetimerplan", boost::bind(&CWebServer::Cmd_DeleteTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("duplicatetimerplan", boost::bind(&CWebServer::Cmd_DuplicateTimerPlan, this, _1, _2, _3));
 
 			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2, _3));
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
@@ -662,10 +662,7 @@ namespace http {
 			//thpost.html
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
 #endif
-
-#ifdef WITH_TELLDUSCORE
 			RegisterCommandCode("tellstickApplySettings", boost::bind(&CWebServer::Cmd_TellstickApplySettings, this, _1, _2, _3));
-#endif
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
@@ -1399,6 +1396,27 @@ namespace http {
 					iDataTimeout
 				);
 			}
+			else if (
+				(htype == HTYPE_RFXtrx433)||
+				(htype == HTYPE_RFXtrx868)
+				)
+			{
+				//No Extra field here, handled in CWebServer::SetRFXCOMMode
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					mode1, mode2, mode3, mode4, mode5, mode6,
+					iDataTimeout
+				);
+				extra = "0";
+			}
 			else {
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1756,6 +1774,31 @@ namespace http {
 						idx.c_str()
 					);
 				}
+				else if (
+					(htype == HTYPE_RFXtrx433) ||
+					(htype == HTYPE_RFXtrx868)
+					)
+				{
+					//No Extra field here, handled in CWebServer::SetRFXCOMMode
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(bEnabled == true) ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						mode1, mode2, mode3, mode4, mode5, mode6,
+						iDataTimeout,
+						idx.c_str()
+					);
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE ID=%q", idx.c_str());
+					if (!result.empty())
+						extra = result[0][0];
+				}
 				else {
 					m_sql.safe_query(
 						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
@@ -1845,7 +1888,7 @@ namespace http {
 			root["title"] = "DeleteUserVariable";
 		}
 
-		void CWebServer::Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
@@ -1862,8 +1905,8 @@ namespace http {
 				)
 				return;
 
-			root["status"] = m_sql.SaveUserVariable(variablename, variabletype, variablevalue);
-			root["title"] = "SaveUserVariable";
+			root["status"] = m_sql.AddUserVariable(variablename, variabletype, variablevalue);
+			root["title"] = "AddUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
@@ -1873,32 +1916,46 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
+
 			std::string idx = request::findValue(&req, "idx");
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 
-			if (idx.empty())
-			{
-				//Get idx from valuename
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'",
-					variablename.c_str());
-				if (result.empty())
-					return;
-				idx = result[0][0];
-			}
-
 			if (
-				(idx.empty()) ||
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
 				return;
 
-			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
+			std::vector<std::vector<std::string> > result;
+			if (idx.empty())
+			{
+				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", variablename.c_str());
+				if (result.empty())
+					return;
+				idx = result[0][0];
+			}
+
+			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE ID='%q'", idx.c_str());
+			if (result.empty())
+				return;
+
+			bool bTypeNameChanged = false;
+			if (variablename != result[0][0])
+				bTypeNameChanged = true; //new name
+			else if (variabletype != result[0][1])
+				bTypeNameChanged = true; //new type
+
+			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, !bTypeNameChanged);
 			root["title"] = "UpdateUserVariable";
+
+			if (bTypeNameChanged)
+			{
+				if (m_sql.m_bEnableEventSystem)
+					m_mainworker.m_eventsystem.GetCurrentUserVariables();
+			}
 		}
 
 
@@ -2416,96 +2473,6 @@ namespace http {
 				aOrder.c_str(), oID.c_str());
 		}
 
-		void CWebServer::Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-			root["status"] = "OK";
-			root["title"] = "GetTimerPlans";
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
-			if (!result.empty())
-			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string name = request::findValue(&req, "name");
-			root["status"] = "OK";
-			root["title"] = "AddTimerPlan";
-			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
-		}
-
-		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string idx = request::findValue(&req, "idx");
-			if (idx.empty())
-				return;
-			std::string name = request::findValue(&req, "name");
-			if (
-				(name.empty())
-				)
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "UpdateTimerPlan";
-
-			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
-		}
-
-		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string idx = request::findValue(&req, "idx");
-			if (idx.empty())
-				return;
-			int iPlan = atoi(idx.c_str());
-			if (iPlan < 1)
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "DeletePlan";
-			m_sql.safe_query("DELETE FROM Timers WHERE (TimerPlan == '%q')", idx.c_str());
-			m_sql.safe_query("DELETE FROM TimerPlans WHERE (ID == '%q')", idx.c_str());
-
-			if (m_sql.m_ActiveTimerPlan == iPlan)
-			{
-				//Set active timer plan to default
-				m_sql.UpdatePreferencesVar("ActiveTimerPlan", 0);
-				m_sql.m_ActiveTimerPlan = 0;
-				m_mainworker.m_scheduler.ReloadSchedules();
-			}
-		}
-
 		void CWebServer::Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
@@ -2605,7 +2572,7 @@ namespace http {
 			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 			bool bIsBetaChannel = (nValue != 0);
 
-			std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history";
+			std::string szHistoryURL = "https://www.domoticz.com/download.php?channel=stable&type=history";
 			if (bIsBetaChannel)
 			{
 				utsname my_uname;
@@ -2623,9 +2590,9 @@ namespace http {
 				}
 
 				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64") && (machine != "aarch64")) || (strstr(my_uname.release, "ARCH+") != NULL))
-					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history";
+					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history";
 				else
-					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
+					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
 			}
 			if (!HTTPClient::GET(szHistoryURL, historyfile))
 			{
@@ -3663,7 +3630,8 @@ namespace http {
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
 
-						if ((Type == HTYPE_RFXLAN) ||
+						if (
+							(Type == HTYPE_RFXLAN) ||
 							(Type == HTYPE_RFXtrx315) ||
 							(Type == HTYPE_RFXtrx433) ||
 							(Type == HTYPE_RFXtrx868) ||
@@ -4568,6 +4536,17 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 307)
+					{
+						//Westinghouse
+						dtype = pTypeFan;
+						subtype = sTypeWestinghouse;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 					else if (lighttype == 400) {
 						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
@@ -5167,6 +5146,17 @@ namespace http {
 						//Lucci Air DC
 						dtype = pTypeFan;
 						subtype = sTypeLucciAirDC;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 307)
+					{
+						//Westinghouse
+						dtype = pTypeFan;
+						subtype = sTypeWestinghouse;
 						std::string id = request::findValue(&req, "id");
 						if (id.empty())
 							return;
@@ -8112,6 +8102,7 @@ namespace http {
 							// assume results are ordered such that same device is adjacent
 							// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 							std::string thisIdx = sd[0];
+
 							if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 								std::string typeOfThisOne = root["result"][ii]["Type"].asString();
 								if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -8610,6 +8601,8 @@ namespace http {
 					// assume results are ordered such that same device is adjacent
 					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 					std::string thisIdx = sd[0];
+					int devIdx = atoi(thisIdx.c_str());
+
 					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
 						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -8890,6 +8883,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorContact)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
@@ -8903,6 +8900,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorLock)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
@@ -8916,6 +8917,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorLockInverted)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
@@ -8929,12 +8934,21 @@ namespace http {
 						}
 						else if (switchtype == STYPE_PushOn)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Push";
+							}
 							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
 							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 						}
 						else if (switchtype == STYPE_PushOff)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Push";
+							}
+							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
 							root["result"][ii]["TypeImg"] = "pushoff";
 						}
@@ -8948,6 +8962,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Contact)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Contact";
+							}
 							root["result"][ii]["TypeImg"] = "contact";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							if (bIsOn) {
@@ -9192,6 +9210,14 @@ namespace http {
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeThermostat1)
 					{
@@ -9214,6 +9240,13 @@ namespace http {
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["TypeImg"] = "temperature";
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeHUM)
 					{
@@ -9244,6 +9277,14 @@ namespace http {
 
 							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_HUM_BARO)
@@ -9294,6 +9335,14 @@ namespace http {
 							}
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_BARO)
@@ -9316,6 +9365,14 @@ namespace http {
 							);
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeUV)
@@ -9332,6 +9389,14 @@ namespace http {
 
 								root["result"][ii]["Temp"] = tvalue;
 								sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
 							}
 							else
 							{
@@ -9388,6 +9453,14 @@ namespace http {
 								}
 								double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
 								root["result"][ii]["Chill"] = tvalue;
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
 							}
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -9436,7 +9509,7 @@ namespace http {
 								total_real *= AddjMulti;
 								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
-								sprintf(szTmp, "%g", total_real);
+								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
 								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
@@ -9454,24 +9527,9 @@ namespace http {
 					}
 					else if (dType == pTypeRFXMeter)
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
+
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
@@ -9498,20 +9556,21 @@ namespace http {
 							uint64_t total_real = total_max - total_min;
 							sprintf(szTmp, "%" PRIu64, total_real);
 
-							float musage = 0;
+							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+							float musage = 0.0f;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f kWh", musage);
 								break;
 							case MTYPE_GAS:
-								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / (WaterDivider / 1000.0f);
+								musage = float(total_real) / (divider / 1000.0f);
 								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
@@ -9535,23 +9594,25 @@ namespace http {
 						root["result"][ii]["ValueUnits"] = "";
 
 						double meteroffset = AddjValue;
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -9572,30 +9633,15 @@ namespace http {
 					}
 					else if ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
 							ValueUnits.assign("");
 						}
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
 						time_t now = mytime(NULL);
@@ -9621,16 +9667,16 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f kWh", musage);
 								break;
 							case MTYPE_GAS:
-								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%" PRIu64, total_real);
@@ -9659,22 +9705,22 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%gm3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%" PRIu64 " %s", static_cast<uint64_t>(meteroffset + dvalue), ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9690,30 +9736,15 @@ namespace http {
 					}
 					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
 							ValueUnits.assign("");
 						}
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
@@ -9741,17 +9772,17 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%gm3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -9772,31 +9803,16 @@ namespace http {
 					}
 					else if (dType == pTypeYouLess)
 					{
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
 						float musage = 0;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
 						if (ValueQuantity.empty()) {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
 							ValueUnits.assign("");
 						}
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						//get value of today
 						time_t now = mytime(NULL);
@@ -9824,16 +9840,16 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f kWh", musage);
 								break;
 							case MTYPE_GAS:
-								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%g m3", musage);
+								musage = float(total_real) / divider;
+								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
@@ -9857,12 +9873,12 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							musage = float(total_actual) / EnergyDivider;
+							musage = float(total_actual) / divider;
 							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_GAS:
 						case MTYPE_WATER:
-							musage = float(total_actual) / GasDivider;
+							musage = float(total_actual) / divider;
 							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_COUNTER:
@@ -9882,16 +9898,16 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							musage = float(acounter) / EnergyDivider;
-							sprintf(szTmp, "%g kWh %s Watt", musage, splitresults[1].c_str());
+							musage = float(acounter) / divider;
+							sprintf(szTmp, "%.3f kWh %s Watt", musage, splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
-							musage = float(acounter) / GasDivider;
-							sprintf(szTmp, "%g m3", musage);
+							musage = float(acounter) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
 							break;
 						case MTYPE_WATER:
-							musage = float(acounter) / WaterDivider;
-							sprintf(szTmp, "%g m3", musage);
+							musage = float(acounter) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
@@ -10015,15 +10031,15 @@ namespace http {
 								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
 
 								musage = double(total_real_usage) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								sprintf(szTmp, "%.3f kWh", musage);
 								root["result"][ii]["CounterToday"] = szTmp;
 								musage = double(total_real_deliv) / EnergyDivider;
-								sprintf(szTmp, "%g kWh", musage);
+								sprintf(szTmp, "%.3f kWh", musage);
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
 							else
 							{
-								sprintf(szTmp, "%g kWh", 0.0f);
+								sprintf(szTmp, "%.3f kWh", 0.0f);
 								root["result"][ii]["CounterToday"] = szTmp;
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
@@ -10033,7 +10049,6 @@ namespace http {
 					{
 						root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
 
-						float GasDivider = 1000.0f;
 						//get lowest value of today
 						time_t now = mytime(NULL);
 						struct tm ltime;
@@ -10042,6 +10057,8 @@ namespace http {
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 						std::vector<std::vector<std::string> > result2;
+
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						strcpy(szTmp, "0");
 						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
@@ -10054,14 +10071,14 @@ namespace http {
 							uint64_t gasactual = std::stoull(sValue);
 							uint64_t total_real_gas = gasactual - total_min_gas;
 
-							double musage = double(gasactual) / GasDivider;
+							double musage = double(gasactual) / divider;
 							sprintf(szTmp, "%.03f", musage);
 							root["result"][ii]["Counter"] = szTmp;
-							musage = double(total_real_gas) / GasDivider;
+							musage = double(total_real_gas) / divider;
 							sprintf(szTmp, "%.03f m3", musage);
 							root["result"][ii]["CounterToday"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / GasDivider);
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Data"] = szTmp;
 						}
 						else
@@ -10070,7 +10087,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							sprintf(szTmp, "%.03f m3", 0.0f);
 							root["result"][ii]["CounterToday"] = szTmp;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / GasDivider);
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
@@ -10133,7 +10150,7 @@ namespace http {
 							}
 							if (total > 0)
 							{
-								sprintf(szTmp, ", Total: %g kWh", total / 1000.0f);
+								sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0f);
 								strcat(szData, szTmp);
 							}
 							root["result"][ii]["Data"] = szData;
@@ -10164,21 +10181,12 @@ namespace http {
 								sd[0].c_str(), szDate);
 							if (!result2.empty())
 							{
-								float EnergyDivider = 1000.0f;
-								int tValue;
-								if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-								{
-									EnergyDivider = float(tValue);
-								}
-								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								{
-									EnergyDivider *= 100.0;
-								}
+								float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 								std::vector<std::string> sd2 = result2[0];
-								double minimum = atof(sd2[0].c_str()) / EnergyDivider;
+								double minimum = atof(sd2[0].c_str()) / divider;
 
-								sprintf(szData, "%g kWh", total);
+								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
@@ -10190,12 +10198,12 @@ namespace http {
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-								sprintf(szTmp, "%g kWh", total - minimum);
+								sprintf(szTmp, "%.3f kWh", total - minimum);
 								root["result"][ii]["CounterToday"] = szTmp;
 							}
 							else
 							{
-								sprintf(szData, "%g kWh", total);
+								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
@@ -10342,6 +10350,13 @@ namespace http {
 							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "temperature";
 							root["result"][ii]["Type"] = "temperature";
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 						else if (dSubType == sTypePercentage)
 						{
@@ -11196,6 +11211,8 @@ namespace http {
 
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
+						continue;
+					if (hType == HTYPE_RESERVED_FOR_YOU_1)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -13110,7 +13127,7 @@ namespace http {
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 
-			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
+			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, AddjValue2, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 				idx);
 			if (result.empty())
 				return;
@@ -13138,8 +13155,11 @@ namespace http {
 
 			double AddjValue = atof(result[0][3].c_str());
 			double AddjMulti = atof(result[0][4].c_str());
-			std::string sOptions = result[0][5].c_str();
+			double AddjValue2 = atof(result[0][5].c_str());
+			std::string sOptions = result[0][6].c_str();
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+
+			float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 			std::string dbasetable = "";
 			if (srange == "day") {
@@ -13238,7 +13258,6 @@ namespace http {
 								(dType == pTypeTEMP_HUM_BARO) ||
 								(dType == pTypeTEMP_BARO) ||
 								((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-								((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								(dType == pTypeThermostat1) ||
 								(dType == pTypeRadiator1) ||
@@ -13808,27 +13827,6 @@ namespace http {
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
 
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
-						if (dType == pTypeP1Gas)
-							GasDivider = 1000;
-						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-							EnergyDivider *= 100.0f;
-
 						//First check if we had any usage in the short log, if not, its probably a meter without usage
 						bool bHaveUsage = true;
 						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
@@ -13859,7 +13857,7 @@ namespace http {
 						{
 							//realtime graph
 							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								EnergyDivider /= 100.0f;
+								divider /= 100.0f;
 						}
 						root["method"] = method;
 						bool bHaveFirstValue = false;
@@ -13902,13 +13900,13 @@ namespace http {
 											{
 											case MTYPE_ENERGY:
 											case MTYPE_ENERGY_GENERATED:
-												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+												sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
-												sprintf(szTmp, "%.3f", TotalValue / GasDivider);
+												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_WATER:
-												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
@@ -13953,13 +13951,13 @@ namespace http {
 									{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+										sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 										break;
 									case MTYPE_GAS:
-										sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+										sprintf(szTmp, "%.2f", TotalValue / divider);
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+										sprintf(szTmp, "%.3f", TotalValue / divider);
 										break;
 									case MTYPE_COUNTER:
 										sprintf(szTmp, "%.1f", TotalValue);
@@ -13980,27 +13978,6 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
-
-						float EnergyDivider = 1000.0f;
-						float GasDivider = 100.0f;
-						float WaterDivider = 100.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-						{
-							EnergyDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-						{
-							GasDivider = float(tValue);
-						}
-						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-						{
-							WaterDivider = float(tValue);
-						}
-						if (dType == pTypeP1Gas)
-							GasDivider = 1000.0f;
-						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-							EnergyDivider *= 100.0f;
 
 						int ii = 0;
 
@@ -14071,13 +14048,13 @@ namespace http {
 												{
 												case MTYPE_ENERGY:
 												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+													sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 													break;
 												case MTYPE_GAS:
-													sprintf(szTmp, "%.3f", TotalValue / GasDivider);
+													sprintf(szTmp, "%.3f", TotalValue / divider);
 													break;
 												case MTYPE_WATER:
-													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+													sprintf(szTmp, "%.3f", TotalValue / divider);
 													break;
 												case MTYPE_COUNTER:
 													sprintf(szTmp, "%.1f", TotalValue);
@@ -14131,13 +14108,13 @@ namespace http {
 											{
 											case MTYPE_ENERGY:
 											case MTYPE_ENERGY_GENERATED:
-												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+												sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
-												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+												sprintf(szTmp, "%.2f", TotalValue / divider);
 												break;
 											case MTYPE_WATER:
-												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+												sprintf(szTmp, "%.3f", TotalValue / divider);
 												break;
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
@@ -14175,13 +14152,13 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+									sprintf(szTmp, "%.3f", (TotalValue / divider)*1000.0f);	//from kWh -> Watt
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", TotalValue / GasDivider);
+									sprintf(szTmp, "%.3f", TotalValue / divider);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+									sprintf(szTmp, "%.3f", TotalValue / divider);
 									break;
 								case MTYPE_COUNTER:
 									sprintf(szTmp, "%.1f", TotalValue);
@@ -14588,29 +14565,6 @@ namespace http {
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
 
-					float EnergyDivider = 1000.0f;
-					float GasDivider = 100.0f;
-					float WaterDivider = 100.0f;
-					int tValue;
-					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-					{
-						GasDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-					{
-						WaterDivider = float(tValue);
-					}
-					if (dType == pTypeP1Gas)
-						GasDivider = 1000.0f;
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-						EnergyDivider *= 100.0f;
-					//else if (dType==pTypeRFXMeter)
-					//EnergyDivider*=1000.0f;
-
 					char szDateStart[40];
 					char szDateEnd[40];
 					sprintf(szDateEnd, "%04d-%02d-%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
@@ -14647,13 +14601,13 @@ namespace http {
 
 								if ((fDeliv1 != 0) || (fDeliv2 != 0))
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage1 / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage2 / divider);
 								root["result"][ii]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv1 / divider);
 								root["result"][ii]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv2 / divider);
 								root["result"][ii]["r2"] = szTmp;
 								ii++;
 							}
@@ -14678,16 +14632,19 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									//value already set above!
 									break;
 								default:
 									szValue = "0";
@@ -14733,20 +14690,20 @@ namespace http {
 
 							sprintf(szTmp, "%llu", total_real_usage_1);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_usage_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
 							sprintf(szTmp, "%llu", total_real_deliv_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_deliv_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
 							ii++;
@@ -14775,16 +14732,19 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								//value already set above!
 								break;
 							default:
 								szValue = "0";
@@ -14889,7 +14849,7 @@ namespace http {
 								bool bOK = true;
 								if (dType == pTypeWIND)
 								{
-									bOK = ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp));
+									bOK = ((dSubType != sTypeWINDNoTemp) && (dSubType != sTypeWINDNoTempNoChill));
 								}
 								if (bOK)
 								{
@@ -14972,7 +14932,6 @@ namespace http {
 							((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1)) ||
 							((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
 							)
 						{
@@ -15333,29 +15292,6 @@ namespace http {
 						sValue = sd[1];
 					}
 
-					float EnergyDivider = 1000.0f;
-					float GasDivider = 100.0f;
-					float WaterDivider = 100.0f;
-					int tValue;
-					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-					{
-						GasDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-					{
-						WaterDivider = float(tValue);
-					}
-					if (dType == pTypeP1Gas)
-						GasDivider = 1000.0f;
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-						EnergyDivider *= 100.0f;
-					//				else if (dType==pTypeRFXMeter)
-					//				EnergyDivider*=1000.0f;
-
 					int ii = 0;
 					iPrev = 0;
 					if (dType == pTypeP1Power)
@@ -15396,18 +15332,18 @@ namespace http {
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_1 / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_2 / divider);
 								root["result"][ii]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
 								root["result"][ii]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
 								root["result"][ii]["r2"] = szTmp;
 
 								if (counter_1 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / divider);
 								}
 								else
 								{
@@ -15417,7 +15353,7 @@ namespace http {
 
 								if (counter_2 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / divider);
 								}
 								else
 								{
@@ -15427,7 +15363,7 @@ namespace http {
 
 								if (counter_3 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / divider);
 								}
 								else
 								{
@@ -15437,7 +15373,7 @@ namespace http {
 
 								if (counter_4 != 0)
 								{
-									sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / EnergyDivider);
+									sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / divider);
 								}
 								else
 								{
@@ -15479,13 +15415,13 @@ namespace http {
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_1 / divider);
 								root["resultprev"][iPrev]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage_2 / divider);
 								root["resultprev"][iPrev]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
 								root["resultprev"][iPrev]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
 								root["resultprev"][iPrev]["r2"] = szTmp;
 								iPrev++;
 							}
@@ -15868,7 +15804,7 @@ namespace http {
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 100.0f));
+								sprintf(szTmp, "%.3f", fvalue / (divider / 100.0f));
 								root["counter"] = szTmp;
 							}
 						}
@@ -15878,7 +15814,7 @@ namespace http {
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
+								sprintf(szTmp, "%.3f", fvalue / divider);
 								root["counter"] = szTmp;
 							}
 						}
@@ -15890,13 +15826,13 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", AddjValue + (fvalue / EnergyDivider));
+								sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", AddjValue + (fvalue / GasDivider));
+								sprintf(szTmp, "%.2f", AddjValue + (fvalue / divider));
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", AddjValue + (fvalue / WaterDivider));
+								sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
 								break;
 							default:
 								strcpy(szTmp, "");
@@ -15916,13 +15852,13 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
+									sprintf(szTmp, "%.3f", fvalue / divider);
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", fvalue / GasDivider);
+									sprintf(szTmp, "%.2f", fvalue / divider);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
+									sprintf(szTmp, "%.3f", fvalue / divider);
 									break;
 								default:
 									strcpy(szTmp, "");
@@ -15936,6 +15872,10 @@ namespace http {
 							//Add last counter value
 							sprintf(szTmp, "%d", atoi(sValue.c_str()));
 							root["counter"] = szTmp;
+						}
+						else
+						{
+							root["counter"] = "0";
 						}
 						//Actual Year
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
@@ -15955,28 +15895,28 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / EnergyDivider));
+										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / GasDivider));
+										sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / WaterDivider));
+										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -16010,15 +15950,15 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
@@ -16095,20 +16035,20 @@ namespace http {
 
 							sprintf(szTmp, "%llu", total_real_usage_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_usage_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 
 							sprintf(szTmp, "%llu", total_real_deliv_1);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r1"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_deliv_2);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["r2"] = szTmp;
 
 							ii++;
@@ -16263,7 +16203,7 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 							{
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								root["result"][ii]["v"] = szTmp;
 
 								std::vector<std::string> mresults;
@@ -16273,22 +16213,22 @@ namespace http {
 									sValue = mresults[1];
 								}
 								if (dType == pTypeENERGY)
-									sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / EnergyDivider));
+									sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / divider));
 								else
-									sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider));
+									sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
 							}
 							break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / GasDivider));
+								sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider));
+								sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
@@ -16444,7 +16384,6 @@ namespace http {
 						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
 						((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 							((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
@@ -16812,27 +16751,6 @@ namespace http {
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
 
-					float EnergyDivider = 1000.0f;
-					float GasDivider = 100.0f;
-					float WaterDivider = 100.0f;
-					int tValue;
-					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
-					{
-						GasDivider = float(tValue);
-					}
-					if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-					{
-						WaterDivider = float(tValue);
-					}
-					if (dType == pTypeP1Gas)
-						GasDivider = 1000.0f;
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-						EnergyDivider *= 100.0f;
-
 					int ii = 0;
 					if (dType == pTypeP1Power)
 					{
@@ -16860,9 +16778,9 @@ namespace http {
 
 								if (fDeliv != 0)
 									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage / EnergyDivider);
+								sprintf(szTmp, "%.3f", fUsage / divider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv / EnergyDivider);
+								sprintf(szTmp, "%.3f", fDeliv / divider);
 								root["result"][ii]["v2"] = szTmp;
 								ii++;
 							}
@@ -16886,15 +16804,15 @@ namespace http {
 								{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								}
@@ -16940,11 +16858,11 @@ namespace http {
 
 							sprintf(szTmp, "%llu", total_real_usage);
 							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v"] = szTmp;
 							sprintf(szTmp, "%llu", total_real_deliv);
 							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 							root["result"][ii]["v2"] = szTmp;
 							ii++;
 							if (bHaveDeliverd)
@@ -16973,15 +16891,15 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
+								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 								szValue = szTmp;
 								break;
 							}

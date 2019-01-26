@@ -182,7 +182,7 @@ bool CSysfsGpio::StartHardware()
 	Init();
 
 	m_thread = std::make_shared<std::thread>(&CSysfsGpio::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "SysfsGpio");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 
 	return (m_thread != nullptr);

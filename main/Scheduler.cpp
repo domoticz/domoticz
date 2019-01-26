@@ -2152,5 +2152,199 @@ namespace http {
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
+
+		void CWebServer::Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			root["status"] = "OK";
+			root["title"] = "GetTimerPlans";
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string name = request::findValue(&req, "name");
+			root["status"] = "OK";
+			root["title"] = "AddTimerPlan";
+			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
+		}
+
+		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			std::string name = request::findValue(&req, "name");
+			if (
+				(name.empty())
+				)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "UpdateTimerPlan";
+
+			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
+		}
+
+		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			int iPlan = atoi(idx.c_str());
+			if (iPlan < 1)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DeletePlan";
+			
+			m_sql.safe_query("DELETE FROM Timers WHERE (TimerPlan == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM SceneTimers WHERE (TimerPlan == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM SetpointTimers WHERE (TimerPlan == '%q')", idx.c_str());
+
+			m_sql.safe_query("DELETE FROM TimerPlans WHERE (ID == '%q')", idx.c_str());
+
+			if (m_sql.m_ActiveTimerPlan == iPlan)
+			{
+				//Set active timer plan to default
+				m_sql.UpdatePreferencesVar("ActiveTimerPlan", 0);
+				m_sql.m_ActiveTimerPlan = 0;
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
+		}
+
+		void CWebServer::Cmd_DuplicateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			std::string name = request::findValue(&req, "name");
+			if (
+				(name.empty())
+				)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DuplicateTimerPlan";
+
+			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
+
+			std::vector<std::vector<std::string> > result;
+
+			result = m_sql.safe_query("SELECT MAX(ID) FROM TimerPlans WHERE (Name=='%q')", name.c_str());
+			if (!result.empty())
+			{
+				std::string nID = result[0][0];
+
+				//Normal Timers
+				result = m_sql.safe_query("SELECT Active, DeviceRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], MDay, Month, Occurence, Color FROM Timers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					m_sql.safe_query(
+						"INSERT INTO Timers (Active, DeviceRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], MDay, Month, Occurence, Color, TimerPlan) VALUES (%q, %q, '%q', %q, %q, %q, %q, %q, %q, '%q', %q, %q, %q, '%q', %q)",
+						sd[0].c_str(),
+						sd[1].c_str(),
+						sd[2].c_str(),
+						sd[3].c_str(),
+						sd[4].c_str(),
+						sd[5].c_str(),
+						sd[6].c_str(),
+						sd[7].c_str(),
+						sd[8].c_str(),
+						sd[9].c_str(),
+						sd[10].c_str(),
+						sd[11].c_str(),
+						sd[12].c_str(),
+						sd[13].c_str(),
+						nID.c_str()
+					);
+				}
+				//Scene Timers
+				result = m_sql.safe_query("SELECT Active, SceneRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], Month, MDay, Occurence FROM SceneTimers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					m_sql.safe_query(
+						"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], Month, MDay, Occurence, TimerPlan) VALUES (%q, %q, '%q', %q, %q, %q, %q, %q, %q, '%q', %q, %q, %q, %q)",
+						sd[0].c_str(),
+						sd[1].c_str(),
+						sd[2].c_str(),
+						sd[3].c_str(),
+						sd[4].c_str(),
+						sd[5].c_str(),
+						sd[6].c_str(),
+						sd[7].c_str(),
+						sd[8].c_str(),
+						sd[9].c_str(),
+						sd[10].c_str(),
+						sd[11].c_str(),
+						sd[12].c_str(),
+						nID.c_str()
+					);
+				}
+				//Setpoint Timers
+				result = m_sql.safe_query("SELECT Active, DeviceRowID, [Date], Time, Type, Temperature, Days, Month, MDay, Occurence FROM SetpointTimers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					m_sql.safe_query(
+						"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, Month, MDay, Occurence, TimerPlan) VALUES (%q, %q, '%q', '%q', %q, %q, %q, %q, %q, %q, %q)",
+						sd[0].c_str(),
+						sd[1].c_str(),
+						sd[2].c_str(),
+						sd[3].c_str(),
+						sd[4].c_str(),
+						sd[5].c_str(),
+						sd[6].c_str(),
+						sd[7].c_str(),
+						sd[8].c_str(),
+						sd[9].c_str(),
+						nID.c_str()
+					);
+				}
+			}
+		}
+
 	}
 }

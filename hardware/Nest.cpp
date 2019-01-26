@@ -79,7 +79,7 @@ bool CNest::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CNest::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Nest");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -97,7 +97,7 @@ bool CNest::StopHardware()
     return true;
 }
 
-#define NEST_POLL_INTERVAL 30
+#define NEST_POLL_INTERVAL 60
 
 void CNest::Do_Work()
 {

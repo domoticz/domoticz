@@ -1,0 +1,131 @@
+<div class="events-editor-file__header">
+    <form class="form-inline">
+        <div class="btn-group">
+            <button class="btn btn-default"
+                    ng-class="{
+                        'btn-default': $ctrl.eventData.eventstatus === '0',
+                        'btn-success active': $ctrl.eventData.eventstatus === '1'
+                    }"
+                    ng-click="$ctrl.setEventState(true)"
+            >
+                {{:: 'On' | translate }}
+            </button>
+
+            <button class="btn btn-default"
+                    ng-class="{
+                        'btn-default': $ctrl.eventData.eventstatus === '1',
+                        'btn-danger active': $ctrl.eventData.eventstatus === '0'
+                    }"
+                    ng-click="$ctrl.setEventState(false)"
+            >
+                {{:: 'Off' | translate }}
+            </button>
+        </div>
+
+        <input id="eventName"
+               class="events-editor-file__name"
+               ng-model="$ctrl.eventData.name"
+               ng-change="$ctrl.markEventAsUpdated()"
+        >
+
+        <div class="pull-right">
+            <div class="events-editor-file__type input-prepend" ng-show="$ctrl.isTriggerAvailable()">
+                <label class="add-on" for="trigger">{{:: 'Trigger' | translate }}</label>
+                <select id="trigger"
+                        ng-model="$ctrl.eventData.type"
+                        ng-options="item.value as item.label for item in ::$ctrl.eventTypes"
+                        ng-change="$ctrl.markEventAsUpdated()">
+                </select>
+            </div>
+
+            <div class="btn-group" ng-if="$ctrl.eventData.interpreter === 'Blockly'">
+                <button class="btn btn-default"
+                        type="button"
+                        ng-click="$ctrl.importEvent()"
+                >
+                    {{:: 'Import' | translate}}
+                </button>
+                <button class="btn btn-default"
+                        type="button"
+                        ng-click="$ctrl.exportEvent()"
+                >
+                    {{:: 'Export' | translate}}
+                </button>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary"
+                        type="button"
+                        ng-click="$ctrl.saveEvent()"
+                        ng-disabled="!$ctrl.event.isChanged"
+                        title="{{:: 'Save' | translate}} (Ctrl + S)"
+                >
+                    {{:: 'Save' | translate}}
+                </button>
+
+                <button class="btn btn-danger"
+                        type="button"
+                        ng-click="$ctrl.deleteEvent()"
+                >
+                    {{:: 'Delete' | translate}}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="events-editor-file__content js-script-content"></div>
+
+<script type="text/ng-template" id="app/events/exportEventModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">{{:: 'Export' | translate }}</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form" name="modalForm">
+            <p>{{:: 'Copy the script body from the field below to share it:' | translate }}</p>
+            <div class="control-group">
+                <div class="controls">
+                    <textarea
+                            autofocus
+                            name="script-data"
+                            class="form-control"
+                            readonly
+                            rows="12"
+                            style="width: 100%"
+                            ng-model="scriptData"
+                    />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" type="button" ng-click="$close()">{{:: 'Ok' | translate }}</button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="app/events/importEventModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">{{:: 'Import' | translate }}</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form" name="modalForm">
+            <p>{{:: 'Please, insert the script body into the field below:' | translate }}</p>
+            <div class="control-group">
+                <div class="controls">
+                    <textarea
+                            autofocus
+                            name="script-data"
+                            class="form-control"
+                            rows="12"
+                            style="width: 100%"
+                            ng-model="scriptData"
+                    />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="$close(scriptData)">{{:: 'Import' | translate }}</button>
+        <button class="btn btn-default" type="button" ng-click="$dismiss()">{{:: 'Cancel' | translate }}</button>
+    </div>
+</script>

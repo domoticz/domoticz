@@ -1,10 +1,10 @@
-define(['app', 'log/components'], function (app) {
+define(['app', 'log/components/DeviceTextLogTable'], function (app) {
 
     app.component('deviceTextLog', {
         bindings: {
             deviceIdx: '<'
         },
-        templateUrl: '/views/log/device_text_log.html',
+        templateUrl: 'app/log/TextLog.html',
         controller: DeviceTextLogController,
         controllerAs: 'vm',
     });

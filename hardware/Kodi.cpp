@@ -918,7 +918,7 @@ bool CKodi::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CKodi::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Kodi");
+	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
 	return true;
@@ -998,12 +998,6 @@ void CKodi::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
-}
-
-void CKodi::Restart()
-{
-	StopHardware();
-	StartHardware();
 }
 
 bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)

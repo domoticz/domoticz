@@ -270,8 +270,8 @@ int eHouseTCP::UpdateSQLState(int devh, const uint8_t devl, int devtype, const u
 	{
 ///GIZ		!!! Your solution NOT WORKING eg, not setting used=1 and is not sufficient We update devicestatus, and add RoomPlan for each controller
 //i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
-	m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name,     Used, SwitchType ) VALUES ('%d',      '%q',       '%d','%d',  '%d',   '%d',       '%d',           '%d',   '%q', '%q',     1, %d)",
-                                            m_HwdID,    IDX,        devl,type,subtype,  signal,     battery,      nValue, sValue,devname.c_str(), swtype);
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name, Used, SwitchType ) VALUES ('%d', '%q', '%d','%d', '%d', '%d', '%d', '%d', '%q', '%q', 1, %d)",
+			m_HwdID, IDX, devl, type, subtype, signal, battery, nValue, sValue, devname.c_str(), swtype);
 
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",m_HwdID,                IDX,           devl );
 																		   
@@ -550,7 +550,7 @@ bool eHouseTCP::StartHardware()
 
 #endif
 	m_thread = std::make_shared<std::thread>(&eHouseTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "eHouseTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
@@ -602,7 +602,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		saddr.sin_addr.s_addr = IP;
 	else
 		saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
-	saddr.sin_port = htons((u_short)m_EHOUSE_TCP_PORT);
+	saddr.sin_port = htons((uint16_t)m_EHOUSE_TCP_PORT);
 	memset(&server, 0, sizeof(server));               //clear server structure
 	memset(&challange, 0, sizeof(challange));         //clear buffer
 	char line[20];
@@ -617,7 +617,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	server.sin_addr.s_addr = m_addr.sin_addr.s_addr;
 	server.sin_family = AF_INET;                    //tcp v4
-	server.sin_port = htons((u_short)m_EHOUSE_TCP_PORT);       //assign eHouse Port
+	server.sin_port = htons((uint16_t)m_EHOUSE_TCP_PORT);       //assign eHouse Port
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
 	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{

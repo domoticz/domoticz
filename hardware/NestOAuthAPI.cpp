@@ -56,7 +56,7 @@ bool CNestOAuthAPI::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CNestOAuthAPI::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "NestOAuthAPI");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
@@ -74,7 +74,7 @@ bool CNestOAuthAPI::StopHardware()
     return true;
 }
 
-#define NEST_POLL_INTERVAL 30
+#define NEST_POLL_INTERVAL 60
 
 void CNestOAuthAPI::Do_Work()
 {

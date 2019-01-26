@@ -347,6 +347,7 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_HwdID = ID;
 	m_controllerID = 0;
 	m_controllerNodeId = 0;
+	m_LastControllerConfigWrite = 0;
 	m_bIsShuttingDown = false;
 	m_initFailed = false;
 	m_allNodesQueried = false;
@@ -1238,6 +1239,14 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 				bHandleAsBinary = true;
 			}
 		}
+		else if (pDevice->Manufacturer_id == 0x0154)
+		{
+			if ((pDevice->Product_id == 0x0003) && (pDevice->Product_type == 0x0005))
+			{
+				//Special case for the Popp 009501 Flow Stop
+				bHandleAsBinary = true;
+			}
+		}
 	}
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
@@ -1735,7 +1744,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					else
 						_device.scaleID = SCALEID_POWER;
 					_device.scaleMultiply = 1;
-					if (vUnits == "kWh")
+					if ((vUnits == "kWh") || (vUnits == "kVAh"))
 					{
 						_device.scaleMultiply = 1000;
 						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
@@ -1920,7 +1929,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					else
 						_device.scaleID = SCALEID_POWER;
 					_device.scaleMultiply = 1;
-					if (vUnits == "kWh")
+					if ((vUnits == "kWh") || (vUnits == "kVAh"))
 					{
 						_device.scaleMultiply = 1000;
 						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;

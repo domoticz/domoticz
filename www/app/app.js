@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		Notification.requestPermission();
 });
 
-define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD) {
-	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', 'ngWebsocket']);
+define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket', 'app.routes'], function (angularAMD, deviceFactory) {
+	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', 'ngWebsocket', 'app.routes']);
 
 	isOnline = false;
 	dashboardType = 1;
@@ -36,10 +36,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		return {
 			setPermissions: function (permissions) {
 				permissionList = permissions;
-				window.my_config =
-					{
-						userrights: permissionList.rights
-					};
+				window.my_config = {
+					userrights: permissionList.rights
+				};
 				$rootScope.$broadcast('permissionsChanged');
 			},
 			hasPermission: function (permission) {
@@ -202,6 +201,26 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		}
 	});
+	app.directive('gzBackToTop', function(){
+		return {
+			restrict: 'E'
+			, replace: true
+			, template: '<div class="gz-back-to-top"></div>'
+			, link: function($scope, element, attrs) {
+				$(window).scroll(function() {
+					if ($(window).scrollTop() <= 0) {
+						$(element).fadeOut();
+					}
+					else {
+						$(element).fadeIn();
+					}
+				});
+				$(element).on('click', function(){
+					$('html, body').animate({ scrollTop: 0 }, 'fast');
+				});
+			}
+		}
+	});
 	app.filter('translate', function() {
 		return function(input) {
 			return $.t(input);
@@ -211,12 +230,13 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		"sDom": '<"H"lfrC>t<"F"ip>',
 		"aaSorting": [[0, "desc"]],
 		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": true,
 		"bJQueryUI": true,
-		lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
-		pageLength: 25,
+		processing: true,
+		stateSave: true,
+		paging: true,
 		pagingType: 'full_numbers',
+		pageLength: 25,
+		lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
 		select: {
 			className: 'row_selected',
 			style: 'single'
@@ -227,7 +247,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
 		return {
 			sendRequest: sendRequest,
-			sendCommand: sendCommand
+			sendCommand: sendCommand,
+            errorHandler: errorHandler
 		};
 
 		function sendRequest(data) {
@@ -240,13 +261,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
 		function sendCommand(command, data) {
 			var commandParams = { type: 'command', param: command };
-			return sendRequest(Object.assign({}, commandParams, data))
-				.then(function (response) {
-					return response && response.status !== 'OK'
-						? $q.reject(response)
-						: response;
-				});
+			return sendRequest(Object.assign({}, commandParams, data)).then(errorHandler);
 		}
+
+		function errorHandler(response) {
+            return response && response.status !== 'OK' ? $q.reject(response) : response;
+        }
 	}]);
 
 	app.factory('utils', function () {
@@ -267,58 +287,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
     });
 
-	app.factory('Device', function () {
-        return function Device(rawData) {
-        	var device = Object.assign({}, rawData);
-
-            device.isDimmer = function() {
-                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(this.SwitchType);
-            };
-
-            device.isSelector = function() {
-                return this.SwitchType === "Selector";
-            };
-
-            device.isLED = function() {
-                return (this.SubType.indexOf("RGB") >= 0 || this.SubType.indexOf("WW") >= 0);
-            };
-
-            device.getLevels = function() {
-                return this.LevelNames ? b64DecodeUnicode(this.LevelNames).split('|') : [];
-            };
-
-            device.getLevelActions = function() {
-                return this.LevelActions ? b64DecodeUnicode(this.LevelActions).split('|') : [];
-			};
-
-            device.getSelectorLevelOptions = function () {
-                return this.getLevels()
-                    .slice(1)
-                    .map(function (levelName, index) {
-                        return {
-                            label: levelName,
-                            value: (index + 1) * 10
-                        }
-                    });
-            };
-
-            device.getDimmerLevelOptions = function (step) {
-                var options = [];
-                var step = step || 5;
-
-                for (var i = step; i <= 100; i+=step) {
-                    options.push({
-                        label: i + '%',
-                        value: i
-                    });
-                }
-
-                return options;
-            };
-
-            return device;
-        };
-    });
+	app.factory('Device', deviceFactory);
 
 	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun, Device) {
 		return {
@@ -424,6 +393,28 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
             }
         }
     });
+
+    app.factory('bootbox', function($q) {
+    	return {
+    		confirm: confirm,
+            alert: alert
+		};
+
+		function confirm(message) {
+			return $q(function(resolve, reject) {
+                bootbox.confirm($.t(message), function (result) {
+                    if (result !== true) {
+                        reject();
+                    }
+                    resolve();
+                });
+			});
+		}
+
+		function alert(message) {
+			return bootbox.alert($.t(message));
+        }
+	});
 
 	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
 		return {
@@ -563,240 +554,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		}
 	}]);
-	app.config(function ($routeProvider, $locationProvider) {
-		$locationProvider.hashPrefix('');
-		$routeProvider.
-			when('/Dashboard', angularAMD.route({
-				templateUrl: 'views/dashboard.html',
-				controller: 'DashboardController'
-			})).
-			when('/Devices', angularAMD.route({
-				templateUrl: 'views/devices.html',
-				controller: 'DevicesController'
-			})).
-			when('/Devices/:id/Timers', angularAMD.route({
-				templateUrl: 'views/timers.html',
-				controller: 'DeviceTimersController',
-				controllerUrl: 'app/timers/DeviceTimersController.js',
-				controllerAs: 'vm'
-			})).
-			when('/Devices/:id/Notifications', angularAMD.route({
-				templateUrl: 'views/notifications.html',
-				controller: 'DeviceNotificationsController',
-				controllerUrl: 'app/notifications/DeviceNotifications.js',
-				controllerAs: 'vm'
-			})).
-			when('/Devices/:id/LightEdit', angularAMD.route({
-				templateUrl: 'views/device_light_edit.html',
-				controller: 'DeviceLightEditController',
-				controllerUrl: 'app/DeviceLightEdit.js',
-				controllerAs: 'vm'
-			})).
-			when('/Devices/:id/Log', angularAMD.route({
-				templateUrl: 'views/log/device_log.html',
-				controller: 'DeviceLogController',
-				controllerUrl: 'app/log/DeviceLog.js',
-				controllerAs: 'vm'
-			})).
-			when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({
-				templateUrl: 'views/log/device_temperature_report.html',
-				controller: 'DeviceTemperatureReportController',
-				controllerUrl: 'app/log/TemperatureReport.js',
-				controllerAs: 'vm'
-			})).
-			when('/DPFibaro', angularAMD.route({
-				templateUrl: 'views/dpfibaro.html',
-				controller: 'DPFibaroController',
-				permission: 'Admin'
-			})).
-			when('/DPHttp', angularAMD.route({
-				templateUrl: 'views/dphttp.html',
-				controller: 'DPHttpController',
-				permission: 'Admin'
-			})).
-			when('/DPInflux', angularAMD.route({
-				templateUrl: 'views/dpinflux.html',
-				controller: 'DPInfluxController',
-				permission: 'Admin'
-			})).
-			when('/DPGooglePubSub', angularAMD.route({
-				templateUrl: 'views/dpgooglepubsub.html',
-				controller: 'DPGooglePubSubController',
-				permission: 'Admin'
-			})).
-			when('/Events', angularAMD.route({
-				templateUrl: 'views/events.html',
-				controller: 'EventsController',
-				permission: 'Admin'
-			})).
-			when('/Floorplans', angularAMD.route({
-				templateUrl: 'views/floorplans.html',
-				controller: 'FloorplanController'
-			})).
-			when('/Floorplanedit', angularAMD.route({
-				templateUrl: 'views/floorplanedit.html',
-				controller: 'FloorplanEditController',
-				permission: 'Admin'
-			})).
-			when('/Forecast', angularAMD.route({
-				templateUrl: 'views/forecast.html',
-				controller: 'ForecastController'
-			})).
-			when('/Frontpage', angularAMD.route({
-				templateUrl: 'views/frontpage.html',
-				controller: 'FrontpageController'
-			})).
-			when('/Hardware', angularAMD.route({
-				templateUrl: 'views/hardware.html',
-				controller: 'HardwareController',
-				permission: 'Admin'
-			})).
-			when('/History', angularAMD.route({
-				templateUrl: 'views/history.html',
-				controller: 'HistoryController'
-			})).
-			when('/LightSwitches', angularAMD.route({
-				templateUrl: 'views/lights.html',
-				controller: 'LightsController',
-			})).
-			when('/Lights', angularAMD.route({
-				templateUrl: 'views/lights.html',
-				controller: 'LightsController'
-			})).
-			when('/Log', angularAMD.route({
-				templateUrl: 'views/log.html',
-				controller: 'LogController',
-				permission: 'Admin'
-			})).
-			when('/Login', angularAMD.route({
-				templateUrl: 'views/login.html',
-				controller: 'LoginController'
-			})).
-			when('/Logout', angularAMD.route({
-				templateUrl: 'views/logout.html',
-				controller: 'LogoutController'
-			})).
-			when('/Offline', angularAMD.route({
-				templateUrl: 'views/offline.html',
-				controller: 'OfflineController'
-			})).
-			when('/Notification', angularAMD.route({
-				templateUrl: 'views/notification.html',
-				controller: 'NotificationController',
-				permission: 'Admin'
-			})).
-			when('/RestoreDatabase', angularAMD.route({
-				templateUrl: 'views/restoredatabase.html',
-				controller: 'RestoreDatabaseController',
-				permission: 'Admin'
-			})).
-			when('/RFXComFirmware', angularAMD.route({
-				templateUrl: 'views/rfxcomfirmware.html',
-				controller: 'RFXComFirmwareController',
-				permission: 'Admin'
-			})).
-			when('/Cam', angularAMD.route({
-				templateUrl: 'views/cam.html',
-				controller: 'CamController',
-				permission: 'Admin'
-			})).
-			when('/CustomIcons', angularAMD.route({
-				templateUrl: 'views/customicons.html',
-				controller: 'CustomIconsController',
-				permission: 'Admin'
-			})).
-			when('/Roomplan', angularAMD.route({
-				templateUrl: 'views/roomplan.html',
-				controller: 'RoomplanController',
-				permission: 'Admin'
-			})).
-			when('/Timerplan', angularAMD.route({
-				templateUrl: 'views/timerplan.html',
-				controller: 'TimerplanController',
-				permission: 'Admin'
-			})).
-			when('/Scenes', angularAMD.route({
-				templateUrl: 'views/scenes.html',
-				controller: 'ScenesController'
-			})).
-			when('/Scenes/:id/Log', angularAMD.route({
-				templateUrl: 'views/log/scene_log.html',
-				controller: 'SceneLogController',
-				controllerUrl: 'app/log/SceneLog.js',
-				controllerAs: 'vm'
-			})).
-			when('/Scenes/:id/Timers', angularAMD.route({
-				templateUrl: 'views/timers.html',
-				controller: 'SceneTimersController',
-				controllerUrl: 'app/timers/SceneTimersController.js',
-				controllerAs: 'vm'
-			})).
-			when('/Setup', angularAMD.route({
-				templateUrl: 'views/setup.html',
-				controller: 'SetupController',
-				permission: 'Admin'
-			})).
-			when('/Temperature', angularAMD.route({
-				templateUrl: 'views/temperature.html',
-				controller: 'TemperatureController',
-				controllerAs: 'ctrl'
-			})).
-			when('/Temperature/CustomTempLog', angularAMD.route({
-				templateUrl: 'views/temperature_custom_temp_log.html',
-				controller: 'TemperatureCustomLogController',
-				controllerAs: 'ctrl'
-			})).
-			when('/Update', angularAMD.route({
-				templateUrl: 'views/update.html',
-				controller: 'UpdateController',
-				permission: 'Admin'
-			})).
-			when('/Users', angularAMD.route({
-				templateUrl: 'views/users.html',
-				controller: 'UsersController',
-				permission: 'Admin'
-			})).
-			when('/UserVariables', angularAMD.route({
-				templateUrl: 'views/uservariables.html',
-				controller: 'UserVariablesController',
-				permission: 'Admin'
-			})).
-			when('/Utility', angularAMD.route({
-				templateUrl: 'views/utility.html',
-				controller: 'UtilityController'
-			})).
-			when('/Weather', angularAMD.route({
-				templateUrl: 'views/weather.html',
-				controller: 'WeatherController',
-				controllerAs: 'ctrl'
-			})).
-			when('/ZWaveTopology', angularAMD.route({
-				templateUrl: 'zwavetopology.html',
-				controller: 'ZWaveTopologyController',
-				permission: 'Admin'
-			})).
-			when('/Mobile', angularAMD.route({
-				templateUrl: 'views/mobile_notifications.html',
-				controller: 'MobileNotificationsController',
-				permission: 'Admin'
-			})).
-			when('/About', angularAMD.route({
-				templateUrl: 'views/about.html',
-				controller: 'AboutController'
-			})).
-			when('/Custom/:custompage', angularAMD.route({
-				templateUrl: function (params) {
-					return 'templates/' + params.custompage + '.html';
-				},
-				controller: 'DummyController'
-			})
-			).
-			otherwise({
-				redirectTo: '/Dashboard'
-			});
-		// Use html5 mode.
-		//$locationProvider.html5Mode(true);
-	});
 
 	app.config(function ($httpProvider) {
 		var logsOutUserOn401 = ['$q', '$location', 'permissions', function ($q, $location, permissions) {
@@ -994,8 +751,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
 						$rootScope.config.EnableTabProxy = data.result.EnableTabProxy,
-							$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
-							$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
+						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
+						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;
 						$rootScope.config.EnableTabScenes = data.result.EnableTabScenes;
 						$rootScope.config.EnableTabTemp = data.result.EnableTabTemp;
@@ -1162,6 +919,33 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		});
 		permissions.setPermissions(permissionList);
 
+		Highcharts.setOptions({
+			chart: {
+				style: {
+                    fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif'
+				}
+			},
+            credits: {
+                enabled: true,
+                href: "http://www.domoticz.com",
+                text: "Domoticz.com"
+            },
+            title: {
+                style: {
+                    textTransform: 'none',
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif',
+                    fontSize: '16px',
+					fontWeight: 'bold'
+                }
+            },
+            legend: {
+                itemStyle: {
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif',
+                    fontWeight: 'normal'
+                }
+            }
+		});
+
 			/* this doesnt run, for some reason */
 			app.run(function (livesocket) {
 				console.log(livesocket);
@@ -1236,6 +1020,21 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 			return backgroundClass;
 		}
+		$rootScope.DisplayTrend = function (trend) {
+			//0=Unknown, 1=Stable, 2=Up, 3=Down
+			if (typeof trend != 'undefined') {
+				if (trend > 1)
+					return true;
+			}
+			return false;
+		};
+		$rootScope.TrendState = function (trend) {
+			if (trend == 0) return "unk";
+			if (trend == 1) return "stable";
+			if (trend == 2) return "up";
+			if (trend == 3) return "down";
+			return "unk";
+		};
 
 	});
 

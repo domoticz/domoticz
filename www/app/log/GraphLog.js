@@ -1,4 +1,4 @@
-define(['app', 'log/factories', 'log/components'], function (app) {
+define(['app', 'log/factories'], function (app) {
     app.component('deviceGraphLog', {
         bindings: {
             device: '<'
@@ -39,11 +39,6 @@ define(['app', 'log/factories', 'log/components'], function (app) {
                                 y: -36
                             }
                         }
-                    },
-                    credits: {
-                        enabled: true,
-                        href: 'http://www.domoticz.com',
-                        text: 'Domoticz.com'
                     },
                     xAxis: {
                         type: 'datetime'
@@ -208,41 +203,7 @@ define(['app', 'log/factories', 'log/components'], function (app) {
             }
 
             function getChartUnit() {
-                if (vm.device.SubType === 'Custom Sensor') {
-                    return vm.device.SensorUnit
-                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Voltage') {
-                    return 'V';
-                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Distance') {
-                    return vm.device.SwitchTypeVal === 1 ? 'in' : 'cm'
-                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Current') {
-                    return 'A';
-                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Pressure') {
-                    return 'Bar';
-                } else if (vm.device.Type === 'General' && vm.device.SubType === 'Sound Level') {
-                    return 'dB';
-                } else if (vm.device.SubType === 'Visibility') {
-                    return vm.device.SwitchTypeVal === 1 ? 'mi' : 'km';
-                } else if (vm.device.SubType === 'Solar Radiation') {
-                    return 'Watt/m2';
-                } else if (vm.device.SubType === 'Soil Moisture') {
-                    return 'cb';
-                } else if (vm.device.SubType === 'Leaf Wetness') {
-                    return 'Range';
-                } else if (vm.device.SubType === 'Weight') {
-                    return 'kg';
-                } else if (['Voltage', 'A/D'].includes(vm.device.SubType)) {
-                    return 'mV';
-                } else if (vm.device.SubType === 'Waterflow') {
-                    return 'l/min';
-                } else if (vm.device.SubType === 'Lux') {
-                    return 'lx';
-                } else if (vm.device.SubType === 'Percentage') {
-                    return '%';
-                } else if (vm.device.Type === 'Usage' && vm.device.SubType === 'Electric') {
-                    return 'W';
-                } else {
-                    return '?';
-                }
+                return vm.device.getUnit();
             }
 
             function getChartType() {

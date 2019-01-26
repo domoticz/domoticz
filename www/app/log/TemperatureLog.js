@@ -48,11 +48,6 @@ define(['app', 'log/factories'], function (app) {
                                     }
                                 }
                             },
-                            credits: {
-                                enabled: true,
-                                href: "http://www.domoticz.com",
-                                text: "Domoticz.com"
-                            },
                             xAxis: {
                                 type: 'datetime'
                             },
@@ -140,7 +135,12 @@ define(['app', 'log/factories'], function (app) {
 											}
 										}
 									}
-								}
+								},
+                                areasplinerange: {
+                                    marker: {
+                                        enabled: false
+                                    }
+                                }
                             },
                             title: {
                                 text: getChartTitle()
@@ -184,7 +184,7 @@ define(['app', 'log/factories'], function (app) {
                             chart.yAxis[1].visibility = vm.range !== 'day';
                         });
                 }
-                
+
                 function getChartType() {
 					if (vm.deviceType === 'Thermostat') return 'line';
 					return 'spline';

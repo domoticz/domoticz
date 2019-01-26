@@ -13,6 +13,10 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
+#ifndef WIN32
+	#include <ifaddrs.h>
+#endif
+
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
 for a variety of Xiaomi sensors.
@@ -102,6 +106,69 @@ void XiaomiGateway::RemoveFromGatewayList()
 	{
 		maingw->Restart();
 	}
+}
+
+// Use this function to get local ip addresses via getifaddrs when Boost.Asio approach fails
+// Adds the addresses found to the supplied vector and returns the count
+// Code from Stack Overflow - https://stackoverflow.com/questions/2146191
+int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
+{
+#ifdef WIN32
+	return 0;
+#else
+	struct ifaddrs *myaddrs, *ifa;
+	void *in_addr;
+	char buf[64];
+	int count = 0;
+
+	if(getifaddrs(&myaddrs) != 0)
+	{
+		_log.Log(LOG_ERROR, "getifaddrs failed! (when trying to determine local ip address)");
+		perror("getifaddrs");
+		return 0;
+	}
+
+	for (ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
+	{
+		if (ifa->ifa_addr == NULL)
+			continue;
+		if (!(ifa->ifa_flags & IFF_UP))
+			continue;
+
+		switch (ifa->ifa_addr->sa_family)
+		{
+			case AF_INET:
+			{
+				struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
+				in_addr = &s4->sin_addr;
+				break;
+			}
+
+			case AF_INET6:
+			{
+				struct sockaddr_in6 *s6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+				in_addr = &s6->sin6_addr;
+				break;
+			}
+
+			default:
+				continue;
+		}
+
+		if (!inet_ntop(ifa->ifa_addr->sa_family, in_addr, buf, sizeof(buf)))
+		{
+			_log.Log(LOG_ERROR, "Could not convert to IP address, inet_ntop failed for interface %s", ifa->ifa_name);
+		}
+		else
+		{
+			ip_addrs.push_back(buf);
+			count++;
+		}
+	}
+
+	freeifaddrs(myaddrs);
+	return count;
+#endif
 }
 
 XiaomiGateway::XiaomiGateway(const int ID)
@@ -552,9 +619,13 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall/rotate
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|rotate", false));
 				}
+				else if (Name == "Aqara Vibration Sensor") {
+					// tilt/vibrate/free fall
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Tilt|Vibrate|Free Fall", false));
+				}
 				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
 					//for Aqara wireless switch, 2 buttons support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both_Click", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both Click|Switch 1 Double Click|Switch 2 Double Click|Both Double Click|Switch 1 Long Click|Switch 2 Long Click|Both Long Click", false));
 				}
 				else if (Name == "Xiaomi Wired Single Wall Switch") {
 					//for Aqara wired switch, single button support
@@ -579,7 +650,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		else if (switchtype == STYPE_OnOff && Name == "Xiaomi Gateway MP3") {
-			m_sql.SaveUserVariable("XiaomiMP3", "0", "10001");
+			m_sql.AddUserVariable("XiaomiMP3", "0", "10001");
 		}
 	}
 	else {
@@ -691,16 +762,9 @@ bool XiaomiGateway::StartHardware()
 
 	//Start worker thread
 	m_thread = std::shared_ptr<std::thread>(new std::thread(&XiaomiGateway::Do_Work, this));
-	SetThreadName(m_thread->native_handle(), "XiaomiGateway");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
-}
-
-
-void XiaomiGateway::Restart()
-{
-    StopHardware();
-    StartHardware();
 }
 
 bool XiaomiGateway::StopHardware()
@@ -736,7 +800,38 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 	catch (std::exception& e) {
-		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address: %s", m_HwdID, e.what());
+		_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not detect local IP address using Boost.Asio: %s", m_HwdID, e.what());
+	}
+	
+	// try finding local ip using ifaddrs when Boost.Asio fails
+	if (m_LocalIp == "") {
+		try {
+			// get first 2 octets of Xiaomi gateway ip to search for similar ip address
+			std::string compareIp = m_GatewayIp.substr(0, (m_GatewayIp.length() - 3));
+			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): XiaomiGateway IP address starts with: %s", m_HwdID, compareIp.c_str());	
+			
+			std::vector<std::string> ip_addrs;
+			if (XiaomiGateway::get_local_ipaddr(ip_addrs) > 0)
+			{
+				for(const std::string &addr : ip_addrs) 
+				{
+					std::size_t found = addr.find(compareIp);
+					if (found != std::string::npos) 
+					{
+						m_LocalIp = addr;
+						_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Using %s for local IP address.", m_HwdID, m_LocalIp.c_str());
+						break;
+					}
+				}
+			}
+			else 
+			{
+				_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not find local IP address with ifaddrs", m_HwdID);	
+			}
+		}
+		catch (std::exception& e) {
+			_log.Log(LOG_STATUS, "XiaomiGateway (ID=%d): Could not find local IP address with ifaddrs: %s", m_HwdID, e.what());
+		}
 	}
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
@@ -918,7 +1013,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Motion;
 						name = "Aqara Motion Sensor";
 					}
-					else if (model == "switch") {
+					else if ((model == "switch") || (model == "remote.b1acn01")) {
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
@@ -956,22 +1051,26 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Aqara Cube";
 						type = STYPE_Selector;
 					}
-					else if (model == "86sw2") {
+					else if (model == "86sw2" || model == "remote.b286acn01" ) {
 						name = "Xiaomi Wireless Dual Wall Switch";
+						type = STYPE_Selector;
+					}
+					else if (model == "vibration") {
+						name = "Aqara Vibration Sensor";
 						type = STYPE_Selector;
 					}
 					else if (model == "ctrl_neutral2" || model == "ctrl_ln2" || model == "ctrl_ln2.aq1") {
 						name = "Xiaomi Wired Dual Wall Switch";
 						//type = STYPE_Selector;
 					}
-					else if (model == "gateway") {
+					else if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
 						name = "Xiaomi RGB Gateway";
 					}
 					else if (model == "ctrl_neutral1" || model == "ctrl_ln1" || model == "ctrl_ln1.aq1") {
 						name = "Xiaomi Wired Single Wall Switch";
 						//type = STYPE_Selector;
 					}
-					else if (model == "86sw1") {
+					else if (model == "86sw1" || model == "remote.b186acn01") {
 						name = "Xiaomi Wireless Single Wall Switch";
 						type = STYPE_PushOn;
 					}
@@ -1023,7 +1122,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							if (model == "sensor_wleak.aq1" && battery != 255) {
 								level = 0;
 							}
-							if ((alarm == "1") || (status == "leak")) {
+							if ((alarm == "1") || (alarm == "2") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
@@ -1041,37 +1140,41 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 0;
 							on = false;
 						}
-						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click")) {
+						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click") || (status == "tilt")) {
 							level = 10;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake") || (status == "vibrate")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click")) {
+						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click") || (status == "free_fall")) {
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (status == "long_click_release")) {
-							level = 40;
-							on = true;
+						else if ((status == "tap_twice") || (status == "long_click_release") || (aqara_wireless1 == "double_click")) {
+						    level = 40;
+						    on = true;
 						}
-						else if (status == "shake_air") {
-							level = 50;
-							on = true;
+						else if ((status == "shake_air") || (aqara_wireless2 == "double_click")) {
+						    level = 50;
+						    on = true;
 						}
-						else if (status == "swing") {
-							level = 60;
-							on = true;
+						else if ((status == "swing") || (aqara_wireless3 == "double_both_click")) {
+						    level = 60;
+						    on = true;
 						}
-						else if (status == "alert") {
-							level = 70;
-							on = true;
+						else if ((status == "alert") || (aqara_wireless1 == "long_click")) {
+						    level = 70;
+						    on = true;
 						}
-						else if (status == "free_fall") {
-							level = 80;
-							on = true;
+						else if ((status == "free_fall") || (aqara_wireless2 == "long_click")) {
+						    level = 80;
+						    on = true;
+						}
+						else if (aqara_wireless3 == "long_both_click") {
+						    level = 90;
+						    on = true;
 						}
 						std::string rotate = root2["rotate"].asString();
 						if (rotate != "") {
@@ -1226,7 +1329,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				showmessage = false;
 			}
 			else if (cmd == "iam") {
-				if (model == "gateway") {
+				if (model == "gateway" || model == "gateway.v3" || model == "acpartner.v3") {
 					std::string ip = root["ip"].asString();
 					// Only add in the gateway that matches the IP address for this hardware.
 					if (ip == TrueGateway->GetGatewayIp()) 
@@ -1259,7 +1362,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		start_receive();
 	}
 	else {
-		_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive %d", error);
+		_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive %s", error.message().c_str());
 	}
 
 }

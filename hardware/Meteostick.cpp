@@ -54,7 +54,7 @@ bool Meteostick::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	m_thread = std::make_shared<std::thread>(&Meteostick::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Meteostick");
+	SetThreadNameInt(m_thread->native_handle());
 
 	return true;
 }
@@ -233,12 +233,8 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	tsen.WIND.gusth = 0;
 	tsen.WIND.gustl = 0;
 
-	//this is not correct, why no wind temperature? and only chill?
 	tsen.WIND.chillh = 0;
 	tsen.WIND.chilll = 0;
-	//tsen.WIND.temperatureh = 0;
-	//tsen.WIND.temperaturel = 0;
-	//tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
 
 	float dWindSpeed = Speed * 3.6f;
 	float dWindChill = Temp;
@@ -251,10 +247,8 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	}
 	dWindChill*=10.0f;
 	tsen.WIND.chillsign = (dWindChill >= 0) ? 0 : 1;
-	//tsen.WIND.temperatureh = (BYTE)(dWindChill / 256);
 	tsen.WIND.chillh = (BYTE)(dWindChill / 256);
 	dWindChill -= (tsen.WIND.chillh * 256);
-	//tsen.WIND.temperaturel = (BYTE)(dWindChill);
 	tsen.WIND.chilll = (BYTE)(dWindChill);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255);

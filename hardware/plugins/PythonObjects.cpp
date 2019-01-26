@@ -758,7 +758,9 @@ namespace Plugins {
 								std::map<std::string, std::string> mpOptions;
 								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
 									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-									std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
+									PyObject* pStr = PyObject_Str(pValueDict);
+									std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+									Py_XDECREF(pStr);
 									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
@@ -811,10 +813,10 @@ namespace Plugins {
 			int			iSubType = self->SubType;
 			int			iSwitchType = self->SwitchType;
 			int			iUsed = self->Used;
-			uint64_t 		DevRowIdx;
+			uint64_t 	DevRowIdx;
 			char*		Description = NULL;
 			char*		Color = NULL;
-			bool		SuppressTriggers = false;
+			int			SuppressTriggers = false;
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
@@ -839,7 +841,7 @@ namespace Plugins {
 				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
 
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
-				if ((self->Type == pTypeSecurity1) && (self->SubType = sTypeDomoticzSecurity) && (self->nValue != nValue))
+				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
 					switch (nValue)
 					{
@@ -951,9 +953,12 @@ namespace Plugins {
 					PyObject *pKeyDict, *pValueDict;
 					Py_ssize_t pos = 0;
 					std::map<std::string, std::string> mpOptions;
-					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict)) {
+					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
+					{
 						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-						std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
+						PyObject* pStr = PyObject_Str(pValueDict);
+						std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+						Py_XDECREF(pStr);
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
 					m_sql.SetDeviceOptions(self->ID, mpOptions);
@@ -1085,7 +1090,9 @@ namespace Plugins {
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) CConnection Type is not ready.", self->pPlugin->m_Name.c_str());
+			//!Giz: self = NULL here!!
+			//_log.Log(LOG_ERROR, "(%s) CConnection Type is not ready.", self->pPlugin->m_Name.c_str());
+			_log.Log(LOG_ERROR, "(Python plugin) CConnection Type is not ready!");
 		}
 
 		try

@@ -5,8 +5,9 @@
 #if defined WIN32
 #include "ws2tcpip.h"
 #endif
+#include "ASyncTCP.h"
 
-class DomoticzTCP : public CRFXBase
+class DomoticzTCP : public CRFXBase, ASyncTCP
 {
 public:
 	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
@@ -24,14 +25,10 @@ public:
 	void DisconnectProxy();
 #endif
 private:
-	void write(const char *data, size_t size);
-	bool isConnectedTCP();
-	void disconnectTCP();
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void writeTCP(const char *data, size_t size);
 	void Do_Work();
-	bool ConnectInternal();
+
 #ifndef NOCLOUD
 	bool StartHardwareProxy();
 	void writeProxy(const char *data, size_t size);
@@ -40,20 +37,20 @@ private:
 	bool StopHardwareProxy();
 	std::string GetToken();
 #endif
-private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_username;
 	std::string m_password;
-	int m_retrycntr;
 	std::shared_ptr<std::thread> m_thread;
-	sockaddr_in6 m_addr;
-	struct addrinfo *info;
-	int m_socket;
-	unsigned char mBuffer[512];
 #ifndef NOCLOUD
 	std::string token;
 	bool b_ProxyConnected;
 	bool b_useProxy;
 #endif
+protected:
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 };

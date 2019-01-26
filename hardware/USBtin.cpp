@@ -88,14 +88,8 @@ bool USBtin::StartHardware()
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
 	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "USBtin");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
-}
-
-void USBtin::Restart()
-{
-	StopHardware();
-	StartHardware();
 }
 
 bool USBtin::StopHardware()
@@ -261,7 +255,7 @@ void USBtin::ParseData(const char *pData, int Len)
 			m_USBtinBelErrorCount++;
 			if( m_USBtinBelErrorCount > 3 ){ //If more than 3 BEL receive : restart the Gateway !
 				_log.Log(LOG_ERROR,"USBtin: 3x times BEL signal receive : restart gateway ");
-				Restart();
+				RestartWithDelay(3);
 			}
 			else{
 				_log.Log(LOG_ERROR,"USBtin: BEL signal (commande allready active or Gateway error) ! ");

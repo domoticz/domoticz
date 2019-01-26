@@ -123,6 +123,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_AddModule, const char*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_SetProfile, Py_tracefunc COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_SetTrace, Py_tracefunc COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Str, PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyObject_IsTrue, PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -246,6 +248,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyImport_AddModule);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SetProfile);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SetTrace);
+					RESOLVE_PYTHON_SYMBOL(PyObject_Str);
+					RESOLVE_PYTHON_SYMBOL(PyObject_IsTrue);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -296,6 +300,25 @@ namespace Plugins {
 					if (!shared_lib_)
 					{
 						library = "/usr/local/lib/lib" + sLibrary + "m.so";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// MacOS
+					// look for .dylib in /usr/local/lib
+					if (!shared_lib_)
+					{
+						library = "/usr/local/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// look for .dylib in /Library/Frameworks/Python.framework/Versions/*/lib
+					if (!shared_lib_)
+					{
+						library = "/Library/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// Finally look for .dylib installed by Homebrew
+					if (!shared_lib_)
+					{
+						library = "/usr/local/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 				}
@@ -426,4 +449,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyImport_AddModule		pythonLib->PyImport_AddModule
 #define PyEval_SetProfile		pythonLib->PyEval_SetProfile
 #define PyEval_SetTrace			pythonLib->PyEval_SetTrace
+#define PyObject_Str			pythonLib->PyObject_Str
+#define	PyObject_IsTrue			pythonLib->PyObject_IsTrue
 }

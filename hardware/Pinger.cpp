@@ -175,7 +175,7 @@ bool CPinger::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CPinger::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "Pinger");
+	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
 
@@ -423,12 +423,6 @@ void CPinger::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
-}
-
-void CPinger::Restart()
-{
-	StopHardware();
-	StartHardware();
 }
 
 //Webserver helpers

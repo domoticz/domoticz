@@ -33,7 +33,6 @@
 
 // Includes for SystemUptime()
 #if defined(__linux__) || defined(__linux) || defined(linux)
-#include <sys/time.h>
 #include <sys/sysinfo.h>
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
 #include <time.h>
@@ -843,6 +842,17 @@ int MStoBeaufort(const float ms)
 	return 12;
 }
 
+void FixFolderEnding(std::string &folder)
+{
+#if defined(WIN32)
+	if (folder.at(folder.length() - 1) != '\\')
+		folder += "\\";
+#else
+	if (folder.at(folder.length() - 1) != '/')
+		folder += "/";
+#endif
+}
+
 bool dirent_is_directory(const std::string &dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_DIR)
@@ -1129,7 +1139,7 @@ typedef struct tagTHREADNAME_INFO
 	DWORD dwFlags; // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 #pragma pack(pop)
-int SetThreadName(std::thread::native_handle_type thread, const char* threadName) {
+int SetThreadName(const std::thread::native_handle_type &thread, const char* threadName) {
 	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
@@ -1148,7 +1158,7 @@ int SetThreadName(std::thread::native_handle_type thread, const char* threadName
 }
 #else
 // Based on https://stackoverflow.com/questions/2369738/how-to-set-the-name-of-a-thread-in-linux-pthreads
-int SetThreadName(std::thread::native_handle_type thread, const char *name)
+int SetThreadName(const std::thread::native_handle_type &thread, const char *name)
 {
 #if defined(__linux__) || defined(__linux) || defined(linux)
 	char name_trunc[16];

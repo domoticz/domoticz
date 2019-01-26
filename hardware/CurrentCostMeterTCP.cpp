@@ -56,7 +56,7 @@ bool CurrentCostMeterTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CurrentCostMeterTCP::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "CurrentCostMeterTCP");
+	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
 
@@ -83,7 +83,7 @@ bool CurrentCostMeterTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		_log.Log(LOG_ERROR,"CurrentCost Smart Meter: could not create a TCP/IP socket!");
+		Log(LOG_ERROR,"could not create a TCP/IP socket!");
 		return false;
 	}
 
@@ -94,11 +94,11 @@ bool CurrentCostMeterTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		_log.Log(LOG_ERROR,"CurrentCost Smart Meter: could not connect to: %s:%d",m_szIPAddress.c_str(),m_usIPPort);
+		Log(LOG_ERROR,"could not connect to: %s:%d",m_szIPAddress.c_str(),m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS,"CurrentCost Smart Meter: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS,"connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	Init();
 
@@ -136,7 +136,7 @@ void CurrentCostMeterTCP::Do_Work()
 					m_retrycntr = 0;
 					if (!ConnectInternal())
 					{
-						_log.Log(LOG_STATUS, "CurrentCost Smart Meter: retrying in %d seconds...", RETRY_DELAY);
+						Log(LOG_STATUS, "retrying in %d seconds...", RETRY_DELAY);
 						continue;
 					}
 				}
@@ -152,14 +152,14 @@ void CurrentCostMeterTCP::Do_Work()
 			if ((bread==0)||(bread<0))
 			{
 				disconnect();
-				_log.Log(LOG_ERROR, "CurrentCost Smart Meter: TCP/IP connection closed!, retrying in %d seconds...", RETRY_DELAY);
+				Log(LOG_ERROR, "TCP/IP connection closed!, retrying in %d seconds...", RETRY_DELAY);
 				m_retrycntr = 0;
 				continue;
 			}
 			ParseData(data, bread);
 		}
 	}
-	_log.Log(LOG_STATUS,"CurrentCost Smart Meter: TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"TCP/IP Worker stopped...");
 }
 
 void CurrentCostMeterTCP::write(const char* /*data*/, size_t /*size*/)

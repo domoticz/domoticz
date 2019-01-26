@@ -40,7 +40,7 @@ bool CVolcraftCO20::StartHardware()
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>(&CVolcraftCO20::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "VolcraftCO20");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 

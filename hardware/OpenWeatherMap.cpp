@@ -75,7 +75,7 @@ bool COpenWeatherMap::StartHardware()
 	RequestStart();
 
 	m_thread = std::make_shared<std::thread>(&COpenWeatherMap::Do_Work, this);
-	SetThreadName(m_thread->native_handle(), "OpenWeatherMap");
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "OpenWeatherMap: Started");
@@ -190,9 +190,9 @@ void COpenWeatherMap::GetMeterDetails()
 		return;
 	}
 
+	float temp = -999.9f;
 	if (!root["main"].empty())
 	{
-		float temp = -999.9f;
 		int humidity = 0;
 		int barometric = 0;
 		int barometric_forecast = baroForecastNoInfo;
@@ -268,7 +268,11 @@ void COpenWeatherMap::GetMeterDetails()
 			windspeed_ms = root["wind"]["speed"].asFloat();
 		}
 		if ((wind_degrees != -1) && (windspeed_ms != -1))
-			SendWind(1, 255, wind_degrees, windspeed_ms, 0, 0, 0, false, "Wind");
+		{
+			bool bHaveTemp = (temp != -999.9f);
+			float rTemp = (temp != -999.9f) ? temp : 0;
+			SendWind(1, 255, wind_degrees, windspeed_ms, 0, rTemp, 0, bHaveTemp, false, "Wind");
+		}
 	}
 
 	//Rain

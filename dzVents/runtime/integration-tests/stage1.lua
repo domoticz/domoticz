@@ -164,12 +164,12 @@ local testAmpere1 = function(name)
 	local dev = dz.devices(name)
 	local res = true
 
-	res = res and expectEql(64, math.floor(dev.current * 10))
+	res = res and expectEql(0, dev.current)
 
 	res = res and checkAttributes(dev, {
 		["id"] = 5,
 		["name"] = name,
-		["state"] = "6.4",
+		["state"] = "0.0",
 		["deviceSubType"] = "Current";
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -866,7 +866,11 @@ local testThermostatSetpoint = function(name)
 		["timedOut"] = false;
 	})
 
-	dev.updateSetPoint(22)
+	
+	
+    dev.updateSetPoint(11) 
+    dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
+	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
 	tstMsg('Test thermostat device', res)
 	return res
 end
@@ -1173,6 +1177,13 @@ local testSilentGroup = function(name)
 	return res
 end
 
+local testSnapshot = function()
+    local res = true
+    dz.snapshot(1,"stage1 snapshot").afterSec(4)
+    tstMsg('Test camera snaphot',res)
+    return res
+end
+
 local storeLastUpdates = function()
 
 	dz.globalData.stage1Time = dz.time.raw
@@ -1218,7 +1229,7 @@ local testRepeatSwitch = function(name)
 	dz.globalData.repeatSwitch.reset()
 	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
 	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
-	tstMsg('Test reapeat switch device', res)
+	tstMsg('Test repeat switch device', res)
 	return true
 end
 
@@ -1313,6 +1324,7 @@ return {
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
 		res = res and testCancelledScene('scCancelledScene');
 		res = res and testHTTPSwitch('vdHTTPSwitch');
+		res = res and testSnapshot();
 
 		storeLastUpdates()
 

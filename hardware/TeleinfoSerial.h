@@ -40,22 +40,11 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Init();
-	void MatchLine();
-	void ParseData(const char *pData, int Len);
 	void readCallback(const char *data, size_t len);
 private:
 	std::string m_szSerialPort;
-	Teleinfo m_teleinfo;
-
-	unsigned int m_iBaudRate;
-	bool m_bDisableCRC;
 	boost::asio::serial_port_base::parity m_iOptParity;
 	boost::asio::serial_port_base::character_size m_iOptCsize;
 	boost::asio::serial_port_base::flow_control m_iOptFlow;
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
-
-	unsigned int m_counter;
-
-	char m_buffer[1024];
-	int m_bufferpos;
 };
