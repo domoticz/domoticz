@@ -1,3 +1,10 @@
+[2.4.11]
+- Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+
+[2.4.10]
+- Added option to use afterXXX() and withinXXX() functions to updateSetPoint()
+- Changed parm from integer to string in call to device.update in function updateMode of device adapter zwave_thermostat_mode_device
+
 [2.4.9]
 - Added evohome hotwater device (state, mode, untilDate and setHotWater function)
 - Added mode and untilDate for evohome zone devices 
@@ -8,6 +15,8 @@
 - Added tests for twilight and device functions (hotwater) and attributes (evohome- and wind devices)
 - Fixed some date-range rule checking
 - Fixed integration tests by changing API call for creating a domoticz variable (saveuservariable was changed to adduservariable)
+- Fixed combined timer where one part of the combination is even or odd week. 
+- Added tests for combined timer with even/odd week 
 
 [2.4.8]
 - Added telegram as option for domoticz.notify

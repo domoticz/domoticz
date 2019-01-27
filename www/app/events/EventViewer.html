@@ -29,6 +29,15 @@
         >
 
         <div class="pull-right">
+            <div class="events-editor-file__type input-prepend" ng-show="$ctrl.isTriggerAvailable()">
+                <label class="add-on" for="trigger">{{:: 'Trigger' | translate }}</label>
+                <select id="trigger"
+                        ng-model="$ctrl.eventData.type"
+                        ng-options="item.value as item.label for item in ::$ctrl.eventTypes"
+                        ng-change="$ctrl.markEventAsUpdated()">
+                </select>
+            </div>
+
             <div class="btn-group" ng-if="$ctrl.eventData.interpreter === 'Blockly'">
                 <button class="btn btn-default"
                         type="button"

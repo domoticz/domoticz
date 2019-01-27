@@ -1,53 +1,109 @@
 define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
+    var iconByDeviceSwitchType = {
+        0: 'Light48_On.png',        // On/Off
+        1: 'doorbell48.png',        // Doorbell
+        2: 'Contact48_On.png',      // Contact
+        3: 'blinds48.png',          // Blinds,
+        4: 'Alarm48_On.png',        // X10 Siren
+        5: 'smoke48on.png',         // Smoke Detector
+        6: 'blinds48.png',          // Blinds Inverted
+        7: 'Dimmer48_On.png',       // Dimmer
+        8: 'motion48-on.png',       // Motion Sensor
+        9: 'Push48_On.png',         // Push On Button
+        10: 'Push48_Off.png',       // Push Off Button
+        11: 'Door48_On.png',        // Door Contact
+        12: 'Water48_On.png',       // Dusk Sensor
+        13: 'blinds48.png',         // Blinds Percentage
+        14: 'blinds48.png',         // Venetian Blinds US
+        15: 'blinds48.png',         // Venetian Blinds EU
+        16: 'blinds48.png',         // Blinds Percentage Inverted
+        17: 'Media48_On.png',       // Media Player
+        18: 'Generic48_On.png',     // Selector
+        19: 'Door48_On.png',      // Door Lock
+        20: 'Door48_On.png',      // Door Lock Inverted
+    };
+
     app.component('deviceIconSelect', {
         template: '<select id="icon-select"></select>',
+        bindings: {
+            switchType: '<'
+        },
         require: {
             ngModelCtrl: 'ngModel'
         },
         controller: function ($element, domoticzApi) {
             var vm = this;
-            var icons = [];
+            var switch_icons = [];
+
+            function updateSelector(bFromUser) {
+                switch_icons[0].imageSrc = iconByDeviceSwitchType[vm.switchType]
+                    ? 'images/' + iconByDeviceSwitchType[vm.switchType]
+                    : 'images/Generic48_On.png';
+
+                $element.find('#icon-select').ddslick('destroy');
+                $element.find('#icon-select').ddslick({
+                    data: switch_icons,
+                    width: 260,
+                    height: 390,
+                    selectText: 'Select Switch Icon',
+                    imagePosition: 'left',
+                    onSelected: function (data) {
+                        vm.ngModelCtrl.$setViewValue(data.selectedData.value);
+                    }
+                });
+                if (bFromUser) {
+					$element.find('#icon-select').ddslick('select', { index: 0 });
+				}
+
+                vm.ngModelCtrl.$render();
+            }
 
             vm.$onInit = function () {
                 // TODO: Add caching mechanism for this request
                 domoticzApi.sendRequest({
                     type: 'custom_light_icons'
                 }).then(function (data) {
-                    icons = (data.result || []).map(function (item) {
-                        return {
-                            text: item.text,
-                            value: item.idx,
-                            selected: false,
-                            description: item.description,
-                            imageSrc: 'images/' + item.imageSrc + '48_On.png'
-                        };
+                    switch_icons = (data.result || [])
+                        .filter(function (item) {
+                            return item.idx !== 0;
+                        })
+                        .map(function (item) {
+                            return {
+                                text: item.text,
+                                value: item.idx,
+                                selected: false,
+                                description: item.description,
+                                imageSrc: 'images/' + item.imageSrc + '48_On.png'
+                            };
+                        });
+
+                    switch_icons.unshift({
+                        text: 'Default',
+                        value: 0,
+                        selected: false,
+                        description: 'Default icon'
                     });
 
-                    $element.find('#icon-select').ddslick({
-                        data: icons,
-                        width: 260,
-                        height: 390,
-                        selectText: 'Select Switch Icon',
-                        imagePosition: 'left',
-                        onSelected: function (data) {
-                            vm.ngModelCtrl.$setViewValue(data.selectedData.value);
-                        }
-                    });
-
-                    vm.ngModelCtrl.$render();
+                    updateSelector(false);
                 });
 
                 vm.ngModelCtrl.$render = function () {
                     var value = vm.ngModelCtrl.$modelValue;
 
-                    icons.forEach(function (item, index) {
+                    switch_icons.forEach(function (item, index) {
                         if (item.value === value) {
                             $element.find('#icon-select').ddslick('select', { index: index });
                         }
                     });
                 };
             };
+
+            vm.$onChanges = function (changes) {
+                if (changes.switchType && switch_icons.length > 0) {
+                    updateSelector(true);
+                }
+            }
         }
     });
 
@@ -575,7 +631,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         }
 
         function isSwitchIconAvailable() {
-            return [0, 7, 17, 18].includes(vm.device.SwitchTypeVal);
+            return [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(vm.device.SwitchTypeVal);
         }
 
         function isLevelsAvailable() {

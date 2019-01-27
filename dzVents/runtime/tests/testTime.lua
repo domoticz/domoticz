@@ -1366,12 +1366,12 @@ describe('Time', function()
 				it('should return true when matches odd weeks', function()
 					local t = Time('2017-06-05 02:04:00') -- week 23
 					assert.is_true(t.ruleIsInWeek('every odd week'))
-					assert.is_nil(t.ruleIsInWeek('every even week'))
+					assert.is_false(t.ruleIsInWeek('every even week'))
 				end)
 
 				it('should return true when matches even weeks', function()
 					local t = Time('2017-06-13 02:04:00') -- week 24
-					assert.is_nil(t.ruleIsInWeek('every odd week'))
+					assert.is_false(t.ruleIsInWeek('every odd week'))
 					assert.is_true(t.ruleIsInWeek('every even week'))
 				end)
 
@@ -1470,6 +1470,15 @@ describe('Time', function()
 		end)
 
 		describe('combis', function()
+
+        	it('should return false when not on every second sunday between 1:00 and 1:30', function()
+				local t = Time('2018-12-30 01:04:00') -- on Sunday, odd week at 01:04 
+				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sun every odd week'))
+				assert.is_false(t.matchesRule('between 2:00 and 2:30 on sun every odd week'))
+				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sat every even week'))
+				assert.is_false(t.matchesRule('between 2:00 and 2:30 on sat every even week'))
+				assert.is_true(t.matchesRule('between 1:00 and 1:30 on sun every even week'))
+			end)
 
 			it('should return false when not on the day', function()
 

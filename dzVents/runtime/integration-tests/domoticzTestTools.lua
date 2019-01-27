@@ -99,6 +99,13 @@ local function DomoticzTestTools(port, debug, webroot)
 		return ok, dummyIdx
 	end
 
+   function self.createCamera()             
+        local url = "type=command&param=addcamera&address=192.168.192.123&port=8083&name=camera1&enabled=true&imageurl=aW1hZ2UuanBn&protocol=0"
+        --&username=&password=&imageurl=aW1hZ2UuanBn&protocol=0
+        local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
+    	return ok, json, result, respcode, respheaders, respstatus
+    end
+       
     function self.createVirtualDevice(hw, name, type, options)
     	-- type=createvirtualsensor&idx=2&sensorname=s1&sensortype=6
 

@@ -422,8 +422,8 @@ describe('device', function()
 			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14)
-			assert.is_same({ { ['SetSetPoint:1'] = '14'} }, commandArray)
-
+            assert.is_same( { { ["UpdateDevice"] = { idx=1, nValue=0, sValue="14", _trigger=true } } }, commandArray)
+      
 		end)
 
 		it('should detect a text device', function()
@@ -702,15 +702,14 @@ describe('device', function()
 			assert.is_same(2, device.mode)
 			assert.is_same('Heat Econ', device.modeString)
 
-
 			device.updateMode('Heat')
-			assert.is_same({ { ["UpdateDevice"] ={idx=1, nValue=1, sValue="1", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] ={idx=1, nValue=1, sValue="Heat", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Off')
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="0", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="Off", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Heat Econ')
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=2, sValue="2", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=2, sValue="Heat Econ", _trigger=true} } }, commandArray)
 
 		end)
 
