@@ -1932,6 +1932,14 @@ tspan {
 	margin-bottom: 24px;
 }
 
+.device-log-chart_sm {
+	height: 100px;
+}
+
+.device-log-chart_md {
+	height: 200px;
+}
+
 .no-data {
 	background-color: rgba(0, 0, 0, 0.25);
 	padding: 10px;

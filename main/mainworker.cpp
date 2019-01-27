@@ -2585,7 +2585,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				if (FWType >= FWtypePro1)
 				{
 					pMyHardware->m_NoiseLevel = NoiseLevel;
-					sprintf(szTmp, "Noise Level: %d dB", pMyHardware->m_NoiseLevel);
+					sprintf(szTmp, "Noise Level: %d", pMyHardware->m_NoiseLevel);
 					WriteMessage(szTmp);
 				}
 				if (FWType == FWtypeProXL1)

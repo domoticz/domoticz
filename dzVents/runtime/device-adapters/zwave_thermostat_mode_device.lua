@@ -42,7 +42,7 @@ return {
 		function device.updateMode(modeString)
 			for i, mode in pairs(modesLookup) do
 				if (mode == modeString) then
-					return device.update(i, i)
+					return device.update(i, modeString) -- 20190112 Changed 2nd parm from i to modeString to include modeString in logs
 				end
 			end
 		end

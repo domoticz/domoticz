@@ -33,6 +33,9 @@
 
 extern std::string szWWWFolder;
 extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
+extern std::string szWebRoot;
+extern std::string dbasefile;
 extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
@@ -1119,6 +1122,9 @@ Error:
 			}
 			Py_DECREF(pObj);
 
+			std::string sLanguage = "en";
+			m_sql.GetPreferencesVar("Language", sLanguage);
+
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
 			if (!result.empty())
@@ -1130,6 +1136,10 @@ Error:
 					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
 					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "WebRoot", szWebRoot);
+					ADD_STRING_TO_DICT(pParamsDict, "Database", dbasefile);
+					ADD_STRING_TO_DICT(pParamsDict, "Language", sLanguage);
 					ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
 					ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
 					ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);
@@ -1940,13 +1950,14 @@ Error:
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
-				else szTypeImage = "Light48";
+				else 
+					szTypeImage = "Light48";
 				break;
 			case STYPE_Doorbell:
 				szTypeImage = "doorbell48";
 				break;
 			case STYPE_Contact:
-				szTypeImage = "contact48";
+				szTypeImage = "Contact48";
 				break;
 			case STYPE_Blinds:
 			case STYPE_BlindsPercentage:
@@ -1969,19 +1980,19 @@ Error:
 				szTypeImage = "motion48";
 				break;
 			case STYPE_PushOn:
-				szTypeImage = "pushon48";
+				szTypeImage = "Push48";
 				break;
 			case STYPE_PushOff:
-				szTypeImage = "pushon48";
+				szTypeImage = "Push48";
 				break;
 			case STYPE_DoorContact:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLock:
-				szTypeImage = "door48open";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLockInverted:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_Media:
 				if (posCustom >= 0)
@@ -1989,7 +2000,8 @@ Error:
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
-				else szTypeImage = "Media48";
+				else
+					szTypeImage = "Media48";
 				break;
 			default:
 				szTypeImage = "logo";
