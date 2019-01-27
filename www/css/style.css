@@ -1995,3 +1995,40 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 	padding-right: 0;
 }
 
+.battery {
+	position: relative;
+	display: block;
+	margin: 1px 0 0 0.5px;
+	background: #B8DB23;
+	width: 6px;
+	height: 6px;
+	float: left;
+}
+
+.battery:before {
+	content: "";
+	display: block;
+	background: transparent;
+	border: 1px solid #000;
+	margin: -2px;;
+	width: 16px;
+	height: 8px;
+	position: absolute;
+	border-radius: 1px;
+}
+
+.battery:after {
+	content: "";
+	display: block;
+	background: transparent;
+	border: 1px solid #000;
+	margin-left: 15px;
+	width: 2px;
+	height: 4px;
+	position: absolute;
+	border-radius: 1px;
+}
+
+.battery.empty {background-color: #ED3745;}
+.battery.empty:before, .battery.empty:after {border-color: #ED3745;}
+.battery.half {background-color: #F9D023;}

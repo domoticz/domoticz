@@ -250,23 +250,19 @@ define(['app'], function (app) {
             		return value;
 				}
 
-                var levelTitle = $.t('Battery level') + ': ' + value + '%';
+                if (value === 255) {
+                    return '-'
+                }
 
-                // TODO: Find more battery icons
-				// As an option https://www.dreamstale.com/free-download-40-battery-vector-icons/
-            	if (value === 255) {
-            		return '-'
-				} else if (value < 5) {
-            		return '<img src="images/battery-low.png" title="' + levelTitle + '">'
-				} else if (value >= 75) {
-            		return '<img src="images/battery-ok.png" title="' + levelTitle + '">';
-				} else {
-                    return '<img src="images/battery.png" title="' + levelTitle + '">';
-				}
+				var className = value < 10 ? 'empty' : value < 40 ? 'half' : 'full';
+				var width = Math.ceil(value * 14 / 100);
+                var title = $.t('Battery level') + ': ' + value + '%';
+
+                 return '<div class="battery ' + className + '" style="width: ' + width + 'px" title="' + title + '"></div>';
 			}
 
             function renderBatteryLevelTitle() {
-                return '<img src="images/battery.png" title="' + $.t('Battery Level') + '">'
+                return '<img src="images/battery.png" style="transform: rotate(180deg);" title="' + $.t('Battery Level') + '">'
             }
 
             function renderSignalLevelTitle() {

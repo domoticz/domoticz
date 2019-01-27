@@ -1000,4 +1000,10 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   background-color: #606060;
 }
 
+.battery {
+  background-color: #FFF;
+}
 
+.battery:before, .battery:after {
+  border-color: #FFF;
+}
