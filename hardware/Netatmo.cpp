@@ -462,14 +462,14 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	{
 		if (!m_bNetatmoRefreshed[ID])
 		{
-			_log.Log(LOG_STATUS, "Netatmo module [%s]: Clould data is now updated again", name.c_str());
+			_log.Log(LOG_STATUS, "Netatmo: cloud data for module [%s] is now updated again", name.c_str());
 			m_bNetatmoRefreshed[ID] = true;
 		}
 	}
 	else
 	{
 		if (m_bNetatmoRefreshed[ID])
-			_log.Log(LOG_ERROR, "Netatmo module [%s]: cloud data no longer updated (module possibly disconnected)", name.c_str());
+			_log.Log(LOG_ERROR, "Netatmo: cloud data for module [%s] no longer updated (module possibly disconnected)", name.c_str());
 		m_bNetatmoRefreshed[ID] = false;
 		return false;
 	}
