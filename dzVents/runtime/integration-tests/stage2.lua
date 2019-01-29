@@ -188,6 +188,19 @@ local testLux = function(name)
 	return res
 end
 
+
+local testManagedCounter = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["counter"] = 1.234;
+		["counterToday"] = 0;
+	})
+	tstMsg('Test managed counter', res)
+	return res
+end
+
+
 local testP1SmartMeter = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -721,6 +734,7 @@ return {
 		res = res and testAmpere3('vdAmpere3')
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testAPITemperature('vdAPITemperature')
+        res = res and testManagedCounter('vdManagedCounter');
 
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch')
 		res = res and testLastUpdates(stage2Trigger)
@@ -729,7 +743,7 @@ return {
 		res = res and testVarCancelled('varCancelled')
 		res = res and testCancelledScene('scCancelledScene')
 		res = res and testHTTPSwitch('vdHTTPSwitch');
-
+		
 		-- test a require
 		local m = require('some_module')
 		local output = m.dzVents()
