@@ -80,7 +80,7 @@ local VIRTUAL_DEVICES = {
 	-- increment SECPANEL_INDEX when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX = 51
+local SECPANEL_INDEX = 52
 
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
@@ -621,7 +621,7 @@ describe('Integration test', function ()
 
 		it('Should have succeeded', function()
 
-			socket.sleep(18) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+			socket.sleep(25) -- 25 because of repeatAfter tests , the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
 			local switchDimmerResultsDevice
 			local varStringResultsDevice

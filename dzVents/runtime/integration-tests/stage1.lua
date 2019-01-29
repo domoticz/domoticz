@@ -1345,6 +1345,6 @@ return {
 			log('Results stage 1: SUCCEEDED')
 		end
 
-		dz.devices('stage2Trigger').switchOn().afterSec(20)
+		dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
 	end
 }
