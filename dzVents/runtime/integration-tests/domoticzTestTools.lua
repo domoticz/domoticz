@@ -13,6 +13,8 @@ local scriptTargetPath = '../../../scripts/dzVents/scripts/'
 local generatedScriptTargetPath = '../../../scripts/dzVents/generated_scripts/'
 local dataTargetPath = '../../../scripts/dzVents/data/'
 local DUMMY_HW = 15
+local DUMMY_HW_ID = 2
+
 
 local function DomoticzTestTools(port, debug, webroot)
 
@@ -99,11 +101,26 @@ local function DomoticzTestTools(port, debug, webroot)
 		return ok, dummyIdx
 	end
 
+    function self.createManagedCounter(name)
+        local url = "type=createdevice&idx=" .. DUMMY_HW_ID .."&sensorname=" .. name .. "&sensormappedtype=0xF321"
+        local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
+    	return ok, json, result, respcode, respheaders, respstatus
+    end   
+   
+    function self.createCamera()             
+        local url = "type=command&param=addcamera&address=192.168.192.123&port=8083&name=camera1&enabled=true&imageurl=aW1hZ2UuanBn&protocol=0"
+        --&username=&password=&imageurl=aW1hZ2UuanBn&protocol=0
+        local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
+    	return ok, json, result, respcode, respheaders, respstatus
+    end
+       
     function self.createVirtualDevice(hw, name, type, options)
-    	-- type=createvirtualsensor&idx=2&sensorname=s1&sensortype=6
-
-    	local url = "type=createvirtualsensor&idx=" .. tostring(hw) .."&sensorname=" .. name .. "&sensortype=" .. tostring(type)
-
+    
+        local url = "type=createvirtualsensor&idx=" .. tostring(hw) .."&sensorname=" .. name .. "&sensortype=" .. tostring(type)
+        if tostring(type) == "33" then
+            url = "type=createdevice&idx=" .. tostring(hw) .."&sensorname=" .. name .. "&sensormappedtype=0xF321"
+        end
+    
     	if (options) then
     		url = url .. '&sensoroptions=1;' .. tostring(options)
     	end
@@ -135,8 +152,8 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.createVariable(name, type, value)
 		-- todo, encode value
-    	--type=command&param=saveuservariable&vname=myint&vtype=0&vvalue=1
-    	local url = "param=saveuservariable&type=command&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
+    	--type=command&param=adduservariable&vname=myint&vtype=0&vvalue=1
+    	local url = "param=adduservariable&type=command&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
 
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 
@@ -404,8 +421,7 @@ local function DomoticzTestTools(port, debug, webroot)
     end
 
     function self.addSecurityPanel(idx)
-    	--http://localhost:8080/json.htm?type=setused&idx=42&name=secPanel&used=true&maindeviceidx=
-    	local url = "type=setused&idx=" .. tostring(idx) .. "&name=secPanel&used=true&maindeviceidx="
+        local url = "type=setused&idx=" .. tostring(idx) .. "&name=secPanel&used=true&maindeviceidx="
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end

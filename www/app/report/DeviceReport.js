@@ -3,6 +3,7 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
         var vm = this;
         vm.isTemperatureReport = isTemperatureReport;
         vm.isCounterReport = isCounterReport;
+        vm.isOnlyUsage = isOnlyUsage;
         vm.isEnergyMultiCounterReport = isEnergyMultiCounterReport;
         vm.isNoReport = isNoReport;
         vm.getYearsOptions = getYearsOptions;
@@ -65,10 +66,18 @@ define(['app', 'report/CounterReport', 'report/TemperatureReport', 'report/Energ
                 return undefined;
             }
             return ['Power', 'Energy', 'RFXMeter'].includes(vm.device.Type)
+                || isOnlyUsage()
                 || ['kWh'].includes(vm.device.SubType)
                 || ['YouLess counter'].includes(vm.device.SubType)
                 || ['Counter Incremental'].includes(vm.device.SubType)
                 || (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType !== 'Energy');
+        }
+
+        function isOnlyUsage() {
+            if (!vm.device) {
+                return undefined;
+            }
+            return ['Managed Counter'].includes(vm.device.SubType);
         }
 
         function isEnergyMultiCounterReport() {

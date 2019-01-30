@@ -192,6 +192,11 @@
 		<Product type="0102" id="0004" name="ZWA004 NanoMote One" config="aeotec/zwa004.xml"/>
 		<Product type="0002" id="0005" name="ZWA005 TriSensor" config="aeotec/zwa005.xml"/>
 		<Product type="0102" id="0005" name="ZWA005 TriSensor" config="aeotec/zwa005.xml"/>
+		<Product type="0003" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="0103" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="0203" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="1d03" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		
 	</Manufacturer>
 	<Manufacturer id="0111" name="Airline Mechanical">
 		<Product type="8200" id="0200" name="ZDS-100"/>
@@ -203,6 +208,7 @@
 	<Manufacturer id="0129" name="Assa Abloy">
 		<Product type="0001" id="0000" name="Yale Touchscreen Lever (YRL220)" config="assa_abloy/TouchLever.xml"/>
 		<Product type="0002" id="0000" name="Yale Touchscreen Deadbolt (YRD220)" config="assa_abloy/TouchDeadbolt.xml" />
+		<Product type="0002" id="aa00" name="Yale Touchscreen Deadbolt (YRD220)" config="assa_abloy/TouchDeadbolt.xml" />
 		<Product type="0002" id="0209" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="8002" id="0600" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="8002" id="1000" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
@@ -211,7 +217,8 @@
 		<Product type="0003" id="0800" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
 		<Product type="0004" id="0000" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
 		<Product type="0004" id="0209" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
-		<Product type="8004" id="0600" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
+		<Product type="0004" id="aa00" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
+		<Product type="8004" id="0600" name="Yale Push Button Deadbolt (YRD216)" config="assa_abloy/PushButtonDeadbolt.xml"/>
 		<Product type="0004" id="0800" name="Yale Push Button Deadbolt (YRD110)" config="assa_abloy/PushButtonDeadbolt.xml"/>
 		<Product type="0006" id="0000" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="0007" id="0000" name="Yale Keyless Connected Smart Lock (YSL)" config="assa_abloy/KeyfreeConnected.xml"/>
@@ -556,9 +563,11 @@
 		<Product type="0d01" id="2000" name="FGGC001 Swipe" config="fibaro/fggc001.xml"/>
 		<Product type="0f01" id="1000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="0f01" id="2000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
+		<Product type="0f01" id="3000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="1001" id="1000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />
 		<Product type="1001" id="2000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />
 		<Product type="1201" id="1000" name="FGSD001 CO Sensor" config="fibaro/fgcd001.xml" />
+		<Product type="1201" id="1001" name="FGSD001 CO Sensor" config="fibaro/fgcd001.xml" />
 		<Product type="1301" id="1000" name="FGT001 Heat Controller" config="fibaro/fgt001.xml"/>
 		<Product type="1701" id="2000" name="FGWPG111 US Wall Plug" config="fibaro/fgwpg111.xml"/>
 		<Product type="1801" id="1000" name="FGWPG111 UK Wall Plug" config="fibaro/fgwpg111.xml"/>
@@ -638,8 +647,10 @@
 		<Product type="4952" id="3032" name="12722 On/Off Relay Switch" config="ge/relay.xml"/>
 		<Product type="4952" id="3033" name="12727 In-Wall Smart Switch (Toggle)"/>
 		<Product type="4953" id="3032" name="32563 Hinge Pin Smart Door Sensor" config="ge/hinge-pin.xml"/>
+		<Product type="5044" id="3031" name="12718 Plug-In Two-Outlet Smart Dimmer" config="ge/dimmer_module.xml"/>
 		<Product type="5052" id="3031" name="12719 Plug-in Smart Switch" config="ge/12719-plugin-switch.xml"/>
 		<Product type="5052" id="3033" name="14282 Plug-In Two-Outlet Smart Switch" config="ge/14282-plugin-switch.xml"/>
+		<Product type="5052" id="3038" name="28169 Plug-In One-Outlet Smart Switch" config="ge/28169-plugin-switch.xml"/>
 		<Product type="6363" id="3533" name="ZW4001 In-Wall Decora Style On/Off Relay Switch" config="ge/zw4001-switch.xml"/>
 		<Product type="4c42" id="3031" name="ZW7101 Smart LED Light Bulb ZE26I" config="ge/ze26i.xml"/>
 		<Product type="4953" id="3133" name="ZW6302 Portable Smart Motion Sensor" config="ge/zw6302.xml"/>
@@ -895,6 +906,7 @@
 		<Product type="3102" id="0201" name="MH-S311 One-load" config="mcohome/mhs311.xml"/>
 		<Product type="3102" id="0202" name="MH-S312 Two-load" config="mcohome/mhs312.xml"/>
 		<Product type="3102" id="0204" name="MH-S314 Four-load" config="mcohome/mhs314.xml"/>
+		<Product type="3141" id="1302" name="MH-S314 Four-load" config="mcohome/mhs314.xml"/>
 		<Product type="5102" id="3141" name="MH-S314 Four-load" config="mcohome/mhs314.xml"/>
 		<Product type="4102" id="0201" name="MH-S411 One-load" config="mcohome/mhs411.xml"/>
 		<Product type="4102" id="0202" name="MH-S412 Two-load" config="mcohome/mhs412.xml"/>
@@ -940,7 +952,7 @@
 		<Product type="0003" id="1087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
 		<Product type="0003" id="0083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
 		<Product type="0003" id="1083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
-		<Product type="0003" id="108d" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
+		<Product type="0003" id="108d" name="Battery Powered PIR Sensor V2" config="shenzen_neo/nas-pd02z.xml"/>
 		<Product type="0003" id="0085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
 		<Product type="0003" id="1085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
 		<Product type="0003" id="6085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
@@ -972,9 +984,11 @@
 	<Manufacturer id="0040" name="Novar EDS">
 	</Manufacturer>
 	<Manufacturer id="016a" name="Oomi">
+		<!-- EU-market products seems to start with type prefix "00" -->
 		<!-- US-market products start with type prefix "01" -->
 		<!-- AU-market products start with type prefix "02" -->
 		<!-- CN-market products start with type prefix "1D" -->
+		<Product type="0002" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
 		<Product type="0102" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
 		<Product type="0202" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
 		<Product type="1D02" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />

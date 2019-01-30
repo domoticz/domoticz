@@ -201,6 +201,26 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 			}
 		}
 	});
+	app.directive('gzBackToTop', function(){
+		return {
+			restrict: 'E'
+			, replace: true
+			, template: '<div class="gz-back-to-top"></div>'
+			, link: function($scope, element, attrs) {
+				$(window).scroll(function() {
+					if ($(window).scrollTop() <= 0) {
+						$(element).fadeOut();
+					}
+					else {
+						$(element).fadeIn();
+					}
+				});
+				$(element).on('click', function(){
+					$('html, body').animate({ scrollTop: 0 }, 'fast');
+				});
+			}
+		}
+	});
 	app.filter('translate', function() {
 		return function(input) {
 			return $.t(input);
@@ -900,10 +920,29 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 		permissions.setPermissions(permissionList);
 
 		Highcharts.setOptions({
+			chart: {
+				style: {
+                    fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif'
+				}
+			},
             credits: {
                 enabled: true,
                 href: "http://www.domoticz.com",
                 text: "Domoticz.com"
+            },
+            title: {
+                style: {
+                    textTransform: 'none',
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif',
+                    fontSize: '16px',
+					fontWeight: 'bold'
+                }
+            },
+            legend: {
+                itemStyle: {
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif',
+                    fontWeight: 'normal'
+                }
             }
 		});
 

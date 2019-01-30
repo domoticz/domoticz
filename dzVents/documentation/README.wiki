@@ -518,6 +518,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ** '''webRoot''': <code>webroot</code> value as specified when starting the Domoticz service.
 ** '''serverPort''': webserver listening port.
 * '''sms(message)''': ''Function''. Sends an sms if it is configured in Domoticz.
+* '''snapshot(cameraID,subject)''':<sup>2.4.11</sup> ''Function''. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
 * '''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.
 * '''systemUptime''': ''Number''. Number of seconds the system is up.
 * '''time''': ''[[#Time_object|Time Object]]'': Current system time. Additional to Time object attributes:
@@ -531,14 +532,14 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ** '''civTwilightStartInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
 ** '''civTwilightEndInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
 * '''utils''': <sup>2.4.0</sup>. A subset of handy utilities:
-* _: Lodash. This is an entire collection with very handy Lua functions. Read more about [[#Lodash_for_Lua|Lodash]]. E.g.: <code>domoticz.utils._.size({'abc', 'def'}))</code> Returns 2.
-* '''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.
-* '''fromJSON(json)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1.
-* '''osExecute(cmd)''': ''Function'': Execute an os command.
-* '''round(number, decimalPlaces)''': ''Function''. Helper function to round numbers.
-* '''toCelsius(f, relative)''': ''Function''. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So <code>toCelsius(5, true)</code> returns 5F*(1/1.8) = 2.78C.
-* '''toJSON(luaTable)''': ''Function''. <sup>2.4.0</sup> Converts a Lua table to a json string.
-* '''urlEncode(s, [strSub])''': ''Functon''. Simple url encoder for string so you can use them in <code>openURL()</code>. <code>strSub</code> is optional and defaults to + but you can also pass %20 if you like/need.
+** _: Lodash. This is an entire collection with very handy Lua functions. Read more about [[#Lodash_for_Lua|Lodash]]. E.g.: <code>domoticz.utils._.size({'abc', 'def'}))</code> Returns 2.
+** '''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.
+** '''fromJSON(json)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1.
+** '''osExecute(cmd)''': ''Function'': Execute an os command.
+** '''round(number, decimalPlaces)''': ''Function''. Helper function to round numbers.
+** '''toCelsius(f, relative)''': ''Function''. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So <code>toCelsius(5, true)</code> returns 5F*(1/1.8) = 2.78C.
+** '''toJSON(luaTable)''': ''Function''. <sup>2.4.0</sup> Converts a Lua table to a json string.
+** '''urlEncode(s, [strSub])''': ''Functon''. Simple url encoder for string so you can use them in <code>openURL()</code>. <code>strSub</code> is optional and defaults to + but you can also pass %20 if you like/need.
 * '''variables(idx/name)''': ''Function''. A function returning a variable by it's name or idx. See [[#Variable_object_API_.28user_variables.29|Variable object API]] for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. '''Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>'''.
 
 === Looping through the collections: iterators ===
@@ -610,7 +611,7 @@ The domoticz object has these constants available for use in your code e.g. <cod
 * '''BASETYPE_DEVICE''', '''BASETYPE_SCENE''', '''BASETYPE_GROUP''', '''BASETYPE_VARIABLE''', '''BASETYPE_SECURITY''', '''BASETYPE_TIMER''', '''BASETYPE_HTTP_RESPONSE''': indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object: <code>if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end</code>.
 * '''BARO_CLOUDY''', '''BARO_CLOUDY_RAIN''', '''BARO_STABLE''', '''BARO_SUNNY''', '''BARO_THUNDERSTORM''', '''BARO_NOINFO''', '''BARO_UNSTABLE''': for updating barometric values.
 * '''EVENT_TYPE_DEVICE''', '''EVENT_TYPE_VARIABLE''', '''EVENT_TYPE_SECURITY''', '''EVENT_TYPE_HTTPRESPONSE'''<sup>2.4.0</sup>, '''EVENT_TYPE_TIMER''': triggerInfo types passed to the execute function in your scripts.
-* '''EVOHOME_MODE_AUTO''', '''EVOHOME_MODE_TEMPORARY_OVERRIDE''', '''EVOHOME_MODE_PERMANENT_OVERRIDE''': mode for EvoHome system.
+* '''EVOHOME_MODE_AUTO''', '''EVOHOME_MODE_TEMPORARY_OVERRIDE''', '''EVOHOME_MODE_PERMANENT_OVERRIDE''', '''EVOHOME_MODE_FOLLOW_SCHEDULE''' <sup>2.4.9</sup>: mode for EvoHome system.
 * '''HUM_COMFORTABLE''', '''HUM_DRY''', '''HUM_NORMAL''', '''HUM_WET''': constant for humidity status.
 * '''INTEGER''', '''FLOAT''', '''STRING''', '''DATE''', '''TIME''': variable types.
 * '''LOG_DEBUG''', '''LOG_ERROR''', '''LOG_INFO''', '''LOG_FORCE''': for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
@@ -691,7 +692,7 @@ Note that if you do not find your specific device type here you can always inspe
 * '''forecastString''': ''String''.
 * '''updateBarometer(pressure, forecast)''': ''Function''. Update barometric pressure. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
-==== Counter and counter incremental ====
+==== Counter, managed Counter <sup>2.4.12</sup>,counter incremental ====
 
 * '''counter''': ''Number''
 * '''counterToday''': ''Number''. Today's counter value.
@@ -715,10 +716,19 @@ Note that if you do not find your specific device type here you can always inspe
 * '''WhActual''': ''Number''. Current Watt usage.
 * '''updateEnergy(energy)''': ''Function''. In Watt. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
-==== Evohome ====
+==== Evohome (zones) ====
 
 * '''setPoint''': ''Number''.
-* '''updateSetPoint(setPoint, mode, until)''': ''Function''. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''mode''': ''string'' <sup>2.4.9</sup>.
+* '''untilDate''': ''string in ISO 8601 format'' or n/a <sup>2.4.9</sup>.
+* '''updateSetPoint(setPoint, mode, until)''': ''Function''. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE <sup>2.4.9</sup> or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+
+==== Evohome (hotWater) <sup>2.4.9</sup>. ====
+
+* '''state''': ''string'' ('On' or 'Off')
+* '''mode''': ''string''
+* '''untilDate''': ''string in ISO 8601 format'' or n/a.
+* '''setHotWater(state, mode, until)''': ''Function''. set HotWater Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE You can provide an until date (in ISO 8601 format for domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE e.g.: <code>os.date(&quot;!%Y-%m-%dT%TZ&quot;)</code>).
 
 ==== Gas ====
 
@@ -960,9 +970,11 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''chill''': ''Number''.
 * '''direction''': ''Number''. Degrees.
 * '''directionString''': ''String''. Formatted wind direction like N, SE.
-* '''gust''': ''Number''.
+* '''gust''': ''Number''. ( in meters / second, might change in future releases to Meters/Counters settings for Wind Meter )
+* '''gustMs''': ''Number''. Gust ( in meters / second ) <sup>2.4.9</sup>
 * '''temperature''': ''Number''
-* '''speed''': ''Number''.
+* '''speed''': ''Number''. Windspeed ( in the unit set in Meters/Counters settings for Wind Meter )
+* '''speedMs''': ''Number''. Windspeed ( in meters / second ) <sup>2.4.9</sup>
 * '''updateWind(bearing, direction, speed, gust, temperature, chill)''': ''Function''. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Youless meter <sup>2.4.6</sup> ====
@@ -1033,55 +1045,71 @@ or issue these two commands ''both'' as they are mutually exclusive:
 light.switchOn().checkFirst().forMin(5)</pre>
 ==== Availability ====
 
-Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>.
+Some options are not available to all commands. All the options are available to device switch-like commands like <code>myDevice.switchOff()</code>, <code>myGroup.switchOn()</code> or <code>myBlinds.open()</code>. For updating (usually Dummy ) devices like a text device <code>myTextDevice.updateText('zork')</code> you can only use <code>silent()</code>. For thermostat setpoint devices and snapshot command silent() is not available. See table below
 
 {|
 ! option
 !align="center"| state changes
 !align="center"| update commands
 !align="center"| user variables
+!align="center"| updateSetpoint
+! snapshot
 |-
 | <code>afterXXX()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| •
+| •
 |-
 | <code>forXXX()</code>
 |align="center"| •
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
+| n/a
 |-
 | <code>withinXXX()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| •
+| •
 |-
 | <code>silent()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| n/a
+| n/a
 |-
 | <code>repeatAfterXXX()</code>
 |align="center"| •
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
+| n/a
 |-
 | <code>checkFirst()</code>
 |align="center"| • (switch-like devices)
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
+| n/a
 |-
 | <code>cancelQueuedCommands()</code>
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| n/a
+| n/a
 |}
 
 '''Note''': XXX is a placeholder for <code>Min/Sec/Hour</code> affix e.g. <code>afterMin()</code>. '''Note''': for <code>domoticz.openURL()</code> only <code>afterXXX()</code> and <code>withinXXX()</code> is available.
 
 ==== Follow-up event triggers ====
 
-Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add <code>.silent()</code> to your commands.
+Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add <code>.silent()</code> to your commands (exception is updateSetPoint).
 
 === Create your own device adapter ===
 
@@ -1149,7 +1177,7 @@ local now = Time() -- current time
 local someTime = Time('2017-12-31 22:19:15')
 local utcTime = Time('2017-12-31 22:19:15', true)</pre>
 * '''compare(time)''': ''Function''. Compares the current time object with another time object. ''Make sure you pass a Time object!'' Returns a table (all values are ''positive'', use the compare property to see if ''time'' is in the past or future):
-* '''milliSeconds''': Total difference in milliseconds.
+* '''milliseconds''': Total difference in milliseconds.
 * '''seconds''': Total difference in whole seconds.
 * '''minutes''': Total difference in whole minutes.
 * '''hours''': Total difference in whole hours.
@@ -1163,10 +1191,11 @@ local utcTime = Time('2017-12-31 22:19:15', true)</pre>
 * '''isToday''': ''Boolean''. Indicates if the device was updated today
 * '''isUTC''': ''Boolean''.
 * '''matchesRule(rule) ''': ''Function''. Returns true if the rule matches with the time. See [[#timer_trigger_rules|time trigger rules]] for rule examples.
+* '''millisecondsAgo''': ''Number''. Number of milliseconds since the last update.
 * '''minutes''': ''Number''
 * '''minutesAgo''': ''Number''. Number of minutes since the last update.
 * '''month''': ''Number''
-* '''milliSecondsAgo''': ''Number''. Number of milliseconds since the last update.
+* '''msAgo''': ''Number''. Number of milliseconds since the last update.
 * '''raw''': ''String''. Generated by Domoticz
 * '''rawDate''': ''String''. Returns the date part of the raw data.
 * '''rawTime''': ''String''. Returns the time part of the raw data.
@@ -2038,7 +2067,32 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = Change log =
 
-[2.4.8] - Added telegram as option for domoticz.notify
+== [2.4.12] ==
+
+* Added managed Counter (to counter)
+
+== [2.4.11] ==
+
+* Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+
+== [2.4.10] ==
+
+* Added option to use afterXXX() and withinXXX() functions to updateSetPoint() <sup>needs domoticz V4.10360 or newer</sup>
+* Changed function updateMode to display mode as string in domoticz log
+
+== [2.4.9] ==
+
+* Added evohome hotwater device (state, mode, untilDate and setHotWater function)
+* Added mode and untilDate for evohome zone devices
+* Added EVOHOME_MODE_FOLLOW_SCHEDULE as mode for evohome devices
+* Add speedMs and gustMs from wind devices
+* bugfix for youless device (0 handling)
+* bugfix for time ( twilightstart and twilightend handling)
+* Fixed some date-range rule checking
+
+== [2.4.8] ==
+
+* Added telegram as option for domoticz.notify
 
 == [2.4.7] ==
 

@@ -244,7 +244,7 @@ void CWinddelen::GetMeterDetails()
 			else if (szWD == "NNW")
 				windDir = static_cast<int>(rint(15 * 22.5f));
 
-			SendWind(m_usMillID, 255, windDir, windSpeed, windSpeed, 0, 0, false, "Wind");
+			SendWind(m_usMillID, 255, windDir, windSpeed, windSpeed, 0, 0, false, false, "Wind");
 		}
 
 		if (!root["diameter"].empty())

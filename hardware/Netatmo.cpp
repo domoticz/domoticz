@@ -572,7 +572,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 
 	if (bHaveWind)
 	{
-		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, name, rssiLevel);
+		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, false, name, rssiLevel);
 	}
 	return true;
 }

@@ -13,11 +13,11 @@ return {
 	end,
 
 	process = function(device, data, domoticz, utils, adapterManager)
-		-- from data: current, Kwh.
+		-- from data: current, 
 		device.counterDeliveredTotal = tonumber(device.rawData[1])
 		device.powerYield = tonumber(device.rawData[2])
-		device.counterDeliveredToday = tonumber((string.gsub(device.counterToday, "kWh", ""))) * 1000
-
+		device.counterDeliveredToday = (string.match(device.counterToday, "%d+.%d*") or 0) * 1000
+        	
 		function device.updateYouless(total, actual)
 			local value = tostring(total) .. ';' ..
 					tostring(actual)

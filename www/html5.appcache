@@ -130,8 +130,8 @@ images/Computer48_Off.png
 images/Computer48_On.png
 images/contact.png
 images/contact_open.png
-images/contact48.png
-images/contact48_open.png
+images/Contact48_Off.png
+images/Contact48_On.png
 images/copy.png
 images/copy_hover.png
 images/counter.png
@@ -157,8 +157,8 @@ images/devices.png
 images/Dimmer48_Off.png
 images/Dimmer48_On.png
 images/door.png
-images/door48.png
-images/door48open.png
+images/Door48_Off.png
+images/Door48_On.png
 images/doorbell.png
 images/doorbell48.png
 images/down.png
@@ -259,9 +259,9 @@ images/program.png
 images/program_mini.png
 images/proxy.png
 images/push.png
-images/push48.png
+images/Push48_On.png
+images/Push48_Off.png
 images/pushoff.png
-images/pushoff48.png
 images/pushon.png
 images/pushon48.png
 images/PV48.png
@@ -494,13 +494,19 @@ app/events/EventViewer.html
 app/events/EventViewer.js
 app/events/factories.js
 
-app/log/components.js
+app/log/components/DeviceLevelChart.js
+app/log/components/DeviceOnOffChart.js
+app/log/components/DeviceTextLogTable.js
+app/log/DeviceLog.html
 app/log/DeviceLog.js
 app/log/factories.js
 app/log/GraphLog.js
+app/log/LightLog.html
 app/log/LightLog.js
+app/log/SceneLog.html
 app/log/SceneLog.js
 app/log/TemperatureLog.js
+app/log/TextLog.html
 app/log/TextLog.js
 
 app/notifications/constants.js
@@ -571,7 +577,11 @@ js/blockly/blockly_compressed.js
 js/blockly/blocks_compressed.js
 js/blockly/msg/en.js
 
-js/modules/exporting.js
+js/highcharts/highcharts.js
+js/highcharts/highcharts-more.js
+js/highcharts/modules/exporting.js
+js/highcharts/modules/xrange.js
+js/highcharts/themes/dark-unica.js
 
 js/noty/jquery.noty.js
 js/noty/layouts/top.js
@@ -601,9 +611,7 @@ js/domoticz.js
 js/domoticzdevices.js
 js/export-csv.js
 js/FileSaver.js
-js/highcharts-more.js
 js/highcharts-ng.min.js
-js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
 js/jquery-3.3.1.min.js
@@ -616,6 +624,7 @@ js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
 js/jquery.wheelcolorpicker.js
+js/luxon.min.js
 js/md5.js
 js/ng-grid-flexible-height.js
 js/ng-grid.min.js
@@ -623,8 +632,6 @@ js/ngDraggable.js
 js/ngload.min.js
 js/require.js
 js/respond.min.js
-js/themes/dark-blue.js
-js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
@@ -642,11 +649,7 @@ secpanel/js/ion.sound.min.js
 
 # HTML pages
 views/log/device_graph_log.html
-views/log/device_light_log.html
-views/log/device_log.html
 views/log/device_temperature_log.html
-views/log/device_text_log.html
-views/log/scene_log.html
 views/about.html
 views/cam.html
 views/customicons.html

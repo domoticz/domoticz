@@ -1086,6 +1086,80 @@ describe('Time', function()
 
 				end)
 
+                describe('twilight stuff', function()
+
+					it('between civiltwilightend and civiltwilightstart', function()
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360 , -- 06:00
+							['CivTwilightEndInMinutes'] = 1080
+						}
+
+						-- time between 18:00 and 06:00
+						local t = Time('2017-01-01 01:04:00')
+						assert.is_true(t.ruleMatchesBetweenRange('between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:00:00')
+						assert.is_false(t.ruleMatchesBetweenRange('between civiltwilightend and civiltwilightstart'))
+					end)
+
+					it('every x minute between civiltwilightend and civiltwilightstart', function()
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360 , -- 06:00
+							['CivTwilightEndInMinutes'] = 1080
+						}
+
+						-- time between 18:00 and 06:00
+						t = Time('2017-01-01 01:01:00')
+						assert.is_false(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 01:01:00')
+						assert.is_true(t.matchesRule('every 1 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 01:02:00')
+						assert.is_true(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:00:00')
+						assert.is_false(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:01:00')
+						assert.is_false(t.matchesRule('every 2 minutes between civiltwilightend and civiltwilightstart'))
+
+						t = Time('2017-01-01 17:01:00')
+						assert.is_false(t.matchesRule('every 1 minutes between civiltwilightend and civiltwilightstart'))
+					end)
+
+					it('between civiltwilightstart and civiltwilightend', function()
+
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360, -- 06:00
+							['CivTwilightEndInMinutes'] = 1080
+						}
+
+						-- time between 06:00 and 18:00
+						local t = Time('2017-01-01 11:04:00')
+
+						assert.is_true(t.ruleMatchesBetweenRange('between civiltwilightstart and civiltwilightend'))
+					end)
+
+					it('between 10 minutes before civiltwilightstart and 10 minutes after civiltwilightend', function()
+
+						_G.timeofday = {
+							['CivTwilightStartInMinutes'] = 360, -- 06:00
+							['CivTwilightEndInMinutes'] = 1080 -- 18:00
+						}
+
+						local rule = 'between 10 minutes before civiltwilightstart and 10 minutes after civiltwilightend'
+						-- time between 06:00 and 18:00
+						local t = Time('2017-01-01 05:55:00')
+
+						assert.is_true(t.ruleMatchesBetweenRange(rule))
+
+						local t = Time('2017-01-01 18:06:00')
+
+						assert.is_true(t.ruleMatchesBetweenRange(rule))
+					end)
+				end)
+
 				describe('sun stuff', function()
 
 					it('between sunset and sunrise', function()
@@ -1292,12 +1366,12 @@ describe('Time', function()
 				it('should return true when matches odd weeks', function()
 					local t = Time('2017-06-05 02:04:00') -- week 23
 					assert.is_true(t.ruleIsInWeek('every odd week'))
-					assert.is_nil(t.ruleIsInWeek('every even week'))
+					assert.is_false(t.ruleIsInWeek('every even week'))
 				end)
 
 				it('should return true when matches even weeks', function()
 					local t = Time('2017-06-13 02:04:00') -- week 24
-					assert.is_nil(t.ruleIsInWeek('every odd week'))
+					assert.is_false(t.ruleIsInWeek('every odd week'))
 					assert.is_true(t.ruleIsInWeek('every even week'))
 				end)
 
@@ -1361,7 +1435,7 @@ describe('Time', function()
 					local t = Time('2017-06-20 02:04:00')
 					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
 
-					t = Time('2017-05-20 02:04:00')
+					local t = Time('2017-05-20 02:04:00')
 					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
 
 					t = Time('2017-05-21 02:04:00')
@@ -1396,6 +1470,15 @@ describe('Time', function()
 		end)
 
 		describe('combis', function()
+
+        	it('should return false when not on every second sunday between 1:00 and 1:30', function()
+				local t = Time('2018-12-30 01:04:00') -- on Sunday, odd week at 01:04 
+				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sun every odd week'))
+				assert.is_false(t.matchesRule('between 2:00 and 2:30 on sun every odd week'))
+				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sat every even week'))
+				assert.is_false(t.matchesRule('between 2:00 and 2:30 on sat every even week'))
+				assert.is_true(t.matchesRule('between 1:00 and 1:30 on sun every even week'))
+			end)
 
 			it('should return false when not on the day', function()
 
@@ -1487,6 +1570,11 @@ describe('Time', function()
 
 			end)
 
+			it('on date 20/10-31/10', function()
+				local t = Time('2018-10-19 16:00:00') -- on monday, wk43
+				assert.is_false(t.matchesRule('on 20/10-31/10'))
+			end)
+
 			it('at 08:00-15:00 on 21/4-30/4', function()
 				local t = Time('2017-04-21 08:04:00')
 				assert.is_true(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
@@ -1537,7 +1625,7 @@ describe('Time', function()
 			it('every 10 minutes between 2 minutes after sunset and 22:33 on 20/11-20/12 in week 49 on mon,fri', function()
 				_G.timeofday = {
 					['SunriseInMinutes'] = 360, -- 06:00
-					['SunsetInMinutes'] = 1080
+					['SunsetInMinutes'] = 1080 -- 18:00
 				}
 
 				local rule = 'every 10 minutes between 2 minutes after sunset and 22:33 on 20/11-20/12 in week 49 on mon,fri'
@@ -1546,9 +1634,9 @@ describe('Time', function()
 				assert.is_false(t.matchesRule(rule))
 
 				t = Time('2017-11-24 18:10:00') -- on fri, week 47
-				assert.is_false(t.matchesRule(rule))
+				assert.is_false(t.matchesRule(rule)) -- should fail because t is in week 47
 
-				t = Time('2017-12-08 18:10:00') -- on fri, week 49
+				local t = Time('2017-12-08 18:10:00') -- on fri, week 49
 				assert.is_true(t.matchesRule(rule))
 
 				t = Time('2017-12-04 18:10:00') -- on mon, week 49

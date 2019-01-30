@@ -3,6 +3,11 @@
 #include <boost/signals2.hpp>
 #include "../main/RFXNames.h"
 #include "../main/StoppableTask.h"
+// type support
+#include "../cereal/types/string.hpp"
+#include "../cereal/types/memory.hpp"
+// the archiver
+#include "../cereal/archives/portable_binary.hpp"
 
 enum _eLogLevel : uint32_t;
 enum _eDebugLevel : uint32_t;
@@ -19,7 +24,7 @@ public:
 	bool Stop();
 	bool Restart();
 	bool RestartWithDelay(const long seconds);
-	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
+	virtual bool WriteToHardware(const char *pdata, const unsigned char length) = 0;
 	virtual bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void EnableOutputLog(const bool bEnableLog);
@@ -98,7 +103,7 @@ protected:
 	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname, const int RssiLevel = 12);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
 	bool GetWindSensorValue(const int NodeID, int &WindDir, float &WindSpeed, float &WindGust, float &twindtemp, float &windchill, bool bHaveWindTemp, bool &bExists);
-	void SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname, const int RssiLevel = 12);
+	void SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const bool bHaveWindChill, const std::string &defaultname, const int RssiLevel = 12);
 	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const std::string &defaultname);
 	void SendSolarRadiationSensor(const unsigned char NodeID, const int BatteryLevel, const float radiation, const std::string &defaultname);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string &defaultname);

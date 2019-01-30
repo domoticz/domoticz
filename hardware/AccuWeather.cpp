@@ -371,7 +371,7 @@ void CAccuWeather::GetMeterDetails()
 			}
 			if (wind_degrees != -1)
 			{
-				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, true, "Wind");
+				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, true, true, "Wind");
 			}
 		}
 

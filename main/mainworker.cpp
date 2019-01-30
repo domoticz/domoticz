@@ -850,7 +850,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_LogitechMediaServer:
 		//Logitech Media Server
-		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1, Mode2);
+		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1);
 		break;
 	case HTYPE_Sterbox:
 		//LAN
@@ -957,7 +957,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTado(ID, Username, Password);
 		break;
 	case HTYPE_Honeywell:
-		pHardware = new CHoneywell(ID, Username, Password);
+		pHardware = new CHoneywell(ID, Username, Password, Extra);
 		break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1, Mode2);
@@ -1205,6 +1205,8 @@ bool MainWorker::Stop()
 #endif
 
 		//    m_cameras.StopCameraGrabber();
+
+		HTTPClient::Cleanup();
 
 		RequestStop();
 		m_thread->join();
@@ -2583,7 +2585,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				if (FWType >= FWtypePro1)
 				{
 					pMyHardware->m_NoiseLevel = NoiseLevel;
-					sprintf(szTmp, "Noise Level: %d dB", pMyHardware->m_NoiseLevel);
+					sprintf(szTmp, "Noise Level: %d", pMyHardware->m_NoiseLevel);
 					WriteMessage(szTmp);
 				}
 				if (FWType == FWtypeProXL1)
@@ -3169,75 +3171,64 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 	m_wind_calculator[windID].SetSpeedGust(intSpeed, intGust);
 
 	float temp = 0, chill = 0;
-	if (pResponse->WIND.subtype == sTypeWIND4)
+	if (subType != sTypeWINDNoTempNoChill)
 	{
-		if (!pResponse->WIND.tempsign)
+		if (pResponse->WIND.subtype == sTypeWIND4)
 		{
-			temp = float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
-		}
-		else
-		{
-			temp = -(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
-		}
-		if ((temp < -200) || (temp > 380))
-		{
-			WriteMessage(" Invalid Temperature");
-			return;
-		}
+			if (!pResponse->WIND.tempsign)
+			{
+				temp = float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
+			}
+			else
+			{
+				temp = -(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
+			}
+			if ((temp < -200) || (temp > 380))
+			{
+				WriteMessage(" Invalid Temperature");
+				return;
+			}
 
-		float AddjValue = 0.0f;
-		float AddjMulti = 1.0f;
-		m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-		temp += AddjValue;
+			float AddjValue = 0.0f;
+			float AddjMulti = 1.0f;
+			m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+			temp += AddjValue;
 
-		if (!pResponse->WIND.chillsign)
-		{
-			chill = float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
+			if (!pResponse->WIND.chillsign)
+			{
+				chill = float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
+			}
+			else
+			{
+				chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
+			}
+			chill += AddjValue;
 		}
-		else
+		else if (pResponse->WIND.subtype == sTypeWINDNoTemp)
 		{
-			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
-		}
-		chill += AddjValue;
-	}
-	else if (pResponse->WIND.subtype == sTypeWINDNoTemp)
-	{
-		if (!pResponse->WIND.tempsign)
-		{
-			temp = float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
-		}
-		else
-		{
-			temp = -(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
-		}
-		if ((temp < -200) || (temp > 380))
-		{
-			WriteMessage(" Invalid Temperature");
-			return;
-		}
+			float AddjValue = 0.0f;
+			float AddjMulti = 1.0f;
+			m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+			temp += AddjValue;
 
-		float AddjValue = 0.0f;
-		float AddjMulti = 1.0f;
-		m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-		temp += AddjValue;
-
-		if (!pResponse->WIND.chillsign)
-		{
-			chill = float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
+			if (!pResponse->WIND.chillsign)
+			{
+				chill = float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
+			}
+			else
+			{
+				chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
+			}
+			chill += AddjValue;
 		}
-		else
+		if (chill == 0)
 		{
-			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
-		}
-		chill += AddjValue;
-	}
-	if (chill == 0)
-	{
-		float wspeedms = float(intSpeed) / 10.0f;
-		if ((temp < 10.0) && (wspeedms >= 1.4))
-		{
-			float chillJatTI = 13.12f + 0.6215f*temp - 11.37f*pow(wspeedms*3.6f, 0.16f) + 0.3965f*temp*pow(wspeedms*3.6f, 0.16f);
-			chill = chillJatTI;
+			float wspeedms = float(intSpeed) / 10.0f;
+			if ((temp < 10.0) && (wspeedms >= 1.4))
+			{
+				float chillJatTI = 13.12f + 0.6215f*temp - 11.37f*pow(wspeedms*3.6f, 0.16f) + 0.3965f*temp*pow(wspeedms*3.6f, 0.16f);
+				chill = chillJatTI;
+			}
 		}
 	}
 
@@ -3283,6 +3274,9 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 		case sTypeWINDNoTemp:
 			WriteMessage("subtype       = Weather Station");
 			break;
+		case sTypeWINDNoTempNoChill:
+			WriteMessage("subtype       = Wind (No Temp or Chill sensors");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->WIND.packettype, pResponse->WIND.subtype);
 			WriteMessage(szTmp);
@@ -3312,13 +3306,12 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			WriteMessage(szTmp);
 
 			sprintf(szTmp, "Chill         = %.1f C", chill);
+			WriteMessage(szTmp);
 		}
 		if (pResponse->WIND.subtype == sTypeWINDNoTemp)
 		{
-			sprintf(szTmp, "Temperature   = %.1f C", temp);
-			WriteMessage(szTmp);
-
 			sprintf(szTmp, "Chill         = %.1f C", chill);
+			WriteMessage(szTmp);
 		}
 
 		sprintf(szTmp, "Signal level  = %d", pResponse->WIND.rssi);

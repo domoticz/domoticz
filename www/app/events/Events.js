@@ -1,7 +1,7 @@
 define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates'], function (app) {
     app.controller('EventsController', EventsController);
 
-    function EventsController($q, domoticzApi, domoticzEventsApi, bootbox) {
+    function EventsController($q, $rootScope, domoticzApi, domoticzEventsApi, bootbox) {
         var vm = this;
         vm.createEvent = createEvent;
         vm.openEvent = openEvent;
@@ -52,6 +52,8 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
         }
 
         function fetchEvents() {
+			$rootScope.RefreshTimeAndSun();
+
             return domoticzEventsApi.fetchEvents().then(function (data) {
                 vm.events = data.events;
                 vm.interpreters = data.interpreters;

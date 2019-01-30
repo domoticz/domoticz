@@ -20,7 +20,8 @@ require.config({
 		'ace-language-tools': '../js/ace/ext-language_tools',
 		'blockly': '../js/blockly/blockly_compressed',
 		'blockly-blocks': '../js/blockly/blocks_compressed',
-		'blockly-msg-en': '../js/blockly/msg/en'
+		'blockly-msg-en': '../js/blockly/msg/en',
+		'luxon': '../js/luxon.min',
 	},
 	shim: {
 		'angularAMD': ['angular'],

@@ -146,17 +146,22 @@ typedef enum
 } COMMON_COMMAND_TYPE;
 
 typedef enum {
-	RORG_RPS = 0xF6,
-	RORG_1BS = 0xD5,
+	RORG_ST = 0x30, //Secure telegram
+	RORG_ST_WE = 0x31, //Secure telegram with encapsulation
+	RORG_STT_FW = 0x35, //Secure Teach-In telegram for switch
 	RORG_4BS = 0xA5,
-	RORG_VLD = 0xD2,
-	RORG_MSC = 0xD1,
 	RORG_ADT = 0xA6,
+	RORG_SM_REC = 0xA7,
+	RORG_GP_SD = 0xB3, //Generic Profiles selective data
 	RORG_SM_LRN_REQ = 0xC6,
 	RORG_SM_LRN_ANS = 0xC7,
-	RORG_SM_REC = 0xA7,
+	RORG_SM_ACK_SGNL = 0xD0, //Smart Acknowledge Signal telegram
+	RORG_MSC = 0xD1, // Manufacturer Specific Communicatio
+	RORG_VLD = 0xD2, // Variable length data telegram 
+	RORG_UTI = 0xD4, //Universal Teach-In EEP based 
+	RORG_1BS = 0xD5,
+	RORG_RPS = 0xF6,
 	RORG_SYS_EX = 0xC5,
-	RORG_UTI = 0xD4
 } ESP3_RORG;
 
 //! Function return codes
@@ -429,6 +434,8 @@ bool CEnOceanESP3::StartHardware()
 {
 	RequestStart();
 
+	Init();
+
 	m_retrycntr=ENOCEAN_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
@@ -450,6 +457,36 @@ bool CEnOceanESP3::StopHardware()
 	return true;
 }
 
+void CEnOceanESP3::Init()
+{
+	ReloadVLDNodes();
+}
+
+void CEnOceanESP3::ReloadVLDNodes()
+{
+	m_VLDNodes.clear();
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, DeviceID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d)", m_HwdID);
+	if (!result.empty())
+	{
+		for (const auto & itt : result)
+		{
+			std::vector<std::string> sd = itt;
+			_tVLDNode node;
+			node.idx = atoi(sd[0].c_str());
+			node.manufacturer = atoi(sd[2].c_str());
+			node.profile = (uint8_t)atoi(sd[3].c_str());
+			node.type = (uint8_t)atoi(sd[4].c_str());
+
+			//convert to hex, and we have our ID
+			std::stringstream s_strid;
+			s_strid << std::hex << std::uppercase << sd[1];
+			uint32_t devid;
+			s_strid >> devid;
+			m_VLDNodes[devid] = node;
+		}
+	}
+}
 
 void CEnOceanESP3::Do_Work()
 {
@@ -1215,7 +1252,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					}
 					else
 						_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08lX already in the database", id);
-
+					ReloadVLDNodes();
 				}
 				else	// RORG_4BS_TEACHIN_LRN_BIT is 1 -> Data datagram
 				{
@@ -1891,6 +1928,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							}
 							else
 								_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08lX already in the database", id);
+							ReloadVLDNodes();
 						}
 
 						if((rorg == 0xD2) && (func == 0x01) && ( (type == 0x12) || (type == 0x0F) ))
@@ -1943,77 +1981,128 @@ void CEnOceanESP3::ParseRadioDatagram()
 				unsigned char func = (m_buffer[1] >> 2) & 0x3F;
 				unsigned char type = ((m_buffer[2] >> 3) & 0x1F) | ((m_buffer[1] & 0x03) << 5);
 
-				_log.Log(LOG_NORM, "EnOcean message VLD: func: %02X Type: %02X", func, type);
-				if(func == 0x01)
+				if (m_DataSize > 7)
 				{
-					// D2-01
-					switch(type)
+					unsigned char ID_BYTE3 = m_buffer[m_DataSize - 5];
+					unsigned char ID_BYTE2 = m_buffer[m_DataSize - 4];
+					unsigned char ID_BYTE1 = m_buffer[m_DataSize - 3];
+					unsigned char ID_BYTE0 = m_buffer[m_DataSize - 2];
+					unsigned long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
+
+					auto itt = m_VLDNodes.find(id);
+					if (itt != m_VLDNodes.end())
 					{
-						case 0x0C:	// D2-01-0C
-									{
-										unsigned char channel = m_buffer[2] & 0x7;
+						uint8_t Profile = itt->second.profile;
+						uint8_t iType = itt->second.type;
 
-										unsigned char dim_power = m_buffer[3] & 0x7F;		// 0=off, 0x64=100%
+						// D2-03-0A Push Button – Single Button
+						_log.Log(LOG_NORM, "EnOcean message VLD: Profile: %02X Type: %02X", Profile, iType);
 
-										unsigned char ID_BYTE3=m_buffer[4];
-										unsigned char ID_BYTE2=m_buffer[5];
-										unsigned char ID_BYTE1=m_buffer[6];
-										unsigned char ID_BYTE0=m_buffer[7];
-										long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
+						switch (Profile)
+						{
+						case 0x03:
+							//Light, Switching + Blind Control
+							if (iType == 0x0A)
+							{
+								int battery = (int)double((255.0 / 100.0)*m_buffer[1]);
+								unsigned char DATA_BYTE0 = m_buffer[2]; //1 = simple press, 2=double press, 3=long press, 4=press release
+								SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", 12);
+								return;
+							}
+							break;
+						}
+					}
+				}
+				_log.Log(LOG_NORM, "EnOcean message VLD: func: %02X Type: %02X", func, type);
+				if (func == 0x01)
+				{
+					// D2-01 Electr. switches/dimmers, Energy Meas. / Local Ctrl
+					switch (type)
+					{
+					case 0x0C:	// D2-01-0C
+					{
+						unsigned char channel = m_buffer[2] & 0x7;
 
-										// report status only if it is a known device else we may have an incorrect profile
-										char szDeviceID[20];
-										std::vector<std::vector<std::string> > result;
-										sprintf(szDeviceID,"%08X",(unsigned int)id);
+						unsigned char dim_power = m_buffer[3] & 0x7F;		// 0=off, 0x64=100%
 
-										result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-										if (result.size()<1)
-										{
-											_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", szDeviceID);
-											return;
-										}
+						unsigned char ID_BYTE3 = m_buffer[4];
+						unsigned char ID_BYTE2 = m_buffer[5];
+						unsigned char ID_BYTE1 = m_buffer[6];
+						unsigned char ID_BYTE0 = m_buffer[7];
+						long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 
-										RBUF tsen;
-										memset(&tsen,0,sizeof(RBUF));
-										tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
-										tsen.LIGHTING2.packettype=pTypeLighting2;
-										tsen.LIGHTING2.subtype=sTypeAC;
-										tsen.LIGHTING2.seqnbr=0;
+						// report status only if it is a known device else we may have an incorrect profile
+						char szDeviceID[20];
+						std::vector<std::vector<std::string> > result;
+						sprintf(szDeviceID, "%08X", (unsigned int)id);
 
-										tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
-										tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
-										tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
-										tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
-										tsen.LIGHTING2.level=dim_power;
-										tsen.LIGHTING2.rssi=12;
+						result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
+						if (result.size() < 1)
+						{
+							_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", szDeviceID);
+							return;
+						}
 
-										tsen.LIGHTING2.unitcode = channel + 1;
-										tsen.LIGHTING2.cmnd     = (dim_power>0) ? light2_sOn : light2_sOff;
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+
+						tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+						tsen.LIGHTING2.level = dim_power;
+						tsen.LIGHTING2.rssi = 12;
+
+						tsen.LIGHTING2.unitcode = channel + 1;
+						tsen.LIGHTING2.cmnd = (dim_power > 0) ? light2_sOn : light2_sOff;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-										_log.Log(LOG_NORM, "EnOcean message: 0x%02X Node 0x%08x UnitID: %02X cmd: %02X ",
-											DATA_BYTE3,
-											id,
-											tsen.LIGHTING2.unitcode,
-											tsen.LIGHTING2.cmnd
-										);
+						_log.Log(LOG_NORM, "EnOcean message: 0x%02X Node 0x%08x UnitID: %02X cmd: %02X ",
+							DATA_BYTE3,
+							id,
+							tsen.LIGHTING2.unitcode,
+							tsen.LIGHTING2.cmnd
+						);
 #endif //ENOCEAN_BUTTON_DEBUG
 
-										// Never learn device from D2-01-0C because subtype may be incorrect
-										sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+						// Never learn device from D2-01-0C because subtype may be incorrect
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 
-										// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
-										//			Domoticz will show device status but some functions may not work because EnoceanSensors table has no info on this device (until teach-in is performed)
-										//       If a device has local control (ex: nodon inwall module with physically attached switched), domoticz will record the local control as unit 0.
-										//       Ex: nodon inwall 2 channels will show 3 entries. Unit 0 is the local switch, 1 is the first channel, 2 is the second channel.
-										//			(I only have attached a switch on the first channel, I have no idea which unit number a switch on the 2nd channel will have)
-										return;
-									}
-									break;
+						// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
+						//			Domoticz will show device status but some functions may not work because EnoceanSensors table has no info on this device (until teach-in is performed)
+						//       If a device has local control (ex: nodon inwall module with physically attached switched), domoticz will record the local control as unit 0.
+						//       Ex: nodon inwall 2 channels will show 3 entries. Unit 0 is the local switch, 1 is the first channel, 2 is the second channel.
+						//			(I only have attached a switch on the first channel, I have no idea which unit number a switch on the 2nd channel will have)
+						return;
+					}
+					break;
+					}
+				}
+				else if (func == 0x02)
+				{
+					// D2-02 Temp. Sensor, Light, Occupancy, SmokeType
+				}
+				else if (func == 0x03)
+				{
+					// D2-03
+					switch (type)
+					{
+					case 0x00:	// D2-03-00 Light, Switching and Blind Control Type
+						break;
+					case 0x0A:	// D2-03-0A Push Button – Single Button
+						while (1 == 0);
+						break;
+					case 0x10:	// D2-03-10 Mechanical Handle
+						break;
+					case 0x20:	// D2-03-20 Beacon with Vibration Detection
+						break;
 					}
 				}
 			}
-
 		default:
 			_log.Log(LOG_NORM, "EnOcean: Unhandled RORG (%02x)", m_buffer[0]);
 			break;

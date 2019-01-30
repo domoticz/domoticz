@@ -121,6 +121,7 @@ local function Domoticz(settings)
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
+		['EVOHOME_MODE_FOLLOW_SCHEDULE'] = 'FollowSchedule',
 		['INTEGER'] = 'integer',
 		['FLOAT'] = 'float',
 		['STRING'] = 'string',
@@ -185,7 +186,7 @@ local function Domoticz(settings)
 			toJSON = function(luaTable)
 				return utils.toJSON(luaTable)
 			end,
-
+            
 			rgbToHSB = function(r, g, b)
 				return utils.rgbToHSB(r,g,b)
 			end
@@ -241,6 +242,14 @@ local function Domoticz(settings)
 			self.sendCommand('SendEmail', subject .. '#' .. message .. '#' .. mailTo)
 		end
 	end
+    
+    
+    -- have domoticz send snapshot
+	function self.snapshot(cameraID, subject)
+        local snapshotCommand = "SendCamera:" .. cameraID
+        return TimedCommand(self, snapshotCommand , subject, 'camera')       -- works with afterXXX 
+    end
+
 
 	-- have domoticz send an sms
 	function self.sms(message)
@@ -301,7 +310,7 @@ local function Domoticz(settings)
 		end
 
 	end
-
+    
 	-- send a scene switch command
 	function self.setScene(scene, value)
 		utils.log('setScene is deprecated. Please use the scene object directly.', utils.LOG_INFO)
