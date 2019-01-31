@@ -57,3 +57,6 @@ deploy:
     APPVEYOR_REPO_NAME: domoticz/domoticz
     APPVEYOR_REPO_BRANCH: development
 
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  
