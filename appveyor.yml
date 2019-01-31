@@ -46,10 +46,11 @@ test: off
 
 deploy:
 - provider: FTP
-  protocol: sftp
+  protocol: ftps
   host: $(FTP_HOST)
   username: $(FTP_USER)
-  password: $(FTP_PASSWORD)
+  password:
+    secure: $(FTP_PASSWORD)
   folder: beta
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
