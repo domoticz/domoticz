@@ -49,8 +49,7 @@ deploy:
   protocol: ftps
   host: $(FTP_HOST)
   username: $(FTP_USER)
-  password:
-    secure: $(FTP_PASSWORD)
+  password: $(FTP_PASSWORD)
   folder: beta
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
