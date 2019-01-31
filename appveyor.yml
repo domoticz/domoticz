@@ -50,6 +50,8 @@ deploy:
   host: $(FTP_HOST)
   username: $(FTP_USER)
   password: $(FTP_PASSWORD)
+  beta: true
+  debug: true
   folder: beta
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
