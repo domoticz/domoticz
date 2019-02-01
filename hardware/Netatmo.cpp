@@ -447,7 +447,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	std::time_t tNow = time(NULL);
 
 	// initialize the relevant device flag
-	if ( m_bNetatmoRefreshed.count(ID) == 0 )
+	if ( m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end() )
 	{
 		m_bNetatmoRefreshed[ID] = true;
 	}
