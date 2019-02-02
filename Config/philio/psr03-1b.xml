@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Zipato Keyfob 5 Remote
+https://products.z-wavealliance.org/products/2432
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" index="2" label="Basic Set Level" units="" min="0" max="255" value="255">
+            <Help>
+                Setting the BASIC command value to turn on the light.
+                The 0xFF(-1) means turn on the light.
+                For dimmer equipment 1 to 99 means the light strength.
+                0 means turn off the light.
+            </Help>
+        </Value>
+		<Value type="list" genre="config" index="7" label="Customer function" size="1" value="0">
+            <Help>
+                Customer function switch, using bit control.
+            </Help>
+            <Item label="Switch AV control" value="0"/>
+            <Item label="Lighting group control" value="1"/>
+        </Value>
+        <Value type="short" genre="config" index="10" label="Auto Report Battery Time" min="0" max="127" value="12">
+			<Help>
+                The interval time for auto report the battery level.
+                0 means turn off auto report battery.
+                Each tick means 30 minutes.
+                The default value is 12(6 hours).
+            </Help>
+		</Value>
+		<Value type="byte" genre="config" index="82" label="Association Group 2 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 2.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" index="83" label="Association Group 3 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 3.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" index="84" label="Association Group 4 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 4.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" index="85" label="Association Group 5 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 5.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" index="86" label="Association Group 6 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 6.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" index="87" label="Association Group 7 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 7.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" index="88" label="Association Group 8 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 8.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" index="89" label="Association Group 9 Basic Set Level" units="" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value to turn on the light in the association group 9.
+                0 means using the value of configuration 2 to set.
+            </Help>
+        </Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="9">
+			<Group index="1" max_associations="4" label="Z-Wave Plus Lifeline" />
+			<Group index="2" max_associations="4" label="Top-left Key" />
+			<Group index="3" max_associations="4" label="Top-right Key" />
+			<Group index="4" max_associations="4" label="Bottom-left Key" />
+			<Group index="5" max_associations="4" label="Bottom-right Key" />
+			<Group index="6" max_associations="4" label="Top-left Key" />
+			<Group index="7" max_associations="4" label="Top-right Key" />
+			<Group index="8" max_associations="4" label="Bottom-left Key" />
+			<Group index="9" max_associations="4" label="Bottom-right Key" />
+		</Associations>
+	</CommandClass>
+</Product>

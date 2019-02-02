@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Simon S100 Socket iO
+https://products.z-wavealliance.org/products/2674
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the device, but it does not respond to requests -->
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Association LED" value="1" min="255" max="1" size="1">
+            <Help>Activates the Central LED.</Help>
+            <Item label="Turns the center LED OFF" value="0"/>
+            <Item label="Turns the center LED ON" value="255"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="2" label="Custom consumption limit" value="0" min="0" max="65535">
+			<Help>
+                Sets a delay from activation request until the activation is performed.
+                0 Disables custom consumption limit (Default).
+                1 to 65535 Sets the power in Watts that is supported (Once the load is over, it is disconnected).
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="3" label="Beacon" value="0" min="0" max="99">
+            <Help>
+                Sets the beacon intensity, turning ON all Device LEDs al percentage set in this configuration.
+                0 Disables the beacon function (Defect).
+                1 to 99 (1-100%) sets the intensity of the beacon LEDs.
+            </Help>
+        </Value>
+		<Value type="byte" genre="config" instance="1" index="10" label="Delay ON" value="0" min="0" max="254">
+	    <Help>
+            This parameter allows to choose delay from activation request until load activation.
+            Value 0 Instantly (default).
+            Values from 1 to 127 - 1 second to 127 seconds in 1 second resolution.
+            Values from 128 to 254 - 1 minute to 127 minutes in 1 minute resolution.
+        </Help>
+		</Value>
+        <Value type="byte" genre="config" instance="1" index="11" label="Activation Time" value="0" min="0" max="254">
+        <Help>
+            This parameter allows to chose the time that load performs activated after complete an activation process.
+            Value 0 - Instantly (default).
+            Values from 1 to 127 - 1 second to 127 seconds in 1 second resolution.
+            Values from 128 to 254 - 1 minute to 127 minutes in 1 minute resolution.
+        </Help>
+		</Value>
+        <Value type="list" genre="config" instance="1" index="13" label="Lock Input" value="0" min="0" max="255" size="1">
+            <Help>This parameter allows to choose operating for Main LED as identification at 20%.</Help>
+            <Item label="Enables the pushbutton to control the load" value="0"/>
+            <Item label="Disables the action of the pushbutton on the load" value="255"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Reset default (Write Only)" value="0" min="0" max="39015" size="2">
+            <Help>Write only parameter used to restore configurations or perform a completely restore default.</Help>
+            <Item label="Configuration values are restored" value="17170"/>
+            <Item label="Factory reset" value="39015"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="17" label="PostReset State" value="0" min="0" max="255" size="1">
+            <Help>Sets the device state after a reset.</Help>
+            <Item label="After a reset the load starts Off" value="0"/>
+            <Item label="After a reset the load recovers the last value" value="255"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="19" label="Press Action" value="0" min="0" max="2" size="1">
+            <Help>Defines the function performed by the device when keypad is pressed.</Help>
+            <Item label="Short press toggles the load" value="0"/>
+            <Item label="Short press activates the load" value="1"/>
+			<Item label="Short press deactivates the load" value="2"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="20" label="Identify (Write Only)" value="0" min="255" max="255" size="1">
+            <Help>Write only value that performs a fast blink on Central LED during 5 seconds in order to identify the device when it is installed in a multiple frame.</Help>
+            <Item label="The central LED flashes for 5 seconds at a frequency of 0,1s." value="255"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="21" label="Load State (Read Only)" value="0" min="0" max="65535">
+			<Help>
+                Read only Configuration used to report the device state and last value. This value is represented in Hexadecimal.
+                Byte 0 informs about Load State (0 load is OFF and 1 load is ON).
+                Byte 1 informs about Load value (0x00 or 0xFF)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="27" label="Lock Hold Press" value="0" min="0" max="255" size="1">
+            <Help>
+                Locks the major part of Hold press effects in order to avoid undesired Z-Wave changes, or restores Default.
+                0xFF Hold Press from 2sec to 30 sec does not performs a Node info.
+                Hold press of 30sec restores configuration except Lock Hold Press, and sends a Node info in order to add or remove from Z-Wave Network.
+            </Help>
+            <Item label="Hold Press is available" value="0"/>
+            <Item label="Hold Press is Locked" value="255"/>
+        </Value>
+    </CommandClass>
+    <!-- -->
+    <CommandClass id="96" mapping="endpoints"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="3" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>
