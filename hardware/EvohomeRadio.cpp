@@ -1423,7 +1423,7 @@ bool CEvohomeRadio::DecodeHeatDemand(CEvohomeMsg &msg)
 	if (nDevNo == 0xfc)//252...afaik this is also some sort of broadcast channel so maybe there is more to this device number than representing the boiler
 	{
 		szDevType = "Boiler"; //Boiler demand
-		if (msg.command == 0x0008) //discard these messages from the boiler as they are always zero and the 0x3150 messages contain actual demand
+		if (msg.command == 0x0008) //discard this type of boiler demand message sent from the controller as they are always zero and the 0x3150 messages contain actual demand
 			return true;
 	}	
 	else if (nDevNo == 0xfa)//250
