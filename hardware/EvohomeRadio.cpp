@@ -1434,14 +1434,15 @@ bool CEvohomeRadio::DecodeHeatDemand(CEvohomeMsg &msg)
 	else if (nDevNo == 0xf9)//249
 		szDevType = "Heating"; //Central Heating zone valve
 
-	Log(true, LOG_STATUS, "evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command);
-
 	if (msg.command == 0x0008)
 	{
 		if (nDevNo < 12)
 			nDevNo++; //Need to add 1 to give correct zone numbers
 		RXRelay(static_cast<uint8_t>(nDevNo), static_cast<uint8_t>(nDemand), msg.GetID(0));
 	}
+
+	Log(true, LOG_STATUS, "evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command); 
+	
 	return true;
 }
 
