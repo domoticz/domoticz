@@ -1,23 +1,17 @@
 <div class="container">
-    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td>
-                <a class="btnstylerev" back-button>{{ :: 'Back'|translate }}</a>
-            </td>
+    <a class="btnstylerev" back-button>{{ :: 'Back'|translate }}</a>
 
-            <td align="right" ng-if="::!vm.isMonthView">
-                <label for="comboyear">{{ :: 'Year' | translate }}: </label>
-                <select
-                        id="comboyear"
-                        class="combobox ui-corner-all"
-                        style="width:64px"
-                        ng-model="vm.selectedYear"
-                        ng-change="vm.selectYear()"
-                        ng-options="year for year in ::vm.getYearsOptions()">
-                </select>
-            </td>
-        </tr>
-    </table>
+    <div class="pull-right">
+        <label for="comboyear">{{ :: 'Year' | translate }}: </label>
+        <select
+                id="comboyear"
+                class="combobox ui-corner-all"
+                style="width:64px"
+                ng-model="vm.selectedYear"
+                ng-change="vm.selectYear()"
+                ng-options="year for year in ::vm.getYearsOptions()">
+        </select>
+    </div>
 
     <h2 class="page-header">{{ ::vm.pageName }}</h2>
 
