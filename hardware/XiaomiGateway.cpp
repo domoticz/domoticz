@@ -1279,14 +1279,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							//Temp+Hum+Baro
 							float temp = (float)atof(temperature.c_str()) / 100.0f;
 							int hum = atoi(humidity.c_str()) / 100;
-							TrueGateway->InsertUpdateTempHumPressure(sid.c_str(), "Xiaomi Pressure", temp, hum, pressure, battery);
+							TrueGateway->InsertUpdateTempHumPressure(sid.c_str(), "Xiaomi TempHumBaro", temp, hum, pressure, battery);
 						}
 						else if ((!temperature.empty()) && (!humidity.empty()))
 						{
 							//Temp+Hum
 							float temp = (float)atof(temperature.c_str()) / 100.0f;
 							int hum = atoi(humidity.c_str()) / 100;
-							TrueGateway->InsertUpdateTempHum(sid.c_str(), "Xiaomi Pressure", temp, hum, battery);
+							TrueGateway->InsertUpdateTempHum(sid.c_str(), "Xiaomi TempHum", temp, hum, battery);
 						}
 						else if (temperature != "") {
 							float temp = (float)atof(temperature.c_str())/100.0f;
