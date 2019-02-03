@@ -953,9 +953,6 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 .dropdown-submenu > a:after {
     margin-right: 0px;
 }
-.modal-body form {
-  color: #000;
-}
 
 .page-header {
     margin: 12px 0;
@@ -1006,4 +1003,33 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 
 .battery:before, .battery:after {
   border-color: #FFF;
+}
+
+.modal-content {
+  color: #fff;
+  background-color: #303030;
+  border: 1px solid #444;
+}
+
+.modal-header {
+  border-bottom-color: #444;
+}
+
+.modal-footer {
+  background-color: inherit;
+  border-top-color: #444;
+  box-shadow: none;
+}
+
+.modal-title,
+.bootbox-body {
+  color: inherit;
+}
+
+.modal .form-control {
+  line-height: 1.5;
+  color: #444;
+  background-color: #fff;
+  padding: 0.125rem 0.25rem;
+  border: 1px solid transparent;
 }

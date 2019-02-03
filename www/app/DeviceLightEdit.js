@@ -171,7 +171,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 });
 
                 // TODO: Add caching mechanism for this request
-                deviceApi.getLightsDevices.then(function (devices) {
+                deviceApi.getLightsDevices().then(function (devices) {
                     vm.lightsAndSwitches = devices;
                 });
 
