@@ -209,7 +209,6 @@ CRFLinkBase::CRFLinkBase()
 	ParseLine("20;AF;SelectPlus;ID=1bb4;CHIME=01;");
 	ParseLine("20;04;Eurodomest;ID=03696b;SWITCH=07;CMD=ALLOFF;");
 	*/
-	ParseLine("20;01;Blyss;ID=3fae;SWITCH=G1;CMD=ON;");
 }
 
 CRFLinkBase::~CRFLinkBase()
@@ -595,8 +594,6 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
 	sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, BatteryLevel);
-
-	WriteToHardware((const char*)&gswitch, sizeof(gswitch));
 
 	return true;
 }
