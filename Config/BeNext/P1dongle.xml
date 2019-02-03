@@ -48,7 +48,19 @@
 		</Value>
 	</CommandClass>
   <!-- Meter v4 as report -->
-	<CommandClass id="50" setasreport="true" />
+	<CommandClass id="50" name="COMMAND_CLASS_METER" version="4" request_flags="3" >
+		<Instance index="1" />
+		<Instance index="2" />
+		<Instance index="3" />
+		<Instance index="4" />
+		<Value type="decimal" genre="user" instance="1" index="0" label="Energy" units="kWh" read_only="true" write_only="false" />
+		<Value type="decimal" genre="user" instance="1" index="8" label="Power" units="W" read_only="true" write_only="false" />
+		<Value type="decimal" genre="user" instance="2" index="0" label="Energy" units="kWh" read_only="true" write_only="false"/>
+		<Value type="decimal" genre="user" instance="2" index="8" label="Power" units="W" read_only="true" write_only="false" verify_changes="false" />
+		<Value type="decimal" genre="user" instance="3" index="0" label="Energy" units="kWh" read_only="true" write_only="false" verify_changes="false" />
+		<Value type="decimal" genre="user" instance="3" index="8" label="Power" units="W" read_only="true" write_only="false" verify_changes="false" />
+		<Value type="decimal" genre="user" instance="4" index="0" label="Gas" units="cubic meters" read_only="true" write_only="false" verify_changes="false"/>
+	</CommandClass>
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="1">

@@ -213,7 +213,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
             columns.push({ title: $.t('Usage'), data: 'usage', render: counterRenderer });
 
-			if (!['Counter Incremental'].includes(vm.device.SubType))
+			if (!['Counter Incremental'].includes(vm.device.SubType) && (vm.device.SwitchTypeVal != 3))
 				columns.push({ title: $.t('Costs'), data: 'cost', render: costRenderer });
 
             columns.push({
@@ -240,9 +240,13 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         function showUsageChart(data) {
             var chartElement = $element.find('#usagegraph');
             var series = [];
+            var valueQuantity = "Count";
+            if (typeof vm.device.ValueQuantity != 'undefined') {
+                    valueQuantity = vm.device.ValueQuantity;
+            }
 
             var chartName = vm.device.SwitchTypeVal === 4 ? 'Generated' : 'Usage';
-            var yAxisName = ['Energy', 'Gas', 'Water', 'Water', 'Energy'][vm.device.SwitchTypeVal];
+            var yAxisName = ['Energy', 'Gas', 'Water', valueQuantity, 'Energy'][vm.device.SwitchTypeVal];
 
             series.push({
                 name: $.t(chartName),

@@ -221,6 +221,19 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 			}
 		}
 	});
+
+    app.directive('i18n', function() {
+        return {
+            restrict: 'A',
+            priority: 1000,
+            link: function(scope, element, attrs) {
+                if (!element.is('tr')) {
+                    element.text($.t(attrs['i18n']));
+                }
+            }
+        }
+    });
+
 	app.filter('translate', function() {
 		return function(input) {
 			return $.t(input);

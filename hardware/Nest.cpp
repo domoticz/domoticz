@@ -481,24 +481,28 @@ void CNest::GetMeterDetails()
 				if (!bBool)
 					bIAlarm = true;
 			}
+/*
 			if (!device["component_heat_test_passed"].empty())
 			{
 				bBool = device["component_heat_test_passed"].asBool();
 				if (!bBool)
 					bIAlarm = true;
 			}
+*/
 			if (!device["component_buzzer_test_passed"].empty())
 			{
 				bBool = device["component_buzzer_test_passed"].asBool();
 				if (!bBool)
 					bIAlarm = true;
 			}
+/*
 			if (!device["component_us_test_passed"].empty())
 			{
 				bBool = device["component_us_test_passed"].asBool();
 				if (!bBool)
 					bIAlarm = true;
 			}
+*/
 			if (!device["component_temp_test_passed"].empty())
 			{
 				bBool = device["component_temp_test_passed"].asBool();

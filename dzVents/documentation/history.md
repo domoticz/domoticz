@@ -1,3 +1,6 @@
+[2.4.12]
+- Added Managed counter (to counter)
+
 [2.4.11]
 - Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
 
