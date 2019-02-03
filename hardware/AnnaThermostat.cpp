@@ -196,9 +196,11 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	sPostData << "</setpoint>";
 	sPostData << "</thermostat>";
 
-	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult))
+  //if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult))
+  //02-02-2019 Return set is now empty so set bIgnoreNoDataReturned = true
+	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
 	{
-		Log(LOG_ERROR, "Error getting current state!");
+		Log(LOG_ERROR, "Error setting current state!");
 		return;
 	}
 
@@ -281,7 +283,9 @@ void CAnnaThermostat::GetMeterDetails()
 		return;
 	}
 
-	stdreplace(sResult, "\r\n", "");
+	//stdreplace(sResult, "\r\n", "");
+	// 02-02-2019 Just removing \n in  different way
+    sResult.erase(std::remove(sResult.begin(), sResult.end(), '\n'), sResult.end());
 
 	TiXmlDocument doc;
 	if (doc.Parse(sResult.c_str()))
