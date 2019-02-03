@@ -448,11 +448,37 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 	}
 }
 
-void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const int Pressure, const int battery)
+void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const float Pressure, const int battery)
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name);
+		SendPressureSensor(sID, 1, battery, Pressure, Name);
+	}
+}
+
+void XiaomiGateway::InsertUpdateTempHumPressure(const std::string &nodeid, const std::string &Name, const float Temperature, const int Humidity, const float Pressure, const int battery)
+{
+	unsigned int sID = GetShortID(nodeid);
+	int barometric_forcast = baroForecastNoInfo;
+	if (Pressure < 1000)
+		barometric_forcast = baroForecastRain;
+	else if (Pressure < 1020)
+		barometric_forcast = baroForecastCloudy;
+	else if (Pressure < 1030)
+		barometric_forcast = baroForecastPartlyCloudy;
+	else
+		barometric_forcast = baroForecastSunny;
+
+	if (sID > 0) {
+		SendTempHumBaroSensor(sID, battery, Temperature, Humidity, Pressure, barometric_forcast, Name);
+	}
+}
+
+void XiaomiGateway::InsertUpdateTempHum(const std::string &nodeid, const std::string &Name, const float Temperature, const int Humidity, const int battery)
+{
+	unsigned int sID = GetShortID(nodeid);
+	if (sID > 0) {
+		SendTempHumSensor(sID, battery, Temperature, Humidity, Name);
 	}
 }
 
@@ -1238,29 +1264,39 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 					}
 					else if ((name == "Xiaomi Temperature/Humidity") || (name == "Xiaomi Aqara Weather")) {
+						
 						std::string temperature = root2["temperature"].asString();
 						std::string humidity = root2["humidity"].asString();
+						float pressure = 0;
 
-						if (temperature != "") {
-							float temp = (float)atoi(temperature.c_str());
-							temp = temp / 100;
+						if (name == "Xiaomi Aqara Weather") {
+							std::string szPressure = root2["pressure"].asString();
+							pressure = static_cast<float>(atof(szPressure.c_str())) / 100.0f;
+						}
+
+						if ((!temperature.empty()) && (!humidity.empty()) && (pressure != 0))
+						{
+							//Temp+Hum+Baro
+							float temp = (float)atof(temperature.c_str()) / 100.0f;
+							int hum = atoi(humidity.c_str()) / 100;
+							TrueGateway->InsertUpdateTempHumPressure(sid.c_str(), "Xiaomi Pressure", temp, hum, pressure, battery);
+						}
+						else if ((!temperature.empty()) && (!humidity.empty()))
+						{
+							//Temp+Hum
+							float temp = (float)atof(temperature.c_str()) / 100.0f;
+							int hum = atoi(humidity.c_str()) / 100;
+							TrueGateway->InsertUpdateTempHum(sid.c_str(), "Xiaomi Pressure", temp, hum, battery);
+						}
+						else if (temperature != "") {
+							float temp = (float)atof(temperature.c_str())/100.0f;
 							if (temp < 99) {
 								TrueGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp, battery);
 							}
-						}
-						if (humidity != "") {
-							int hum = atoi(humidity.c_str());
-							hum = hum / 100;
+						} else if (humidity != "") {
+							int hum = atoi(humidity.c_str()) / 100;
 							if (hum > 1) {
 								TrueGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum, battery);
-							}
-						}
-						if (name == "Xiaomi Aqara Weather") {
-							std::string pressure = root2["pressure"].asString();
-							int pres = atoi(pressure.c_str());
-							pres = pres / 100;
-							if (pres > 1) {
-								TrueGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Pressure", pres, battery);
 							}
 						}
 					}
