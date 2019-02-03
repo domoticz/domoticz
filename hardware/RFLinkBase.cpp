@@ -342,7 +342,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			//Special case for Blyss
 			char szUnit[10];
 			sprintf(szUnit, "%c%c", (pSwitch->id & 0xFF00) >> 8, pSwitch->id & 0xFF);
-			sstr << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << (pSwitch->id >> 16) << ";" << szUnit << ";" << switchcmnd << ";";
+			sstr << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << ((pSwitch->id & 0xFFFF0000) >> 16) << ";" << szUnit << ";" << switchcmnd << ";";
 		}
 		//#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
