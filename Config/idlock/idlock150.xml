@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+
+	<!--COMMAND_CLASS_CONFIGURATION_V1-->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Door Lock Mode" units="" min="0" max="3" value="1" size="1">
+			<Help>
+				Door Lock Mode
+				Autolock Mode, Manual lock mode, Activate Away Mode, Deactivate Away Mode
+				Default Value : 1 ( Disable Away / Auto Lock Mode )
+			</Help>
+			<Item label="Disable Away, Manual Lock"	value="0" />
+			<Item label="Disable Away, Auto Lock"	value="1" />
+			<Item label="Enable Away, Manual Lock"	value="2" />
+			<Item label="Enable Away, Auto Lock"	value="3" />
+		</Value>
+		<Value type="list" index="2" genre="config" label="RFID Registration Configuration" units="" min="1" max="8" value="5" size="1">
+			<Help>
+				RFID Registration Configuration
+				IDLocks can use up to 50 RFID cards. In order to use a RFID, RFID has to be registered by z-wave configuration command class.
+
+				RFID Configuration with Z-wave is only valid for ID Lock 101.
+
+				Configuration Parameters are as below. Default value is 0x05 (Not in progress).
+				ID Lock 150 will always report 0x05 as this feature is not supported by this door lock model.
+
+				Configuration Set in case of starting to register from gateway
+			</Help>
+      		<Item label="Begin RFID Registering mode on the door lock"	value="1" />
+            <Item label="Not in progress"                               value="5" />
+      		<Item label="RFID Database clear"							value="7" />
+			<Item label="RFID Registering mode stop"					value="8" />
+		</Value>
+		<Value type="list" index="3" genre="config" label="Door Hinge Position" units="" min="0" max="3" value="0" size="1">
+			<Help>
+				Door Hinge Position
+				Default Value : 0 (Right Handle)
+			</Help>
+			<Item label="Right Handle"	value="0" />
+			<Item label="Left Handle"	value="1" />
+		</Value>
+		<Value type="list" index="4" genre="config" label="Door Audio Volume Level" units="" min="0" max="6" value="5" size="1" write_only="true">
+			<Help>
+				Door Audio Volume Level
+				This parameter is a set only parameter. If the value is changed locally on the door lock, this value will not change.
+				Default Value : 5
+			</Help>
+			<Item label="No Sound"			value="0" />
+			<Item label="Level 1"			value="1" />
+			<Item label="Level 2"			value="2" />
+			<Item label="Level 3"			value="3" />
+			<Item label="Level 4"			value="4" />
+			<Item label="Level 5"			value="5" />
+			<Item label="Max. Sound Level"	value="6" />
+		</Value>
+        <Value type="list" index="5" genre="config" label="Door ReLock Mode" units="" min="0" max="1" value="1" size="1">
+			<Help>
+				Door ReLock Mode
+				Default Value: 1 (Enabled)
+			</Help>
+			<Item label="Disabled"	value="0" />
+			<Item label="Enabled"	value="1" />
+		</Value>
+		<Value type="list" index="6" genre="config" label="Service PIN Mode" units="" min="0" max="9" value="0" size="1" write_only="true">
+			<Help>
+				Service PIN Mode
+				A configuration get command on this parameter returns the latest set parameter value (set by Z-wave).
+				This is a set only value, if changed locally on keypad these values are not changed on Z-wave module. Value 5, 6 and 7 are for future use on door lock.
+				Default Value: 0 (Deactivated)
+			</Help>
+			<Item label="Deactivated"				value="0" />
+			<Item label="1 times used"				value="1" />
+			<Item label="2 times used"				value="2" />
+			<Item label="5 times used"				value="3" />
+			<Item label="10 times used"				value="4" />
+			<Item label="Not used (for future use)"	value="5" />
+			<Item label="Not used (for future use)"	value="6" />
+			<Item label="Not used (for future use)"	value="7" />
+			<Item label="12 Hours used"				value="8" />
+			<Item label="24 Hours used"				value="9" />
+		</Value>
+		<Value type="byte" index="7" genre="config" label="Door Lock Model Type" units="" min="101" max="150" value="150" read_only="true">
+			<Help>
+				Door Lock Model Type
+				This configuration is only accepted by configuration get command
+				It is a read only parameter. Default value depends on the door lock model type.
+			</Help>
+		</Value>
+		<Value type="int" index="10" genre="config" label="Retrieve RFID Information" units="">
+			<Help>
+				Configuration Report for retriving the RFID information
+				Byte 1: Para1 (msb)
+				Byte 2: Para2
+				Byte 3: Para3
+				Byte 4: Para4 (lsb)
+			</Help>
+		</Value>
+
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<!--COMMAND_CLASS_ASSOCIATION_V2-->
+	<CommandClass id="133">
+		<Instance index="1" />
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+		</Associations>
+	</CommandClass>
+</Product>

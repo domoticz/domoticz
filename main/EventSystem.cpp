@@ -2543,6 +2543,9 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 		else if (sToken == "TURN") {
 			iLastTokenType = 0;
 		}
+		else if (sToken == "TRIGGER") {
+			iLastTokenType = 0;
+		}
 		else if (sToken == "NOTRIGGER")
 			oResults_.bEventTrigger = false;
 

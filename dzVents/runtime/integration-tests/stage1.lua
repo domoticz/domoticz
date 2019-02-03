@@ -1184,6 +1184,14 @@ local testSnapshot = function()
     return res
 end
 
+local testManagedCounter = function(name)
+    local dev = dz.devices(name)
+	local res = true
+    dev.updateCounter(1234).afterSec(2)
+    tstMsg('Test managed counter',res)
+    return res
+end    
+
 local storeLastUpdates = function()
 
 	dz.globalData.stage1Time = dz.time.raw
@@ -1221,6 +1229,7 @@ local testSecurity = function()
 	local res = true
 	res = res and expectEql(dz.security, dz.SECURITY_DISARMED)
 	dz.devices('secPanel').armAway()
+	
 	return res
 end
 
@@ -1325,6 +1334,7 @@ return {
 		res = res and testCancelledScene('scCancelledScene');
 		res = res and testHTTPSwitch('vdHTTPSwitch');
 		res = res and testSnapshot();
+		res = res and testManagedCounter('vdManagedCounter');
 
 		storeLastUpdates()
 
@@ -1335,6 +1345,6 @@ return {
 			log('Results stage 1: SUCCEEDED')
 		end
 
-		dz.devices('stage2Trigger').switchOn().afterSec(20)
+		dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
 	end
 }

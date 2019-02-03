@@ -872,7 +872,7 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 /*Devices table*/
 .DataTables_sort_wrapper {
   text-transform: uppercase;
-  text-align: left;
+  text-align: right;
   padding: 0px 0px 0px 8px;
   font-size: 0.9em;
 }

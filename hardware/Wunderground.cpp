@@ -382,7 +382,7 @@ void CWunderground::GetMeterDetails()
 		at10-=(tsen.WIND.temperatureh*256);
 		tsen.WIND.temperaturel=(BYTE)(at10);
 
-		tsen.WIND.chillsign=(wind_temp>=0)?0:1;
+		tsen.WIND.chillsign=(wind_chill>=0)?0:1;
 		at10=round(std::abs(wind_chill*10.0f));
 		tsen.WIND.chillh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.chillh*256);
