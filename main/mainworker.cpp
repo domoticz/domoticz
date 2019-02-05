@@ -13044,6 +13044,7 @@ void MainWorker::HeartbeatCheck()
 		if (diff > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
+/* GizMoCuz: This causes long operations to crash (Like Issue #3011)
 			if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
 			{
 				if (!IsDebuggerPresent())
@@ -13055,6 +13056,7 @@ void MainWorker::HeartbeatCheck()
 #endif
 				}
 			}
+*/
 		}
 	}
 
