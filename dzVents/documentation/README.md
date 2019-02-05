@@ -70,7 +70,7 @@ Just to give you an idea! Everything in your Domoticz system is now logically av
 
 # Using dzVents with Domoticz
 In Domoticz go to **Setup > Settings > Other**  and in the section EventSystem make sure the checkbox 'dzVents disabled' is not checked.
-Also make sure that in the Security section in the settings you allow `127.0.0.1` to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in **Setup > Settings > System > Location**, otherwise there is no way to determine nighttime/daytime state.
+Also make sure that in the Security section in the settings **(Setup > Settings > System > Local Networks (no username/password)** you allow 127.0.0.1 to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in **Setup > Settings > System > Location**, otherwise there is no way to determine nighttime/daytime state.
 
 There are two ways of creating dzVents event scripts in Domoticz:
 
@@ -1092,7 +1092,6 @@ Use this in combination with the various dzVents time attributes:
    print(t.compare(anotherTime).secs) -- diff in seconds between t and anotherTime.
 
 ```
-
 ### Time properties and methods
 
 Creation:
@@ -1102,16 +1101,19 @@ local now = Time() -- current time
 local someTime = Time('2017-12-31 22:19:15')
 local utcTime = Time('2017-12-31 22:19:15', true)
 ```
-
+ - **civTwilightEndInMinutes**: *Number*. Minutes from midnight until civTwilightEnd.
+ - **civTwilightStartInMinutes**:*Number*. Minutes from midnight until civTwilightStart. 
  - **compare(time)**: *Function*. Compares the current time object with another time object. *Make sure you pass a Time object!* Returns a table (all values are *positive*, use the compare property to see if *time* is in the past or future):
-   + **milliseconds**: Total difference in milliseconds.
-   + **seconds**: Total difference in whole seconds.
-   + **minutes**: Total difference in whole minutes.
-   + **hours**: Total difference in whole hours.
-   + **days**: Total difference in whole days.
-   + **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
+    - **milliseconds**: Total difference in milliseconds.
+    - **seconds**: Total difference in whole seconds.
+    - **minutes**: Total difference in whole minutes.
+    - **hours**: Total difference in whole hours.
+    - **days**: Total difference in whole days.
+    - **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
  - **day**: *Number*
+ - **ayAbbrOfWeek**: *String*. sun,mon,tue,wed,thu,fri or sat 
  - **daysAgo**: *Number*
+ - **dDate**: *Number*. timestamp (seconds since 01/01/1970 00:00)
  - **getISO**: *Function*. Returns the ISO 8601 formatted date.
  - **hour**: *Number*
  - **hoursAgo**: *Number*. Number of hours since the last update.
@@ -1129,6 +1131,8 @@ local utcTime = Time('2017-12-31 22:19:15', true)
  - **seconds**: *Number*
  - **secondsSinceMidnight**: *Number*
  - **secondsAgo**: *Number*. Number of seconds since the last update.
+ - **sunsetInMinutes**: *Number*. Minutes from midnight until sunset.
+ - **sunriseInMinutes**: *Number*. Minutes from midnight until sunrise.         
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
     - **day**: *Number*
     - **hour**: *Number*
@@ -1144,6 +1148,8 @@ local utcTime = Time('2017-12-31 22:19:15', true)
     - **seconds**: *Number*
     - **year**: *Number*
  - **year**: *Number*
+ - **wday**: *Number* 
+ - **week**: *Number*
 
 **Note: it is currently not possible to change a time object instance.**
 
