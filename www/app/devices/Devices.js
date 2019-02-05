@@ -316,6 +316,10 @@ define(['app'], function (app) {
 			];
 
         	$ctrl.$onInit = function() {
+                $ctrl.filters = $ctrl.filters.map(function(filter) {
+                    return Object.assign({ collapsed: false }, filter)
+                });
+
                 $ctrl.ngModelCtrl.$render = function () {
                     var value = $ctrl.ngModelCtrl.$modelValue;
 

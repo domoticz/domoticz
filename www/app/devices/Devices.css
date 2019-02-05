@@ -39,6 +39,13 @@
     text-transform: uppercase;
 }
 
+.btn.devices-filters__group-collapse {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    line-height: 10px;
+}
+
 .devices-filters__item-list {
     margin-left: 0;
 }

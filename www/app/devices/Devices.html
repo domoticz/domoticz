@@ -23,8 +23,15 @@
 
 <script type="text/ng-template" id="app/devices/deviceFilters.html">
     <section ng-repeat="filter in $ctrl.filters" class="devices-filters">
-        <h3 class="devices-filters__group-title">{{:: filter.name }}</h3>
-        <ul class="devices-filters__item-list">
+        <h3 class="devices-filters__group-title">
+            {{:: filter.name }}
+            <button class="btn btn-link devices-filters__group-collapse pull-right"
+                    title="{{ filter.collapsed ? 'Expand' : 'Collapse' | translate }}"
+                    ng-click="filter.collapsed = !filter.collapsed">
+                <i ng-class="{'icon-chevron-down': filter.collapsed, 'icon-chevron-up': !filter.collapsed}"></i>
+            </button>
+        </h3>
+        <ul class="devices-filters__item-list" ng-hide="filter.collapsed">
             <li class="devices-filters__item" ng-repeat="item in $ctrl.filterValues[$index]">
                 <label>
                     <input type="checkbox"

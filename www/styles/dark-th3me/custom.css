@@ -709,6 +709,10 @@ input[type="search"] {
   background: #f89406;
 }
 
+.btn-link {
+  border-color: transparent;
+}
+
 .label.label-info.lcursor:hover {
   color: yellow !important;
   background: #353535 !important;
