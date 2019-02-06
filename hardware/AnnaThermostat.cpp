@@ -200,7 +200,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
   //02-02-2019 Return set is now empty so set bIgnoreNoDataReturned = true
 	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
 	{
-		Log(LOG_ERROR, "Error setting current state!");
+		Log(LOG_ERROR, "AnnaTherm: Error setting current state!");
 		return;
 	}
 
@@ -273,13 +273,13 @@ void CAnnaThermostat::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		Log(LOG_ERROR, "Error getting current state!");
+		Log(LOG_ERROR, "AnnaTherm: Error getting current state!");
 		return;
 	}
 #endif
 	if (sResult.empty())
 	{
-		Log(LOG_ERROR, "No or invalid data received!");
+		Log(LOG_ERROR, "AnnaTherm: No or invalid data received!");
 		return;
 	}
 
@@ -290,7 +290,7 @@ void CAnnaThermostat::GetMeterDetails()
 	TiXmlDocument doc;
 	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
 	{
-		Log(LOG_ERROR, "Cannot parse XML");
+		Log(LOG_ERROR, "AnnaTherm: Cannot parse XML");
 		return;
 	}
 
@@ -302,7 +302,7 @@ void CAnnaThermostat::GetMeterDetails()
 	pRoot = doc.FirstChildElement("appliances");
 	if (!pRoot)
 	{
-		Log(LOG_ERROR, "Cannot find appliances in XML");
+		Log(LOG_ERROR, "AnnaTherm: Cannot find appliances in XML");
 		return;
 	}
 	pAppliance = pRoot->FirstChildElement("appliance");
@@ -313,7 +313,7 @@ void CAnnaThermostat::GetMeterDetails()
 		pElem = pAppliance->FirstChildElement("name");
 		if (pElem == NULL)
 		{
-			Log(LOG_ERROR, "Cannot find appliance attributes");
+			Log(LOG_ERROR, "AnnaTherm: Cannot find appliance attributes");
 			return;
 		}
 		std::string ApplianceName=pElem->GetText();
@@ -335,14 +335,14 @@ void CAnnaThermostat::GetMeterDetails()
 		pElem = hAppliance.FirstChild("logs").FirstChild().Element();
 		if (!pElem)
 		{
-			Log(LOG_ERROR, "Cannot find logs in XML");
+			Log(LOG_ERROR, "AnnaTherm: Cannot find logs in XML");
 			return;
 		}
 		TiXmlHandle hLogs = TiXmlHandle(pElem);
 		pElem = hAppliance.FirstChild("logs").Child("point_log", 0).ToElement();
 		if (!pElem)
 		{
-			Log(LOG_ERROR, "No log points found in XML");
+			Log(LOG_ERROR, "AnnaTherm: No log points found in XML");
 			return;
 		}
 		for (pElem; pElem; pElem = pElem->NextSiblingElement())
