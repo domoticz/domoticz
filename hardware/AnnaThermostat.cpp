@@ -16,12 +16,15 @@
 // Plugwise Anna Thermostat
 
 const std::string ANNA_GET_STATUS = "/core/appliances";
+const std::string ANNA_SET_STATUS = "/core/appliances";
 
 #ifdef _DEBUG
-	//#define DEBUG_AnnaThermostat
+	//#define DEBUG_AnnaThermostat	
 #endif
 
 #ifdef DEBUG_AnnaThermostat
+#define DEBUG_ANNA_READ_FILE  "/tmp/Anna/appliances.xml"
+#define DEBUG_ANNA_WRITE_FILE "/tmp/Anna/Annout.xml"
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -49,6 +52,8 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+int CAnnaThermostat::m_AnnaVersion = ANNA_VERSION_UNKNOWN;
+
 CAnnaThermostat::CAnnaThermostat(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password) :
 m_IPAddress(IPAddress),
 m_IPPort(usIPPort),
@@ -57,16 +62,18 @@ m_Password(CURLEncode::URLEncode(Password))
 {
 	m_HwdID=ID;
 	Init();
+	AnnaVersionCheck();
 	GetMeterDetails();
 }
 
 CAnnaThermostat::~CAnnaThermostat(void)
 {
 }
-
+ 
 void CAnnaThermostat::Init()
 {
-	m_ThermostatID = "";
+		m_ThermostatID = "";
+
 }
 
 bool CAnnaThermostat::StartHardware()
@@ -119,6 +126,52 @@ void CAnnaThermostat::Do_Work()
 
 	}
 	Log(LOG_STATUS,"Worker stopped...");
+}
+
+void CAnnaThermostat::AnnaVersionCheck()
+{
+//trying to determine what version of XML handling to use
+	if (m_UserName.size() == 0)
+		return;
+	if (m_Password.size() == 0)
+		return;
+	std::string sResult;
+#ifdef DEBUG_AnnaThermostat
+	sResult = ReadFile(DEBUG_ANNA_READ_FILE);
+#else
+	//Get Data
+	std::stringstream szURL;
+
+	if (m_Password.empty())
+	{
+		szURL << "http://" << m_IPAddress << ":" << m_IPPort;
+	}
+	else
+	{
+		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
+	}
+	szURL << ANNA_GET_STATUS;
+
+	if (!HTTPClient::GET(szURL.str(), sResult))
+	{
+		Log(LOG_ERROR, "Error getting current state!");
+		return;
+	}
+#endif
+    if (sResult.empty())
+	{
+		Log(LOG_ERROR, "No data received!");
+		return;
+	}
+    TiXmlDocument doc;
+	// check with old style handling
+	 stdreplace(sResult, "\r\n", "");
+	
+    if (doc.Parse(sResult.c_str()))
+	{
+    	  CAnnaThermostat::m_AnnaVersion = ANNA_VERSION_LF;
+	}
+
 }
 
 void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -178,7 +231,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	{
 		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
 	}
-	szURL << ANNA_GET_STATUS;
+	szURL << ANNA_SET_STATUS;
 	szURL << ";id=";
 	szURL << m_ThermostatID;
 	szURL << "/thermostat";
@@ -186,7 +239,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	std::stringstream sPostData;
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
-
+    std::string stmpResult;
 	char szTemp[10];
 	sprintf(szTemp, "%.1f", temp);
 
@@ -195,10 +248,15 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	sPostData << szTemp;
 	sPostData << "</setpoint>";
 	sPostData << "</thermostat>";
+    
 
-  //if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult))
-  //02-02-2019 Return set is now empty so set bIgnoreNoDataReturned = true
-	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
+	// Set ignore flag base on firmware version of teh ANNA (smile) Gateway firmware 3.1.4 needs to ignore empty data
+	bool bIgnoreEmptyData = false;
+    if (CAnnaThermostat::m_AnnaVersion == ANNA_VERSION_LF) {
+		bIgnoreEmptyData = true;
+		}
+
+  	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, bIgnoreEmptyData))
 	{
 		Log(LOG_ERROR, "Error setting current state!");
 		return;
@@ -256,7 +314,7 @@ void CAnnaThermostat::GetMeterDetails()
 		return;
 	std::string sResult;
 #ifdef DEBUG_AnnaThermostat
-	sResult = ReadFile("E:\\appliances.xml");
+	sResult = ReadFile(DEBUG_ANNA_READ_FILE);
 #else
 	//Get Data
 	std::stringstream szURL;
@@ -279,15 +337,22 @@ void CAnnaThermostat::GetMeterDetails()
 #endif
 	if (sResult.empty())
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "No data received!");
 		return;
+	}  
+      
+  	// 06-02-2019 Based on flag m_AnnaVersion determine how to  clean up sResult 
+     TiXmlDocument doc;
+    if (CAnnaThermostat::m_AnnaVersion == ANNA_VERSION_LF){
+	// Only removing \n as needed by for frmrware 3.1.4
+    	sResult.erase(std::remove(sResult.begin(), sResult.end(), '\n'), sResult.end());
 	}
-
-	//stdreplace(sResult, "\r\n", "");
-	// 02-02-2019 Just removing \n in  different way
-    sResult.erase(std::remove(sResult.begin(), sResult.end(), '\n'), sResult.end());
-
-	TiXmlDocument doc;
+	else
+	{
+	// Removing "\r\n\" in the way it way done in firmware version older then  3.1.4	
+        stdreplace(sResult, "\r\n", "");	
+	}
+	
 	if (doc.Parse(sResult.c_str()))
 	{
 		Log(LOG_ERROR, "Invalid data received!");
