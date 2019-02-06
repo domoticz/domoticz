@@ -1,4 +1,5 @@
 
+
 **Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 
 **Breaking change warning!!**: For people using with dzVents prior to version 2.4: Please read the [change log](#Change_log) below as there is an easy-to-fix breaking change regarding the second parameter passed to the execute function (it is no longer `nil` for timer/security triggers).
@@ -517,9 +518,10 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
+    - **location**:<sup>2.4.13</sup> domoticz settings location Name 
+    - **serverPort**: webserver listening port.
     - **url**: internal url to access the API service.
     - **webRoot**: `webroot` value as specified when starting the Domoticz service.
-    - **serverPort**: webserver listening port.
  - **sms(message)**: *Function*. Sends an sms if it is configured in Domoticz.
  - **snapshot(cameraID,subject)**:<sup>2.4.11</sup> *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
@@ -542,6 +544,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **round(number, decimalPlaces)**: *Function*. Helper function to round numbers.
     - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
     - **toJSON(luaTable)**: *Function*. <sup>2.4.0</sup> Converts a Lua table to a json string.
+    - **urlDecode(s)**: <sup>2.4.13</sup> *Function*. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format
     - **urlEncode(s, [strSub])**: *Functon*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
  - **variables(idx/name)**: *Function*. A function returning a variable by it's name or idx. See  [Variable object API](#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). **Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`**.
 
@@ -1111,7 +1114,7 @@ local utcTime = Time('2017-12-31 22:19:15', true)
     - **days**: Total difference in whole days.
     - **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
  - **day**: *Number*
- - **ayAbbrOfWeek**: *String*. sun,mon,tue,wed,thu,fri or sat 
+ - **dayAbbrOfWeek**: *String*. sun,mon,tue,wed,thu,fri or sat 
  - **daysAgo**: *Number*
  - **dDate**: *Number*. timestamp (seconds since 01/01/1970 00:00)
  - **getISO**: *Function*. Returns the ISO 8601 formatted date.
@@ -1970,6 +1973,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.13]
+- Added domoticz.settings.location (domoticz settings location Name)
+- Added domoticz.utils.urlDecode method to convert a string with escaped chars (%20, %3A and the likes) to human readable format
+
 ##[2.4.12]
 - Added managed Counter (to counter)
 
