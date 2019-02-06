@@ -443,35 +443,39 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 
 	int batValue = GetBatteryLevel(ModuleType, battery_percent);
 
-	std::time_t tNetatmoLastUpdate = 0;
-	std::time_t tNow = time(NULL);
+	// check for Netatmo cloud data timeout, except if we deal with a thermostat
+	if (ModuleType != "NATherm1")
+	{
+		std::time_t tNetatmoLastUpdate = 0;
+		std::time_t tNow = time(NULL);
 
-	// initialize the relevant device flag
-	if ( m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end() )
-	{
-		m_bNetatmoRefreshed[ID] = true;
-	}
-	// Check when dashboard data was last updated
-	if ( !root["time_utc"].empty() )
-	{
-		tNetatmoLastUpdate = root["time_utc"].asUInt();
-	}
-	_log.Debug(DEBUG_HARDWARE, "Netatmo: Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
-	// check if Netatmo data was updated in the past 10 mins (+1 min for sync time lags)... if not means sensors failed to send to cloud
-	if (tNetatmoLastUpdate > (tNow - 660))
-	{
-		if (!m_bNetatmoRefreshed[ID])
+		// initialize the relevant device flag
+		if ( m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end() )
 		{
-			_log.Log(LOG_STATUS, "Netatmo: cloud data for module [%s] is now updated again", name.c_str());
 			m_bNetatmoRefreshed[ID] = true;
 		}
-	}
-	else
-	{
-		if (m_bNetatmoRefreshed[ID])
-			_log.Log(LOG_ERROR, "Netatmo: cloud data for module [%s] no longer updated (module possibly disconnected)", name.c_str());
-		m_bNetatmoRefreshed[ID] = false;
-		return false;
+		// Check when dashboard data was last updated
+		if ( !root["time_utc"].empty() )
+		{
+			tNetatmoLastUpdate = root["time_utc"].asUInt();
+		}
+		_log.Debug(DEBUG_HARDWARE, "Netatmo: Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
+		// check if Netatmo data was updated in the past 10 mins (+1 min for sync time lags)... if not means sensors failed to send to cloud
+		if (tNetatmoLastUpdate > (tNow - 660))
+		{
+			if (!m_bNetatmoRefreshed[ID])
+			{
+				_log.Log(LOG_STATUS, "Netatmo: cloud data for module [%s] is now updated again", name.c_str());
+				m_bNetatmoRefreshed[ID] = true;
+			}
+		}
+		else
+		{
+			if (m_bNetatmoRefreshed[ID])
+				_log.Log(LOG_ERROR, "Netatmo: cloud data for module [%s] no longer updated (module possibly disconnected)", name.c_str());
+			m_bNetatmoRefreshed[ID] = false;
+			return false;
+		}
 	}
 
 	if (!root["Temperature"].empty())
