@@ -6,7 +6,7 @@ Version 4.xxxx (October xxth 2018)
 - Implemented: RFXMeter, Option to specify meter divider
 - Implemented: Starting implementation of Taiwanese language (big thanks to berry lin!)
 - Fixed: Philips Hue, should work correctly now again
-- Updated: Dzvents (version 2.4.9, See dzVents/documentation/history.md)
+- Updated: dzVents (version 2.4.12, See dzVents/documentation/history.md)
 
 Version 4.9700 (June 23th 2018)
 - Implemented: Blockly, now possible to directly add/update Text devices

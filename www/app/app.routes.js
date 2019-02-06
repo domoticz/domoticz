@@ -32,7 +32,7 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controllerAs: 'vm'
             }))
             .when('/Devices/:id/Log', angularAMD.route({
-                templateUrl: 'views/log/device_log.html',
+                templateUrl: 'app/log/DeviceLog.html',
                 controller: 'DeviceLogController',
                 controllerUrl: 'app/log/DeviceLog.js',
                 controllerAs: 'vm'
@@ -88,8 +88,16 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'FrontpageController'
             }))
             .when('/Hardware', angularAMD.route({
-                templateUrl: 'views/hardware.html',
+                templateUrl: 'app/hardware/Hardware.html',
                 controller: 'HardwareController',
+                controllerUrl: 'app/hardware/Hardware.js',
+                permission: 'Admin'
+            }))
+            .when('/Hardware/:id', angularAMD.route({
+                templateUrl: 'app/hardware/HardwareSetup.html',
+                controller: 'HardwareSetupController',
+                controllerUrl: 'app/hardware/HardwareSetup.js',
+                controllerAs: '$ctrl',
                 permission: 'Admin'
             }))
             .when('/History', angularAMD.route({
@@ -161,7 +169,7 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'ScenesController'
             }))
             .when('/Scenes/:id/Log', angularAMD.route({
-                templateUrl: 'views/log/scene_log.html',
+                templateUrl: 'app/log/SceneLog.html',
                 controller: 'SceneLogController',
                 controllerUrl: 'app/log/SceneLog.js',
                 controllerAs: 'vm'

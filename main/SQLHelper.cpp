@@ -4383,11 +4383,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			if ((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255) ||
 				(switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
-				if (((switchtype == STYPE_BlindsPercentage) ||
-					(switchtype == STYPE_BlindsPercentageInverted)) &&
-					(nValue == light2_sOn))
+				if (switchtype == STYPE_BlindsPercentage || switchtype == STYPE_BlindsPercentageInverted)
 				{
-					llevel = 100;
+					if (nValue == light2_sOn)
+						llevel = 100;
+					else if (nValue == light2_sOff)
+						llevel = 0;
 				}
 				//update level for device
 				safe_query(
@@ -7046,6 +7047,8 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 		//Set new Scene status
 		safe_query("UPDATE Scenes SET nValue=%d WHERE (ID == %" PRIu64 ")",
 			int(newValue), Idx);
+		if (m_sql.m_bEnableEventSystem)  // Only when eventSystem is active
+			m_mainworker.m_eventsystem.GetCurrentScenesGroups(); 
 	}
 }
 
@@ -7896,12 +7899,10 @@ std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
 	}
-
 	return "OK";
-
 }
 
-std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
+std::string CSQLHelper::AddUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
 {
 	int typei = atoi(vartype.c_str());
 	std::string dupeName = CheckUserVariableName(varname);
@@ -7914,26 +7915,10 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	std::vector<std::vector<std::string> > result;
-	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')",
-		varname.c_str(),
-		typei,
-		szVarValue.c_str()
-	);
+	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')", varname.c_str(), typei, szVarValue.c_str());
 
 	if (m_bEnableEventSystem)
-	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
-		result = safe_query("SELECT ID, LastUpdate FROM UserVariables WHERE (Name == '%q')",
-			varname.c_str()
-		);
-		if (!result.empty())
-		{
-			std::vector<std::string> sd = result[0];
-			uint64_t vId = std::strtoull(sd[0].c_str(), nullptr, 10);
-			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", szVarValue, typei, sd[1]);
-		}
-	}
 	return "OK";
 }
 
@@ -7972,28 +7957,9 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		uint64_t vId = std::strtoull(idx.c_str(), nullptr, 10);
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, szLastUpdate);
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, szLastUpdate);
 	}
 	return "OK";
-}
-
-bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger)
-{
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
-	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
-	safe_query(
-		"UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
-		szVarValue.c_str(),
-		szLastUpdate.c_str(),
-		idx
-	);
-	if (m_bEnableEventSystem)
-	{
-		if (eventtrigger)
-			m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, -1, szLastUpdate);
-	}
-	return true;
 }
 
 std::string CSQLHelper::CheckUserVariableName(const std::string &varname)
@@ -8186,17 +8152,6 @@ void CSQLHelper::UpdateDeviceValue(const char * FieldName, int Value, std::strin
 void CSQLHelper::UpdateDeviceValue(const char * FieldName, float Value, std::string &Idx)
 {
 	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(NULL, TF_DateTime).c_str(), Idx.c_str());
-}
-
-//return temperature value from Svalue : is code temperature;humidity;???
-float CSQLHelper::getTemperatureFromSValue(const char * sValue)
-{
-	std::vector<std::string> splitresults;
-	StringSplit(sValue, ";", splitresults);
-	if (splitresults.size() < 1)
-		return 0;
-	else
-		return (float)atof(splitresults[0].c_str());
 }
 
 bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)

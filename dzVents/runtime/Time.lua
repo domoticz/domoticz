@@ -428,10 +428,10 @@ local function Time(sDate, isUTC, _testMS)
 
 		if (string.find(rule, 'every odd week') and not ((self.week % 2) == 0)) then
 			return true
-		end
-
-		if (string.find(rule, 'every even week') and ((self.week % 2) == 0)) then
+		elseif (string.find(rule, 'every even week') and ((self.week % 2) == 0)) then
 			return true
+		elseif string.find(rule, 'every even week') or string.find(rule, 'every odd week') then
+        	return false
 		end
 
 		local weeks = string.match(rule, 'in week% ([0-9%-%,% ]*)')

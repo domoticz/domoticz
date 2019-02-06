@@ -67,6 +67,16 @@ define(function () {
                 return 'dB';
             } else if (this.Type === 'General' && this.SubType === 'kWh') {
                 return 'kWh';
+            } else if (this.Type === 'General' && this.SubType === 'Managed Counter') {
+                switch (this.SwitchTypeVal) {
+                    case 0: 
+                    case 4: return 'kWh';
+                    case 1:
+                    case 2: return 'm3';
+                    case 3: return this.ValueUnits;
+                    case 5: return 's';
+                    default: return '?';
+                }                
             } else if (this.Type === 'General' && this.SubType === 'Counter Incremental') {
                 return '';
             } else if (this.Type === 'P1 Smart Meter' && this.SubType === 'Energy') {

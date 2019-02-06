@@ -1018,19 +1018,19 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						break;
 					case STYPE_Contact:
 						notValue = "Open";
-						szExtraData += "Image=contact48_open|";
+						szExtraData += "Image=Contact48_On|";
 						break;
 					case STYPE_DoorContact:
 						notValue = "Open";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_DoorLock:
 						notValue = "Locked";
-						szExtraData += "Image=door48|";
+						szExtraData += "Image=Door48_Off|";
 						break;
 					case STYPE_DoorLockInverted:
 						notValue = "Unlocked";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_Motion:
 						notValue = "movement detected";
@@ -1053,11 +1053,11 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						break;
 					case STYPE_DoorLock:
 						notValue = "Unlocked";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_DoorLockInverted:
 						notValue = "Locked";
-						szExtraData += "Image=door48|";
+						szExtraData += "Image=Door48_Off|";
 						break;
 					default:
 						notValue = ">> OFF";

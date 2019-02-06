@@ -2585,7 +2585,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 				if (FWType >= FWtypePro1)
 				{
 					pMyHardware->m_NoiseLevel = NoiseLevel;
-					sprintf(szTmp, "Noise Level: %d dB", pMyHardware->m_NoiseLevel);
+					sprintf(szTmp, "Noise Level: %d", pMyHardware->m_NoiseLevel);
 					WriteMessage(szTmp);
 				}
 				if (FWType == FWtypeProXL1)
@@ -13044,6 +13044,7 @@ void MainWorker::HeartbeatCheck()
 		if (diff > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
+/* GizMoCuz: This causes long operations to crash (Like Issue #3011)
 			if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
 			{
 				if (!IsDebuggerPresent())
@@ -13055,6 +13056,7 @@ void MainWorker::HeartbeatCheck()
 #endif
 				}
 			}
+*/
 		}
 	}
 

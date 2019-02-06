@@ -866,7 +866,11 @@ local testThermostatSetpoint = function(name)
 		["timedOut"] = false;
 	})
 
-	dev.updateSetPoint(22)
+	
+	
+    dev.updateSetPoint(11) 
+    dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
+	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
 	tstMsg('Test thermostat device', res)
 	return res
 end
@@ -1173,6 +1177,21 @@ local testSilentGroup = function(name)
 	return res
 end
 
+local testSnapshot = function()
+    local res = true
+    dz.snapshot(1,"stage1 snapshot").afterSec(4)
+    tstMsg('Test camera snaphot',res)
+    return res
+end
+
+local testManagedCounter = function(name)
+    local dev = dz.devices(name)
+	local res = true
+    dev.updateCounter(1234).afterSec(2)
+    tstMsg('Test managed counter',res)
+    return res
+end    
+
 local storeLastUpdates = function()
 
 	dz.globalData.stage1Time = dz.time.raw
@@ -1210,6 +1229,7 @@ local testSecurity = function()
 	local res = true
 	res = res and expectEql(dz.security, dz.SECURITY_DISARMED)
 	dz.devices('secPanel').armAway()
+	
 	return res
 end
 
@@ -1218,7 +1238,7 @@ local testRepeatSwitch = function(name)
 	dz.globalData.repeatSwitch.reset()
 	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
 	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
-	tstMsg('Test reapeat switch device', res)
+	tstMsg('Test repeat switch device', res)
 	return true
 end
 
@@ -1313,6 +1333,8 @@ return {
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
 		res = res and testCancelledScene('scCancelledScene');
 		res = res and testHTTPSwitch('vdHTTPSwitch');
+		res = res and testSnapshot();
+		res = res and testManagedCounter('vdManagedCounter');
 
 		storeLastUpdates()
 
@@ -1323,6 +1345,6 @@ return {
 			log('Results stage 1: SUCCEEDED')
 		end
 
-		dz.devices('stage2Trigger').switchOn().afterSec(20)
+		dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
 	end
 }

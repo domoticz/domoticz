@@ -146,17 +146,22 @@ typedef enum
 } COMMON_COMMAND_TYPE;
 
 typedef enum {
-	RORG_RPS = 0xF6,
-	RORG_1BS = 0xD5,
+	RORG_ST = 0x30, //Secure telegram
+	RORG_ST_WE = 0x31, //Secure telegram with encapsulation
+	RORG_STT_FW = 0x35, //Secure Teach-In telegram for switch
 	RORG_4BS = 0xA5,
-	RORG_VLD = 0xD2,
-	RORG_MSC = 0xD1,
 	RORG_ADT = 0xA6,
+	RORG_SM_REC = 0xA7,
+	RORG_GP_SD = 0xB3, //Generic Profiles selective data
 	RORG_SM_LRN_REQ = 0xC6,
 	RORG_SM_LRN_ANS = 0xC7,
-	RORG_SM_REC = 0xA7,
+	RORG_SM_ACK_SGNL = 0xD0, //Smart Acknowledge Signal telegram
+	RORG_MSC = 0xD1, // Manufacturer Specific Communicatio
+	RORG_VLD = 0xD2, // Variable length data telegram 
+	RORG_UTI = 0xD4, //Universal Teach-In EEP based 
+	RORG_1BS = 0xD5,
+	RORG_RPS = 0xF6,
 	RORG_SYS_EX = 0xC5,
-	RORG_UTI = 0xD4
 } ESP3_RORG;
 
 //! Function return codes
