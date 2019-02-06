@@ -100,7 +100,7 @@ bool CAnnaThermostat::StopHardware()
 void CAnnaThermostat::Do_Work()
 {
 	bool bFirstTime = true;
-	Log(LOG_STATUS,"Worker started...");
+	Log(LOG_STATUS,"Anna Worker started...");
 	int sec_counter = ANNA_POLL_INTERVAL-5;
 	while (!IsStopRequested(1000))
 	{
@@ -118,7 +118,7 @@ void CAnnaThermostat::Do_Work()
 		}
 
 	}
-	Log(LOG_STATUS,"Worker stopped...");
+	Log(LOG_STATUS,"Anna Worker stopped...");
 }
 
 void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -279,18 +279,18 @@ void CAnnaThermostat::GetMeterDetails()
 #endif
 	if (sResult.empty())
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "No or invalid data received!");
 		return;
 	}
 
 	//stdreplace(sResult, "\r\n", "");
 	// 02-02-2019 Just removing \n in  different way
-    sResult.erase(std::remove(sResult.begin(), sResult.end(), '\n'), sResult.end());
+    // sResult.erase(std::remove(sResult.begin(), sResult.end(), '\n'), sResult.end());
 
 	TiXmlDocument doc;
-	if (doc.Parse(sResult.c_str()))
+	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Cannot parse XML");
 		return;
 	}
 
@@ -302,7 +302,7 @@ void CAnnaThermostat::GetMeterDetails()
 	pRoot = doc.FirstChildElement("appliances");
 	if (!pRoot)
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Cannot find appliances in XML");
 		return;
 	}
 	pAppliance = pRoot->FirstChildElement("appliance");
@@ -313,7 +313,7 @@ void CAnnaThermostat::GetMeterDetails()
 		pElem = pAppliance->FirstChildElement("name");
 		if (pElem == NULL)
 		{
-			Log(LOG_ERROR, "Invalid data received!");
+			Log(LOG_ERROR, "Cannot find appliance attributes");
 			return;
 		}
 		std::string ApplianceName=pElem->GetText();
@@ -335,14 +335,14 @@ void CAnnaThermostat::GetMeterDetails()
 		pElem = hAppliance.FirstChild("logs").FirstChild().Element();
 		if (!pElem)
 		{
-			Log(LOG_ERROR, "Invalid data received!");
+			Log(LOG_ERROR, "Cannot find logs in XML");
 			return;
 		}
 		TiXmlHandle hLogs = TiXmlHandle(pElem);
 		pElem = hAppliance.FirstChild("logs").Child("point_log", 0).ToElement();
 		if (!pElem)
 		{
-			Log(LOG_ERROR, "Invalid data received!");
+			Log(LOG_ERROR, "No log points found in XML");
 			return;
 		}
 		for (pElem; pElem; pElem = pElem->NextSiblingElement())
@@ -413,6 +413,54 @@ void CAnnaThermostat::GetMeterDetails()
 					SendTempSensor(7, 255, temperature, sname);
 				}
 			}
+            else if (sname == "boiler_state")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    if(strcmp(tmpstr.c_str(), "on") == 0)
+                    {
+                        SendSwitch(8, 1, 255, true, 0, sname);
+                    }
+                    else
+                    {
+                        SendSwitch(8, 1, 255, false, 0, sname);
+                    }
+
+                }
+            }
+            else if (sname == "domestic_hot_water_state")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    if(strcmp(tmpstr.c_str(), "on") == 0)
+                    {
+                        SendSwitch(9, 1, 255, true, 0, sname);
+                    }
+                    else
+                    {
+                        SendSwitch(9, 1, 255, false, 0, sname);
+                    }
+
+                }
+            }
+            else if (sname == "flame_state")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    if(strcmp(tmpstr.c_str(), "on") == 0)
+                    {
+                        SendSwitch(10, 1, 255, true, 0, sname);
+                    }
+                    else
+                    {
+                        SendSwitch(10, 1, 255, false, 0, sname);
+                    }
+
+                }
+            }
 		}
 
 		pAppliance = pAppliance->NextSiblingElement("appliance");
