@@ -57,7 +57,8 @@ describe('event helpers', function()
 			['Security'] = '',
 			['dzVents_log_level'] = 1,
 			['domoticz_listening_port'] = '8181',
-			['currentTime'] = '2017-08-17 12:13:14.123'
+			['currentTime'] = '2017-08-17 12:13:14.123',
+            ['domoticz_title'] = "dzVents test",
 		}
 
         _G.securityupdates = {
