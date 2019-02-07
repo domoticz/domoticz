@@ -420,27 +420,11 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
-                        SendSwitch(8, 1, 255, true, 0, sname);
+                        SendTextSensor(8, 1, 255, "On",sname);
                     }
                     else
                     {
-                        SendSwitch(8, 1, 255, false, 0, sname);
-                    }
-
-                }
-            }
-            else if (sname == "domestic_hot_water_state")
-            {
-                tmpstr = GetPeriodMeasurement(pElem);
-                if (!tmpstr.empty())
-                {
-                    if(strcmp(tmpstr.c_str(), "on") == 0)
-                    {
-                        SendSwitch(9, 1, 255, true, 0, sname);
-                    }
-                    else
-                    {
-                        SendSwitch(9, 1, 255, false, 0, sname);
+                        SendTextSensor(8, 1, 255, "Off",sname);
                     }
 
                 }
@@ -452,11 +436,11 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
-                        SendSwitch(10, 1, 255, true, 0, sname);
+                        SendTextSensor(9, 1, 255, "On",sname);;
                     }
                     else
                     {
-                        SendSwitch(10, 1, 255, false, 0, sname);
+                        SendTextSensor(9, 1, 255, "Off",sname);;
                     }
 
                 }
