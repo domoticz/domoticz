@@ -1,3 +1,7 @@
+[2.4.14]
+- Added domoticz.settings.longitude, domoticz.settings.latitude and domoticz.settings.allowedNetworks
+- Added check for- and message when allowedNetworks does not contain 127.0.0.* or 127.0.0.1
+
 [2.4.13]
 - Added domoticz.settings.location (domoticz settings location Name)
 - Added domoticz.urlDecode method to convert an urlEncoded string to human readable format

@@ -518,6 +518,9 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
+    - **allowedNetworks**:<sup>2.4.14</sup> domoticz settings Local Networks (no username/password): 
+    - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude
+    - **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude
     - **location**:<sup>2.4.13</sup> domoticz settings location Name 
     - **serverPort**: webserver listening port.
     - **url**: internal url to access the API service.

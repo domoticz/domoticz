@@ -39,7 +39,9 @@ describe('Domoticz', function()
 
 		settings = {
 			['Domoticz url'] = 'http://127.0.0.1:8080',
-			['Log level'] = 2
+			['Log level'] = 2,
+            allowedNetworks  = "127.0.0.1",
+            latitude = 54,
 		}
 
 		Domoticz = require('Domoticz')
@@ -84,7 +86,11 @@ describe('Domoticz', function()
 		it('should have settings', function()
 			assert.is_equal(domoticz.settings, settings)
 		end)
-
+        
+        it('should have proper latitude settings', function()
+            assert.are.same(54, settings.latitude)
+        end)
+        
 		it('should have security info', function()
 			assert.is_same('sec', domoticz.security)
 		end)
@@ -158,6 +164,7 @@ describe('Domoticz', function()
 		it('should have log constants', function()
 			assert.is_same(domoticz['LOG_INFO'], 3)
 			assert.is_same(domoticz['LOG_DEBUG'], 4)
+			assert.is_same(domoticz['LOG_FORCE'], 0.5)
 			assert.is_same(domoticz['LOG_ERROR'], 1)
 			assert.is_same(domoticz['LOG_MODULE_EXEC_INFO'], 2)
 		end)
