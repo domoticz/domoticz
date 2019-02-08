@@ -1,3 +1,7 @@
+[2.4.14]
+- Added domoticz.settings.longitude, domoticz.settings.latitude and domoticz.settings.localNetworksAllowed
+- Added check for- and message when localNetworksAllowed is false when call to openURL
+
 [2.4.13]
 - Added domoticz.settings.location (domoticz settings location Name)
 - Added domoticz.urlDecode method to convert an urlEncoded string to human readable format

@@ -518,6 +518,9 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
+    - **localNetworksAllowed**:<sup>2.4.14</sup> Local network allows password-less access (true / false)  
+    - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude
+    - **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude
     - **location**:<sup>2.4.13</sup> domoticz settings location Name 
     - **serverPort**: webserver listening port.
     - **url**: internal url to access the API service.
@@ -1973,6 +1976,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.14]
+- Added domoticz.settings.longitude, domoticz.settings.latitude and localNetworksAllowed = Local network allows password-less access (true / false)
+- Added check for- and message when localNetworksAllowed is false when call to openURL
+
 ##[2.4.13]
 - Added domoticz.settings.location (domoticz settings location Name)
 - Added domoticz.utils.urlDecode method to convert a string with escaped chars (%20, %3A and the likes) to human readable format
