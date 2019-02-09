@@ -67,6 +67,7 @@ CAnnaThermostat::~CAnnaThermostat(void)
 void CAnnaThermostat::Init()
 {
 	m_ThermostatID = "";
+	m_ProximityID = "";
 }
 
 bool CAnnaThermostat::StartHardware()
@@ -136,25 +137,23 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
-	if (m_UserName.size() == 0)
-		return false;
-	if (m_Password.size() == 0)
-		return false;
-
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
-		return false; //later add RGB support, if someone can provide access
+		return false; 
+
 
 	int node_id = pCmd->LIGHTING2.id4;
 
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
-	if (node_id == 3)
+	if (node_id == sAnneBoilerState || node_id ==sAnnaFlameState )
 	{
-		//Away
-		return SetAway(bIsOn);
+	 return false ; // just return Error as these are not supposed to be switches 
 	}
-
+	else if (node_id == sAnnaProximity)
+	{
+		return AnnaToggleProximity(bIsOn);
+	}
 	return false;
 }
 
@@ -201,11 +200,64 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
 	{
 		Log(LOG_ERROR, "AnnaTherm: Error setting current state!");
-		return;
+		return ;
 	}
-
+  
 }
 
+bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
+{
+    //TODO fix fetching ProximityID
+ 
+	std::stringstream szURL;
+
+	if (m_UserName.size() == 0)
+		return false;
+	if (m_Password.size() == 0)
+		return false ;
+
+	if (m_ProximityID.size() == 0)
+		GetMeterDetails();
+
+	if (m_Password.empty())
+	{
+		szURL << "http://" << m_IPAddress << ":" << m_IPPort;
+	}
+	else
+	{
+		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
+	}
+	szURL << ANNA_GET_STATUS;
+	szURL << ";id=";
+	szURL << m_ProximityID;
+	szURL << "/toggle;type=proximity_sensor_state";
+
+	std::stringstream sPostData;
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	char szTemp[10];
+	if (bToggle == true)
+	{
+		strcpy(szTemp,"on");
+	}
+	else
+	{
+		strcpy(szTemp,"off");
+	}
+	sPostData << "<toggle>";
+	sPostData << "<state>";
+	sPostData << szTemp;
+	sPostData << "</state>";
+	sPostData << "</toggle>";
+
+  	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
+	{
+		Log(LOG_ERROR, "AnnaTherm: Error setting toggle Proximity !");
+		return false;
+	}
+    return true;
+}
 bool CAnnaThermostat::SetAway(const bool /*bIsAway*/)
 {
 	return false;
@@ -374,8 +426,7 @@ void CAnnaThermostat::GetMeterDetails()
 					float temperature = (float)atof(tmpstr.c_str());
 					SendSetPointSensor(3, temperature, sname);
 				}
-			}
-			/*
+			}	
 			else if (sname == "intended_boiler_temperature")
 			{
 				tmpstr = GetPeriodMeasurement(pElem);
@@ -385,7 +436,6 @@ void CAnnaThermostat::GetMeterDetails()
 					SendTempSensor(4, 255, temperature, sname);
 				}
 			}
-			*/
 			else if (sname == "return_water_temperature")
 			{
 				tmpstr = GetPeriodMeasurement(pElem);
@@ -420,11 +470,11 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
-                        SendTextSensor(8, 1, 255, "On",sname);
+                        SendSwitch(sAnneBoilerState, 1, 255, true, 0, sname);
                     }
                     else
                     {
-                        SendTextSensor(8, 1, 255, "Off",sname);
+                        SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname);
                     }
 
                 }
@@ -436,15 +486,56 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
-                        SendTextSensor(9, 1, 255, "On",sname);;
+                        SendSwitch(sAnnaFlameState, 1, 255, true, 0, sname);
                     }
                     else
                     {
-                        SendTextSensor(9, 1, 255, "Off",sname);;
+                        SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);
                     }
 
                 }
             }
+			else if (sname == "proximity_sensor_state")
+			{
+				int iLevel = 0;
+				bool bSwitch = false;
+				
+				if ((m_ProximityID.empty()) && (sname == "proximity_sensor_state"))
+				{
+					pAttribute = pAppliance->FirstAttribute();
+					if (pAttribute != NULL)
+					{
+						std::string aName = pAttribute->Name();
+						if (aName == "id")
+						{
+							m_ProximityID= pAttribute->Value();
+						}
+					}
+				}
+				if (m_ProximityID.empty())
+				{
+                     Log(LOG_ERROR, "AnnaTherm: Error getting ProximityID !");
+		             return;
+				}
+				tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    if(strcmp(tmpstr.c_str(), "on") == 0)
+                    {
+                       iLevel = 94;
+					    bSwitch = true;
+                    }
+                    else
+                    {
+						iLevel = 0;
+                        bSwitch = false;
+                    }
+				SendSwitch(sAnnaProximity, 0, 255, bSwitch, iLevel, sname);
+				//m_ProximityID 
+				}
+			
+			}	
+		
 		}
 
 		pAppliance = pAppliance->NextSiblingElement("appliance");

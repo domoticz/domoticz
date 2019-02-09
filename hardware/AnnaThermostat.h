@@ -2,6 +2,17 @@
 
 #include "DomoticzHardware.h"
 
+// Anna Sensors
+
+// Anna Switches
+                 
+#define sAnneBoilerState 8				 
+#define sAnnaFlameState  9
+#define sAnnaProximity   10
+#define sAnnaPresets     11
+#define sAnnaComfort     12
+
+
 class CAnnaThermostat : public CDomoticzHardwareBase
 {
 public:
@@ -19,12 +30,14 @@ private:
 
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	bool SetAway(const bool bIsAway);
+	bool AnnaToggleProximity(bool bToggle);
 private:
 	std::string m_IPAddress;
 	unsigned short m_IPPort;
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_ThermostatID;
+	std::string m_ProximityID;
 	std::shared_ptr<std::thread> m_thread;
 };
 
