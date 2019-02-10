@@ -16,6 +16,7 @@
 // Plugwise Anna Thermostat
 
 const std::string ANNA_GET_STATUS = "/core/appliances";
+const std::string ANNA_SET_PRESET = "/core/locations";
 
 #ifdef _DEBUG
 	//#define DEBUG_AnnaThermostat
@@ -64,10 +65,13 @@ CAnnaThermostat::~CAnnaThermostat(void)
 {
 }
 
-void CAnnaThermostat::Init()
+void CAnnaThermostat::CAnnaThermostat::Init()
 {
 	m_ThermostatID = "";
 	m_ProximityID = "";
+	m_AnnaLocation.m_ALocation = ""; 
+	m_AnnaLocation.m_ALocationID = "";
+	m_AnnaLocation.m_ALocationName = "";
 }
 
 bool CAnnaThermostat::StartHardware()
@@ -140,8 +144,6 @@ bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*l
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; 
-
-
 	int node_id = pCmd->LIGHTING2.id4;
 
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
@@ -154,21 +156,19 @@ bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*l
 	{
 		return AnnaToggleProximity(bIsOn);
 	}
+	else if (node_id == sAnnaPresets)
+	{
+	    return AnnaSetPreset(bIsOn);
+	}
 	return false;
 }
 
 void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 {
-	if (m_UserName.size() == 0)
-		return;
-	if (m_Password.size() == 0)
-		return;
-
-	if (m_ThermostatID.size() == 0)
-		GetMeterDetails();
-
 	std::stringstream szURL;
-
+	if (!CheckLoginData())
+		 return;
+	
 	if (m_Password.empty())
 	{
 		szURL << "http://" << m_IPAddress << ":" << m_IPPort;
@@ -202,19 +202,70 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 		Log(LOG_ERROR, "AnnaTherm: Error setting current state!");
 		return ;
 	}
-  
 }
-
-bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
+bool CAnnaThermostat::AnnaSetPreset(bool bToggle)
 {
-    //TODO fix fetching ProximityID
- 
 	std::stringstream szURL;
 
-	if (m_UserName.size() == 0)
+	if(!CheckLoginData())
+	    return false;
+
+	if (m_AnnaLocation.m_ALocationID.size() == 0)
+		AnnaGetLocation();
+
+	if (m_Password.empty())
+	{
+		szURL << "http://" << m_IPAddress << ":" << m_IPPort;
+	}
+	else
+	{
+		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
+	}
+	szURL << ANNA_SET_PRESET;
+	szURL << ";id=";
+	szURL << m_AnnaLocation.m_ALocationID;
+    
+	std::stringstream sPostData;
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	char szTemp[10];
+	if (bToggle == true)
+	{
+		strcpy(szTemp,"home");
+	}
+	else
+	{
+		strcpy(szTemp,"away");
+	}
+	sPostData << "<locations>";
+	sPostData << "<location id: ";
+    sPostData << m_AnnaLocation.m_ALocationID;
+	sPostData << "><name>";
+	sPostData << m_AnnaLocation.m_ALocationName;
+	sPostData << "</name>";
+	sPostData << "<type>";
+	sPostData << m_AnnaLocation.m_ALocationType;
+	sPostData << "</type>";
+	sPostData << "<preset>";
+	sPostData << szTemp;
+	sPostData << "</preset>";
+	sPostData << "</location>";
+	sPostData << "</locations>";
+  	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
+	{
+		Log(LOG_ERROR, "AnnaTherm: Error setting Preset State !");
 		return false;
-	if (m_Password.size() == 0)
-		return false ;
+	}
+    return true;
+}
+bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
+{
+
+	std::stringstream szURL;
+
+	if(!CheckLoginData())
+	    return false;
 
 	if (m_ProximityID.size() == 0)
 		GetMeterDetails();
@@ -265,10 +316,8 @@ bool CAnnaThermostat::SetAway(const bool /*bIsAway*/)
 
 void CAnnaThermostat::SetProgramState(const int /*newState*/)
 {
-	if (m_UserName.size() == 0)
-		return;
-	if (m_Password.size() == 0)
-		return;
+	if(!CheckLoginData())
+	    return;
 }
 
 std::string GetElementChildValue(TiXmlElement *pElement, const char *szChildName)
@@ -302,11 +351,11 @@ std::string GetPeriodMeasurement(TiXmlElement *pElement)
 
 void CAnnaThermostat::GetMeterDetails()
 {
-	if (m_UserName.size() == 0)
-		return;
-	if (m_Password.size() == 0)
-		return;
+
 	std::string sResult;
+    if(!CheckLoginData())
+	    return;
+    
 #ifdef DEBUG_AnnaThermostat
 	sResult = ReadFile("E:\\appliances.xml");
 #else
@@ -370,7 +419,7 @@ void CAnnaThermostat::GetMeterDetails()
 		}
 		std::string ApplianceName=pElem->GetText();
 
-		if ((m_ThermostatID.empty()) && (ApplianceName == "Anna"))
+		if ((m_ThermostatID.empty()) && ((ApplianceName == "Anna") || (ApplianceName == "Adam")))
 		{
 			pAttribute = pAppliance->FirstAttribute();
 			if (pAttribute != NULL)
@@ -500,7 +549,7 @@ void CAnnaThermostat::GetMeterDetails()
 				int iLevel = 0;
 				bool bSwitch = false;
 				
-				if ((m_ProximityID.empty()) && (sname == "proximity_sensor_state"))
+				if (m_ProximityID.empty())
 				{
 					pAttribute = pAppliance->FirstAttribute();
 					if (pAttribute != NULL)
@@ -531,14 +580,56 @@ void CAnnaThermostat::GetMeterDetails()
                         bSwitch = false;
                     }
 				SendSwitch(sAnnaProximity, 0, 255, bSwitch, iLevel, sname);
+				
+				}
+			
+			}			
+            else if (sname == "preset_state")
+			{
+				int iLevel = 0;
+				int iPreset = 0;
+				
+				
+				if (m_LocationID.empty())
+				{    
+					if(!AnnaFetchLocation()){
+                     Log(LOG_ERROR, "AnnaTherm: Error getting PresetID !");
+		             return;
+					}	 
+				}
+				tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    if(strcmp(tmpstr.c_str(), "home") == 0)
+                    {
+                       iPreset =10;
+					   
+                    }
+                    else
+                    {
+						iPreset = 0;
+                       
+                    }
+				SendSwitch(sAnnaPresets, 0, 255, iPreset, iLevel, sname);
 				//m_ProximityID 
 				}
 			
 			}	
 		
 		}
-
 		pAppliance = pAppliance->NextSiblingElement("appliance");
 	}
 	return;
 }
+
+bool CAnnaThermostat::CheckLoginData()
+{
+	if (m_UserName.size() == 0)
+		return false;
+	if (m_Password.size() == 0)
+		return false;
+	return true;	
+}
+					
+ bool CAnnaThermostat::AnnaFetchLocation()
+ {return true;}
