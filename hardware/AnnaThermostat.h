@@ -2,17 +2,6 @@
 
 #include "DomoticzHardware.h"
 
-// Anna Sensors
-
-// Anna Switches
-                 
-#define sAnneBoilerState 8				 
-#define sAnnaFlameState  9
-#define sAnnaProximity   10
-#define sAnnaPresets     11
-#define sAnnaComfort     12
-
-
 class CAnnaThermostat : public CDomoticzHardwareBase
 {
 public:

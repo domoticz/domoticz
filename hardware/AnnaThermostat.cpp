@@ -14,18 +14,32 @@
 #define round(a) ( int ) ( a + .5 )
 
 // Plugwise Anna Thermostat
+// Anna Sensors
 
-const std::string ANNA_GET_STATUS = "/core/appliances";
-const std::string ANNA_SET_PRESET = "/core/locations";
+// Anna Switches
+                 
+#define sAnneBoilerState 8				 
+#define sAnnaFlameState  9
+#define sAnnaProximity   10
+#define sAnnaPresets     11
+#define sAnnaComfort     12
+
+const std::string ANNA_GET_STATUS   = "/core/appliances";
+const std::string ANNA_LOCATION     = "/cache/domain_objects;class=Location";
+const std::string ANNA_SET_LOCATION = "/core/locations";
 
 #ifdef _DEBUG
-	//#define DEBUG_AnnaThermostat
+//#define DEBUG_AnnaThermostat
+#define DEBUG_ANNA_APPLIANCE_READ  "/tmp/anna/appliances.xml"
+#define DEBUG_ANNA_WRITE           "/tmp/anna/output.txt"
+#define DEBUG_ANNA_LOCATION_READ   "/tmp/anna/location.xml"
+#define DEBUG_ANNN_CRLF          " \r\n"
 #endif
 
 #ifdef DEBUG_AnnaThermostat
 void SaveString2Disk(std::string str, std::string filename)
 {
-	FILE *fOut = fopen(filename.c_str(), "wb+");
+	FILE *fOut = fopen(filename.c_str(), "ab+");
 	if (fOut)
 	{
 		fwrite(str.c_str(), 1, str.size(), fOut);
@@ -69,9 +83,9 @@ void CAnnaThermostat::CAnnaThermostat::Init()
 {
 	m_ThermostatID = "";
 	m_ProximityID = "";
-	m_AnnaLocation.m_ALocation = ""; 
 	m_AnnaLocation.m_ALocationID = "";
 	m_AnnaLocation.m_ALocationName = "";
+	m_AnnaLocation.m_ALocationType= ""; 
 }
 
 bool CAnnaThermostat::StartHardware()
@@ -195,9 +209,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	sPostData << "</setpoint>";
 	sPostData << "</thermostat>";
 
-  //if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult))
-  //02-02-2019 Return set is now empty so set bIgnoreNoDataReturned = true
-	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
+  	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
 	{
 		Log(LOG_ERROR, "AnnaTherm: Error setting current state!");
 		return ;
@@ -221,7 +233,7 @@ bool CAnnaThermostat::AnnaSetPreset(bool bToggle)
 	{
 		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
 	}
-	szURL << ANNA_SET_PRESET;
+	szURL << ANNA_SET_LOCATION;
 	szURL << ";id=";
 	szURL << m_AnnaLocation.m_ALocationID;
     
@@ -236,12 +248,12 @@ bool CAnnaThermostat::AnnaSetPreset(bool bToggle)
 	}
 	else
 	{
-		strcpy(szTemp,"away");
+		strcpy(szTemp,"none");
 	}
 	sPostData << "<locations>";
-	sPostData << "<location id: ";
+	sPostData << "<location id=\"";
     sPostData << m_AnnaLocation.m_ALocationID;
-	sPostData << "><name>";
+	sPostData << "\"><name>";
 	sPostData << m_AnnaLocation.m_ALocationName;
 	sPostData << "</name>";
 	sPostData << "<type>";
@@ -252,16 +264,26 @@ bool CAnnaThermostat::AnnaSetPreset(bool bToggle)
 	sPostData << "</preset>";
 	sPostData << "</location>";
 	sPostData << "</locations>";
+#ifdef DEBUG_AnnaThermostat
+
+    SaveString2Disk("<-- ANNA - SetPReset -->/ \r\n",DEBUG_ANNA_WRITE);
+
+    SaveString2Disk(szURL.str(),DEBUG_ANNA_WRITE);
+   	SaveString2Disk(DEBUG_ANNN_CRLF,DEBUG_ANNA_WRITE);
+	SaveString2Disk(sPostData.str(),DEBUG_ANNA_WRITE);
+	SaveString2Disk(DEBUG_ANNN_CRLF,DEBUG_ANNA_WRITE);
+
+#else 
   	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
 	{
 		Log(LOG_ERROR, "AnnaTherm: Error setting Preset State !");
 		return false;
 	}
+#endif	
     return true;
 }
 bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
 {
-
 	std::stringstream szURL;
 
 	if(!CheckLoginData())
@@ -302,11 +324,17 @@ bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
 	sPostData << "</state>";
 	sPostData << "</toggle>";
 
+#ifdef DEBUG_AnnaThermostat
+    SaveString2Disk("<-- ANNA - TogglePRoximitySensor-->",DEBUG_ANNA_WRITE);
+    SaveString2Disk(szURL.str(),DEBUG_ANNA_WRITE);
+	SaveString2Disk(sPostData.str(),DEBUG_ANNA_WRITE);
+#else 
   	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
 	{
 		Log(LOG_ERROR, "AnnaTherm: Error setting toggle Proximity !");
 		return false;
 	}
+#endif	
     return true;
 }
 bool CAnnaThermostat::SetAway(const bool /*bIsAway*/)
@@ -357,7 +385,7 @@ void CAnnaThermostat::GetMeterDetails()
 	    return;
     
 #ifdef DEBUG_AnnaThermostat
-	sResult = ReadFile("E:\\appliances.xml");
+	sResult = ReadFile(DEBUG_ANNA_APPLIANCE_READ);
 #else
 	//Get Data
 	std::stringstream szURL;
@@ -383,11 +411,6 @@ void CAnnaThermostat::GetMeterDetails()
 		Log(LOG_ERROR, "AnnaTherm: No or invalid data received!");
 		return;
 	}
-
-	//stdreplace(sResult, "\r\n", "");
-	// 02-02-2019 Just removing \n in  different way
-    // sResult.erase(std::remove(sResult.begin(), sResult.end(), '\n'), sResult.end());
-
 	TiXmlDocument doc;
 	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
 	{
@@ -525,7 +548,6 @@ void CAnnaThermostat::GetMeterDetails()
                     {
                         SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname);
                     }
-
                 }
             }
             else if (sname == "flame_state")
@@ -581,19 +603,17 @@ void CAnnaThermostat::GetMeterDetails()
                     }
 				SendSwitch(sAnnaProximity, 0, 255, bSwitch, iLevel, sname);
 				
-				}
-			
+				}			
 			}			
             else if (sname == "preset_state")
 			{
 				int iLevel = 0;
-				int iPreset = 0;
+				int bOnOff = false;
 				
-				
-				if (m_LocationID.empty())
+				if (m_AnnaLocation.m_ALocationID.empty())
 				{    
-					if(!AnnaFetchLocation()){
-                     Log(LOG_ERROR, "AnnaTherm: Error getting PresetID !");
+					if(!AnnaGetLocation()){
+                     Log(LOG_ERROR, "AnnaTherm: Error getting Location Information !");
 		             return;
 					}	 
 				}
@@ -602,26 +622,26 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "home") == 0)
                     {
-                       iPreset =10;
-					   
+                       bOnOff = true;
                     }
-                    else
+                    else if (strcmp(tmpstr.c_str(), "none") == 0)
                     {
-						iPreset = 0;
-                       
+						bOnOff = false;                     
                     }
-				SendSwitch(sAnnaPresets, 0, 255, iPreset, iLevel, sname);
+					
+					//Log(LOG_STATUS, "AnnaTherm: Preset found is: %s ",tmpstr.c_str());
+			        
+				SendSwitch(sAnnaPresets, 0, 255, bOnOff, iLevel, sname);
 				//m_ProximityID 
-				}
-			
-			}	
-		
+				}			
+			}			
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");
 	}
 	return;
 }
 
+// Checks if the USername and password are filled in
 bool CAnnaThermostat::CheckLoginData()
 {
 	if (m_UserName.size() == 0)
@@ -630,6 +650,90 @@ bool CAnnaThermostat::CheckLoginData()
 		return false;
 	return true;	
 }
-					
- bool CAnnaThermostat::AnnaFetchLocation()
- {return true;}
+
+// Fetched the location information (id,name and type)from the  first location given by the Anna/Adam Gateway					
+ bool CAnnaThermostat::AnnaGetLocation()
+ {	 
+	std::string sResult;
+    if(!CheckLoginData())
+	    return false ;
+    
+#ifdef DEBUG_AnnaThermostat
+	sResult = ReadFile(DEBUG_ANNA_LOCATION_READ);
+#else
+	//Get Location  Data
+	std::stringstream szURL;
+
+	if (m_Password.empty())
+	{
+		szURL << "http://" << m_IPAddress << ":" << m_IPPort;
+	}
+	else
+	{
+		szURL << "http://" << m_UserName << ":" << m_Password << "@" << m_IPAddress << ":" << m_IPPort;
+	}
+	szURL << ANNA_LOCATION;
+
+	if (!HTTPClient::GET(szURL.str(), sResult))
+	{
+		Log(LOG_ERROR, "AnnaTherm: Error getting location Info !");
+		return false;
+	}
+#endif
+	if (sResult.empty())
+	{
+		Log(LOG_ERROR, "AnnaTherm: No or invalid location data received!");
+		return false;
+	}
+	TiXmlDocument doc;
+	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
+	{
+		Log(LOG_ERROR, "AnnaTherm: Cannot parse XML");
+		return false;
+	}
+
+	TiXmlElement *pRoot;
+	TiXmlElement *pLocation, *pElem;
+	TiXmlAttribute *pAttribute;
+	std::string sname, tmpstr;
+
+	pRoot = doc.FirstChildElement("domain_objects");
+	if (!pRoot)
+	{
+		Log(LOG_ERROR, "AnnaTherm: Cannot find domain info in XML");
+		return false;
+	}
+	pLocation = pRoot->FirstChildElement("location");
+	TiXmlHandle hAppliance = TiXmlHandle(pLocation);
+	if (m_AnnaLocation.m_ALocationID.empty()) 
+	{
+		pAttribute = pLocation->FirstAttribute();
+		if (pAttribute != NULL)
+		{
+			std::string aName = pAttribute->Name();
+			if (aName == "id")
+			{
+				m_AnnaLocation.m_ALocationID = pAttribute->Value();
+			}
+			else
+			{
+				Log(LOG_ERROR, "AnnaTherm: Cannot get location id ");
+				return false;
+			}
+		}
+	}
+	pElem = pLocation->FirstChildElement("name");
+	if (pElem == NULL)
+	{
+		Log(LOG_ERROR, "AnnaTherm: Cannot find Location name");
+		return false;
+	}
+	m_AnnaLocation.m_ALocationName=pElem->GetText();
+	pElem = pLocation->FirstChildElement("type");
+	if (pElem == NULL)
+	{
+		Log(LOG_ERROR, "AnnaTherm: Cannot find Location type");
+		return false;
+	}	m_AnnaLocation.m_ALocationType=pElem->GetText();
+	return true;
+}
