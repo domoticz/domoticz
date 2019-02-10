@@ -420,11 +420,11 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
-                        SendTextSensor(8, 1, 255, "On",sname);
+                        SendSwitch(8, 1, 255, true, 0, sname);
                     }
                     else
                     {
-                        SendTextSensor(8, 1, 255, "Off",sname);
+                        SendSwitch(8, 1, 255, false, 0, sname);
                     }
 
                 }
@@ -436,11 +436,11 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
-                        SendTextSensor(9, 1, 255, "On",sname);;
+                        SendSwitch(9, 1, 255, true, 0, sname);
                     }
                     else
                     {
-                        SendTextSensor(9, 1, 255, "Off",sname);;
+                        SendSwitch(9, 1, 255, false, 0, sname);
                     }
 
                 }
