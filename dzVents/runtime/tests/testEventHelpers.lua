@@ -58,7 +58,8 @@ describe('event helpers', function()
 			['dzVents_log_level'] = 1,
 			['domoticz_listening_port'] = '8181',
 			['currentTime'] = '2017-08-17 12:13:14.123',
-            ['domoticz_title'] = "dzVents testlocation",
+            location = {}
+            location.name = "dzVents testlocation",
 		}
 
         _G.securityupdates = {
@@ -407,10 +408,13 @@ describe('event helpers', function()
         end)
         
         it('should have proper location settings', function()
-            assert.are.same('dzVents testlocation', helpers.settings['location'])
+            assert.are.same('dzVents testlocation', helpers.settings.location.name)
         end)
 
-        
+        it('should have proper location settings', function()
+            assert.are.same(true, helpers.settings.localNetworksAllowed)
+        end)
+
         
 		it('should add global helpers to the domoticz object', function()
 

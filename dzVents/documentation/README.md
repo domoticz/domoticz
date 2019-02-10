@@ -519,9 +519,10 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
     - **localNetworksAllowed**:<sup>2.4.14</sup> Local network allows password-less access (true / false)  
-    - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude
-    - **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude
-    - **location**:<sup>2.4.13</sup> domoticz settings location Name 
+    - **location**
+        - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude
+        - **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude
+        - **name**:<sup>2.4.14</sup> domoticz settings location Name 
     - **serverPort**: webserver listening port.
     - **url**: internal url to access the API service.
     - **webRoot**: `webroot` value as specified when starting the Domoticz service.
@@ -1977,8 +1978,9 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # Change log
 ##[2.4.14]
-- Added domoticz.settings.longitude, domoticz.settings.latitude and localNetworksAllowed = Local network allows password-less access (true / false)
+- Added domoticz.settings.location.longitude, domoticz.settings.location.latitude and domoticz.settings.localNetworksAllowed
 - Added check for- and message when localNetworksAllowed is false when call to openURL
+- **BREAKING CHANGE** :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name) 
 
 ##[2.4.13]
 - Added domoticz.settings.location (domoticz settings location Name)
