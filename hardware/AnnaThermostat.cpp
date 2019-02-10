@@ -484,7 +484,7 @@ void CAnnaThermostat::GetMeterDetails()
                     }
                     else
                     {
-                        SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname);
+                        SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname);             
                     }
 
                 }
@@ -496,11 +496,12 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
+
                         SendSwitch(sAnnaFlameState, 1, 255, true, 0, sname);
                     }
                     else
                     {
-                        SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);
+                        SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);                   
                     }
 
                 }
