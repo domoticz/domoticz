@@ -1,3 +1,14 @@
+.page-devices-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.page-devices-wrapper > .usage-filter {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
 .page-devices {
     display: flex;
 }

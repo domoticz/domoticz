@@ -1,11 +1,11 @@
 define(['app'], function (app) {
 
-	var addDeviceModal = {
+    var addDeviceModal = {
         templateUrl: 'app/devices/deviceAddModal.html',
         controllerAs: '$ctrl',
         controller: function ($scope, deviceApi) {
             var $ctrl = this;
-			init();
+            init();
 
             function init() {
                 $ctrl.device = Object.assign($scope.device);
@@ -17,7 +17,7 @@ define(['app'], function (app) {
                         $ctrl.mainDevices = devices;
                     });
                 }
-			}
+            }
 
             $ctrl.addDevice = function () {
                 $ctrl.isSaving = true;
@@ -27,7 +27,7 @@ define(['app'], function (app) {
                     .then($scope.$close);
             }
         }
-	};
+    };
 
     var renameDeviceModal = {
         templateUrl: 'app/devices/deviceRenameModal.html',
@@ -37,30 +37,30 @@ define(['app'], function (app) {
             $ctrl.device = Object.assign($scope.device);
 
             $ctrl.renameDevice = function () {
-            	$ctrl.isSaving = true;
+                $ctrl.isSaving = true;
 
                 var savingPromise = ['Scene', 'Group'].includes($ctrl.device.Type)
                     ? sceneApi.renameScene($ctrl.device.idx, $ctrl.device.Name)
                     : deviceApi.renameDevice($ctrl.device.idx, $ctrl.device.Name);
 
                 savingPromise.then(function () {
-					$scope.$close();
+                    $scope.$close();
                 });
             }
         }
     };
 
-	app.component('devicesTable', {
-		bindings: {
-			devices: '<',
+    app.component('devicesTable', {
+        bindings: {
+            devices: '<',
             onUpdate: '&'
-		},
-		template: '<table id="devices" class="display" width="100%"></table>',
-		controller: function($scope, $element, $modal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
-			var $ctrl = this;
-			var table;
+        },
+        template: '<table id="devices" class="display" width="100%"></table>',
+        controller: function ($scope, $element, $modal, $route, bootbox, dataTableDefaultSettings, deviceApi) {
+            var $ctrl = this;
+            var table;
 
-			$ctrl.$onInit = function () {
+            $ctrl.$onInit = function () {
                 table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
                     select: {
                         style: 'multi',
@@ -69,31 +69,49 @@ define(['app'], function (app) {
                     },
                     order: [[2, 'asc']],
                     columns: [
-                        { title: renderSelectorTitle(), width: '16px', orderable: false, defaultContent: selectorRenderer() },
+                        {
+                            title: renderSelectorTitle(),
+                            width: '16px',
+                            orderable: false,
+                            defaultContent: selectorRenderer()
+                        },
                         { title: '', width: '16px', data: 'idx', orderable: false, render: iconRenderer },
                         { title: $.t('Idx'), width: '30px', data: 'idx' },
                         { title: $.t('Hardware'), width: '100px', data: 'HardwareName' },
                         { title: $.t('ID'), width: '70px', data: 'ID' },
                         { title: $.t('Unit'), width: '40px', data: 'Unit' },
                         { title: $.t('Name'), width: '200px', data: 'Name' },
-                        { title: $.t('Type'), width: '110px', data: 'Type'},
-                        { title: $.t('SubType'), width: '110px', data: 'SubType'},
-                        { title: $.t('Data'), data: 'Data'},
+                        { title: $.t('Type'), width: '110px', data: 'Type' },
+                        { title: $.t('SubType'), width: '110px', data: 'SubType' },
+                        { title: $.t('Data'), data: 'Data' },
                         { title: renderSignalLevelTitle(), width: '30px', data: 'SignalLevel' },
-                        { title: renderBatteryLevelTitle(), width: '30px', type: 'number', data: 'BatteryLevel', render: batteryLevelRenderer },
-                        { title: '', className: 'actions-column', width: '80px', data: 'idx', orderable: false, render: actionsRenderer },
+                        {
+                            title: renderBatteryLevelTitle(),
+                            width: '30px',
+                            type: 'number',
+                            data: 'BatteryLevel',
+                            render: batteryLevelRenderer
+                        },
+                        {
+                            title: '',
+                            className: 'actions-column',
+                            width: '80px',
+                            data: 'idx',
+                            orderable: false,
+                            render: actionsRenderer
+                        },
                         { title: $.t('Last Seen'), width: '150px', data: 'LastUpdate', type: 'date' },
                     ]
                 }));
 
                 table.on('click', '.js-include-device', function () {
                     var row = table.api().row($(this).closest('tr')).data();
-					var scope = $scope.$new(true);
+                    var scope = $scope.$new(true);
                     scope.device = row;
 
-					$modal
-						.open(Object.assign({scope: scope}, addDeviceModal)).result
-						.then($ctrl.onUpdate);
+                    $modal
+                        .open(Object.assign({ scope: scope }, addDeviceModal)).result
+                        .then($ctrl.onUpdate);
 
                     $scope.$apply();
                 });
@@ -116,8 +134,8 @@ define(['app'], function (app) {
                     scope.device = row;
 
                     $modal
-						.open(Object.assign({scope: scope}, renameDeviceModal)).result
-						.then($ctrl.onUpdate);
+                        .open(Object.assign({ scope: scope }, renameDeviceModal)).result
+                        .then($ctrl.onUpdate);
 
                     $scope.$apply();
                 });
@@ -125,7 +143,7 @@ define(['app'], function (app) {
                 table.on('click', '.js-show-log', function () {
                     var device = table.api().row($(this).closest('tr')).data();
 
-                    device.openCustomLog('#devicescontent', function() {
+                    device.openCustomLog('#devicescontent', function () {
                         $route.reload();
                     });
 
@@ -143,7 +161,7 @@ define(['app'], function (app) {
                 });
 
                 table.on('click', '.js-remove-selected', function () {
-                    var devices = [].map.call(table.api().rows( { selected: true } ).data(), function(device) {
+                    var devices = [].map.call(table.api().rows({ selected: true }).data(), function (device) {
                         return device.idx;
                     });
 
@@ -194,12 +212,12 @@ define(['app'], function (app) {
             };
 
             $ctrl.getSelectedRecordsCounts = function () {
-                return table.api().rows( { selected: true } ).count()
-			};
+                return table.api().rows({ selected: true }).count()
+            };
 
             function selectorRenderer() {
-            	return '<input type="checkbox" class="noscheck js-select-row" />';
-			}
+                return '<input type="checkbox" class="noscheck js-select-row" />';
+            }
 
             function iconRenderer(value, type, device) {
                 var itemImage = '<img src="' + device.icon.getIcon() + '" width="16" height="16">';
@@ -210,14 +228,14 @@ define(['app'], function (app) {
                     || (['Group', 'Scene'].includes(device.Type));
 
                 if (isToggleAvailable) {
-                    var title = device.isActive() ?  $.t('Turn Off') : $.t('Turn On');
+                    var title = device.isActive() ? $.t('Turn Off') : $.t('Turn On');
                     return '<button class="btn btn-icon js-toggle-state" title="' + title + '">' + itemImage + '</button>';
                 } else {
                     return itemImage;
                 }
             }
 
-			function actionsRenderer(value, type, item) {
+            function actionsRenderer(value, type, item) {
                 var actions = [];
                 var logLink = item.getLogLink();
                 var isScene = ['Group', 'Scene'].includes(item.Type);
@@ -232,71 +250,74 @@ define(['app'], function (app) {
 
                 actions.push('<button class="btn btn-icon js-rename-device" title="' + $.t('Rename Device') + '"><img src="images/rename.png" /></button>');
 
-				if (isScene) {
-                    actions.push('<a class="btn btn-icon" href="#/Scenes/'+ item.idx +'/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
-				} else if (logLink) {
+                if (isScene) {
+                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + item.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
+                } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
-				} else {
-					actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>')
-				}
+                } else {
+                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>')
+                }
 
-				actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
 
                 return actions.join('&nbsp;');
             }
 
             function batteryLevelRenderer(value, type) {
                 if (!['display', 'filter'].includes(type)) {
-            		return value;
-				}
+                    return value;
+                }
 
                 if (value === 255) {
                     return '-'
                 }
 
-				var className = value < 10 ? 'empty' : value < 40 ? 'half' : 'full';
-				var width = Math.ceil(value * 14 / 100);
+                var className = value < 10 ? 'empty' : value < 40 ? 'half' : 'full';
+                var width = Math.ceil(value * 14 / 100);
                 var title = $.t('Battery level') + ': ' + value + '%';
 
-                 return '<div class="battery ' + className + '" style="width: ' + width + 'px" title="' + title + '"></div>';
-			}
+                return '<div class="battery ' + className + '" style="width: ' + width + 'px" title="' + title + '"></div>';
+            }
 
             function renderBatteryLevelTitle() {
                 return '<img src="images/battery.png" style="transform: rotate(180deg);" title="' + $.t('Battery Level') + '">'
             }
 
             function renderSignalLevelTitle() {
-            	return '<img src="images/air_signal.png" title="' + $.t('RF Signal Level') + '">'
-			}
+                return '<img src="images/air_signal.png" title="' + $.t('RF Signal Level') + '">'
+            }
 
-			function renderSelectorTitle() {
+            function renderSelectorTitle() {
                 return '<button class="btn btn-icon js-remove-selected" title="' + $.t('Delete selected device(s)') + '"><img src="images/delete.png" /></button>'
             }
-		}
-	});
+        }
+    });
 
-	app.component('devicesFilters', {
+    app.component('devicesFilters', {
         bindings: {
             devices: '<',
-            onUpdate: '&'
         },
         require: {
             ngModelCtrl: 'ngModel'
         },
-		templateUrl: 'app/devices/deviceFilters.html',
-		controller: function(domoticzApi) {
-        	var $ctrl = this;
-        	var filterAdditionalDataPromise;
+        templateUrl: 'app/devices/deviceFilters.html',
+        controller: function (domoticzApi) {
+            var $ctrl = this;
+            var filterAdditionalDataPromise;
 
-        	$ctrl.filters = [
+            $ctrl.filters = [
                 {
                     field: 'Used',
                     name: $.t('Used'),
-                    display: function(value) { return value === 0 ? 'No' : 'Yes'; },
-                    parse: function (value) { return parseInt(value, 10) }
+                    display: function (value) {
+                        return value === 0 ? 'No' : 'Yes';
+                    },
+                    parse: function (value) {
+                        return parseInt(value, 10)
+                    }
                 },
-				{field: 'HardwareName', name: $.t('Hardware')},
-				{field: 'Type', name: $.t('Type')},
+                { field: 'HardwareName', name: $.t('Hardware') },
+                { field: 'Type', name: $.t('Type') },
                 {
                     field: 'PlanIDs',
                     name: $.t('Room'),
@@ -311,27 +332,33 @@ define(['app'], function (app) {
                             return $.t('- N/A -')
                         }
                     },
-                    parse: function (value) { return parseInt(value, 10) }
+                    parse: function (value) {
+                        return parseInt(value, 10)
+                    }
                 }
-			];
+            ];
 
-        	$ctrl.$onInit = function() {
-                $ctrl.filters = $ctrl.filters.map(function(filter) {
+            $ctrl.$onInit = function () {
+                $ctrl.filters = $ctrl.filters.map(function (filter) {
                     return Object.assign({ collapsed: false }, filter)
                 });
 
                 $ctrl.ngModelCtrl.$render = function () {
                     var value = $ctrl.ngModelCtrl.$modelValue;
 
-                    $ctrl.filterValue = Object.keys(value).reduce(function(acc, fieldName) {
-                        var fieldFilterValue = value[fieldName].reduce(function(acc, fieldValue) {
-                            acc[fieldValue] = true;
-                            return acc
-                        }, {});
+                    $ctrl.filterValue = Object.keys(value)
+                        .filter(function (fieldName) {
+                            return value[fieldName] !== undefined;
+                        })
+                        .reduce(function (acc, fieldName) {
+                            var fieldFilterValue = value[fieldName].reduce(function (acc, fieldValue) {
+                                acc[fieldValue] = true;
+                                return acc
+                            }, {});
 
-                        acc[fieldName] = fieldFilterValue;
-                        return acc;
-                    }, {});
+                            acc[fieldName] = fieldFilterValue;
+                            return acc;
+                        }, {});
                 };
             };
 
@@ -341,7 +368,7 @@ define(['app'], function (app) {
                 }
 
                 if (changes.devices && changes.devices.currentValue) {
-                    filterAdditionalDataPromise.then(function() {
+                    filterAdditionalDataPromise.then(function () {
                         initFilters($ctrl.devices);
                     });
                 }
@@ -349,7 +376,7 @@ define(['app'], function (app) {
 
             $ctrl.updateFilterValue = function (filterValue) {
                 var value = Object.keys(filterValue).reduce(function (acc, fieldName) {
-                    var filter = $ctrl.filters.find(function(item) {
+                    var filter = $ctrl.filters.find(function (item) {
                         return item.field === fieldName;
                     });
 
@@ -380,14 +407,14 @@ define(['app'], function (app) {
                             }
 
                             if (device[item.field] === undefined) {
-                            	return;
-							}
+                                return;
+                            }
 
-							var values = Array.isArray(device[item.field])
+                            var values = Array.isArray(device[item.field])
                                 ? device[item.field]
-                                : [ device[item.field] ];
+                                : [device[item.field]];
 
-                            values.forEach(function(value) {
+                            values.forEach(function (value) {
                                 if (!acc[index].includes(value)) {
                                     acc[index].push(value)
                                 }
@@ -396,14 +423,16 @@ define(['app'], function (app) {
 
                         return acc;
                     }, [])
-					.map(function (values, filterIndex) {
-					    var displayFn = $ctrl.filters[filterIndex].display || function(value) { return value };
+                    .map(function (values, filterIndex) {
+                        var displayFn = $ctrl.filters[filterIndex].display || function (value) {
+                            return value
+                        };
 
-						values.sort(function (value1, value2) {
+                        values.sort(function (value1, value2) {
                             return displayFn(value1) > displayFn(value2) ? 1 : -1;
                         });
 
-						return values;
+                        return values;
                     });
             }
 
@@ -413,17 +442,56 @@ define(['app'], function (app) {
                     displayhidden: 0,
                 })
                     .then(domoticzApi.errorHandler)
-                    .then(function(response) {
+                    .then(function (response) {
                         $ctrl.plans = response.result || []
                     });
             }
-		}
-	});
+        }
+    });
 
-	app.controller('DevicesController', function ($scope, domoticzApi, Device) {
-		var $ctrl = this;
-		$ctrl.refreshDevices = refreshDevices;
-		$ctrl.applyFilter = applyFilter;
+    app.component('deviceFilterByUsage', {
+        templateUrl: 'app/devices/deviceFilterByUsage.html',
+        require: {
+            ngModelCtrl: 'ngModel'
+        },
+        controller: function () {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.ngModelCtrl.$render = function () {
+                    $ctrl.value = $ctrl.ngModelCtrl.$viewValue;
+                };
+
+                $ctrl.ngModelCtrl.$parsers.push(function (value) {
+                    return Object.assign({}, $ctrl.ngModelCtrl.$modelValue, {
+                        Used: value && value.length === 1 ? value : undefined
+                    });
+                });
+
+                $ctrl.ngModelCtrl.$formatters.push(function (value) {
+                    var filterValue = value && value.Used;
+
+                    return (Array.isArray(filterValue) && filterValue.length === 1)
+                        ? filterValue[0]
+                        : undefined;
+                });
+            };
+
+            $ctrl.setFilter = function (value) {
+                var filterValue = value !== undefined
+                    ? [value]
+                    : [0, 1];
+
+                $ctrl.value = value;
+                $ctrl.ngModelCtrl.$setViewValue(filterValue)
+            };
+        }
+    });
+
+    app.controller('DevicesController', function ($scope, domoticzApi, Device) {
+        var $ctrl = this;
+        $ctrl.refreshDevices = refreshDevices;
+        $ctrl.applyFilter = applyFilter;
 
         init();
 
@@ -433,7 +501,7 @@ define(['app'], function (app) {
             $ctrl.refreshDevices();
         }
 
-		function refreshDevices() {
+        function refreshDevices() {
             domoticzApi.sendRequest({
                 type: 'devices',
                 displayhidden: 1,
@@ -442,9 +510,9 @@ define(['app'], function (app) {
                 used: 'all'
             })
                 .then(domoticzApi.errorHandler)
-                .then(function(response) {
+                .then(function (response) {
                     $ctrl.devices = response.result
-						.map(function(item) {
+                        .map(function (item) {
                             var isScene = ['Group', 'Scene'].includes(item.Type);
 
                             if (isScene) {
@@ -456,21 +524,27 @@ define(['app'], function (app) {
                                 item.BatteryLevel = 255;
                             }
 
-							return new Device(item)
-						});
+                            return new Device(item)
+                        });
 
                     $ctrl.applyFilter();
                 });
-		}
+        }
 
-		function applyFilter() {
-		    $ctrl.filteredDevices = ($ctrl.devices || []).filter(function(device) {
-		        return Object.keys($ctrl.filter).every(function(fieldName) {
-		            return Array.isArray(device[fieldName])
-                        ? device[fieldName].some(function(value) { return $ctrl.filter[fieldName].includes(value) } )
-		                : $ctrl.filter[fieldName].includes(device[fieldName])
-                });
+        function applyFilter() {
+            $ctrl.filteredDevices = ($ctrl.devices || []).filter(function (device) {
+                return Object.keys($ctrl.filter)
+                    .filter(function (fieldName) {
+                        return $ctrl.filter[fieldName] !== undefined
+                    })
+                    .every(function (fieldName) {
+                        return Array.isArray(device[fieldName])
+                            ? device[fieldName].some(function (value) {
+                                return $ctrl.filter[fieldName].includes(value)
+                            })
+                            : $ctrl.filter[fieldName].includes(device[fieldName])
+                    });
             });
         }
-	});
+    });
 });

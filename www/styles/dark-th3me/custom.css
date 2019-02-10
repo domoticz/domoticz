@@ -657,7 +657,6 @@ input[type="search"] {
 .btn {
   border: 1px solid rgba(51, 51, 51, 0.51);
   padding: 4px 16px;
-  margin-left: 5px;
   text-transform: uppercase;
   text-shadow: none;
   color: #d0d0d0;
