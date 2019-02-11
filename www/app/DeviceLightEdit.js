@@ -1,29 +1,5 @@
 define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
-    var iconByDeviceSwitchType = {
-        0: 'Light48_On.png',        // On/Off
-        1: 'doorbell48.png',        // Doorbell
-        2: 'Contact48_On.png',      // Contact
-        3: 'blinds48.png',          // Blinds,
-        4: 'Alarm48_On.png',        // X10 Siren
-        5: 'smoke48on.png',         // Smoke Detector
-        6: 'blinds48.png',          // Blinds Inverted
-        7: 'Dimmer48_On.png',       // Dimmer
-        8: 'motion48-on.png',       // Motion Sensor
-        9: 'Push48_On.png',         // Push On Button
-        10: 'Push48_Off.png',       // Push Off Button
-        11: 'Door48_On.png',        // Door Contact
-        12: 'Water48_On.png',       // Dusk Sensor
-        13: 'blinds48.png',         // Blinds Percentage
-        14: 'blinds48.png',         // Venetian Blinds US
-        15: 'blinds48.png',         // Venetian Blinds EU
-        16: 'blinds48.png',         // Blinds Percentage Inverted
-        17: 'Media48_On.png',       // Media Player
-        18: 'Generic48_On.png',     // Selector
-        19: 'Door48_On.png',      // Door Lock
-        20: 'Door48_On.png',      // Door Lock Inverted
-    };
-
     app.component('deviceIconSelect', {
         template: '<select id="icon-select"></select>',
         bindings: {
@@ -32,13 +8,13 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function ($element, domoticzApi) {
+        controller: function ($element, domoticzApi, dzDefaultSwitchIcons) {
             var vm = this;
             var switch_icons = [];
 
             function updateSelector(bFromUser) {
-                switch_icons[0].imageSrc = iconByDeviceSwitchType[vm.switchType]
-                    ? 'images/' + iconByDeviceSwitchType[vm.switchType]
+                switch_icons[0].imageSrc = dzDefaultSwitchIcons[vm.switchType]
+                    ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
                     : 'images/Generic48_On.png';
 
                 $element.find('#icon-select').ddslick('destroy');
@@ -167,7 +143,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
             deviceIdx: '<'
         },
         controllerAs: 'vm',
-        controller: function ($scope, $element, domoticzApi, dataTableDefaultSettings) {
+        controller: function ($scope, $element, domoticzApi, deviceApi, dataTableDefaultSettings) {
             var vm = this;
             var table;
 
@@ -195,8 +171,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 });
 
                 // TODO: Add caching mechanism for this request
-                domoticzApi.sendCommand('getlightswitches').then(function (data) {
-                    vm.lightsAndSwitches = (data.result || [])
+                deviceApi.getLightsDevices().then(function (devices) {
+                    vm.lightsAndSwitches = devices;
                 });
 
                 refreshTable();
@@ -631,7 +607,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         }
 
         function isSwitchIconAvailable() {
-            return [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(vm.device.SwitchTypeVal);
+            return vm.device.icon.isConfigurable();
         }
 
         function isLevelsAvailable() {

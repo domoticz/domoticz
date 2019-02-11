@@ -159,7 +159,11 @@ local function Domoticz(settings)
 			urlEncode = function(s, strSub)
 				return utils.urlEncode(s, strSub)
 			end,
-
+            
+            urlDecode = function(s)
+				return utils.urlDecode(s)
+			end,
+            
 			round = function(x, n)
 				n = math.pow(10, n or 0)
 				x = x * n

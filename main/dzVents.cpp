@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.12")
+	m_version("2.4.13")
 {
 	m_bdzVentsExist = false;
 }
@@ -470,7 +470,12 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_pushstring(lua_state, "dzVents_log_level");
 	lua_pushnumber(lua_state, (lua_Number)rnvalue);
 	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "domoticz_listening_port");
+    std::string sTitle;
+    m_sql.GetPreferencesVar("Title", sTitle);
+    lua_pushstring(lua_state, "domoticz_title");
+	lua_pushstring(lua_state, sTitle.c_str());
+	lua_rawset(lua_state, -3);
+    lua_pushstring(lua_state, "domoticz_listening_port");
 	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "domoticz_webroot");

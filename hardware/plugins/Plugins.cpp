@@ -1008,8 +1008,53 @@ namespace Plugins {
 					break;
 				}
 			}
+
 			std::wstring	sPath = ssPath.str() + sSeparator;
 			sPath += Py_GetPath();
+
+			try
+			{
+				//
+				//	Python loads the 'site' module automatically and adds extra search directories for module loading
+				//	This code makes the plugin framework function the same way
+				//
+				void*	pSiteModule = PyImport_ImportModule("site");
+				if (!pSiteModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
+				}
+				else
+				{
+					PyObject*	pFunc = PyObject_GetAttrString((PyObject*)pSiteModule, "getsitepackages");
+					if (pFunc && PyCallable_Check(pFunc))
+					{
+						PyObject*	pSites = PyObject_CallObject(pFunc, NULL);
+						if (!pSites)
+						{
+							LogPythonException("getsitepackages");
+						}
+						else
+							for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+							{
+								PyObject*	pSite = PyList_GetItem(pSites, i);
+								if (pSite && PyUnicode_Check(pSite))
+								{
+									std::wstringstream ssPath;
+									ssPath << PyUnicode_AsUTF8(pSite);
+									sPath += sSeparator + ssPath.str();
+								}
+							}
+						Py_XDECREF(pSites);
+					}
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
+				PyErr_Clear();
+			}
+
+			// Update the path itself
 			PySys_SetPath((wchar_t*)sPath.c_str());
 
 			try
@@ -1025,6 +1070,7 @@ namespace Plugins {
 			catch (...)
 			{
 				_log.Log(LOG_ERROR, "(%s) exception loading 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
+				PyErr_Clear();
 			}
 
 			// Domoticz callbacks need state so they know which plugin to act on
