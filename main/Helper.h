@@ -87,3 +87,4 @@ int SetThreadName(const std::thread::native_handle_type &thread, const char *nam
 	bool IsWSL(void); //Detects if running under Windows Subsystem for Linux (WSL)
 #endif
 
+std::string GenerateUUID();

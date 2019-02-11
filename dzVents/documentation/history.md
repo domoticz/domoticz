@@ -1,3 +1,7 @@
+[2.4.13]
+- Added domoticz.settings.location (domoticz settings location Name)
+- Added domoticz.urlDecode method to convert an urlEncoded string to human readable format
+
 [2.4.12]
 - Added Managed counter (to counter)
 

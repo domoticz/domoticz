@@ -46,6 +46,16 @@ function self.urlEncode(str, strSub)
 	return str
 end
 
+
+function self.urlDecode(str)
+    
+    local hex2Char = function(x)
+        return string.char(tonumber(x, 16))
+    end
+
+    return str:gsub("%%(%x%x)", hex2Char)
+end
+
 function self.fromJSON(json)
 
 	local parse = function(j)
@@ -103,7 +113,7 @@ function self.log(msg, level)
 
 
 	if (level == self.LOG_ERROR) then
-		marker = marker .. 'Error (2.4.12): '
+		marker = marker .. 'Error (2.4.13): '
 	elseif (level == self.LOG_DEBUG) then
 		marker = marker .. 'Debug: '
 	elseif (level == self.LOG_INFO or level == self.LOG_MODULE_EXEC_INFO) then
