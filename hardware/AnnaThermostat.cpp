@@ -541,7 +541,6 @@ void CAnnaThermostat::GetMeterDetails()
                         bSwitch = false;
                     }
 				SendSwitch(sAnnaProximity, 0, 255, bSwitch, iLevel, sname);
-				//m_ProximityID 
 				}
 			
 			}	
