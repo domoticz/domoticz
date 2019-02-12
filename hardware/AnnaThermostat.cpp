@@ -665,9 +665,9 @@ void CAnnaThermostat::GetMeterDetails()
                 {
 					   strncpy ( sPreset,  "40", sizeof(sPreset) );
                 }
-				else if (strcmp(tmpstr.c_str(), "a_frost") == 0)
+				else if (strcmp(tmpstr.c_str(), "no_frost") == 0)
 				{
-					break;
+					strncpy ( sPreset,  "00", sizeof(sPreset) );
 				}	
 				int customImage = 16;//Frost
 				std::string options_str;
