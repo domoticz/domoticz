@@ -580,6 +580,7 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
+
                         SendSwitch(sAnnaFlameState, 1, 255, true, 0, sname);
                     }
                     else
