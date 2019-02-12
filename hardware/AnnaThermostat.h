@@ -15,12 +15,13 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
+	void OnError(const std::exception e);
 	bool CheckLoginData();
 	void GetMeterDetails();
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	bool SetAway(const bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
-	bool AnnaSetPreset(bool bToggle);
+	bool AnnaSetPreset(std::int8_t level);
 	bool AnnaGetLocation();
 	
 private:

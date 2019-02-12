@@ -28,10 +28,10 @@ const std::string ANNA_GET_STATUS   = "/core/appliances";
 const std::string ANNA_LOCATION     = "/cache/domain_objects;class=Location";
 const std::string ANNA_SET_LOCATION = "/core/locations";
 
-#define _DEBUG
+
 
 #ifdef _DEBUG
-#define DEBUG_AnnaThermostat
+//#define DEBUG_AnnaThermostat
 #define DEBUG_ANNA_APPLIANCE_READ  "/tmp/anna/appliances.xml"
 #define DEBUG_ANNA_WRITE           "/tmp/anna/output.txt"
 #define DEBUG_ANNA_LOCATION_READ   "/tmp/anna/location.xml"
@@ -81,6 +81,10 @@ CAnnaThermostat::~CAnnaThermostat(void)
 {
 }
 
+void CAnnaThermostat::OnError(const std::exception e)
+{
+	_log.Log(LOG_ERROR,"AnnaTherm: Error: %s",e.what());
+}
 void CAnnaThermostat::CAnnaThermostat::Init()
 {
 	m_ThermostatID = "";
@@ -121,7 +125,7 @@ bool CAnnaThermostat::StopHardware()
 void CAnnaThermostat::Do_Work()
 {
 	bool bFirstTime = true;
-	Log(LOG_STATUS,"Anna Worker started...");
+	Log(LOG_STATUS,"AnnaTherm:Worker started...");
 	int sec_counter = ANNA_POLL_INTERVAL-5;
 	while (!IsStopRequested(1000))
 	{
@@ -139,7 +143,7 @@ void CAnnaThermostat::Do_Work()
 		}
 
 	}
-	Log(LOG_STATUS,"Anna Worker stopped...");
+	Log(LOG_STATUS,"AnnaTherm: Worker stopped...");
 }
 
 void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -158,7 +162,8 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
-	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
+	unsigned char packettype = pCmd->ICMND.packettype;
+	if (packettype == pTypeLighting2)
 	{	
 		int node_id = pCmd->LIGHTING2.id4;
 		bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
@@ -171,10 +176,12 @@ bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*l
 			return AnnaToggleProximity(bIsOn);
 		}
 	}	
-	else if (pCmd->LIGHTING2.packettype ==  pTypeGeneralSwitch)
+	else if (packettype ==  pTypeGeneralSwitch)
 	{
-		//just return for now
-		return true ;
+		const _tGeneralSwitch *xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+		int ID = xcmd->id;
+		int level = xcmd->level;
+		return AnnaSetPreset(level);
 	}
 	return false;
 }
@@ -217,7 +224,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 		return ;
 	}
 }
-bool CAnnaThermostat::AnnaSetPreset(bool bToggle)
+bool CAnnaThermostat::AnnaSetPreset( std::int8_t level)
 {
 	std::stringstream szURL;
 
@@ -244,13 +251,25 @@ bool CAnnaThermostat::AnnaSetPreset(bool bToggle)
 	std::string sResult;
 
 	char szTemp[10];
-	if (bToggle == true)
-	{
-		strcpy(szTemp,"home");
-	}
-	else
-	{
-		strcpy(szTemp,"none");
+	switch(level) {
+    case  0: 
+			strcpy(szTemp,"none");
+			break;
+	case 10: 
+			strcpy(szTemp,"home");
+			break;
+	case 20: 
+			strcpy(szTemp,"away");			
+			break;
+	case 30: 
+			strcpy(szTemp,"asleep");			
+			break;
+	case 40: 
+			strcpy(szTemp,"vacation");			
+			break;
+    default: 
+            strcpy(szTemp,"none");			
+			break;
 	}
 	sPostData << "<locations>";
 	sPostData << "<location id=\"";
@@ -576,7 +595,7 @@ void CAnnaThermostat::GetMeterDetails()
 
 				char szIdx[10];
 				sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-                m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID==%q)", 5, m_HwdID,szIdx);
+                //m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", 5, m_HwdID,szIdx);
                 }
 
             }
@@ -617,45 +636,55 @@ void CAnnaThermostat::GetMeterDetails()
 			}			
             else if (sname == "preset_state")
 			{
-				bool bOnOff = false;
-				
+				char sPreset[4];
 				if (m_AnnaLocation.m_ALocationID.empty())
 				{    
 					if(!AnnaGetLocation()){
-                     Log(LOG_ERROR, "AnnaTherm: Error getting Location Information !");
-		             return;
+						Log(LOG_ERROR, "AnnaTherm: Error getting Location Information !");
+						return;
 					}	 
 				}
 				tmpstr = GetPeriodMeasurement(pElem);
-                if (!tmpstr.empty())
+                if(strcmp(tmpstr.c_str(), "none") == 0)
                 {
-                    if(strcmp(tmpstr.c_str(), "home") == 0)
-                    {
-                       bOnOff = true;
-                    }
-                    else if (strcmp(tmpstr.c_str(), "none") == 0)
-                    {
-						bOnOff = false;                     
-                    }
-					
-					//m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%08X' WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (SwitchType==%d) AND (SubType==%d)",
-				 //  i, m_HwdID, i - 2, switch_types[i].switchType, switch_types[i].subtype);
-				}
-                // Setting up selector switch 
-                int customImage = 16;//Frost
+				    strncpy ( sPreset,  "00", sizeof(sPreset) );
+                }
+                else if (strcmp(tmpstr.c_str(), "home") == 0)
+                {
+					   strncpy ( sPreset,  "10", sizeof(sPreset) );
+                }
+				else if (strcmp(tmpstr.c_str(), "away") == 0)
+                {
+					   strncpy ( sPreset,  "20", sizeof(sPreset) );
+                }
+				else if (strcmp(tmpstr.c_str(), "asleep") == 0)
+                {
+					   strncpy ( sPreset,  "30", sizeof(sPreset) );
+                }
+				else if (strcmp(tmpstr.c_str(), "vacation") == 0)
+                {
+					   strncpy ( sPreset,  "40", sizeof(sPreset) );
+                }
+				else if (strcmp(tmpstr.c_str(), "a_frost") == 0)
+				{
+					break;
+				}	
+				int customImage = 16;//Frost
 				std::string options_str;
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d)", m_HwdID, sAnnaPresets);
-	            if (result.empty()) //Switch is not yet in the system so create it
+				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID,sAnnaPresets);
+				if (result.empty()) //Switch is not yet in the system so create it
 				{   
-					const char *sSwitchTypoptions = "";
 					std::string options_str = "";
-		            options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions( "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03", false));
-			        m_sql.safe_query(
-				 "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-			      "VALUES (%d, %d, %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 10, pTypeGeneralSwitch, STYPE_Selector, sSwitchTypeSelector, 0, "Anna Presets", "sub", customImage, options_str.c_str());
-                }
-						
+					options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions( "SelectorStyle:0;LevelNames:Off|Home|Away|Night|Vacation;LevelOffHidden:true;LevelActions:00|10|20|30|40", false));
+					m_sql.safe_query(
+				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
+				"VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 0, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector,0, "Anna Presets", sPreset, customImage, options_str.c_str());
+				}
+				else
+				{
+					result = m_sql.safe_query("UPDATE DeviceStatus SET sValue = '%q' where (HardwareID==%d) AND (DeviceID=='%08X')", sPreset, m_HwdID,sAnnaPresets);	
+				}								
 			}			
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");
