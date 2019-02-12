@@ -543,11 +543,8 @@ void CAnnaThermostat::GetMeterDetails()
                     }
 				SendSwitch(sAnnaProximity, 0, 255, bSwitch, iLevel, sname);
 				}
-			
-			}	
-		
+			}			
 		}
-
 		pAppliance = pAppliance->NextSiblingElement("appliance");
 	}
 	return;
