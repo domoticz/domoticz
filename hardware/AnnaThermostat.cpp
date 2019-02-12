@@ -28,8 +28,10 @@ const std::string ANNA_GET_STATUS   = "/core/appliances";
 const std::string ANNA_LOCATION     = "/cache/domain_objects;class=Location";
 const std::string ANNA_SET_LOCATION = "/core/locations";
 
+#define _DEBUG
+
 #ifdef _DEBUG
-//#define DEBUG_AnnaThermostat
+#define DEBUG_AnnaThermostat
 #define DEBUG_ANNA_APPLIANCE_READ  "/tmp/anna/appliances.xml"
 #define DEBUG_ANNA_WRITE           "/tmp/anna/output.txt"
 #define DEBUG_ANNA_LOCATION_READ   "/tmp/anna/location.xml"
@@ -156,23 +158,23 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
-	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
-		return false; 
-	int node_id = pCmd->LIGHTING2.id4;
-
-	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
-
-	if (node_id == sAnneBoilerState || node_id ==sAnnaFlameState )
+	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
+	{	
+		int node_id = pCmd->LIGHTING2.id4;
+		bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
+		if (node_id == sAnneBoilerState || node_id ==sAnnaFlameState )
+		{
+		    return false ; // just return Error as these are not supposed to be switches 
+		}
+		else if (node_id == sAnnaProximity)
+		{
+			return AnnaToggleProximity(bIsOn);
+		}
+	}	
+	else if (pCmd->LIGHTING2.packettype ==  pTypeGeneralSwitch)
 	{
-	 return false ; // just return Error as these are not supposed to be switches 
-	}
-	else if (node_id == sAnnaProximity)
-	{
-		return AnnaToggleProximity(bIsOn);
-	}
-	else if (node_id == sAnnaPresets)
-	{
-	    return AnnaSetPreset(bIsOn);
+		//just return for now
+		return true ;
 	}
 	return false;
 }
@@ -211,7 +213,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 
   	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
 	{
-		Log(LOG_ERROR, "AnnaTherm: Error setting current state!");
+		Log(LOG_ERROR, "AnnaTherm: Error setting setpoint!");
 		return ;
 	}
 }
@@ -269,7 +271,7 @@ bool CAnnaThermostat::AnnaSetPreset(bool bToggle)
     SaveString2Disk("<-- ANNA - SetPReset -->/ \r\n",DEBUG_ANNA_WRITE);
 
     SaveString2Disk(szURL.str(),DEBUG_ANNA_WRITE);
-   	SaveString2Disk(DEBUG_ANNN_CRLF,DEBUG_ANNA_WRITE);
+  	SaveString2Disk(DEBUG_ANNN_CRLF,DEBUG_ANNA_WRITE);
 	SaveString2Disk(sPostData.str(),DEBUG_ANNA_WRITE);
 	SaveString2Disk(DEBUG_ANNN_CRLF,DEBUG_ANNA_WRITE);
 
@@ -326,7 +328,9 @@ bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
 
 #ifdef DEBUG_AnnaThermostat
     SaveString2Disk("<-- ANNA - TogglePRoximitySensor-->",DEBUG_ANNA_WRITE);
-    SaveString2Disk(szURL.str(),DEBUG_ANNA_WRITE);
+	SaveString2Disk(DEBUG_ANNN_CRLF,DEBUG_ANNA_WRITE);
+	SaveString2Disk(szURL.str(),DEBUG_ANNA_WRITE);	
+	SaveString2Disk(DEBUG_ANNN_CRLF,DEBUG_ANNA_WRITE);
 	SaveString2Disk(sPostData.str(),DEBUG_ANNA_WRITE);
 #else 
   	if (!HTTPClient::PUT(szURL.str(), sPostData.str(), ExtraHeaders, sResult, true))
@@ -563,14 +567,22 @@ void CAnnaThermostat::GetMeterDetails()
                     {
                         SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);
                     }
+				//make device ID
+				const int NodeID = sAnnaFlameState;
+				unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
+				unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
+				unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
+				unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
+				char szIdx[10];
+				sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+                m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID==%q)", 5, m_HwdID,szIdx);
                 }
+
             }
 			else if (sname == "proximity_sensor_state")
 			{
-				int iLevel = 0;
 				bool bSwitch = false;
-				
 				if (m_ProximityID.empty())
 				{
 					pAttribute = pAppliance->FirstAttribute();
@@ -593,22 +605,19 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     if(strcmp(tmpstr.c_str(), "on") == 0)
                     {
-                       iLevel = 94;
 					    bSwitch = true;
                     }
                     else
                     {
-						iLevel = 0;
-                        bSwitch = false;
+					   bSwitch = false;
                     }
-				SendSwitch(sAnnaProximity, 0, 255, bSwitch, iLevel, sname);
-				
+			     	SendSwitch(sAnnaProximity, 0, 255, bSwitch,0, sname);
+					//m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=%d WHERE (HardwareID==%d) AND (DeviceID=='%08X')", 12, m_HwdID,sAnnaProximity);
 				}			
 			}			
             else if (sname == "preset_state")
 			{
-				int iLevel = 0;
-				int bOnOff = false;
+				bool bOnOff = false;
 				
 				if (m_AnnaLocation.m_ALocationID.empty())
 				{    
@@ -629,11 +638,24 @@ void CAnnaThermostat::GetMeterDetails()
 						bOnOff = false;                     
                     }
 					
-					//Log(LOG_STATUS, "AnnaTherm: Preset found is: %s ",tmpstr.c_str());
-			        
-				SendSwitch(sAnnaPresets, 0, 255, bOnOff, iLevel, sname);
-				//m_ProximityID 
-				}			
+					//m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%08X' WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (SwitchType==%d) AND (SubType==%d)",
+				 //  i, m_HwdID, i - 2, switch_types[i].switchType, switch_types[i].subtype);
+				}
+                // Setting up selector switch 
+                int customImage = 16;//Frost
+				std::string options_str;
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d)", m_HwdID, sAnnaPresets);
+	            if (result.empty()) //Switch is not yet in the system so create it
+				{   
+					const char *sSwitchTypoptions = "";
+					std::string options_str = "";
+		            options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions( "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03", false));
+			        m_sql.safe_query(
+				 "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
+			      "VALUES (%d, %d, %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')", m_HwdID, sAnnaPresets, 10, pTypeGeneralSwitch, STYPE_Selector, sSwitchTypeSelector, 0, "Anna Presets", "sub", customImage, options_str.c_str());
+                }
+						
 			}			
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");

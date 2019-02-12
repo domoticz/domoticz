@@ -22,6 +22,7 @@ private:
 	bool AnnaToggleProximity(bool bToggle);
 	bool AnnaSetPreset(bool bToggle);
 	bool AnnaGetLocation();
+	
 private:
 	std::string m_IPAddress;
 	unsigned short m_IPPort;
