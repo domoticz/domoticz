@@ -4,6 +4,11 @@
 
 class CAnnaThermostat : public CDomoticzHardwareBase
 {
+	struct AnnaLocationInfo {
+		std::string m_ALocationID;
+		std::string m_ALocationName;
+		std::string m_ALocationType;
+	};
 public:
 	CAnnaThermostat(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password);
 	~CAnnaThermostat(void);
@@ -33,11 +38,6 @@ private:
 	std::string m_ProximityID;
 	std::string m_PresetID;
 	std::shared_ptr<std::thread> m_thread;
-    struct AnnaLocationInfo {
-         std::string m_ALocationID;
-		 std::string m_ALocationName;
-		 std::string m_ALocationType;
-    };
 	AnnaLocationInfo m_AnnaLocation;
 };
 
