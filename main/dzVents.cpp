@@ -496,23 +496,31 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_pushstring(lua_state, sTitle.c_str());
 	lua_rawset(lua_state, -3);
 	
-	std::string location;
-	std::vector<std::string> strarray;
-	if (m_sql.GetPreferencesVar("Location", rnvalue, location))
-		StringSplit(location, ";", strarray);
-	if (strarray.size() == 2)
-	{
-		// Only when location entered in the settings
-		// Add to table
-		std::string Latitude = strarray[0];
-		std::string Longitude = strarray[1];
-		lua_pushstring(lua_state, "longitude");
-		lua_pushstring(lua_state, Longitude.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "latitude");
-		lua_pushstring(lua_state, Latitude.c_str());
-		lua_rawset(lua_state, -3);
-	}
+    // Only when webLocalNetworks has local network defined 
+    // Add latitude / longitude to table
+    std::string allowedNetworks;
+    rnvalue = 0;
+    m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+    if (allowedNetworks.find("127.0.0.") == std::string::npos)
+    {
+        std::string location;
+        std::vector<std::string> strarray;
+        if (m_sql.GetPreferencesVar("Location", rnvalue, location))
+            StringSplit(location, ";", strarray);
+        if (strarray.size() == 2)
+        {
+            // Only when location entered in the settings
+            // Add to table
+            std::string Latitude = strarray[0];
+            std::string Longitude = strarray[1];
+            lua_pushstring(lua_state, "longitude");
+            lua_pushstring(lua_state, Longitude.c_str());
+            lua_rawset(lua_state, -3);
+            lua_pushstring(lua_state, "latitude");
+            lua_pushstring(lua_state, Latitude.c_str());
+            lua_rawset(lua_state, -3);
+        }
+    }
 
 	// Moved to openURL inside as it considered a security issue when exposed to dzVents Lua code 
 	// std::string allowedNetworks;
