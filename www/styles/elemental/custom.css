@@ -446,6 +446,8 @@ table.mobileitem {
 	padding-top: 20px;
 }
 
-.events-editor-tree__file:link {
+.events-editor-tree__file:link,
+.events-editor-tree-item__file:link,
+.devices-filters__item {
 	line-height: normal;
 }
