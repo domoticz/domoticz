@@ -17,6 +17,11 @@
       <Item value="0" label="Enabled"/>
       <Item value="1" label="Disabled"/>
     </Value>
+    <Value genre="config" index="4" value="0" label="Ramp Rate Control" units="" size="1" min="0" max="255" type="list">
+      <Help>Choose how fast you want to turn the light on and off</Help>
+      <Item value="0" label="Slow"/>
+      <Item value="1" label="Fast"/>
+    </Value>
   </CommandClass>
 
   <!-- Association Groups -->

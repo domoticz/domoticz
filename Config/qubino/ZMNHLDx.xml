@@ -17,7 +17,7 @@
    		</SupportedModes>
 	</CommandClass>
 
-    <CommandClass id="67" override_precision="2"  />
+    <CommandClass id="67" override_precision="2" base="0" />
     
 	<!-- Configuration -->
 	<CommandClass id="112">

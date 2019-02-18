@@ -172,7 +172,7 @@ Default setting: 15</Help>
     <Value type="list" genre="config" instance="1" index="37" label="Behaviour of the Dimmer after OVERCURRENT or SURGE" size="1" value="1">
       <Help>Behaviour of the Dimmer after OVERCURRENT or SURGE</Help>
       <Item label="device permanently disabled until re-enabling by comand or external switch" value="0" />
-      <Item label="three atempts to turn on the load" value="1" />
+      <Item label="three attempts to turn on the load" value="1" />
     </Value>    
     <Value type="short" genre="config" instance="1" index="38" label="Brightness level correction for flickering loads" min="0" max="255" value="255">
       <Help>Correction reduces spontaneous flickering of some capacitive load (e.g. dimmable lEDs) at certain brightness levels in 2-wire installation. In countries using ripple-control, correction may cause changes in brightness. In this case it is necessary to disable correction or adjust time of correction for flickering loads. Available settings: 0 - automatic correction disabled 1-254 - duration of correction in seconds 255 - automatic correction always enabled Default setting: 255</Help>
