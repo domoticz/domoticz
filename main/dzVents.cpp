@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.13")
+	m_version("2.4.14")
 {
 	m_bdzVentsExist = false;
 }
@@ -142,6 +142,8 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEven
 
 bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
+    
+
 	float delayTime = 0;
 	std::string URL, extraHeaders, method, postData, trigger;
 
@@ -184,12 +186,27 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 				delayTime = static_cast<float>(itt->iValue);
 		}
 	}
+	
+	
 	if (URL.empty())
 	{
 		_log.Log(LOG_ERROR, "dzVents: No URL supplied!");
 		return false;
 	}
-
+	
+    // Handle situation where WebLocalNetworks is not open without password for dzVents
+	if (URL.find("127.0.0.1") != std::string::npos)
+    {
+        std::string allowedNetworks;
+        int rnvalue = 0;
+        m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+        if (allowedNetworks.find("127.0.0.") == std::string::npos)
+        {
+            _log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
+            return false;
+        }
+    }    
+    
 	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
 	if (!method.empty() && method == "POST")
 		eMethod = HTTPClient::HTTP_METHOD_POST;
@@ -200,6 +217,8 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 		return false;
 	}
 
+    
+    
 	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, eMethod, postData, trigger));
 	return true;
 }
@@ -470,12 +489,47 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_pushstring(lua_state, "dzVents_log_level");
 	lua_pushnumber(lua_state, (lua_Number)rnvalue);
 	lua_rawset(lua_state, -3);
-    std::string sTitle;
-    m_sql.GetPreferencesVar("Title", sTitle);
-    lua_pushstring(lua_state, "domoticz_title");
+
+	std::string sTitle;
+	m_sql.GetPreferencesVar("Title", sTitle);
+	lua_pushstring(lua_state, "domoticz_title");
 	lua_pushstring(lua_state, sTitle.c_str());
 	lua_rawset(lua_state, -3);
-    lua_pushstring(lua_state, "domoticz_listening_port");
+	
+    // Only when webLocalNetworks has local network defined 
+    // Add latitude / longitude to table
+    std::string allowedNetworks;
+    rnvalue = 0;
+    m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+    if (allowedNetworks.find("127.0.0.") == std::string::npos)
+    {
+        std::string location;
+        std::vector<std::string> strarray;
+        if (m_sql.GetPreferencesVar("Location", rnvalue, location))
+            StringSplit(location, ";", strarray);
+        if (strarray.size() == 2)
+        {
+            // Only when location entered in the settings
+            // Add to table
+            std::string Latitude = strarray[0];
+            std::string Longitude = strarray[1];
+            lua_pushstring(lua_state, "longitude");
+            lua_pushstring(lua_state, Longitude.c_str());
+            lua_rawset(lua_state, -3);
+            lua_pushstring(lua_state, "latitude");
+            lua_pushstring(lua_state, Latitude.c_str());
+            lua_rawset(lua_state, -3);
+        }
+    }
+
+	// Moved to openURL inside as it considered a security issue when exposed to dzVents Lua code 
+	// std::string allowedNetworks;
+    // m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+	// lua_pushstring(lua_state, "localNetworksAllowed");
+	// lua_pushboolean(lua_state,(allowedNetworks.find("127.0.0.") != std::string::npos));
+	// lua_rawset(lua_state, -3);
+	
+	lua_pushstring(lua_state, "domoticz_listening_port");
 	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "domoticz_webroot");
