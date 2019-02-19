@@ -45,7 +45,7 @@ class CEventSystem : public CLuaCommon, StoppableTask
 		float fForSec = 0;
 		float fAfterSec = 0;
 		float fRandomSec = 0;
-		int iRepeat = 0;
+		int iRepeat = 1;
 		float fRepeatSec = 0;
 		bool bEventTrigger = false;
 	};

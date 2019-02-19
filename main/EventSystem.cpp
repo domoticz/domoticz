@@ -3898,6 +3898,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	devicestatesMutexLock.unlock();
 
 	_tActionParseResults oParseResults;
+	oParseResults.bEventTrigger = true;
+
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {
