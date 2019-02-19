@@ -47,7 +47,7 @@ class CEventSystem : public CLuaCommon, StoppableTask
 		float fRandomSec = 0;
 		int iRepeat = 0;
 		float fRepeatSec = 0;
-		bool bEventTrigger = 0;
+		bool bEventTrigger = false;
 	};
 public:
 	enum _eReason
