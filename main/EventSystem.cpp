@@ -3897,7 +3897,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	int level = 0;
 	devicestatesMutexLock.unlock();
 
-	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0, true };
+	_tActionParseResults oParseResults;
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {

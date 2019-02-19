@@ -16,6 +16,7 @@
 		<Product type="6401" id="01fd" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0100" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0001" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
+		<Product type="6501" id="000b" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000c" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000d" name="CT101 Thermostat" config="2gig/ct101.xml"/>
 	</Manufacturer>
@@ -1703,6 +1704,7 @@
 		<Product type="634b" id="504c" name="FE599GR Wireless Door Lock"/>
 		<Product type="6341" id="5044" name="BE469 Touchscreen Deadbolt" config="schlage/BE469.xml"/>
 		<Product type="6349" id="5044" name="BE468 Touchscreen Deadbolt" config="schlage/BE468.xml"/>
+		<Product type="0001" id="0469" name="BE469ZP Connect Smart Deadbolt" config="schlage/BE469ZP.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0097" name="Schlage Link (Wintop)">
 		<Product type="1182" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
@@ -1769,6 +1771,7 @@
 		<Product type="0003" id="2082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
 		<Product type="0003" id="0087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
 		<Product type="0003" id="1087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
+		<Product type="0200" id="1027" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
 		<Product type="0003" id="0083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
 		<Product type="0003" id="1083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
 		<Product type="0003" id="108d" name="Battery Powered PIR Sensor V2" config="shenzen_neo/nas-pd02z.xml"/>
@@ -2237,6 +2240,8 @@
 		<Product type="a000" id="a001" name="ZEN26 S2 On Off Wall Switch" config="zooz/zen26.xml" />
 		<Product type="a000" id="a002" name="ZEN27 S2 Dimmer Wall Switch" config="zooz/zen27.xml" />
 		<Product type="b111" id="1e1c" name="ZEN21 Switch V2.0" config="zooz/zen21.xml" />
+		<Product type="000c" id="0003" name="ZSE19 S2 Multisiren" config="zooz/zse19.xml" />
+		<Product type="a000" id="a004" name="ZEN20 V2.0 Power Strip" config="zooz/zen20v2.xml" />
 	</Manufacturer>
 	<Manufacturer id="015d" name="Zooz (Willis Electric)">
 		<Product type="0651" id="f51c" name="ZEN20 Power Strip" config="zooz/zen20.xml" />

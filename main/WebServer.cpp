@@ -2115,6 +2115,15 @@ namespace http {
 				"INSERT INTO Plans (Name) VALUES ('%q')",
 				name.c_str()
 			);
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT MAX(ID) FROM Plans");
+			if (!result.empty())
+			{
+				std::vector<std::string> sd = result[0];
+				int ID = atoi(sd[0].c_str());
+
+				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
+			}
 		}
 
 		void CWebServer::Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root)
