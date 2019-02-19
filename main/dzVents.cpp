@@ -501,7 +501,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
     std::string allowedNetworks;
     rnvalue = 0;
     m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
-    if (allowedNetworks.find("127.0.0.") == std::string::npos)
+    if (allowedNetworks.find("127.0.0.") != std::string::npos)
     {
         std::string location;
         std::vector<std::string> strarray;
