@@ -197,7 +197,7 @@ namespace http {
 			}
 			else {
 				// unknown subsystem
-				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %ld.", pdu->m_subsystem);
+				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %d.", pdu->m_subsystem);
 			}
 		}
 

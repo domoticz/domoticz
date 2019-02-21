@@ -97,7 +97,7 @@ private:
 
 #ifdef WWW_ENABLE_SSL
 	boost::asio::ssl::context		m_Context; // ssl context
-	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> mSslSocket; // the ssl socket
+	boost::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > mSslSocket; // the ssl socket
 #endif
 	boost::asio::ip::tcp::socket	m_Socket;
 	boost::asio::ip::tcp::endpoint	m_EndPoint;
