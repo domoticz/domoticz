@@ -6,7 +6,7 @@
 .dataTables_wrapper {
     margin-bottom: 16px;
 }
-
+/*
 .modal-content {
     color: #ddd;
     background-color: #013;
@@ -39,7 +39,7 @@
     border-radius: .3125em;
     border: none;
 }
-
+*/
 .btn {
     border: none;
     border-radius: 5px;
