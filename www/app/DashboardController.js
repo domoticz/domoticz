@@ -3699,9 +3699,7 @@ define(['app'], function (app) {
 									) {
 										bigtexthtml += item.CounterToday;
 									}
-									else if (
-										(item.SubType == "Managed Counter")
-									) {
+									else if (item.SubType == "Managed Counter") {
 										bigtexthtml += item.Counter;
 									}
 									else if (
