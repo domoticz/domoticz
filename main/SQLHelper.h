@@ -33,6 +33,15 @@ enum _eWeightUnit
     WEIGHTUNIT_LB,
 };
 
+enum _eUsrVariableType
+{
+	USERVARTYPE_INTEGER = 0,
+	USERVARTYPE_FLOAT,
+	USERVARTYPE_DATE,
+	USERVARTYPE_TIME,
+	USERVARTYPE_STRING
+};
+
 enum _eTaskItemType
 {
 	TITEM_SWITCHCMD=0,
@@ -377,12 +386,12 @@ public:
 	void safe_exec_no_return(const char *fmt, ...);
 	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
-	std::string AddUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
-	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);
+
+	std::string AddUserVariable(const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue);
+	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, const bool eventtrigger);
 	std::string DeleteUserVariable(const std::string &idx);
-	std::string CheckUserVariable(const int vartype, const std::string &varvalue);
+	std::string CheckUserVariable(const _eUsrVariableType eVartype, const std::string &varvalue);
 	std::string CheckUserVariableName(const std::string &varname);
-	std::vector<std::vector<std::string> > GetUserVariables();
 
 	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
 
