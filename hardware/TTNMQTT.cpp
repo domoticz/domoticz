@@ -333,11 +333,11 @@ void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string 
 	int ID;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName);
+	result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName.c_str());
 	if (result.empty())
 	{
 		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", varName.c_str(), USERVARTYPE_STRING, varValue.c_str());
-		result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName);
+		result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName.c_str());
 		if (result.empty())
 			return;
 		ID = atoi(result[0][0].c_str());
@@ -345,7 +345,7 @@ void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string 
 	else
 	{
 		ID = atoi(result[0][0].c_str());
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), szLastUpdate, ID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), szLastUpdate.c_str(), ID);
 	}
 
 	m_mainworker.m_eventsystem.SetEventTrigger(ID, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
