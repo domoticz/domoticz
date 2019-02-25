@@ -7980,7 +7980,7 @@ std::string CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, cons
 		return "String exceeds maximum size";
 	}
 	if (eVartype == USERVARTYPE_INTEGER) {
-		//integer
+		//integer (0)
 		std::istringstream iss(varvalue);
 		int i;
 		iss >> std::noskipws >> i;
@@ -7990,7 +7990,7 @@ std::string CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, cons
 		}
 	}
 	else if (eVartype == USERVARTYPE_FLOAT) {
-		//float
+		//float (1)
 		std::istringstream iss(varvalue);
 		float f;
 		iss >> std::noskipws >> f;
@@ -7999,8 +7999,12 @@ std::string CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, cons
 			return "Not a valid float";
 		}
 	}
+	else if (eVartype == USERVARTYPE_STRING) {
+		//string (2)
+		return "OK";
+	}
 	else if (eVartype == USERVARTYPE_DATE) {
-		//date
+		//date (3)
 		int d, m, y;
 		if (!CheckDate(varvalue, d, m, y))
 		{
@@ -8008,14 +8012,12 @@ std::string CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, cons
 		}
 	}
 	else if (eVartype == USERVARTYPE_TIME) {
-		//time
+		//time (4)
 		if (!CheckTime(varvalue))
 			return "Not a valid time notation (HH:MM)";
 	}
-	else if (eVartype == USERVARTYPE_STRING) {
-		//string
-		return "OK";
-	}
+
+	//return "Unknown variable type!";
 	return "OK";
 }
 
