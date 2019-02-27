@@ -2,12 +2,14 @@
 #include "WebServerHelper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../webserver/proxyclient.h"
 
 namespace http {
 	namespace server {
 
 		typedef std::vector<std::shared_ptr<CWebServer> >::iterator server_iterator;
 #ifndef NOCLOUD
+		typedef std::vector<std::shared_ptr<CProxyManager> >::iterator proxy_iterator;
 		extern CProxySharedData sharedData;
 #endif
 
@@ -64,26 +66,43 @@ namespace http {
 #endif
 
 #ifndef NOCLOUD
-			proxymanager.Stop();
+			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
+				(*it)->Stop();
+			}
+			proxymanagerCollection.clear();
 #endif
 		}
 
 #ifndef NOCLOUD
 		void CWebServerHelper::RestartProxy() {
 			sharedData.StopTCPClients();
-			proxymanager.Stop();
-			// restart
-			cWebem *my_pWebEm = (plainServer_ != NULL ? plainServer_->m_pWebEm : (secureServer_ != NULL ? secureServer_->m_pWebEm : NULL));
-			if (my_pWebEm == NULL) {
-				_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either.");
-				return;
+			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
+				(*it)->Stop();
 			}
-			proxymanager.Start(my_pWebEm, m_pDomServ);
+
+			// restart threads
+			const unsigned int connections = GetNrMyDomoticzThreads();
+			proxymanagerCollection.clear();
+			for (unsigned int i = 0; i < connections; i++) {
+				cWebem *my_pWebEm = (plainServer_ != NULL ? plainServer_->m_pWebEm : (secureServer_ != NULL ? secureServer_->m_pWebEm : NULL));
+				if (my_pWebEm == NULL) {
+					_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either.");
+					break;
+				}
+				proxymanagerCollection.push_back(std::shared_ptr<CProxyManager>(new CProxyManager(our_serverpath, my_pWebEm, m_pDomServ)));
+				proxymanagerCollection[i]->Start(i == 0);
+			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
-			return proxymanager.GetProxyForMaster(master);
+		std::shared_ptr<CProxyClient> CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
+			if (proxymanagerCollection.size() > 0) {
+				// todo: make this a random connection?
+				return proxymanagerCollection[0]->GetProxyForMaster(master);
+			}
+			// we are not connected yet. save this master and connect later.
+			sharedData.AddTCPClient(master);
+			return std::shared_ptr<CProxyClient>();
 		}
 
 		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {
@@ -117,7 +136,6 @@ namespace http {
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				(*it)->SetWebRoot(webRoot);
 			 }
-			proxymanager.SetWebRoot(webRoot);
 		}
 
 		void CWebServerHelper::ClearUserPasswords()
@@ -159,6 +177,15 @@ namespace http {
 				(*it)->ReloadCustomSwitchIcons();
 			 }
 		}
+
+#ifndef NOCLOUD
+		int CWebServerHelper::GetNrMyDomoticzThreads()
+		{
+			int nrThreads = 1; // default value
+			m_sql.GetPreferencesVar("MyDomoticzNrThreads", nrThreads);
+			return nrThreads;
+		}
+#endif
 	}
 
 }

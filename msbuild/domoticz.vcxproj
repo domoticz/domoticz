@@ -14,7 +14,7 @@
     <ProjectGuid>{6AD96441-5B2C-467B-AAB6-A1B8368D503A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>domoticz</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,7 +44,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(IntDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath)</IncludePath>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
@@ -52,7 +52,6 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(IntDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,7 +113,6 @@
   <ItemGroup>
     <None Include="..\CMakeLists.txt" />
     <None Include="..\getsvn.cmake" />
-    <None Include="..\webserver\proxydef.def" />
     <None Include="..\www\app\AboutController.js" />
     <None Include="..\www\app\app.js" />
     <None Include="..\www\app\CamController.js" />
@@ -636,8 +634,8 @@
     <ClInclude Include="..\push\BasePush.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
-    <ClInclude Include="..\webserver\proxycereal.hpp" />
     <ClInclude Include="..\webserver\proxyclient.h" />
+    <ClInclude Include="..\webserver\proxycommon.h" />
     <ClInclude Include="..\webserver\WebsocketHandler.h" />
     <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\zip\ioapi.h" />
@@ -1019,11 +1017,8 @@
     <ClCompile Include="..\webserver\cWebem.cpp" />
     <ClCompile Include="..\webserver\fastcgi.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
-    <ClCompile Include="..\webserver\proxycereal.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\webserver\proxyclient.cpp" />
+    <ClCompile Include="..\webserver\proxycommon.cpp" />
     <ClCompile Include="..\webserver\reply.cpp" />
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />

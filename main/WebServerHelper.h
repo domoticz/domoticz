@@ -4,11 +4,10 @@
 #include "../hardware/DomoticzTCP.h"
 #endif
 #include "../tcpserver/TCPServer.h"
-#include "../webserver/proxyclient.h"
 
 namespace http {
 	namespace server {
-		//class CProxyManager;
+		class CProxyManager;
 		class CWebServerHelper {
 		public:
 			CWebServerHelper();
@@ -23,7 +22,7 @@ namespace http {
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();
-			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+			std::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
 			void RemoveMaster(DomoticzTCP *master);
 #endif
 			void SetWebCompressionMode(const _eWebCompressionMode gzmode);
@@ -60,7 +59,9 @@ namespace http {
 			std::string our_serverpath;
 
 #ifndef NOCLOUD
-			CProxyManager proxymanager;
+			std::vector<std::shared_ptr<CProxyManager> > proxymanagerCollection;
+			int GetNrMyDomoticzThreads();
+
 #endif
 };
 
