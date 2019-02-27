@@ -472,6 +472,12 @@ namespace http {
 			disconnect();
 		}
 
+		bool CProxyClient::Enabled()
+		{
+			Reset();
+			return (_apikey != "" && _password != "" && _allowed_subsystems != 0);
+		}
+
 
 		CProxyManager::CProxyManager()
 		{
@@ -482,15 +488,19 @@ namespace http {
 			Stop();
 		}
 
-		int CProxyManager::Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)
+		bool CProxyManager::Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)
 		{
+			if (!proxyclient.Enabled()) {
+				// mydomoticz has not been set up
+				return false;
+			}
 			m_pDomServ = domServ;
 			proxyclient.Connect(webEm);
 			if (proxyclient.SharedServerAllowed()) {
 				m_pDomServ->StartServer(&proxyclient);
 			}
 			proxyclient.SetSharedServer(m_pDomServ->GetProxiedServer());
-			return 1;
+			return true;
 		}
 
 		void CProxyManager::Stop()

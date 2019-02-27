@@ -75,11 +75,12 @@ namespace http {
 			// restart
 			cWebem *my_pWebEm = (plainServer_ != NULL ? plainServer_->m_pWebEm : (secureServer_ != NULL ? secureServer_->m_pWebEm : NULL));
 			if (my_pWebEm == NULL) {
-				_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either.");
+				_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either (if configured)");
 				return;
 			}
-			proxymanager.Start(my_pWebEm, m_pDomServ);
-			_log.Log(LOG_STATUS, "Proxymanager started.");
+			if (proxymanager.Start(my_pWebEm, m_pDomServ)) {
+				_log.Log(LOG_STATUS, "Proxymanager started.");
+			}
 		}
 
 		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {

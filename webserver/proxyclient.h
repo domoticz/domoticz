@@ -35,6 +35,7 @@ namespace http {
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
 			void Connect(http::server::cWebem *webEm);
 			void Disconnect();
+			bool Enabled();
 		private:
 			void WebsocketGetRequest();
 			bool parse_response(const char *data, size_t len);
@@ -81,7 +82,7 @@ namespace http {
 		public:
 			CProxyManager();
 			~CProxyManager();
-			int Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
+			bool Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
 			void Stop();
 			void SetWebRoot(const std::string& doc_root);
 			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
