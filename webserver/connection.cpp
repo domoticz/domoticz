@@ -248,7 +248,7 @@ void connection::MyWrite(const std::string &buf)
 		std::unique_lock<std::mutex>(writeMutex);
 		if (write_in_progress) {
 			// write in progress, add to queue
-			writeQ.push_back(buf);
+			writeQ.push(buf);
 		}
 		else {
 			SocketWrite(buf);
@@ -388,7 +388,7 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
 	if (!error) {
 		if (!writeQ.empty()) {
 			std::string buf = writeQ.front();
-			writeQ.pop_front();
+			writeQ.pop();
 			SocketWrite(buf);
 		}
 		else if (!keepalive_) {
