@@ -1872,22 +1872,6 @@ namespace http {
 			root["title"] = "GetDeviceValueOptions";
 		}
 
-
-		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-			std::string idx = request::findValue(&req, "idx");
-			if (idx.empty())
-				return;
-
-			root["status"] = m_sql.DeleteUserVariable(idx);
-			root["title"] = "DeleteUserVariable";
-		}
-
 		void CWebServer::Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
@@ -1905,8 +1889,33 @@ namespace http {
 				)
 				return;
 
-			root["status"] = m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue);
 			root["title"] = "AddUserVariable";
+
+			std::string errorMessage;
+			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
+			{
+				root["status"] = "ERR";
+				root["message"] = errorMessage;
+			}
+			else {
+				root["status"] = "OK";
+			}
+		}
+
+		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+
+			m_sql.DeleteUserVariable(idx);
+			root["status"] = "OK";
+			root["title"] = "DeleteUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
@@ -1948,13 +1957,21 @@ namespace http {
 			else if (variabletype != result[0][1])
 				bTypeNameChanged = true; //new type
 
-			root["status"] = m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged);
 			root["title"] = "UpdateUserVariable";
 
-			if (bTypeNameChanged)
+			std::string errorMessage;
+			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
-				if (m_sql.m_bEnableEventSystem)
-					m_mainworker.m_eventsystem.GetCurrentUserVariables();
+				root["status"] = "ERR";
+				root["message"] = errorMessage;
+			}
+			else {
+				root["status"] = "OK";
+				if (bTypeNameChanged)
+				{
+					if (m_sql.m_bEnableEventSystem)
+						m_mainworker.m_eventsystem.GetCurrentUserVariables();
+				}
 			}
 		}
 

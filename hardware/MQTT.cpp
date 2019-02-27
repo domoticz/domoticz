@@ -394,7 +394,11 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			std::string sVarName = result[0][0];
 			_eUsrVariableType varType = (_eUsrVariableType)atoi(result[0][1].c_str());
 
-			m_sql.UpdateUserVariable(root["idx"].asString(), sVarName, varType, varvalue, true);
+			std::string errorMessage;
+			if (!m_sql.UpdateUserVariable(root["idx"].asString(), sVarName, varType, varvalue, true, errorMessage))
+			{
+				_log.Log(LOG_ERROR, "MQTT: Error setting uservariable (%s)", errorMessage.c_str());
+			}
 		}
 		else if (szCommand == "addlogmessage")
 		{

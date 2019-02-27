@@ -677,7 +677,8 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		else if (switchtype == STYPE_OnOff && Name == "Xiaomi Gateway MP3") {
-			m_sql.AddUserVariable("XiaomiMP3", USERVARTYPE_INTEGER, "10001");
+			std::string errorMessage;
+			m_sql.AddUserVariable("XiaomiMP3", USERVARTYPE_INTEGER, "10001", errorMessage);
 		}
 	}
 	else {

@@ -3356,9 +3356,10 @@ void CSQLHelper::Do_Work()
 					s_str.clear();
 					s_str.str("");
 					s_str << itt->_idx;
-					std::string updateResult = UpdateUserVariable(s_str.str(), sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), itt->_sValue, (itt->_nValue == 0) ? false : true);
-					if (updateResult != "OK") {
-						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+					std::string errorMessage;
+					if (!UpdateUserVariable(s_str.str(), sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), itt->_sValue, (itt->_nValue == 0) ? false : true, errorMessage))
+					{
+						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
 					else
 					{
@@ -7892,54 +7893,42 @@ void CSQLHelper::FixDaylightSaving()
 
 }
 
-std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
+void CSQLHelper::DeleteUserVariable(const std::string &idx)
 {
 	safe_query("DELETE FROM UserVariables WHERE (ID=='%q')", idx.c_str());
 	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
 	}
-	return "OK";
 }
 
-std::string CSQLHelper::AddUserVariable(const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue)
+bool CSQLHelper::AddUserVariable(const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage)
 {
-	std::string dupeName = CheckUserVariableName(varname);
-	if (dupeName != "OK")
-		return dupeName;
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT Name FROM UserVariables WHERE (Name=='%q')", varname.c_str());
+	if (!result.empty())
+	{
+		errorMessage = "Variable with the same Name already exists!";
+		return false;
+	}
 
-	std::string formatError = CheckUserVariable(eVartype, varvalue);
-	if (formatError != "OK")
-		return formatError;
+	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
+		return false;
 
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
-	std::vector<std::vector<std::string> > result;
 	safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q','%d','%q')", varname.c_str(), eVartype, szVarValue.c_str());
 
 	if (m_bEnableEventSystem)
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
-	return "OK";
+
+	return true;
 }
 
-std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, const bool eventtrigger)
+bool CSQLHelper::UpdateUserVariable(const std::string &idx, const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, const bool eventtrigger, std::string &errorMessage)
 {
-	std::string formatError = CheckUserVariable(eVartype, varvalue);
-	if (formatError != "OK")
-		return formatError;
+	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
+		return false;
 
-	/*
-	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT Value FROM UserVariables WHERE (Name == '%s')",
-		varname.c_str()
-		);
-	result = query(szTmp);
-	if (!result.empty())
-	{
-		std::vector<std::string> sd = result[0];
-		if (varvalue == sd[0])
-			return "New value same as current, not updating";
-	}
-	*/
 	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
@@ -7957,27 +7946,15 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
 		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, szLastUpdate);
 	}
-	return "OK";
+	return true;
 }
 
-std::string CSQLHelper::CheckUserVariableName(const std::string &varname)
-{
-	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT Name FROM UserVariables WHERE (Name=='%q')",
-		varname.c_str());
-	if (!result.empty())
-	{
-		return "Variable name already exists!";
-	}
-	return "OK";
-}
-
-
-std::string CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::string &varvalue)
+bool CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage)
 {
 
 	if (varvalue.size() > 200) {
-		return "String exceeds maximum size";
+		errorMessage = "String exceeds maximum size";
+		return false;
 	}
 	if (eVartype == USERVARTYPE_INTEGER) {
 		//integer (0)
@@ -7986,8 +7963,10 @@ std::string CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, cons
 		iss >> std::noskipws >> i;
 		if (!(iss.eof() && !iss.fail()))
 		{
-			return "Not a valid integer";
+			errorMessage = "Not a valid integer";
+			return false;
 		}
+		return true;
 	}
 	else if (eVartype == USERVARTYPE_FLOAT) {
 		//float (1)
@@ -7996,29 +7975,37 @@ std::string CSQLHelper::CheckUserVariable(const _eUsrVariableType eVartype, cons
 		iss >> std::noskipws >> f;
 		if (!(iss.eof() && !iss.fail()))
 		{
-			return "Not a valid float";
+			errorMessage = "Not a valid float";
+			return false;
 		}
+		return true;
 	}
 	else if (eVartype == USERVARTYPE_STRING) {
 		//string (2)
-		return "OK";
+		return true;
 	}
 	else if (eVartype == USERVARTYPE_DATE) {
 		//date (3)
 		int d, m, y;
 		if (!CheckDate(varvalue, d, m, y))
 		{
-			return "Not a valid date notation (DD/MM/YYYY)";
+			errorMessage = "Not a valid date notation (DD/MM/YYYY)";
+			return false;
 		}
+		return true;
 	}
 	else if (eVartype == USERVARTYPE_TIME) {
 		//time (4)
 		if (!CheckTime(varvalue))
-			return "Not a valid time notation (HH:MM)";
+		{
+			errorMessage = "Not a valid time notation (HH:MM)";
+			return false;
+		}
+		return true;
 	}
 
-	//return "Unknown variable type!";
-	return "OK";
+	errorMessage = "Unknown variable type!";
+	return false;
 }
 
 bool CSQLHelper::CheckDate(const std::string &sDate, int& d, int& m, int& y)
