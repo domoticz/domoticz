@@ -98,6 +98,7 @@ describe('Integration test', function ()
 		assert.is_true(TestTools.deleteAllDevices())
 		assert.is_true(TestTools.deleteAllVariables())
 		assert.is_true(TestTools.deleteAllHardware())
+		assert.is_true(TestTools.deleteAllCameras())
 		assert.is_true(TestTools.deleteAllScripts())
 	end)
 
@@ -135,7 +136,7 @@ describe('Integration test', function ()
 	local switchSilentResultsIdx
 
 	-- it('a', function() end)
-    --
+	--
 	describe('Settings', function()
 
 		it('Should initialize settings', function()
@@ -156,15 +157,15 @@ describe('Integration test', function ()
 	end)
 
 
-    
-    describe('Camera', function()
+
+	describe('Camera', function()
 		it('should create a camera', function()
 			local ok
 			ok = TestTools.createCamera('dummy', DUMMY_HW)
 			assert.is_true(ok)
 		end)
 	end)
-    
+
 
 	describe('Devices', function()
 
@@ -362,14 +363,14 @@ describe('Integration test', function ()
 		end)
 	end)
 
-    describe('ManagedCounter', function()
-     it('should create a Managed counter', function()
+	describe('ManagedCounter', function()
+	 it('should create a Managed counter', function()
 			local ok
 			ok = TestTools.createManagedCounter('vdManagedCounter')
 			assert.is_true(ok)
 		end)
 	end)
-    
+
 	describe('Groups and scenes', function()
 
 		it('should create a scene', function()

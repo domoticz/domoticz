@@ -1,5 +1,7 @@
 local scriptPath = globalvariables['script_path']
 package.path = package.path .. ';' .. scriptPath .. '?.lua'
+
+local Camera = require('Camera')
 local Device = require('Device')
 local Variable = require('Variable')
 local Time = require('Time')
@@ -146,6 +148,7 @@ local function Domoticz(settings)
 		['BASETYPE_TIMER'] = 'timer',
 		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse',
 
+
 		utils = {
 			_ = _,
 
@@ -250,8 +253,11 @@ local function Domoticz(settings)
 	
 	-- have domoticz send snapshot
 	function self.snapshot(cameraID, subject)
+		if tostring(cameraID):match("%a") then
+			cameraID = self.cameras(cameraID).id
+		end
 		local snapshotCommand = "SendCamera:" .. cameraID
-		return TimedCommand(self, snapshotCommand , subject, 'camera')       -- works with afterXXX 
+		return TimedCommand(self, snapshotCommand , subject, 'camera')       -- works with afterXXX
 	end
 
 
@@ -308,6 +314,7 @@ local function Domoticz(settings)
 			utils.log('OpenURL: callback = ' .. _.str(request._trigger), utils.LOG_DEBUG)
 
 			return TimedCommand(self, 'OpenURL', request, 'updatedevice')
+
 		else
 			utils.log('OpenURL: Invalid arguments, use either a string or a table with options', utils.LOG_ERROR)
 		end
@@ -371,6 +378,12 @@ local function Domoticz(settings)
 		dumpTable(device, '> ')
 	end
 
+	-- doesn't seem to work well for some weird reasone
+	function self.logCamera(camera)
+		dumpTable(camera, '> ')
+	end
+
+	self.__cameras = {}
 	self.__devices = {}
 	self.__scenes = {}
 	self.__groups = {}
@@ -411,6 +424,9 @@ local function Domoticz(settings)
 		elseif (baseType == 'uservariable') then
 			cache = self.__variables
 			constructor = Variable
+		elseif (baseType == 'camera') then
+			cache = self.__cameras
+			constructor = Camera
 		else
 			-- ehhhh
 		end
@@ -597,6 +613,14 @@ local function Domoticz(settings)
 			return self._getObject('uservariable', id)
 		else
 			return self._setIterators({}, true, 'uservariable', false)
+		end
+	end
+
+	function self.cameras(id)
+		if (id ~= nil) then
+			return self._getObject('camera', id)
+		else
+			return self._setIterators({}, true, 'camera', false)
 		end
 	end
 
