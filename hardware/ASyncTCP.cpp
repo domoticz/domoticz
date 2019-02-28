@@ -30,6 +30,10 @@ ASyncTCP::ASyncTCP(const bool secure)
 #ifdef WWW_ENABLE_SSL
 	// we do not authenticate the server
 	m_Context.set_verify_mode(boost::asio::ssl::verify_none);
+	if (mSecure) {
+		// we give mSslSocket an initial value
+		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, m_Context));
+	}
 #endif
 }
 
@@ -101,6 +105,7 @@ void ASyncTCP::connect(boost::asio::ip::tcp::resolver::iterator &endpoint_iterat
 #ifdef WWW_ENABLE_SSL
 	// try to connect, then call handle_connect
 	if (mSecure) {
+		// we reset the ssl socket, because the ssl context needs to be reinitialized after a reconnect
 		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, m_Context));
 		mSslSocket->lowest_layer().async_connect(m_EndPoint,
 			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error, endpoint_iterator));
@@ -141,16 +146,20 @@ void ASyncTCP::StartReconnect()
 {
 	if (m_reconnect_delay != 0)
 	{
+		boost::system::error_code ec;
 #ifdef WWW_ENABLE_SSL
 		if (mSecure) {
-			boost::system::error_code ec;
-			mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-			mSslSocket->lowest_layer().close();
+			if (mSslSocket->lowest_layer().is_open()) {
+				mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+				mSslSocket->lowest_layer().close(ec);
+			}
 		}
 		else
 #endif
 		{
-			m_Socket.close();
+			if (m_Socket.is_open()) {
+				m_Socket.close(ec);
+			}
 		}
 		mIsReconnecting = true;
 		// schedule a timer to reconnect after xx seconds
@@ -378,16 +387,20 @@ void ASyncTCP::do_close()
 
 	mIsClosing = true;
 
+	boost::system::error_code ec;
 #ifdef WWW_ENABLE_SSL
 	if (mSecure) {
-		boost::system::error_code ec;
-		mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-		mSslSocket->lowest_layer().close();
+		if (mSslSocket->lowest_layer().is_open()) {
+			mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+			mSslSocket->lowest_layer().close(ec);
+		}
 	}
 	else
 #endif
 	{
-		m_Socket.close();
+		if (m_Socket.is_open()) {
+			m_Socket.close(ec);
+		}
 	}
 }
 
@@ -397,11 +410,17 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& err)
 	if(mIsClosing) return;
 	if (err) return; // timer was cancelled
 
+	boost::system::error_code ec;
 #ifdef WWW_ENABLE_SSL
-	// close current socket if necessary
-	mSslSocket->lowest_layer().close();
+	if (mSslSocket->lowest_layer().is_open()) {
+		// close current socket if necessary
+		mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+		mSslSocket->lowest_layer().close(ec);
+	}
 #endif
-	m_Socket.close();
+	if (m_Socket.is_open()) {
+		m_Socket.close(ec);
+	}
 
 	if (!mDoReconnect)
 	{
