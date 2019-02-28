@@ -412,14 +412,19 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& err)
 
 	boost::system::error_code ec;
 #ifdef WWW_ENABLE_SSL
-	if (mSslSocket->lowest_layer().is_open()) {
-		// close current socket if necessary
-		mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-		mSslSocket->lowest_layer().close(ec);
+	if (mSecure) {
+		if (mSslSocket->lowest_layer().is_open()) {
+			// close current socket if necessary
+			mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+			mSslSocket->lowest_layer().close(ec);
+		}
 	}
+	else
 #endif
-	if (m_Socket.is_open()) {
-		m_Socket.close(ec);
+	{
+		if (m_Socket.is_open()) {
+			m_Socket.close(ec);
+		}
 	}
 
 	if (!mDoReconnect)

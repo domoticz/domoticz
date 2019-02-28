@@ -82,7 +82,7 @@ private:
 	bool							mIsReconnecting;
 	bool							mAllowCallbacks;
 #ifdef WWW_ENABLE_SSL
-	bool							mSecure; // true if we do ssl
+	const bool						mSecure; // true if we do ssl
 #endif
 	bool							mWriteInProgress; // indicates if we are already writing something
 
