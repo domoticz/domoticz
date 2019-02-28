@@ -1,3 +1,9 @@
+[2.4.15]
+- Add option to use camera name in snapshot command
+- Add domoticz.settings.domoticzVersion
+- Add domoticz.settings.dzVentsVersion
+
+ 
 [2.4.14]
 - Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
 - Added check for- and message when call to openURL cannot open local (127.0.0.1)
