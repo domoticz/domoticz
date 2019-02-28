@@ -583,6 +583,7 @@ namespace http {
 			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1, _2, _3));
 			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
 			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
+			RegisterRType("cameras_user", boost::bind(&CWebServer::RType_CamerasUser, this, _1, _2, _3));
 			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2, _3));
 			RegisterRType("mobiles", boost::bind(&CWebServer::RType_Mobiles, this, _1, _2, _3));
 
