@@ -48,7 +48,7 @@ define(['app'], function (app) {
 								$('#uservariablesedittable #uservariabletype').val("0");
 							}
 							else {
-								ShowNotify($.t(data.status), 2500, true);
+								ShowNotify($.t(data.message), 2500, true);
 							}
 						}
 					},

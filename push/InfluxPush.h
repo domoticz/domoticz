@@ -27,6 +27,7 @@ private:
 	std::string m_szURL;
 	std::string m_InfluxIP;
 	int m_InfluxPort;
+	std::string m_InfluxPath;
 	std::string m_InfluxDatabase;
 	std::string m_InfluxUsername;
 	std::string m_InfluxPassword;

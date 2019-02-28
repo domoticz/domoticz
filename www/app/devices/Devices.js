@@ -75,7 +75,7 @@ define(['app'], function (app) {
                             orderable: false,
                             defaultContent: selectorRenderer()
                         },
-                        { title: '', width: '16px', data: 'idx', orderable: false, render: iconRenderer },
+                        { title: renderDeviceStateTitle(), width: '16px', data: 'idx', orderable: false, render: iconRenderer },
                         { title: $.t('Idx'), width: '30px', data: 'idx' },
                         { title: $.t('Hardware'), width: '100px', data: 'HardwareName' },
                         { title: $.t('ID'), width: '70px', data: 'ID' },
@@ -185,17 +185,32 @@ define(['app'], function (app) {
                     $scope.$apply();
                 });
 
+                table.on('change', '.js-select-devices', function () {
+                    if (this.checked) {
+                        table.api().rows().select();
+                    } else {
+                        table.api().rows().deselect();
+                    }
+
+                    table.find('.js-select-row').attr('checked', this.checked);
+                    $scope.$apply();
+                });
+
                 table.on('select.dt', function () {
+                    updateDeviceDeleteBtnState();
                     $scope.$apply();
                 });
 
                 table.on('deselect.dt', function () {
+                    updateDeviceDeleteBtnState();
                     $scope.$apply();
                 });
 
                 table.api().rows
                     .add($ctrl.devices)
                     .draw();
+
+                updateDeviceDeleteBtnState();
             };
 
             $ctrl.$onChanges = function (changes) {
@@ -214,6 +229,14 @@ define(['app'], function (app) {
             $ctrl.getSelectedRecordsCounts = function () {
                 return table.api().rows({ selected: true }).count()
             };
+
+            function updateDeviceDeleteBtnState() {
+                if ($ctrl.getSelectedRecordsCounts() > 0) {
+                    table.find('.js-remove-selected').show();
+                } else {
+                    table.find('.js-remove-selected').hide();
+                }
+            }
 
             function selectorRenderer() {
                 return '<input type="checkbox" class="noscheck js-select-row" />';
@@ -287,8 +310,12 @@ define(['app'], function (app) {
                 return '<img src="images/air_signal.png" title="' + $.t('RF Signal Level') + '">'
             }
 
+            function renderDeviceStateTitle() {
+                return '<button class="btn btn-icon js-remove-selected" title="' + $.t('Delete selected device(s)') + '"><img src="images/delete.png" /></button>';
+            }
+
             function renderSelectorTitle() {
-                return '<button class="btn btn-icon js-remove-selected" title="' + $.t('Delete selected device(s)') + '"><img src="images/delete.png" /></button>'
+                return '<input class="noscheck js-select-devices" type="checkbox" />';
             }
         }
     });
