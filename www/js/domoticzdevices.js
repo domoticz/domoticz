@@ -908,6 +908,7 @@ Device.create = function (item) {
             dev = new BinarySwitch(item);
             break;
         case "humidity":
+	case "moisture":
             dev = new Humidity(item);
             break;
         case "lightbulb":
