@@ -20,6 +20,7 @@ namespace http {
 
 		CProxyClient::CProxyClient() : ASyncTCP(true)
 		{
+			m_pDomServ = NULL;
 		}
 
 		void CProxyClient::Reset()
@@ -32,7 +33,6 @@ namespace http {
 			if (_password != "") {
 				_password = base64_decode(_password);
 			}
-			m_pDomServ = NULL;
 			readbuf.clear();
 		}
 
