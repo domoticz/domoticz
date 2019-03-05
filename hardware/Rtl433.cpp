@@ -169,6 +169,9 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	bool haveWind_Dir = false;
 	int wind_dir = 0;
 
+	bool haveMoisture = false;
+	int moisture = 0;
+
 	if (!data["id"].empty())
 	{
 		id = atoi(data["id"].c_str());
@@ -308,6 +311,11 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		wind_gust = (float)atof(data["gust"].c_str());
 		haveWind_Gust = true;
 	}
+	else if (FindField(data, "moisture"))
+	{
+		moisture = atoi(data["moisture"].c_str());
+		haveMoisture = true;
+	}
 
 	std::string model = data["model"];
 
@@ -381,6 +389,12 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		SendDistanceSensor(sensoridx, unit, batterylevel, depth, model);
 		return true;
 	}
+	if (haveMoisture)
+	{
+		SendMoistureSensor(sensoridx, batterylevel, moisture, model);
+		return true;
+	}
+
 	return false; //not handled (Yet!)
 }
 
