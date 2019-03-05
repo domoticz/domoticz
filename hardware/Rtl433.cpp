@@ -206,6 +206,11 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 		tempC = (float)atof(data["temperature_C"].c_str());
 		haveTemp = true;
 	}
+	else if (FindField(data, "temperature_F"))
+	{
+		tempC = (float)ConvertToCelsius(atof(data["temperature_F"].c_str()));
+		haveTemp = true;
+	}
 
 	if (FindField(data, "humidity"))
 	{
