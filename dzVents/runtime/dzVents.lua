@@ -33,6 +33,7 @@ local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 local utils = require('Utils')
 
+
 if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE) then
 	print('Debug: Dumping domoticz data to ' .. scriptPath .. 'domoticzData.lua')
 	local persistence = require('persistence')
@@ -40,7 +41,7 @@ if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMOD
 
 	local events, length = helpers.getEventSummary()
 	if (length > 0) then
-		print('Debug: dzVents version: 2.4.14')
+		print('Debug: dzVents version: '.. globalvariables.dzVents_version)
 
 		print('Debug: Event triggers:')
 		for i, event in pairs(events) do

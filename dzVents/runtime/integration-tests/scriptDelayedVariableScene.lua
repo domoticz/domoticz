@@ -6,7 +6,7 @@ local testLastUpdate = function(dz, trigger, expectedDifference)
 	local diff = (now - lastUpdate)
 	print('current: ' .. now .. ', lastUpdate: ' .. lastUpdate .. ', diff: ' .. diff .. ', expected: ' .. expectedDifference)
 
-	if ( diff ~= expectedDifference) then
+	if math.abs( diff - expectedDifference) > 1 then
 		print('Difference is: ' .. tostring(diff) .. ', expected to be: ' .. tostring(expectedDifference))
 		return false
 	end

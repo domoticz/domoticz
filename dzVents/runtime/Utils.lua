@@ -7,6 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
+	DZVERSION = '2.4.15',
 }
 
 function self.fileExists(name)
@@ -113,7 +114,7 @@ function self.log(msg, level)
 
 
 	if (level == self.LOG_ERROR) then
-		marker = marker .. 'Error (2.4.14): '
+		marker = marker .. 'Error (' .. self.DZVERSION .. '): '
 	elseif (level == self.LOG_DEBUG) then
 		marker = marker .. 'Debug: '
 	elseif (level == self.LOG_INFO or level == self.LOG_MODULE_EXEC_INFO) then
