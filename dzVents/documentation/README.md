@@ -518,15 +518,17 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
+    - **domoticzVersion**:<sup>2.4.15</sup> domoticz version string.
+    - **dzVentsVersion**:<sup>2.4.15</sup> dzVents version string.
     - **location**
-        - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude
-        - **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude
-        - **name**:<sup>2.4.14</sup> domoticz settings location Name 
+        - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude.
+        - **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude.
+        - **name**:<sup>2.4.14</sup> domoticz settings location Name. 
     - **serverPort**: webserver listening port.
     - **url**: internal url to access the API service.
     - **webRoot**: `webroot` value as specified when starting the Domoticz service.
  - **sms(message)**: *Function*. Sends an sms if it is configured in Domoticz.
- - **snapshot(cameraID,subject)**:<sup>2.4.11</sup> *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
+ - **snapshot(cameraID or camera Name<sup>2.4.15</sup>,subject)**:<sup>2.4.11</sup> *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
@@ -1976,6 +1978,12 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.15]
+- Add option to use camera name in snapshot command
+- Add domoticz.settings.domoticzVersion
+- Add domoticz.settings.dzVentsVersion
+
+ 
 ##[2.4.14]
 - Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
 - Added check for- and message when call to openURL cannot open local (127.0.0.1)

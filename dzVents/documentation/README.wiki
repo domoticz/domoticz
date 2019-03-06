@@ -514,10 +514,12 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''security''': Holds the state of the security system e.g. <code>Armed Home</code> or <code>Armed Away</code>.
 * '''sendCommand(command, value)''': Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. ''There is likely no need to use this directly. Use any of the device methods instead (see below).''
 * '''settings''':
+** '''domoticzVersion''':<sup>2.4.15</sup> domoticz version string.
+** '''dzVentsVersion''':<sup>2.4.15</sup> dzVents version string.
 ** '''location'''
-*** '''latitude''':<sup>2.4.14</sup> domoticz settings locations latitude
-*** '''longitude''':<sup>2.4.14</sup> domoticz settings locations longitude
-*** '''name''':<sup>2.4.14</sup> domoticz settings location Name
+*** '''latitude''':<sup>2.4.14</sup> domoticz settings locations latitude.
+*** '''longitude''':<sup>2.4.14</sup> domoticz settings locations longitude.
+*** '''name''':<sup>2.4.14</sup> domoticz settings location Name.
 ** '''serverPort''': webserver listening port.
 ** '''url''': internal url to access the API service.
 ** '''webRoot''': <code>webroot</code> value as specified when starting the Domoticz service.
@@ -2080,6 +2082,11 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you're good to go.
 
 = Change log =
+== [2.4.15] ==
+* Add option to use camera name in snapshot command
+* Add domoticz.settings.dzVentsVersion
+* Add domoticz.settings.domoticzVersion
+
 == [2.4.14] ==
 * Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
 * Added check for- and message when call to openURL cannot open local (127.0.0.1)
