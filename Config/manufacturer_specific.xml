@@ -225,6 +225,8 @@
 		<Product type="0103" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
 		<Product type="0203" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
 		<Product type="1d03" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="0003" id="00b4" name="ZWA006 Smart Boost Timer Switch" config="aeotec/zwa006.xml"/>
+		<Product type="0103" id="00b4" name="ZWA006 Smart Boost Timer Switch" config="aeotec/zwa006.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0088" name="Airvent SAM S.p.A.">
 	</Manufacturer>
