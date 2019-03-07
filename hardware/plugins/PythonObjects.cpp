@@ -1053,7 +1053,7 @@ namespace Plugins {
 		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
 		{
 			std::string sID = std::to_string(self->ID);
-			m_sql.safe_query("UPDATE DeviceStatus LastUpdate='%s' WHERE (ID == %s )", TimeToString(NULL, TF_DateTime).c_str(), sID.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (ID == %s )", TimeToString(NULL, TF_DateTime).c_str(), sID.c_str());
 		}
 		else
 		{
