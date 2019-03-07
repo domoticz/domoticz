@@ -1048,6 +1048,21 @@ namespace Plugins {
 		return Py_None;
 	}
 
+	PyObject * CDevice_touch(CDevice * self)
+	{
+		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
+		{
+			std::string sID = std::to_string(self->ID);
+			m_sql.safe_query("UPDATE DeviceStatus LastUpdate='%s' WHERE (ID == %s )", TimeToString(NULL, TF_DateTime).c_str(), sID.c_str());
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Device touch failed, Device object is not associated with a plugin.");
+		}
+
+		return CDevice_refresh(self);
+	}
+
 	PyObject* CDevice_str(CDevice* self)
 	{
 		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%U', nValue: %d, sValue: '%U'", self->ID, self->Name, self->nValue, self->sValue);
