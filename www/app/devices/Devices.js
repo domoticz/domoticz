@@ -532,7 +532,6 @@ define(['app'], function (app) {
             domoticzApi.sendRequest({
                 type: 'devices',
                 displayhidden: 1,
-                displaydisabled: 1,
                 filter: 'all',
                 used: 'all'
             })
