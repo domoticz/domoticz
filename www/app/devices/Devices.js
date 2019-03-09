@@ -100,7 +100,7 @@ define(['app'], function (app) {
                             orderable: false,
                             render: actionsRenderer
                         },
-                        { title: $.t('Last Seen'), width: '150px', data: 'LastUpdate', type: 'date' },
+                        { title: $.t('Last Seen'), width: '150px', data: 'LastUpdate', type: 'date-us' },
                     ]
                 }));
 
