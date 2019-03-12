@@ -1700,7 +1700,7 @@ namespace Plugins {
 				}
 				PyObject*	pObj = Py_BuildValue("i", lMaskingKey);
 				if (PyDict_SetItemString(pDataDict, "Mask", pObj) == -1)
-					_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, "Mask", lMaskingKey);
+					_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%ld' to dictionary.", __func__, "Mask", lMaskingKey);
 				Py_DECREF(pObj);
 			}
 
