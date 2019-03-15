@@ -6,7 +6,7 @@
 
 <div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px">
     <div>{{:: 'Total Usage' | translate }}: {{:: $ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}</div>
-    <div>{{:: 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+    <div ng-if="::($ctrl.device.SwitchTypeVal != 3)">{{:: 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
 </div>
 
 <div ng-if="::$ctrl.noDataAvailable" class="no-data">

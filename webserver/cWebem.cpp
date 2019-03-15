@@ -6,9 +6,6 @@
 #include "stdafx.h"
 #include "cWebem.h"
 #include <boost/bind.hpp>
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // uuid generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"
@@ -19,6 +16,7 @@
 #include <stdarg.h>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -1331,13 +1329,7 @@ namespace http {
 		std::string cWebemRequestHandler::generateSessionID()
 		{
 			// Session id should not be predictable
-			boost::uuids::random_generator gen;
-			std::stringstream ss;
-			std::string randomValue;
-
-			boost::uuids::uuid u = gen();
-			ss << u;
-			randomValue = ss.str();
+			std::string randomValue = GenerateUUID();
 
 			std::string sessionId = GenerateMD5Hash(base64_encode(randomValue));
 
@@ -1349,13 +1341,7 @@ namespace http {
 		std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session, const request & req)
 		{
 			// Authentication token should not be predictable
-			boost::uuids::random_generator gen;
-			std::stringstream ss;
-			std::string randomValue;
-
-			boost::uuids::uuid u = gen();
-			ss << u;
-			randomValue = ss.str();
+			std::string randomValue = GenerateUUID();
 
 			std::string authToken = base64_encode(randomValue);
 

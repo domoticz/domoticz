@@ -868,8 +868,8 @@ local testThermostatSetpoint = function(name)
 
 	
 	
-    dev.updateSetPoint(11) 
-    dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
+	dev.updateSetPoint(11)
+	dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
 	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
 	tstMsg('Test thermostat device', res)
 	return res
@@ -1178,19 +1178,21 @@ local testSilentGroup = function(name)
 end
 
 local testSnapshot = function()
-    local res = true
-    dz.snapshot(1,"stage1 snapshot").afterSec(4)
-    tstMsg('Test camera snaphot',res)
-    return res
+	local res = true
+	res = res and dz.snapshot(1,"stage1 snapshot").afterSec(4)
+	tstMsg('Test camera snaphot with id',res)
+	res = res and dz.snapshot("camera1","stage1 snapshot").afterSec(4)
+	tstMsg('Test camera snaphot with name',res)
+	return res
 end
 
 local testManagedCounter = function(name)
-    local dev = dz.devices(name)
+	local dev = dz.devices(name)
 	local res = true
-    dev.updateCounter(1234).afterSec(2)
-    tstMsg('Test managed counter',res)
-    return res
-end    
+	res = dev.updateCounter(1234).afterSec(2)
+	tstMsg('Test managed counter',res)
+	return res
+end
 
 local storeLastUpdates = function()
 
@@ -1228,39 +1230,65 @@ end
 local testSecurity = function()
 	local res = true
 	res = res and expectEql(dz.security, dz.SECURITY_DISARMED)
-	dz.devices('secPanel').armAway()
-	
+	tstMsg('Test Security panel', res)
+	res = res and dz.devices('secPanel').armAway()
+	tstMsg('Test set security panel to armAway', res)
+	return res
+end
+
+local testLocation = function()
+	local res = true
+	res = res and expectEql(tonumber(dz.settings.location.latitude), 52.27887)
+	res = res and expectEql(tonumber(dz.settings.location.longitude), 5.665849)
+	res = res and expectEql(dz.settings.location.name, "Domoticz")
+
+	tstMsg('Test location in settings', res)
+	return res
+end
+
+local testVersion = function()
+	local res = true
+	res = res and type(dz.settings.domoticzVersion) == "string"
+	tstMsg('Test domoticz Version in settings (' .. dz.settings.domoticzVersion ..')' , res)
+
+	local utils = require('Utils')
+	res = res and expectEql(dz.settings.dzVentsVersion,utils.DZVERSION)
+	tstMsg('Test dzVents version in settings (' .. dz.settings.dzVentsVersion ..')' , res)
 	return res
 end
 
 local testRepeatSwitch = function(name)
+	local res = true
 	local dev = dz.devices(name)
 	dz.globalData.repeatSwitch.reset()
 	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
 	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
-	tstMsg('Test repeat switch device', res)
-	return true
+	tstMsg('Start test repeat switch device', res)
+	return res
 end
 
 local testCancelledRepeatSwitch = function(name)
+	local res = true
 	local dev = dz.devices(name)
 	dev.switchOn().afterSec(8).forSec(1).repeatAfterSec(1, 5)
-	tstMsg('Test cancelled repeat switch device', res)
-	return true
+	tstMsg('Start test cancelled repeat switch device', res)
+	return res
 end
 
 local testCancelledScene = function(name)
+	local res = true
 	local sc = dz.scenes(name)
 	sc.switchOn().afterSec(4).forSec(1).repeatAfterSec(1, 5)
-	tstMsg('Test cancelled repeat scene', res)
-	return true
+	tstMsg('Start test cancelled repeat scene', res)
+	return res
 end
 
 local testHTTPSwitch = function(name)
+	local res = true
 	local dev = dz.devices(name)
 	dev.switchOn()
-	tstMsg('Test http trigger switch device', res)
-	return true
+	tstMsg('Start test http trigger switch device', res)
+	return res
 end
 
 return {
@@ -1332,10 +1360,12 @@ return {
 		res = res and testRepeatSwitch('vdRepeatSwitch');
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
 		res = res and testCancelledScene('scCancelledScene');
+		res = res and testLocation();
+		res = res and testVersion();
 		res = res and testHTTPSwitch('vdHTTPSwitch');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
-
+	
 		storeLastUpdates()
 
 		log('Finishing stage 1')
@@ -1343,8 +1373,7 @@ return {
 			log('Results stage 1: FAILED!!!!', dz.LOG_ERROR)
 		else
 			log('Results stage 1: SUCCEEDED')
+			dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
 		end
-
-		dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
 	end
 }

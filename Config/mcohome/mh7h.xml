@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+	
+  <CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE">
+    <Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="0" value="0">
+      <Item label="Off" value="0"/>
+      <Item label="Heat" value="1"/>
+      <Item label="Energy Heat" value="11"/>
+      <Item label="Away" value="13"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+      <Mode index="11" label="Energy Heat"/>
+      <Mode index="13" label="Away"/>
+    </SupportedModes>
+  </CommandClass>
+  
+   <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
+    <Instance index="1"/>
+    <Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="0" max="0" value="20"/>
+    <Value type="decimal" genre="user" instance="1" index="11" label="Energy Heating" units="C" read_only="false" write_only="false" min="0" max="0" value="16"/>
+  </CommandClass>
+
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="1" value="2" label="Upload temperature format automatically" units="" size="1" min="0" max="2" type="list">
+      <Help>Upload temperature format automatically</Help>
+      <Item value="0" label="Celsius"/>
+      <Item value="1" label="Fahrenheit"/>
+      <Item value="2" label="Follow the main display"/>
+    </Value>
+    <Value genre="config" instance="1" index="2" value="3" label="Upload temperature and humidity automatically" units="" size="1" min="0" max="3" type="list">
+      <Help>Upload temperature and humidity automatically</Help>
+      <Item value="0" label="OFF"/>
+      <Item value="1" label="Upload the difference value only"/>
+      <Item value="2" label="Timing upload mode only"/>
+      <Item value="3" label="Upload the difference+timing upload mode"/>
+    </Value>
+    <Value genre="config" instance="1" index="3" value="5" label="Upload temperature difference" units="" size="2" min="3" max="1000" type="short">
+      <Help>Base on 0.1C unit, 5 by default, 5*0.1C=0.5C</Help>
+    </Value>
+    <Value genre="config" instance="1" index="4" value="30" label="Upload time interval regularly" units="" size="2" min="19" max="65535" type="short">
+      <Help>Base on 1s unit, it suggest to be set above 30s</Help>
+    </Value>
+    <Value genre="config" instance="1" index="5" value="3" label="Upload humidity difference" units="" size="1" min="2" max="255" type="byte">
+      <Help>Upload when percent difference exceeded</Help>
+    </Value>
+    <Value genre="config" instance="1" index="255" value="0" label="Factory setting" units="" size="1" min="0" max="255" type="byte">
+      <Help>Restore the factory setting - write only, set to 85 to reset</Help>
+    </Value>
+  </CommandClass>
+
+   <!-- Association Groups -->
+   <CommandClass id="133">
+       <Associations num_groups="3">
+           <Group index="1" max_associations="1" label="Lifeline"/>
+           <Group index="2" max_associations="5" label="Basic_Set"/>
+           <Group index="3" max_associations="5" label="Basic_Set"/>
+       </Associations>
+   </CommandClass>
+
+
+</Product>

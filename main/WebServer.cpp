@@ -583,6 +583,7 @@ namespace http {
 			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1, _2, _3));
 			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
 			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
+			RegisterRType("cameras_user", boost::bind(&CWebServer::RType_CamerasUser, this, _1, _2, _3));
 			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2, _3));
 			RegisterRType("mobiles", boost::bind(&CWebServer::RType_Mobiles, this, _1, _2, _3));
 
@@ -1872,22 +1873,6 @@ namespace http {
 			root["title"] = "GetDeviceValueOptions";
 		}
 
-
-		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-			std::string idx = request::findValue(&req, "idx");
-			if (idx.empty())
-				return;
-
-			root["status"] = m_sql.DeleteUserVariable(idx);
-			root["title"] = "DeleteUserVariable";
-		}
-
 		void CWebServer::Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
@@ -1905,8 +1890,33 @@ namespace http {
 				)
 				return;
 
-			root["status"] = m_sql.AddUserVariable(variablename, variabletype, variablevalue);
 			root["title"] = "AddUserVariable";
+
+			std::string errorMessage;
+			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
+			{
+				root["status"] = "ERR";
+				root["message"] = errorMessage;
+			}
+			else {
+				root["status"] = "OK";
+			}
+		}
+
+		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+
+			m_sql.DeleteUserVariable(idx);
+			root["status"] = "OK";
+			root["title"] = "DeleteUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
@@ -1948,36 +1958,39 @@ namespace http {
 			else if (variabletype != result[0][1])
 				bTypeNameChanged = true; //new type
 
-			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, !bTypeNameChanged);
 			root["title"] = "UpdateUserVariable";
 
-			if (bTypeNameChanged)
+			std::string errorMessage;
+			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
-				if (m_sql.m_bEnableEventSystem)
-					m_mainworker.m_eventsystem.GetCurrentUserVariables();
+				root["status"] = "ERR";
+				root["message"] = errorMessage;
+			}
+			else {
+				root["status"] = "OK";
+				if (bTypeNameChanged)
+				{
+					if (m_sql.m_bEnableEventSystem)
+						m_mainworker.m_eventsystem.GetCurrentUserVariables();
+				}
 			}
 		}
 
 
 		void CWebServer::Cmd_GetUserVariables(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables";
-			result = m_sql.GetUserVariables();
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables");
+			int ii = 0;
+			for (const auto & itt : result)
 			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Type"] = sd[2];
-					root["result"][ii]["Value"] = sd[3];
-					root["result"][ii]["LastUpdate"] = sd[4];
-					ii++;
-				}
+				std::vector<std::string> sd = itt;
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Type"] = sd[2];
+				root["result"][ii]["Value"] = sd[3];
+				root["result"][ii]["LastUpdate"] = sd[4];
+				ii++;
 			}
 			root["status"] = "OK";
 			root["title"] = "GetUserVariables";
@@ -1992,21 +2005,17 @@ namespace http {
 			int iVarID = atoi(idx.c_str());
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables WHERE (ID==%d)",
-				iVarID);
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables WHERE (ID==%d)", iVarID);
+			int ii = 0;
+			for (const auto & itt : result)
 			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Type"] = sd[2];
-					root["result"][ii]["Value"] = sd[3];
-					root["result"][ii]["LastUpdate"] = sd[4];
-					ii++;
-				}
+				std::vector<std::string> sd = itt;
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Type"] = sd[2];
+				root["result"][ii]["Value"] = sd[3];
+				root["result"][ii]["LastUpdate"] = sd[4];
+				ii++;
 			}
 			root["status"] = "OK";
 			root["title"] = "GetUserVariable";
@@ -2115,6 +2124,15 @@ namespace http {
 				"INSERT INTO Plans (Name) VALUES ('%q')",
 				name.c_str()
 			);
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT MAX(ID) FROM Plans");
+			if (!result.empty())
+			{
+				std::vector<std::string> sd = result[0];
+				int ID = atoi(sd[0].c_str());
+
+				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
+			}
 		}
 
 		void CWebServer::Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root)

@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		Notification.requestPermission();
 });
 
-define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket', 'app.routes'], function (angularAMD, deviceFactory) {
-	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', 'ngWebsocket', 'app.routes']);
+define(['angularAMD', 'app.routes', 'app.permissions', 'domoticz.api', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD, appRoutesModule, appPermissionsModule, apiModule, deviceFactory) {
+	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', 'ngWebsocket', appRoutesModule.name, appPermissionsModule.name, apiModule.name]);
 
 	isOnline = false;
 	dashboardType = 1;
@@ -31,105 +31,6 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 		}
 	}
 
-	app.factory('permissions', function ($rootScope) {
-		var permissionList;
-		return {
-			setPermissions: function (permissions) {
-				permissionList = permissions;
-				window.my_config = {
-					userrights: permissionList.rights
-				};
-				$rootScope.$broadcast('permissionsChanged');
-			},
-			hasPermission: function (permission) {
-				if (permission == "Admin") {
-					return (permissionList.rights == 2);
-				}
-				if (permission == "User") {
-					return (permissionList.rights >= 0);
-				}
-				if (permission == "Viewer") {
-					return (permissionList.rights == 0);
-				}
-				alert("Unknown permission request: " + permission);
-				return false;
-			},
-			hasLogin: function (isloggedin) {
-				return (permissionList.isloggedin == isloggedin);
-			},
-			isAuthenticated: function () {
-				return (permissionList.rights != -1);
-			}
-		};
-	});
-	app.directive('hasPermission', function (permissions) {
-		return {
-			link: function (scope, element, attrs) {
-				var value = attrs.hasPermission.trim();
-				var notPermissionFlag = value[0] === '!';
-				if (notPermissionFlag) {
-					value = value.slice(1).trim();
-				}
-
-				function toggleVisibilityBasedOnPermission() {
-					var hasPermission = permissions.hasPermission(value);
-					if (hasPermission && !notPermissionFlag || !hasPermission && notPermissionFlag)
-						element.show();
-					else
-						element.hide();
-				}
-				toggleVisibilityBasedOnPermission();
-				scope.$on('permissionsChanged', toggleVisibilityBasedOnPermission);
-			}
-		};
-	});
-	app.directive('hasLogin', function (permissions) {
-		return {
-			link: function (scope, element, attrs) {
-				var bvalue = (attrs.hasLogin === 'true');
-				function toggleVisibilityBasedOnPermission() {
-					if (permissions.hasLogin(bvalue))
-						element.show();
-					else
-						element.hide();
-				}
-				toggleVisibilityBasedOnPermission();
-				scope.$on('permissionsChanged', toggleVisibilityBasedOnPermission);
-			}
-		};
-	});
-	app.directive('hasLoginNoAdmin', function (permissions) {
-		return {
-			link: function (scope, element, attrs) {
-				function toggleVisibilityBasedOnPermission() {
-					var bVisible = !permissions.hasPermission("Admin");
-					if (bVisible) {
-						bVisible = permissions.hasLogin(true);
-					}
-					if (bVisible == true)
-						element.show();
-					else
-						element.hide();
-				}
-				toggleVisibilityBasedOnPermission();
-				scope.$on('permissionsChanged', toggleVisibilityBasedOnPermission);
-			}
-		};
-	});
-	app.directive('hasUser', function (permissions) {
-		return {
-			link: function (scope, element, attrs) {
-				function toggleVisibilityBasedOnPermission() {
-					if (permissions.isAuthenticated())
-						element.show();
-					else
-						element.hide();
-				}
-				toggleVisibilityBasedOnPermission();
-				scope.$on('permissionsChanged', toggleVisibilityBasedOnPermission);
-			}
-		};
-	});
 	app.directive('sbLoad', ['$parse', function ($parse) {
 		return {
 			restrict: 'A',
@@ -221,14 +122,27 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 			}
 		}
 	});
+
+    app.directive('i18n', function() {
+        return {
+            restrict: 'A',
+            priority: 1000,
+            link: function(scope, element, attrs) {
+                if (!element.is('tr')) {
+                    element.text($.t(attrs['i18n']));
+                }
+            }
+        }
+    });
+
 	app.filter('translate', function() {
 		return function(input) {
 			return $.t(input);
 		}
 	});
 	app.constant('dataTableDefaultSettings', {
-		"sDom": '<"H"lfrC>t<"F"ip>',
-		"aaSorting": [[0, "desc"]],
+		dom: '<"H"lfrC>t<"F"ip>',
+        order: [[0, 'desc']],
 		"bSortClasses": false,
 		"bJQueryUI": true,
 		processing: true,
@@ -244,159 +158,43 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 		language: $.DataTableLanguage
 	});
 
-	app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
+	// Default device icon based on SwitchTypeVal ([on, off] states)
+	app.constant('dzDefaultSwitchIcons', {
+        0: ['Light48_On.png', 'Light48_Off.png'],        // On/Off
+        1: ['doorbell48.png', 'doorbell48.png'],         // Doorbell
+        2: ['Contact48_On.png', 'Contact48_Off.png'],    // Contact
+        3: ['blinds48.png', 'blinds48.png'],             // Blinds,
+        4: ['Alarm48_On.png', 'Alarm48_Off.png'],        // X10 Siren
+        5: ['smoke48on.png', 'smoke48off.png'],          // Smoke Detector
+        6: ['blinds48.png', 'blinds48sel.png'],          // Blinds Inverted
+        7: ['Dimmer48_On.png', 'Dimmer48_Off.png'],      // Dimmer
+        8: ['motion48-on.png', 'motion48-off.png'],      // Motion Sensor
+        9: ['Push48_On.png', 'Push48_Off.png'],          // Push On Button
+        10: ['Push48_Off.png', 'Push48_On.png'],         // Push Off Button
+        11: ['Door48_On.png', 'Door48_Off.png'],         // Door Contact
+        12: ['Water48_On.png', 'Water48_Off.png'],       // Dusk Sensor
+        13: ['blinds48.png', 'blinds48.png'],            // Blinds Percentage
+        14: ['blinds48.png', 'blinds48.png'],            // Venetian Blinds US
+        15: ['blinds48.png', 'blinds48.png'],            // Venetian Blinds EU
+        16: ['blinds48.png', 'blinds48.png'],            // Blinds Percentage Inverted
+        17: ['Media48_On.png', 'Media48_Off.png'],       // Media Player
+        18: ['Generic48_On.png', 'Generic48_Off.png'],   // Selector
+        19: ['Door48_On.png', 'Door48_Off.png'],         // Door Lock
+        20: ['Door48_On.png', 'Door48_Off.png'],         // Door Lock Inverted
+    });
+
+	app.factory('utils', function (bootbox) {
 		return {
-			sendRequest: sendRequest,
-			sendCommand: sendCommand,
-            errorHandler: errorHandler
+            confirmDecorator: bootbox.confirmDecorator
 		};
-
-		function sendRequest(data) {
-			return $http.get('json.htm', {
-				params: data
-			}).then(function (response) {
-				return response.data;
-			});
-		}
-
-		function sendCommand(command, data) {
-			var commandParams = { type: 'command', param: command };
-			return sendRequest(Object.assign({}, commandParams, data)).then(errorHandler);
-		}
-
-		function errorHandler(response) {
-            return response && response.status !== 'OK' ? $q.reject(response) : response;
-        }
-	}]);
-
-	app.factory('utils', function () {
-		return {
-            confirmDecorator: confirmDecorator
-		};
-
-		function confirmDecorator(fn, message) {
-			return function() {
-			    var args = arguments;
-
-                bootbox.confirm(message, function(result) {
-                    if (result) {
-                        fn.apply(null, args);
-                    }
-                });
-			};
-		}
     });
 
 	app.factory('Device', deviceFactory);
 
-	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun, Device) {
-		return {
-			getDeviceInfo: getDeviceInfo,
-            updateDeviceInfo: updateDeviceInfo,
-            removeDevice: removeDevice,
-            disableDevice: disableDevice
-		};
-
-		function getDeviceInfo(deviceIdx) {
-			return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
-				.then(function (data) {
-                    dzTimeAndSun.updateData(data);
-
-					return data && data.result && data.result.length === 1
-						? new Device(data.result[0])
-						: $q.reject(data);
-				});
-		}
-
-		function updateDeviceInfo(deviceIdx, data) {
-			return domoticzApi.sendRequest(Object.assign({}, data, {
-				idx: deviceIdx
-			}));
-		}
-
-		function removeDevice(deviceIdx) {
-            return domoticzApi.sendRequest({
-                idx: deviceIdx,
-                type: 'setused',
-                used: false,
-                RemoveSubDevices: true
-            });
-        }
-
-        function disableDevice(deviceIdx) {
-            return domoticzApi.sendCommand('setunused', {
-                idx: deviceIdx,
-            });
-        }
-	});
-
-    app.factory('deviceLightApi', function ($q, domoticzApi, permissions) {
-        return {
-            switchOff: createSwitchCommand('Off'),
-            switchOn: createSwitchCommand('On'),
-            setColor: setColor,
-            brightnessUp: createCommand('brightnessup'),
-            brightnessDown: createCommand('brightnessdown'),
-            nightLight: createCommand('nightlight'),
-            fullLight: createCommand('fulllight'),
-            whiteLight: createCommand('whitelight'),
-            colorWarmer: createCommand('warmer'),
-            colorColder: createCommand('cooler'),
-            discoUp: createCommand('discoup'),
-            discoDown: createCommand('discodown'),
-            discoMode: createCommand('discomode'),
-            speedUp: createCommand('speedup'),
-            speedDown: createCommand('speeddown'),
-            speedMin: createCommand('speedmin'),
-            speedMax: createCommand('speedmax')
-        };
-
-        function createCommand(command) {
-            return function(deviceIdx) {
-                return checkPersmissions().then(function () {
-                    return domoticzApi.sendCommand(command, {
-                        idx: deviceIdx
-                    });
-                });
-            }
-        }
-
-        function createSwitchCommand(command) {
-            return function (deviceIdx) {
-                return checkPersmissions().then(function () {
-                    return domoticzApi.sendCommand('switchlight', {
-                        idx: deviceIdx,
-                        switchcmd: command
-                    });
-                });
-            }
-        }
-
-        function setColor(deviceIdx, color, brightness) {
-            return checkPersmissions().then(function () {
-                return domoticzApi.sendCommand('setcolbrightnessvalue', {
-                    idx: deviceIdx,
-                    color: color,
-                    brightness: brightness
-                });
-            });
-        }
-
-        function checkPersmissions() {
-            if (permissions.hasPermission('Viewer')) {
-                var message = $.t('You do not have permission to do that!');
-                HideNotify();
-                ShowNotify(message, 2500, true);
-                return $q.reject(message);
-            } else {
-                return $q.resolve();
-            }
-        }
-    });
-
     app.factory('bootbox', function($q) {
     	return {
     		confirm: confirm,
+            confirmDecorator: confirmDecorator,
             alert: alert
 		};
 
@@ -411,10 +209,49 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
 			});
 		}
 
+        function confirmDecorator(fn, message) {
+            return function() {
+                var args = arguments;
+
+                return confirm(message).then(function () {
+                    return fn.apply(null, args);
+                }, angular.noop);
+            };
+        }
+
 		function alert(message) {
 			return bootbox.alert($.t(message));
         }
 	});
+
+    app.factory('dzNotification', function($q) {
+        return {
+			show: show,
+            withNotificationDecorator: withNotificationDecorator
+        };
+
+        function show(text, timeout) {
+            ShowNotify($.t(text), timeout);
+            return {
+                hide: HideNotify
+			}
+        }
+
+        function withNotificationDecorator(fn, text) {
+        	return function() {
+                var args = arguments;
+                var notification = show(text);
+
+                var result = fn.apply(null, args);
+
+                $q.when(result).finally(function() {
+                	notification.hide();
+				});
+
+                return result;
+			}
+		}
+    });
 
 	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
 		return {
@@ -652,6 +489,10 @@ define(['angularAMD', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng
             this.data = dzTimeAndSun.getCurrentData();
         }
     });
+
+    app.component('pageLoadingIndicator', {
+    	template: '<section class="page-spinner">{{:: "Loading..." | translate }}</section>'
+	});
 
 	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
 		var permissionList = {

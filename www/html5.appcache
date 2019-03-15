@@ -480,6 +480,9 @@ app/components/rgbw-picker/RgbwPicker.html
 app/components/rgbw-picker/RgbwPicker.js
 
 app/devices/deviceFactory.js
+app/devices/Devices.css
+app/devices/Devices.html
+app/devices/Devices.js
 
 app/events/blockly_blocks_domoticz.js
 app/events/blockly_messages_domoticz_en.js
@@ -493,6 +496,25 @@ app/events/Events.js
 app/events/EventViewer.html
 app/events/EventViewer.js
 app/events/factories.js
+
+app/hardware/Hardware.html
+app/hardware/Hardware.js
+app/hardware/HardwareSetup.html
+app/hardware/HardwareSetup.js
+app/hardware/setup/BleBox.html
+app/hardware/setup/BleBox.js
+app/hardware/setup/Kodi.html
+app/hardware/setup/Kodi.js
+app/hardware/setup/MySensors.html
+app/hardware/setup/MySensors.js
+app/hardware/setup/PanasonicTV.html
+app/hardware/setup/PanasonicTV.js
+app/hardware/setup/Pinger.html
+app/hardware/setup/Pinger.js
+app/hardware/setup/WakeOnLan.html
+app/hardware/setup/WakeOnLan.js
+app/hardware/setup/ZWave.html
+app/hardware/setup/ZWave.js
 
 app/log/components/DeviceLevelChart.js
 app/log/components/DeviceOnOffChart.js
@@ -532,12 +554,13 @@ app/timers/SceneTimersController.js
 
 app/AboutController.js
 app/app.js
+app/app.permissions.js
 app/app.routes.js
 app/CamController.js
 app/CustomIconsController.js
 app/DashboardController.js
 app/DeviceLightEdit.js
-app/DevicesController.js
+app/domoticz.api.js
 app/DPFibaroController.js
 app/DPHttpController.js
 app/DPInfluxController.js
@@ -547,7 +570,6 @@ app/FloorplanController.js
 app/FloorplanEditController.js
 app/ForecastController.js
 app/FrontpageController.js
-app/HardwareController.js
 app/HistoryController.js
 app/LightsController.js
 app/LogController.js
@@ -577,6 +599,10 @@ js/blockly/blockly_compressed.js
 js/blockly/blocks_compressed.js
 js/blockly/msg/en.js
 
+js/data-tables/dataTables.select.min.js.gz
+js/data-tables/dataTables.tableTools.min.js.gz
+js/data-tables/jquery.dataTables.min.js.gz
+
 js/highcharts/highcharts.js
 js/highcharts/highcharts-more.js
 js/highcharts/modules/exporting.js
@@ -604,8 +630,6 @@ js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
 js/d3.min.js
-js/dataTables.select.min.js
-js/dataTables.tableTools.min.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
@@ -616,7 +640,6 @@ js/html5shiv.js
 js/i18next-1.8.0.min.js
 js/jquery-3.3.1.min.js
 js/jquery-ui.min.js
-js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js
 js/jquery.isotope.min.js
 js/jquery.jeditable.mini.js
@@ -655,7 +678,6 @@ views/cam.html
 views/customicons.html
 views/dashboard.html
 views/device_light_edit.html
-views/devices.html
 views/dpfibaro.html
 views/dphttp.html
 views/dpinflux.html
@@ -663,7 +685,6 @@ views/dpgooglepubsub.html
 views/frontpage_example.html
 views/floorplanedit.html
 views/floorplans.html
-views/hardware.html
 views/history.html
 views/lights.html
 views/log.html

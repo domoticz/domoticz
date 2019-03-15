@@ -57,7 +57,9 @@ return {
 			else
 				level = utils.LOG_DEBUG
 			end
-			utils.log('Discarding device. No last update info found: ' .. domoticz.utils._.str(data), level)
+			if data.baseType ~= 'camera' then
+				utils.log('Discarding device. No last update info found: ' .. domoticz.utils._.str(data), level)
+			end
 			return nil
 		end
 

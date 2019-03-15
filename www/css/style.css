@@ -204,8 +204,17 @@ strong {
 
 /* Button Style 2 */
 
-a.btn {
+a.btn, a.btn-link {
 	text-decoration: none;
+}
+
+.btn.btn-icon {
+	border: none;
+	box-shadow: none;
+	background: transparent;
+	padding: 0;
+	margin: 0;
+	line-height: 0;
 }
 
 .button-style2 a {
@@ -1948,6 +1957,13 @@ tspan {
 	font-style: italic;
 }
 
+.page-spinner {
+	background-color: rgba(0, 0, 0, 0.25);
+	padding: 10px;
+	margin-top: 24px;
+	margin-bottom: 24px;
+}
+
 #container-speed > .highcharts-container {
     overflow: visible !important;
 }
@@ -1967,3 +1983,52 @@ tspan {
 		cursor: pointer;
 	}
 }
+
+table td.actions-column {
+	padding-left: 5px;
+	padding-right: 5px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
+	padding-right: 0;
+}
+
+.battery {
+	position: relative;
+	display: block;
+	margin: 1px 0 0 0.5px;
+	background: #B8DB23;
+	width: 6px;
+	height: 6px;
+	float: left;
+}
+
+.battery:before {
+	content: "";
+	display: block;
+	background: transparent;
+	border: 1px solid #000;
+	margin: -2px;;
+	width: 16px;
+	height: 8px;
+	position: absolute;
+	border-radius: 1px;
+}
+
+.battery:after {
+	content: "";
+	display: block;
+	background: transparent;
+	border: 1px solid #000;
+	margin-left: 15px;
+	width: 2px;
+	height: 4px;
+	position: absolute;
+	border-radius: 1px;
+}
+
+.battery.empty {background-color: #ED3745;}
+.battery.empty:before, .battery.empty:after {border-color: #ED3745;}
+.battery.half {background-color: #F9D023;}

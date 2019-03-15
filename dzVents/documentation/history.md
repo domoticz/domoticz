@@ -1,3 +1,19 @@
+[2.4.15]
+- Add option to use camera name in snapshot command
+- Add domoticz.settings.domoticzVersion
+- Add domoticz.settings.dzVentsVersion
+
+ 
+[2.4.14]
+- Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
+- Added check for- and message when call to openURL cannot open local (127.0.0.1)
+- **BREAKING CHANGE** :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name) 
+- prevent call to updateCounter with table
+
+[2.4.13]
+- Added domoticz.settings.location (domoticz settings location Name) 
+- Added domoticz.urlDecode method to convert an urlEncoded string to human readable format
+
 [2.4.12]
 - Added Managed counter (to counter)
 

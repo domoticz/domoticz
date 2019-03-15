@@ -1,4 +1,5 @@
 
+
 **Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 
 **Breaking change warning!!**: For people using with dzVents prior to version 2.4: Please read the [change log](#Change_log) below as there is an easy-to-fix breaking change regarding the second parameter passed to the execute function (it is no longer `nil` for timer/security triggers).
@@ -70,7 +71,7 @@ Just to give you an idea! Everything in your Domoticz system is now logically av
 
 # Using dzVents with Domoticz
 In Domoticz go to **Setup > Settings > Other**  and in the section EventSystem make sure the checkbox 'dzVents disabled' is not checked.
-Also make sure that in the Security section in the settings you allow `127.0.0.1` to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in **Setup > Settings > System > Location**, otherwise there is no way to determine nighttime/daytime state.
+Also make sure that in the Security section in the settings **(Setup > Settings > System > Local Networks (no username/password)** you allow 127.0.0.1 to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in **Setup > Settings > System > Location**, otherwise there is no way to determine nighttime/daytime state.
 
 There are two ways of creating dzVents event scripts in Domoticz:
 
@@ -517,11 +518,17 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
+    - **domoticzVersion**:<sup>2.4.15</sup> domoticz version string.
+    - **dzVentsVersion**:<sup>2.4.15</sup> dzVents version string.
+    - **location**
+        - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude.
+        - **longitude**:<sup>2.4.14</sup> domoticz settings locations longitude.
+        - **name**:<sup>2.4.14</sup> domoticz settings location Name. 
+    - **serverPort**: webserver listening port.
     - **url**: internal url to access the API service.
     - **webRoot**: `webroot` value as specified when starting the Domoticz service.
-    - **serverPort**: webserver listening port.
  - **sms(message)**: *Function*. Sends an sms if it is configured in Domoticz.
- - **snapshot(cameraID,subject)**:<sup>2.4.11</sup> *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
+ - **snapshot(cameraID or camera Name<sup>2.4.15</sup>,subject)**:<sup>2.4.11</sup> *Function*. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
@@ -542,6 +549,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **round(number, decimalPlaces)**: *Function*. Helper function to round numbers.
     - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
     - **toJSON(luaTable)**: *Function*. <sup>2.4.0</sup> Converts a Lua table to a json string.
+    - **urlDecode(s)**: <sup>2.4.13</sup> *Function*. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format
     - **urlEncode(s, [strSub])**: *Functon*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
  - **variables(idx/name)**: *Function*. A function returning a variable by it's name or idx. See  [Variable object API](#Variable_object_API_.28user_variables.29) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). **Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`**.
 
@@ -1092,7 +1100,6 @@ Use this in combination with the various dzVents time attributes:
    print(t.compare(anotherTime).secs) -- diff in seconds between t and anotherTime.
 
 ```
-
 ### Time properties and methods
 
 Creation:
@@ -1102,16 +1109,19 @@ local now = Time() -- current time
 local someTime = Time('2017-12-31 22:19:15')
 local utcTime = Time('2017-12-31 22:19:15', true)
 ```
-
+ - **civTwilightEndInMinutes**: *Number*. Minutes from midnight until civTwilightEnd.
+ - **civTwilightStartInMinutes**:*Number*. Minutes from midnight until civTwilightStart. 
  - **compare(time)**: *Function*. Compares the current time object with another time object. *Make sure you pass a Time object!* Returns a table (all values are *positive*, use the compare property to see if *time* is in the past or future):
-   + **milliseconds**: Total difference in milliseconds.
-   + **seconds**: Total difference in whole seconds.
-   + **minutes**: Total difference in whole minutes.
-   + **hours**: Total difference in whole hours.
-   + **days**: Total difference in whole days.
-   + **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
+    - **milliseconds**: Total difference in milliseconds.
+    - **seconds**: Total difference in whole seconds.
+    - **minutes**: Total difference in whole minutes.
+    - **hours**: Total difference in whole hours.
+    - **days**: Total difference in whole days.
+    - **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
  - **day**: *Number*
+ - **dayAbbrOfWeek**: *String*. sun,mon,tue,wed,thu,fri or sat 
  - **daysAgo**: *Number*
+ - **dDate**: *Number*. timestamp (seconds since 01/01/1970 00:00)
  - **getISO**: *Function*. Returns the ISO 8601 formatted date.
  - **hour**: *Number*
  - **hoursAgo**: *Number*. Number of hours since the last update.
@@ -1129,6 +1139,8 @@ local utcTime = Time('2017-12-31 22:19:15', true)
  - **seconds**: *Number*
  - **secondsSinceMidnight**: *Number*
  - **secondsAgo**: *Number*. Number of seconds since the last update.
+ - **sunsetInMinutes**: *Number*. Minutes from midnight until sunset.
+ - **sunriseInMinutes**: *Number*. Minutes from midnight until sunrise.         
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
     - **day**: *Number*
     - **hour**: *Number*
@@ -1144,6 +1156,8 @@ local utcTime = Time('2017-12-31 22:19:15', true)
     - **seconds**: *Number*
     - **year**: *Number*
  - **year**: *Number*
+ - **wday**: *Number* 
+ - **week**: *Number*
 
 **Note: it is currently not possible to change a time object instance.**
 
@@ -1964,6 +1978,22 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.15]
+- Add option to use camera name in snapshot command
+- Add domoticz.settings.domoticzVersion
+- Add domoticz.settings.dzVentsVersion
+
+ 
+##[2.4.14]
+- Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
+- Added check for- and message when call to openURL cannot open local (127.0.0.1)
+- **BREAKING CHANGE** :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name) 
+- prevent call to updateCounter with table
+
+##[2.4.13]
+- Added domoticz.settings.location (domoticz settings location Name)
+- Added domoticz.utils.urlDecode method to convert a string with escaped chars (%20, %3A and the likes) to human readable format
+
 ##[2.4.12]
 - Added managed Counter (to counter)
 

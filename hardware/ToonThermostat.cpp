@@ -10,10 +10,6 @@
 #include "../main/SQLHelper.h"
 #include "../json/json.h"
 
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
-
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat
 //	#define DEBUG_ToonThermostatW
@@ -288,12 +284,9 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
-
 std::string CToonThermostat::GetRandom()
 {
-	boost::uuids::uuid uuid = boost::uuids::random_generator()();
-	std::string suuid = boost::uuids::to_string(uuid);
-	return suuid;
+	return GenerateUUID();
 }
 
 bool CToonThermostat::Login()

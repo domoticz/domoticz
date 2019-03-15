@@ -29,13 +29,17 @@ private:
 
 	bool SendMessageToGateway(const std::string &controlmessage);
 	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int unittype, const int level, const std::string &messagetype, const std::string &load_power, const std::string &power_consumed, const int battery);
+	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const int brightness, const int hue);
 	void InsertUpdateCubeText(const std::string &nodeid, const std::string &Name, const std::string &degrees);
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int VoltageLevel);
 	void InsertUpdateLux(const std::string &nodeid, const std::string &Name, const int Illumination, const int battery);
+
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature, const int battery);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity, const int battery);
-	void InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const int Pressure, const int battery);
-	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const int brightness, const int hue);
+	void InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const float Pressure, const int battery);
+	void InsertUpdateTempHumPressure(const std::string &nodeid, const std::string &Name, const float Temperature, const int Humidity, const float Pressure, const int battery);
+	void InsertUpdateTempHum(const std::string &nodeid, const std::string &Name, const float Temperature, const int Humidity, const int battery);
+
 	std::string GetGatewayKey();
 	unsigned int GetShortID(const std::string & nodeid);
 

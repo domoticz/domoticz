@@ -170,6 +170,7 @@ local function DeviceAdapters(dummyLogger)
 		['nightmode'] = { b = true, inv = 'Off' },
 		['set to white'] = { b = true, inv = 'Off' },
 		['set kelvin level'] = { b = true, inv = 'Off' },
+		['set color'] = { b = true },
 	}
 
 	return self

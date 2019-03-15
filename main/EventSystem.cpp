@@ -2308,9 +2308,10 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
-					std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
-					if (updateResult != "OK") {
-						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+					std::string errorMessage;
+					if (!m_sql.UpdateUserVariable(variableNo, sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), doWhat, false, errorMessage))
+					{
+						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
 				}
 			}
@@ -2541,6 +2542,9 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 			iLastTokenType = 5;
 		}
 		else if (sToken == "TURN") {
+			iLastTokenType = 0;
+		}
+		else if (sToken == "TRIGGER") {
 			iLastTokenType = 0;
 		}
 		else if (sToken == "NOTRIGGER")
@@ -3556,9 +3560,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
-				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
-				if (updateResult != "OK") {
-					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
+				std::string errorMessage;
+				if (!m_sql.UpdateUserVariable(sd[0], variableName, (const _eUsrVariableType)atoi(sd[1].c_str()), variableValue, false, errorMessage))
+				{
+					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), errorMessage.c_str());
 				}
 			}
 			else
@@ -3741,17 +3746,17 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			(devType == pTypeRadiator1 && !sValue.empty())
 			)
 		{
-			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
+			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device '%s' (%g) ....", dname.c_str(), static_cast<float>(atof(sValue.c_str())));
 			m_mainworker.SetSetPoint(std::to_string(idx), static_cast<float>(atof(sValue.c_str())));
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nValue != -1)
 		{
-			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
+			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device '%s' ....", dname.c_str());
 			m_mainworker.SetZWaveThermostatMode(std::to_string(idx), nValue);
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nValue != -1)
 		{
-			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
+			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device '%s' ....", dname.c_str());
 			m_mainworker.SetZWaveThermostatFanMode(std::to_string(idx), nValue);
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeTextStatus))
@@ -3894,7 +3899,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	int level = 0;
 	devicestatesMutexLock.unlock();
 
-	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0, true };
+	_tActionParseResults oParseResults;
+	oParseResults.bEventTrigger = true;
+
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {

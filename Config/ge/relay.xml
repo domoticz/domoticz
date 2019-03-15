@@ -2,13 +2,14 @@
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
-		<Value type="list" index="3" genre="config" label="Night Light" size="1" value="0">
-			<Help>In night-light mode the LED on the switch will turn ON when the switch is turned OFF.</Help>
-			<Item label="No" value="0" />
-			<Item label="Yes" value="1" />
+	  	<Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" value="0" size="1">
+			<Help>Sets when the LED on the switch is lit.</Help>
+			<Item label="LED on when light off" value="0" />
+			<Item label="LED on when light on" value="1" />
+			<Item label="LED always off" value="2" />
 		</Value>
 		<Value type="list" index="4" genre="config" label="Invert Switch" size="1" value="0">
-			<Help>Change the top of the switch to OFF and the bottom of the switch to ON. Note: If you invert the switches and also install the product upside down, remember the load will now be controlled by the right, not the left switch.</Help>
+			<Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
 			<Item label="No" value="0" />
 			<Item label="Yes" value="1" />
 		</Value>

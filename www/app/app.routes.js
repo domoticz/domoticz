@@ -10,8 +10,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'DashboardController'
             }))
             .when('/Devices', angularAMD.route({
-                templateUrl: 'views/devices.html',
-                controller: 'DevicesController'
+                templateUrl: 'app/devices/Devices.html',
+                controller: 'DevicesController',
+                controllerUrl: 'app/devices/Devices.js',
+                controllerAs: '$ctrl'
             }))
             .when('/Devices/:id/Timers', angularAMD.route({
                 templateUrl: 'views/timers.html',
@@ -88,8 +90,16 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'FrontpageController'
             }))
             .when('/Hardware', angularAMD.route({
-                templateUrl: 'views/hardware.html',
+                templateUrl: 'app/hardware/Hardware.html',
                 controller: 'HardwareController',
+                controllerUrl: 'app/hardware/Hardware.js',
+                permission: 'Admin'
+            }))
+            .when('/Hardware/:id', angularAMD.route({
+                templateUrl: 'app/hardware/HardwareSetup.html',
+                controller: 'HardwareSetupController',
+                controllerUrl: 'app/hardware/HardwareSetup.js',
+                controllerAs: '$ctrl',
                 permission: 'Admin'
             }))
             .when('/History', angularAMD.route({
