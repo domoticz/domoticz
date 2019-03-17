@@ -61,6 +61,7 @@ namespace Plugins {
 		~CPlugin(void);
 
 		int		PollInterval(int Interval = -1);
+		void*	PythonModule() { return m_PyModule; };
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
 		void	RemoveConnection(CPluginTransport*);
@@ -97,8 +98,6 @@ namespace Plugins {
 		bool	HasNodeFailed(const int Unit);
 
 		std::string			m_PluginKey;
-		std::string			m_Username;
-		std::string			m_Password;
 		void*				m_DeviceDict;
 		void*				m_ImageDict;
 		void*				m_SettingsDict;

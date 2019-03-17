@@ -16,7 +16,7 @@
 
 namespace Plugins {
 
-	CPluginProtocol * CPluginProtocol::Create(std::string sProtocol, std::string sUsername, std::string sPassword)
+	CPluginProtocol * CPluginProtocol::Create(std::string sProtocol)
 	{
 		if (sProtocol == "Line") return (CPluginProtocol*) new CPluginProtocolLine();
 		else if (sProtocol == "XML") return (CPluginProtocol*) new CPluginProtocolXML();
@@ -24,20 +24,17 @@ namespace Plugins {
 		else if ((sProtocol == "HTTP") || (sProtocol == "HTTPS"))
 		{
 			CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP(sProtocol == "HTTPS");
-			pProtocol->AuthenticationDetails(sUsername, sPassword);
 			return (CPluginProtocol*)pProtocol;
 		}
 		else if (sProtocol == "ICMP") return (CPluginProtocol*) new CPluginProtocolICMP();
 		else if ((sProtocol == "MQTT") || (sProtocol == "MQTTS"))
 		{
 			CPluginProtocolMQTT*	pProtocol = new CPluginProtocolMQTT(sProtocol == "MQTTS");
-			pProtocol->AuthenticationDetails(sUsername, sPassword);
 			return (CPluginProtocol*)pProtocol;
 		}
 		else if ((sProtocol == "WS") || (sProtocol == "WSS"))
 		{
 			CPluginProtocolWS*	pProtocol = new CPluginProtocolWS(sProtocol == "WSS");
-			pProtocol->AuthenticationDetails(sUsername, sPassword);
 			return (CPluginProtocol*)pProtocol;
 		}
 		else return new CPluginProtocol();
@@ -646,25 +643,41 @@ namespace Plugins {
 			sHttp += sHttpURL;
 			sHttp += " HTTP/1.1\r\n";
 
-			// If username &/or password specified then add a basic auth header
-			std::string auth;
-			if (m_Username.length() > 0 || m_Password.length() > 0)
+			// If username &/or password specified then add a basic auth header (if one was not supplied)
+			PyObject *pHead = NULL;
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Authorization:Basic");
+			if (!pHead)
 			{
-				if (m_Username.length() > 0)
+				std::string		User;
+				std::string		Pass;
+				PyObject *pModule = (PyObject*)WriteMessage->m_pPlugin->PythonModule();
+				PyObject *pDict = PyObject_GetAttrString(pModule, "Parameters");
+				if (pDict)
 				{
-					auth += m_Username;
+					PyObject *pUser = PyDict_GetItemString(pDict, "Username");
+					if (pUser) User = PyUnicode_AsUTF8(pUser);
+					PyObject *pPass = PyDict_GetItemString(pDict, "Password");
+					if (pPass) Pass = PyUnicode_AsUTF8(pPass);
+					Py_DECREF(pDict);
 				}
-				auth += ":";
-				if (m_Password.length() > 0)
+				if (User.length() > 0 || Pass.length() > 0)
 				{
-					auth += m_Password;
+					std::string auth;
+					if (User.length() > 0)
+					{
+						auth += User;
+					}
+					auth += ":";
+					if (Pass.length() > 0)
+					{
+						auth += Pass;
+					}
+					std::string encodedAuth = base64_encode(auth);
+					sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
 				}
-				std::string encodedAuth = base64_encode(auth);
-				sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
 			}
 
 			// Add Server header if it is not supplied
-			PyObject *pHead = NULL;
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "User-Agent");
 			if (!pHead)
 			{
@@ -1367,15 +1380,27 @@ namespace Plugins {
 				}
 
 				// Username / Password
-				if (m_Username.length())
+				std::string		User;
+				std::string		Pass;
+				PyObject *pModule = (PyObject*)WriteMessage->m_pPlugin->PythonModule();
+				PyObject *pDict = PyObject_GetAttrString(pModule, "Parameters");
+				if (pDict)
 				{
-					MQTTPushBackStringWLen(m_Username, vPayload);
+					PyObject *pUser = PyDict_GetItemString(pDict, "Username");
+					if (pUser) User = PyUnicode_AsUTF8(pUser);
+					PyObject *pPass = PyDict_GetItemString(pDict, "Password");
+					if (pPass) Pass = PyUnicode_AsUTF8(pPass);
+					Py_DECREF(pDict);
+				}
+				if (User.length())
+				{
+					MQTTPushBackStringWLen(User, vPayload);
 					bControlFlags |= 128;
 				}
 
-				if (m_Password.length())
+				if (Pass.length())
 				{
-					MQTTPushBackStringWLen(m_Password, vPayload);
+					MQTTPushBackStringWLen(Pass, vPayload);
 					bControlFlags |= 64;
 				}
 
