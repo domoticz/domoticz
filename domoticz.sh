@@ -14,7 +14,7 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 DESC="Domoticz Home Automation System"
 NAME=domoticz
-USERNAME=dietpi
+USERNAME=pi
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
