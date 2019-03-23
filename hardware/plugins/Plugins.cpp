@@ -1059,6 +1059,31 @@ namespace Plugins {
 
 			try
 			{
+				//
+				//	Load the 'faulthandler' module to get a python stackdump during a segfault
+				//
+				void*	pFaultModule = PyImport_ImportModule("faulthandler");
+				if (!pFaultModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				}
+				else
+				{
+					PyObject*	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
+					if (pFunc && PyCallable_Check(pFunc))
+					{
+						PyObject_CallObject(pFunc, NULL);
+					}
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "(%s) exception loading 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				PyErr_Clear();
+			}
+
+			try
+			{
 				m_PyModule = PyImport_ImportModule("plugin");
 				if (!m_PyModule)
 				{
