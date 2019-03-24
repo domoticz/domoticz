@@ -2995,11 +2995,60 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 
 	float TotalRain = float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
 
-	if (subType != sTypeRAINWU)
+	if (subType == sTypeRAINDS)
+	{
+		//calculate new Total
+		TotalRain = 0;
+
+		std::vector<std::vector<std::string>> result;
+
+		//Get our index
+		result = m_sql.safe_query(
+			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
+		if (!result.empty())
+		{
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+
+			time_t now = mytime(NULL);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query(
+				"SELECT Rate, Date FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%04d-%02d-%02d') ORDER BY ROWID ASC",
+				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+			if (!result.empty())
+			{
+				time_t countTime;
+				struct tm midnightTime;
+				getMidnight(countTime, midnightTime);
+
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+
+					float rate = atof(sd[0].c_str()) / 10000.0f;
+					std::string date = sd[1];
+
+					time_t rowtime;
+					struct tm rowTimetm;
+					ParseSQLdatetime(rowtime, rowTimetm, date);
+
+					int pastSeconds = rowtime - countTime;
+
+					float rateAdd = (rate / (float)3600 * (float)pastSeconds);
+					TotalRain += rateAdd;
+
+					countTime = rowtime;
+				}
+			}
+		}
+	}
+	else if (subType != sTypeRAINWU)
 	{
 		Rainrate = 0;
 		//Calculate our own rainrate
-		std::vector<std::vector<std::string> > result;
+		std::vector<std::vector<std::string>> result;
 
 		//Get our index
 		result = m_sql.safe_query(
@@ -3014,7 +3063,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 
-			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query(
 				"SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%04d-%02d-%02d %02d:%02d:%02d')",
 				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
