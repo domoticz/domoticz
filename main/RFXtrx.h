@@ -9,7 +9,7 @@
 
 /*
                                                                    
-Copyright 2011-2018, RFXCOM
+Copyright 2011-2019, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
 Netherlands Copyright Laws and Treaties and shall be subject to the 
@@ -27,6 +27,15 @@ portions of this file.
 */
 
 /*
+SDK version 9.24
+	Chime Alfawise, dBell added
+	SelectPlus3 changed to ByronBY
+	Async Get Settings added
+	868 protocol selection bits updated and changed
+	WEATHER & SOLAR structures added
+	ACH2010 moved to WEATHER
+	WS5500 added
+
 SDK version 9.23
 	Async data subtypes changed
 
@@ -447,17 +456,17 @@ SDK version 4.9
 #define msg3_868_DAVISAU 0x02	//Davis AU
 #define msg3_868_DAVISUS 0x04	//Davis US
 #define msg3_868_DAVISEU 0x08	//Davis EU
-#define msg3_868_RFU4 0x10		//RFU
-#define msg3_868_LACROSSE 0x20	//LaCrosse
+#define msg3_868_LACROSSE 0x10  //LACROSSE
+#define msg3_868_ALECTO5500 0x20	//Alecto WS5500
 #define msg3_868_ALECTO 0x40	//Alecto ACH2010
 #define msg3_868_UNDEC 0x80		//Enable undecoded
 
-#define msg4_868_EDISIO 0x01	//Edisio
-#define msg4_868_RFU1 0x02		//RFU
-#define msg4_868_RFU2 0x04		//RFU
+#define msg4_868_EDISIO 0x01	//EDISIO
+#define msg4_868_LWRF 0x02		//LightwaveRF
+#define msg4_868_FS20 0x04		//FS20
 #define msg4_868_RFU3 0x08		//RFU
-#define msg4_868_FS20 0x10		//FS20
-#define msg4_868_PROGUARD 0x20	//Proguard
+#define msg4_868_RFU4 0x10		//RFU
+#define msg4_868_RFU5 0x20		//RFU
 #define msg4_868_RFU6 0x40		//RFU
 #define msg4_868_RFU7 0x80		//RFU
 
@@ -465,19 +474,19 @@ SDK version 4.9
 #define msg5_868_RFU1 0x02		//RFU
 #define msg5_868_RFU2 0x04		//RFU
 #define msg5_868_RFU3 0x08		//RFU
-#define msg5_868_RFU4 0x10		//RFU
-#define msg5_868_RFU5 0x20		//RFU
-#define msg5_868_MEI 0x40		//Meiantech,Atlantic
+#define msg5_868_PROGUARD  0x10 //Proguard
+#define msg5_868_KEELOQ 0x20    //KEELOQ
+#define msg5_868_MEIANTECH 0x40	//Meiantech,Atlantic
 #define msg5_868_VISONIC 0x80	//Visonic
 
-#define msg6_868_KEELOQ 0x01	//Keeloq
+#define msg6_868_RFU0 0x01		//RFU
 #define msg6_868_RFU1 0x02		//RFU
 #define msg6_868_RFU2 0x04		//RFU
 #define msg6_868_RFU3 0x08		//RFU
 #define msg6_868_RFU4 0x10		//RFU
-#define msg6_868_RFU5 0x20		//RFU
-#define msg6_868_RFU6 0x40		//RFU
-#define msg6_868_RFU7 0x80		//RFU
+#define msg6_868_HONCHIME 0x20	//Honeywell Chime
+#define msg6_868_ITHOECO 0x40	//Itho CVE ECO RFT
+#define msg6_868_ITHO 0x80		//Itho CVE RFT
 
 #define pTypeRecXmitMessage 0x02
 #define sTypeReceiverLockError 0x00
@@ -683,8 +692,9 @@ SDK version 4.9
 #define sTypeByronSX 0x0
 #define sTypeByronMP001 0x1
 #define sTypeSelectPlus 0x2
-#define sTypeSelectPlus3 0x3
+#define sTypeByronBY 0x3
 #define sTypeEnvivo 0x4
+#define sTypeAlfawise 0x5
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5
@@ -1075,7 +1085,6 @@ SDK version 4.9
 #define sTypeRAIN6 0x6   //TX5
 #define sTypeRAIN7 0x7   //Alecto
 #define sTypeRAIN8 0x8   //Davis
-#define sTypeRAIN9 0x9   //Alecto WCH2010
 
 //types for wind
 #define pTypeWIND 0x56
@@ -1086,7 +1095,6 @@ SDK version 4.9
 #define sTypeWIND5 0x5   //UPM, Davis
 #define sTypeWIND6 0x6   //WS2300
 #define sTypeWIND7 0x7   //Alecto WS4500
-#define sTypeWIND8 0x8   //Alecto ACH2010
 
 //types for uv
 #define pTypeUV 0x57
@@ -1138,7 +1146,8 @@ SDK version 4.9
 #define asyncdisable 0x0
 #define asyncreceiveP1 0x1
 #define asyncreceiveTeleinfo 0x2
-#define asyncreceiveRAW 0x3
+#define asyncreceiveRAW 0xFE //not yet implemented
+#define asyncreceiveGetSettings 0xFF
 #define asyncbaud110 0x0
 #define asyncbaud300 0x1
 #define asyncbaud600 0x2
@@ -1221,6 +1230,15 @@ SDK version 4.9
 #define fs20_sOn_100_for_time_period 0x19 
 #define fs20_sOn_last_dim_level_period 0x1A 
 #define fs20_sReset 0x1B
+
+//WEATHER STATIONS
+#define pTypeWEATHER 0x76
+#define sTypeWEATHER1 0x1   //Alecto ACH2010
+#define sTypeWEATHER2 0x2   //Alecto WS5500
+
+//types for Solar
+#define pTypeSOLAR 0x77
+#define sTypeSOLAR1 0x1   //Davis
 
 //RAW transit/receive
 #define pTypeRAW 0x7F
@@ -1363,8 +1381,8 @@ typedef union tRBUF {
 		//BYTE	msg3;
 		BYTE	UNDECODEDenabled : 1;
 		BYTE	ALECTOenabled : 1;
-		BYTE	MSG3Reserved5 : 1;
-		BYTE	MSG3Reserved4 : 1;
+		BYTE	ALECTO5500enabled : 1;
+		BYTE	LACROSSEenabled : 1;
 		BYTE	DAVISEUenabled : 1;
 		BYTE	DAVISUSenabled : 1;
 		BYTE	DAVISAUenabled : 1;
@@ -1373,50 +1391,50 @@ typedef union tRBUF {
 		//BYTE	msg4;
 		BYTE	MSG4Reserved7 : 1;
 		BYTE	MSG4Reserved6 : 1;
-		BYTE	PROGUARDenabled : 1;
-		BYTE	FS20enabled : 1;
+		BYTE	MSG4Reserved5 : 1;
+		BYTE	MSG4Reserved4 : 1;
 		BYTE	MSG4Reserved3 : 1;
-		BYTE	MSG4Reserved2 : 1;
-		BYTE	MSG4Reserved1 : 1;
+		BYTE	FS20enabled : 1;
+		BYTE	LWRFenabled : 1;
 		BYTE	EDISIOenabled : 1;
 
 		//BYTE	msg5;
 		BYTE	VISONICenabled : 1;
-		BYTE	MSG5Reserved6 : 1;
-		BYTE	MSG5Reserved5 : 1;
-		BYTE	MSG5Reserved4 : 1;
+		BYTE	MEIANTECHenabled : 1;
+		BYTE	KEELOQenabled : 1;
+		BYTE	PROGUARDenabled : 1;
 		BYTE	MSG5Reserved3 : 1;
 		BYTE	MSG5Reserved2 : 1;
 		BYTE	MSG5Reserved1 : 1;
 		BYTE	MSG5Reserved0 : 1; //note: keep this order
 
-								//BYTE    msg6;
-		BYTE    MSG6Reserved7 : 1;
-		BYTE    MSG6Reserved6 : 1;
-		BYTE    MSG6Reserved5 : 1;
+		//BYTE    msg6;
+		BYTE    ITHOenabled : 1;
+		BYTE    ITHOecoenabled : 1;
+		BYTE    HONEYWELLenabled : 1;
 		BYTE    MSG6Reserved4 : 1;
 		BYTE    MSG6Reserved3 : 1;
 		BYTE    MSG6Reserved2 : 1;
 		BYTE    MSG6Reserved1 : 1;
-		BYTE    KEELOQenabled : 1;
+		BYTE    MSG6Reserved0 : 1;
 #else
 		//BYTE	msg3;
 		BYTE	MSG3Reserved0 : 1;
 		BYTE	DAVISAUenabled : 1;
 		BYTE	DAVISUSenabled : 1;
 		BYTE	DAVISEUenabled : 1;
-		BYTE	MSG3Reserved4 : 1;
-		BYTE	MSG3Reserved5 : 1;
+		BYTE	LACROSSEenabled : 1;
+		BYTE	ALECTO5500enabled : 1;
 		BYTE	ALECTOenabled : 1;
 		BYTE	UNDECODEDenabled : 1;
 
 		//BYTE	msg4;
 		BYTE	EDISIOenabled : 1;
-		BYTE	MSG4Reserved1 : 1;
-		BYTE	MSG4Reserved2 : 1;
-		BYTE	MSG4Reserved3 : 1;
+		BYTE	LWRFenabled : 1;
 		BYTE	FS20enabled : 1;
-		BYTE	PROGUARDenabled : 1;
+		BYTE	MSG4Reserved3 : 1;
+		BYTE	MSG4Reserved4 : 1;
+		BYTE	MSG4Reserved5 : 1;
 		BYTE	MSG4Reserved6 : 1;
 		BYTE	MSG4Reserved7 : 1;
 
@@ -1425,20 +1443,20 @@ typedef union tRBUF {
 		BYTE	MSG5Reserved1 : 1;
 		BYTE	MSG5Reserved2 : 1;
 		BYTE	MSG5Reserved3 : 1;
-		BYTE	MSG5Reserved4 : 1;
-		BYTE	MSG5Reserved5 : 1;
-		BYTE	MSG5Reserved6 : 1;
+		BYTE	PROGUARDenabled : 1;
+		BYTE    KEELOQenabled : 1;
+		BYTE	MEIANTECHenabled : 1;
 		BYTE	VISONICenabled : 1;
 
 		//BYTE	msg6;
-		BYTE    KEELOQenabled : 1;
+		BYTE    MSG6Reserved0 : 1;
 		BYTE    MSG6Reserved1 : 1;
 		BYTE    MSG6Reserved2 : 1;
 		BYTE    MSG6Reserved3 : 1;
 		BYTE    MSG6Reserved4 : 1;
-		BYTE    MSG6Reserved5 : 1;
-		BYTE    MSG6Reserved6 : 1;
-		BYTE    MSG6Reserved7 : 1;
+		BYTE    HONEYWELLenabled : 1;
+		BYTE    ITHOecoenabled : 1;
+		BYTE    ITHOenabled : 1;
 #endif
 
 		BYTE	msg7;
@@ -2537,6 +2555,79 @@ typedef union tRBUF {
 	BYTE	rssi : 4;
 #endif
     } FS20;
+
+	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE id1;
+		BYTE id2;
+		BYTE directionhigh;
+		BYTE directionlow;
+		BYTE av_speedhigh;
+		BYTE av_speedlow;
+		BYTE gusthigh;
+		BYTE gustlow;
+#ifdef IS_BIG_ENDIAN
+		BYTE	temperaturesign : 1;
+		BYTE	temperaturehigh : 7;
+#else
+		BYTE	temperaturehigh : 7;
+		BYTE	temperaturesign : 1;
+#endif
+		BYTE temperaturelow;
+#ifdef IS_BIG_ENDIAN
+		BYTE	chillsign : 1;
+		BYTE	chillhigh : 7;
+#else
+		BYTE	chillhigh : 7;
+		BYTE	chillsign : 1;
+#endif
+		BYTE chilllow;
+		BYTE humidity;
+		BYTE humidity_status;
+		BYTE rainratehigh;
+		BYTE rainratelow;
+		BYTE raintotal1; //high byte
+		BYTE raintotal2;
+		BYTE raintotal3; //low byte
+		BYTE uv;
+		BYTE solarhigh;
+		BYTE solarlow;
+		BYTE barohigh;
+		BYTE barolow;
+		BYTE forecast;
+		BYTE rfu1;
+		BYTE rfu2;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE battery_level : 4;
+		BYTE rssi : 4;
+#endif
+	} WEATHER;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	solarhigh;
+		BYTE	solarlow;
+		BYTE	rfu1;
+		BYTE	rfu2;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE battery_level : 4;
+		BYTE rssi : 4;
+#endif
+	} SOLAR;
 
 	struct {
 	BYTE	packetlength;
