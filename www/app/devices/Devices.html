@@ -2,11 +2,15 @@
     <page-loading-indicator ng-hide="::$ctrl.devices" />
 
     <div class="page-devices-wrapper" ng-if="::$ctrl.devices">
-        <device-filter-by-usage
-                class="usage-filter"
-                ng-model="$ctrl.filter"
-                ng-change="$ctrl.applyFilter()"
-        />
+        <section class="top-panel">
+            <device-filter-by-usage
+                    class="btn-group"
+                    ng-model="$ctrl.filter"
+                    ng-change="$ctrl.applyFilter()"
+            />
+
+            <button class="btn btn-default pull-right" ng-click="$ctrl.refreshDevices()">{{:: 'Refresh' | translate}}</button>
+        </section>
 
         <section class="page-devices">
             <devices-filters
