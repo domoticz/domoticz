@@ -13898,6 +13898,11 @@ namespace http {
 								{
 									//bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
+									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
+
+									if (actValue >= ulLastValue)
+										ulLastValue = actValue;
+
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
 										if (bHaveFirstValue)
@@ -13939,11 +13944,6 @@ namespace http {
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
 									}
-									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
-
-									if (actValue >= ulLastValue)
-										ulLastValue = actValue;
-
 									if (!bHaveFirstValue)
 									{
 										ulFirstValue = ulLastValue;
