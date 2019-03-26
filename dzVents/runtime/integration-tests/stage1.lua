@@ -577,6 +577,7 @@ local testRGBW = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 	})
+	dev.setRGB(15,30,60)
 	dev.dimTo(15)
 	tstMsg('Test rgbw device', res)
 	return res
@@ -1213,7 +1214,7 @@ local testLastUpdates = function()
 			local delta = now - device.lastUpdate.secondsSinceMidnight
 			--print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
 			-- test if lastUpdate for the device is close to domoticz time
-			local ok = (devTime <= now and delta < 5)
+			local ok = (devTime <= now and delta < 6)
 			acc = acc and ok
 			if (expectEql(true, ok, device.name .. ' lastUpdate is not correctly set') == false) then
 				print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
@@ -1278,7 +1279,7 @@ end
 local testCancelledScene = function(name)
 	local res = true
 	local sc = dz.scenes(name)
-	sc.switchOn().afterSec(4).forSec(1).repeatAfterSec(1, 5)
+	sc.switchOn().afterSec(5).forSec(1).repeatAfterSec(1, 5)
 	tstMsg('Start test cancelled repeat scene', res)
 	return res
 end
@@ -1290,6 +1291,31 @@ local testHTTPSwitch = function(name)
 	tstMsg('Start test http trigger switch device', res)
 	return res
 end
+
+local testDescriptionSwitchDevice = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	dev.switchOn()
+	tstMsg('Start test description trigger switch device', res)
+	return res
+end
+
+local testDescriptionSwitchGroup = function(name)
+	local res = true
+	local group = dz.groups(name)
+	group.switchOn()
+	tstMsg('Start test description group', res)
+	return res
+end
+
+local testDescriptionSwitchScene = function(name)
+	local res = true
+	local scene = dz.scenes(name)
+	scene.switchOn()
+	tstMsg('Start test description scene', res)
+	return res
+end
+
 
 return {
 	active = true,
@@ -1363,6 +1389,10 @@ return {
 		res = res and testLocation();
 		res = res and testVersion();
 		res = res and testHTTPSwitch('vdHTTPSwitch');
+		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
+		res = res and testDescriptionSwitchDevice('vdDescriptionSwitch');
+		res = res and testDescriptionSwitchScene('scDescriptionScene');
+		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
 	

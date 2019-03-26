@@ -515,6 +515,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''sendCommand(command, value)''': Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. ''There is likely no need to use this directly. Use any of the device methods instead (see below).''
 * '''settings''':
 ** '''domoticzVersion''':<sup>2.4.15</sup> domoticz version string.
+** '''dump()''': ''Function''. <sup>2.4.16</sup> Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
 ** '''dzVentsVersion''':<sup>2.4.15</sup> dzVents version string.
 ** '''location'''
 *** '''latitude''':<sup>2.4.14</sup> domoticz settings locations latitude.
@@ -524,7 +525,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ** '''url''': internal url to access the API service.
 ** '''webRoot''': <code>webroot</code> value as specified when starting the Domoticz service.
 * '''sms(message)''': ''Function''. Sends an sms if it is configured in Domoticz.
-* '''snapshot(cameraID,subject)''':<sup>2.4.11</sup> ''Function''. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
+* '''snapshot(cameraID or camera Name<sup>2.4.15</sup>,subject)''':<sup>2.4.11</sup> ''Function''. Sends email with a camera snapshot if email is configured and set for attachments in Domoticz.
 * '''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.
 * '''systemUptime''': ''Number''. Number of seconds the system is up.
 * '''time''': ''[[#Time_object|Time Object]]'': Current system time. Additional to Time object attributes:
@@ -540,7 +541,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''utils''': <sup>2.4.0</sup>. A subset of handy utilities:
 ** _: Lodash. This is an entire collection with very handy Lua functions. Read more about [[#Lodash_for_Lua|Lodash]]. E.g.: <code>domoticz.utils._.size({'abc', 'def'}))</code> Returns 2.
 ** '''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.
-** '''fromJSON(json)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1.
+** '''fromJSON(json, fallback <sup>2.4.16</sup>)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
 ** '''osExecute(cmd)''': ''Function'': Execute an os command.
 ** '''round(number, decimalPlaces)''': ''Function''. Helper function to round numbers.
 ** '''toCelsius(f, relative)''': ''Function''. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So <code>toCelsius(5, true)</code> returns 5F*(1/1.8) = 2.78C.
@@ -657,6 +658,8 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''name''': ''String''. Name of the device.
 * '''nValue''': ''Number''. Numerical representation of the state.
 * '''rawData''': ''Table'': All values are ''String'' types and hold the raw data received from Domoticz.
+* '''setDescription(description)''': ''Function''. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].<br />
+
 * '''setState(newState)''': ''Function''. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''state''': ''String''. For switches, holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. '''For selector switches''' (Dummy switch) the state holds the ''name'' of the currently selected level. The corresponding numeric level of this state can be found in the '''rawData''' attribute: <code>device.rawData[1]</code>.
 * '''signalLevel''': ''Number'' If applicable for that device then it will be from 0-100.
@@ -746,9 +749,9 @@ Note that if you do not find your specific device type here you can always inspe
 ==== Group ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn't allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
-* '''toggleGroup()''': Toggles the state of a group. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''toggleGroup()''': Toggles the state of a group. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Humidity sensor ====
 
@@ -791,7 +794,8 @@ Note that if you do not find your specific device type here you can always inspe
 * '''setVolume(level)''': ''Function''. <sup>2.4.0</sup> Sets the volume (0 &lt;= level &lt;= 100). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''startPlaylist(name)''': ''Function''. <sup>2.4.0</sup> Will start the playlist by its <code>name</code>. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''stop()''': ''Function''. <sup>2.4.0</sup> Will stop the device (only effective if the device is streaming). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
-* '''switchOff()''': ''Function''. <sup>2.4.0</sup> Will turn the device off. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''volumeUp()''': ''Function''. <sup>2.4.16</sup> Will turn the device volume up with 2 points. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''volumeDown()''': ''Function''. <sup>2.4.16</sup> Will turn the device volume down with 2 points. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 ==== Lux sensor ====
 
@@ -841,7 +845,11 @@ See switch below.
 
 * '''decreaseBrightness()''': ''Function''. <sup>2.4.0</sup> Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''increaseBrightness()''': ''Function''. <sup>2.4.0</sup> Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''setColor(r, g, b, br, cw, ww, m, t)''': ''Function''. <sup>2.4.16</sup> Sets the light to requested color. r, g, b required, others optional. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''setColorBrightness()''': same as setColor
 * '''setDiscoMode(modeNum)''': ''Function''. <sup>2.4.0</sup> Activate disco mode, <code>1 =&lt; modeNum &lt;= 9</code>. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''setHex(r, g, b)''': ''Function''. <sup>2.4.16</sup> Sets the light to requested color. r, g, b required (decimal Values 0-255). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''setHue(hue, brightness, isWhite)''': ''Function''. <sup>2.4.16</sup> Sets the light to requested Hue. Hue and brightness required. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setKelvin(Kelvin)''': ''Function''. <sup>2.4.0</sup> Sets Kelvin level of the light (For RGBWW devices only). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setNightMode()''': ''Function''. <sup>2.4.0</sup> Sets the lamp to night mode. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setRGB(red, green, blue)''': ''Function''. <sup>2.4.0</sup> Set the lamps RGB color. Values are from 0-255. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -2082,15 +2090,26 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you're good to go.
 
 = Change log =
+
+== [2.4.16] ==
+
+* Add method dump() to domoticz.settings
+* Add setHue, setColor, setHex, getColor for RGBW(W) devices
+* Add setDescription for devices, groups and scenes
+* Add volumeUp / volumeDown for Logitech Media Server (LMS)
+* Changed domoticz.utils.fromJSON (add optional fallback param)
+
 == [2.4.15] ==
+
 * Add option to use camera name in snapshot command
-* Add domoticz.settings.dzVentsVersion
 * Add domoticz.settings.domoticzVersion
+* Add domoticz.settings.dzVentsVersion
 
 == [2.4.14] ==
-* Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
+
+* Added domoticz.settings.location.longitude and domoticz.settings.location.latitude
 * Added check for- and message when call to openURL cannot open local (127.0.0.1)
-* '''BREAKING CHANGE''' :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name) 
+* '''BREAKING CHANGE''' :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name)
 * prevent call to updateCounter with table
 
 == [2.4.13] ==

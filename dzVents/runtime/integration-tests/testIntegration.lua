@@ -77,10 +77,11 @@ local VIRTUAL_DEVICES = {
 	REPEAT_SWITCH = { 6, 'vdRepeatSwitch' },
 	CANCELLED_REPEAT_SWITCH = { 6, 'vdCancelledRepeatSwitch' },
 	HTTP_SWITCH = { 6, 'vdHTTPSwitch' },
+	DESCRIPTION_SWITCH = { 6, 'vdDescriptionSwitch' },
 	-- increment SECPANEL_INDEX when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX = 52
+local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 10 -- 10 is number of groups / scenes + managed counter + dimmer switch+ ?
 
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
@@ -91,6 +92,15 @@ local VAR_TYPES = {
 	SILENT = { 0, 'varSilent', 1 },
 	CANCELLED = { 0, 'varCancelled', 0}
 }
+
+local getResultsFromfile = function(file)
+		local utils = require('Utils')
+		local results = assert(io.open(file, "r"))
+		resTable = utils.fromJSON(results:read("*all"))
+		results:close()
+		return resTable
+end
+
 
 describe('Integration test', function ()
 
@@ -117,6 +127,7 @@ describe('Integration test', function ()
 		TestTools.removeFSScript('some_module.lua')
 		TestTools.removeFSScript('global_data.lua')
 		TestTools.removeFSScript('httpResponseScript.lua')
+		TestTools.removeFSScript('descriptionScript.lua')
 		TestTools.removeDataFile('__data_global_data.lua')
 		TestTools.removeDataFile('__data_secArmedAway.lua')
 	end)
@@ -156,7 +167,11 @@ describe('Integration test', function ()
 		end)
 	end)
 
-
+	describe('Camera ID', function()
+		it('should have proper Camera ID', function()
+			assert.are.equal(SECPANEL_INDEX, 55)
+		end)
+	end)
 
 	describe('Camera', function()
 		it('should create a camera', function()
@@ -361,6 +376,11 @@ describe('Integration test', function ()
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.HTTP_SWITCH[2], VIRTUAL_DEVICES.HTTP_SWITCH[1])
 			assert.is_true(ok)
 		end)
+
+		it('should create a description switch to trigger desription script', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.DESCRIPTION_SWITCH[2], VIRTUAL_DEVICES.DESCRIPTION_SWITCH[1])
+			assert.is_true(ok)
+		end)
 	end)
 
 	describe('ManagedCounter', function()
@@ -372,7 +392,7 @@ describe('Integration test', function ()
 	end)
 
 	describe('Groups and scenes', function()
-
+		-- increment SECPANEL_INDEX when adding a new one !!!!!!!!!!
 		it('should create a scene', function()
 			-- first create switch to be put in the scene
 			local ok
@@ -442,7 +462,7 @@ describe('Integration test', function ()
 		it('should create a scene which update will be cancelled', function()
 			local ok
 			local switchIdx
-			local sceneIdx = 4 -- api doesn't return the idx so we assume this is 1
+			local sceneIdx = 5 -- api doesn't return the idx so we assume this is 1
 			ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneCancelledSwitch1', 6)
 			assert.is_true(ok)
 
@@ -452,6 +472,36 @@ describe('Integration test', function ()
 			ok = TestTools.addSceneDevice(sceneIdx, switchIdx)
 			assert.is_true(ok)
 		end)
+
+		it('should create a scene which will get a new description', function()
+			local ok
+			local switchIdx
+			local sceneIdx = 6
+			ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneDescriptionSwitch1', 6)
+			assert.is_true(ok)
+
+			ok = TestTools.createScene('scDescriptionScene')
+			assert.is_true(ok)
+
+			ok = TestTools.addSceneDevice(sceneIdx, switchIdx)
+			assert.is_true(ok)
+		end)
+
+	   it('should create a group which will get a new description', function()
+			local ok
+			local switchIdx
+			local groupIdx = 7
+
+			ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'groupDescriptionSwitch1', 6)
+			assert.is_true(ok)
+
+			ok = TestTools.createGroup('gpDescriptionGroup')
+			assert.is_true(ok)
+
+			ok = TestTools.addSceneDevice(groupIdx, switchIdx)
+			assert.is_true(ok)
+		end)
+		-- increment SECPANEL_INDEX when adding a new group or scene !!!!!!!!!!
 	end)
 
 	describe('Variables', function()
@@ -556,6 +606,10 @@ describe('Integration test', function ()
 			TestTools.createFSScript('silent.lua')
 		end)
 
+		it('Should move description script in place', function()
+			TestTools.createFSScript('descriptionScript.lua')
+		end)
+
 		it('Should move a module in place', function()
 			TestTools.createFSScript('some_module.lua')
 		end)
@@ -609,7 +663,6 @@ describe('Integration test', function ()
 	end)
 
 	describe('Start the tests', function()
-
 		it('Should all just work fine', function()
 
 			socket.sleep(1)
@@ -619,10 +672,31 @@ describe('Integration test', function ()
 			assert.is_true(ok)
 
 		end)
+	end)
 
-		it('Should have succeeded', function()
+	describe('waiting...', function()
+		secondsToWait = 25
+		for i=1,secondsToWait do
+			it('sleeping ' .. tostring(i) .. ' of ' .. secondsToWait .. ' seconds '   , function()
+				socket.sleep(1) -- 25 because of repeatAfter tests , the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+					assert.is_true(true)
+			end)
+		end
 
-			socket.sleep(25) -- 25 because of repeatAfter tests , the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+
+	end)
+
+
+	describe('Stage2', function()
+
+		resTable = getResultsFromfile("/tmp/Stage2results.json")
+		for key,value in pairs (resTable)do
+			it(key , function()
+				assert.is_same(true, value)
+			end)
+		end
+
+				it('Devices with results should have succeeded', function()
 
 			local switchDimmerResultsDevice
 			local varStringResultsDevice
@@ -659,11 +733,10 @@ describe('Integration test', function ()
 
 		end)
 
+
 		-- it('NOTE', function()
 		-- 	print('DONT FORGET TO SWITCH OFF TESTMODE IN dVents.lua !!!!!')
 		-- end)
-
 	end)
-
 
 end);

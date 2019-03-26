@@ -502,6 +502,12 @@ local function DomoticzTestTools(port, debug, webroot)
 		self.copyScript(name)
 	end
 
+	function self.tableEntries(t)
+		local count = 0
+		for _ in pairs(t) do count = count + 1 end
+		return count
+	end
+
 	return self
 
 

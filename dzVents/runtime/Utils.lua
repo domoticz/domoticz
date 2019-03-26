@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.15',
+	DZVERSION = '2.4.16',
 }
 
 function self.fileExists(name)
@@ -57,10 +57,14 @@ function self.urlDecode(str)
 	return str:gsub("%%(%x%x)", hex2Char)
 end
 
-function self.fromJSON(json)
+function self.fromJSON(json, fallback)
 
 	local parse = function(j)
 		return jsonParser:decode(j)
+	end
+
+	if json == nil then
+		return fallback
 	end
 
 	if (jsonParser == nil) then
@@ -72,11 +76,12 @@ function self.fromJSON(json)
 	if (ok) then
 		return results
 	end
-
+	
 	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
-	return nil
+	return fallback
 
 end
+
 
 function self.toJSON(luaTable)
 
@@ -165,6 +170,39 @@ function self.rgbToHSB(r, g, b)
 
 	local isWhite = (hsb.s < 20)
 	return hsb.h, hsb.s, hsb.b, isWhite
+end
+
+function self.hsbToRGB(h,s,v)
+	local r, b, g, C, V, S, X, m, r1, b1, g1
+
+	local function inRange(value, low, high)
+		return (value >= low and value <= high)
+	end
+
+	local function getRGB(C,X,h)
+		if h >= 300 and h < 360 then return C, 0, X end
+		if h >= 240  then return X, 0, C end
+		if h >= 180  then return 0, X, C end
+		if h >= 120  then return 0, C, X end
+		if h >=  60  then return X, C, 0 end
+		return C, X, 0
+	end
+
+	if s > 1 then S = s / 100 else S = s end
+	if v > 1 then V = v / 100 else V = v end
+	if not(inRange(h,0,360)) then h = h % 360 end
+
+	C = V * S
+	X = C * (1 - (h / 60 % 2) - 1)
+
+	m = V - C
+
+	r1, g1, b1 = getRGB(C, X, h)
+	r = (r1+m) * 255
+	g = (g1+m) * 255
+	b = (b1+m) * 255
+	return r, g, b
+
 end
 
 return self

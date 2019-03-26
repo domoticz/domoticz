@@ -186,8 +186,8 @@ local function Domoticz(settings)
 				return utils.fileExists(path)
 			end,
 
-			fromJSON = function(json)
-				return utils.fromJSON(json)
+			fromJSON = function(json, fallback)
+				return utils.fromJSON(json, fallback)
 			end,
 
 			toJSON = function(luaTable)
@@ -196,7 +196,11 @@ local function Domoticz(settings)
 			
 			rgbToHSB = function(r, g, b)
 				return utils.rgbToHSB(r,g,b)
-			end
+			end,
+
+			hsbToRGB = function(h, s, b)
+				return utils.hsbToRGB(h,s,b)
+			end,
 		}
 	}
 
@@ -373,12 +377,13 @@ local function Domoticz(settings)
 		return self.utils.round(x, n)
 	end
 
-	-- doesn't seem to work well for some weird reasone
+	function self.dump()
+		dumpTable(settings, '> ')
+	end
 	function self.logDevice(device)
 		dumpTable(device, '> ')
 	end
 
-	-- doesn't seem to work well for some weird reasone
 	function self.logCamera(camera)
 		dumpTable(camera, '> ')
 	end
