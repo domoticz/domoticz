@@ -1,9 +1,15 @@
-[2.4.15]
+[2.4.16]
+- Add option dump() to domoticz.settings
+- Add domoticz.hsbToRGB method for converting hue to rgb
+- Add setHue, setColor, setHex, getColor for RGBW(W) devices
+- Add setDescription for devices, groups and scenes
+- Add volumeUp / volumeDown for Logitech Media Server (LMS)
+
+[2.4.15] 
 - Add option to use camera name in snapshot command
 - Add domoticz.settings.domoticzVersion
 - Add domoticz.settings.dzVentsVersion
 
- 
 [2.4.14]
 - Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
 - Added check for- and message when call to openURL cannot open local (127.0.0.1)

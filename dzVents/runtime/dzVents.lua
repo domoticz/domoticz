@@ -5,7 +5,6 @@ globalvariables['testmode'] = false
 if (_G.TESTMODE) then
 	TESTMODE = false
 	globalvariables['testmode'] = false
-
 end
 
 
