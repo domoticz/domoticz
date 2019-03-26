@@ -89,6 +89,23 @@ describe('event helpers', function()
 		local t = utils.fromJSON(json)
 		assert.is_same(1, t['a'])
 	end)
+    
+    it('should convert a json to a table or fallback to fallback', function()
+        local json = '{ "a": 1 }'
+        local t = utils.fromJSON(json, fallback)
+		assert.is_same(1, t['a'])
+        
+        json = nil
+        local fallback  = { a=1 }
+		local t = utils.fromJSON(json, fallback)
+		assert.is_same(1, t['a'])
+        
+        json = nil
+        fallback  = nil
+		local t = utils.fromJSON(json, fallback)
+		assert.is_nil(t)
+        
+	end)
 
 	it('should convert a table to json', function()
 		local t = { a= 1 }

@@ -186,8 +186,8 @@ local function Domoticz(settings)
 				return utils.fileExists(path)
 			end,
 
-			fromJSON = function(json)
-				return utils.fromJSON(json)
+			fromJSON = function(json, fallback)
+				return utils.fromJSON(json, fallback)
 			end,
 
 			toJSON = function(luaTable)
