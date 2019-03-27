@@ -3,9 +3,7 @@
     flex-direction: column;
 }
 
-.page-devices-wrapper > .usage-filter {
-    display: flex;
-    justify-content: space-between;
+.page-devices-wrapper > .top-panel {
     margin-bottom: 8px;
 }
 

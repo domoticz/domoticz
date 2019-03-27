@@ -6751,6 +6751,8 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 				safe_exec_no_return("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID == '%q')", itt.c_str());
 				safe_exec_no_return("DELETE FROM Percentage WHERE (DeviceRowID == '%q')", itt.c_str());
 				safe_exec_no_return("DELETE FROM Percentage_Calendar WHERE (DeviceRowID == '%q')", itt.c_str());
+				safe_exec_no_return("DELETE FROM Fan WHERE (DeviceRowID == '%q')", itt.c_str());
+				safe_exec_no_return("DELETE FROM Fan_Calendar WHERE (DeviceRowID == '%q')", itt.c_str());
 				safe_exec_no_return("DELETE FROM SceneDevices WHERE (DeviceRowID == '%q')", itt.c_str());
 				safe_exec_no_return("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')", itt.c_str());
 				safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", itt.c_str());
@@ -6876,6 +6878,20 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
 	else
 		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+
+	//Fan
+	result = safe_query("SELECT Date FROM Fan WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
+	if (!result.empty())
+		safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
+	else
+		safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+
+	result = safe_query("SELECT Date FROM Fan_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
+	if (!result.empty())
+		safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
+	else
+		safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+
 
 	//Percentage
 	result = safe_query("SELECT Date FROM Percentage WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
