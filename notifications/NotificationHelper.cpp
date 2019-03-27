@@ -1205,7 +1205,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	ltime.tm_mday = tm1.tm_mday;
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
-	if (subType == sTypeRAINWU || subType == sTypeRAINDS)
+	if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
 	{
 		//value is already total rain
 		double total_real = mvalue;

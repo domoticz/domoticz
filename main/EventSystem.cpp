@@ -1011,7 +1011,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
-				if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINDS)
+				if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
 				{
 					result2 = m_sql.safe_query(
 						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
@@ -1027,7 +1027,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				{
 					double total_real = 0;
 					std::vector<std::string> sd2 = result2[0];
-					if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINDS)
+					if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
 					{
 						total_real = atof(sd2[1].c_str());
 					}

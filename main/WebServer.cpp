@@ -9499,7 +9499,7 @@ namespace http {
 
 							std::vector<std::vector<std::string> > result2;
 
-							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 							{
 								result2 = m_sql.safe_query(
 									"SELECT Total, Total FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
@@ -9516,7 +9516,7 @@ namespace http {
 								float rate = 0;
 								std::vector<std::string> sd2 = result2[0];
 
-								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 								{
 									total_real = atof(sd2[1].c_str());
 								}
@@ -9528,7 +9528,7 @@ namespace http {
 								}
 
 								total_real *= AddjMulti;
-								if (dSubType == sTypeRAINDS)
+								if (dSubType == sTypeRAINByRate)
 								{
 									rate = (static_cast<float>(atof(strarray[0].c_str())) / 10000.0f)*float(AddjMulti);
 								}
@@ -14550,7 +14550,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
 							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
@@ -14571,7 +14571,7 @@ namespace http {
 						int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
-						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
 							total_real = total_max;
 						}
@@ -15248,7 +15248,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
 							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
@@ -15269,7 +15269,7 @@ namespace http {
 						int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
-						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
 							total_real = total_max;
 						}
@@ -16738,7 +16738,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
 							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
@@ -16759,7 +16759,7 @@ namespace http {
 						int rate = atoi(sd[2].c_str());
 
 						float total_real = 0;
-						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINDS)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
 							total_real = total_max;
 						}

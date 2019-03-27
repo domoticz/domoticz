@@ -5975,7 +5975,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 		unsigned char subType = atoi(sd[0].c_str());
 
-		if (subType == sTypeRAINWU || subType == sTypeRAINDS)
+		if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
 		{
 			result = safe_query("SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<'%q') ORDER BY ROWID DESC LIMIT 1",
 				ID,
@@ -6001,7 +6001,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 			int rate = atoi(sd[2].c_str());
 
 			float total_real = 0;
-			if (subType == sTypeRAINWU || subType == sTypeRAINDS)
+			if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
 			{
 				total_real = total_max;
 			}

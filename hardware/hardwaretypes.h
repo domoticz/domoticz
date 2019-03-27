@@ -16,7 +16,7 @@
 #define sTypeSmartwaresSwitchRadiator 0x84
 
 #define sTypeRAINWU 0x70	 //Weather Underground (Total rain reported, no counter)
-#define sTypeRAINDS 0x71	 //DarkSky (Only rate, no total, no counter)
+#define sTypeRAINByRate 0x71	 //DarkSky for example (Only rate, no total, no counter)
 
 #define sTypeTHBFloat 0x10   //Weather Station
 #define sTypeWINDNoTemp 0x30    //Weather Station

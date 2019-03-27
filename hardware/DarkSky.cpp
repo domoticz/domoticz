@@ -359,7 +359,7 @@ void CDarkSky::GetMeterDetails()
 				memset(&tsen,0,sizeof(RBUF));
 				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
 				tsen.RAIN.packettype=pTypeRAIN;
-				tsen.RAIN.subtype= sTypeRAINDS;
+				tsen.RAIN.subtype = sTypeRAINByRate;
 				tsen.RAIN.battery_level=9;
 				tsen.RAIN.rssi=12;
 				tsen.RAIN.id1=0;

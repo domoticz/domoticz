@@ -3001,7 +3001,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 
 	float TotalRain = float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
 
-	if (subType == sTypeRAINDS)
+	if (subType == sTypeRAINByRate)
 	{
 		//calculate new Total
 		TotalRain = 0;
