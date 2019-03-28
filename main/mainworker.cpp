@@ -10902,7 +10902,7 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 		}
 
 		bool bHaveChill = false;
-		if (1 == 0);// subType == sTypeWEATHERx)
+		if (1 == 0)// subType == sTypeWEATHERx)
 		{
 			if (!pResponse->WEATHER.chillsign)
 			{
