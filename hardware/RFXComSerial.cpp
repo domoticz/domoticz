@@ -25,6 +25,8 @@
 
 #define RETRY_DELAY 30
 
+#define RFX_WRITE_DELAY 300
+
 extern std::string szStartupFolder;
 
 #define round(a) ( int ) ( a + .5 )
@@ -82,7 +84,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_serial.setStopbits(serial::stopbits_one);
 	m_serial.setFlowcontrol(serial::flowcontrol_none);
 
-	serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
+	serial::Timeout stimeout = serial::Timeout::simpleTimeout(200);
 	m_serial.setTimeout(stimeout);
 }
 
@@ -682,7 +684,7 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, int m
 		try
 		{
 			size_t twrite = m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
-			sleep_milliseconds(100);
+			sleep_milliseconds(RFX_WRITE_DELAY);
 			if (twrite == tot_bytes)
 			{
 				int rcount = 0;

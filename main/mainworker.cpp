@@ -10900,15 +10900,21 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage(" Invalid Temperature");
 			return;
 		}
-		if (!pResponse->WEATHER.chillsign)
+
+		bool bHaveChill = false;
+		if (1 == 0);// subType == sTypeWEATHERx)
 		{
-			chill = float((pResponse->WEATHER.chillhigh * 256) + pResponse->WEATHER.chilllow) / 10.0f;
+			if (!pResponse->WEATHER.chillsign)
+			{
+				chill = float((pResponse->WEATHER.chillhigh * 256) + pResponse->WEATHER.chilllow) / 10.0f;
+			}
+			else
+			{
+				chill = -(float(((pResponse->WEATHER.chillhigh) & 0x7F) * 256 + pResponse->WEATHER.chilllow) / 10.0f);
+			}
+			bHaveChill = true;
 		}
-		else
-		{
-			chill = -(float(((pResponse->WEATHER.chillhigh) & 0x7F) * 256 + pResponse->WEATHER.chilllow) / 10.0f);
-		}
-		pRFXDevice->SendWind(windID, BatteryLevel, intDirection, (float)intSpeed, (float)intGust, temp, chill, true, true, procResult.DeviceName, SignalLevel);
+		pRFXDevice->SendWind(windID, BatteryLevel, intDirection, (float)intSpeed, (float)intGust, temp, chill, true, bHaveChill, procResult.DeviceName, SignalLevel);
 
 		if (subType = sTypeWEATHER2)
 		{
