@@ -2745,49 +2745,53 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 					WriteMessage("Undec             off");
 
 				if (pResponse->IRESPONSE868.ALECTOenabled)
-					WriteMessage("Alecto            enabled");
-				else
-					WriteMessage("Alecto            disabled");
+					WriteMessage("Alecto ACH2010    enabled");
+				
+				if (pResponse->IRESPONSE868.ALECTO5500enabled)
+					WriteMessage("Alecto WS5500     enabled");
+
+				if (pResponse->IRESPONSE868.LACROSSEenabled)
+					WriteMessage("LA Crosse         enabled");
 
 				if (pResponse->IRESPONSE868.DAVISEUenabled)
 					WriteMessage("Davis EU          enabled");
-				else
-					WriteMessage("Davis EU          disabled");
 
 				if (pResponse->IRESPONSE868.DAVISUSenabled)
 					WriteMessage("Davis US          enabled");
-				else
-					WriteMessage("Davis US          disabled");
 
 				if (pResponse->IRESPONSE868.DAVISAUenabled)
 					WriteMessage("Davis AU          enabled");
-				else
-					WriteMessage("Davis AU          disabled");
-
-				if (pResponse->IRESPONSE868.PROGUARDenabled)
-					WriteMessage("Proguard          enabled");
-				else
-					WriteMessage("Proguard          disabled");
 
 				if (pResponse->IRESPONSE868.FS20enabled)
 					WriteMessage("FS20              enabled");
-				else
-					WriteMessage("FS20              disabled");
+
+				if (pResponse->IRESPONSE868.LWRFenabled)
+					WriteMessage("LightwaveRF       enabled");
 
 				if (pResponse->IRESPONSE868.EDISIOenabled)
 					WriteMessage("Edisio            enabled");
-				else
-					WriteMessage("Edisio            disabled");
 
 				if (pResponse->IRESPONSE868.VISONICenabled)
 					WriteMessage("Visonic           enabled");
-				else
-					WriteMessage("Visonic           disabled");
+
+				if (pResponse->IRESPONSE868.MEIANTECHenabled)
+					WriteMessage("Meiantech         enabled");
 
 				if (pResponse->IRESPONSE868.KEELOQenabled)
 					WriteMessage("Keeloq            enabled");
-				else
-					WriteMessage("Keeloq            disabled");
+
+				if (pResponse->IRESPONSE868.PROGUARDenabled)
+					WriteMessage("Proguard          enabled");
+
+				if (pResponse->IRESPONSE868.ITHOenabled)
+					WriteMessage("Itho CVE RFT      enabled");
+
+				if (pResponse->IRESPONSE868.ITHOecoenabled)
+					WriteMessage("Itho CVE ECO RFT  enabled");
+
+				if (pResponse->IRESPONSE868.HONEYWELLenabled)
+					WriteMessage("Honeywell Chime   enabled");
+
 			}
 		}
 		break;
@@ -10858,8 +10862,6 @@ void MainWorker::decode_CartelectronicEncoder(const int HwdID,
 
 void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
-	//to be implemented soon
-
 	unsigned short windID = (pResponse->WIND.id1 * 256) + pResponse->WIND.id2;
 	char szTmp[100];
 	sprintf(szTmp, "%d", windID);
@@ -10872,98 +10874,41 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 	unsigned char SignalLevel = pResponse->WEATHER.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->WEATHER.battery_level & 0x0F);
 
-	double dDirection;
-	dDirection = (double)(pResponse->WEATHER.directionhigh * 256) + pResponse->WEATHER.directionlow;
-	dDirection = m_wind_calculator[windID].AddValueAndReturnAvarage(dDirection);
-
-	std::string strDirection;
-	if (dDirection > 348.75 || dDirection < 11.26)
-		strDirection = "N";
-	else if (dDirection < 33.76)
-		strDirection = "NNE";
-	else if (dDirection < 56.26)
-		strDirection = "NE";
-	else if (dDirection < 78.76)
-		strDirection = "ENE";
-	else if (dDirection < 101.26)
-		strDirection = "E";
-	else if (dDirection < 123.76)
-		strDirection = "ESE";
-	else if (dDirection < 146.26)
-		strDirection = "SE";
-	else if (dDirection < 168.76)
-		strDirection = "SSE";
-	else if (dDirection < 191.26)
-		strDirection = "S";
-	else if (dDirection < 213.76)
-		strDirection = "SSW";
-	else if (dDirection < 236.26)
-		strDirection = "SW";
-	else if (dDirection < 258.76)
-		strDirection = "WSW";
-	else if (dDirection < 281.26)
-		strDirection = "W";
-	else if (dDirection < 303.76)
-		strDirection = "WNW";
-	else if (dDirection < 326.26)
-		strDirection = "NW";
-	else if (dDirection < 348.76)
-		strDirection = "NNW";
-	else
-		strDirection = "---";
-
-	dDirection = round(dDirection);
-
-	int intSpeed = (pResponse->WEATHER.av_speedhigh * 256) + pResponse->WEATHER.av_speedlow;
-	int intGust = (pResponse->WEATHER.gusthigh * 256) + pResponse->WEATHER.gustlow;
-
-	m_wind_calculator[windID].SetSpeedGust(intSpeed, intGust);
-
-	float temp = 0, chill = 0;
-	if (!pResponse->WEATHER.temperaturesign)
-	{
-		temp = float((pResponse->WEATHER.temperaturehigh * 256) + pResponse->WEATHER.temperaturelow) / 10.0f;
-	}
-	else
-	{
-		temp = -(float(((pResponse->WEATHER.temperaturehigh & 0x7F) * 256) + pResponse->WEATHER.temperaturelow) / 10.0f);
-	}
-	if ((temp < -200) || (temp > 380))
-	{
-		WriteMessage(" Invalid Temperature");
-		return;
-	}
-
-	float AddjValue = 0.0f;
-	float AddjMulti = 1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-	temp += AddjValue;
-
-	if (!pResponse->WEATHER.chillsign)
-	{
-		chill = float((pResponse->WEATHER.chillhigh * 256) + pResponse->WEATHER.chilllow) / 10.0f;
-	}
-	else
-	{
-		chill = -(float(((pResponse->WEATHER.chillhigh) & 0x7F) * 256 + pResponse->WEATHER.chilllow) / 10.0f);
-	}
-	chill += AddjValue;
-
-	sprintf(szTmp, "%.2f;%s;%d;%d;%.1f;%.1f", dDirection, strDirection.c_str(), intSpeed, intGust, temp, chill);
-	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
-	if (DevRowIdx == -1)
-		return;
-	procResult.DeviceRowIdx = DevRowIdx;
-
-	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, Unit, devType, subType, cmnd, szTmp);
-
-	uint64_t tID = ((uint64_t)(HwdID & 0x7FFFFFFF) << 32) | (DevRowIdx & 0x7FFFFFFF);
-	m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(chill), _tTrendCalculator::TAVERAGE_TEMP);
+	procResult.DeviceRowIdx = -1;
 
 	CDomoticzHardwareBase* pHardware = GetHardware(HwdID);
 	if (pHardware)
 	{
 		CRFXBase *pRFXDevice = reinterpret_cast<CRFXBase *>(pHardware);
+
+		//Wind
+		int intDirection = (pResponse->WEATHER.directionhigh * 256) + pResponse->WEATHER.directionlow;
+		int intSpeed = (pResponse->WEATHER.av_speedhigh * 256) + pResponse->WEATHER.av_speedlow;
+		int intGust = (pResponse->WEATHER.gusthigh * 256) + pResponse->WEATHER.gustlow;
+
+		float temp = 0, chill = 0;
+		if (!pResponse->WEATHER.temperaturesign)
+		{
+			temp = float((pResponse->WEATHER.temperaturehigh * 256) + pResponse->WEATHER.temperaturelow) / 10.0f;
+		}
+		else
+		{
+			temp = -(float(((pResponse->WEATHER.temperaturehigh & 0x7F) * 256) + pResponse->WEATHER.temperaturelow) / 10.0f);
+		}
+		if ((temp < -200) || (temp > 380))
+		{
+			WriteMessage(" Invalid Temperature");
+			return;
+		}
+		if (!pResponse->WEATHER.chillsign)
+		{
+			chill = float((pResponse->WEATHER.chillhigh * 256) + pResponse->WEATHER.chilllow) / 10.0f;
+		}
+		else
+		{
+			chill = -(float(((pResponse->WEATHER.chillhigh) & 0x7F) * 256 + pResponse->WEATHER.chilllow) / 10.0f);
+		}
+		pRFXDevice->SendWind(windID, BatteryLevel, intDirection, (float)intSpeed, (float)intGust, temp, chill, true, true, procResult.DeviceName, SignalLevel);
 
 		if (subType = sTypeWEATHER2)
 		{
@@ -11002,11 +10947,7 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 		if (subType = sTypeWEATHER2)
 		{
 			float radiation = (float)((pResponse->WEATHER.solarhigh * 256) + pResponse->WEATHER.solarlow);
-			_tGeneralDevice gdevice;
-			gdevice.subtype = sTypeSolarRadiation;
-			gdevice.intval1 = windID;
-			gdevice.floatval1 = radiation;
-			decode_General(HwdID, HwdType, pResponse, procResult, SignalLevel, BatteryLevel);
+			pRFXDevice->SendSolarRadiationSensor(windID, BatteryLevel, radiation, procResult.DeviceName);
 		}
 	}
 }
