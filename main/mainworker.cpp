@@ -10862,7 +10862,7 @@ void MainWorker::decode_CartelectronicEncoder(const int HwdID,
 
 void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
-	unsigned short windID = (pResponse->WIND.id1 * 256) + pResponse->WIND.id2;
+	unsigned short windID = (pResponse->WEATHER.id1 * 256) + pResponse->WEATHER.id2;
 	char szTmp[100];
 	sprintf(szTmp, "%d", windID);
 	std::string ID = szTmp;
