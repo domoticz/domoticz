@@ -3,7 +3,6 @@
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
 	<CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE">
-
 		<Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="0" value="0">
 			<Item label="Off" value="0"/>
 			<Item label="Heat (Default)" value="1"/>
@@ -20,8 +19,9 @@
 
 	<CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
 		<Instance index="1"/>
-		<Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="0" max="0" value="20"/>
-		<Value type="decimal" genre="user" instance="1" index="11" label="Energy Heat" units="C" read_only="false" write_only="false" min="0" max="0" value="16"/>
+		<Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="5" max="40" value="20"/>
+		<Value type="decimal" genre="user" instance="1" index="2" label="Cooling" units="C" read_only="false" write_only="false" min="5" max="40" value="21"/>
+		<Value type="decimal" genre="user" instance="1" index="11" label="Energy Heat" units="C" read_only="false" write_only="false" min="5" max="40" value="16"/>
 	</CommandClass>
 
 	<CommandClass id="112" name="COMMAND_CLASS_CONFIGURATION">
@@ -48,7 +48,7 @@
 			<Item label="47k ntc" value="5"/>
 		</Value>
 		<Value type="short" index="4" genre="config" label="DIFF l. Temperature control Hysteresis" min="3" max="30" size="1" value="5">
-			<Help>3-30 (0,2C - 3.0C)</Help>
+			<Help>3-30 (0.3C - 3.0C)</Help>
 		</Value>
 		<Value type="short" index="5" genre="config" label="FLo: Floor min limit" min="50" max="400" size="1" value="50">
 			<Help>50-400 (5.0C - 40.0C)</Help>

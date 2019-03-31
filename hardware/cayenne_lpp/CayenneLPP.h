@@ -16,6 +16,7 @@
 #define LPP_RELATIVE_HUMIDITY   104     // 1 byte, 0.5% unsigned
 #define LPP_ACCELEROMETER       113     // 2 bytes per axis, 0.001G
 #define LPP_BAROMETRIC_PRESSURE 115     // 2 bytes 0.1 hPa Unsigned
+#define LPP_UNIXTIME			133		// 4 bytes, unsigned uint_32_t
 #define LPP_GYROMETER           134     // 2 bytes per axis, 0.01 °/s
 #define LPP_GPS                 136     // 3 byte lon/lat 0.0001 °, 3 bytes alt 0.01 meter
 
@@ -31,6 +32,7 @@
 #define LPP_RELATIVE_HUMIDITY_SIZE   3       // 1 byte, 0.5% unsigned
 #define LPP_ACCELEROMETER_SIZE       8       // 2 bytes per axis, 0.001G
 #define LPP_BAROMETRIC_PRESSURE_SIZE 4       // 2 bytes 0.1 hPa Unsigned
+#define LPP_UNIXTIME_SIZE			 6		 // 4 bytes, unsigned uint_32_t
 #define LPP_GYROMETER_SIZE           8       // 2 bytes per axis, 0.01 °/s
 #define LPP_GPS_SIZE                 11      // 3 byte lon/lat 0.0001 °, 3 bytes alt 0.01 meter
 

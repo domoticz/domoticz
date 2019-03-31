@@ -42,12 +42,12 @@ class CEventSystem : public CLuaCommon, StoppableTask
 	struct _tActionParseResults
 	{
 		std::string sCommand;
-		float fForSec;
-		float fAfterSec;
-		float fRandomSec;
-		int iRepeat;
-		float fRepeatSec;
-		bool bEventTrigger;
+		float fForSec = 0;
+		float fAfterSec = 0;
+		float fRandomSec = 0;
+		int iRepeat = 1;
+		float fRepeatSec = 0;
+		bool bEventTrigger = false;
 	};
 public:
 	enum _eReason

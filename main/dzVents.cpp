@@ -10,13 +10,13 @@
 #include <inttypes.h>
 #include "../webserver/Base64.h"
 
-extern std::string szUserDataFolder, szWebRoot, szStartupFolder;
+extern std::string szUserDataFolder, szWebRoot, szStartupFolder, szAppVersion;
 extern http::server::CWebServerHelper m_webservers;
 
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.13")
+	m_version("2.4.15")
 {
 	m_bdzVentsExist = false;
 }
@@ -184,12 +184,27 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 				delayTime = static_cast<float>(itt->iValue);
 		}
 	}
+	
 	if (URL.empty())
 	{
 		_log.Log(LOG_ERROR, "dzVents: No URL supplied!");
 		return false;
 	}
+	
+	// Handle situation where WebLocalNetworks is not open without password for dzVents
+	if (URL.find("127.0.0.1") != std::string::npos)
+	{
+		std::string allowedNetworks;
+		int rnvalue = 0;
+		m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+		if (allowedNetworks.find("127.0.0.") == std::string::npos)
+		{
+			_log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
+			return false;
+		}
+	}
 
+	
 	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
 	if (!method.empty() && method == "POST")
 		eMethod = HTTPClient::HTTP_METHOD_POST;
@@ -470,12 +485,40 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_pushstring(lua_state, "dzVents_log_level");
 	lua_pushnumber(lua_state, (lua_Number)rnvalue);
 	lua_rawset(lua_state, -3);
-    std::string sTitle;
-    m_sql.GetPreferencesVar("Title", sTitle);
-    lua_pushstring(lua_state, "domoticz_title");
+
+	std::string sTitle;
+	m_sql.GetPreferencesVar("Title", sTitle);
+	lua_pushstring(lua_state, "domoticz_title");
 	lua_pushstring(lua_state, sTitle.c_str());
 	lua_rawset(lua_state, -3);
-    lua_pushstring(lua_state, "domoticz_listening_port");
+	
+	// Only when webLocalNetworks has local network defined
+	// Add latitude / longitude to table
+	std::string allowedNetworks;
+	rnvalue = 0;
+	m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+	if (allowedNetworks.find("127.0.0.") != std::string::npos)
+	{
+		std::string location;
+		std::vector<std::string> strarray;
+		if (m_sql.GetPreferencesVar("Location", rnvalue, location))
+			StringSplit(location, ";", strarray);
+		if (strarray.size() == 2)
+		{
+			// Only when location entered in the settings
+			// Add to table
+			std::string Latitude = strarray[0];
+			std::string Longitude = strarray[1];
+			lua_pushstring(lua_state, "longitude");
+			lua_pushstring(lua_state, Longitude.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "latitude");
+			lua_pushstring(lua_state, Latitude.c_str());
+			lua_rawset(lua_state, -3);
+		}
+	}
+
+	lua_pushstring(lua_state, "domoticz_listening_port");
 	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "domoticz_webroot");
@@ -489,6 +532,12 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "systemUptime");
 	lua_pushnumber(lua_state, (lua_Number)SystemUptime());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "domoticz_version");
+	lua_pushstring(lua_state, szAppVersion.c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "dzVents_version");
+	lua_pushstring(lua_state,(GetVersion().c_str()));
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 }
@@ -871,6 +920,35 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_settable(lua_state, -3); // end entry
 
 		index++;
+	}
+
+	// Now do the cameras.
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, Name FROM Cameras where enabled = '1' ORDER BY ID ASC");
+	if (!result.empty())
+	{
+		for (const auto & itt : result)
+		{
+			std::vector<std::string> sd = itt;
+			lua_pushnumber(lua_state, (lua_Number)index);
+			lua_createtable(lua_state, 1, 3);
+
+			lua_pushstring(lua_state, "name");
+			lua_pushstring(lua_state, sd[1].c_str());
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "id");
+			lua_pushnumber(lua_state, atoi(sd[0].c_str()));
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "baseType");
+			lua_pushstring(lua_state, "camera");
+			lua_rawset(lua_state, -3);
+
+			lua_settable(lua_state, -3); // end entry
+
+			index++;
+		}
 	}
 
 	lua_setglobal(lua_state, "domoticzData");

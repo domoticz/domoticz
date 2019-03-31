@@ -231,7 +231,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								m_CurrentStatus.Status(MSTAT_ON);
 								UpdateStatus();
 							}
-							else if (root["method"] == "Player.OnPlay")
+							else if ((root["method"] == "Player.OnPlay") || (root["method"] == "Player.OnResume"))
 							{
 								m_CurrentStatus.Clear();
 								m_CurrentStatus.PlayerID(root["params"]["data"]["player"]["playerid"].asInt());
@@ -249,7 +249,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 									m_CurrentStatus.Status(MSTAT_VIDEO);
 								else
 								{
-									_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
+									_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay/OnResume message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
 								}
 
 								if (m_CurrentStatus.PlayerID() != "")  // if we now have a player id then request more details

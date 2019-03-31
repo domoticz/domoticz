@@ -32,6 +32,8 @@ public:
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
 public:
+	void UpdateUserVariable(const std::string &varName, const std::string &varValue);
+
 	bool m_bDoReconnect;
 	bool m_IsConnected;
 	boost::signals2::signal<void()>	sDisconnected;

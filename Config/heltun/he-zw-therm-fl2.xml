@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
+		<Instance index="1"/>
+		<Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="0" max="0" value="20"/>
+	</CommandClass>
+	<CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE" version="1" request_flags="4"  >
+		<Instance index="1" />
+		<Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="0"   size="1">
+			<Item label="Off" value="0" />
+			<Item label="Dry floor" value="8" />
+			<Item label="Auto" value="10" />
+			<Item label="Heat Econ" value="11" />
+			<Item label="Vacation" value="13" />
+			<Item label="Unknown" value="14"/>
+			<Item label="Comfort" value="15" />
+		</Value>
+		<SupportedModes>
+			<Mode index="0" label="Off" />
+			<Mode index="8" label="Dry floor" />
+			<Mode index="10" label="Auto" />
+			<Mode index="11" label="Heat Econ" />
+			<Mode index="13" label="Vacation" />
+			<Mode index="14" label="Unknown" />
+			<Mode index="15" label="Comfort" />
+		</SupportedModes>
+	</CommandClass>
+  <CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="Degree mode" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Degree Mode 0=C, 1=F
+      </Help>
+      <Item label="Centigrade" value="0" />
+      <Item label="Farenheit" value="1" />
+    </Value>
+    <Value type="list" index="2" genre="config" label="External input mode" units="" min="0" max="2" value="1" size="1">
+      <Help>
+        External input mode.  The thermostat can be connected to an external device (like security system) dry output contacts and control the thermostat operating modes depending on the contacts state. If parameter value is 0 no action will be take (the input state is ignored by the thermostat logic). If parameter value is 1 the thermostat will be switched to the operating mode selected in Parameter 3 if the output was short-circuited. The thermostat will go back to previous mode as soon as the input is open. If parameter value is 2 the thermostat will be switched to the operating mode selected in Parameter 3 if the output was short-circuited. But the thermostat will not undertake any action if the input is open again.
+      </Help>
+      <Item label="Ignore external input" value="0" />
+      <Item label="Trigger on input" value="1" />
+      <Item label="Latch on input" value="2" />
+    </Value>
+    <Value type="list" index="3" genre="config" label="Mode number" units="" min="1" max="6" value="2" size="1">
+      <Help>
+        Mode number for EXT input action.  This parameter allows selecting which operating mode the thermostat should go to if the external input is short-circuited. 1=COM, 2=TIME, 3=DRY, 4=ECO, 5=VAC, 6=MAN. Note: When thermostat goes to MAN mode it will be in IDLE state till HEATING key is not pressed manually.
+      </Help>
+      <Item label="COM" value="1" />
+      <Item label="TIME" value="2" />
+      <Item label="DRY" value="3" />
+      <Item label="ECO" value="4" />
+      <Item label="VAC" value="5" />
+      <Item label="MAN" value="6" />
+    </Value>
+    <Value type="list" index="4" genre="config" label="Source sensor" units="" min="1" max="7" value="3" size="1">
+      <Help>
+        Source Sensor: 1=A, 2=AF, 3=F, 4=FA, 5=P, 6=PA, 7=PF. A=Air sensor, AF - Air sensor + Floor sensor, F - Floor sensor, FA - Floor sensor +Air sensor, P - Power regulator, PA - Power regulator + Air sensor, PF - Power regulator + Floor sensor
+      </Help>
+      <Item label="Air sensor" value="1" />
+      <Item label="Air and Floor sensors" value="2" />
+      <Item label="Floor sensor" value="3" />
+      <Item label="Floor and Air sensor" value="4" />
+      <Item label="Power regulator" value="5" />
+      <Item label="Power regulator and Air sensor" value="6" />
+      <Item label="Power rgulator and Floor sensor" value="7" />
+    </Value>
+    <Value type="byte" index="5" genre="config" label="Power reg on" units="mins" min="10" max="90" value="15" size="1">
+      <Help>
+        Power Regulation ON time, min
+      </Help>
+    </Value>
+    <Value type="byte" index="6" genre="config" label="Power reg off" units="mins" min="10" max="90" value="15" size="1">
+      <Help>
+        Power Regulation OFF time, min
+      </Help>
+    </Value>
+    <Value type="byte" index="7" genre="config" label="Dry time" units="mins" min="5" max="90" value="30" size="1">
+      <Help>
+        Dry Time, min
+      </Help>
+    </Value>
+    <Value type="bool" index="8" genre="config" label="Time by controller" units="" min="0" max="1" value="1" size="1">
+      <Help>
+        Time correction by controller
+      </Help>
+    </Value>
+    <Value type="list" index="9" genre="config" label="Time format" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Time format 0=24hour, 1=12hour (AM/PM)
+      </Help>
+      <Item label="24 hour" value="0" />
+      <Item label="12 hour" value="1" />
+    </Value>
+    <Value type="byte" index="10" genre="config" label="Week day" units="" min="1" max="7" value="1" size="1">
+      <Help>
+        Manually set week day
+      </Help>
+    </Value>
+    <Value type="byte" index="11" genre="config" label="Hour" units="hours" min="0" max="23" value="0" size="1">
+      <Help>
+        Manually set time hour
+      </Help>
+    </Value>
+    <Value type="byte" index="12" genre="config" label="Mins" units="mins" min="0" max="59" value="0" size="1">
+      <Help>
+        Maually set time minute
+      </Help>
+    </Value>
+    <Value type="short" index="13" genre="config" label="Air temp min" units="degree" min="40" max="360" value="210" size="2">
+      <Help>
+        Air Temperature Minimum in degree, value x10, e.g. 22.5=225
+      </Help>
+    </Value>
+    <Value type="short" index="14" genre="config" label="Air temp max" units="degree" min="50" max="370" value="270" size="2">
+      <Help>
+        Air Temperature Maximum in degree, x10
+      </Help>
+    </Value>
+    <Value type="short" index="15" genre="config" label="Floor temp min" units="degree" min="40" max="360" value="180" size="2">
+      <Help>
+        Floor Temperature Minimum in degree, x10
+      </Help>
+    </Value>
+    <Value type="short" index="16" genre="config" label="Floor temp max" units="degree" min="50" max="370" value="320" size="2">
+      <Help>
+        Floor Temperature Maximum in degree, x10
+      </Help>
+    </Value>
+    <Value type="byte" index="17" genre="config" label="Floor sensor resistance" units="kohm" min="1" max="100" value="10" size="1">
+      <Help>
+        Floor Sensor Resistance, kohm
+      </Help>
+    </Value>
+    <Value type="byte" index="18" genre="config" label="Air temp calibration" units="degree" min="-95" max="95" value="0" size="1">
+      <Help>
+        Air Temperature Calibration in degree x10
+      </Help>
+    </Value>
+    <Value type="byte" index="19" genre="config" label="Floor temp calibration" units="degree" min="-95" max="95" value="0" size="1">
+      <Help>
+        Floor Temperature Calibration in degree x10
+      </Help>
+    </Value>
+    <Value type="byte" index="20" genre="config" label="Temp hysteresis" units="degree" min="1" max="95" value="5" size="1">
+      <Help>
+        Temperature Hysteresis in degree, x10
+      </Help>
+    </Value>
+    <Value type="byte" index="21" genre="config" label="Temp diff to send values" units="" min="1" max="10" value="2" size="1">
+      <Help>
+        Temperature difference to send to controller, value x10
+      </Help>
+    </Value>
+    <Value type="byte" index="22" genre="config" label="Active display brightnes" units="" min="1" max="4" value="4" size="1">
+      <Help>
+        Active display brightness level. Must be greater than or equal param 23
+      </Help>
+    </Value>
+    <Value type="byte" index="23" genre="config" label="Inactive display brightness" units="" min="1" max="4" value="3" size="1">
+      <Help>
+        Inactive display brightness level. Must be less than or equal param 22
+      </Help>
+    </Value>
+    <Value type="bool" index="24" genre="config" label="Auto LCD brightness" units="" min="0" max="1" value="1" size="1">
+      <Help>
+        Auto LCD brightness control
+      </Help>
+    </Value>
+    <Value type="short" index="25" genre="config" label="Auto bright level 1" units="lumens" min="0" max="5000" value="30" size="2">
+      <Help>
+        Auto brightness level 1 max lumens
+      </Help>
+    </Value>
+    <Value type="short" index="26" genre="config" label="Auto bright level 2" units="lumens" min="0" max="5000" value="200" size="2">
+      <Help>
+        Auto brightness level 2 max lumens
+      </Help>
+    </Value>
+    <Value type="short" index="27" genre="config" label="Auto bright level 3" units="lumens" min="0" max="5000" value="3000" size="2">
+      <Help>
+        Auto brightness level 3 max lumens
+      </Help>
+    </Value>
+    <Value type="list" index="28" genre="config" label="Basic set action" units="" min="1" max="6" value="6" size="1">
+      <Help>
+        Basic Set Action
+      </Help>
+      <Item label="COM" value="1" />
+      <Item label="TIME" value="2" />
+      <Item label="DRY" value="3" />
+      <Item label="ECO" value="4" />
+      <Item label="VAC" value="5" />
+      <Item label="MAN" value="6" />
+    </Value>    
+    <Value type="byte" index="51" genre="config" label="Touch sensitivity" units="" min="20" max="70" value="50" size="1">
+      <Help>
+        Touch buttons sensitivity. 20=Super sensitive. 70=lowest sensitivity.
+      </Help>
+    </Value>
+    <Value type="short" index="52" genre="config" label="Morning start time" units="HHMM" min="0000" max="2359" value="0600" size="2">
+      <Help>
+        Morning start time. Format: HHMM. e.g.08:00 should be sent as 0800
+      </Help>
+    </Value>
+    <Value type="short" index="53" genre="config" label="Day start time" units="HHMM" min="0000" max="2359" value="0900" size="2">
+      <Help>
+        Day start time. Format: HHMM.
+      </Help>
+    </Value>
+    <Value type="short" index="54" genre="config" label="Evening start time" units="HHMM" min="0000" max="2359" value="1800" size="2">
+      <Help>
+        Evening start time. Format: HHMM.
+      </Help>
+    </Value>
+    <Value type="short" index="55" genre="config" label="Night Start time" units="HHMM" min="0000" max="2359" value="2300" size="2">
+      <Help>
+        Night start time. Format: HHMM.
+      </Help>
+    </Value>
+    <Value type="short" index="56" genre="config" label="Monday morning temp" units="degree" min="40" max="370" value="240" size="2">
+      <Help>
+        Monday morning temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="57" genre="config" label="Monday day temp" units="degree" min="40" max="370" value="200" size="2">
+      <Help>
+        Monday day temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="58" genre="config" label="Monday evening temp" units="degree" min="40" max="370" value="230" size="2">
+      <Help>
+        Monday evening temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="59" genre="config" label="Monday night temp" units="degree" min="40" max="370" value="180" size="2">
+      <Help>
+        Monday night temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="60" genre="config" label="Tuesday morning temp" units="degree" min="40" max="370" value="240" size="2">
+      <Help>
+        Tuesday morning temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="61" genre="config" label="Tuesday day temp" units="degree" min="40" max="370" value="200" size="2">
+      <Help>
+        Tuesday day temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="62" genre="config" label="Tuesday evening temp" units="degree" min="40" max="370" value="230" size="2">
+      <Help>
+        Tuesday evening temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="63" genre="config" label="Tuesday night temp" units="degree" min="40" max="370" value="180" size="2">
+      <Help>
+        Tuesday night temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="64" genre="config" label="Wednesday morning temp" units="degree" min="40" max="370" value="240" size="2">
+      <Help>
+        Wednesday morning temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="65" genre="config" label="Wednesday day temp" units="degree" min="40" max="370" value="200" size="2">
+      <Help>
+        Wednesday day temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="66" genre="config" label="Wednesday evening temp" units="degree" min="40" max="370" value="230" size="2">
+      <Help>
+        Wednesday evening temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="67" genre="config" label="Wednesday night temp" units="degree" min="40" max="370" value="180" size="2">
+      <Help>
+        Wednesday night temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="68" genre="config" label="Thursday morning temp" units="degree" min="40" max="370" value="240" size="2">
+      <Help>
+        Thursday morning temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="69" genre="config" label="Thursday day temp" units="degree" min="40" max="370" value="200" size="2">
+      <Help>
+        Thursday day temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="70" genre="config" label="Thursday evening temp" units="degree" min="40" max="370" value="230" size="2">
+      <Help>
+        Thursday evening temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="71" genre="config" label="Thursday night temp" units="degree" min="40" max="370" value="180" size="2">
+      <Help>
+        Thursday night temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="72" genre="config" label="Friday morning temp" units="degree" min="40" max="370" value="240" size="2">
+      <Help>
+        Friday morning temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="73" genre="config" label="Friday day temp" units="degree" min="40" max="370" value="200" size="2">
+      <Help>
+        Friday day temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="74" genre="config" label="Friday evening temp" units="degree" min="40" max="370" value="230" size="2">
+      <Help>
+        Friday evening temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="75" genre="config" label="Friday night temp" units="degree" min="40" max="370" value="180" size="2">
+      <Help>
+        Friday night temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="76" genre="config" label="Saturday morning temp" units="degree" min="40" max="370" value="240" size="2">
+      <Help>
+        Saturday morning temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="77" genre="config" label="Saturday day temp" units="degree" min="40" max="370" value="200" size="2">
+      <Help>
+        Saturday day temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="78" genre="config" label="Saturday evening temp" units="degree" min="40" max="370" value="230" size="2">
+      <Help>
+        Saturday evening temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="79" genre="config" label="Saturday night temp" units="degree" min="40" max="370" value="180" size="2">
+      <Help>
+        Saturday night temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="80" genre="config" label="Sunday morning temp" units="degree" min="40" max="370" value="240" size="2">
+      <Help>
+        Sunday morning temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="81" genre="config" label="Sunday day temp" units="degree" min="40" max="370" value="200" size="2">
+      <Help>
+        Sunday day temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="82" genre="config" label="Sunday evening temp" units="degree" min="40" max="370" value="230" size="2">
+      <Help>
+        Sunday evening temperature, value x10
+      </Help>
+    </Value>
+    <Value type="short" index="83" genre="config" label="Sunday night temp" units="degree" min="40" max="370" value="180" size="2">
+      <Help>
+        Sunday night temperature, value x10
+      </Help>
+    </Value>
+  </CommandClass>
+  
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="1"  label="Lifeline" />
+      <Group index="2" max_associations="10" label="Basic Set" auto="true" />
+    </Associations>
+  </CommandClass>
+
+</Product>

@@ -404,6 +404,26 @@ namespace http {
 				}
 			}
 		}
+		void CWebServer::RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "Cameras";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto& itt : result)
+				{
+					std::vector<std::string> sd = itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
+		}
 		void CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep)
 		{
 			std::string request_path;

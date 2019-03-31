@@ -8,7 +8,7 @@ define(['app'], function (app) {
         controller: ZWaveHardwareController
     });
 
-    function ZWaveHardwareController ($scope) {
+    function ZWaveHardwareController ($scope, $interval) {
         var $ctrl = this;
 
         $ctrl.$onInit = function() {

@@ -16,6 +16,7 @@
 		<Product type="6401" id="01fd" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0100" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0001" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
+		<Product type="6501" id="000b" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000c" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000d" name="CT101 Thermostat" config="2gig/ct101.xml"/>
 	</Manufacturer>
@@ -224,6 +225,8 @@
 		<Product type="0103" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
 		<Product type="0203" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
 		<Product type="1d03" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="0003" id="00b4" name="ZWA006 Smart Boost Timer Switch" config="aeotec/zwa006.xml"/>
+		<Product type="0103" id="00b4" name="ZWA006 Smart Boost Timer Switch" config="aeotec/zwa006.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0088" name="Airvent SAM S.p.A.">
 	</Manufacturer>
@@ -651,6 +654,7 @@
 		<Product type="0003" id="0002" name="AD146 In wall Dimmer Module" config="everspring/ad146.xml"/>
 		<Product type="0004" id="0001" name="AN157 Plug-in Appliance Module"/>
 		<Product type="0004" id="0002" name="AN158 Plug-in Meter Appliance Module" config="everspring/an158.xml"/>
+		<Product type="0004" id="0005" name="AN163 Plug-in On/Off with meter function" config="everspring/an163.xml"/>
 		<Product type="0004" id="0006" name="AN181 Miniplug On/Off with meter function" config="everspring/an181.xml"/>
 		<Product type="0004" id="0007" name="AN180 Plug-in ON/OFF Module" config="everspring/an180.xml"/>
 		<Product type="0004" id="0008" name="AN179 In wall ON/OFF Module" config="everspring/an179.xml"/>
@@ -737,6 +741,7 @@
 		<Product type="0301" id="1001" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
 		<Product type="0302" id="1000" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
 		<Product type="0302" id="4000" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
+		<Product type="0303" id="1000" name="FGRM223 Roller Shutter Controller 3" config="fibaro/fgr223.xml"/>
 		<Product type="0400" id="0104" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0105" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0106" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
@@ -873,6 +878,7 @@
 		<Product type="4944" id="3131" name="14287 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4952" id="3134" name="14288 In-Wall Tamper Resistant Smart Outlet" config="ge/14288-outlet.xml"/>
 		<Product type="4944" id="3038" name="14294 In-Wall Smart Dimmer" config="ge/14294-dimmer.xml"/>
+		<Product type="4944" id="3039" name="14299 In-Wall 1000W Smart Dimmer" config="ge/14294-dimmer.xml"/>
 		<Product type="4944" id="3130" name="14295 In-Wall Smart Toggle Dimmer" config="ge/14295-dimmer-toggle.xml"/>
 		<Product type="494d" id="3032" name="26931 Smart Motion Switch" config="ge/26931-motion-switch.xml"/>
 		<Product type="494d" id="3034" name="26933 Smart Motion Dimmer" config="ge/26933-motion-dimmer.xml"/>
@@ -975,6 +981,7 @@
 		<Product type="8008" id="1000" name="Smart Plug HS2SK-Z" config="heiman/HS2SK-Z.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0344" name="HELTUN">
+		<Product type="0003" id="0001" name="HE-ZW-THERM-FL2 Heating Thermostat" config="heltun/he-zw-therm-fl2.xml"/>
 	</Manufacturer>
 	<Manufacturer id="020F" name="Herald Datanetics Limited">
 	</Manufacturer>
@@ -1703,6 +1710,7 @@
 		<Product type="634b" id="504c" name="FE599GR Wireless Door Lock"/>
 		<Product type="6341" id="5044" name="BE469 Touchscreen Deadbolt" config="schlage/BE469.xml"/>
 		<Product type="6349" id="5044" name="BE468 Touchscreen Deadbolt" config="schlage/BE468.xml"/>
+		<Product type="0001" id="0469" name="BE469ZP Connect Smart Deadbolt" config="schlage/BE469ZP.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0097" name="Schlage Link (Wintop)">
 		<Product type="1182" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
@@ -1769,6 +1777,7 @@
 		<Product type="0003" id="2082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
 		<Product type="0003" id="0087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
 		<Product type="0003" id="1087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
+		<Product type="0200" id="1027" name="Power plug 12A" config="shenzen_neo/nas-wr01ze.xml"/>
 		<Product type="0003" id="0083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
 		<Product type="0003" id="1083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
 		<Product type="0003" id="108d" name="Battery Powered PIR Sensor V2" config="shenzen_neo/nas-pd02z.xml"/>
@@ -1922,7 +1931,7 @@
 	</Manufacturer>
 	<Manufacturer id="019b" name="ThermoFloor AS">
 		<Product type="0001" id="0001" name="Heatit Thermostat TF 021" config="thermofloor/heatit021.xml"/>
-		<Product type="0003" id="0202" name="Heatit Thermostat TF 033" config="thermofloor/heatit033.xml"/>
+		<Product type="0003" id="0202" name="Heatit Thermostat TF 056" config="thermofloor/heatit056.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0317" name="Think Simple srl">
 	</Manufacturer>
@@ -2237,6 +2246,8 @@
 		<Product type="a000" id="a001" name="ZEN26 S2 On Off Wall Switch" config="zooz/zen26.xml" />
 		<Product type="a000" id="a002" name="ZEN27 S2 Dimmer Wall Switch" config="zooz/zen27.xml" />
 		<Product type="b111" id="1e1c" name="ZEN21 Switch V2.0" config="zooz/zen21.xml" />
+		<Product type="000c" id="0003" name="ZSE19 S2 Multisiren" config="zooz/zse19.xml" />
+		<Product type="a000" id="a004" name="ZEN20 V2.0 Power Strip" config="zooz/zen20v2.xml" />
 	</Manufacturer>
 	<Manufacturer id="015d" name="Zooz (Willis Electric)">
 		<Product type="0651" id="f51c" name="ZEN20 Power Strip" config="zooz/zen20.xml" />
