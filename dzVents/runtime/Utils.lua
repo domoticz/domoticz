@@ -47,9 +47,8 @@ function self.urlEncode(str, strSub)
 	return str
 end
 
-
 function self.urlDecode(str)
-	
+
 	local hex2Char = function(x)
 		return string.char(tonumber(x, 16))
 	end
@@ -76,12 +75,11 @@ function self.fromJSON(json, fallback)
 	if (ok) then
 		return results
 	end
-	
+
 	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
 	return fallback
 
 end
-
 
 function self.toJSON(luaTable)
 
@@ -103,7 +101,6 @@ function self.toJSON(luaTable)
 	return nil
 
 end
-
 
 function self.log(msg, level)
 
@@ -172,7 +169,7 @@ function self.rgbToHSB(r, g, b)
 	return hsb.h, hsb.s, hsb.b, isWhite
 end
 
-function self.hsbToRGB(h,s,v)
+function self.hsbToRGB(h, s, v)
 	local r, b, g, C, V, S, X, m, r1, b1, g1
 
 	local function inRange(value, low, high)

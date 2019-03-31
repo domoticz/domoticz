@@ -3,7 +3,6 @@ local dz
 local _ = require('lodash')
 local resTable = {}
 
-
 local err = function(msg)
 	log(msg, dz.LOG_ERROR)
 end
@@ -791,10 +790,6 @@ return {
 		res = res and testDescription('vdDescriptionSwitch',descriptionString,"device");
 		res = res and testDescription('sceneDescriptionSwitch1',descriptionString,"scene");
 	   	res = res and testDescription('groupDescriptionSwitch1',descriptionString,"group");
-		
-
-	
-
 		res = res and testVersion('version')
 
 		-- test a require

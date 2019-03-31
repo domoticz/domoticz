@@ -80,13 +80,13 @@ return {
 
 		local function validRGB(r, g, b)
 			return  (
-						 type(r) == 'number'    and
-						 type(b) == 'number'    and
-						 type(g) == 'number'    and
-						 inRange(r, 0, 255)     and
-						 inRange(b, 0, 255)     and
-						 inRange(g, 0, 255)
-					)
+				type(r) == 'number' and
+				type(b) == 'number' and
+				type(g) == 'number' and
+				inRange(r, 0, 255) and
+				inRange(b, 0, 255) and
+				inRange(g, 0, 255)
+			)
 		end
 
 		local function RGBError()
@@ -97,11 +97,11 @@ return {
 		  if not(validRGB(r,g,b)) then RGBError() return false end
 		  local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
 			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?param=setcolbrightnessvalue&type=command' ..
-					'&idx='         .. device.id   ..
-					'&hue='         .. tostring(h) ..
-					'&brightness='  .. tostring(b) ..
-					'&iswhite='     .. tostring(isWhite)
+				'/json.htm?param=setcolbrightnessvalue&type=command' ..
+				'&idx=' .. device.id   ..
+				'&hue=' .. tostring(h) ..
+				'&brightness=' .. tostring(b) ..
+				'&iswhite=' .. tostring(isWhite)
 			return domoticz.openURL(url)
 		end
 
@@ -122,15 +122,15 @@ return {
 			if t  == nil then t = colors.t end
 			local url = domoticz.settings['Domoticz url'] ..
 						'/json.htm?type=command&param=setcolbrightnessvalue' ..
-						'&idx='         .. device.id   ..
-						'&brightness='  .. brightness  ..
-						'&color={"m":'  .. m           ..
-						',"t":'         .. t           ..
-						',"cw":'        .. cw          ..
-						',"ww":'        .. ww          ..
-						',"r":'         .. r           ..
-						',"g":'         .. g           ..
-						',"b":'         .. b           .. '}'
+						'&idx=' .. device.id   ..
+						'&brightness=' .. brightness ..
+						'&color={"m":' .. m ..
+						',"t":' .. t ..
+						',"cw":' .. cw ..
+						',"ww":' .. ww ..
+						',"r":' .. r ..
+						',"g":' .. g ..
+						',"b":' .. b .. '}'
 			return domoticz.openURL(url)
 		end
 
@@ -141,11 +141,11 @@ return {
 		function device.setHex(r,g,b)
 			local _ , _ , brightness = domoticz.utils.rgbToHSB(r, g, b)
 			local hex = string.format("%02x",r) .. string.format("%02x", g) .. string.format("%02x", b)
-			local url           = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=setcolbrightnessvalue' ..
-								'&idx='         .. device.id   ..
-								'&brightness='  .. brightness  ..
-								'&hex='         .. hex         ..
-								'&iswhite=false'
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=setcolbrightnessvalue' ..
+				'&idx=' .. device.id ..
+				'&brightness=' .. brightness ..
+				'&hex=' .. hex ..
+				'&iswhite=false'
 			return domoticz.openURL(url)
 		end
 
@@ -163,25 +163,25 @@ return {
 				return false
 			end
 			if not(isWhite) then isWhite = false end
-				local url           = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=setcolbrightnessvalue' ..
-									'&idx='         .. device.id   ..
-									'&brightness='  .. brightness  ..
-									'&hue='         .. hue         ..
-									'&iswhite='     .. tostring(isWhite)
+				local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=setcolbrightnessvalue' ..
+					'&idx=' .. device.id ..
+					'&brightness=' .. brightness ..
+					'&hue=' .. hue ..
+					'&iswhite=' .. tostring(isWhite)
 				return domoticz.openURL(url)
 		end
 
 		function device.getColor()
 			local ct = domoticz.utils.fromJSON(device.color, {})
 			ct.hue, ct.saturation, ct.value, ct.isWhite = domoticz.utils.rgbToHSB(ct.r, ct.g, ct.b)
-			ct.red              = ct.r
-			ct.blue             = ct.b
-			ct.green            = ct.g
-			ct["warm white"]    = ct.ww
-			ct["cold white"]    = ct.cw
-			ct.temperature      = ct.t
-			ct.mode             = ct.m
-			ct.brightness       = ct.value
+			ct.red  = ct.r
+			ct.blue = ct.b
+			ct.green = ct.g
+			ct["warm white"] = ct.ww
+			ct["cold white"] = ct.cw
+			ct.temperature = ct.t
+			ct.mode = ct.m
+			ct.brightness = ct.value
 			return (ct)
 		end
 	end

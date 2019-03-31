@@ -15,7 +15,6 @@ local dataTargetPath = '../../../scripts/dzVents/data/'
 local DUMMY_HW = 15
 local DUMMY_HW_ID = 2
 
-
 local function DomoticzTestTools(port, debug, webroot)
 
 	if (port == nil) then port = 8080 end

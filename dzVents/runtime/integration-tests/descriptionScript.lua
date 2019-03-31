@@ -1,10 +1,10 @@
 return {
-	on =    {
-				devices         = { 'vdDescriptionSwitch'   },
-				groups          = { 'gpDescriptionGroup'    },
-				scenes          = { 'scDescriptionScene'    },
-				httpResponses   = { '*Description*'          }
-			},
+	on = {
+		devices = { 'vdDescriptionSwitch' },
+		groups = { 'gpDescriptionGroup' },
+		scenes = { 'scDescriptionScene' },
+		httpResponses = { '*Description*' }
+	},
 
 	execute = function(domoticz, triggerItem, info)
 
@@ -14,13 +14,11 @@ return {
 
 		local function getScenes(description)
 			local url = dz.settings['Domoticz url'] ..  "/json.htm?type=scenes"
-			dz.openURL  (
-							{
-								url = url,
-								method = "GET",
-								callback = description,
-							}
-						).afterSec(3)
+			dz.openURL({
+				url = url,
+				method = "GET",
+				callback = description,
+			}).afterSec(3)
 		end
 
 

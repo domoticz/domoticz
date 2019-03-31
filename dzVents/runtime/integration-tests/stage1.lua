@@ -577,7 +577,7 @@ local testRGBW = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 	})
-	dev.setRGB(15,30,60)
+	dev.setRGB(15, 30, 60)
 	dev.dimTo(15)
 	tstMsg('Test rgbw device', res)
 	return res
@@ -867,8 +867,6 @@ local testThermostatSetpoint = function(name)
 		["timedOut"] = false;
 	})
 
-	
-	
 	dev.updateSetPoint(11)
 	dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
 	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
@@ -1395,7 +1393,7 @@ return {
 		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
-	
+
 		storeLastUpdates()
 
 		log('Finishing stage 1')

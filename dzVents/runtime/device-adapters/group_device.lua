@@ -49,18 +49,18 @@ return {
 		end
 
 		function group.setDescription(description)
-			local url   =   domoticz.settings['Domoticz url'] ..
-							"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
-							"&scenetype=1" ..
-							"&idx=" .. group.id ..
-							"&name=".. domoticz.utils.urlEncode(group.name) ..
-							"&type=updatescene" ..
-							"&onaction=&offaction="
+			local url = domoticz.settings['Domoticz url'] ..
+				"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
+				"&scenetype=1" ..
+				"&idx=" .. group.id ..
+				"&name=".. domoticz.utils.urlEncode(group.name) ..
+				"&type=updatescene" ..
+				"&onaction=&offaction="
 			return domoticz.openURL(url)
 			--?type=updatescene&idx=7&scenetype=1&name=gpDescriptionGroup&description=ff&onaction=&offaction=&protected=false
 
 		end
-		
+
 		function group.devices()
 			local subData = {}
 			local ids = data.deviceIDs ~= nil and data.deviceIDs or {}

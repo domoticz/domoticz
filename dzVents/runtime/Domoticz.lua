@@ -34,7 +34,7 @@ local function Domoticz(settings)
 	if (_G.timeofday['SunriseInMinutes'] == 0 and _G.timeofday['SunsetInMinutes'] == 0) then
 		utils.log('No information about sunrise and sunset available. Please set lat/lng information in settings.', utils.LOG_ERROR)
 	end
-	
+
 	nowTime['isDayTime'] = timeofday['Daytime']
 	nowTime['isCivilDayTime'] = timeofday['Civildaytime']
 	nowTime['isCivilNightTime'] = timeofday['Civilnighttime']
@@ -162,11 +162,11 @@ local function Domoticz(settings)
 			urlEncode = function(s, strSub)
 				return utils.urlEncode(s, strSub)
 			end,
-			
+
 			urlDecode = function(s)
 				return utils.urlDecode(s)
 			end,
-			
+
 			round = function(x, n)
 				n = math.pow(10, n or 0)
 				x = x * n
@@ -193,7 +193,7 @@ local function Domoticz(settings)
 			toJSON = function(luaTable)
 				return utils.toJSON(luaTable)
 			end,
-			
+
 			rgbToHSB = function(r, g, b)
 				return utils.rgbToHSB(r,g,b)
 			end,
@@ -253,17 +253,15 @@ local function Domoticz(settings)
 			self.sendCommand('SendEmail', subject .. '#' .. message .. '#' .. mailTo)
 		end
 	end
-	
-	
+
 	-- have domoticz send snapshot
 	function self.snapshot(cameraID, subject)
 		if tostring(cameraID):match("%a") then
 			cameraID = self.cameras(cameraID).id
 		end
 		local snapshotCommand = "SendCamera:" .. cameraID
-		return TimedCommand(self, snapshotCommand , subject, 'camera')       -- works with afterXXX
+		return TimedCommand(self, snapshotCommand , subject, 'camera') -- works with afterXXX
 	end
-
 
 	-- have domoticz send an sms
 	function self.sms(message)
@@ -324,7 +322,7 @@ local function Domoticz(settings)
 		end
 
 	end
-	
+
 	-- send a scene switch command
 	function self.setScene(scene, value)
 		utils.log('setScene is deprecated. Please use the scene object directly.', utils.LOG_INFO)
@@ -380,6 +378,7 @@ local function Domoticz(settings)
 	function self.dump()
 		dumpTable(settings, '> ')
 	end
+
 	function self.logDevice(device)
 		dumpTable(device, '> ')
 	end
