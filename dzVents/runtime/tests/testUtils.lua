@@ -80,8 +80,12 @@ describe('event helpers', function()
 		assert.is_true(utils.fileExists('testfile'))
 	end)
 
-	it('should return true for os.execute', function()
-		assert.is_true(utils.osExecute('dir'))
+	it('should return true for os.execute (echo)', function()
+		assert.is_nil(utils.osExecute('echo test > testfile.out'))
+	end)
+
+	it('should return true for os.execute (rm)', function()
+		assert.is_nil(utils.osExecute('rm testfile.out'))
 	end)
 
 	it('should return false if a file does not exist', function()
