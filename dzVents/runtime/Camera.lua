@@ -3,15 +3,11 @@ local Adapters = require('Adapters')
 local TimedCommand = require('TimedCommand')
 local TIMED_OPTIONS = require('TimedCommandOptions')
 
-
 local function Camera(domoticz, data, dummyLogger)
-
 	local self = {}
 	local state
 	local adapterManager = Adapters(dummyLogger)
 
-
-	
 	function self.dump()
 		domoticz.logCamera(self)
 	end

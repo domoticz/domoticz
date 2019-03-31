@@ -4,10 +4,10 @@ return {
 		devices = {'vdCancelledRepeatSwitch'},
 	},
 
-	logging =   {
-					level           =   domoticz.LOG_DEBUG,
-					marker          =   httpResponses
-				},
+	logging = {
+		level = domoticz.LOG_DEBUG,
+		marker = httpResponses
+	},
 
 	execute = function(domoticz, switch)
 		domoticz.globalData.cancelledRepeatSwitch = domoticz.globalData.cancelledRepeatSwitch + 1

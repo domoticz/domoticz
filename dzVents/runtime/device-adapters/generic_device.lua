@@ -46,8 +46,11 @@ return {
 		return true -- generic always matches
 	end,
 
+	matches = function (device, adapterManager)
+		adapterManager.addDummyMethod(device, 'setDescription')
+	end,
+	
 	process = function (device, data, domoticz, utils, adapterManager)
-
 		local _states = adapterManager.states
 
 		if (data.lastUpdate == '' or data.lastUpdate == nil) then
@@ -125,6 +128,15 @@ return {
 		end
 
 		setStateAttribute(data.data._state, device, _states)
+
+		function device.setDescription(description)
+			local url = domoticz.settings['Domoticz url'] ..
+							"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
+							"&idx=" .. device.id ..
+							"&name=".. domoticz.utils.urlEncode(device.name) ..
+							"&type=setused&used=true"
+			return domoticz.openURL(url)
+		end
 
 		function device.setState(newState)
 			-- generic state update method
