@@ -12,6 +12,7 @@ local deviceAdapters = {
 	'electric_usage_device',
 	'evohome_device',
 	'gas_device',
+	'generic_device',
 	'group_device',
 	'humidity_device',
 	'kwh_device',

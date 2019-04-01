@@ -1010,8 +1010,6 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		updateTotal(res)
 
-
-
 		res = self.ruleIsOnDay(rule) -- range
 		if (res == false) then
 			-- on <days> was specified but 'now' is not

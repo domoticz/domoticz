@@ -1627,11 +1627,11 @@ bool CEvohomeRadio::DecodeSync(CEvohomeMsg &msg) //0x1F09
 	{
 		if (msg.payloadsize == 1)
 		{
-			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x", msg.payload[0]);
+			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x", tag, msg.payload[0]);
 		}
 		else
 		{
-			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x (%d)", msg.payload[0], msg.payload[1] << 8 | msg.payload[2]);
+			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x (%d)", tag, msg.payload[0], msg.payload[1] << 8 | msg.payload[2]);
 		}
 		return true;
 	}
