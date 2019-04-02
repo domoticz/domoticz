@@ -355,32 +355,7 @@ void CDarkSky::GetMeterDetails()
 			float rainrateph = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str()))*25.4f; //inches to mm
 			if ((rainrateph !=-9999.00f)&&(rainrateph >=0.00f))
 			{
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-				tsen.RAIN.packettype=pTypeRAIN;
-				tsen.RAIN.subtype = sTypeRAINByRate;
-				tsen.RAIN.battery_level=9;
-				tsen.RAIN.rssi=12;
-				tsen.RAIN.id1=0;
-				tsen.RAIN.id2=1;
-
-				int at10 = round(std::abs(rainrateph*10000.0f));
-				tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
-				at10 -= (tsen.RAIN.rainrateh * 256);
-				tsen.RAIN.rainratel = (BYTE)(at10);
-
-				tsen.RAIN.raintotal1 = 0;
-				tsen.RAIN.raintotal2 = 0;
-				tsen.RAIN.raintotal3 = 0;
-
-				/*int tr10=int((float(RainCount)*10.0f));
-				tsen.RAIN.raintotal1=0;
-				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-				tr10-=(tsen.RAIN.raintotal2*256);
-				tsen.RAIN.raintotal3=(BYTE)(tr10);*/
-
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
+				SendRainRateSensor(1, 255, rainrateph, "Rain");
 			}
 		}
 	}

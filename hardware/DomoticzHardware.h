@@ -101,6 +101,7 @@ protected:
 	void SendPercentageSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
 	void SendWaterflowSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname);
 	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname, const int RssiLevel = 12);
+	void SendRainRateSensor(const int NodeID, const int BatteryLevel, const float RainRate, const std::string &defaultname, const int RssiLevel = 12);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
 	bool GetWindSensorValue(const int NodeID, int &WindDir, float &WindSpeed, float &WindGust, float &twindtemp, float &windchill, bool bHaveWindTemp, bool &bExists);
 	void SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const bool bHaveWindChill, const std::string &defaultname, const int RssiLevel = 12);
