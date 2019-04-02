@@ -10,6 +10,7 @@ CNotificationTelegram::CNotificationTelegram() : CNotificationBase(std::string("
 	SetupConfig(std::string("TelegramEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("TelegramAPI"), _apikey);
 	SetupConfig(std::string("TelegramChat"), _chatid);
+	SetupConfig(std::string("TelegramProxy"), _proxy);
 }
 
 CNotificationTelegram::~CNotificationTelegram()
@@ -53,6 +54,10 @@ bool CNotificationTelegram::SendMessageImplementation(
 
 	//Add the required Content Type
 	ExtraHeaders.push_back("Content-Type: application/json");
+
+	if (_proxy.length() > 0) {
+        HTTPClient::SetProxy(CURLEncode::URLDecode(_proxy));
+	}
 
 #ifndef WIN32
 	HTTPClient::SetSecurityOptions(true, true);

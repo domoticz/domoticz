@@ -85,14 +85,19 @@ define(['app'], function (app) {
 					}
 					extraparams = "PushbulletAPI=" + PushbulletAPI;
 					break;
-                                case "telegram":
-                                        var TelegramAPI = encodeURIComponent($("#telegramtable #TelegramAPI").val());
-                                        if (TelegramAPI == "") {
-                                                ShowNotify($.t('Please enter the API key!...'), 3500, true);
-                                                return;
-                                        }
-                                        extraparams = "TelegramAPI=" + TelegramAPI;
-                                        break;
+				case "telegram":
+						var TelegramAPI = encodeURIComponent($("#telegramtable #TelegramAPI").val());
+						if (TelegramAPI == "") {
+								ShowNotify($.t('Please enter the API key!...'), 3500, true);
+								return;
+						}
+						extraparams = "TelegramAPI=" + TelegramAPI;
+
+						var TelegramProxy = encodeURIComponent($("#telegramtable #TelegramProxy").val());
+						if (TelegramProxy != "") {
+							extraparams += "&TelegramProxy=" + TelegramProxy
+						}
+						break;
 				case "pushsafer":
 					var PushsaferAPI = encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
 					var PushsaferImage = encodeURIComponent($("#pushsafertable #PushsaferImage").val());
@@ -282,15 +287,18 @@ define(['app'], function (app) {
 					if (typeof data.PushbulletAPI != 'undefined') {
 						$("#pushbullettable #PushbulletAPI").val(data.PushbulletAPI);
 					}
-                                        if (typeof data.TelegramEnabled != 'undefined') {
-                                                $("#telegramtable #TelegramEnabled").prop('checked', data.TelegramEnabled == 1);
-                                        }
-                                        if (typeof data.TelegramAPI != 'undefined') {
-                                                $("#telegramtable #TelegramAPI").val(data.TelegramAPI);
-                                        }
-                                        if (typeof data.TelegramChat != 'undefined') {
-                                                $("#telegramtable #TelegramChat").val(data.TelegramChat);
-                                        }
+					if (typeof data.TelegramEnabled != 'undefined') {
+							$("#telegramtable #TelegramEnabled").prop('checked', data.TelegramEnabled == 1);
+					}
+					if (typeof data.TelegramAPI != 'undefined') {
+							$("#telegramtable #TelegramAPI").val(data.TelegramAPI);
+					}
+					if (typeof data.TelegramChat != 'undefined') {
+							$("#telegramtable #TelegramChat").val(data.TelegramChat);
+					}
+					if (typeof data.TelegramProxy != 'undefined') {
+						$("#telegramtable #TelegramProxy").val(data.TelegramProxy);
+					}
 					if (typeof data.PushsaferEnabled != 'undefined') {
 						$("#pushsafertable #PushsaferEnabled").prop('checked', data.PushsaferEnabled == 1);
 					}

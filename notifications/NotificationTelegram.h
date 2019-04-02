@@ -19,4 +19,5 @@ protected:
 private:
 	std::string _apikey;
 	std::string _chatid;
+	std::string _proxy;
 };
