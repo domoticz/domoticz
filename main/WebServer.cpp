@@ -9502,7 +9502,7 @@ namespace http {
 							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 							{
 								result2 = m_sql.safe_query(
-									"SELECT Total, Total FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
+									"SELECT Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
 							}
 							else
 							{
@@ -9518,7 +9518,7 @@ namespace http {
 
 								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 								{
-									total_real = atof(sd2[1].c_str());
+									total_real = atof(sd2[0].c_str());
 								}
 								else
 								{
@@ -9530,7 +9530,7 @@ namespace http {
 								total_real *= AddjMulti;
 								if (dSubType == sTypeRAINByRate)
 								{
-									rate = (static_cast<float>(atof(strarray[0].c_str())) / 10000.0f)*float(AddjMulti);
+									rate = atof(sd2[1].c_str()) / 10000.0f;
 								}
 								else
 								{
