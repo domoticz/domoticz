@@ -392,6 +392,30 @@ void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLe
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, defaultname.c_str(), BatteryLevel);
 }
 
+void CDomoticzHardwareBase::SendRainRateSensor(const int NodeID, const int BatteryLevel, const float RainRate, const std::string &defaultname, const int RssiLevel /* =12 */)
+{
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.RAIN.packetlength = sizeof(tsen.RAIN) - 1;
+	tsen.RAIN.packettype = pTypeRAIN;
+	tsen.RAIN.subtype = sTypeRAINByRate;
+	tsen.RAIN.battery_level = BatteryLevel;
+	tsen.RAIN.rssi = RssiLevel;
+	tsen.RAIN.id1 = (NodeID & 0xFF00) >> 8;
+	tsen.RAIN.id2 = NodeID & 0xFF;
+
+	int at10 = round(std::abs(RainRate*10000.0f));
+	tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
+	at10 -= (tsen.RAIN.rainrateh * 256);
+	tsen.RAIN.rainratel = (BYTE)(at10);
+
+	tsen.RAIN.raintotal1 = 0;
+	tsen.RAIN.raintotal2 = 0;
+	tsen.RAIN.raintotal3 = 0;
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, defaultname.c_str(), BatteryLevel);
+}
+
 float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool &bExists)
 {
 	char szIdx[10];

@@ -1011,31 +1011,31 @@ void CEventSystem::GetCurrentMeasurementStates()
 				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
-				if (sitem.subType != sTypeRAINWU)
+				if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
 				{
 					result2 = m_sql.safe_query(
-						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 						sitem.ID, szDate.c_str());
 				}
 				else
 				{
 					result2 = m_sql.safe_query(
-						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate.c_str());
 				}
 				if (!result2.empty())
 				{
 					double total_real = 0;
 					std::vector<std::string> sd2 = result2[0];
-					if (sitem.subType != sTypeRAINWU)
+					if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
+					{
+						total_real = atof(sd2[1].c_str());
+					}
+					else
 					{
 						float total_min = static_cast<float>(atof(sd2[0].c_str()));
 						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
 						total_real = total_max - total_min;
-					}
-					else
-					{
-						total_real = atof(sd2[1].c_str());
 					}
 					rainmm = float(total_real);
 				}
