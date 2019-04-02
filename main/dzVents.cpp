@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.16")
+	m_version("2.4.17")
 {
 	m_bdzVentsExist = false;
 }
@@ -200,6 +200,7 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 		if (allowedNetworks.find("127.0.0.") == std::string::npos)
 		{
 			_log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
+			_log.Log(LOG_ERROR, "dzVents: check dzVents wiki (look for 'Using dzVents with Domoticz')");
 			return false;
 		}
 	}

@@ -201,6 +201,11 @@ local function Domoticz(settings)
 			hsbToRGB = function(h, s, b)
 				return utils.hsbToRGB(h,s,b)
 			end,
+			
+			dumpTable = function(t, level)
+				return utils.dumpTable(t, level)
+			end,
+			
 		}
 	}
 
@@ -345,21 +350,6 @@ local function Domoticz(settings)
 		utils.log(message, level)
 	end
 
-	local function dumpTable(t, level)
-		for attr, value in pairs(t) do
-			if (type(value) ~= 'function') then
-				if (type(value) == 'table') then
-					print(level .. attr .. ':')
-					dumpTable(value, level .. '    ')
-				else
-					print(level .. attr .. ': ' .. tostring(value))
-				end
-			else
-				print(level .. attr .. '()')
-			end
-		end
-	end
-
 	function self.toCelsius(f, relative)
 		utils.log('domoticz.toCelsius deprecated. Please use domoticz.utils.toCelsius.', utils.LOG_INFO)
 		return self.utils.toCelsius(f, relative)
@@ -376,15 +366,15 @@ local function Domoticz(settings)
 	end
 
 	function self.dump()
-		dumpTable(settings, '> ')
+		self.utils.dumpTable(settings, '> ')
 	end
 
 	function self.logDevice(device)
-		dumpTable(device, '> ')
+		self.utils.dumpTable(device, '> ')
 	end
 
 	function self.logCamera(camera)
-		dumpTable(camera, '> ')
+		self.utils.dumpTable(camera, '> ')
 	end
 
 	self.__cameras = {}

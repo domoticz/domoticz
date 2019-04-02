@@ -84,7 +84,7 @@ local testDimmer = function(name)
 
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 39,
+		["id"] = 40,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -579,7 +579,7 @@ local testRGBW = function(name)
 	})
 	dev.setRGB(15, 30, 60)
 	dev.dimTo(15)
-	tstMsg('Test rgbw device', res)
+	tstMsg('Test RGBW device', res)
 	return res
 end
 
@@ -627,8 +627,7 @@ local testSelectorSwitch = function(name)
 		["timedOut"] = false;
 	})
 
-	dz.logDevice(dev)
-
+	res = res and ( dz.logDevice(dev) == nil )
 	res = res and expectEql('Off',  dev.levelNames[1])
 	res = res and expectEql('Level1', dev.levelNames[2])
 	res = res and expectEql('Level2', dev.levelNames[3])
@@ -643,7 +642,7 @@ local testSoilMoisture = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 24,
+		["id"] = 25,
 		["name"] = name,
 		["moisture"] = 3,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -667,7 +666,7 @@ local testSolarRadiation = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 25,
+		["id"] = 26,
 		["name"] = name,
 		["radiation"] = 1,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -691,7 +690,7 @@ local testSoundLevel = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 26,
+		["id"] = 27,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["level"] = 65,
@@ -715,7 +714,7 @@ local testTemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 27,
+		["id"] = 28,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["name"] = name,
 		["temperature"] = 0,
@@ -739,7 +738,7 @@ local testAPITemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
 
-	dz.openURL(dz.settings['Domoticz url'] .. '/json.htm?type=command%26param=udevice%26idx=' .. tonumber(42) .. '%26nvalue=0%26svalue=' .. tostring(42))
+	dz.openURL(dz.settings['Domoticz url'] .. '/json.htm?type=command%26param=udevice%26idx=' .. tonumber(dev.id) .. '%26nvalue=0%26svalue=' .. tostring(42))
 
 	tstMsg('Test API temperature device', res)
 	return res
@@ -749,7 +748,7 @@ local testTempHum = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 28,
+		["id"] = 29,
 		["name"] = name,
 		["temperature"] = 0,
 		["humidity"] = 50,
@@ -775,7 +774,7 @@ local testTempHumBaro = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 29,
+		["id"] = 30,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["temperature"] = 0,
@@ -801,7 +800,7 @@ local testTempBaro = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 40,
+		["id"] = 41,
 		["name"] = name,
 		["temperature"] = 0,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -827,7 +826,7 @@ local testText = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 30,
+		["id"] = 31,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["text"] = 'Hello World',
@@ -852,7 +851,7 @@ local testThermostatSetpoint = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 31,
+		["id"] = 32,
 		["name"] = name,
 		["setPoint"] = 20.5,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -878,7 +877,7 @@ local testUsageElectric = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 32,
+		["id"] = 33,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["WhActual"] = 0,
@@ -902,7 +901,7 @@ local testUV = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 33,
+		["id"] = 34,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["uv"] = 0,
@@ -927,7 +926,7 @@ local testVisibility = function(name)
 	local res = true
 	res = res and expectEql(103, math.floor(dev.visibility * 10))
 	res = res and checkAttributes(dev, {
-		["id"] = 34,
+		["id"] = 35,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Visibility";
@@ -950,7 +949,7 @@ local testVoltage = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 35,
+		["id"] = 36,
 		["name"] = name,
 		["voltage"] = 0,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -974,7 +973,7 @@ local testWaterflow = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 36,
+		["id"] = 37,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["flow"] = 0,
@@ -1193,6 +1192,42 @@ local testManagedCounter = function(name)
 	return res
 end
 
+local testSetIconSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = id,
+		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
+	})
+	dev.setIcon(10)
+	dev.dimTo(20).afterSec(1)
+	tstMsg('Test setIcon device', res)
+	return res
+end
+
+local testSetValueSensor = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = id,
+		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["deviceSubType"] = "Custom Sensor";
+		["deviceType"] = "General";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+	})
+	dev.setValues(nil,12,34,45)
+	tstMsg('Test setValues device', res)
+	return res
+end
+
 local storeLastUpdates = function()
 
 	dz.globalData.stage1Time = dz.time.raw
@@ -1314,7 +1349,6 @@ local testDescriptionSwitchScene = function(name)
 	return res
 end
 
-
 return {
 	active = true,
 	on = {
@@ -1351,6 +1385,8 @@ return {
 		res = res and testRGBW('vdRGBWSwitch')
 		res = res and testScaleWeight('vdScaleWeight')
 		res = res and testSelectorSwitch('vdSelectorSwitch')
+		res = res and testSetIconSwitch('vdSetIconSwitch')
+		res = res and testSetValueSensor('vdSetValueSensor')
 		res = res and testSoilMoisture('vdSoilMoisture')
 		res = res and testSolarRadiation('vdSolarRadiation')
 		res = res and testSoundLevel('vdSoundLevel')
@@ -1365,8 +1401,8 @@ return {
 		res = res and testVisibility("vdVisibility")
 		res = res and testVoltage("vdVoltage")
 		res = res and testWaterflow("vdWaterflow")
-		res = res and testWind('vdWind', 37, "WTGR800")
-		res = res and testWind('vdWindTempChill', 38, "TFA")
+		res = res and testWind('vdWind', 38, "WTGR800")
+		res = res and testWind('vdWindTempChill', 39, "TFA")
 		res = res and testScene('scScene')
 		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
@@ -1393,7 +1429,7 @@ return {
 		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
-
+		
 		storeLastUpdates()
 
 		log('Finishing stage 1')

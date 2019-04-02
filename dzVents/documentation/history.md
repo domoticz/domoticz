@@ -1,3 +1,8 @@
+[2.4.17]
+- Add function dumpTable() to domoticz.utils
+- Add setValues() method to devices 
+- Add setIcon() method for devices
+
 [2.4.16]
 - Add option dump() to domoticz.settings
 - Add domoticz.hsbToRGB method for converting hue to rgb
