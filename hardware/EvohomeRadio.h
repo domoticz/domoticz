@@ -86,6 +86,7 @@ private:
 	bool DecodeExternalSensor(CEvohomeMsg &msg);
 	bool DecodeDeviceInfo(CEvohomeMsg &msg);
 	bool DecodeBatteryInfo(CEvohomeMsg &msg);
+	bool DecodeSync(CEvohomeMsg &msg);
 	bool DumpMessage(CEvohomeMsg &msg);
 
 	void AddSendQueue(const CEvohomeMsg &msg);

@@ -15,7 +15,6 @@ local dataTargetPath = '../../../scripts/dzVents/data/'
 local DUMMY_HW = 15
 local DUMMY_HW_ID = 2
 
-
 local function DomoticzTestTools(port, debug, webroot)
 
 	if (port == nil) then port = 8080 end
@@ -500,6 +499,12 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.createFSScript(name)
 		self.copyScript(name)
+	end
+
+	function self.tableEntries(t)
+		local count = 0
+		for _ in pairs(t) do count = count + 1 end
+		return count
 	end
 
 	return self

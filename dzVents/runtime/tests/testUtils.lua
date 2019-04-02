@@ -80,6 +80,14 @@ describe('event helpers', function()
 		assert.is_true(utils.fileExists('testfile'))
 	end)
 
+	it('should return true for os.execute (echo)', function()
+		assert.is_nil(utils.osExecute('echo test > testfile.out'))
+	end)
+
+	it('should return true for os.execute (rm)', function()
+		assert.is_nil(utils.osExecute('rm testfile.out'))
+	end)
+
 	it('should return false if a file does not exist', function()
 		assert.is_false(utils.fileExists('blatestfile'))
 	end)
@@ -88,6 +96,23 @@ describe('event helpers', function()
 		local json = '{ "a": 1 }'
 		local t = utils.fromJSON(json)
 		assert.is_same(1, t['a'])
+	end)
+
+	it('should convert a json to a table or fallback to fallback', function()
+		local json = '{ "a": 1 }'
+		local t = utils.fromJSON(json, fallback)
+		assert.is_same(1, t['a'])
+
+		json = nil
+		local fallback  = { a=1 }
+		local t = utils.fromJSON(json, fallback)
+		assert.is_same(1, t['a'])
+
+		json = nil
+		fallback  = nil
+		local t = utils.fromJSON(json, fallback)
+		assert.is_nil(t)
+
 	end)
 
 	it('should convert a table to json', function()

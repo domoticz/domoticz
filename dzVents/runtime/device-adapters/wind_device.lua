@@ -14,8 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-        -- from data:   direction, 
-        --              speed (in the unit set in Meters / Counters Wind Meter unit), 
+        -- from data:   direction,
+        --              speed (in the unit set in Meters / Counters Wind Meter unit),
         --              directionString
 
 		device.speedMs = adapterManager.round(tonumber(device.rawData[3]) / 10,1)
@@ -27,11 +27,11 @@ return {
 
 		function device.updateWind(bearing, direction, speed, gust, temperature, chill)
 			local value = tostring(bearing) .. ';' ..
-					tostring(direction) .. ';' ..
-					tostring(speed * 10) .. ';' ..
-					tostring(gust * 10) .. ';' ..
-					tostring(temperature) .. ';' ..
-					tostring(chill)
+				tostring(direction) .. ';' ..
+				tostring(speed * 10) .. ';' ..
+				tostring(gust * 10) .. ';' ..
+				tostring(temperature) .. ';' ..
+				tostring(chill)
 			return device.update(0, value)
 		end
 	end

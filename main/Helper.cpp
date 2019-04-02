@@ -1014,6 +1014,8 @@ const char *szInsecureArgumentOptions[] = {
 	"$",
 	"<",
 	">",
+	"\n",
+	"\r",
 	NULL
 };
 

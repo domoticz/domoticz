@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.h" 
 #include "mainworker.h"
 #include "SQLHelper.h"
 #include "localtime_r.h"
@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.15")
+	m_version("2.4.16")
 {
 	m_bdzVentsExist = false;
 }
