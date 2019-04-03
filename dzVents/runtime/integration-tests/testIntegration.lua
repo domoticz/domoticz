@@ -97,11 +97,11 @@ local VAR_TYPES = {
 }
 
 local getResultsFromfile = function(file)
-		local utils = require('Utils')
-		local results = assert(io.open(file, "r"))
-		resTable = utils.fromJSON(results:read("*all"))
-		results:close()
-		return resTable
+	local utils = require('Utils')
+	local results = assert(io.open(file, "r"))
+	resTable = utils.fromJSON(results:read("*all"))
+	results:close()
+	return resTable
 end
 
 
@@ -430,7 +430,7 @@ describe('Integration test', function ()
 	end)
 
 	describe('ManagedCounter', function()
-	 it('should create a Managed counter', function()
+ 		it('should create a Managed counter', function()
 			local ok
 			ok = TestTools.createManagedCounter('vdManagedCounter')
 			assert.is_true(ok)
