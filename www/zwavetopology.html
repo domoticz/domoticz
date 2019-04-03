@@ -171,7 +171,7 @@
 													var removeNodeId = this * 1;
 													var removeNode = nodes[Math.round(removeNodeId)];
 													button.click({node: node, group: group, removeNode: removeNode, removeNodeId: this}, removeNodeFromGroup);
-													button.attr('title', getNodeName(node) + ' on ' + getGroupName(group));
+													button.attr('title', getNodeName(removeNode) + ' on ' + getGroupName(group));
 													button.appendTo(td);
 												}
 											});
