@@ -47,6 +47,7 @@ enum evoCommands
 	cmdDeviceInfo = 0x0418,
 	cmdBatteryInfo = 0x1060,
 	cmdSync = 0x1F09,
+	cmdDTime = 0x313F,
 	//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
 	//0x0005
 	//0x0006
@@ -103,6 +104,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string &UserContID)
 	RegisterDecoder(cmdDeviceInfo, boost::bind(&CEvohomeRadio::DecodeDeviceInfo, this, _1));
 	RegisterDecoder(cmdBatteryInfo, boost::bind(&CEvohomeRadio::DecodeBatteryInfo, this, _1));
 	RegisterDecoder(cmdSync, boost::bind(&CEvohomeRadio::DecodeSync, this, _1));
+	RegisterDecoder(cmdDTime, boost::bind(&CEvohomeRadio::DecodeDTime, this, _1));
 }
 
 
@@ -1632,6 +1634,29 @@ bool CEvohomeRadio::DecodeSync(CEvohomeMsg &msg) //0x1F09
 		else
 		{
 			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x (%d)", tag, msg.payload[0], msg.payload[1] << 8 | msg.payload[2]);
+		}
+		return true;
+	}
+}
+
+bool CEvohomeRadio::DecodeDTime(CEvohomeMsg &msg) //0x313F
+{
+	char tag[] = "DATE_TIME"; //these messages communicate the current date and time
+
+	if (msg.payloadsize != 1 && msg.payloadsize != 9)
+	{
+		Log(false, LOG_ERROR, "evohome: %s: unexpected payload size: %d", tag, msg.payloadsize);
+		return false;
+	}
+	else
+	{
+		if (msg.payloadsize == 1)
+		{
+			Log(true, LOG_STATUS, "evohome: %s: (%02x)", tag, msg.payload[0]);
+		}
+		else
+		{
+			Log(true, LOG_STATUS, "evohome: %s: %02d/%02d/%04d %02d:%02d:%02d", tag, msg.payload[5], msg.payload[6], msg.payload[7] << 8 | msg.payload[8], msg.payload[4], msg.payload[3], msg.payload[2] & 0x3F);
 		}
 		return true;
 	}
