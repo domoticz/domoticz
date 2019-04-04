@@ -80,11 +80,11 @@ describe('event helpers', function()
 		assert.is_true(utils.fileExists('testfile'))
 	end)
 
-	it('should return true for os.execute (echo)', function()
+	it('should return nil for os.execute (echo)', function()
 		assert.is_nil(utils.osExecute('echo test > testfile.out'))
 	end)
 
-	it('should return true for os.execute (rm)', function()
+	it('should return nil for os.execute (rm)', function()
 		assert.is_nil(utils.osExecute('rm testfile.out'))
 	end)
 
@@ -119,6 +119,12 @@ describe('event helpers', function()
 		local t = { a= 1 }
 		local res = utils.toJSON(t)
 		assert.is_same('{"a":1}', res)
+	end)
+	
+	it('should dump a table to log', function()
+		local t = { a=1,b=2,c={d=3,e=4, "test"} }
+		local res = utils.dumpTable(t,"> ")
+		assert.is_nil(res)
 	end)
 
 end)

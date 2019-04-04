@@ -3,6 +3,7 @@ local dz
 local _ = require('lodash')
 local resTable = {}
 
+
 local err = function(msg)
 	log(msg, dz.LOG_ERROR)
 end
@@ -68,7 +69,7 @@ local testDimmer = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 39,
+		["id"] = 40,
 		["state"] = "On",
 		["lastLevel"] = 75, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["level"] = 75;
@@ -254,8 +255,8 @@ end
 local testRain = function(name)
 	local dev = dz.devices(name)
 	local res = true
-	expectEql(3000, tonumber(dev.rawData[1]))
-	expectEql(6660, tonumber(dev.rawData[2]))
+	res = res and expectEql(3000, tonumber(dev.rawData[1]))
+	res = res and expectEql(6660, tonumber(dev.rawData[2]))
 	handleResult('Test rain device', res)
 	return res
 end
@@ -306,6 +307,7 @@ local testSelectorSwitch = function(name)
 	handleResult('Test selector switch device', res)
 	return res
 end
+
 
 local testSoilMoisture = function(name)
 	local dev = dz.devices(name)
@@ -400,6 +402,38 @@ local testTempBaro = function(name)
 	return res
 end
 
+local testGetColorRGBW = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	local ct = dev.getColor()
+	res = res and checkAttributes(ct, {
+		["r"] = 0,
+		["red"] = 0,
+		["hue"] = 220,
+		["saturation"] = 100,
+		["value"] = 100,
+		["isWhite"] = false,
+		["b"] = 255,
+		["blue"] = 255,
+		["g"] = 85,
+		["green"] = 85,
+		["warm white"] = 0,
+		["cold white"] = 0,
+		["temperature"] = 0,
+		["mode"] = 3,
+		["brightness"] = 100,
+	})
+	handleResult('Test getColor RGBW(' .. dev.color .. ')', res)
+	return res
+end
+
+local testGetColorRGB = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and (dev.getColor() == nil)
+	handleResult('Test getColor RGB (' .. dev.color .. ')', res)
+	return res
+end
 
 local testText = function(name)
 	local dev = dz.devices(name)
@@ -668,7 +702,52 @@ local testVarCancelled = function(name)
 	local res = true
 	local var = dz.variables('varCancelled')
 	res = res and expectEql(0, var.value)
-	handleResult('Cancelled variable', res)
+	handleResult('Test cancelled variable', res)
+	return res
+end
+
+local testSetValuesSensor = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and expectEql(12, tonumber(dev.rawData[1]))
+	res = res and expectEql(34, tonumber(dev.rawData[2]))
+	res = res and expectEql(45, tonumber(dev.rawData[3]))
+	handleResult('Test setValues sensor', res)
+	return res
+end
+
+local testSetIconSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and expectEql(10, tonumber(dev.description))
+	handleResult('Test setIcon switch', res)
+	return res
+end
+
+local testDeviceDump = function(name)
+	local utils = require('Utils')
+	local dev = dz.devices(name)
+	local res = true
+	res = res and ( utils.dumpTable(dev, '> ') == nil) 
+	handleResult('Test device dump', res)
+	return res
+end
+
+local testCameraDump = function()
+	local utils = require('Utils')
+	local cam = dz.cameras(1)
+	local res = true
+	res = res and (utils.dumpTable(cam, '> ') == nil)
+	handleResult('Test camera dump', res)
+	return res
+end
+
+local testSettingsDump = function()
+	local utils = require('Utils')
+	local settings = dz.settings
+	local res = true
+	res = res and (utils.dumpTable(settings, '> ') == nil)
+	handleResult('Test settings dump', res)
 	return res
 end
 
@@ -676,7 +755,7 @@ local testCancelledScene = function(name)
 	local res = true
 	local count = dz.globalData.cancelledScene
 	res = res and expectEql(2, count)
-	handleResult('Cancelled repeat scene', res)
+	handleResult('Test cancelled repeat scene', res)
 	return res
 end
 
@@ -741,6 +820,8 @@ return {
 		res = res and testDistance('vdDistance')
 		res = res and testElectricInstanceCounter('vdElectricInstanceCounter')
 		res = res and testGas('vdGas')
+		res = res and testGetColorRGBW('vdRGBWSwitch')
+		res = res and testGetColorRGB('vdRGBSwitch')
 		res = res and testHumidity('vdHumidity')
 		res = res and testLeafWetness('vdLeafWetness')
 		res = res and testLux('vdLux')
@@ -752,6 +833,8 @@ return {
 		res = res and testRGBW('vdRGBWSwitch')
 		res = res and testScaleWeight('vdScaleWeight')
 		res = res and testSelectorSwitch('vdSelectorSwitch')
+		res = res and testSetIconSwitch('vdSetIconSwitch')
+		res = res and testSetValuesSensor('vdSetValueSensor')
 		res = res and testSoilMoisture('vdSoilMoisture')
 		res = res and testSolarRadiation('vdSolarRadiation')
 		res = res and testSoundLevel('vdSoundLevel')
@@ -779,17 +862,18 @@ return {
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testAPITemperature('vdAPITemperature')
 		res = res and testManagedCounter('vdManagedCounter')
-
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch')
 		res = res and testLastUpdates(stage2Trigger)
 		res = res and testRepeatSwitch('vdRepeatSwitch')
-
 		res = res and testVarCancelled('varCancelled')
 		res = res and testCancelledScene('scCancelledScene')
 		res = res and testHTTPSwitch('vdHTTPSwitch');
-		res = res and testDescription('vdDescriptionSwitch',descriptionString,"device");
-		res = res and testDescription('sceneDescriptionSwitch1',descriptionString,"scene");
-	   	res = res and testDescription('groupDescriptionSwitch1',descriptionString,"group");
+		res = res and testDescription('vdDescriptionSwitch',descriptionString,"device")
+		res = res and testDescription('sceneDescriptionSwitch1',descriptionString,"scene")
+	   	res = res and testDescription('groupDescriptionSwitch1',descriptionString,"group")
+		res = res and testDeviceDump(vdSwitchDimmer)
+		res = res and testCameraDump()
+		res = res and testSettingsDump()
 		res = res and testVersion('version')
 
 		-- test a require

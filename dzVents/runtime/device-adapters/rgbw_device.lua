@@ -94,7 +94,7 @@ return {
 		end
 
 		function device.setRGB(r, g, b)
-		  if not(validRGB(r,g,b)) then RGBError() return false end
+		  if not(validRGB(r, g, b)) then RGBError() return false end
 		  local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
 			url = domoticz.settings['Domoticz url'] ..
 				'/json.htm?param=setcolbrightnessvalue&type=command' ..
@@ -159,7 +159,7 @@ return {
 				return false
 			end
 			if isWhite and type(isWhite) ~= "boolean" then
-				domoticz.log('isWhite need to be of boolena type', utils.LOG_ERROR)
+				domoticz.log('isWhite need to be of boolean type', utils.LOG_ERROR)
 				return false
 			end
 			if not(isWhite) then isWhite = false end
@@ -172,6 +172,10 @@ return {
 		end
 
 		function device.getColor()
+			if not(device.color) or device.color == "" then
+				domoticz.log('Color field not set for this device', utils.LOG_ERROR)
+				return nil
+			end
 			local ct = domoticz.utils.fromJSON(device.color, {})
 			ct.hue, ct.saturation, ct.value, ct.isWhite = domoticz.utils.rgbToHSB(ct.r, ct.g, ct.b)
 			ct.red  = ct.r
