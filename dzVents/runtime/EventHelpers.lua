@@ -1,4 +1,4 @@
-	local GLOBAL_DATA_MODULE = 'global_data'
+local GLOBAL_DATA_MODULE = 'global_data'
 local GLOBAL = false
 local LOCAL = true
 
@@ -31,11 +31,17 @@ local function EventHelpers(domoticz, mainMethod)
 	local settings = {
 		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
 		['Domoticz url'] = _url,
-		['url'] = url,
-		['webRoot'] = tostring(webRoot),
-		['serverPort'] = globalvariables['domoticz_listening_port'] or '8080'
+		url = url,
+		webRoot = tostring(webRoot),
+		serverPort = globalvariables['domoticz_listening_port'] or '8080',
+		dzVentsVersion = globalvariables.dzVents_version,
+		domoticzVersion = globalvariables.domoticz_version,
+		location = {
+			name = utils.urlDecode(globalvariables['domoticz_title'] or "Domoticz"),
+			latitude = globalvariables.latitude or 0,
+			longitude = globalvariables.longitude or 0,
+		}
 	}
-
 
 	if (webRoot ~= '' and webRoot ~= nil) then
 		settings['Domoticz url'] = settings['Domoticz url'] .. '/' .. tostring(webRoot)

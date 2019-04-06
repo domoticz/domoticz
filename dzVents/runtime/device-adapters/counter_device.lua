@@ -33,7 +33,12 @@ return {
         end
         
 		function device.updateCounter(value)
-			return device.update(0, value)
+			if type(value) == "table" then
+                domoticz.log('no updateCounter with value of type table allowed !! ', utils.LOG_ERROR)
+                return nil
+            else
+                return device.update(0, value)
+            end
 		end
 
 	end

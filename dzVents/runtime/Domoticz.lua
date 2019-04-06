@@ -1,5 +1,7 @@
 local scriptPath = globalvariables['script_path']
 package.path = package.path .. ';' .. scriptPath .. '?.lua'
+
+local Camera = require('Camera')
 local Device = require('Device')
 local Variable = require('Variable')
 local Time = require('Time')
@@ -146,6 +148,7 @@ local function Domoticz(settings)
 		['BASETYPE_TIMER'] = 'timer',
 		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse',
 
+
 		utils = {
 			_ = _,
 
@@ -158,6 +161,10 @@ local function Domoticz(settings)
 
 			urlEncode = function(s, strSub)
 				return utils.urlEncode(s, strSub)
+			end,
+
+			urlDecode = function(s)
+				return utils.urlDecode(s)
 			end,
 
 			round = function(x, n)
@@ -179,17 +186,26 @@ local function Domoticz(settings)
 				return utils.fileExists(path)
 			end,
 
-			fromJSON = function(json)
-				return utils.fromJSON(json)
+			fromJSON = function(json, fallback)
+				return utils.fromJSON(json, fallback)
 			end,
 
 			toJSON = function(luaTable)
 				return utils.toJSON(luaTable)
 			end,
-            
+
 			rgbToHSB = function(r, g, b)
 				return utils.rgbToHSB(r,g,b)
-			end
+			end,
+
+			hsbToRGB = function(h, s, b)
+				return utils.hsbToRGB(h,s,b)
+			end,
+			
+			dumpTable = function(t, level)
+				return utils.dumpTable(t, level)
+			end,
+			
 		}
 	}
 
@@ -242,14 +258,15 @@ local function Domoticz(settings)
 			self.sendCommand('SendEmail', subject .. '#' .. message .. '#' .. mailTo)
 		end
 	end
-    
-    
-    -- have domoticz send snapshot
-	function self.snapshot(cameraID, subject)
-        local snapshotCommand = "SendCamera:" .. cameraID
-        return TimedCommand(self, snapshotCommand , subject, 'camera')       -- works with afterXXX 
-    end
 
+	-- have domoticz send snapshot
+	function self.snapshot(cameraID, subject)
+		if tostring(cameraID):match("%a") then
+			cameraID = self.cameras(cameraID).id
+		end
+		local snapshotCommand = "SendCamera:" .. cameraID
+		return TimedCommand(self, snapshotCommand , subject, 'camera') -- works with afterXXX
+	end
 
 	-- have domoticz send an sms
 	function self.sms(message)
@@ -310,7 +327,7 @@ local function Domoticz(settings)
 		end
 
 	end
-    
+
 	-- send a scene switch command
 	function self.setScene(scene, value)
 		utils.log('setScene is deprecated. Please use the scene object directly.', utils.LOG_INFO)
@@ -333,21 +350,6 @@ local function Domoticz(settings)
 		utils.log(message, level)
 	end
 
-	local function dumpTable(t, level)
-		for attr, value in pairs(t) do
-			if (type(value) ~= 'function') then
-				if (type(value) == 'table') then
-					print(level .. attr .. ':')
-					dumpTable(value, level .. '    ')
-				else
-					print(level .. attr .. ': ' .. tostring(value))
-				end
-			else
-				print(level .. attr .. '()')
-			end
-		end
-	end
-
 	function self.toCelsius(f, relative)
 		utils.log('domoticz.toCelsius deprecated. Please use domoticz.utils.toCelsius.', utils.LOG_INFO)
 		return self.utils.toCelsius(f, relative)
@@ -363,11 +365,19 @@ local function Domoticz(settings)
 		return self.utils.round(x, n)
 	end
 
-	-- doesn't seem to work well for some weird reasone
-	function self.logDevice(device)
-		dumpTable(device, '> ')
+	function self.dump()
+		self.utils.dumpTable(settings, '> ')
 	end
 
+	function self.logDevice(device)
+		self.utils.dumpTable(device, '> ')
+	end
+
+	function self.logCamera(camera)
+		self.utils.dumpTable(camera, '> ')
+	end
+
+	self.__cameras = {}
 	self.__devices = {}
 	self.__scenes = {}
 	self.__groups = {}
@@ -408,6 +418,9 @@ local function Domoticz(settings)
 		elseif (baseType == 'uservariable') then
 			cache = self.__variables
 			constructor = Variable
+		elseif (baseType == 'camera') then
+			cache = self.__cameras
+			constructor = Camera
 		else
 			-- ehhhh
 		end
@@ -594,6 +607,14 @@ local function Domoticz(settings)
 			return self._getObject('uservariable', id)
 		else
 			return self._setIterators({}, true, 'uservariable', false)
+		end
+	end
+
+	function self.cameras(id)
+		if (id ~= nil) then
+			return self._getObject('camera', id)
+		else
+			return self._setIterators({}, true, 'camera', false)
 		end
 	end
 

@@ -972,12 +972,12 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CDummy(ID);
 		break;
 	case HTYPE_Tellstick: {
-            CTellstick* tellstick;
-            if (CTellstick::Create(&tellstick, ID, Mode1, Mode2)) {
-                pHardware = tellstick;
-            }
-        }
-		break;
+		CTellstick* tellstick;
+		if (CTellstick::Create(&tellstick, ID, Mode1, Mode2)) {
+			pHardware = tellstick;
+		}
+	}
+						  break;
 	case HTYPE_EVOHOME_SCRIPT:
 		pHardware = new CEvohomeScript(ID);
 		break;
@@ -2388,6 +2388,12 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeASYNCDATA:
 			decode_ASyncData(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
+		case pTypeWEATHER:
+			decode_Weather(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
+		case pTypeSOLAR:
+			decode_Solar(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -2739,49 +2745,53 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 					WriteMessage("Undec             off");
 
 				if (pResponse->IRESPONSE868.ALECTOenabled)
-					WriteMessage("Alecto            enabled");
-				else
-					WriteMessage("Alecto            disabled");
+					WriteMessage("Alecto ACH2010    enabled");
+				
+				if (pResponse->IRESPONSE868.ALECTO5500enabled)
+					WriteMessage("Alecto WS5500     enabled");
+
+				if (pResponse->IRESPONSE868.LACROSSEenabled)
+					WriteMessage("LA Crosse         enabled");
 
 				if (pResponse->IRESPONSE868.DAVISEUenabled)
 					WriteMessage("Davis EU          enabled");
-				else
-					WriteMessage("Davis EU          disabled");
 
 				if (pResponse->IRESPONSE868.DAVISUSenabled)
 					WriteMessage("Davis US          enabled");
-				else
-					WriteMessage("Davis US          disabled");
 
 				if (pResponse->IRESPONSE868.DAVISAUenabled)
 					WriteMessage("Davis AU          enabled");
-				else
-					WriteMessage("Davis AU          disabled");
-
-				if (pResponse->IRESPONSE868.PROGUARDenabled)
-					WriteMessage("Proguard          enabled");
-				else
-					WriteMessage("Proguard          disabled");
 
 				if (pResponse->IRESPONSE868.FS20enabled)
 					WriteMessage("FS20              enabled");
-				else
-					WriteMessage("FS20              disabled");
+
+				if (pResponse->IRESPONSE868.LWRFenabled)
+					WriteMessage("LightwaveRF       enabled");
 
 				if (pResponse->IRESPONSE868.EDISIOenabled)
 					WriteMessage("Edisio            enabled");
-				else
-					WriteMessage("Edisio            disabled");
 
 				if (pResponse->IRESPONSE868.VISONICenabled)
 					WriteMessage("Visonic           enabled");
-				else
-					WriteMessage("Visonic           disabled");
+
+				if (pResponse->IRESPONSE868.MEIANTECHenabled)
+					WriteMessage("Meiantech         enabled");
 
 				if (pResponse->IRESPONSE868.KEELOQenabled)
 					WriteMessage("Keeloq            enabled");
-				else
-					WriteMessage("Keeloq            disabled");
+
+				if (pResponse->IRESPONSE868.PROGUARDenabled)
+					WriteMessage("Proguard          enabled");
+
+				if (pResponse->IRESPONSE868.ITHOenabled)
+					WriteMessage("Itho CVE RFT      enabled");
+
+				if (pResponse->IRESPONSE868.ITHOecoenabled)
+					WriteMessage("Itho CVE ECO RFT  enabled");
+
+				if (pResponse->IRESPONSE868.HONEYWELLenabled)
+					WriteMessage("Honeywell Chime   enabled");
+
 			}
 		}
 		break;
@@ -2995,11 +3005,60 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 
 	float TotalRain = float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
 
-	if (subType != sTypeRAINWU)
+	if (subType == sTypeRAINByRate)
+	{
+		//calculate new Total
+		TotalRain = 0;
+
+		std::vector<std::vector<std::string>> result;
+
+		//Get our index
+		result = m_sql.safe_query(
+			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
+		if (!result.empty())
+		{
+			uint64_t ulID = std::strtoull(result[0][0].c_str(), nullptr, 10);
+
+			time_t now = mytime(NULL);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query(
+				"SELECT Rate, Date FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%04d-%02d-%02d') ORDER BY ROWID ASC",
+				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+			if (!result.empty())
+			{
+				time_t countTime;
+				struct tm midnightTime;
+				getMidnight(countTime, midnightTime);
+
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+
+					float rate = atof(sd[0].c_str()) / 10000.0f;
+					std::string date = sd[1];
+
+					time_t rowtime;
+					struct tm rowTimetm;
+					ParseSQLdatetime(rowtime, rowTimetm, date);
+
+					int pastSeconds = rowtime - countTime;
+
+					float rateAdd = (rate / (float)3600 * (float)pastSeconds);
+					TotalRain += rateAdd;
+
+					countTime = rowtime;
+				}
+			}
+		}
+	}
+	else if (subType != sTypeRAINWU)
 	{
 		Rainrate = 0;
 		//Calculate our own rainrate
-		std::vector<std::vector<std::string> > result;
+		std::vector<std::vector<std::string>> result;
 
 		//Get our index
 		result = m_sql.safe_query(
@@ -3014,7 +3073,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 
-			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query(
 				"SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%04d-%02d-%02d %02d:%02d:%02d')",
 				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
@@ -3061,9 +3120,6 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case sTypeRAIN8:
 			WriteMessage("subtype       = RAIN8 - Davis");
-			break;
-		case sTypeRAIN9:
-			WriteMessage("subtype       = RAIN9 - Alecto WCH2010");
 			break;
 		case sTypeRAINWU:
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
@@ -3267,9 +3323,6 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case sTypeWIND7:
 			WriteMessage("subtype       = WIND7 - Alecto WS4500");
-			break;
-		case sTypeWIND8:
-			WriteMessage("subtype       = WIND8 - Alecto ACH2010");
 			break;
 		case sTypeWINDNoTemp:
 			WriteMessage("subtype       = Weather Station");
@@ -6002,7 +6055,7 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
 			break;
-		case sTypeSelectPlus3:
+		case sTypeByronBY:
 			WriteMessage("subtype       = SelectPlus200689103");
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
@@ -6011,6 +6064,13 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 			break;
 		case sTypeEnvivo:
 			WriteMessage("subtype       = Envivo");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeAlfawise:
+			WriteMessage("subtype       = Alfawise");
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
@@ -10575,7 +10635,7 @@ void MainWorker::decode_ASyncData(const int HwdID, const _eHardwareTypes HwdType
 		return;
 
 	if (
-		(pHardware->m_HwdID == 999)||
+		(pHardware->m_HwdID == 999) ||
 		(pHardware->HwdType == HTYPE_RFXtrx315) ||
 		(pHardware->HwdType == HTYPE_RFXtrx433) ||
 		(pHardware->HwdType == HTYPE_RFXtrx868) ||
@@ -10847,6 +10907,117 @@ void MainWorker::decode_CartelectronicEncoder(const int HwdID,
 	if (DevRowIdx == -1)
 		return;
 	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, 1, devType, subType, (float)counter2);
+}
+
+void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	unsigned short windID = (pResponse->WEATHER.id1 * 256) + pResponse->WEATHER.id2;
+	char szTmp[100];
+	sprintf(szTmp, "%d", windID);
+	std::string ID = szTmp;
+
+	unsigned char devType = pTypeWEATHER;
+	unsigned char subType = pResponse->WEATHER.subtype;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->WEATHER.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->WEATHER.battery_level & 0x0F);
+
+	procResult.DeviceRowIdx = -1;
+
+	CDomoticzHardwareBase* pHardware = GetHardware(HwdID);
+	if (pHardware)
+	{
+		CRFXBase *pRFXDevice = reinterpret_cast<CRFXBase *>(pHardware);
+
+		//Wind
+		int intDirection = (pResponse->WEATHER.directionhigh * 256) + pResponse->WEATHER.directionlow;
+		int intSpeed = (pResponse->WEATHER.av_speedhigh * 256) + pResponse->WEATHER.av_speedlow;
+		int intGust = (pResponse->WEATHER.gusthigh * 256) + pResponse->WEATHER.gustlow;
+
+		float temp = 0, chill = 0;
+		if (!pResponse->WEATHER.temperaturesign)
+		{
+			temp = float((pResponse->WEATHER.temperaturehigh * 256) + pResponse->WEATHER.temperaturelow) / 10.0f;
+		}
+		else
+		{
+			temp = -(float(((pResponse->WEATHER.temperaturehigh & 0x7F) * 256) + pResponse->WEATHER.temperaturelow) / 10.0f);
+		}
+		if ((temp < -200) || (temp > 380))
+		{
+			WriteMessage(" Invalid Temperature");
+			return;
+		}
+
+		bool bHaveChill = false;
+		if (1 == 0)// subType == sTypeWEATHERx)
+		{
+			if (!pResponse->WEATHER.chillsign)
+			{
+				chill = float((pResponse->WEATHER.chillhigh * 256) + pResponse->WEATHER.chilllow) / 10.0f;
+			}
+			else
+			{
+				chill = -(float(((pResponse->WEATHER.chillhigh) & 0x7F) * 256 + pResponse->WEATHER.chilllow) / 10.0f);
+			}
+			bHaveChill = true;
+		}
+		pRFXDevice->SendWind(windID, BatteryLevel, intDirection, (float)intSpeed, (float)intGust, temp, chill, true, bHaveChill, procResult.DeviceName, SignalLevel);
+
+		if (subType = sTypeWEATHER2)
+		{
+			int Humidity = (int)pResponse->WEATHER.humidity;
+			unsigned char HumidityStatus = pResponse->WEATHER.humidity_status;
+
+			MySensorsBase *pMySensorDevice = reinterpret_cast<MySensorsBase*>(pHardware);
+
+			pRFXDevice->SendTempHumSensor(windID, BatteryLevel, temp, Humidity, procResult.DeviceName, SignalLevel);
+		}
+
+		//Rain
+		if ((subType = sTypeWEATHER1) || (subType = sTypeWEATHER2))
+		{
+			float TotalRain = 0;
+
+			if (subType = sTypeWEATHER1)
+			{
+				TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.3f;
+			}
+			else if (subType = sTypeWEATHER2)
+			{
+				TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.254f;
+			}
+			pRFXDevice->SendRainSensor(windID, BatteryLevel, TotalRain, procResult.DeviceName, SignalLevel);
+		}
+
+		//UV
+		if (subType = sTypeWEATHER2)
+		{
+			float UV = (float)pResponse->WEATHER.uv;
+			pRFXDevice->SendUVSensor(windID, 1, BatteryLevel, UV, procResult.DeviceName, SignalLevel);
+		}
+
+		//Solar
+		if (subType = sTypeWEATHER2)
+		{
+			float radiation = (float)((pResponse->WEATHER.solarhigh * 256) + pResponse->WEATHER.solarlow);
+			pRFXDevice->SendSolarRadiationSensor(windID, BatteryLevel, radiation, procResult.DeviceName);
+		}
+	}
+}
+
+void MainWorker::decode_Solar(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	unsigned char SignalLevel = pResponse->SOLAR.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->SOLAR.battery_level & 0x0F);
+
+	_tGeneralDevice gdevice;
+	gdevice.subtype = sTypeSolarRadiation;
+	gdevice.intval1 = (pResponse->SOLAR.id1 * 256) + pResponse->SOLAR.id2;
+	gdevice.floatval1 = float((pResponse->SOLAR.solarhigh * 256) + float(pResponse->SOLAR.solarlow)) / 100.f;
+	decode_General(HwdID, HwdType, pResponse, procResult, SignalLevel, BatteryLevel);
+	procResult.bProcessBatteryValue = false;
 }
 
 bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sValue)
@@ -13044,19 +13215,19 @@ void MainWorker::HeartbeatCheck()
 		if (diff > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly (last update %f seconds ago)", itt.first.c_str(), diff);
-/* GizMoCuz: This causes long operations to crash (Like Issue #3011)
-			if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
-			{
-				if (!IsDebuggerPresent())
-				{
-#ifdef WIN32
-					abort();
-#else
-					raise(SIGUSR1);
-#endif
-				}
-			}
-*/
+			/* GizMoCuz: This causes long operations to crash (Like Issue #3011)
+						if (itt.second.second) // If the stalled component is marked as critical, call abort / raise signal
+						{
+							if (!IsDebuggerPresent())
+							{
+			#ifdef WIN32
+								abort();
+			#else
+								raise(SIGUSR1);
+			#endif
+							}
+						}
+			*/
 		}
 	}
 
