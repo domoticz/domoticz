@@ -381,39 +381,7 @@ local function DomoticzTestTools(port, debug, webroot)
 		-- http://localhost:8080/json.htm?type=command&param=addscenedevice&idx=2&isscene=false&devidx=1&command=On&level=100&hue=0&ondelay=&offdelay=
 		local url = "param=addscenedevice&type=command&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&hue=0&ondelay=&offdelay="
 		local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
-
 		return ok
-	end
-
-		function self.ff()
-		local response = {}
-		local reqbody = "Language=en&Themes=default&Title=Domoticz&Latitude=53.278870&Longitude=5.665849&DashboardType=0&AllowWidgetOrdering=on&MobileType=0&WebUserName=&WebPassword=d41d8cd98f00b204e9800998ecf8427e&AuthenticationMethod=0&GuestUser=0&SecPassword=1&SecOnDelay=0&ProtectionPassword=d41d8cd98f00b204e9800998ecf8427e&WebLocalNetworks=127.0.0.1&RemoteSharedPort=6144&WebRemoteProxyIPs=127.0.0.1&checkforupdates=on&ReleaseChannel=0&AcceptNewHardware=on&HideDisabledHardwareSensors=on&MyDomoticzUserId=&MyDomoticzPassword=&EnableTabLights=on&EnableTabScenes=on&EnableTabTemp=on&EnableTabWeather=on&EnableTabUtility=on&EnableTabCustom=on&LightHistoryDays=30&ShortLogDays=1&ProwlAPI=&NMAAPI=&PushbulletAPI=&PushsaferAPI=&PushsaferImage=&PushoverUser=&PushoverAPI=&PushALotAPI=&ClickatellAPI=&ClickatellUser=&ClickatellPassword=&ClickatellFrom=&ClickatellTo=&IFTTTAPI=thisIsnotTheRealAPI&IFTTTEnabled=on&HTTPField1=&HTTPField2=&HTTPField3=&HTTPField4=&HTTPTo=&HTTPURL=https%3A%2F%2Fwww.somegateway.com%2Fpushurl.php%3Fusername%3D%23FIELD1%26password%3D%23FIELD2%26apikey%3D%23FIELD3%26from%3D%23FIELD4%26to%3D%23TO%26message%3D%23MESSAGE&HTTPPostData=&HTTPPostContentType=application%2Fjson&HTTPPostHeaders=&KodiIPAddress=224.0.0.1&KodiPort=9777&KodiTimeToLive=5&LmsPlayerMac=&LmsDuration=5&TelegramAPI=&TelegramChat=&NotificationSensorInterval=43200&NotificationSwitchInterval=0&EmailEnabled=on&EmailFrom=&EmailTo=&EmailServer=&EmailPort=25&EmailUsername=&EmailPassword=&UseEmailInNotifications=on&TempUnit=0&DegreeDaysBaseTemperature=18.0&WindUnit=0&WeightUnit=0&EnergyDivider=1000&CostEnergy=0.2149&CostEnergyT2=0.2149&CostEnergyR1=0.0800&CostEnergyR2=0.0800&GasDivider=100&CostGas=0.6218&WaterDivider=100&CostWater=1.6473&ElectricVoltage=230&CM113DisplayType=0&SmartMeterType=0&FloorplanPopupDelay=750&FloorplanAnimateZoom=on&FloorplanShowSensorValues=on&FloorplanShowSceneNames=on&FloorplanRoomColour=Blue&FloorplanActiveOpacity=25&FloorplanInactiveOpacity=5&RandomSpread=15&SensorTimeout=60&BatterLowLevel=0&LogFilter=&LogFileName=&LogLevel=0&DoorbellCommand=0&RaspCamParams=-w+800+-h+600+-t+1&UVCParams=-S80+-B128+-C128+-G80+-x800+-y600+-q100&EnableEventScriptSystem=on&LogEventScriptTrigger=on&DisableDzVentsSystem=on&DzVentsLogLevel=3"
-
-		local url = BASE_URL .. '/storesettings.webem'
-		local result, respcode, respheaders, respstatus = http.request {
-			method = "POST",
-			source = ltn12.source.string(reqbody),
-			url = url,
-			headers = {
-				['Connection'] = 'keep-alive',
-				['Content-Length'] = _.size(reqbody),
-				['Pragma'] = 'no-cache',
-				['Cache-Control'] = 'no-cache',
-				['Origin'] = BASE_URL,
-				['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
-				['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8',
-				['Accept'] = '*/*',
-				['X-Requested-With'] = 'XMLHttpRequest',
-				['DNT'] = '1',
-				['Referer'] = BASE_URL,
-			},
-			sink = ltn12.sink.table(response)
-		}
-
-		local _json = table.concat(response)
-		local ok = (respcode == 200)
-		return ok, result, respcode, respheaders, respstatus
-
 	end
 
 	function self.initSettings(IFTTTEnabled)
