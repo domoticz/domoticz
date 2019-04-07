@@ -20,7 +20,7 @@ struct STR_DEVICE {
 	std::string api_state;
 };
 
-#define TOT_DEVICE_TYPES 7
+#define TOT_DEVICE_TYPES 8
 
 const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
 {
@@ -30,7 +30,8 @@ const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
 	{ 3, "wLightBox", "Light Box", pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, "rgbw" },
 	{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
 	{ 5, "dimmerBox", "Dimmer Box", pTypeLighting2, sTypeAC, STYPE_Dimmer, "dimmer" },
-	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" }
+	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
+	{ 7, "airSensor", "Air Sensor", pTypeAirQuality, sTypeVoltcraft, 0, "air" },
 };
 
 BleBox::BleBox(const int id, const int pollIntervalsec)
@@ -123,6 +124,11 @@ void BleBox::GetDevicesState()
 			}
 			case 1:
 			{
+				if (DoesNodeExists(root, "shutter") == false)
+					break;
+
+				root = root["shutter"];
+
 				if (DoesNodeExists(root, "state") == false)
 					break;
 
@@ -203,6 +209,30 @@ void BleBox::GetDevicesState()
 					bool currentState = relay["state"].asBool(); // 0 or 1
 					//std::string name = DevicesType[itt.second].name + " " + relay["state"].asString();
 					SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt.second].name);
+				}
+
+				break;
+			}
+			case 7:
+			{
+				if (DoesNodeExists(root, "air") == false)
+					break;
+
+				root = root["air"];
+
+				if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
+					break;
+
+				Json::Value sensors = root["sensors"];
+				Json::ArrayIndex count = sensors.size();
+				for (Json::ArrayIndex index = 0; index < count; index++)
+				{
+					Json::Value sensor = sensors[index];
+					if ((DoesNodeExists(sensor, "type") == false) || (DoesNodeExists(sensor, "value") == false))
+						break;
+					uint8_t value = (uint8_t)sensor["value"].asInt(); 
+					std::string type = sensor["type"].asString();
+					SendAirQualitySensor(IP, index + 1, 255, value, type);
 				}
 
 				break;
