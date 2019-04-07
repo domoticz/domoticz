@@ -97,11 +97,11 @@ local VAR_TYPES = {
 }
 
 local getResultsFromfile = function(file)
-	local utils = require('Utils')
-	local results = assert(io.open(file, "r"))
-	resTable = utils.fromJSON(results:read("*all"))
-	results:close()
-	return resTable
+		local utils = require('Utils')
+		local results = assert(io.open(file, "r"))
+		resTable = utils.fromJSON(results:read("*all"))
+		results:close()
+		return resTable
 end
 
 
@@ -152,12 +152,13 @@ describe('Integration test', function ()
 
 	-- it('a', function() end)
 	describe('Settings', function()
-		it('Should initialize settings', function()
-			local ok, result, respcode, respheaders, respstatus = TestTools.initSettings()
+		it('Should initialize settings with enabled IFTTT', function()
+			local IFTTTEnabled = "on"
+			local ok, result, respcode, respheaders, respstatus = TestTools.initSettings(IFTTTEnabled)
 			assert.is_true(ok)
 		end)
 	end)
-
+	
 	describe('Hardware', function()
 		it('should create dummy hardware', function()
 			local ok
@@ -430,7 +431,7 @@ describe('Integration test', function ()
 	end)
 
 	describe('ManagedCounter', function()
- 		it('should create a Managed counter', function()
+	 it('should create a Managed counter', function()
 			local ok
 			ok = TestTools.createManagedCounter('vdManagedCounter')
 			assert.is_true(ok)
@@ -443,7 +444,7 @@ describe('Integration test', function ()
 			-- first create switch to be put in the scene
 			local ok
 			local switchIdx
-			local sceneIdx  = 1 -- api doesn't return the idx so we assume this is 1
+			local sceneIdx = 1 -- api doesn't return the idx so we assume this is 1
 			ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneSwitch1', 6)
 			assert.is_true(ok)
 
@@ -725,14 +726,21 @@ describe('Integration test', function ()
 				socket.sleep(1) -- 25 because of repeatAfter tests , the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 				assert.is_true(true)
 			end)
+			if i == 10 then 
+				it('Should reinitialize settings with disabled IFTTT', function()
+					local IFTTTEnabled = "%20"
+					local ok, result, respcode, respheaders, respstatus = TestTools.initSettings(IFTTTEnabled)
+					assert.is_true(ok)
+				end)
+			end
 		end
 	end)
 
 	describe('Stage2', function()
 
 		resTable = getResultsFromfile("/tmp/Stage2results.json")
-		for key,value in pairs (resTable)do
-			it(key , function()
+		for key, value in pairs (resTable)do
+			it(key, function()
 				assert.is_same(true, value)
 			end)
 		end

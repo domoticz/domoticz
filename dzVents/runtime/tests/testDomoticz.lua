@@ -292,6 +292,44 @@ describe('Domoticz', function()
 
 		end)
 
+		describe('triggerIFTTT', function()
+
+			it('should trigger an IFTTT maker event without extra values', function()
+				domoticz.triggerIFTTT('some maker event')
+				assert.is_same({
+					{
+						['TriggerIFTTT'] = { sID = 'some maker event' }
+					}
+				}, domoticz.commandArray)
+			end)
+
+			it('should trigger an IFTTT maker event with some extra values', function()
+				domoticz.triggerIFTTT('some maker event', 1, 2, 3)
+				assert.is_same({
+					{
+						['TriggerIFTTT'] = { 
+							sID = 'some maker event', 
+							sValue1 = '1',
+							sValue2 = '2',
+							sValue3 = '3',
+					}}
+				}, domoticz.commandArray)
+			end)
+
+			it('should trigger an IFTTT maker event with method afterSec', function()
+				domoticz.triggerIFTTT('some maker event', 1, 'two').afterMin(2)
+				assert.is_same({
+					{
+						['TriggerIFTTT'] = { 
+							_after = 120,
+							sID = 'some maker event', 
+							sValue1 = '1',
+							sValue2 = 'two',
+					}}
+				}, domoticz.commandArray)
+			end)
+		end)
+
 		it('should set a scene', function()
 			local res = domoticz.setScene('scene1', 'on')
 			assert.is_table(res)
@@ -903,7 +941,6 @@ describe('Domoticz', function()
 	end)
 
 	it('should url encode', function()
-
 		local s = 'a b c'
 		assert.is_same('a+b+c', domoticz.utils.urlEncode(s))
 	end)
@@ -947,7 +984,5 @@ describe('Domoticz', function()
 			b = 20
 		}, domoticz.utils.fromJSON(json))
 	end)
-
-
 
 end)
