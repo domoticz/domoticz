@@ -25,7 +25,7 @@ struct STR_DEVICE {
 const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
 {
 	{ 0, "switchBox", "Switch Box",pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
-	{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
+	{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
 	{ 3, "wLightBox", "Light Box", pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, "rgbw" },
 	{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
@@ -350,10 +350,10 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 				int percentage = 0;
 				switch (output->LIGHTING2.cmnd) {
 				case light2_sOn:
-					percentage = 0;
+					percentage = 100;
 					break;
 				case light2_sOff:
-					percentage = 100;
+					percentage = 0;
 					break;
 				default:
 					percentage = output->LIGHTING2.level * 100 / 15;
@@ -736,14 +736,14 @@ void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int Batte
 	lcmd.LIGHTING2.unitcode = ChildID;
 	if (!bOn)
 	{
-		lcmd.LIGHTING2.cmnd = light2_sOff;
+		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
 	else
 	{
 		if (level != 0)
 			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
 		else
-			lcmd.LIGHTING2.cmnd = light2_sOn;
+			lcmd.LIGHTING2.cmnd = light2_sOff;
 	}
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
