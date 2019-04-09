@@ -490,7 +490,7 @@ int mkdir_deep(const char *szDirName, int secattr)
 	{
 		if (('\\' == *p) || ('/' == *p))
 		{
-			if (':' != *(p-1))
+			if ((p > szDirName) && (':' != *(p-1)))
 			{
 				ret = createdir(DirName, secattr);
 			}
