@@ -41,7 +41,7 @@ void CWebSocketPush::Stop()
 
 void CWebSocketPush::ListenTo(const unsigned long long DeviceRowIdx)
 {
-	std::unique_lock<std::mutex>(listenMutex);
+	std::unique_lock<std::mutex> lock(listenMutex);
 	bool bExists = std::find(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx) != listenIdxs.end();
 	if (!bExists) {
 		listenIdxs.push_back(DeviceRowIdx);
@@ -50,13 +50,13 @@ void CWebSocketPush::ListenTo(const unsigned long long DeviceRowIdx)
 
 void CWebSocketPush::UnlistenTo(const unsigned long long DeviceRowIdx)
 {
-	std::unique_lock<std::mutex>(listenMutex);
+	std::unique_lock<std::mutex> lock(listenMutex);
 	listenIdxs.erase(std::remove(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx), listenIdxs.end());
 }
 
 void CWebSocketPush::ClearListenTable()
 {
-	std::unique_lock<std::mutex>(listenMutex);
+	std::unique_lock<std::mutex> lock(listenMutex);
 	listenIdxs.clear();
 }
 
@@ -96,7 +96,7 @@ void CWebSocketPush::onDeviceTableChanged()
 
 bool CWebSocketPush::WeListenTo(const unsigned long long DeviceRowIdx)
 {
-	std::unique_lock<std::mutex>(listenMutex);
+	std::unique_lock<std::mutex> lock(listenMutex);
 	return std::find(listenIdxs.begin(), listenIdxs.end(), DeviceRowIdx) != listenIdxs.end();
 }
 
