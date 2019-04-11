@@ -48,6 +48,8 @@ return {
 
 	matches = function (device, adapterManager)
 		adapterManager.addDummyMethod(device, 'setDescription')
+		adapterManager.addDummyMethod(device, 'setIcon')
+		adapterManager.addDummyMethod(device, 'setValues')
 	end,
 	
 	process = function (device, data, domoticz, utils, adapterManager)
@@ -131,10 +133,36 @@ return {
 
 		function device.setDescription(description)
 			local url = domoticz.settings['Domoticz url'] ..
-							"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
-							"&idx=" .. device.id ..
-							"&name=".. domoticz.utils.urlEncode(device.name) ..
-							"&type=setused&used=true"
+				"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
+				"&idx=" .. device.id ..
+				"&name=".. domoticz.utils.urlEncode(device.name) ..
+				"&type=setused&used=true"
+			return domoticz.openURL(url)
+		end
+		
+		function device.setIcon(iconNumber)
+			local url = domoticz.settings['Domoticz url'] .. 
+				'/json.htm?type=setused&used=true&name=' .. domoticz.utils.urlEncode(device.name) ..
+				'&description=' .. domoticz.utils.urlEncode(device.description) ..
+				'&idx=' .. device.id .. 
+				'&switchtype=' .. device.switchTypeValue ..
+				'&customimage=' .. iconNumber
+			return domoticz.openURL(url)
+		end
+
+		function device.setValues(nValue, ...)
+			local args = {...}
+			local sValue = ''
+			for _,value in ipairs(args) do
+				sValue	= sValue .. tostring(value) .. ';'
+			end
+			if #sValue > 1 then 
+				sValue = sValue:sub(1,-2)
+			end
+			local url = domoticz.settings['Domoticz url'] ..
+				'/json.htm?type=command&param=udevice&idx=' .. device.id .. 
+				'&nvalue=' .. (nValue or device.nValue) ..
+				'&svalue=' .. sValue 
 			return domoticz.openURL(url)
 		end
 

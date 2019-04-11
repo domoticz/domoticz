@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.16',
+	DZVERSION = '2.4.17',
 }
 
 function self.fileExists(name)
@@ -46,8 +46,7 @@ function self.urlEncode(str, strSub)
 	end
 	return str
 end
-
-function self.urlDecode(str)
+function self.urlDecode(str, strSub)
 
 	local hex2Char = function(x)
 		return string.char(tonumber(x, 16))
@@ -167,6 +166,21 @@ function self.rgbToHSB(r, g, b)
 
 	local isWhite = (hsb.s < 20)
 	return hsb.h, hsb.s, hsb.b, isWhite
+end
+
+function self.dumpTable(t, level)
+	for attr, value in pairs(t or {}) do
+		if (type(value) ~= 'function') then
+			if (type(value) == 'table') then
+				self.print(level .. attr .. ':')
+				self.dumpTable(value, level .. '    ')
+			else
+				self.print(level .. attr .. ': ' .. tostring(value))
+			end
+		else
+			self.print(level .. attr .. '()')
+		end
+	end
 end
 
 function self.hsbToRGB(h, s, v)

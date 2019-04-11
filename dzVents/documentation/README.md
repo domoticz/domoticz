@@ -506,6 +506,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 
 ### Domoticz attributes and methods
  - **devices(idx/name)**: *Function*. A function returning a device by idx or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. For the device API see [Device object API](#Device_object_API). To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
+ - **dump()**: *Function*. <sup>2.4.16</sup> Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
  - **email(subject, message, mailTo)**: *Function*. Send email.
  - **groups(idx/name)**: *Function*: A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`. Read more about [Groups](#Group).
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Shared helper functions](#Shared_helper_functions).
@@ -517,7 +518,6 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **settings**:
     - **domoticzVersion**:<sup>2.4.15</sup> domoticz version string.
-    - **dump()**: *Function*. <sup>2.4.16</sup> Dump all domoticz.settings attributes to the Domoticz log. This ignores the log level setting.
     - **dzVentsVersion**:<sup>2.4.15</sup> dzVents version string.
     - **location**
         - **latitude**:<sup>2.4.14</sup> domoticz settings locations latitude.
@@ -542,6 +542,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
     - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
+    - **dumpTable(table,levelIndicator)**: *Function*: <sup>2.4.17</sup> print table structure and contents to log
     - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
     - **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
     - **osExecute(cmd)**: *Function*:  Execute an os command.
@@ -664,8 +665,10 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **name**: *String*. Name of the device.
  - **nValue**: *Number*. Numerical representation of the state.
  - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
- - **setDescription(description)**: *Function*. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).  
+ - **setDescription(description)**: *Function*. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setIcon(iconNumber)**: *Function*. <sup>2.4.17</sup> method to update the icon for devices. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. <sup>2.4.17</sup> Generic alternative method to update device nValue, sValue. Uses domoticz JSON API to force subsequent events like pushing to influxdb. nValue required but when set to nil it will use current nValue. sValue parms are optional and can be many.
  - **state**: *String*. For switches, holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
  - **signalLevel**: *Number* If applicable for that device then it will be from 0-100.
  - **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
@@ -821,6 +824,7 @@ See switch below.
 
 #### RGBW(W) / Lighting Limitless/Applamp
  - **decreaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **getColor()**; *Function*. <sup>2.4.17</sup> Returns table with color attributes or nil when color field of device is not set.
  - **increaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setColor(r, g, b, br, cw, ww, m, t)**: *Function*. <sup>2.4.16</sup> Sets the light to requested color.  r, g, b required, others optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setColorBrightness()**: same as setColor
@@ -1983,8 +1987,13 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.17]
+- Add dumpTable() to domoticz.utils
+- Add setValues for devices
+- Add setIcon for devices
+
 ##[2.4.16]
-- Add method dump() to domoticz.settings
+- Add method dump() to domoticz (dumps settings)
 - Add setHue, setColor, setHex, getColor for RGBW(W) devices
 - Add setDescription for devices, groups and scenes
 - Add volumeUp / volumeDown for Logitech Media Server (LMS)
