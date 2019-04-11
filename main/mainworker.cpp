@@ -11140,7 +11140,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 
 			unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
 			unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-			unsigned long long total_real = total_real = total_max - total_min;
+			unsigned long long total_real = total_max - total_min;
 			sprintf(szTmp, "%llu", total_real);
 
 			float musage = 0;
