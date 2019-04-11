@@ -44,11 +44,11 @@ return {
 				(So if your meter displays f.i. USAGE1= 523,66 KWh you need to send 523660)
 			 ]]
 			local value = tostring(usage1) .. ';' ..
-					tostring(usage2) .. ';' ..
-					tostring(return1) .. ';' ..
-					tostring(return2) .. ';' ..
-					tostring(cons) .. ';' ..
-					tostring(prod)
+				tostring(usage2) .. ';' ..
+				tostring(return1) .. ';' ..
+				tostring(return2) .. ';' ..
+				tostring(cons) .. ';' ..
+				tostring(prod)
 			return device.update(0, value)
 		end
 	end

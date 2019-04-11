@@ -603,11 +603,11 @@ namespace Plugins {
 		}
 
 		// Extract potential values.  Failures return NULL, success returns borrowed reference
-		PyObject *pStatus = PyDict_GetItemString(WriteMessage->m_Object, "Status");
 		PyObject *pVerb = PyDict_GetItemString(WriteMessage->m_Object, "Verb");
-		PyObject *pURL = PyDict_GetItemString(WriteMessage->m_Object, "URL");
-		PyObject *pData = PyDict_GetItemString(WriteMessage->m_Object, "Data");
+		PyObject *pStatus = PyDict_GetItemString(WriteMessage->m_Object, "Status");
+		PyObject *pChunk = PyDict_GetItemString(WriteMessage->m_Object, "Chunk");
 		PyObject *pHeaders = PyDict_GetItemString(WriteMessage->m_Object, "Headers");
+		PyObject *pData = PyDict_GetItemString(WriteMessage->m_Object, "Data");
 
 		//
 		//	Assume Request if 'Verb' specified
@@ -633,8 +633,10 @@ namespace Plugins {
 				return retVal;
 			}
 			sHttp = PyUnicode_AsUTF8(pVerb);
+			stdupper(sHttp);
 			sHttp += " ";
 
+			PyObject *pURL = PyDict_GetItemString(WriteMessage->m_Object, "URL");
 			std::string	sHttpURL = "/";
 			if (pURL && PyUnicode_Check(pURL))
 			{
@@ -705,7 +707,7 @@ namespace Plugins {
 
 			if (!PyUnicode_Check(pStatus))
 			{
-				_log.Log(LOG_ERROR, "(%s) HTTP 'Status' dictionary entry was not found or not a string, ignored. See Python Plugin wiki page for help.", __func__);
+				_log.Log(LOG_ERROR, "(%s) HTTP 'Status' dictionary entry was not a string, ignored. See Python Plugin wiki page for help.", __func__);
 				return retVal;
 			}
 
@@ -734,59 +736,98 @@ namespace Plugins {
 				sHttp += "Server: Domoticz/1.0\r\n";
 			}
 		}
-		else
+		//
+		//	Only other valid options is a chunk response
+		//
+		else if (!pChunk)
 		{
-			_log.Log(LOG_ERROR, "(%s) HTTP unable to determine send type. 'Status' or 'Verb' dictionary entries not found, ignored. See Python Plugin wiki page for help.", __func__);
+			_log.Log(LOG_ERROR, "(%s) HTTP unable to determine send type. 'Verb', 'Status' or 'Chunk' dictionary entries not found, ignored. See Python Plugin wiki page for help.", __func__);
 			return retVal;
 		}
 
-		// Did we get headers to send?
-		if (pHeaders)
+		// Handle headers for normal Requests & Responses
+		if (pVerb || pStatus)
 		{
-			if (PyDict_Check(pHeaders))
+			// Did we get headers to send?
+			if (pHeaders)
 			{
-				PyObject *key, *value;
-				Py_ssize_t pos = 0;
-				while (PyDict_Next(pHeaders, &pos, &key, &value))
+				if (PyDict_Check(pHeaders))
 				{
-					std::string	sKey = PyUnicode_AsUTF8(key);
-					std::string	sValue = PyUnicode_AsUTF8(value);
-					sHttp += sKey + ": " + sValue + "\r\n";
+					PyObject *key, *value;
+					Py_ssize_t pos = 0;
+					while (PyDict_Next(pHeaders, &pos, &key, &value))
+					{
+						std::string	sKey = PyUnicode_AsUTF8(key);
+						std::string	sValue = PyUnicode_AsUTF8(value);
+						sHttp += sKey + ": " + sValue + "\r\n";
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) HTTP 'Headers' parameter was not a dictionary, ignored.", __func__);
 				}
 			}
-			else
+
+			// Add Content-Length header if it is required but not supplied
+			PyObject *pLength = NULL;
+			if (pHeaders)
+				pLength = PyDict_GetItemString(pHeaders, "Content-Length");
+			if (!pLength && pData && !pChunk)
 			{
-				_log.Log(LOG_ERROR, "(%s) HTTP Response 'Headers' parameter was not a dictionary, ignored.", __func__);
+				Py_ssize_t iLength = 0;
+				if (PyUnicode_Check(pData))
+					iLength = PyUnicode_GetLength(pData);
+				else if (pData->ob_type->tp_name == std::string("bytearray"))
+					iLength = PyByteArray_Size(pData);
+				else if (PyBytes_Check(pData))
+					iLength = PyBytes_Size(pData);
+				sHttp += "Content-Length: " + std::to_string(iLength) + "\r\n";
 			}
-		}
 
-		// Add Content-Length header if it is required but not supplied
-		PyObject *pLength = NULL;
-		if (pHeaders)
-			pLength = PyDict_GetItemString(pHeaders, "Content-Length");
-		if (!pLength && pData)
+			// Add Transfer-Encoding header if required but not supplied
+			if (pChunk)
+			{
+				PyObject *pHead = NULL;
+				if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Transfer-Encoding");
+				if (!pHead)
+				{
+					sHttp += "Transfer-Encoding: chunked\r\n";
+				}
+			}
+
+			// Terminate preamble
+			sHttp += "\r\n";
+		}
+		
+		// Chunks require hex encoded chunk length instead of normal response
+		if (pChunk)
 		{
-			Py_ssize_t iLength = 0;
-			if (PyUnicode_Check(pData))
-				iLength = PyUnicode_GetLength(pData);
-			else if (pData->ob_type->tp_name == std::string("bytearray"))
-				iLength = PyByteArray_Size(pData);
-			else if (PyBytes_Check(pData))
-				iLength = PyBytes_Size(pData);
-			sHttp += "Content-Length: " + std::to_string(iLength) + "\r\n";
+			long	lChunkLength = 0;
+			if (pData)
+			{
+				if (PyUnicode_Check(pData))
+					lChunkLength = PyUnicode_GetLength(pData);
+				else if (pData->ob_type->tp_name == std::string("bytearray"))
+					lChunkLength = PyByteArray_Size(pData);
+				else if (PyBytes_Check(pData))
+					lChunkLength = PyBytes_Size(pData);
+			}
+			std::stringstream stream;
+			stream << std::hex << lChunkLength;
+			sHttp += std::string(stream.str());
+			sHttp += "\r\n";
 		}
-
-		sHttp += "\r\n";
 
 		// Append data if supplied (for POST) or Response
 		if (pData && PyUnicode_Check(pData))
 		{
 			sHttp += PyUnicode_AsUTF8(pData);
+			retVal.reserve(sHttp.length()+2);
 			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
 		}
 		else if (pData && (pData->ob_type->tp_name == std::string("bytearray")))
 		{
-			retVal.reserve(sHttp.length() + PyByteArray_Size(pData));
+			retVal.reserve(sHttp.length() + PyByteArray_Size(pData)+2);
 			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
 			const char* pByteArray = PyByteArray_AsString(pData);
 			int iStop = PyByteArray_Size(pData);
@@ -797,7 +838,7 @@ namespace Plugins {
 		}
 		else if (pData && PyBytes_Check(pData))
 		{
-			retVal.reserve(sHttp.length() + PyBytes_Size(pData));
+			retVal.reserve(sHttp.length() + PyBytes_Size(pData)+2);
 			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
 			const char* pBytes = PyBytes_AsString(pData);
 			int iStop = PyBytes_Size(pData);
@@ -807,7 +848,17 @@ namespace Plugins {
 			}
 		}
 		else
+		{
+			retVal.reserve(sHttp.length() + 2);
 			retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
+		}
+
+		// Chunks require additional CRLF (hence '+2' on all vector reserves to make sure there is room)
+		if (pChunk)
+		{
+			retVal.push_back('\r');
+			retVal.push_back('\n');
+		}
 
 		return retVal;
 	}

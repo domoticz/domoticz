@@ -11,6 +11,5 @@ return {
 			delta = domoticz.utils.round((latest.time.msAgo / 1000))
 		} )
 
-
 	end
 }

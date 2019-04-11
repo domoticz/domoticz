@@ -12,6 +12,7 @@ return {
 			adapterManager.addDummyMethod(device, 'switchOn')
 			adapterManager.addDummyMethod(device, 'switchOff')
 			adapterManager.addDummyMethod(device, 'toggleGroup')
+			adapterManager.addDummyMethod(device, 'setDescription')
 		end
 		return res
 	end,
@@ -45,6 +46,19 @@ return {
 
 		function group.switchOff()
 			return TimedCommand(domoticz, 'Group:' .. group.name, 'Off', 'device', group.state)
+		end
+
+		function group.setDescription(description)
+			local url = domoticz.settings['Domoticz url'] ..
+				"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
+				"&scenetype=1" ..
+				"&idx=" .. group.id ..
+				"&name=".. domoticz.utils.urlEncode(group.name) ..
+				"&type=updatescene" ..
+				"&onaction=&offaction="
+			return domoticz.openURL(url)
+			--?type=updatescene&idx=7&scenetype=1&name=gpDescriptionGroup&description=ff&onaction=&offaction=&protected=false
+
 		end
 
 		function group.devices()
