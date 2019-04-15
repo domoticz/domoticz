@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.17")
+	m_version("2.4.18")
 {
 	m_bdzVentsExist = false;
 }
@@ -256,6 +256,62 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 	return true;
 }
 
+bool CdzVents::TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
+{
+	std::string sID, sValue1, sValue2, sValue3 ;
+	float delayTime = 1;
+	int rnvalue = 0;
+
+	m_sql.GetPreferencesVar("IFTTTEnabled", rnvalue);
+	if (rnvalue == 0)
+	{
+		_log.Log(LOG_ERROR, "dzVents: IFTTT not enabled" );
+		return false;
+	}
+
+	std::vector<_tLuaTableValues>::const_iterator itt;
+	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
+	{
+		if (itt->type == TYPE_INTEGER )
+		{
+			if (itt->name == "_random")
+				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
+
+			else if (itt->name == "_after")
+				delayTime = static_cast<float>(itt->iValue);
+
+			else if (itt->name == "sID")
+				 sID = std::to_string(itt->iValue);
+
+			else if (itt->name == "sValue1")
+				sValue1 = std::to_string(itt->iValue);
+
+			else if (itt->name == "sValue2")
+				sValue2 = std::to_string(itt->iValue);
+
+			else if (itt->name == "sValue3")
+				sValue2 = std::to_string(itt->iValue);
+		}
+		else if (itt->type == TYPE_STRING)
+		{
+			if (itt->name == "sID")
+				sID = itt->sValue;
+
+			else if (itt->name == "sValue1")
+				sValue1 = itt->sValue;
+
+			else if (itt->name == "sValue2")
+				sValue2 = itt->sValue;
+
+			else if (itt->name == "sValue3")
+				sValue3 = itt->sValue;
+		}
+	}
+
+	m_sql.AddTaskItem(_tTaskItem::SendIFTTTTrigger(delayTime, sID, sValue1, sValue2, sValue3));
+	return true;
+}
+
 bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
 	std::string variableValue;
@@ -341,6 +397,9 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 
 		else if (lCommand == "Cancel")
 			scriptTrue = CancelItem(lua_state, vLuaTable);
+		
+		else if (lCommand == "TriggerIFTTT")
+			scriptTrue = TriggerIFTTT(lua_state, vLuaTable);
 	}
 	return scriptTrue;
 }
