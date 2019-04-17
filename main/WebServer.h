@@ -163,7 +163,7 @@ private:
 	void Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetUserVariables(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetUserVariable(WebEmSession & session, const request& req, Json::Value &root);
@@ -302,7 +302,8 @@ private:
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_Cameras(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_Cameras(WebEmSession& session, const request& req, Json::Value& root);
+	void RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Users(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);

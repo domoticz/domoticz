@@ -2153,11 +2153,6 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: Get5MinuteHistoryDaysGraphTitle()
 		},
@@ -2231,11 +2226,6 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Month')
@@ -2311,11 +2301,6 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Year')
@@ -2410,11 +2395,6 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: 'UV ' + Get5MinuteHistoryDaysGraphTitle()
@@ -2515,11 +2495,6 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: 'UV ' + $.t('Last Month')
@@ -2635,11 +2610,6 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: 'UV ' + $.t('Last Year')
@@ -2801,11 +2771,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Wind') + ' ' + $.t('speed/gust') + ' ' + Get5MinuteHistoryDaysGraphTitle()
@@ -3034,11 +2999,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 		pane: {
 			size: '85%'
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		xAxis: {
 			tickmarkPlacement: 'on',
 			tickWidth: 1,
@@ -3134,11 +3094,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Wind') + ' ' + $.t('speed/gust') + ' ' + $.t('Last Month')
@@ -3416,11 +3371,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Wind') + ' ' + $.t('speed/gust') + ' ' + $.t('Last Year')
 		},
@@ -3693,11 +3643,6 @@ function ShowMonthReportRain(actMonth, actYear) {
 		chart: {
 			type: 'column'
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: ''
 		},
@@ -3903,11 +3848,6 @@ function ShowYearReportRain(actYear) {
 		chart: {
 			type: 'column'
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: ''
 		},
@@ -4102,11 +4042,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Rainfall') + ' ' + Get5MinuteHistoryDaysGraphTitle()
 		},
@@ -4166,11 +4101,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Rainfall') + ' ' + $.t('Last Week')
@@ -4253,11 +4183,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Rainfall') + ' ' + $.t('Last Month')
@@ -4371,11 +4296,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Rainfall') + ' ' + $.t('Last Year')
@@ -4496,11 +4416,6 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Barometer') + ' ' + Get5MinuteHistoryDaysGraphTitle()
@@ -4623,11 +4538,6 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Barometer') + ' ' + $.t('Last Month')
 		},
@@ -4749,11 +4659,6 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Barometer') + ' ' + $.t('Last Year')
 		},
@@ -4866,11 +4771,6 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Air Quality') + ' ' + Get5MinuteHistoryDaysGraphTitle()
@@ -5053,11 +4953,6 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Air Quality') + ' ' + $.t('Last Month')
@@ -5269,11 +5164,6 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Air Quality') + ' ' + $.t('Last Year')
 		},
@@ -5462,11 +5352,6 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('RPM') + ' ' + Get5MinuteHistoryDaysGraphTitle()
 		},
@@ -5566,11 +5451,6 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('RPM') + ' ' + $.t('Last Month')
@@ -5681,11 +5561,6 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('RPM') + ' ' + $.t('Last Year')
 		},
@@ -5791,7 +5666,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 	if (typeof data.ValueQuantity != 'undefined') {
 		valueQuantity = data.ValueQuantity;
 	}
-	
+
 	$.DividerWater = 1000;
 
 	var valueUnits = "";
@@ -6370,11 +6245,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: Get5MinuteHistoryDaysGraphTitle()
 		},
@@ -6450,11 +6320,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Last Week')
 		},
@@ -6513,11 +6378,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Month')
@@ -6593,11 +6453,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Year')
@@ -6699,11 +6554,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: graph_title
 		},
@@ -6762,11 +6612,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Week')
@@ -6828,11 +6673,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Month')
@@ -6908,11 +6748,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Year')
@@ -7039,11 +6874,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: graph_title
 		},
@@ -7136,11 +6966,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Last Week')
 		},
@@ -7197,11 +7022,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Month')
@@ -7277,11 +7097,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Year')

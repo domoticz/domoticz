@@ -1,2 +1,0 @@
-/usr/bin/ar qc libminizip.a  CMakeFiles/minizip.dir/unzip.c.o CMakeFiles/minizip.dir/ioapi.c.o
-/usr/bin/ranlib libminizip.a

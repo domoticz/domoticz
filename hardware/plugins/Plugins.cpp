@@ -32,6 +32,10 @@
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
 extern std::string szWWWFolder;
+extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
+extern std::string szWebRoot;
+extern std::string dbasefile;
 extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
@@ -1004,9 +1008,79 @@ namespace Plugins {
 					break;
 				}
 			}
+
 			std::wstring	sPath = ssPath.str() + sSeparator;
 			sPath += Py_GetPath();
+
+			try
+			{
+				//
+				//	Python loads the 'site' module automatically and adds extra search directories for module loading
+				//	This code makes the plugin framework function the same way
+				//
+				void*	pSiteModule = PyImport_ImportModule("site");
+				if (!pSiteModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
+				}
+				else
+				{
+					PyObject*	pFunc = PyObject_GetAttrString((PyObject*)pSiteModule, "getsitepackages");
+					if (pFunc && PyCallable_Check(pFunc))
+					{
+						PyObject*	pSites = PyObject_CallObject(pFunc, NULL);
+						if (!pSites)
+						{
+							LogPythonException("getsitepackages");
+						}
+						else
+							for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+							{
+								PyObject*	pSite = PyList_GetItem(pSites, i);
+								if (pSite && PyUnicode_Check(pSite))
+								{
+									std::wstringstream ssPath;
+									ssPath << PyUnicode_AsUTF8(pSite);
+									sPath += sSeparator + ssPath.str();
+								}
+							}
+						Py_XDECREF(pSites);
+					}
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
+				PyErr_Clear();
+			}
+
+			// Update the path itself
 			PySys_SetPath((wchar_t*)sPath.c_str());
+
+			try
+			{
+				//
+				//	Load the 'faulthandler' module to get a python stackdump during a segfault
+				//
+				void*	pFaultModule = PyImport_ImportModule("faulthandler");
+				if (!pFaultModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				}
+				else
+				{
+					PyObject*	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
+					if (pFunc && PyCallable_Check(pFunc))
+					{
+						PyObject_CallObject(pFunc, NULL);
+					}
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "(%s) exception loading 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				PyErr_Clear();
+			}
 
 			try
 			{
@@ -1021,6 +1095,7 @@ namespace Plugins {
 			catch (...)
 			{
 				_log.Log(LOG_ERROR, "(%s) exception loading 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
+				PyErr_Clear();
 			}
 
 			// Domoticz callbacks need state so they know which plugin to act on
@@ -1118,6 +1193,9 @@ Error:
 			}
 			Py_DECREF(pObj);
 
+			std::string sLanguage = "en";
+			m_sql.GetPreferencesVar("Language", sLanguage);
+
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
 			if (!result.empty())
@@ -1128,6 +1206,11 @@ Error:
 					std::vector<std::string> sd = *itt;
 					const char*	pChar = sd[0].c_str();
 					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "StartupFolder", szStartupFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "UserDataFolder", szUserDataFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "WebRoot", szWebRoot);
+					ADD_STRING_TO_DICT(pParamsDict, "Database", dbasefile);
+					ADD_STRING_TO_DICT(pParamsDict, "Language", sLanguage);
 					ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
 					ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
 					ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);
@@ -1147,10 +1230,6 @@ Error:
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzVersion", szAppVersion);
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzHash", szAppHash);
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzBuildTime", szAppDate);
-
-					// Remember these for use with some protocols
-					m_Username = sd[4];
-					m_Password = sd[5];
 				}
 			}
 
@@ -1247,7 +1326,7 @@ Error:
 			pConnection->pProtocol = NULL;
 		}
 		std::string	sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
-		pConnection->pProtocol = CPluginProtocol::Create(sProtocol, m_Username, m_Password);
+		pConnection->pProtocol = CPluginProtocol::Create(sProtocol);
 		if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", m_Name.c_str(), sProtocol.c_str());
 	}
 
@@ -1430,6 +1509,12 @@ Error:
 				_log.Log(LOG_ERROR, "(%s) No transport, write directive to '%s' ignored.", m_Name.c_str(), sConnection.c_str());
 				return;
 			}
+		}
+
+		// Make sure there is a protocol to encode the data
+		if (!pConnection->pProtocol)
+		{
+			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
@@ -1932,13 +2017,14 @@ Error:
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
-				else szTypeImage = "Light48";
+				else 
+					szTypeImage = "Light48";
 				break;
 			case STYPE_Doorbell:
 				szTypeImage = "doorbell48";
 				break;
 			case STYPE_Contact:
-				szTypeImage = "contact48";
+				szTypeImage = "Contact48";
 				break;
 			case STYPE_Blinds:
 			case STYPE_BlindsPercentage:
@@ -1961,19 +2047,19 @@ Error:
 				szTypeImage = "motion48";
 				break;
 			case STYPE_PushOn:
-				szTypeImage = "pushon48";
+				szTypeImage = "Push48";
 				break;
 			case STYPE_PushOff:
-				szTypeImage = "pushon48";
+				szTypeImage = "Push48";
 				break;
 			case STYPE_DoorContact:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLock:
-				szTypeImage = "door48open";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_DoorLockInverted:
-				szTypeImage = "door48";
+				szTypeImage = "Door48";
 				break;
 			case STYPE_Media:
 				if (posCustom >= 0)
@@ -1981,7 +2067,8 @@ Error:
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}
-				else szTypeImage = "Media48";
+				else
+					szTypeImage = "Media48";
 				break;
 			default:
 				szTypeImage = "logo";

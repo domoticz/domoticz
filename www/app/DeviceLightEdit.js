@@ -2,52 +2,84 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
     app.component('deviceIconSelect', {
         template: '<select id="icon-select"></select>',
+        bindings: {
+            switchType: '<'
+        },
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function ($element, domoticzApi) {
+        controller: function ($element, domoticzApi, dzDefaultSwitchIcons) {
             var vm = this;
-            var icons = [];
+            var switch_icons = [];
+
+            function updateSelector(bFromUser) {
+                switch_icons[0].imageSrc = dzDefaultSwitchIcons[vm.switchType]
+                    ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
+                    : 'images/Generic48_On.png';
+
+                $element.find('#icon-select').ddslick('destroy');
+                $element.find('#icon-select').ddslick({
+                    data: switch_icons,
+                    width: 260,
+                    height: 390,
+                    selectText: 'Select Switch Icon',
+                    imagePosition: 'left',
+                    onSelected: function (data) {
+                        vm.ngModelCtrl.$setViewValue(data.selectedData.value);
+                    }
+                });
+                if (bFromUser) {
+					$element.find('#icon-select').ddslick('select', { index: 0 });
+				}
+
+                vm.ngModelCtrl.$render();
+            }
 
             vm.$onInit = function () {
                 // TODO: Add caching mechanism for this request
                 domoticzApi.sendRequest({
                     type: 'custom_light_icons'
                 }).then(function (data) {
-                    icons = (data.result || []).map(function (item) {
-                        return {
-                            text: item.text,
-                            value: item.idx,
-                            selected: false,
-                            description: item.description,
-                            imageSrc: 'images/' + item.imageSrc + '48_On.png'
-                        };
+                    switch_icons = (data.result || [])
+                        .filter(function (item) {
+                            return item.idx !== 0;
+                        })
+                        .map(function (item) {
+                            return {
+                                text: item.text,
+                                value: item.idx,
+                                selected: false,
+                                description: item.description,
+                                imageSrc: 'images/' + item.imageSrc + '48_On.png'
+                            };
+                        });
+
+                    switch_icons.unshift({
+                        text: 'Default',
+                        value: 0,
+                        selected: false,
+                        description: 'Default icon'
                     });
 
-                    $element.find('#icon-select').ddslick({
-                        data: icons,
-                        width: 260,
-                        height: 390,
-                        selectText: 'Select Switch Icon',
-                        imagePosition: 'left',
-                        onSelected: function (data) {
-                            vm.ngModelCtrl.$setViewValue(data.selectedData.value);
-                        }
-                    });
-
-                    vm.ngModelCtrl.$render();
+                    updateSelector(false);
                 });
 
                 vm.ngModelCtrl.$render = function () {
                     var value = vm.ngModelCtrl.$modelValue;
 
-                    icons.forEach(function (item, index) {
+                    switch_icons.forEach(function (item, index) {
                         if (item.value === value) {
                             $element.find('#icon-select').ddslick('select', { index: index });
                         }
                     });
                 };
             };
+
+            vm.$onChanges = function (changes) {
+                if (changes.switchType && switch_icons.length > 0) {
+                    updateSelector(true);
+                }
+            }
         }
     });
 
@@ -111,7 +143,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
             deviceIdx: '<'
         },
         controllerAs: 'vm',
-        controller: function ($scope, $element, domoticzApi, dataTableDefaultSettings) {
+        controller: function ($scope, $element, domoticzApi, deviceApi, dataTableDefaultSettings) {
             var vm = this;
             var table;
 
@@ -139,8 +171,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 });
 
                 // TODO: Add caching mechanism for this request
-                domoticzApi.sendCommand('getlightswitches').then(function (data) {
-                    vm.lightsAndSwitches = (data.result || [])
+                deviceApi.getLightsDevices().then(function (devices) {
+                    vm.lightsAndSwitches = devices;
                 });
 
                 refreshTable();
@@ -575,7 +607,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         }
 
         function isSwitchIconAvailable() {
-            return [0, 7, 17, 18].includes(vm.device.SwitchTypeVal);
+            return vm.device.icon.isConfigurable();
         }
 
         function isLevelsAvailable() {

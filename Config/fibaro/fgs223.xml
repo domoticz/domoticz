@@ -4,12 +4,12 @@
     <CommandClass id="38" getsupported="false"/>
     <!-- Configuration -->
     <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="9" label="Saving state before power failure" value="1" size="1">
+        <Value type="list" genre="config" instance="1" index="9" label="Saving state before power failure" value="1" min="0" max="1" size="1">
             <Help>Saving state before power failure</Help>
             <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
             <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="10" label="First channel - operating mode" value="0" size="1">
+        <Value type="list" genre="config" instance="1" index="10" label="First channel - operating mode" value="0" min="0" max="5" size="1">
             <Help>This parameter allows to choose operating for the 1st channel controlled by the S1 switch.</Help>
             <Item label="Standard operation" value="0"/>
             <Item label="Delay On" value="1"/>
@@ -18,7 +18,7 @@
             <Item label="Auto Off" value="4"/>
             <Item label="Flashing Mode" value="5"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="11" label="First channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
+        <Value type="list" genre="config" instance="1" index="11" label="First channel - reaction to switch for delay/auto ON/OFF modes" value="0" min="0" max="2" size="1">
             <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal.</Help>
             <Item label="Cancel mode and set target state" value="0"/>
             <Item label="No reaction to switch - mode runs until it ends" value="1"/>
@@ -33,7 +33,7 @@
                 1-32000 (0.1-3200.0s, 0.1s step)
             </Help>
         </Value>
-        <Value type="list" genre="config" instance="1" index="15" label="Second channel - operating mode" value="0" size="1">
+        <Value type="list" genre="config" instance="1" index="15" label="Second channel - operating mode" value="0" min="0" max="5" size="1">
             <Help>This parameter allows to choose operating for the 2nd channel controlled by the S2 switch.</Help>
             <Item label="Standard operation" value="0"/>
             <Item label="Delay On" value="1"/>
@@ -42,7 +42,7 @@
             <Item label="Auto Off" value="4"/>
             <Item label="Flashing Mode" value="5"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="16" label="Second channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
+        <Value type="list" genre="config" instance="1" index="16" label="Second channel - reaction to switch for delay/auto ON/OFF modes" value="0" min="0" max="2" size="1">
             <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S2 terminal.</Help>
             <Item label="Cancel mode and set target state" value="0"/>
             <Item label="No reaction to switch - mode runs until it ends" value="1"/>
@@ -57,13 +57,13 @@
                 1-32000 (0.1-3200.0s, 0.1s step)
             </Help>
         </Value>
-        <Value type="list" genre="config" instance="1" index="20" label="Switch type" value="2" size="1">
+        <Value type="list" genre="config" instance="1" index="20" label="Switch type" value="2" min="0" max="2" size="1">
             <Help>Inputs type configuration</Help>
             <Item label="Momentary switch" value="0"/>
             <Item label="Toggle switch (contact closed - On, contact opened - OFF)" value="1"/>
             <Item label="Toggle switch (device changes status when switch changes status)" value="2"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="21" label="Flashing mode report" value="0" size="1">
+        <Value type="list" genre="config" instance="1" index="21" label="Flashing mode report" value="0" min="0" max="1" size="1">
             <Help>Enabled / Disabled reports on Flashing mode</Help>
             <Item label="Disabled" value="0"/>
             <Item label="Enabled" value="1"/>
@@ -152,28 +152,28 @@
                 This parameter determines value sent with Double Click command to devices associated in 4th and 5th association group.
             </Help>
         </Value>
-        <Value type="list" genre="config" instance="1" index="40" label="Reaction to General Alarm" value="3" size="1">
+        <Value type="list" genre="config" instance="1" index="40" label="Reaction to General Alarm" value="3" min="0" max="3" size="1">
             <Help>This parameter determines how the device will react to General Alarm frame.</Help>
             <Item label="Ignored" value="0"/>
             <Item label="Turn On" value="1"/>
             <Item label="Turn OFF" value="2"/>
             <Item label="Flash" value="3"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="41" label="Reaction to Flood Alarm" value="2" size="1">
+        <Value type="list" genre="config" instance="1" index="41" label="Reaction to Flood Alarm" value="2" min="0" max="3" size="1">
             <Help>This parameter determines how the device will react to Flood Alarm frame.</Help>
             <Item label="Ignored" value="0"/>
             <Item label="Turn On" value="1"/>
             <Item label="Turn OFF" value="2"/>
             <Item label="Flash" value="3"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="42" label="Reaction to CO/CO2/Smoke Alarm" value="3" size="1">
+        <Value type="list" genre="config" instance="1" index="42" label="Reaction to CO/CO2/Smoke Alarm" value="3" min="0" max="3" size="1">
             <Help>This parameter determines how the device will react to CO/CO2/Smoke Alarm frame.</Help>
             <Item label="Ignored" value="0"/>
             <Item label="Turn On" value="1"/>
             <Item label="Turn OFF" value="2"/>
             <Item label="Flash" value="3"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="43" label="Reaction to Heat Alarm" value="1" size="1">
+        <Value type="list" genre="config" instance="1" index="43" label="Reaction to Heat Alarm" value="1" min="0" max="3" size="1">
             <Help>This parameter determines how the device will react to Heat alarm frame.</Help>
             <Item label="Ignored" value="0"/>
             <Item label="Turn On" value="1"/>
@@ -242,7 +242,7 @@
                 1-32000 (s) Default 3600 (1h)
             </Help>
         </Value>
-        <Value type="list" genre="config" instance="1" index="60" label="Measuring energy consumed by the device itself" value="0" size="1">
+        <Value type="list" genre="config" instance="1" index="60" label="Measuring energy consumed by the device itself" value="0" min="0" max="1" size="1">
             <Help>
                 This parameter determines whether energy metering should include
                 the amount of energy consumed by the device itself. Results are

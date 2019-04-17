@@ -475,9 +475,9 @@ namespace http {
 			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1, _2, _3));
 			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1, _2, _3));
 
-			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
-			RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::Cmd_SaveUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("adduservariable", boost::bind(&CWebServer::Cmd_AddUserVariable, this, _1, _2, _3));
 			RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
 			RegisterCommandCode("getuservariables", boost::bind(&CWebServer::Cmd_GetUserVariables, this, _1, _2, _3));
 			RegisterCommandCode("getuservariable", boost::bind(&CWebServer::Cmd_GetUserVariable, this, _1, _2, _3));
 
@@ -583,6 +583,7 @@ namespace http {
 			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1, _2, _3));
 			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
 			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
+			RegisterRType("cameras_user", boost::bind(&CWebServer::RType_CamerasUser, this, _1, _2, _3));
 			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2, _3));
 			RegisterRType("mobiles", boost::bind(&CWebServer::RType_Mobiles, this, _1, _2, _3));
 
@@ -1872,6 +1873,35 @@ namespace http {
 			root["title"] = "GetDeviceValueOptions";
 		}
 
+		void CWebServer::Cmd_AddUserVariable(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			std::string variablename = request::findValue(&req, "vname");
+			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variabletype = request::findValue(&req, "vtype");
+			if (
+				(variablename.empty()) ||
+				(variabletype.empty()) ||
+				((variablevalue.empty()) && (variabletype != "2"))
+				)
+				return;
+
+			root["title"] = "AddUserVariable";
+
+			std::string errorMessage;
+			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
+			{
+				root["status"] = "ERR";
+				root["message"] = errorMessage;
+			}
+			else {
+				root["status"] = "OK";
+			}
+		}
 
 		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -1884,29 +1914,9 @@ namespace http {
 			if (idx.empty())
 				return;
 
-			root["status"] = m_sql.DeleteUserVariable(idx);
+			m_sql.DeleteUserVariable(idx);
+			root["status"] = "OK";
 			root["title"] = "DeleteUserVariable";
-		}
-
-		void CWebServer::Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-			std::string variablename = request::findValue(&req, "vname");
-			std::string variablevalue = request::findValue(&req, "vvalue");
-			std::string variabletype = request::findValue(&req, "vtype");
-			if (
-				(variablename.empty()) ||
-				(variabletype.empty()) ||
-				((variablevalue.empty()) && (variabletype != "2"))
-				)
-				return;
-
-			root["status"] = m_sql.SaveUserVariable(variablename, variabletype, variablevalue);
-			root["title"] = "SaveUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
@@ -1916,54 +1926,71 @@ namespace http {
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
+
 			std::string idx = request::findValue(&req, "idx");
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 
-			if (idx.empty())
-			{
-				//Get idx from valuename
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'",
-					variablename.c_str());
-				if (result.empty())
-					return;
-				idx = result[0][0];
-			}
-
 			if (
-				(idx.empty()) ||
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
 				return;
 
-			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
+			std::vector<std::vector<std::string> > result;
+			if (idx.empty())
+			{
+				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", variablename.c_str());
+				if (result.empty())
+					return;
+				idx = result[0][0];
+			}
+
+			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE ID='%q'", idx.c_str());
+			if (result.empty())
+				return;
+
+			bool bTypeNameChanged = false;
+			if (variablename != result[0][0])
+				bTypeNameChanged = true; //new name
+			else if (variabletype != result[0][1])
+				bTypeNameChanged = true; //new type
+
 			root["title"] = "UpdateUserVariable";
+
+			std::string errorMessage;
+			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
+			{
+				root["status"] = "ERR";
+				root["message"] = errorMessage;
+			}
+			else {
+				root["status"] = "OK";
+				if (bTypeNameChanged)
+				{
+					if (m_sql.m_bEnableEventSystem)
+						m_mainworker.m_eventsystem.GetCurrentUserVariables();
+				}
+			}
 		}
 
 
 		void CWebServer::Cmd_GetUserVariables(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables";
-			result = m_sql.GetUserVariables();
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables");
+			int ii = 0;
+			for (const auto & itt : result)
 			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Type"] = sd[2];
-					root["result"][ii]["Value"] = sd[3];
-					root["result"][ii]["LastUpdate"] = sd[4];
-					ii++;
-				}
+				std::vector<std::string> sd = itt;
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Type"] = sd[2];
+				root["result"][ii]["Value"] = sd[3];
+				root["result"][ii]["LastUpdate"] = sd[4];
+				ii++;
 			}
 			root["status"] = "OK";
 			root["title"] = "GetUserVariables";
@@ -1978,21 +2005,17 @@ namespace http {
 			int iVarID = atoi(idx.c_str());
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables WHERE (ID==%d)",
-				iVarID);
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables WHERE (ID==%d)", iVarID);
+			int ii = 0;
+			for (const auto & itt : result)
 			{
-				int ii = 0;
-				for (const auto & itt : result)
-				{
-					std::vector<std::string> sd = itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Type"] = sd[2];
-					root["result"][ii]["Value"] = sd[3];
-					root["result"][ii]["LastUpdate"] = sd[4];
-					ii++;
-				}
+				std::vector<std::string> sd = itt;
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Type"] = sd[2];
+				root["result"][ii]["Value"] = sd[3];
+				root["result"][ii]["LastUpdate"] = sd[4];
+				ii++;
 			}
 			root["status"] = "OK";
 			root["title"] = "GetUserVariable";
@@ -2101,6 +2124,15 @@ namespace http {
 				"INSERT INTO Plans (Name) VALUES ('%q')",
 				name.c_str()
 			);
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT MAX(ID) FROM Plans");
+			if (!result.empty())
+			{
+				std::vector<std::string> sd = result[0];
+				int ID = atoi(sd[0].c_str());
+
+				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
+			}
 		}
 
 		void CWebServer::Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root)
@@ -8088,6 +8120,7 @@ namespace http {
 							// assume results are ordered such that same device is adjacent
 							// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 							std::string thisIdx = sd[0];
+
 							if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 								std::string typeOfThisOne = root["result"][ii]["Type"].asString();
 								if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -8586,6 +8619,8 @@ namespace http {
 					// assume results are ordered such that same device is adjacent
 					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 					std::string thisIdx = sd[0];
+					int devIdx = atoi(thisIdx.c_str());
+
 					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
 						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
 						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
@@ -8866,6 +8901,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorContact)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
@@ -8879,6 +8918,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorLock)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
@@ -8892,6 +8935,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_DoorLockInverted)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Door";
+							}
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
@@ -8905,12 +8952,21 @@ namespace http {
 						}
 						else if (switchtype == STYPE_PushOn)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Push";
+							}
 							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
 							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 						}
 						else if (switchtype == STYPE_PushOff)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Push";
+							}
+							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
 							root["result"][ii]["TypeImg"] = "pushoff";
 						}
@@ -8924,6 +8980,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Contact)
 						{
+							if (CustomImage == 0)
+							{
+								root["result"][ii]["Image"] = "Contact";
+							}
 							root["result"][ii]["TypeImg"] = "contact";
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							if (bIsOn) {
@@ -9168,6 +9228,14 @@ namespace http {
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeThermostat1)
 					{
@@ -9190,6 +9258,13 @@ namespace http {
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["TypeImg"] = "temperature";
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
 					}
 					else if (dType == pTypeHUM)
 					{
@@ -9220,6 +9295,14 @@ namespace http {
 
 							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
 							root["result"][ii]["DewPoint"] = szTmp;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_HUM_BARO)
@@ -9270,6 +9353,14 @@ namespace http {
 							}
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeTEMP_BARO)
@@ -9292,6 +9383,14 @@ namespace http {
 							);
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 					}
 					else if (dType == pTypeUV)
@@ -9308,6 +9407,14 @@ namespace http {
 
 								root["result"][ii]["Temp"] = tvalue;
 								sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
 							}
 							else
 							{
@@ -9364,6 +9471,14 @@ namespace http {
 								}
 								double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
 								root["result"][ii]["Chill"] = tvalue;
+
+								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+								{
+									tstate = m_mainworker.m_trend_calculator[tID].m_state;
+								}
+								root["result"][ii]["trend"] = (int)tstate;
 							}
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -9384,35 +9499,45 @@ namespace http {
 
 							std::vector<std::vector<std::string> > result2;
 
-							if (dSubType != sTypeRAINWU)
-							{
-								result2 = m_sql.safe_query(
-									"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
-							}
-							else
+							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 							{
 								result2 = m_sql.safe_query(
 									"SELECT Total, Total FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
 							}
+							else
+							{
+								result2 = m_sql.safe_query(
+									"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+							}
+
 							if (!result2.empty())
 							{
 								double total_real = 0;
 								float rate = 0;
 								std::vector<std::string> sd2 = result2[0];
-								if (dSubType != sTypeRAINWU)
+
+								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+								{
+									total_real = atof(sd2[1].c_str());
+								}
+								else
 								{
 									double total_min = atof(sd2[0].c_str());
 									double total_max = atof(strarray[1].c_str());
 									total_real = total_max - total_min;
 								}
+
+								total_real *= AddjMulti;
+								if (dSubType == sTypeRAINByRate)
+								{
+									rate = (static_cast<float>(atof(strarray[0].c_str())) / 10000.0f)*float(AddjMulti);
+								}
 								else
 								{
-									total_real = atof(sd2[1].c_str());
+									rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 								}
-								total_real *= AddjMulti;
-								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
-								sprintf(szTmp, "%.3f", total_real);
+								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
 								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
@@ -10253,6 +10378,13 @@ namespace http {
 							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "temperature";
 							root["result"][ii]["Type"] = "temperature";
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
 						}
 						else if (dSubType == sTypePercentage)
 						{
@@ -10650,7 +10782,7 @@ namespace http {
 				return;
 			}
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%s", idx.c_str());
+			result = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%d", atol(idx.c_str()));
 			if (result.empty())
 				return;
 			reply::set_content(&rep, result[0][0].begin(), result[0][0].end());
@@ -13154,7 +13286,6 @@ namespace http {
 								(dType == pTypeTEMP_HUM_BARO) ||
 								(dType == pTypeTEMP_BARO) ||
 								((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-								((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								(dType == pTypeThermostat1) ||
 								(dType == pTypeRadiator1) ||
@@ -13777,6 +13908,11 @@ namespace http {
 								{
 									//bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
+									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
+
+									if (actValue >= ulLastValue)
+										ulLastValue = actValue;
+
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
 										if (bHaveFirstValue)
@@ -13818,11 +13954,6 @@ namespace http {
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
 									}
-									long long actValue = std::strtoll(sd[0].c_str(), nullptr, 10);
-
-									if (actValue >= ulLastValue)
-										ulLastValue = actValue;
-
 									if (!bHaveFirstValue)
 									{
 										ulFirstValue = ulLastValue;
@@ -14419,16 +14550,16 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType != sTypeRAINWU)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 							idx, szDateEnd);
 					}
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
 					}
 					if (!result.empty())
@@ -14440,13 +14571,13 @@ namespace http {
 						int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
-						if (dSubType != sTypeRAINWU)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
-							total_real = total_max - total_min;
+							total_real = total_max;
 						}
 						else
 						{
-							total_real = total_max;
+							total_real = total_max - total_min;
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -14746,7 +14877,7 @@ namespace http {
 								bool bOK = true;
 								if (dType == pTypeWIND)
 								{
-									bOK = ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp));
+									bOK = ((dSubType != sTypeWINDNoTemp) && (dSubType != sTypeWINDNoTempNoChill));
 								}
 								if (bOK)
 								{
@@ -14829,7 +14960,6 @@ namespace http {
 							((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1)) ||
 							((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
 							)
 						{
@@ -15118,16 +15248,16 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType != sTypeRAINWU)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 							idx, szDateEnd);
 					}
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
 					}
 					if (!result.empty())
@@ -15139,13 +15269,13 @@ namespace http {
 						int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
-						if (dSubType != sTypeRAINWU)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
-							total_real = total_max - total_min;
+							total_real = total_max;
 						}
 						else
 						{
-							total_real = total_max;
+							total_real = total_max - total_min;
 						}
 						total_real *= AddjMulti;
 						sprintf(szTmp, "%.1f", total_real);
@@ -15771,6 +15901,10 @@ namespace http {
 							sprintf(szTmp, "%d", atoi(sValue.c_str()));
 							root["counter"] = szTmp;
 						}
+						else
+						{
+							root["counter"] = "0";
+						}
 						//Actual Year
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (!result.empty())
@@ -16278,7 +16412,6 @@ namespace http {
 						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
 						((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 							((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 							((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
@@ -16605,16 +16738,16 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					if (dSubType != sTypeRAINWU)
+					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 							idx, szDateEnd.c_str());
 					}
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd.c_str());
 					}
 					if (!result.empty())
@@ -16626,13 +16759,13 @@ namespace http {
 						int rate = atoi(sd[2].c_str());
 
 						float total_real = 0;
-						if (dSubType != sTypeRAINWU)
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
-							total_real = total_max - total_min;
+							total_real = total_max;
 						}
 						else
 						{
-							total_real = total_max;
+							total_real = total_max - total_min;
 						}
 						sprintf(szTmp, "%.1f", total_real);
 						root["result"][ii]["d"] = szDateEnd;

@@ -47,7 +47,10 @@ void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 	{
 		LOG(LOG_STATUS, "Allocating CommManager LAN Controller (192.168.%d.%d)", devaddrh, devaddrl);
 		m_ECMn = (struct CommManagerNamesT *) malloc(sizeof(struct CommManagerNamesT));
-		if (m_ECMn == NULL) LOG(LOG_ERROR, "CAN'T Allocate ECM Names Memory");
+		if (m_ECMn == NULL) {
+			LOG(LOG_ERROR, "CAN'T Allocate ECM Names Memory");
+			return;
+		}
 		m_ECMn->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 		m_ECMn->AddrH = devaddrh;
 		m_ECMn->AddrL = devaddrl;
@@ -66,8 +69,11 @@ void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 	if (m_eHouseProN == NULL)
 	{
 		LOG(LOG_STATUS, "Allocating eHouse PRO Controller (192.168.%d.%d)", devaddrh, devaddrl);
-		m_eHouseProN = (struct eHouseProNamesT *) malloc(sizeof(struct eHouseProNamesT));
-		if (m_eHouseProN == NULL) LOG(LOG_ERROR, "CAN'T Allocate PRO Names Memory");
+		m_eHouseProN = (struct eHouseProNamesT *) malloc(sizeof(struct eHouseProNamesT)); //Giz: ?? why use mallocs ?
+		if (m_eHouseProN == NULL) {
+			LOG(LOG_ERROR, "CAN'T Allocate PRO Names Memory");
+			return;
+		}
 		m_eHouseProN->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 		m_eHouseProN->AddrH[0] = devaddrh;
 		m_eHouseProN->AddrL[0] = devaddrl;
@@ -92,7 +98,10 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 		{
 			LOG(LOG_STATUS, "Allocating Aura Thermostat (%d.%d)", devaddrh, i + 1);
 			m_AuraN[i] = (struct AuraNamesT *) malloc(sizeof(struct AuraNamesT));
-			if (m_AuraN[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Names Memory");
+			if (m_AuraN[i] == NULL) {
+				LOG(LOG_ERROR, "CAN'T Allocate AURA Names Memory");
+				return;
+			}
 			m_AuraN[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			m_AuraN[i]->AddrH = devaddrh;
 			m_AuraN[i]->AddrL = i + 1;
@@ -101,7 +110,10 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_adcs[i] = (struct CtrlADCT *) malloc(sizeof(struct CtrlADCT));
 			if (m_adcs[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate ADCs Memory");
 			if (m_AuraDev[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Stat Memory");
-			if (m_AuraDevPrv[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Stat Prv Memory");
+			if (m_AuraDevPrv[i] == NULL) {
+				LOG(LOG_ERROR, "CAN'T Allocate AURA Stat Prv Memory");
+				return;
+			}
 			m_AuraN[i]->BinaryStatus[0] = 0;	//modified flag
 			m_AuraDevPrv[i]->Addr = 0;		//modified flag
 		}
@@ -123,14 +135,20 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 		{
 			LOG(LOG_STATUS, "Allocating eHouse LAN controller (192.168.%d.%d)", devaddrh, i + m_INITIAL_ADDRESS_LAN);
 			m_eHEn[i] = (struct EtherneteHouseNamesT *) malloc(sizeof(struct EtherneteHouseNamesT));
-			if (m_eHEn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate LAN Names Memory");
+			if (m_eHEn[i] == NULL) {
+				LOG(LOG_ERROR, "CAN'T Allocate LAN Names Memory");
+				return;
+			}
 			m_eHEn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			m_eHEn[i]->AddrH = devaddrh;
 			m_eHEn[i]->AddrL = i + m_INITIAL_ADDRESS_LAN;
 			m_eHERMs[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
 			m_eHERMPrev[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
 			if (m_eHERMs[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Memory");
-			if (m_eHERMPrev[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Prv Memory");
+			if (m_eHERMPrev[i] == NULL) {
+				LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Prv Memory");
+				return;
+			}
 			m_eHEn[i]->BinaryStatus[0] = 0;	//modification flags
 			m_eHERMPrev[i]->data[0] = 0;
 		}
@@ -150,7 +168,10 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 		if (m_eHn[i] == NULL)
 		{
 			m_eHn[i] = (struct eHouse1NamesT *) malloc(sizeof(struct eHouse1NamesT));
-			if (m_eHn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate RS-485 Names Memory");
+			if (m_eHn[i] == NULL) {
+				LOG(LOG_ERROR, "CAN'T Allocate RS-485 Names Memory");
+				return;
+			}
 			m_eHn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			if (i == 0)
 			{
@@ -172,7 +193,10 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_eHRMs[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
 			m_eHRMPrev[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
 			if (m_eHRMs[i] == NULL) LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Memory");
-			if (m_eHRMPrev[i] == NULL) LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Prev Memory");
+			if (m_eHRMPrev[i] == NULL) {
+				LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Prev Memory");
+				return;
+			}
 			m_eHn[i]->BinaryStatus[0] = 0;		//modification flags
 			m_eHRMPrev[i]->data[0] = 0;
 		}
@@ -193,7 +217,10 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 		{
 			LOG(LOG_STATUS, "Allocating eHouse WiFi Controller (192.168.%d.%d)", devaddrh, m_INITIAL_ADDRESS_WIFI + i);
 			m_eHWIFIn[i] = (struct WiFieHouseNamesT *) malloc(sizeof(struct WiFieHouseNamesT));
-			if (m_eHWIFIn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate WiFi Names Memory");
+			if (m_eHWIFIn[i] == NULL) {
+				LOG(LOG_ERROR, "CAN'T Allocate WiFi Names Memory");
+				return;
+			}
 			m_eHWIFIn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			m_eHWIFIn[i]->AddrH = devaddrh;
 			m_eHWIFIn[i]->AddrL = devaddrl;
@@ -201,7 +228,10 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_eHWIFIs[i] = (union WIFIFullStatT *) malloc(sizeof(union WIFIFullStatT));
 			m_eHWIFIPrev[i] = (union WIFIFullStatT *) malloc(sizeof(union WIFIFullStatT));
 			if (m_eHWIFIs[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate WiFi Stat Memory");
-			if (m_eHWIFIPrev[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate WiFi Stat Memory");
+			if (m_eHWIFIPrev[i] == NULL) {
+				LOG(LOG_ERROR, "CAN'T Allocate WiFi Stat Memory");
+				return;
+			}
 			m_eHWIFIn[i]->BinaryStatus[0] = 0;
 			m_eHWIFIPrev[i]->data[0] = 0;
 		}

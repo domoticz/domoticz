@@ -9,6 +9,7 @@
 #include "../json/json.h"
 #include "../webserver/Base64.h"
 #include "cayenne_lpp/CayenneLPP_Dec.h"
+#include <sstream>
 
 #define RETRY_DELAY 30
 
@@ -325,6 +326,32 @@ void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &s
 	}
 }
 
+void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
+{
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+
+	int ID;
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName.c_str());
+	if (result.empty())
+	{
+		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", varName.c_str(), USERVARTYPE_STRING, varValue.c_str());
+		result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE (Name=='%q')", varName.c_str());
+		if (result.empty())
+			return;
+		ID = atoi(result[0][0].c_str());
+	}
+	else
+	{
+		ID = atoi(result[0][0].c_str());
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), szLastUpdate.c_str(), ID);
+	}
+
+	m_mainworker.m_eventsystem.SetEventTrigger(ID, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, szLastUpdate);
+}
+
 
 void CTTNMQTT::on_message(const struct mosquitto_message *message)
 {
@@ -477,10 +504,13 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			}
 			else if (type == "gps")
 			{
-				//Not handled yet
-				_log.Log(LOG_STATUS, "TTN_MQTT: GPS not implemented yet!");
 				float height = (*itt)["alt"].asFloat();
 				SendPercentageSensor(DeviceID, 1, BatteryLevel, height, DeviceName + " Altitude");
+
+				std::stringstream sstr;
+				sstr << (*itt)["lat"].asFloat() << "," << (*itt)["lon"].asFloat() << "," << (*itt)["alt"].asFloat();
+
+				UpdateUserVariable(DeviceName, sstr.str());
 			}
 			else if ((type == "digital_input") || (type == "digital_output"))
 			{

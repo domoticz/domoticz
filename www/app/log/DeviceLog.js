@@ -32,7 +32,8 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 return undefined;
             }
 
-            return ['Text', 'Alert'].includes(vm.device.SubType) || vm.device.SwitchType === 'Media Player';
+            return ['Text', 'Alert'].includes(vm.device.SubType)
+                || vm.device.SwitchType === 'Media Player';
         }
 
         function isLightLog() {
@@ -41,20 +42,21 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             if (vm.device.Type === 'Heating') {
-                return (vm.device.SubType != 'Zone');
+                return ((vm.device.SubType != 'Zone') && (vm.device.SubType != 'Hot Water'));
             }
 
             var isLightType = [
+				'Lighting 1', 'Lighting 2', 'Lighting 3', 'Lighting 4', 'Lighting 5',
                 'Light', 'Light/Switch', 'Color Switch', 'Chime',
                 'Security', 'RFY', 'ASA', 'Blinds'
             ].includes(vm.device.Type);
 
             var isLightSwitchType = [
-                'Contact', 'Door Contact', 'Dusk Sensor', 'Motion Sensor',
-                'Smoke Detector', 'On/Off'
+                'Contact', 'Door Contact', 'Doorbell', 'Dusk Sensor', 'Motion Sensor',
+                'Smoke Detector', 'On/Off', 'Dimmer'
             ].includes(vm.device.SwitchType);
 
-            return isLightType || isLightSwitchType;
+            return (isLightType || isLightSwitchType) && !isTextLog();
         }
 
         function isTemperatureLog() {
@@ -63,7 +65,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
             }
 
             if (vm.device.Type === 'Heating') {
-                return (vm.device.SubType === 'Zone');
+                return ((vm.device.SubType === 'Zone') || (vm.device.SubType === 'Hot Water'));
             }
 
             //This goes wrong (when we also use this log call from the weather tab), for wind sensors

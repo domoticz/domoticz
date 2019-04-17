@@ -132,7 +132,7 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
 
 	if ((!bHaveUPinURL) && ((pCamera->Username != "") || (pCamera->Password != "")))
-		s_str << szURLPreFix << "://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
+		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
 		s_str << szURLPreFix << "://" << pCamera->Address << ":" << pCamera->Port;
 	return s_str.str();
@@ -400,6 +400,26 @@ namespace http {
 					root["result"][ii]["Password"] = base64_decode(sd[6]);
 					root["result"][ii]["ImageURL"] = sd[7];
 					root["result"][ii]["Protocol"] = atoi(sd[8].c_str());
+					ii++;
+				}
+			}
+		}
+		void CWebServer::RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "Cameras";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto& itt : result)
+				{
+					std::vector<std::string> sd = itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
 					ii++;
 				}
 			}

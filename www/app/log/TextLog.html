@@ -1,0 +1,14 @@
+<device-text-log-table log="vm.log"></device-text-log-table>
+
+<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td></td>
+        <td align="right">
+            <button class="btnstyle3"
+                    ng-click="vm.clearLog()"
+                    ng-disabled="!vm.log.length">
+                {{ ::'Clear' | translate }}
+            </button>
+        </td>
+    </tr>
+</table>

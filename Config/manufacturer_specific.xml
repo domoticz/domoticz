@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ManufacturerSpecificData xmlns='http://code.google.com/p/open-zwave/'>
-	<Manufacturer id="0040" name="2B Electronics">
+	<Manufacturer id="0028" name="2B Electronics">
 	</Manufacturer>
 	<Manufacturer id="0098" name="2GIG Technologies">
 		<Product type="3200" id="015e" name="CT50e Thermostat" config="2gig/ct50e.xml"/>
@@ -11,15 +11,28 @@
 		<Product type="5002" id="0100" name="CT80 Thermostat" config="2gig/ct80.xml"/>
 		<Product type="5003" id="0109" name="CT80 Thermostat" config="2gig/ct80.xml"/>
 		<Product type="6401" id="0105" name="CT100 Thermostat" config="2gig/ct100.xml"/>
+		<Product type="6401" id="0106" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
 		<Product type="6401" id="0107" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
+		<Product type="6401" id="01fd" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0100" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0001" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
+		<Product type="6501" id="000b" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000c" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000d" name="CT101 Thermostat" config="2gig/ct101.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002a" name="3e Technologies">
 	</Manufacturer>
 	<Manufacturer id="0022" name="A-1 Components">
+	</Manufacturer>
+	<Manufacturer id="0117" name="Abilia">
+	</Manufacturer>
+	<Manufacturer id="0400" name="Abode">
+	</Manufacturer>
+	<Manufacturer id="0409" name="ABUS August Bremicker Sohne KG">
+	</Manufacturer>
+	<Manufacturer id="0403" name="ABUS Security-Center GmbH Co. KG">
+	</Manufacturer>
+	<Manufacturer id="034A" name="AcroComm Corp">
 	</Manufacturer>
 	<Manufacturer id="0001" name="ACT">
 		<Product type="4349" id="3130" name="ZCS101 Serial Interface"/>
@@ -40,7 +53,23 @@
 		<Product type="5457" id="3330" name="ZTW230 Wall Transmitter Module"/>
 		<Product type="544d" id="3330" name="ZTM230 Wall Transmitter Module"/>
 	</Manufacturer>
-	<Manufacturer id="0086" name="Aeotec">
+	<Manufacturer id="0297" name="AdMobilize, LLC">
+	</Manufacturer>
+	<Manufacturer id="0101" name="ADOX, Inc.">
+	</Manufacturer>
+	<Manufacturer id="025B" name="AdTrustMedia LLC">
+	</Manufacturer>
+	<Manufacturer id="016C" name="Advanced Optronic Devices">
+	</Manufacturer>
+	<Manufacturer id="009E" name="Adventure Interactive">
+	</Manufacturer>
+	<Manufacturer id="035B" name="Aeinnovation">
+	</Manufacturer>
+	<Manufacturer id="0405" name="AEM Acotel Engineering and Manufacturing Spa">
+	</Manufacturer>
+	<Manufacturer id="0350" name="AENSys Informatics Ltd">
+	</Manufacturer>
+	<Manufacturer id="0086" name="AEON Labs">
 		<Product type="0000" id="0000" name="Z-Wave Extender"/>
 		<Product type="0001" id="0001" name="Z-Stick"/>
 		<Product type="0001" id="0002" name="DSA02203 Z-Stick S2"/>
@@ -181,7 +210,7 @@
 		<Product type="0103" id="008d" name="ZW141 Nano Shutter" config="aeotec/zw141.xml"/>
 		<Product type="0203" id="008d" name="ZW141 Nano Shutter" config="aeotec/zw141.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0371" name="Aeotec">
+	<Manufacturer id="0371" name="Aeotec Limited">
 		<Product type="0003" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
 		<Product type="0103" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
 		<Product type="0003" id="0002" name="ZWA002 LED Bulb 6 Multi-Color" config="aeotec/zwa002.xml"/>
@@ -192,17 +221,57 @@
 		<Product type="0102" id="0004" name="ZWA004 NanoMote One" config="aeotec/zwa004.xml"/>
 		<Product type="0002" id="0005" name="ZWA005 TriSensor" config="aeotec/zwa005.xml"/>
 		<Product type="0102" id="0005" name="ZWA005 TriSensor" config="aeotec/zwa005.xml"/>
+		<Product type="0003" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="0103" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="0203" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="1d03" id="00a2" name="ZW162 Doorbell 6" config="aeotec/zw162.xml"/>
+		<Product type="0003" id="00b4" name="ZWA006 Smart Boost Timer Switch" config="aeotec/zwa006.xml"/>
+		<Product type="0103" id="00b4" name="ZWA006 Smart Boost Timer Switch" config="aeotec/zwa006.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0111" name="Airline Mechanical">
-		<Product type="8200" id="0200" name="ZDS-100"/>
+	<Manufacturer id="0088" name="Airvent SAM S.p.A.">
 	</Manufacturer>
 	<Manufacturer id="0094" name="Alarm.com">
 	</Manufacturer>
+	<Manufacturer id="0126" name="Alertme (Iris)">
+		<Product type="0002" id="0001" name="Range Extender" config="iris/rangeextender.xml"/>
+	</Manufacturer>
+	<Manufacturer id="0372" name="ALLEATO">
+	</Manufacturer>
+	<Manufacturer id="028E" name="Alphanetworks">
+	</Manufacturer>
+	<Manufacturer id="0230" name="Alphonsus Tech">
+		<Product type="0003" id="0001" name="ID Lock 101" config="idlock/idlock101.xml"/>
+	</Manufacturer>
+	<Manufacturer id="029F" name="AMADAS Co. LTD ">
+	</Manufacturer>
+	<Manufacturer id="019C" name="Amdocs">
+	</Manufacturer>
+	<Manufacturer id="005A" name="American Grid Inc.">
+	</Manufacturer>
+	<Manufacturer id="0384" name="Ameta International Co. Ltd.">
+	</Manufacturer>
+	<Manufacturer id="032B" name="Anchor Tech">
+	</Manufacturer>
+	<Manufacturer id="0392" name="Animus Home AB">
+	</Manufacturer>
+	<Manufacturer id="026D" name="Antik Technology Ltd.">
+	</Manufacturer>
+	<Manufacturer id="0078" name="anyCOMM Corporation">
+	</Manufacturer>
+	<Manufacturer id="0144" name="Applied Micro Electronics AME BV">
+	</Manufacturer>
+	<Manufacturer id="0291" name="Arkea">
+	</Manufacturer>
 	<Manufacturer id="0029" name="Asia Heading">
+	</Manufacturer>
+	<Manufacturer id="0231" name="ASITEQ">
+	</Manufacturer>
+	<Manufacturer id="028A" name="Askey Computer Corp.">
 	</Manufacturer>
 	<Manufacturer id="0129" name="Assa Abloy">
 		<Product type="0001" id="0000" name="Yale Touchscreen Lever (YRL220)" config="assa_abloy/TouchLever.xml"/>
 		<Product type="0002" id="0000" name="Yale Touchscreen Deadbolt (YRD220)" config="assa_abloy/TouchDeadbolt.xml" />
+		<Product type="0002" id="aa00" name="Yale Touchscreen Deadbolt (YRD220)" config="assa_abloy/TouchDeadbolt.xml" />
 		<Product type="0002" id="0209" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="8002" id="0600" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="8002" id="1000" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
@@ -211,7 +280,8 @@
 		<Product type="0003" id="0800" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
 		<Product type="0004" id="0000" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
 		<Product type="0004" id="0209" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
-		<Product type="8004" id="0600" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
+		<Product type="0004" id="aa00" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
+		<Product type="8004" id="0600" name="Yale Push Button Deadbolt (YRD216)" config="assa_abloy/PushButtonDeadbolt.xml"/>
 		<Product type="0004" id="0800" name="Yale Push Button Deadbolt (YRD110)" config="assa_abloy/PushButtonDeadbolt.xml"/>
 		<Product type="0006" id="0000" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="0007" id="0000" name="Yale Keyless Connected Smart Lock (YSL)" config="assa_abloy/KeyfreeConnected.xml"/>
@@ -223,15 +293,36 @@
 		<Product type="8001" id="0b00" name="Yale nexTouch Wireless Push Button (NTB610)" config="assa_abloy/nexTouch.xml"/>
 		<Product type="8003" id="0b00" name="Yale nexTouch Wireless Push Button (NTB620)" config="assa_abloy/nexTouch.xml"/>
 	</Manufacturer>
-	<Manufacturer id="005d" name="Aspalis">
-		<Product type="0202" id="0511" name="Plugin Lamp Module"/>
+	<Manufacturer id="013B" name="AstraLink">
+	</Manufacturer>
+	<Manufacturer id="0134" name="AT&amp;T">
 	</Manufacturer>
 	<Manufacturer id="002b" name="Atech">
+	</Manufacturer>
+	<Manufacturer id="0244" name="Athom BV">
+	</Manufacturer>
+	<Manufacturer id="032A" name="AUCEAN TECHNOLOGY. INC">
 	</Manufacturer>
 	<Manufacturer id="033f" name="August">
 		<Product type="0001" id="0001" name="ASL-03 Smart Lock" config="august/asl-03.xml"/>
 	</Manufacturer>
+	<Manufacturer id="025D" name="Avadesign Technology Co.">
+	</Manufacturer>
+	<Manufacturer id="0155" name="Avadesign Technology Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0146" name="Axesstel Inc">
+	</Manufacturer>
 	<Manufacturer id="0018" name="Balboa Inst.">
+	</Manufacturer>
+	<Manufacturer id="0236" name="Bandi Comm Tech Inc.">
+	</Manufacturer>
+	<Manufacturer id="0204" name="Beijing Sino-American Boyi Software Development Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0251" name="Beijing Universal Energy Huaxia Technology Co.Ltd">
+	</Manufacturer>
+	<Manufacturer id="0196" name="Bellatrix Systems Inc.">
+	</Manufacturer>
+	<Manufacturer id="032D" name="Benetek">
 	</Manufacturer>
 	<Manufacturer id="008a" name="BeNext">
 		<Product type="0001" id="0100" name="myGate"/>
@@ -261,36 +352,101 @@
 		<Product type="0021" id="0102" name="Heating Control" config="BeNext/HeatingControl.xml"/>
 		<Product type="002f" id="0100" name="P1 Dongle" config="BeNext/P1dongle.xml"/>
 	</Manufacturer>
-	<Manufacturer id="002c" name="BeSafer">
+	<Manufacturer id="014B" name="BFT S.p.A.">
+	</Manufacturer>
+	<Manufacturer id="0052" name="Bit7 Inc.">
+	</Manufacturer>
+	<Manufacturer id="0311" name="Blaze Automation">
+	</Manufacturer>
+	<Manufacturer id="0213" name="BMS Evler LTD">
 	</Manufacturer>
 	<Manufacturer id="0023" name="Boca Devices">
 	</Manufacturer>
-	<Manufacturer id="002d" name="Broadband Energy">
+	<Manufacturer id="0169" name="Bonig und Kallenbach oHG (Popp)">
+		<Product type="0001" id="0001" name="ZWeather" config="popp/zweather.xml" />
+	</Manufacturer>
+	<Manufacturer id="015C" name="Bosch Security Systems Inc">
+	</Manufacturer>
+	<Manufacturer id="002d" name="Broadband Energy Networks Inc.">
+	</Manufacturer>
+	<Manufacturer id="024A" name="BTSTAR(HK) TECHNOLOGY COMPANY LIMITED">
 	</Manufacturer>
 	<Manufacturer id="0145" name="Buffalo">
 		<Product type="0001" id="0004" name="HW-100V15A-ZW Measure Power Monitor"/>
 	</Manufacturer>
+	<Manufacturer id="0190" name="Building 36 Technologies">
+	</Manufacturer>
+	<Manufacturer id="0396" name="Bulcraft Control">
+	</Manufacturer>
 	<Manufacturer id="0026" name="BuLogics">
+	</Manufacturer>
+	<Manufacturer id="0398" name="Calix">
+	</Manufacturer>
+	<Manufacturer id="009C" name="Cameo Communications Inc.">
 	</Manufacturer>
 	<Manufacturer id="002e" name="Carrier">
 	</Manufacturer>
-	<Manufacturer id="0011" name="CasaWorks">
+	<Manufacturer id="000B" name="CasaWorks">
+	</Manufacturer>
+	<Manufacturer id="0243" name="casenio AG">
+	</Manufacturer>
+	<Manufacturer id="0404" name="CCC Air Inc.">
+	</Manufacturer>
+	<Manufacturer id="0246" name="CentraLite Systems Inc">
+	</Manufacturer>
+	<Manufacturer id="033C" name="Centurylink">
+	</Manufacturer>
+	<Manufacturer id="0359" name="Chamberlain Group">
+	</Manufacturer>
+	<Manufacturer id="014E" name="Check-It Solutions Inc.">
+	</Manufacturer>
+	<Manufacturer id="038F" name="CHENGPUTECH	">
+	</Manufacturer>
+	<Manufacturer id="0320" name="China Security and Fire IOT Sensing CO. LTD">
 	</Manufacturer>
 	<Manufacturer id="0116" name="Chromagic Technologies Corporation">
 		<Product type="0001" id="0001" name="HSCP02 Motion Detector" config="everspring/hsp02.xml"/>
 		<Product type="0002" id="0001" name="HSM02 Mini Door/Window Detector" config="everspringct/hsm02.xml" />
 		<Product type="0010" id="0001" name="HAC01 Remote Button"/>
 	</Manufacturer>
+	<Manufacturer id="0280" name="Chuango Security Technology Corporation">
+	</Manufacturer>
+	<Manufacturer id="0082" name="Cisco Consumer Business Group">
+	</Manufacturer>
+	<Manufacturer id="0194" name="Clare Controls">
+	</Manufacturer>
+	<Manufacturer id="018E" name="Climax Technology, Ltd.">
+	</Manufacturer>
+	<Manufacturer id="0200" name="Cloud Media	">
+	</Manufacturer>
 	<Manufacturer id="002f" name="Color Kinetics">
+	</Manufacturer>
+	<Manufacturer id="0329" name="COMAP">
+	</Manufacturer>
+	<Manufacturer id="0309" name="Comfortability">
+	</Manufacturer>
+	<Manufacturer id="0140" name="Computime">
+	</Manufacturer>
+	<Manufacturer id="011B" name="Connected Object">
 	</Manufacturer>
 	<Manufacturer id="0179" name="ConnectHome">
 		<Product type="0001" id="0001" name="CH-201 Thermostat"/>
 	</Manufacturer>
+	<Manufacturer id="0285" name="CONNECTION TECHNOLOGY SYSTEMS">
+	</Manufacturer>
+	<Manufacturer id="025D" name="Contec intelligent housing">
+	</Manufacturer>
+	<Manufacturer id="023F" name="Control4 Corporation">
+	</Manufacturer>
 	<Manufacturer id="0019" name="ControlThink">
 	</Manufacturer>
-	<Manufacturer id="0015" name="ConvergeX">
+	<Manufacturer id="000F" name="ConvergeX">
 	</Manufacturer>
-	<Manufacturer id="001a" name="Cooper">
+	<Manufacturer id="007D" name="CoolGuard">
+	</Manufacturer>
+	<Manufacturer id="0079" name="Cooper Lighting">
+	</Manufacturer>
+	<Manufacturer id="001a" name="Cooper Wiring Devices">
 		<Product type="4441" id="0000" name="RF9542-Z Accessory Dimmer" config="cooper/RF9542-Z.xml"/>
 		<Product type="4449" id="0002" name="RF9534DS Wall Dimmer Module"/>
 		<Product type="4449" id="0101" name="RF9540-N All Load Dimmer Light Switch" config="cooper/RF9540-N.xml"/>
@@ -299,12 +455,23 @@
 		<Product type="5352" id="0000" name="RF9517 Accessory Light Switch" config="cooper/RF9517.xml"/>
 		<Product type="574d" id="0000" name="RFWC5/RFWDC Scene Controller" config="cooper/RFWC5.xml"/>
 	</Manufacturer>
-	<Manufacturer id="009d" name="Coventive">
+	<Manufacturer id="009d" name="Coventive Technologies Inc.">
 	</Manufacturer>
-	<Manufacturer id="0020" name="Cyberhouse">
+	<Manufacturer id="0379" name="CPRO">
 	</Manufacturer>
-	<Manufacturer id="0030" name="Cytech Tech">
+	<Manufacturer id="0383" name="CribOS">
+	</Manufacturer>
+	<Manufacturer id="0328" name="Cvnet">
+	</Manufacturer>
+	<Manufacturer id="0014" name="Cyberhouse (GoControl)">
+		<Product type="5442" id="5436" name="GC-TBZ48L Battery Powered Z-Wave Plus Thermostat" config="gocontrol/GC-TBZ48L.xml" />
+	</Manufacturer>
+	<Manufacturer id="0067" name="CyberTAN Technology, Inc.">
+	</Manufacturer>
+	<Manufacturer id="0030" name="Cytech Technology Pre Ltd.">
 		<Product type="0001" id="0001" name="Comfort 9000 with UCM/Zwave"/>
+	</Manufacturer>
+	<Manufacturer id="0294" name="D-3 Technology Co. Ltd">
 	</Manufacturer>
 	<Manufacturer id="0108" name="D-Link Corporation">
 		<Product type="0002" id="000e" name="DCH-Z110 Door/Window 3 in 1 sensor" config="dlink/dch-z110.xml"/>
@@ -322,6 +489,16 @@
 		<Product type="8004" id="2000" name="RXZ3 RF relay Switching Unit"/>
 		<Product type="8005" id="0001" name="Living Connect Radiator Thermostat" config="danfoss/living.xml"/>
 	</Manufacturer>
+	<Manufacturer id="018C" name="Dawon DNS">
+	</Manufacturer>
+	<Manufacturer id="020A" name="Decoris Intelligent System Limited">
+	</Manufacturer>
+	<Manufacturer id="013F" name="Defacontrols BV">
+	</Manufacturer>
+	<Manufacturer id="032E" name="DEFARO">
+	</Manufacturer>
+	<Manufacturer id="040D" name="Delaney Hardware">
+	</Manufacturer>
 	<Manufacturer id="0031" name="Destiny Networks">
 	</Manufacturer>
 	<Manufacturer id="0175" name="Devolo home Control">
@@ -338,26 +515,24 @@
 		<Product type="0100" id="0102" name="Key MT2653" config="devolo/mt2653.xml" />
 		<Product type="2004" id="2004" name="Smoke Detector MT2651" config="devolo/mt2651.xml" />
 	</Manufacturer>
-	<Manufacturer id="0103" name="DiehlControls">
+	<Manufacturer id="0103" name="Diehl AKO">
 		<Product type="0002" id="0002" name="Dimmer Actuator"/>
 	</Manufacturer>
-	<Manufacturer id="0050" name="Digital 5">
+	<Manufacturer id="0032" name="Digital 5 Inc.">
 	</Manufacturer>
-	<Manufacturer id="021f" name="Dome">
-		<Product type="0003" id="0002" name="Water Shut-Off Valve" config="dome/0002.xml"/>
-		<Product type="0003" id="0083" name="Motion Detector" config="dome/0083.xml"/>
-		<Product type="0003" id="0085" name="Leak Sensor" config="dome/0085.xml"/>
-		<Product type="0003" id="0086" name="Mouser" config="dome/0086.xml"/>
-		<Product type="0003" id="0087" name="On/Off Plug-In Switch" config="dome/0087.xml"/>
-		<Product type="0003" id="0088" name="Siren" config="dome/0088.xml"/>
-		<Product type="0003" id="0101" name="Door/Window Sensor" config="dome/0101.xml"/>
-		<Product type="0003" id="0201" name="Door/Window Sensor Pro" config="dome/0201.xml"/>
+	<Manufacturer id="035D" name="Digital Watchdog">
+	</Manufacturer>
+	<Manufacturer id="0228" name="DigitalZone">
+	</Manufacturer>
+	<Manufacturer id="0127" name="Digital Monitoring Products">
+	</Manufacturer>
+	<Manufacturer id="0177" name="Domino sistemi d.o.o.">
 	</Manufacturer>
 	<Manufacturer id="020e" name="Domitech">
 		<Product type="4c42" id="3134" name="Smart LED Retrofit Kit ZE27EU" config="domitech/ze27eu.xml"/>
 		<Product type="4c42" id="3135" name="Smart LED Light Bulb ZB22UK" config="domitech/zb22uk.xml"/>
 	</Manufacturer>
-	<Manufacturer id="021c" name="Domux">
+	<Manufacturer id="021c" name="Domux Shenzhen iSurpass Technology Co.">
 		<Product type="0168" id="0168" name="Door Sensor DX1DS-Z" config="domux/DX1DS-Z.xml"/>
 		<Product type="8001" id="1000" name="Motion Sensor DX1MS-Z" config="domux/DX1MS-Z.xml"/>
 		<Product type="8002" id="1000" name="Smart Smoke Sensor DX1SA-Z" config="domux/DX1SA-Z.xml"/>
@@ -368,11 +543,36 @@
 		<Product type="8007" id="1000" name="Temperature Humidity Sensor DX1HT-Z" config="domux/DX1HT-Z.xml"/>
 		<Product type="8008" id="1000" name="Smart Plug DX2SK-Z" config="domux/DX2SK-Z.xml"/>
 	</Manufacturer>
+	<Manufacturer id="020C" name="Dongguan Zhou Da Electronics Co.,Ltd">
+	</Manufacturer>
+	<Manufacturer id="017D" name="DRACOR Inc.">
+	</Manufacturer>
 	<Manufacturer id="0184" name="Dragon Tech">
 		<Product type="4447" id="3034" name="In Wall Dimmer" config="dragontech/wd-100.xml" />
 	</Manufacturer>
-	<Manufacturer id="0012" name="E Housekeeper">
-		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
+	<Manufacturer id="0223" name="DTV Research Unipessoal, Lda">
+	</Manufacturer>
+	<Manufacturer id="0272" name="Dune-HD">
+	</Manufacturer>
+	<Manufacturer id="0334" name="Dusun Electron Ltd.">
+	</Manufacturer>
+	<Manufacturer id="031B" name="DVACO GROUP">
+	</Manufacturer>
+	<Manufacturer id="0132" name="DynaQuip Controls">
+	</Manufacturer>
+	<Manufacturer id="010D" name="e-Home AUTOMATION">
+	</Manufacturer>
+	<Manufacturer id="0247" name="EASY SAVER Co. Inc">
+	</Manufacturer>
+	<Manufacturer id="001A" name="Eaton">
+	</Manufacturer>
+	<Manufacturer id="017C" name="EbV">
+	</Manufacturer>
+	<Manufacturer id="016B" name="Echostar">
+	</Manufacturer>
+	<Manufacturer id="028F" name="Eco Automation">
+	</Manufacturer>
+	<Manufacturer id="037C" name="Eco Life Engineering Co. Ltd.">
 	</Manufacturer>
 	<Manufacturer id="014a" name="Ecolink">
 		<Product type="0001" id="0001" name="Motion Sensor" config="ecolink/sensor.xml"/>
@@ -383,17 +583,58 @@
 		<Product type="0004" id="0003" name="Garage Door Tilt Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0005" id="000f" name="FireFighter" config="ecolink/firefighter.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0157" name="EcoNet Controls">
+	</Manufacturer>
+	<Manufacturer id="039D" name="ECS">
+	</Manufacturer>
+	<Manufacturer id="031F" name="Eelectron SpA">
+	</Manufacturer>
+	<Manufacturer id="026B" name="Ei Electronics">
+	</Manufacturer>
 	<Manufacturer id="0087" name="Eka Systems">
+	</Manufacturer>
+	<Manufacturer id="0034" name="El-Gev Electronics LTD">
+	</Manufacturer>
+	<Manufacturer id="0389" name="Elear Solutions Tech Pvt. Ltd.">
 	</Manufacturer>
 	<Manufacturer id="0033" name="Electronic Solutions Inc">
 		<Product type="5250" id="0002" name="DBMZ Motor Control" config="electronicsolutions/dbmz.xml"/>
 		<Product type="5250" id="3032" name="DBMZ Motor Control" config="electronicsolutions/dbmz.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0034" name="El-Gev Electronics">
+	<Manufacturer id="021f" name="Elexa Consumer Products Inc. (Dome)">
+		<Product type="0003" id="0002" name="Water Shut-Off Valve" config="dome/0002.xml"/>
+		<Product type="0003" id="0083" name="Motion Detector" config="dome/0083.xml"/>
+		<Product type="0003" id="0085" name="Leak Sensor" config="dome/0085.xml"/>
+		<Product type="0003" id="0086" name="Mouser" config="dome/0086.xml"/>
+		<Product type="0003" id="0087" name="On/Off Plug-In Switch" config="dome/0087.xml"/>
+		<Product type="0003" id="0088" name="Siren" config="dome/0088.xml"/>
+		<Product type="0003" id="0101" name="Door/Window Sensor" config="dome/0101.xml"/>
+		<Product type="0003" id="0201" name="Door/Window Sensor Pro" config="dome/0201.xml"/>
 	</Manufacturer>
 	<Manufacturer id="001b" name="ELK Products">
 	</Manufacturer>
+	<Manufacturer id="0393" name="Embedded Data Systems">
+	</Manufacturer>
+	<Manufacturer id="020B" name="Embedded System Design Limited">
+	</Manufacturer>
 	<Manufacturer id="0035" name="Embedit A/S">
+	</Manufacturer>
+	<Manufacturer id="0284" name="Empers Tech Co., Ltd.">
+	</Manufacturer>
+	<Manufacturer id="0336" name="EMT Controls">
+	</Manufacturer>
+	<Manufacturer id="014d" name="Enblink">
+		<Product type="0001" id="0001" name="SS201-US-W Z-Wave Controller"/>
+	</Manufacturer>
+	<Manufacturer id="0219" name="Enwox Technologies s.r.o.">
+	</Manufacturer>
+	<Manufacturer id="006F" name="Erone">
+		<Product type="0102" id="0001" name="Door/Window Sensor"/>
+		<Product type="0104" id="0001" name="HM-AM001 Plugin Appliance Module"/>
+	</Manufacturer>
+	<Manufacturer id="0160" name="Essence Security">
+	</Manufacturer>
+	<Manufacturer id="029B" name="ESSENTIAL TECHNOLOGIES INC.">
 	</Manufacturer>
 	<Manufacturer id="0148" name="EUROtronic">
 		<Product type="0001" id="0001" name="EUR_STELLAZ Wall Radiator Thermostat Valve Control" config="eurotronic/eur_stellaz.xml"/>
@@ -401,21 +642,6 @@
 		<Product type="0003" id="0001" name="EUR_SPIRITZ Wall Radiator Thermostat" config="eurotronic/eur_spiritz.xml"/>
 		<Product type="0003" id="0002" name="EUR_SPIRITZ Wall Radiator Thermostat" config="eurotronic/eur_spiritz.xml"/>
 		<Product type="0003" id="0003" name="EUR_SPIRITZ Wall Radiator Thermostat" config="eurotronic/eur_spiritz.xml"/>
-	</Manufacturer>
-	<Manufacturer id="0128" name="Eneco">
-		<Product type="0000" id="0000" name="ED2.0 Meter Adapter"/>
-		<Product type="0128" id="0000" name="ED2.0 Display"/>
-	</Manufacturer>
-	<Manufacturer id="011a" name="Enerwave">
-		<Product type="0601" id="0901" name="ZWN-BPC Ceiling Mounted PIR Motion Sensor" config="enerwave/zwn-bpc.xml"/>
-		<Product type="0801" id="0b03" name="ZWN-SC7 7-Button Scene Controller" config="enerwave/zwn-sc7.xml"/>
-		<Product type="0101" id="0102" name="ZW15S 15A On/Off Switch" config="enerwave/zw15s.xml"/>
-		<Product type="0101" id="0603" name="ZW20R 20A TR Duplex Receptacle" config="enerwave/zw20r.xml"/>
-		<Product type="0111" id="0605" name="ZWN-RSM1 PLUS—Smart Single Relay Switch Module" config="enerwave/zwnrsm1plus.xml"/>
-		<!--<Product type="0111" id="0605" name="ZWN-RSM2-PLUS Smart Single Relay Switch Module" config="enerwave/zwnrsm2plus.xml"/>-->
-		<Product type="0111" id="0101" name="ZW20RM 20A TR Smart Meter Duplex Receptacle" config="enerwave/zw20rm.xml"/>
-		<Product type="0102" id="0201" name="ZW500D 500W In-Wall Preset Dimmer Switch" config="enerwave/zw500d.xml"/>
-		<Product type="0111" id="0105" name="ZW15RM Plus 15A TR Smart Meter Duplex Receptacle" config="enerwave/zw15rmplus.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0060" name="Everspring">
 		<Product type="0001" id="0001" name="HSP02 Motion Detector" config="everspring/hsp02.xml"/>
@@ -428,6 +654,7 @@
 		<Product type="0003" id="0002" name="AD146 In wall Dimmer Module" config="everspring/ad146.xml"/>
 		<Product type="0004" id="0001" name="AN157 Plug-in Appliance Module"/>
 		<Product type="0004" id="0002" name="AN158 Plug-in Meter Appliance Module" config="everspring/an158.xml"/>
+		<Product type="0004" id="0005" name="AN163 Plug-in On/Off with meter function" config="everspring/an163.xml"/>
 		<Product type="0004" id="0006" name="AN181 Miniplug On/Off with meter function" config="everspring/an181.xml"/>
 		<Product type="0004" id="0007" name="AN180 Plug-in ON/OFF Module" config="everspring/an180.xml"/>
 		<Product type="0004" id="0008" name="AN179 In wall ON/OFF Module" config="everspring/an179.xml"/>
@@ -444,20 +671,21 @@
 		<Product type="0104" id="0001" name="AN145 Lamp Screw In Module" config="everspring/an145.xml"/>
 		<Product type="0202" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>
 	</Manufacturer>
-	<Manufacturer id="014d" name="Enblink">
-		<Product type="0001" id="0001" name="SS201-US-W Z-Wave Controller"/>
-	</Manufacturer>
 	<Manufacturer id="0113" name="Evolve Guest Controls">
 		<Product type="4457" id="3034" name="LRM-AS Wall Dimmer 500W" config="evolve/lrm-as.xml"/>
 		<Product type="5246" id="3133" name="LFM-20 Fixture Module"/>
 		<Product type="5257" id="3533" name="LSM-15 Wall Switch" config="evolve/lsm-15.xml"/>
 		<Product type="5457" id="3033" name="LTM-5 Wall Switch Transmitter" config="evolve/ltm-5.xml" />
 	</Manufacturer>
-	<Manufacturer id="0036" name="Exceptional Innv">
+	<Manufacturer id="036F" name="Evolvere SpA">
+	</Manufacturer>
+	<Manufacturer id="0036" name="Exceptional Innovations">
 	</Manufacturer>
 	<Manufacturer id="0004" name="Exhausto">
 	</Manufacturer>
 	<Manufacturer id="009f" name="Exigent">
+	</Manufacturer>
+	<Manufacturer id="0233" name="eZEX Corporation">
 	</Manufacturer>
 	<Manufacturer id="0085" name="Fakro">
 		<Product type="0001" id="0001" name="ZWP10 Remote Controller" config="fakro/zwp10.xml"/>
@@ -466,6 +694,19 @@
 		<Product type="0003" id="0001" name="ZWS12 Chain actuator 12VDC" config="fakro/zws12.xml" />
 		<Product type="0003" id="0002" name="ZWS230 Chain actuator 230VAC" config="fakro/zws230.xml" />
 		<Product type="0016" id="0001" name="ZWRS Roller Shutter FLiRS module" config="fakro/zwrs.xml"/>
+	</Manufacturer>
+	<Manufacturer id="016a" name="Fantem (Oomi)">
+		<!-- EU-market products seems to start with type prefix "00" -->
+		<!-- US-market products start with type prefix "01" -->
+		<!-- AU-market products start with type prefix "02" -->
+		<!-- CN-market products start with type prefix "1D" -->
+		<Product type="0002" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
+		<Product type="0102" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
+		<Product type="0202" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
+		<Product type="1D02" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
+		<Product type="0103" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
+		<Product type="0203" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
+		<Product type="1D03" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
 	</Manufacturer>
 	<Manufacturer id="010f" name="FIBARO System">
 		<Product type="0501" id="0101" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
@@ -499,6 +740,8 @@
 		<Product type="0300" id="0109" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0301" id="1001" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
 		<Product type="0302" id="1000" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
+		<Product type="0302" id="4000" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
+		<Product type="0303" id="1000" name="FGRM223 Roller Shutter Controller 3" config="fibaro/fgr223.xml"/>
 		<Product type="0400" id="0104" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0105" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0106" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
@@ -509,6 +752,7 @@
 		<Product type="0400" id="400a" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0402" id="1002" name="FGS212 Switch 3kW" config="fibaro/fgs212.xml" />
 		<Product type="0402" id="3002" name="FGS212 Switch 3kW" config="fibaro/fgs212.xml" />
+		<Product type="0402" id="4002" name="FGS212 Switch 3kW" config="fibaro/fgs212.xml" />
 		<Product type="0403" id="1000" name="FGS213 Switch" config="fibaro/fgs213.xml"/>
 		<Product type="0403" id="2000" name="FGS213 Switch" config="fibaro/fgs213.xml"/>
 		<Product type="0403" id="4000" name="FGS213 Switch" config="fibaro/fgs213.xml"/>
@@ -525,6 +769,7 @@
 		<Product type="0203" id="1000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0203" id="2000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0203" id="3000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
+		<Product type="0303" id="1000" name="FGR223 Roller Shutter Controller 3" config="fibaro/fgr223.xml"/>
 		<Product type="0600" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml" />
 		<Product type="0200" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml"/>
 		<Product type="0602" id="1001" name="FGWPE/F Wall Plug Gen5" config="fibaro/fgwpfzw5.xml" />
@@ -548,6 +793,7 @@
 		<Product type="0b01" id="2002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
 		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
 		<Product type="0900" id="2000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml"/>
+		<Product type="0900" id="3000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml"/>
 		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
 		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
 		<Product type="0c02" id="1002" name="FGSD002 Smoke Sensor" config="fibaro/fgsd002.xml" />
@@ -556,22 +802,36 @@
 		<Product type="0d01" id="2000" name="FGGC001 Swipe" config="fibaro/fggc001.xml"/>
 		<Product type="0f01" id="1000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="0f01" id="2000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
+		<Product type="0f01" id="3000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="1001" id="1000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />
 		<Product type="1001" id="2000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />
 		<Product type="1201" id="1000" name="FGSD001 CO Sensor" config="fibaro/fgcd001.xml" />
+		<Product type="1201" id="1001" name="FGSD001 CO Sensor" config="fibaro/fgcd001.xml" />
 		<Product type="1301" id="1000" name="FGT001 Heat Controller" config="fibaro/fgt001.xml"/>
 		<Product type="1701" id="2000" name="FGWPG111 US Wall Plug" config="fibaro/fgwpg111.xml"/>
 		<Product type="1801" id="1000" name="FGWPG111 UK Wall Plug" config="fibaro/fgwpg111.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0138" name="First Alert">
+	<Manufacturer id="0295" name="fifthplay nv">
+	</Manufacturer>
+	<Manufacturer id="0138" name="First Alert (BRK Brands Inc)">
 		<Product type="0001" id="0002" name="ZCombo Smoke and Carbon Monoxide Detector"  config="firstalert/zcombo.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0037" name="Foard Sys">
+	<Manufacturer id="002c" name="Flex Automation">
 	</Manufacturer>
-	<Manufacturer id="0137" name="Followgood">
+	<Manufacturer id="004F" name="Flex Automation">
+	</Manufacturer>
+	<Manufacturer id="018D" name="Flextronics">
+	</Manufacturer>
+	<Manufacturer id="0024" name="Flue Sentinel">
+	</Manufacturer>
+	<Manufacturer id="0037" name="Foard Systems">
+	</Manufacturer>
+	<Manufacturer id="018F" name="Focal Point Limited">
+	</Manufacturer>
+	<Manufacturer id="0137" name="FollowGood Technology Company">
 		<Product type="3001" id="0002" name="SWZ-1002 Binary Power Switch"/>
 	</Manufacturer>
-	<Manufacturer id="0207" name="Forest Group Nederland B.V.">
+	<Manufacturer id="0207" name="Forest Group Nederland B.V">
 		<Product type="0027" id="0100" name="Shuttle L Z-Wave" config="forest/fs2z5232000002.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0084" name="FortrezZ">
@@ -597,20 +857,19 @@
 		<Product type="0473" id="0110" name="FMI Flow Meter" config="fortrezz/fmi.xml"/>
 		<Product type="0513" id="0111" name="GDC1 Siren/Strobe Light Alarm"/>
 	</Manufacturer>
+	<Manufacturer id="011D" name="Foxconn">
+	</Manufacturer>
+	<Manufacturer id="039C" name="Foxconn Industrial Internet">
+	</Manufacturer>
 	<Manufacturer id="0110" name="Frostdale">
 		<Product type="2411" id="0001" name="Nanogrid: FDN2nxx light switch - where n is 1, 2, 3 or 4 buttons"/>
 		<Product type="7333" id="0031" name="Nanogrid: FDN2nxx light switch - where n is 1, 2, 3 or 4 buttons" config="frostdale/fdn2nxx.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0152" name="G.R.">
-		<Product type="0202" id="0511" name="GR105 Auto Valve" config="gr/gr105.xml"/>
-		<Product type="0003" id="0512" name="GR105n Auto Valve" config="gr/gr105n.xml"/>
-		<Product type="0500" id="0003" name="ZSE02 Motion Sensor"/>
+	<Manufacturer id="0305" name="Future Home AS">
 	</Manufacturer>
-	<Manufacturer id="0020" name="General Electric">
-		<Product type="8007" id="1390" name="Wireless Lighting Control"/>
-		<Product type="8007" id="1391" name="45601 Advanced Remote"/>
+	<Manufacturer id="033E" name="GE">
 	</Manufacturer>
-	<Manufacturer id="0063" name="GE">
+	<Manufacturer id="0063" name="GE (Jasco Products)">
 		<Product type="4450" id="3030" name="45602 Lamp Dimmer Module" config="ge/dimmer_module.xml"/>
 		<Product type="4457" id="3230" name="45606 2-Way Dimmer Switch" config="ge/dimmer.xml"/>
 		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
@@ -619,6 +878,7 @@
 		<Product type="4944" id="3131" name="14287 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4952" id="3134" name="14288 In-Wall Tamper Resistant Smart Outlet" config="ge/14288-outlet.xml"/>
 		<Product type="4944" id="3038" name="14294 In-Wall Smart Dimmer" config="ge/14294-dimmer.xml"/>
+		<Product type="4944" id="3039" name="14299 In-Wall 1000W Smart Dimmer" config="ge/14294-dimmer.xml"/>
 		<Product type="4944" id="3130" name="14295 In-Wall Smart Toggle Dimmer" config="ge/14295-dimmer-toggle.xml"/>
 		<Product type="494d" id="3032" name="26931 Smart Motion Switch" config="ge/26931-motion-switch.xml"/>
 		<Product type="494d" id="3034" name="26933 Smart Motion Dimmer" config="ge/26933-motion-dimmer.xml"/>
@@ -638,28 +898,55 @@
 		<Product type="4952" id="3032" name="12722 On/Off Relay Switch" config="ge/relay.xml"/>
 		<Product type="4952" id="3033" name="12727 In-Wall Smart Switch (Toggle)"/>
 		<Product type="4953" id="3032" name="32563 Hinge Pin Smart Door Sensor" config="ge/hinge-pin.xml"/>
+		<Product type="5044" id="3031" name="12718 Plug-In Two-Outlet Smart Dimmer" config="ge/dimmer_module.xml"/>
 		<Product type="5052" id="3031" name="12719 Plug-in Smart Switch" config="ge/12719-plugin-switch.xml"/>
 		<Product type="5052" id="3033" name="14282 Plug-In Two-Outlet Smart Switch" config="ge/14282-plugin-switch.xml"/>
+		<Product type="5052" id="3038" name="28169 Plug-In One-Outlet Smart Switch" config="ge/28169-plugin-switch.xml"/>
 		<Product type="6363" id="3533" name="ZW4001 In-Wall Decora Style On/Off Relay Switch" config="ge/zw4001-switch.xml"/>
 		<Product type="4c42" id="3031" name="ZW7101 Smart LED Light Bulb ZE26I" config="ge/ze26i.xml"/>
 		<Product type="4953" id="3133" name="ZW6302 Portable Smart Motion Sensor" config="ge/zw6302.xml"/>
 		<Product type="4953" id="3134" name="ZW6302 Portable Smart Motion Sensor" config="ge/zw6302.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0014" name="GoControl">
-		<Product type="5442" id="5436" name="GC-TBZ48L Battery Powered Z-Wave Plus Thermostat" config="gocontrol/GC-TBZ48L.xml" />
+	<Manufacturer id="0408" name="Gerber Technology">
 	</Manufacturer>
-	<Manufacturer id="026e" name="Graber">
-		<Product type="4252" id="5a31" name="BRZ1 Remote Control" config="graber/brz1.xml"/>
-		<Product type="5253" id="5a31" name="RSZ1 Roller Shade"/>
-		<Product type="5643" id="5a31" name="VCZ1 Virtual Cord Remote Control" config="graber/vcz1.xml"/>
-		<Product type="4353" id="5a31" name="CSZ1 Cellular Shade"/>
+	<Manufacturer id="025A" name="GES">
 	</Manufacturer>
-	<Manufacturer id="0099" name="GreenWave">
+	<Manufacturer id="022B" name="GKB Security Corporation">
+	</Manufacturer>
+	<Manufacturer id="018A" name="Globalchina-Tech">
+	</Manufacturer>
+	<Manufacturer id="0076" name="Goggin Research">
+	</Manufacturer>
+	<Manufacturer id="0068" name="Good Way Technology Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0099" name="GreenWave Reality Inc">
 		<Product type="0001" id="0002" name="One Gateway"/>
 		<Product type="0002" id="0002" name="PowerNode 1 port" config="greenwave/powernode1.xml"/>
 		<Product type="0003" id="0004" name="PowerNode 6 port" config="greenwave/powernode6.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0208" name="Hank">
+	<Manufacturer id="0401" name="Grenton Sp. z o.o.">
+	</Manufacturer>
+	<Manufacturer id="018B" name="Grib">
+	</Manufacturer>
+	<Manufacturer id="0391" name="GUANGDONG PHNIX ECO-ENERGY SOLUTION LTD">
+	</Manufacturer>
+	<Manufacturer id="016D" name="Guangzhou Ruixiang M&amp;E Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0158" name="GuangZhou Zeewave Information Technology Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0395" name="Guangzhou_SIMT Limited">
+	</Manufacturer>
+	<Manufacturer id="037B" name="Guardtec Inc">
+	</Manufacturer>
+	<Manufacturer id="0287" name="HAB Home Intelligence LLC">
+	</Manufacturer>
+	<Manufacturer id="030D" name="Hampoo">
+	</Manufacturer>
+	<Manufacturer id="040A" name="Hangzhou Hikvision Digital Technology Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0387" name="HangZhou iMagic Technology Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0208" name="HANK Electronics Ltd">
 		<Product type="0101" id="0005" name="HKZW-SO01 Smart Plug" config="hank/hkzw-so01-smartplug.xml"/>
 		<Product type="0100" id="000a" name="HKZW-SO05 Smart Plug" config="hank/hkzw-so05-smartplug.xml"/>
 		<Product type="0200" id="0006" name="HKZW-MS01 Multisensor" config="hank/hkzw-ms01.xml"/>
@@ -674,7 +961,15 @@
 		<Product type="0101" id="000a" name="HKZW-SO03 Smart Plug" config="hank/hkzw-so03.xml"/>
 		<Product type="0200" id="000f" name="HKZW-FLD01 Flood Sensor" config="hank/hkzw-fld01.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0260" name="Heiman">
+	<Manufacturer id="024C" name="Hankook Gas Kiki CO.LTD">
+	</Manufacturer>
+	<Manufacturer id="025C" name="Hauppauge">
+	</Manufacturer>
+	<Manufacturer id="0073" name="Hawking Technologies Inc">
+	</Manufacturer>
+	<Manufacturer id="040C" name="HEIGHTS TELECOM T LTD">
+	</Manufacturer>
+	<Manufacturer id="0260" name="Heiman Technology Co. Ltd">
 		<Product type="0168" id="0168" name="Door Sensor HS1DS-Z" config="heiman/HS1DS-Z.xml"/>
 		<Product type="8001" id="1000" name="Motion Sensor HS1MS-Z" config="heiman/HS1MS-Z.xml"/>
 		<Product type="8002" id="1000" name="Smart Smoke Sensor HS1SA-Z" config="heiman/HS1SA-Z.xml"/>
@@ -685,27 +980,54 @@
 		<Product type="8007" id="1000" name="Temperature Humidity Sensor HS1HT-Z" config="heiman/HS1HT-Z.xml"/>
 		<Product type="8008" id="1000" name="Smart Plug HS2SK-Z" config="heiman/HS2SK-Z.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0344" name="HELTUN">
+		<Product type="0003" id="0001" name="HE-ZW-THERM-FL2 Heating Thermostat" config="heltun/he-zw-therm-fl2.xml"/>
+	</Manufacturer>
+	<Manufacturer id="020F" name="Herald Datanetics Limited">
+	</Manufacturer>
 	<Manufacturer id="0017" name="HiTech Automation">
 	</Manufacturer>
-	<Manufacturer id="005b" name="HAI">
+	<Manufacturer id="024C" name="Hankook Gas Kiki CO.LTD">
 	</Manufacturer>
-	<Manufacturer id="009a" name="Home Auto. Euro">
+	<Manufacturer id="025C" name="Hauppauge">
+	</Manufacturer>
+	<Manufacturer id="0073" name="Hawking Technologies Inc">
+	</Manufacturer>
+	<Manufacturer id="040C" name="HEIGHTS TELECOM T LTD">
+	</Manufacturer>
+	<Manufacturer id="0344" name="HELTUN">
+	</Manufacturer>
+	<Manufacturer id="020F" name="Herald Datanetics Limited">
+	</Manufacturer>
+	<Manufacturer id="0017" name="HiTech Automation">
+	</Manufacturer>
+	<Manufacturer id="0181" name="Holion Electronic Engineering Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="013E" name="Holtec Electronics BV">
+	</Manufacturer>
+	<Manufacturer id="000D" name="Home Automated Living">
+	</Manufacturer>
+	<Manufacturer id="009a" name="Home Automation Europe">
+	</Manufacturer>
+	<Manufacturer id="005b" name="Home Automation Inc.">
+	</Manufacturer>
+	<Manufacturer id="0293" name="Home controls">
 	</Manufacturer>
 	<Manufacturer id="0038" name="Home Director">
 	</Manufacturer>
-	<Manufacturer id="006f" name="Home Manageables">
-		<Product type="0102" id="0001" name="Door/Window Sensor"/>
-		<Product type="0104" id="0001" name="HM-AM001 Plugin Appliance Module"/>
+	<Manufacturer id="0070" name="Homemanageables Inc">
 	</Manufacturer>
-	<Manufacturer id="0080" name="Homepro">
+	<Manufacturer id="0050" name="Homepro">
 	</Manufacturer>
-	<Manufacturer id="001e" name="Homeseer">
+	<Manufacturer id="0162" name="HomeScenario">
+	</Manufacturer>
+	<Manufacturer id="001e" name="Homeseer (Express Controls)">
 		<Product type="0001" id="0002" name="ZTroller" config="homeseer/ztroller.xml"/>
 		<Product type="0002" id="0001" name="HSM100 Wireless Multi-Sensor" config="homeseer/hsm100.xml"/>
 		<Product type="0002" id="0002" name="EZMotion+ 3-in-1 Sensor" config="homeseer/ezmotionplus.xml"/>
 		<Product type="0004" id="0001" name="HSM200 Wireless Multi-Sensor" config="homeseer/hsm200.xml"/>
 	</Manufacturer>
-	<Manufacturer id="000c" name="HomeSeer">
+	<Manufacturer id="000c" name="HomeSeer Technologies">
 		<Product type="4447" id="3033" name="HS-WS100+ Wall Switch" config="homeseer/hs-ws100plus.xml"/>
 		<Product type="4447" id="3034" name="HS-WD100+ Wall Dimmer" config="homeseer/hs-wd100plus.xml"/>
 		<Product type="4447" id="3035" name="HS-WS200+ Wall Switch" config="homeseer/hs-ws200plus.xml"/>
@@ -715,14 +1037,20 @@
 		<Product type="0201" id="000b" name="HS-FLS100+ Floodlight Sensor" config="homeseer/hs-fls100plus.xml"/>
 		<Product type="0203" id="0001" name="HS-FC200+ Z-Wave Plus Fan Controller" config="homeseer/hs-fc200plus.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0030" name="HomeSeer Tech">
+	<Manufacturer id="0275" name="Honest Technology">
+	</Manufacturer>
+	<Manufacturer id="023D" name="Honest Technology Co. Ltd">
 	</Manufacturer>
 	<Manufacturer id="0039" name="Honeywell">
 		<Product type="0011" id="0001" name="TH8320ZW1000 Touchscreen Thermostat" config="honeywell/th8320zw1000.xml"/>
 		<Product type="0001" id="0003" name="Lynx Touch L5100 / L7000" config="honeywell/lynx-touch-l5100.xml"/>
 		<Product type="4944" id="3038" name="39351 / ZW3005 In-Wall Smart Dimmer" config="honeywell/39351-ZW3005.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0059" name="Horstmann">
+	<Manufacturer id="0313" name="Hoppe">
+	</Manufacturer>
+	<Manufacturer id="0377" name="HORNBACH Baumarkt AG">
+	</Manufacturer>
+	<Manufacturer id="0059" name="Horstmann (Secure Meters)">
 		<Product type="0001" id="0001" name="ASR-RF Thermostat Receiver"/>
 		<Product type="0001" id="0002" name="AS2-RF Thermostat Transmitter"/>
 		<Product type="0001" id="0003" name="HRT4-ZW Thermostat Transmitter" config="horstmann/hrt4zw.xml"/>
@@ -739,18 +1067,55 @@
 		<Product type="0010" id="0001" name="SIR321 RF Countdown Timer" config="horstmann/sir321.xml"/>
 		<Product type="0010" id="0002" name="SIR321 RF Countdown Timer with temperature" config="horstmann/sir321.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0121" name="IBR-ZW">
-		<Product type="0001" id="0001" name="I-Bridge Z-Wave Controller"/>
+	<Manufacturer id="0298" name="Horus Smart Control">
 	</Manufacturer>
-	<Manufacturer id="0011" name="iCOM Tech">
+	<Manufacturer id="0221" name="HOSEOTELNET">
 	</Manufacturer>
-	<Manufacturer id="0230" name="ID Lock">
-		<Product type="0003" id="0001" name="ID Lock 101" config="idlock/idlock101.xml"/>
+	<Manufacturer id="0180" name="Huapin Information Technology Co.Ltd">
+	</Manufacturer>
+	<Manufacturer id="025F" name="Huawei Device Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="024B" name="Huawei Technologies Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="007C" name="Hunter Douglas">
+	</Manufacturer>
+	<Manufacturer id="0374" name="Hyundai Telecom">
+	</Manufacturer>
+	<Manufacturer id="038A" name="iamsmart">
+	</Manufacturer>
+	<Manufacturer id="0218" name="iAutomade Pte Ltd">
+	</Manufacturer>
+	<Manufacturer id="0011" name="iCOM Technology b.v.">
+	</Manufacturer>
+	<Manufacturer id="0106" name="Icontrol Networks">
+	</Manufacturer>
+	<Manufacturer id="0373" name="ID Lock AS">
+		<Product type="0003" id="0001" name="150" config="idlock/idlock150.xml"/>
+	</Manufacturer>
+	<Manufacturer id="019E" name="iEXERGY GmbH">
+	</Manufacturer>
+	<Manufacturer id="031C" name="Ilevia srl">
+	</Manufacturer>
+	<Manufacturer id="0056" name="Impact Technologies and Products">
+	</Manufacturer>
+	<Manufacturer id="0061" name="Impact Technologies BV">
+	</Manufacturer>
+	<Manufacturer id="0385" name="Inergy Systems LLC">
+	</Manufacturer>
+	<Manufacturer id="012B" name="Infusion Development">
+	</Manufacturer>
+	<Manufacturer id="006C" name="Ingersoll Rand (Schlage)">
 	</Manufacturer>
 	<Manufacturer id="011f" name="Ingersoll Rand">
 		<Product type="0001" id="0002" name="DWZWAVE1" config="ingersoll/dwzwave1.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0256" name="Inkel Corp">
+	</Manufacturer>
 	<Manufacturer id="003a" name="Inlon Srl">
+	</Manufacturer>
+	<Manufacturer id="0141" name="Innoband Technologies Inc">
+	</Manufacturer>
+	<Manufacturer id="0382" name="INNOPIA Technologies Inc">
 	</Manufacturer>
 	<Manufacturer id="0077" name="Innovus">
 		<Product type="0002" id="0001" name="SmoothRemote Controller"/>
@@ -773,9 +1138,15 @@
 		<Product type="6000" id="6000" name="NZW96 1-Channel Outdoor Smart Plug" config="inovelli/nzw96.xml"/>
 		<Product type="6100" id="6100" name="NZW97 2-Channel Outdoor Smart Plug" config="inovelli/nzw97.xml"/>
 	</Manufacturer>
+	<Manufacturer id="031E" name="Inovelli">
+	</Manufacturer>
+	<Manufacturer id="0100" name="Insignia">
+	</Manufacturer>
 	<Manufacturer id="0006" name="Intel">
 	</Manufacturer>
 	<Manufacturer id="001c" name="IntelliCon">
+	</Manufacturer>
+	<Manufacturer id="0072" name="Interactive Electronics Systems">
 	</Manufacturer>
 	<Manufacturer id="0005" name="Intermatic">
 		<Product type="0002" id="0003" name="HA-02 Appliance Module"/>
@@ -789,26 +1160,69 @@
 		<Product type="4341" id="8900" name="CA8900 Digital Thermostat" config="intermatic/ca8900.xml"/>
 		<Product type="4341" id="9000" name="CA9000 PIR Occupancy Sensor"/>
 	</Manufacturer>
+	<Manufacturer id="0338" name="International Integrated Systems Inc">
+	</Manufacturer>
 	<Manufacturer id="0013" name="Internet Dom">
 	</Manufacturer>
-	<Manufacturer id="0126" name="Iris">
-		<Product type="0002" id="0001" name="Range Extender" config="iris/rangeextender.xml"/>
+	<Manufacturer id="0288" name="INTERSOFT">
 	</Manufacturer>
-	<Manufacturer id="0123" name="Iwatsu Electric Co">
+	<Manufacturer id="039E" name="Invalance">
+	</Manufacturer>
+	<Manufacturer id="0278" name="Inventec">
+	</Manufacturer>
+	<Manufacturer id="0368" name="IOOOTA">
+	</Manufacturer>
+	<Manufacturer id="005F" name="IQ-Group">
+	</Manufacturer>
+	<Manufacturer id="0212" name="iRevo">
+	</Manufacturer>
+	<Manufacturer id="0253" name="iungo.nl B.V.">
+	</Manufacturer>
+	<Manufacturer id="0123" name="IWATSU">
 		<Product type="0000" id="0000" name="TM-H2VHD081 HA Dongle"/>
 		<Product type="0102" id="0102" name="NE-4CT-2P Electric Power Measuring Equipment"/>
 		<Product type="0103" id="0103" name="NE-4CT Electric Power Measuring Equipment"/>
 	</Manufacturer>
-	<Manufacturer id="0214" name="Kaipule">
+	<Manufacturer id="0063" name="Jasco Products">
+	</Manufacturer>
+	<Manufacturer id="015A" name="Jin Tao Bao">
+	</Manufacturer>
+	<Manufacturer id="039F" name="JLabs Corporation">
+	</Manufacturer>
+	<Manufacturer id="0164" name="JSW Pacific Corporation">
+	</Manufacturer>
+	<Manufacturer id="0214" name="Kaipule Technology Co. Ltd">
 		<Product type="0002" id="0001" name="IM20 Door/Window Sensor" config="kaipule/im20.xml"/>
 		<Product type="0003" id="0002" name="PIR Celling Sensor" config="kaipule/ix32.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0091" name="Kamstrup">
+	<Manufacturer id="0091" name="Kamstrup A/S">
 	</Manufacturer>
-	<Manufacturer id="0090" name="Kwikset">
+	<Manufacturer id="006A" name="Kellendonk Elektronik">
+	</Manufacturer>
+	<Manufacturer id="0114" name="Kichler">
+	</Manufacturer>
+	<Manufacturer id="035F" name="KIWILAB">
+	</Manufacturer>
+	<Manufacturer id="0139" name="KlickH Pvt Ltd">
+	</Manufacturer>
+	<Manufacturer id="0261" name="KOOL KONCEPTS">
+	</Manufacturer>
+	<Manufacturer id="0174" name="Kopera Development Inc">
+	</Manufacturer>
+	<Manufacturer id="023A" name="KUMHO ELECTRIC INC">
+	</Manufacturer>
+	<Manufacturer id="0090" name="Kwikset (Spectrum Brands)">
 		<Product type="0001" id="0001" name="Touchpad Electronic Deadbolt" config="kwikset/smartcode.xml"/>
+		<Product type="0003" id="0642" name="SmartCode 916" config="kwikset/smartcode.xml"/>
+		<Product type="0006" id="0440" name="SmartCode 10" config="kwikset/smartcode.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0051" name="Lagotek Corp">
+	</Manufacturer>
+	<Manufacturer id="0173" name="Leak Intelligence LLC">
+	</Manufacturer>
+	<Manufacturer id="0300" name="LEEDARSON LIGHTING CO. LTD">
+	</Manufacturer>
+	<Manufacturer id="0187" name="LEVION Technologies GmbH">
 	</Manufacturer>
 	<Manufacturer id="001d" name="Leviton">
 		<Product type="0101" id="0206" name="RZP15-1LW Binary Scene Switch"/>
@@ -816,7 +1230,6 @@
 		<Product type="0202" id="030b" name="VRP03-1LW Lamp Module"/>
 		<Product type="0301" id="0206" name="RZS15-1LX Binary Scene Switch"/>
 		<Product type="0301" id="0209" name="VRS15-1LZ Binary Scene Switch"/>
-		<Product type="0301" id="0209" name="VRS15-1LZ Switch"/>
 		<Product type="0301" id="0334" name="VRS15-1LZ Switch"/>
 		<Product type="0401" id="0206" name="RZI10-1LX Multilevel Scene Switch" config="leviton/rzi10.xml"/>
 		<Product type="0401" id="0209" name="VRI06-1LX Multilevel Scene Switch" config="leviton/vri06.xml"/>
@@ -829,9 +1242,8 @@
 		<Product type="0b02" id="030b" name="VRC0P-1LW Plug-in Serial Interface Module"/>
 		<Product type="0c01" id="0206" name="VRCPG-SG RF Handheld Remote Controller" config="leviton/vrcpg.xml"/>
 		<Product type="0e01" id="0334" name="VRE06-1LZ Multilevel Scene Switch" config="leviton/vre06.xml"/>
-		<Product type="1001" id="0209" name="VRF01-1LZ Quiet Fan Speed Control" config="leviton/vrf01.xml"/>
+		<Product type="1001" id="0209" name="VRF01-1LZ Scene Capable Quiet Fan Speed Control" config="leviton/vrf01.xml"/>
 		<Product type="1001" id="0334" name="VRF01-1LZ Quiet Fan Speed Control" config="leviton/vrf01.xml"/>
-		<Product type="1001" id="0209" name="VRF01-1LZ Multilevel Scene Switch - 1.5A Fan" config="leviton/vrf01.xml"/>
 		<Product type="1102" id="0243" name="VRCS2-MRZ 2-Button Scene Controller with Switches"/>
 		<Product type="1202" id="0243" name="VRCZ4-MRZ 4-Button Zone Controller with Switch"/>
 		<Product type="1902" id="0334" name="DZPD3-1LW Plug-In Dimming Lamp Module"/>
@@ -845,7 +1257,21 @@
 		<Product type="3501" id="0001" name="DZPD3-2BW Decora 300W Plug-In Smart Dimmer" config="leviton/dzpd3.xml"/>
 		<Product type="3601" id="0001" name="DZPA1-2BW Plug-In Outlet" config="leviton/dz15s.xml"/>
 	</Manufacturer>
-	<Manufacturer id="014f" name="Linear">
+	<Manufacturer id="0015" name="Lexel">
+	</Manufacturer>
+	<Manufacturer id="015B" name="LG Electronics">
+	</Manufacturer>
+	<Manufacturer id="0362" name="LiaoningYouwang Lighting and Electronic Technology Pty Ltd">
+	</Manufacturer>
+	<Manufacturer id="0224" name="LifeShield LLC">
+	</Manufacturer>
+	<Manufacturer id="003C" name="Lifestyle Networks">
+	</Manufacturer>
+	<Manufacturer id="0210" name="Light Engine Limited">
+	</Manufacturer>
+	<Manufacturer id="0342" name="LIMEI">
+	</Manufacturer>
+	<Manufacturer id="014f" name="Linear (Nortek Security Control LLC)">
 		<Product type="2001" id="0102" name="WADWAZ-1 Door/Window Sensor" config="linear/WADWAZ-1.xml"/>
 		<Product type="2002" id="0203" name="WAPIRZ-1 Motion Sensor" config="linear/WAPIRZ-1.xml"/>
 		<Product type="2009" id="0903" name="WA105DBZ-1 Main Operated Siren" config="linear/WA105DBZ-1.xml"/>
@@ -867,6 +1293,14 @@
 		<Product type="5442" id="5437" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
 		<Product type="5744" id="3530" name="WD500Z5-1 Wall Mounted Dimmer" config="linear/WD500Z5-1.xml" />
 	</Manufacturer>
+	<Manufacturer id="035C" name="LINK ELECTRONICS Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0316" name="Lite Automation">
+	</Manufacturer>
+	<Manufacturer id="017A" name="Liveguard Ltd">
+	</Manufacturer>
+	<Manufacturer id="013A" name="Living Style Enterprises Ltd">
+	</Manufacturer>
 	<Manufacturer id="015e" name="Locstar">
 		<Product type="8015" id="0001" name="LS-8015-ZW Single Latch Door Lock"/>
 	</Manufacturer>
@@ -878,16 +1312,32 @@
 	</Manufacturer>
 	<Manufacturer id="0025" name="Loudwater Tech">
 	</Manufacturer>
+	<Manufacturer id="038C" name="Lowes">
+	</Manufacturer>
 	<Manufacturer id="0071" name="LS Control">
 		<Product type="0002" id="035D" name="ES 861 Temperature Sensor"/>
+	</Manufacturer>
+	<Manufacturer id="036D" name="Luffanet Co. Lte">
+	</Manufacturer>
+	<Manufacturer id="025E" name="LUXEASY technology company LTD">
+	</Manufacturer>
+	<Manufacturer id="0062" name="LVI Produkter AB">
+	</Manufacturer>
+	<Manufacturer id="0192" name="m2m Solution">
+	</Manufacturer>
+	<Manufacturer id="0195" name="M2M Solution">
+	</Manufacturer>
+	<Manufacturer id="006E" name="Manodo / KTC">
 	</Manufacturer>
 	<Manufacturer id="003d" name="Marmitek BV">
 	</Manufacturer>
 	<Manufacturer id="003e" name="Martec Access">
 	</Manufacturer>
-	<Manufacturer id="008f" name="MB Design">
+	<Manufacturer id="0092" name="Martin Renz GmbH">
 	</Manufacturer>
-	<Manufacturer id="015f" name="Mcohome">
+	<Manufacturer id="008f" name="MB Turn Key Design">
+	</Manufacturer>
+	<Manufacturer id="015f" name="McoHome Technology Co Ltd">
 		<Product type="0001" id="0001" name="Mini Energy Dimmer"/>
 		<Product type="0002" id="0001" name="Mini Energy Switch"/>
 		<!--EU-->
@@ -895,6 +1345,7 @@
 		<Product type="3102" id="0201" name="MH-S311 One-load" config="mcohome/mhs311.xml"/>
 		<Product type="3102" id="0202" name="MH-S312 Two-load" config="mcohome/mhs312.xml"/>
 		<Product type="3102" id="0204" name="MH-S314 Four-load" config="mcohome/mhs314.xml"/>
+		<Product type="3141" id="1302" name="MH-S314 Four-load" config="mcohome/mhs314.xml"/>
 		<Product type="5102" id="3141" name="MH-S314 Four-load" config="mcohome/mhs314.xml"/>
 		<Product type="4102" id="0201" name="MH-S411 One-load" config="mcohome/mhs411.xml"/>
 		<Product type="4102" id="0202" name="MH-S412 Two-load" config="mcohome/mhs412.xml"/>
@@ -904,8 +1355,20 @@
 		<Product type="0802" id="3102" name="MH8-FC4-EU Thermostat" config="mcohome/mh8fceu.xml"/>
 		<Product type="0905" id="0201" name="MH9-CO2-WD CO2 Monitor" config="mcohome/mh9co2.xml"/>
 		<Product type="a800" id="1352" name="A8-9 Multi-sensor" config="mcohome/a8-9.xml"/>
+                <Product type="0701" id="5102" name="MH7H Water/Electrical Heating Thermostat" config="mcohome/mh7h.xml"/>
+                <Product type="0702" id="5102" name="MH7H Water/Electrical Heating Thermostat" config="mcohome/mh7h.xml"/>
+                <Product type="0712" id="5102" name="MH7H Water/Electrical Heating Thermostat" config="mcohome/mh7h.xml"/>
+                <Product type="0732" id="5102" name="MH7H Water/Electrical Heating Thermostat" config="mcohome/mh7h.xml"/>
 		<!--US-->
 		<Product type="5102" id="0103" name="Touch Panel Switch MH-S513" config="mcohome/mhs513.xml"/>
+	</Manufacturer>
+	<Manufacturer id="0222" name="MCT CO. LTD">
+	</Manufacturer>
+	<Manufacturer id="0027" name="Meedio LLC">
+	</Manufacturer>
+	<Manufacturer id="0107" name="MegaChips">
+	</Manufacturer>
+	<Manufacturer id="022D" name="Mercury Corporation">
 	</Manufacturer>
 	<Manufacturer id="007a" name="Merten">
 		<Product type="8001" id="0001" name="Plug-in Appliance Module"/>
@@ -920,75 +1383,120 @@
 		<Product type="0001" id="0004" name="Transmitter 2-Gang Switch"/>
 		<Product type="0002" id="0001" name="Transmitter Move"/>
 	</Manufacturer>
-	<Manufacturer id="008c" name="MIOS">
-		<Product type="0001" id="0001" name="Vera Lite"/>
+	<Manufacturer id="0238" name="Milanity Inc">
 	</Manufacturer>
-	<Manufacturer id="0122" name="Miyakawa Electric Works">
+	<Manufacturer id="0112" name="MITSUMI">
+	</Manufacturer>
+	<Manufacturer id="019D" name="MOBILUS MOTOR z o.o.">
+	</Manufacturer>
+	<Manufacturer id="0232" name="MODACOM CO. LTD">
+	</Manufacturer>
+	<Manufacturer id="008D" name="Modstrom">
+	</Manufacturer>
+	<Manufacturer id="000E" name="Mohito Networks">
+	</Manufacturer>
+	<Manufacturer id="0202" name="Monoprice">
+	</Manufacturer>
+	<Manufacturer id="007E" name="Monster Cable">
+	</Manufacturer>
+	<Manufacturer id="0125" name="Motion Control Systems">
+	</Manufacturer>
+	<Manufacturer id="003F" name="Motorola">
+	</Manufacturer>
+	<Manufacturer id="0122" name="MSK Miyakawa Seisakusho">
 		<Product type="0001" id="0001" name="ME-D101 Electric Power Measuring Instrument"/>
 		<Product type="8000" id="0000" name="ZW-GW Smart Bridge"/>
 	</Manufacturer>
-	<Manufacturer id="007e" name="Monster Cable">
-	</Manufacturer>
-	<Manufacturer id="003f" name="Motorola">
-	</Manufacturer>
 	<Manufacturer id="0083" name="MTC Maintronic">
 	</Manufacturer>
-	<Manufacturer id="0258" name="Neo CoolCam">
-		<Product type="0003" id="0082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
-		<Product type="0003" id="1082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
-		<Product type="0003" id="0087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
-		<Product type="0003" id="1087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
-		<Product type="0003" id="0083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
-		<Product type="0003" id="1083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
-		<Product type="0003" id="108d" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
-		<Product type="0003" id="0085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
-		<Product type="0003" id="1085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
-		<Product type="0003" id="6085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
-		<Product type="0003" id="0088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
-		<Product type="0003" id="1088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
-		<Product type="0003" id="008a" name="SOS/Remote Control" config="shenzen_neo/nas-rc01z.xml"/>
-		<Product type="0003" id="108a" name="SOS/Remote Control" config="shenzen_neo/nas-rc01z.xml"/>
-		<Product type="0003" id="008b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
-		<Product type="0003" id="108b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
-		<Product type="0003" id="008c" name="Wall Switch (1 channel)" config="shenzen_neo/ls01ch.xml"/>
-		<Product type="0003" id="108c" name="Wall Switch (1 channel)" config="shenzen_neo/ls01ch.xml"/>
+	<Manufacturer id="0143" name="myStrom">
+	</Manufacturer>
+	<Manufacturer id="016E" name="Nanjing Easthouse Electrical Co">
+	</Manufacturer>
+	<Manufacturer id="0121" name="Napco Security Technologies, Inc.">
+		<Product type="0001" id="0001" name="I-Bridge Z-Wave Controller"/>
+	</Manufacturer>
+	<Manufacturer id="038D" name="nCube">
+	</Manufacturer>
+	<Manufacturer id="036B" name="NEC Platforms Ltd">
+	</Manufacturer>
+	<Manufacturer id="0241" name="NEEO AG">
+	</Manufacturer>
+	<Manufacturer id="006D" name="Nefit">
+	</Manufacturer>
+	<Manufacturer id="0351" name="NEOCONTROL US LLC">
+	</Manufacturer>
+	<Manufacturer id="0189" name="Ness Corporation Pty Ltd">
+	</Manufacturer>
+	<Manufacturer id="0133" name="Netgear">
+	</Manufacturer>
+	<Manufacturer id="0248" name="neusta next GmbH Co. KG">
+	</Manufacturer>
+	<Manufacturer id="0203" name="Newland Communication Science Technology Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="0268" name="Nexa Trading AB">
 	</Manufacturer>
 	<Manufacturer id="0178" name="Nexia">
 		<!-- full name in Z-wave database: Ingersoll Rand - Nexia Home Intelligence -->
 		<Product type="4442" id="3130" name="DB100Z Doorbell Sensor" config="nexia/db100z.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0165" name="NodOn">
+	<Manufacturer id="0075" name="NextEnergy">
+	</Manufacturer>
+	<Manufacturer id="0361" name="NHN Entertainment">
+	</Manufacturer>
+	<Manufacturer id="0185" name="Ningbo Sentek Electronics Co Ltd">
+	</Manufacturer>
+	<Manufacturer id="0165" name="NodOn (ID-RF)">
 		<Product type="0001" id="0001" name="ASP-3-1-00 Smart Plug" config="nodon/asp3100SmartPlug.xml"/>
 		<Product type="0001" id="0003" name="MSP-3-1-XX Micro Smart Plug" config="nodon/msp31xxMicroSmartPlug.xml"/>
 		<Product type="0002" id="0001" name="CRC-3-1-00 Octan Remote" config="nodon/crc3100OctanRemote.xml"/>
 		<Product type="0002" id="0002" name="CRC-3-6-0x Soft Remote" config="nodon/crc360xSofremote.xml"/>
 		<Product type="0002" id="0003" name="CWS-3-1-01 Wall Switch" config="nodon/cws3101wallswitch.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0252" name="North China University of Technology">
+	</Manufacturer>
 	<Manufacturer id="0096" name="NorthQ">
 		<Product type="0001" id="0001" name="NQ-92021 Power Reader" config="northq/nq92021.xml"/>
 		<Product type="0001" id="0002" name="NQ-9021 Power Reader" config="northq/nq9021.xml" />
 		<Product type="0010" id="0001" name="NQ-9121 Gas Meter" config="northq/nq9121.xml" />
 	</Manufacturer>
-	<Manufacturer id="0040" name="Novar EDS">
+	<Manufacturer id="0040" name="Novar Electrical Devices and Systems">
 	</Manufacturer>
-	<Manufacturer id="016a" name="Oomi">
-		<!-- US-market products start with type prefix "01" -->
-		<!-- AU-market products start with type prefix "02" -->
-		<!-- CN-market products start with type prefix "1D" -->
-		<Product type="0102" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
-		<Product type="0202" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
-		<Product type="1D02" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
-		<Product type="0103" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
-		<Product type="0203" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
-		<Product type="1D03" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
+	<Manufacturer id="020D" name="Novateqni HK Ltd">
 	</Manufacturer>
-	<Manufacturer id="0041" name="OpenPeak Inc.">
+	<Manufacturer id="0296" name="OBLO LIVING LLC	">
 	</Manufacturer>
-	<Manufacturer id="0245" name="Permundo">
+	<Manufacturer id="0119" name="Omnima Limited">
+	</Manufacturer>
+	<Manufacturer id="014C" name="OnSite Pro">
+	</Manufacturer>
+	<Manufacturer id="0041" name="OpenPeak Inc">
+	</Manufacturer>
+	<Manufacturer id="027D" name="Oregon Automation">
+	</Manufacturer>
+	<Manufacturer id="0104" name="Panasonic Electric Works Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="031A" name="Panasonic ES Shin Dong-A Co Ltd">
+	</Manufacturer>
+	<Manufacturer id="028D" name="Panodic Electric (Shenzhen) Limited">
+	</Manufacturer>
+	<Manufacturer id="0257" name="PARATECH">
+	</Manufacturer>
+	<Manufacturer id="0172" name="PassivSystems Limited">
+	</Manufacturer>
+	<Manufacturer id="0322" name="Paxton Access Ltd">
+	</Manufacturer>
+	<Manufacturer id="0281" name="PC Partner">
+	</Manufacturer>
+	<Manufacturer id="013D" name="Pella">
+	</Manufacturer>
+	<Manufacturer id="0245" name="permundo GmbH">
 		<Product type="0003" id="0002" name="PSC132ZW Smart Mini Plug"/>
 		<Product type="0003" id="0001" name="PSC234ZW Smart Plug"/>
 	</Manufacturer>
-	<Manufacturer id="013c" name="Philio Technology Corporation">
+	<Manufacturer id="0366" name="PHILIA TECHNOLOGY Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="013c" name="Philio Technology Corp">
 		<Product type="0001" id="0001" name="PAN11-4 Smart Energy Plug In Switch"/>
 		<Product type="0001" id="0003" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml"/>
 		<Product type="0001" id="0004" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module" config="philio/pan06.xml"/>
@@ -998,6 +1506,7 @@
 		<Product type="0001" id="0011" name="PAN11 Smart Energy Plug In Switch" config="philio/pan11.xml"/>
 		<Product type="0001" id="0012" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml"/>
 		<Product type="0001" id="0015" name="PAN08-1 In Wall Roller Shutter Controller" config="philio/pan08.xml"/>
+		<Product type="0001" id="0029" name="PAN16 Smart energy plug in switch" config="philio/pan16.xml"/>
 		<Product type="0002" id="0002" name="PSM02-1 Slim Multi-Sensor" config="philio/psm02.xml"/>
 		<Product type="0002" id="0050" name="PSP05 PIR/Motion" config="philio/psp05.xml"/>
 		<Product type="0002" id="000c" name="PST02-A 4 in 1 Multi-Sensor" config="philio/pst02.xml"/>
@@ -1009,17 +1518,19 @@
 		<Product type="0004" id="000a" name="PH-PSE02.eu Zipato Indoor Siren" config="philio/pse02.xml"/>
 		<Product type="0005" id="0031" name="PH-PAD02.eu Smart Dimmer Socket E27" config="philio/pad02.xml"/>
 		<Product type="0006" id="001a" name="PH-PAB01.eu Micromodule Energy Meter" config="philio/phpab01.xml"/>
+		<Product type="0008" id="001d" name="PSR03-1B.EU Keyfob 5 Remote" config="philio/psr03-1b.xml"/>
 		<Product type="0009" id="0022" name="PSR04 Smart Color Button" config="philio/psr04.xml"/>
-		<Product type="0001" id="0029" name="PAN16 Smart energy plug in switch" config="philio/pan16.xml"/>
 	</Manufacturer>
-	<Manufacturer id="010e" name="Polycontrol">
+	<Manufacturer id="0277" name="Pixela Corporation ">
+	</Manufacturer>
+	<Manufacturer id="010e" name="Poly-control">
 		<Product type="0002" id="0001" name="Danalock Keypad" config="polycontrol/keypad.xml"/>
 		<Product type="0003" id="0002" name="Danalock Circle/Square" config="polycontrol/doorlock.xml"/>
 		<Product type="0001" id="0001" name="Polylock" config="polycontrol/polylock.xml"/>
 		<Product type="0008" id="0002" name="Danalock V2 BTZE" config="polycontrol/doorlock.xml"/>
 		<Product type="0009" id="0001" name="Danalock V3 BTZE" config="polycontrol/doorlockv3.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0154" name="Popp">
+	<Manufacturer id="0154" name="Popp &amp; Co">
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml"/>
 		<Product type="0003" id="0001" name="009105 Wall Plug Switch Schuko (IP44)" config="popp/009105.xml"/>
 		<Product type="0004" id="0002" name="Solar Powered Outdoor Siren" config="popp/solar-siren.xml" />
@@ -1036,10 +1547,7 @@
 		<Product type="1100" id="0001" name="123601 Plug-in Switch" config="popp/123601.xml" />
 		<Product type="1100" id="0002" name="123580 Plug-in Dimmer" config="popp/123580.xml" />
 	</Manufacturer>
-	<Manufacturer id="0169" name="Popp">
-		<Product type="0001" id="0001" name="ZWeather" config="popp/zweather.xml" />
-	</Manufacturer>
-	<Manufacturer id="0064" name="Popp / Duwi">
+	<Manufacturer id="0064" name="Popp / Duwi (Reitz-Group.de)">
 		<Product type="0001" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" />
 		<Product type="1000" id="0002" name="Flush Mounted Switch"/>
 		<Product type="1001" id="0000" name="Plugin Dimmer" />
@@ -1052,18 +1560,36 @@
 		<Product type="5002" id="0000" name="Wireless Flush Mounted Switch" />
 		<Product type="5003" id="0000" name="Static Controller" />
 	</Manufacturer>
+	<Manufacturer id="0170" name="Powerhouse Dynamics">
+	</Manufacturer>
+	<Manufacturer id="0074" name="PowerLinx">
+	</Manufacturer>
 	<Manufacturer id="0016" name="PowerLynx">
 	</Manufacturer>
 	<Manufacturer id="0042" name="Pragmatic Cons">
 	</Manufacturer>
-	<Manufacturer id="0163" name="Queenlock">
-		<Product type="3001" id="0301" name="ZW-702 Door Lock"/>
+	<Manufacturer id="0341" name="Prodea">
+	</Manufacturer>
+	<Manufacturer id="0128" name="Prodrive Technologies">
+		<Product type="0000" id="0000" name="ED2.0 Meter Adapter"/>
+		<Product type="0128" id="0000" name="ED2.0 Display"/>
+	</Manufacturer>
+	<Manufacturer id="0161" name="Promixis LLC">
+	</Manufacturer>
+	<Manufacturer id="005d" name="Pulse Technologies (Aspalis)">
+		<Product type="0202" id="0511" name="Plugin Lamp Module"/>
+	</Manufacturer>
+	<Manufacturer id="0376" name="Pytronic AB">
 	</Manufacturer>
 	<Manufacturer id="0095" name="Qees">
 		<Product type="3101" id="0001" name="RETO Dimmer Plus 2013" config="qees/reto-dimmer-plus.xml"/>
 		<Product type="3103" id="0001" name="RETO Plug-in Switch Plus" config="qees/reto-plugin-switch.xml" />
 	</Manufacturer>
-	<Manufacturer id="0159" name="Qubino">
+	<Manufacturer id="0355" name="Qingdao hongyu cles air conditioning co.ltd">
+	</Manufacturer>
+	<Manufacturer id="012A" name="Qolsys">
+	</Manufacturer>
+	<Manufacturer id="0159" name="Qubino (Goap)">
 		<Product type="0001" id="0001" name="ZMNHDA2 Flush Dimmer" config="qubino/ZMNHDA2.xml"/>
 		<Product type="0001" id="0051" name="ZMNHDD1 Flush Dimmer" config="qubino/ZMNHDDx.xml"/>
 		<Product type="0001" id="0052" name="ZMNHSDx Din Dimmer" config="qubino/ZMNHSDx.xml"/>
@@ -1095,7 +1621,26 @@
 	<Manufacturer id="0130" name="Quby">
 		<Product type="0001" id="0001" name="Energy Management System"/>
 	</Manufacturer>
-	<Manufacturer id="0100" name="Reitz-Group.de">
+	<Manufacturer id="0163" name="Queenlock">
+		<Product type="3001" id="0301" name="ZW-702 Door Lock"/>
+	</Manufacturer>
+	<Manufacturer id="0142" name="Rademacher Gerate-Elektronik GmbH">
+	</Manufacturer>
+	<Manufacturer id="0098" name="Radio Thermostat Company of America">
+	</Manufacturer>
+	<Manufacturer id="0314" name="Raonix Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="008E" name="Raritan">
+	</Manufacturer>
+	<Manufacturer id="040F" name="RATOC Systems Inc">
+	</Manufacturer>
+	<Manufacturer id="0370" name="Raylios">
+	</Manufacturer>
+	<Manufacturer id="021E" name="Red Bee Co. Ltd">
+	</Manufacturer>
+	<Manufacturer id="022C" name="Remote Solution">
+	</Manufacturer>
+	<Manufacturer id="0255" name="Remote Technologies Incorporated">
 	</Manufacturer>
 	<Manufacturer id="5254" name="Remotec">
 		<Product type="0000" id="531f" name="Z-URC" config="remotec/zurc.xml"/>
@@ -1120,7 +1665,9 @@
 		<Product type="0202" id="8031" name="ZTS-110" config="remotec/zts-110.xml" />
 		<Product type="0200" id="8170" name="ZTS-500US" config="remotec/zts-500.xml" />
 	</Manufacturer>
-	<Manufacturer id="0010" name="RCS">
+	<Manufacturer id="039B" name="Reply S.p.A.">
+	</Manufacturer>
+	<Manufacturer id="0010" name="Residential Control Systems">
 		<Product type="0001" id="0002" name="TZ43 Thermostat" config="rcs/therm0009.xml" />
 		<Product type="0001" id="0005" name="TZ43-IHD SMUD Thermostat" config="rcs/therm0005.xml" />
 		<Product type="0001" id="0007" name="TZ45-IHD SMUD Thermostat" config="rcs/therm0007.xml" />
@@ -1129,14 +1676,43 @@
 		<Product type="454d" id="3532" name="EM52-ZW Z-Wave Home Energy Meter" config="rcs/em52-zw.xml" />
 		<Product type="504d" id="3132" name="PM12-ZW Z-Wave Power Monitoring Module" config="rcs/pm12-zw.xml" />
 	</Manufacturer>
-	<Manufacturer id="0065" name="RS Scene">
+	<Manufacturer id="0216" name="RET Nanjing Intelligence System">
 	</Manufacturer>
-	<Manufacturer id="003b" name="Schlage">
+	<Manufacturer id="0153" name="Revolv">
+	</Manufacturer>
+	<Manufacturer id="035E" name="RISCO Group">
+	</Manufacturer>
+	<Manufacturer id="023B" name="ROC-Connect">
+	</Manufacturer>
+	<Manufacturer id="0197" name="RPE Ajax LLC">
+	</Manufacturer>
+	<Manufacturer id="0065" name="RS Scene Automation">
+	</Manufacturer>
+	<Manufacturer id="029D" name="Rubetek">
+	</Manufacturer>
+	<Manufacturer id="0290" name="S1">
+	</Manufacturer>
+	<Manufacturer id="023C" name="SafeTech Products">
+	</Manufacturer>
+	<Manufacturer id="0201" name="Samsung Electronics">
+	</Manufacturer>
+	<Manufacturer id="022E" name="Samsung SDS">
+	</Manufacturer>
+	<Manufacturer id="0093" name="San Shih Electrical Enterprise">
+	</Manufacturer>
+	<Manufacturer id="012C" name="SANAV">
+	</Manufacturer>
+	<Manufacturer id="0307" name="SATCO Products">
+	</Manufacturer>
+	<Manufacturer id="0318" name="SBCK Corp">
+	</Manufacturer>
+	<Manufacturer id="003b" name="Schlage (Allegion)">
 		<Product type="634b" id="504c" name="FE599GR Wireless Door Lock"/>
 		<Product type="6341" id="5044" name="BE469 Touchscreen Deadbolt" config="schlage/BE469.xml"/>
 		<Product type="6349" id="5044" name="BE468 Touchscreen Deadbolt" config="schlage/BE468.xml"/>
+		<Product type="0001" id="0469" name="BE469ZP Connect Smart Deadbolt" config="schlage/BE469ZP.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0097" name="Schlage Link">
+	<Manufacturer id="0097" name="Schlage Link (Wintop)">
 		<Product type="1182" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
 		<Product type="1188" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
 		<Product type="6131" id="4501" name="Mini Keypad RFID" config="schlagelink/minikeypad.xml" />
@@ -1144,7 +1720,15 @@
 		<Product type="6941" id="5501" name="LE120 Appliance Module"/>
 		<Product type="6943" id="4501" name="On-Wall Power Socket"/>
 	</Manufacturer>
-	<Manufacturer id="001f" name="Scientia Tech">
+	<Manufacturer id="001F" name="Scientia Technologies">
+	</Manufacturer>
+	<Manufacturer id="029A" name="Scout Alarm">
+	</Manufacturer>
+	<Manufacturer id="011E" name="Secure Wireless">
+	</Manufacturer>
+	<Manufacturer id="0167" name="SecureNet Technologies">
+	</Manufacturer>
+	<Manufacturer id="0182" name="Securifi">
 	</Manufacturer>
 	<Manufacturer id="0069" name="Seluxit">
 	</Manufacturer>
@@ -1159,17 +1743,121 @@
 	<Manufacturer id="0151" name="Sercomm">
 		<Product type="0002" id="0001" name="SW-CLP01-EU Clamp Power Meter"/>
 	</Manufacturer>
-	<Manufacturer id="0000" name="Sigma Designs">
-		<Product type="0001" id="0001" name="UZB Z-Wave USB Adapter"/>
+	<Manufacturer id="0378" name="Shandong Bittel Intelligent Technology">
+	</Manufacturer>
+	<Manufacturer id="030B" name="Shandong Smart Life Data System">
+	</Manufacturer>
+	<Manufacturer id="0215" name="Shangdong Smart Life Data System">
+	</Manufacturer>
+	<Manufacturer id="023E" name="Shanghai Dorlink Intelligent Technologies">
+	</Manufacturer>
+	<Manufacturer id="0205" name="Shanghai Longchuang Eco-energy Systems">
+	</Manufacturer>
+	<Manufacturer id="010B" name="Sharp">
+	</Manufacturer>
+	<Manufacturer id="0357" name="Shenzhen 3nod Acousticlink">
+	</Manufacturer>
+	<Manufacturer id="021A" name="SHENZHEN AOYA INDUSTRY">
+	</Manufacturer>
+	<Manufacturer id="0286" name="Shenzhen Easyhome Technology">
+	</Manufacturer>
+	<Manufacturer id="021C" name="Shenzhen iSurpass Technology">
+	</Manufacturer>
+	<Manufacturer id="037A" name="Shenzhen JBT Smart Lighting">
+	</Manufacturer>
+	<Manufacturer id="021D" name="Shenzhen Kaadas Intelligent Technology">
+	</Manufacturer>
+	<Manufacturer id="0211" name="Shenzhen Liao Wang Tong Da Technology">
+	</Manufacturer>
+	<Manufacturer id="0406" name="Shenzhen Meian Technology">
+	</Manufacturer>
+	<Manufacturer id="0258" name="Shenzhen Neo Electronics Co Ltd">
+		<Product type="0003" id="0082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
+		<Product type="0003" id="1082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
+		<Product type="0003" id="2082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
+		<Product type="0003" id="0087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
+		<Product type="0003" id="1087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
+		<Product type="0200" id="1027" name="Power plug 12A" config="shenzen_neo/nas-wr01ze.xml"/>
+		<Product type="0003" id="0083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
+		<Product type="0003" id="1083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
+		<Product type="0003" id="108d" name="Battery Powered PIR Sensor V2" config="shenzen_neo/nas-pd02z.xml"/>
+		<!--<Product type="0003" id="108d" name="Battery Powered PIR Sensor with temp" config="shenzen_neo/nas-pd01z.xml"/>-->
+		<Product type="0003" id="0085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
+		<Product type="0003" id="1085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
+		<Product type="0003" id="6085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
+		<Product type="0003" id="0088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
+		<Product type="0003" id="1088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
+		<Product type="0003" id="008a" name="SOS/Remote Control" config="shenzen_neo/nas-rc01z.xml"/>
+		<Product type="0003" id="108a" name="SOS/Remote Control" config="shenzen_neo/nas-rc01z.xml"/>
+		<Product type="0003" id="008b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
+		<Product type="0003" id="108b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
+		<Product type="0003" id="008c" name="Wall Switch (1 channel)" config="shenzen_neo/ls01ch.xml"/>
+		<Product type="0003" id="108c" name="Wall Switch (1 channel)" config="shenzen_neo/ls01ch.xml"/>
+	</Manufacturer>
+	<Manufacturer id="032C" name="Shenzhen Saykey Technology">
+	</Manufacturer>
+	<Manufacturer id="036C" name="Shenzhen Sen5 Technology">
+	</Manufacturer>
+	<Manufacturer id="0381" name="Shenzhen Thingsview Tech">
+	</Manufacturer>
+	<Manufacturer id="0250" name="Shenzhen Tripath Digital Audio Equipment">
+	</Manufacturer>
+	<Manufacturer id="0356" name="Shenzhen ZHIQU Technology Limited">
+	</Manufacturer>
+	<Manufacturer id="0081" name="SIEGENIA-AUBI KG">
+	</Manufacturer>
+	<Manufacturer id="0267" name="Simon">
+		<Product type="0001" id="0000" name="S100 Socket iO" config="simon/10002034-13X.xml"/>
+		<Product type="0001" id="00da" name="S100 Socket iO" config="simon/10002034-13X.xml"/>
+		<Product type="0009" id="0022" name="S100 Socket iO" config="simon/10002041-13X.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0045" name="Sine Wireless">
 	</Manufacturer>
-	<Manufacturer id="0070" name="Smart Products">
+	<Manufacturer id="0266" name="Siterwell Technology HK">
+	</Manufacturer>
+	<Manufacturer id="0282" name="Smart Electronic Industrial">
+	</Manufacturer>
+	<Manufacturer id="0046" name="Smart Products">
+	</Manufacturer>
+	<Manufacturer id="026A" name="SmartAll">
+	</Manufacturer>
+	<Manufacturer id="0323" name="SmartHome Partner GmbH">
+	</Manufacturer>
+	<Manufacturer id="024F" name="Smartly AS">
+	</Manufacturer>
+	<Manufacturer id="0150" name="SmartThings">
+	</Manufacturer>
+	<Manufacturer id="0102" name="SMK Manufacturing">
+	</Manufacturer>
+	<Manufacturer id="029C" name="SoftAtHome">
 	</Manufacturer>
 	<Manufacturer id="0047" name="Somfy">
 	</Manufacturer>
-	<Manufacturer id="0239" name="Stelpro">
-		<Product type="0001" id="0001" name="STZW402+ Electronic Thermostat" config="stelpro/stzw402.xml"/>
+	<Manufacturer id="0394" name="SONG JIANG YUN-AN TECHNOLOGY">
+	</Manufacturer>
+	<Manufacturer id="0402" name="Sony Mobile Communications">
+	</Manufacturer>
+	<Manufacturer id="0274" name="Soosan Hometech">
+	</Manufacturer>
+	<Manufacturer id="035A" name="SOREL GmbH">
+	</Manufacturer>
+	<Manufacturer id="026e" name="Springs Window Fashions (Graber)">
+		<Product type="4252" id="5a31" name="BRZ1 Remote Control" config="graber/brz1.xml"/>
+		<Product type="5253" id="5a31" name="RSZ1 Roller Shade"/>
+		<Product type="5643" id="5a31" name="VCZ1 Virtual Cord Remote Control" config="graber/vcz1.xml"/>
+		<Product type="4353" id="5a31" name="CSZ1 Cellular Shade"/>
+	</Manufacturer>
+	<Manufacturer id="026F" name="Sprue Safety Products">
+	</Manufacturer>
+	<Manufacturer id="0124" name="Square Connect">
+	</Manufacturer>
+	<Manufacturer id="021B" name="ST&amp;T Electric Corporation">
+	</Manufacturer>
+	<Manufacturer id="0358" name="Star Automation">
+	</Manufacturer>
+	<Manufacturer id="0259" name="Starkoff">
+	</Manufacturer>
+	<Manufacturer id="0265" name="StarVedia">
 	</Manufacturer>
 	<Manufacturer id="0271" name="Steinel">
 		<Product type="0002" id="1a72" name="IS140-2" config="steinel/is140-2.xml"/>
@@ -1177,13 +1865,53 @@
 		<Product type="0001" id="1a73" name="XLED HOME 2" config="steinel/xled-home-2.xml"/>
                 <Product type="0001" id="1a75" name="L810 LED iHF" config="steinel/l810-led-ihf.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0166" name="Swiid">
+	<Manufacturer id="0239" name="Stelpro">
+		<Product type="0001" id="0001" name="STZW402+ Electronic Thermostat" config="stelpro/stzw402.xml"/>
+	</Manufacturer>
+	<Manufacturer id="0217" name="Strattec Advanced Logic">
+	</Manufacturer>
+	<Manufacturer id="0168" name="STRATTEC Security">
+	</Manufacturer>
+	<Manufacturer id="0105" name="Sumitomo">
+	</Manufacturer>
+	<Manufacturer id="028B" name="Sunjet Components">
+	</Manufacturer>
+	<Manufacturer id="0054" name="Superna">
+	</Manufacturer>
+	<Manufacturer id="0191" name="Swann Communications">
+	</Manufacturer>
+	<Manufacturer id="0339" name="SWYCS">
+	</Manufacturer>
+	<Manufacturer id="0166" name="Swiid (CBCC Domotique SAS)">
 		<Product type="0100" id="0100" name="SwiidInter" config="swiid/swiidinter.xml"/>
 		<Product type="2007" id="0706" name="SwiidPlug" config="swiid/swiidplug.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0009" name="Sylvania">
 	</Manufacturer>
+	<Manufacturer id="0136" name="Systech Corporation">
+	</Manufacturer>
+	<Manufacturer id="0276" name="Systemair Sverige AB">
+	</Manufacturer>
+	<Manufacturer id="0375" name="T&amp;W">
+	</Manufacturer>
+	<Manufacturer id="0235" name="TAEWON Lighting">
+	</Manufacturer>
+	<Manufacturer id="0262" name="Taiwan Fu Hsing Industrial">
+	</Manufacturer>
+	<Manufacturer id="0264" name="Taiwan iCATCH">
+	</Manufacturer>
+	<Manufacturer id="0186" name="Team Digital Limited">
+	</Manufacturer>
+	<Manufacturer id="0089" name="Team Precision PCL">
+	</Manufacturer>
+	<Manufacturer id="0240" name="Technicolor">
+	</Manufacturer>
+	<Manufacturer id="000A" name="Techniku">
+	</Manufacturer>
+	<Manufacturer id="012F" name="Tecom">
+	</Manufacturer>
 	<Manufacturer id="0012" name="Tell It Online">
+		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
 	</Manufacturer>
 	<Manufacturer id="0176" name="Telldus">
 		<Product type="0003" id="0001" name="TZWP-100 Plug-in Switch" config="telldus/tzwp100.xml"/>
@@ -1192,34 +1920,120 @@
 	</Manufacturer>
 	<Manufacturer id="0048" name="Telsey">
 	</Manufacturer>
-	<Manufacturer id="010c" name="There">
+	<Manufacturer id="017E" name="Telular">
+	</Manufacturer>
+	<Manufacturer id="0397" name="Teptron AB">
+	</Manufacturer>
+	<Manufacturer id="005C" name="Terra Optima B.V.">
+	</Manufacturer>
+	<Manufacturer id="010c" name="There Corporation">
 		<Product type="0001" id="0001" name="ThereGate"/>
 	</Manufacturer>
 	<Manufacturer id="019b" name="ThermoFloor AS">
 		<Product type="0001" id="0001" name="Heatit Thermostat TF 021" config="thermofloor/heatit021.xml"/>
-		<Product type="0003" id="0202" name="Heatit Thermostat TF 033" config="thermofloor/heatit033.xml"/>
+		<Product type="0003" id="0202" name="Heatit Thermostat TF 056" config="thermofloor/heatit056.xml"/>
 	</Manufacturer>
-	<Manufacturer id="008b" name="Trane">
+	<Manufacturer id="0317" name="Think Simple srl">
+	</Manufacturer>
+	<Manufacturer id="022A" name="TIMEVALVE">
+	</Manufacturer>
+	<Manufacturer id="033B" name="Tingcore AB">
+	</Manufacturer>
+	<Manufacturer id="0118" name="TKB Home">
+		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
+		<Product type="0001" id="0011" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
+		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="wenzhou/sm103.xml"/>
+		<Product type="0002" id="0002" name="TSP01 3 in 1 PIR Motion Sensor" config="wenzhou/tsp01.xml" />
+		<Product type="0003" id="0002" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
+		<Product type="0003" id="0003" name="TZ56 Wall Switch On/Off" config="wenzhou/tz56.xml"/>
+		<Product type="0003" id="0004" name="TZ55 Wall Switch Dimmer" config="wenzhou/tz55.xml"/>
+		<Product type="0004" id="0002" name="TZ69 Smart energy plug in switch" config="wenzhou/tz69.xml"/>
+		<Product type="0116" id="3119" name="TZ69F Smart energy plug in switch" config="wenzhou/tz69.xml"/>
+		<Product type="000b" id="0001" name="ST812 Flood Detector" config="everspring/st812.xml"/>
+		<Product type="0808" id="0808" name="TZ65 Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
+		<Product type="0101" id="0103" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
+		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
+		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer" config="wenzhou/tz67.xml"/>
+		<Product type="0311" id="0103" name="TZ69E Smart energy plug in switch" config="wenzhou/tz69.xml"/>
+		<Product type="0311" id="0202" name="TZ56S On/Off wall switch" config="wenzhou/tz56s.xml"/>
+		<Product type="0311" id="0203" name="TZ57 Two channel switch" config="wenzhou/tz57.xml"/>
+		<Product type="0311" id="0305" name="TZ79 Power meter Relay Switch" config="wenzhou/tz79.xml"/>
+		<Product type="0311" id="0304" name="TZ74 Dual Switch" config="wenzhou/tz74.xml"/>
+	</Manufacturer>
+	<Manufacturer id="011C" name="TKH Group / Eminent">
+	</Manufacturer>
+	<Manufacturer id="0327" name="TMC Technology">
+	</Manufacturer>
+	<Manufacturer id="0326" name="TODKI">
+	</Manufacturer>
+	<Manufacturer id="0319" name="Toledo">
+	</Manufacturer>
+	<Manufacturer id="034F" name="TONG LUNG METAL INDUSTRY">
+	</Manufacturer>
+	<Manufacturer id="0333" name="Toshiba Visual Solution">
+	</Manufacturer>
+	<Manufacturer id="0283" name="TP-Link Technologies">
+	</Manufacturer>
+	<Manufacturer id="008b" name="Trane Corporation">
 		<Product type="5452" id="5431" name="Model TZEMT400AB32MAA" config="trane/TZEMT400AB32MAA.xml"/>
 		<Product type="5452" id="5433" name="Model TZEMT400BB32MAA" config="trane/TZEMT400BB32MAA.xml"/>
 		<Product type="5452" id="5436" name="Model TZEMT400BB32MAA" config="trane/TZEMT400BB32MAA.xml"/>
 		<Product type="5452" id="5442" name="Model TZEMT524AA21MA" config="trane/TZEMT524AA21MA.xml"/>
 		<Product type="5452" id="5439" name="Model TCONT624AS42DAA" config="trane/TZEMT524AA21MA.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0066" name="TrickleStar">
+	</Manufacturer>
 	<Manufacturer id="006b" name="Tricklestar">
+	</Manufacturer>
+	<Manufacturer id="0055" name="Tridium">
+	</Manufacturer>
+	<Manufacturer id="0111" name="Tronico Technology Co. Ltd.">
+		<Product type="8200" id="0200" name="ZDS-100"/>
 	</Manufacturer>
 	<Manufacturer id="0330" name="Tronika">
 		<Product type="0003" id="a10d" name="Touch Panel Wall Controller - ZSC-01D" config="tronika/zsc01d.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0049" name="Twisthink">
 	</Manufacturer>
+	<Manufacturer id="0270" name="Ubitech">
+	</Manufacturer>
+	<Manufacturer id="0152" name="UFairy G.R. Tech">
+		<Product type="0202" id="0511" name="GR105 Auto Valve" config="gr/gr105.xml"/>
+		<Product type="0003" id="0512" name="GR105n Auto Valve" config="gr/gr105n.xml"/>
+		<Product type="0500" id="0003" name="ZSE02 Motion Sensor"/>
+	</Manufacturer>
+	<Manufacturer id="0193" name="Universal Devices">
+	</Manufacturer>
+	<Manufacturer id="0020" name="Universal Electronics Inc.">
+		<Product type="8007" id="1390" name="Wireless Lighting Control"/>
+		<Product type="8007" id="1391" name="45601 Advanced Remote"/>
+	</Manufacturer>
+	<Manufacturer id="0183" name="Universe Future">
+	</Manufacturer>
+	<Manufacturer id="0209" name="UTC Fire and Security Americas Corp">
+	</Manufacturer>
+	<Manufacturer id="0388" name="Vates">
+	</Manufacturer>
+	<Manufacturer id="030F" name="Vemmio">
+	</Manufacturer>
+	<Manufacturer id="0198" name="Venstar">
+	</Manufacturer>
+	<Manufacturer id="008c" name="Vera Control">
+		<Product type="0001" id="0001" name="Vera Lite"/>
+	</Manufacturer>
 	<Manufacturer id="0080" name="Vero Duco">
 	</Manufacturer>
-	<Manufacturer id="005e" name="ViewSonic">
+	<Manufacturer id="0237" name="Vestel Elektronik Ticaret ve Sanayi">
+	</Manufacturer>
+	<Manufacturer id="0053" name="Viewsonic">
+	</Manufacturer>
+	<Manufacturer id="005e" name="ViewSonic Corporation">
 	</Manufacturer>
 	<Manufacturer id="0007" name="Vimar CRS">
 	</Manufacturer>
-	<Manufacturer id="010a" name="Vitrum">
+	<Manufacturer id="0188" name="Vipa-Star">
+	</Manufacturer>
+	<Manufacturer id="010a" name="Vitrum (VDA)">
 		<Product type="1100" id="4900" name="Vitrum I EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
 		<Product type="1100" id="4a00" name="Vitrum II EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
 		<Product type="1100" id="4b00" name="Vitrum III EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
@@ -1237,7 +2051,7 @@
 		<Product type="1400" id="6600" name="Vitrum VI EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
 		<Product type="1400" id="6100" name="Vitrum I EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0109" name="Vision">
+	<Manufacturer id="0109" name="Vision Security">
 		<Product type="1001" id="0101" name="ZU1401 Z-Wave USB Stick"/>
 		<Product type="1001" id="0104" name="ZU1401 Z-Wave USB Stick"/>
 		<Product type="1001" id="0105" name="ZU1401 Z-Wave USB Stick"/>
@@ -1283,44 +2097,74 @@
 	</Manufacturer>
 	<Manufacturer id="004a" name="Visualize">
 	</Manufacturer>
+	<Manufacturer id="0058" name="Vitelec">
+	</Manufacturer>
+	<Manufacturer id="0263" name="Viva Labs AS">
+	</Manufacturer>
+	<Manufacturer id="0156" name="Vivint">
+	</Manufacturer>
+	<Manufacturer id="017B" name="Vs-Safety AS">
+	</Manufacturer>
 	<Manufacturer id="004b" name="Watt Stopper">
 	</Manufacturer>
 	<Manufacturer id="0008" name="Wayne Dalton">
 		<Product type="0007" id="0020" name="WDTC-20 Thermostat" config="waynedalton/WDTC-20.xml"/>
 	</Manufacturer>
+	<Manufacturer id="019F" name="Webee Life">
+	</Manufacturer>
 	<Manufacturer id="0171" name="WeBeHome AB">
 		<Product type="0001" id="0001" name="WBH HG-900 Home Gateway"/>
 	</Manufacturer>
-	<Manufacturer id="0118" name="Wenzhou TKB Control System">
-		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
-		<Product type="0001" id="0011" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
-		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="wenzhou/sm103.xml"/>
-		<Product type="0002" id="0002" name="TSP01 3 in 1 PIR Motion Sensor" config="wenzhou/tsp01.xml" />
-		<Product type="0003" id="0002" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
-		<Product type="0003" id="0003" name="TZ56 Wall Switch On/Off" config="wenzhou/tz56.xml"/>
-		<Product type="0003" id="0004" name="TZ55 Wall Switch Dimmer" config="wenzhou/tz55.xml"/>
-		<Product type="0004" id="0002" name="TZ69 Smart energy plug in switch" config="wenzhou/tz69.xml"/>
-		<Product type="0116" id="3119" name="TZ69F Smart energy plug in switch" config="wenzhou/tz69.xml"/>
-		<Product type="000b" id="0001" name="ST812 Flood Detector" config="everspring/st812.xml"/>
-		<Product type="0808" id="0808" name="TZ65 Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
-		<Product type="0101" id="0103" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
-		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
-		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer" config="wenzhou/tz67.xml"/>
-		<Product type="0311" id="0103" name="TZ69E Smart energy plug in switch" config="wenzhou/tz69.xml"/>
-		<Product type="0311" id="0203" name="TZ57 Two channel switch" config="wenzhou/tz57.xml"/>
-		<Product type="0311" id="0305" name="TZ79 Power meter Relay Switch" config="wenzhou/tz79.xml"/>
-		<Product type="0311" id="0304" name="TZ74 Dual Switch" config="wenzhou/tz74.xml"/>
+	<Manufacturer id="011a" name="Wenzhou MTLC Electric Appliances (Enerwave)">
+		<Product type="0601" id="0901" name="ZWN-BPC Ceiling Mounted PIR Motion Sensor" config="enerwave/zwn-bpc.xml"/>
+		<Product type="0801" id="0b03" name="ZWN-SC7 7-Button Scene Controller" config="enerwave/zwn-sc7.xml"/>
+		<Product type="0101" id="0102" name="ZW15S 15A On/Off Switch" config="enerwave/zw15s.xml"/>
+		<Product type="0101" id="0603" name="ZW20R 20A TR Duplex Receptacle" config="enerwave/zw20r.xml"/>
+		<Product type="0111" id="0605" name="ZWN-RSM1 PLUS-Smart Single Relay Switch Module" config="enerwave/zwnrsm1plus.xml"/>
+		<!--<Product type="0111" id="0605" name="ZWN-RSM2-PLUS Smart Single Relay Switch Module" config="enerwave/zwnrsm2plus.xml"/>-->
+		<Product type="0111" id="0101" name="ZW20RM 20A TR Smart Meter Duplex Receptacle" config="enerwave/zw20rm.xml"/>
+		<Product type="0102" id="0201" name="ZW500D 500W In-Wall Preset Dimmer Switch" config="enerwave/zw500d.xml"/>
+		<Product type="0111" id="0105" name="ZW15RM Plus 15A TR Smart Meter Duplex Receptacle" config="enerwave/zw15rmplus.xml"/>
+	</Manufacturer>
+	<Manufacturer id="026C" name="Westcontrol AS">
+	</Manufacturer>
+	<Manufacturer id="0057" name="Whirlpool">
+	</Manufacturer>
+	<Manufacturer id="027B" name="White Rabbit">
 	</Manufacturer>
 	<Manufacturer id="0149" name="wiDom">
 		<Product type="0012" id="0104" name="UBS104 Universal Relay Switch" config="widom/UBS104.xml"/>
 		<Product type="1214" id="0304" name="UME304 Energy Driven Switch" config="widom/UME304C_S.xml"/>
 		<Product type="1214" id="0504" name="WDS Universal Double Switch" config="widom/WDS.xml"/>
 	</Manufacturer>
+	<Manufacturer id="012D" name="Wilshine Holding">
+	</Manufacturer>
+	<Manufacturer id="017F" name="Wink">
+	</Manufacturer>
 	<Manufacturer id="004c" name="Woodward Labs">
+	</Manufacturer>
+	<Manufacturer id="0242" name="Winytechnology">
+	</Manufacturer>
+	<Manufacturer id="0199" name="Wireless Maingate AB">
+	</Manufacturer>
+	<Manufacturer id="0269" name="WOOREE Lighting">
 	</Manufacturer>
 	<Manufacturer id="0003" name="Wrap">
 	</Manufacturer>
+	<Manufacturer id="022F" name="WRT Intelligent Technology">
+	</Manufacturer>
+	<Manufacturer id="012E" name="Wuhan NWD Technology">
+	</Manufacturer>
 	<Manufacturer id="004d" name="Xanboo">
+	</Manufacturer>
+	<Manufacturer id="037D" name="Xiamen AcTEC Electronics">
+	</Manufacturer>
+	<Manufacturer id="0000" name="Z-Wave (Sigma Designs)">
+		<Product type="0001" id="0001" name="UZB Z-Wave USB Adapter"/>
+	</Manufacturer>
+	<Manufacturer id="031D" name="Z-Wave Alliance">
+	</Manufacturer>
+	<Manufacturer id="004F" name="Z-Wave Technologia">
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">
 		<Product type="0001" id="0001" name="Z-Wave USB Stick"/>
@@ -1355,9 +2199,17 @@
 		<Product type="0400" id="0001" name="RaZberry Controller ZWave+"/>
 		<Product type="0400" id="0002" name="RaZberry Controller 2016 ZWave+"/>
 	</Manufacturer>
-	<Manufacturer id="004f" name="Z-Wave Technologia">
+	<Manufacturer id="024D" name="Z-works">
+	</Manufacturer>
+	<Manufacturer id="024E" name="zConnect">
 	</Manufacturer>
 	<Manufacturer id="004e" name="Zdata">
+	</Manufacturer>
+	<Manufacturer id="016F" name="Zhejiang Jiuxing Electric">
+	</Manufacturer>
+	<Manufacturer id="040E" name="ZHONGSHAN YunJia INTELLIGENT TECHNOLOGY">
+	</Manufacturer>
+	<Manufacturer id="036E" name="Zinno">
 	</Manufacturer>
 	<Manufacturer id="0131" name="Zipato">
 		<Product type="0001" id="0012" name="Micro Module Switch Double PAN04" config="zipato/pan04.xml" />
@@ -1376,6 +2228,8 @@
 		<Product type="8004" id="1000" name="Water Leakage Sensor HS1WL-Z" config="heiman/HS1WL-Z.xml"/>
 		<Product type="8005" id="1000" name="CO Sensor HS1CA-Z" config="heiman/HS1CA-Z.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0120" name="Zonoff">
+	</Manufacturer>
 	<Manufacturer id="027a" name="Zooz">
 		<Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml" />
 		<Product type="0003" id="0083" name="ZSE09 Mini Sensor" config="zooz/zse09.xml" />
@@ -1389,8 +2243,13 @@
 		<Product type="0101" id="000D" name="ZEN15 Power Switch" config="zooz/zen15.xml" />
 		<Product type="0301" id="0012" name="ZSE18 Motion Sensor" config="zooz/zse18.xml" />
 		<Product type="0401" id="0002" name="ZST10 S2 Z-Wave Plus USB Stick" />
+		<Product type="a000" id="a001" name="ZEN26 S2 On Off Wall Switch" config="zooz/zen26.xml" />
+		<Product type="a000" id="a002" name="ZEN27 S2 Dimmer Wall Switch" config="zooz/zen27.xml" />
+		<Product type="b111" id="1e1c" name="ZEN21 Switch V2.0" config="zooz/zen21.xml" />
+		<Product type="000c" id="0003" name="ZSE19 S2 Multisiren" config="zooz/zse19.xml" />
+		<Product type="a000" id="a004" name="ZEN20 V2.0 Power Strip" config="zooz/zen20v2.xml" />
 	</Manufacturer>
-	<Manufacturer id="015d" name="Zooz">
+	<Manufacturer id="015d" name="Zooz (Willis Electric)">
 		<Product type="0651" id="f51c" name="ZEN20 Power Strip" config="zooz/zen20.xml" />
 		<Product type="0111" id="231c" name="ZEN21 Switch" config="zooz/zen21.xml"/>
 		<Product type="0112" id="241c" name="ZEN22 Dimmer" config="zooz/zen22.xml"/>
@@ -1399,9 +2258,11 @@
 		<Product type="6100" id="6100" name="NZW97 Inovelli Dual Outdoor Z-Wave Plug" config="inovelli/nzw97.xml"/>
 		<Product type="b111" id="1e1c" name="ZEN21 Switch V2.0" config="zooz/zen21.xml" />
 	</Manufacturer>
-	<Manufacturer id="0315" name="Z Wave Products Inc.">
+	<Manufacturer id="0315" name="zwaveproducts.com">
 		<Product type="4447" id="3034" name="WD-100" config="zwp/WD-100.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0021" name="Zykronix">
+	</Manufacturer>
+	<Manufacturer id="0135" name="ZyXEL">
 	</Manufacturer>
 </ManufacturerSpecificData>

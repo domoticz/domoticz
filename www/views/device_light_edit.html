@@ -49,7 +49,7 @@
             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isSwitchIconAvailable()">
                 <td>{{ :: 'Switch Icon' | translate}}:</td>
                 <td>
-                    <device-icon-select ng-model="vm.device.CustomImage"></device-icon-select>
+                    <device-icon-select ng-model="vm.device.CustomImage" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
                 </td>
             </tr>
             <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isMotionAvailable()">

@@ -16,6 +16,7 @@ local function values(t)
 	table.sort(values)
 	return values
 end
+
 local function getDevice_(
 	domoticz,
 	name,
@@ -422,7 +423,7 @@ describe('device', function()
 			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14)
-			assert.is_same({ { ['SetSetPoint:1'] = '14'} }, commandArray)
+			assert.is_same( { { ["UpdateDevice"] = { idx=1, nValue=0, sValue="14", _trigger=true } } }, commandArray)
 
 		end)
 
@@ -552,6 +553,7 @@ describe('device', function()
 					'decreaseBrightness',
 					"dimTo",
 					"disarm",
+					"getColor",
 					'increaseBrightness',
 					"kodiExecuteAddOn",
 					"kodiPause",
@@ -566,7 +568,13 @@ describe('device', function()
 					"pause",
 					"play",
 					"playFavorites",
+					"setColor",
+					"setColorBrightness",
+					-- "setDescription",
 					"setDiscoMode",
+					"setHex",
+					"setHotWater",
+					"setHue",
 					"setKelvin",
 					'setNightMode',
 					'setRGB',
@@ -609,7 +617,9 @@ describe('device', function()
 					"updateWeight",
 					"updateWetness",
 					"updateWind",
-					"updateYouless"
+					"updateYouless",
+					"volumeDown",
+					"volumeUp",
 				}, values(dummies))
 			end)
 		end)
@@ -621,14 +631,46 @@ describe('device', function()
 				['type'] = 'Thermostat',
 				['subType'] = 'Zone',
 				['hardwareTypeValue'] = 39,
-				['rawData'] = { [1] = 12.5 }
+				['rawData'] = { [1] = 12.5;
+								[3] = "TemporaryOverride";
+								[4] = "2016-05-29T06:32:58Z" }
 			})
 
 			assert.is_same(12.5, device.setPoint)
+			assert.is_same('TemporaryOverride', device.mode)
+			assert.is_same('2016-05-29T06:32:58Z', device.untilDate)
 
 			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
 
 			assert.is_same({ { ['SetSetPoint:1'] = '14#Permanent#2016-04-29T06:32:58Z'} }, commandArray)
+		end)
+		
+		it('should detect an evohome hotWater device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Thermostat',
+				['subType'] = 'Hot Water',
+				['hardwareTypeValue'] = 39,
+				['rawData'] = {
+								[2] = "On";
+								[3] = "TemporaryOverride";
+								[4] = "2016-04-29T06:32:58Z" }
+							   })
+			
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+			
+			assert.is_same('On', device.state)
+			assert.is_same('TemporaryOverride', device.mode)
+			assert.is_same('2016-04-29T06:32:58Z', device.untilDate)
+
+			device.setHotWater('Off', 'Permanent')
+
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&idx=1&setpoint=&state=Off&mode=Permanent&used=true', res)
 		end)
 
 		it('should detect an opentherm gateway device', function()
@@ -669,15 +711,14 @@ describe('device', function()
 			assert.is_same(2, device.mode)
 			assert.is_same('Heat Econ', device.modeString)
 
-
 			device.updateMode('Heat')
-			assert.is_same({ { ["UpdateDevice"] ={idx=1, nValue=1, sValue="1", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] ={idx=1, nValue=1, sValue="Heat", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Off')
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="0", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="Off", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Heat Econ')
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=2, sValue="2", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=2, sValue="Heat Econ", _trigger=true} } }, commandArray)
 
 		end)
 
@@ -695,6 +736,8 @@ describe('device', function()
 				}
 			})
 			assert.is.same(12, device.gust)
+			assert.is.same(12, device.gustMs)
+			assert.is.same(66, device.speedMs)
 			assert.is.same(33, device.temperature)
 			assert.is.same(32, device.chill)
 
@@ -1224,82 +1267,138 @@ describe('device', function()
 		end)
 
 
-		it('should detect an rgbw device', function()
+		describe('RGBW device #RGB', function()
 
 			local commandArray = {}
 			local utils = require('Utils')
+			domoticz.utils  = utils
 
 			domoticz.openURL = function(url)
 				return table.insert(commandArray, url)
 			end
 
-			domoticz.utils = {
-				rgbToHSB = function(r, g, b)
-					return utils.rgbToHSB(r, g, b)
-				end
-			}
+			domoticz.log    = function()
+				return
+			end
 
 			local device = getDevice(domoticz, {
-				['name'] = 'myRGBW',
-				['state'] = 'Set Kelvin Level',
-				['subType'] = 'RGBWW',
-				['type'] = 'Color Switch'
-			})
+					['name'] = 'myRGBW',
+					['state'] = 'Set Kelvin Level',
+					['subType'] = 'RGBWW',
+					['type'] = 'Color Switch'
+				})
 
 			assert.is_true(device.active)
 
-			device.setKelvin(5500)
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setkelvinlevel&type=command&idx=1&kelvin=5500' }, commandArray)
+			it('should handle the setKelvin method correctly', function()
+				commandArray = {}
+				device.setKelvin(5500)
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setkelvinlevel&type=command&idx=1&kelvin=5500' }, commandArray)
+			end)
 
-			commandArray = {}
-			device.setWhiteMode()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=whitelight&type=command&idx=1' }, commandArray)
+			it('should handle setWhitemode method correctly', function()
+				commandArray = {}
+				device.setWhiteMode()
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=whitelight&type=command&idx=1' }, commandArray)
+			end)
 
-			commandArray = {}
-			device.increaseBrightness()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessup&type=command&idx=1' }, commandArray)
+			it('should handle increaseBrightness method correctly', function()
+				commandArray = {}
+				device.increaseBrightness()
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessup&type=command&idx=1' }, commandArray)
+			end)
 
-			commandArray = {}
-			device.decreaseBrightness()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessdown&type=command&idx=1' }, commandArray)
+			it('should handle decreaseBrightness method correctly', function()
+				commandArray = {}
+				device.decreaseBrightness()
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessdown&type=command&idx=1' }, commandArray)
+			end)
 
-			commandArray = {}
-			device.setNightMode()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=nightlight&type=command&idx=1' }, commandArray)
+			it('should handle dsetNightMode method correctly', function()
+				commandArray = {}
+				device.setNightMode()
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=nightlight&type=command&idx=1' }, commandArray)
+			end)
 
-			commandArray = {}
-			device.setRGB(255, 0, 0)
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setcolbrightnessvalue&type=command&idx=1&hue=0&brightness=100&iswhite=false' }, commandArray)
+			it('should handle setRGB method correctly', function()
+				commandArray = {}
+				device.setRGB(255, 0, 0)
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setcolbrightnessvalue&type=command&idx=1&hue=0&brightness=100&iswhite=false' }, commandArray)
+			end)
 
-			commandArray = {}
-			device.setDiscoMode(8)
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=discomodenum8&type=command&idx=1' }, commandArray)
+			it('should handle setHex method correctly', function()
+				commandArray = {}
+				assert.is_nil(device.setHex(15,31,47))
+				assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=18.43137254902&hex=0f1f2f&iswhite=false'},commandArray)
+			end)
+
+			it('should handle setColor method with wrong values correctly' , function()
+				commandArray = {}
+				assert.is_false(device.setColor(15,31,447))  -- Should return false because of out of range parms
+				assert.is_same({},commandArray)
+			end)
+
+			it('should handle setColor method  correctly',function()
+				commandArray = {}
+				assert.is_nil(device.setColor(15,31,44))
+				assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=100&color={"m":3,"t":0,"cw":0,"ww":0,"r":15,"g":31,"b":44}'},commandArray)
+			end)
+
+			it('should handle setColorBrightness method  correctly',function()
+				commandArray = {}
+				assert.is_nil(device.setColorBrightness(15,31,44))
+				assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=100&color={"m":3,"t":0,"cw":0,"ww":0,"r":15,"g":31,"b":44}'},commandArray)
+			end)
+
+			it('should handle setDiscomode method  correctly',function()
+				commandArray = {}
+				device.setDiscoMode(8)
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=discomodenum8&type=command&idx=1' }, commandArray)
+			end)
+
+			it('should handle setHue method  correctly',function()
+				commandArray = {}
+				assert.is_nil(device.setHue(180,11,true))
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=11&hue=180&iswhite=true' }, commandArray)
+			end)
+
+			it('should handle setHue method with wrong parms correctly',function()
+				commandArray = {}
+				assert.is_false(device.setHue(180,1111))
+				assert.is_false(device.setHue(1180,11))
+				assert.is_false(device.setHue(180,11,"white"))
+				assert.is_same({}, commandArray)
+			end)
 
 
-			device = getDevice(domoticz, {
-				['name'] = 'myRGBW',
-				['state'] = 'Set To White',
-				['type'] = 'Color Switch'
-			})
 
-			assert.is_true(device.active)
+			it('should handle get Device with type color Switch correctly',function()
+				device = getDevice(domoticz, {
+					['name'] = 'myRGBW',
+					['state'] = 'Set To White',
+					['type'] = 'Color Switch',
+				})
+			   assert.is_true(device.active)
+			end)
 
-			device = getDevice(domoticz, {
-				['name'] = 'myRGBW',
-				['state'] = 'NightMode',
-				['subType'] = 'RGBWW',
-				['type'] = 'Color Switch'
-			})
+			it('should handle getDevice with subtype RGBWW with state NightMode correctly',function()
+				device = getDevice(domoticz, {
+					['name'] = 'myRGBW',
+					['state'] = 'NightMode',
+					['subType'] = 'RGBWW',
+					['type'] = 'Color Switch'
+				})
+				assert.is_true(device.active)
+			end)
 
-			assert.is_true(device.active)
-
-			device = getDevice(domoticz, {
-				['name'] = 'myRGBW',
-				['state'] = 'Off',
-				['subType'] = 'RGBWW',
-				['type'] = 'Color Switch'
-			})
-
+			it('should handle getDevice with subtype RGBWW with state Off correctly',function()
+				device = getDevice(domoticz, {
+					['name'] = 'myRGBW',
+					['state'] = 'Off',
+					['subType'] = 'RGBWW',
+					['type'] = 'Color Switch'
+				})
+			end)
 		end)
 
 		describe('Kodi', function()

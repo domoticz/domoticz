@@ -4,7 +4,7 @@ _G._ = require('lodash')
 local scriptPath = ''
 
 package.path = package.path ..
- 	";../?.lua;../../../scripts/lua/?.lua;" ..
+	";../?.lua;../../../scripts/lua/?.lua;" ..
 	scriptPath .. '/?.lua;../device-adapters/?.lua;./data/?.lua;./generated_scripts/?.lua'
 
 local Time = require('Time')
@@ -44,10 +44,10 @@ describe('event helpers', function()
 		_G.dataFolderPath= './data'
 		_G.generatedScriptsFolderPath = './generated_scripts'
 		_G.httpresponse = {
-            {
-	            callback='trigger1'
-            }
-        }
+			{
+				callback='trigger1'
+			}
+		}
 
 		_G.globalvariables = {
 			Security = 'sec',
@@ -57,12 +57,12 @@ describe('event helpers', function()
 			['Security'] = '',
 			['dzVents_log_level'] = 1,
 			['domoticz_listening_port'] = '8181',
-			['currentTime'] = '2017-08-17 12:13:14.123'
+			['currentTime'] = '2017-08-17 12:13:14.123',
 		}
 
-        _G.securityupdates = {
-            'Armed Away'
-        }
+		_G.securityupdates = {
+			'Armed Away'
+		}
 
 		EventHelpers = require('EventHelpers')
 	end)
@@ -90,7 +90,7 @@ describe('event helpers', function()
 			['devices'] = function(id)
 				return devs[id]
 			end,
-            ['notify'] = function() end
+			['notify'] = function() end
 		}
 
 		helpers = EventHelpers(domoticz)
@@ -164,48 +164,48 @@ describe('event helpers', function()
 				['aa*'] = { 'c1', 'c2', 'c3' },
 				['a*'] =  { 'd1', 'd2', 'd3' },
 				['aaa*'] = { 'e1', 'e2', 'e3' },
-                ['*xx*yy*'] = { 'f1', 'f2'},
-                ['h*'] = { 'h1','h2'},
-                ['*g'] = { 'g1', 'g2'},
-                ['*i*'] = {'i1', 'i2'}
+				['*xx*yy*'] = { 'f1', 'f2'},
+				['h*'] = { 'h1','h2'},
+				['*g'] = { 'g1', 'g2'},
+				['*i*'] = {'i1', 'i2'}
 			}
-            local scripts
+			local scripts
 
 			local scripts = helpers.findScriptForTarget('aaa', modules)
 			assert.are.same({ 'a1', 'a2', 'a3', 'c1', 'c2', 'c3', 'd1', 'd2', 'd3', 'e1', 'e2', 'e3' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('tttxxrrrryyuuuu', modules)
-            assert.are.same({ 'f1', 'f2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('tttxxrrrryyuuuu', modules)
+			assert.are.same({ 'f1', 'f2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('tttxxrrrryy', modules)
-            assert.are.same({ 'f1', 'f2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('tttxxrrrryy', modules)
+			assert.are.same({ 'f1', 'f2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('hzzz', modules)
-            assert.are.same({ 'h1', 'h2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('hzzz', modules)
+			assert.are.same({ 'h1', 'h2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('h', modules)
-            assert.are.same({ 'h1', 'h2' }, values(scripts))
+			scripts = helpers.findScriptForTarget('h', modules)
+			assert.are.same({ 'h1', 'h2' }, values(scripts))
 
-            scripts = helpers.findScriptForTarget('xxhzzz', modules)
-            assert.are.same({}, values(scripts))
+			scripts = helpers.findScriptForTarget('xxhzzz', modules)
+			assert.are.same({}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('xxxg', modules)
-            assert.are.same({'g1', 'g2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('xxxg', modules)
+			assert.are.same({'g1', 'g2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('xxxgwww', modules)
-            assert.are.same({}, values(scripts))
+			scripts = helpers.findScriptForTarget('xxxgwww', modules)
+			assert.are.same({}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('qqqiwww', modules)
-            assert.are.same({'i1', 'i2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('qqqiwww', modules)
+			assert.are.same({'i1', 'i2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('qqqi', modules)
-            assert.are.same({'i1', 'i2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('qqqi', modules)
+			assert.are.same({'i1', 'i2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('iwww', modules)
-            assert.are.same({'i1', 'i2'}, values(scripts))
+			scripts = helpers.findScriptForTarget('iwww', modules)
+			assert.are.same({'i1', 'i2'}, values(scripts))
 
-            scripts = helpers.findScriptForTarget('bbb', modules)
-            assert.are.same({'b1', 'b2', 'b3'}, values(scripts))
+			scripts = helpers.findScriptForTarget('bbb', modules)
+			assert.are.same({'b1', 'b2', 'b3'}, values(scripts))
 
 		end)
 
@@ -395,7 +395,7 @@ describe('event helpers', function()
 			helpers.dumpCommandArray(array)
 			assert.is_same({
 				"Commands sent to Domoticz: ",
-                "- a = 1",
+				"- a = 1",
 				"- b = 2",
 				"====================================================="
 			}, messages)
@@ -403,9 +403,12 @@ describe('event helpers', function()
 
 		it('should have proper settings', function()
 			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
-
 		end)
-
+		
+		it('should have proper location settings', function()
+			assert.are.same('Domoticz', helpers.settings.location.name)
+		end)
+		
 		it('should add global helpers to the domoticz object', function()
 
 			local bindings = helpers.getEventBindings()
@@ -470,7 +473,7 @@ describe('event helpers', function()
 
 			local res = helpers.callEventHandler(trigger1, nil, nil, nil, nil, {
 				callback = 'trigger1',
-                statusCode = 200
+				statusCode = 200
 			})
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function

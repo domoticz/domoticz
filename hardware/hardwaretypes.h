@@ -16,9 +16,11 @@
 #define sTypeSmartwaresSwitchRadiator 0x84
 
 #define sTypeRAINWU 0x70	 //Weather Underground (Total rain reported, no counter)
+#define sTypeRAINByRate 0x71	 //DarkSky for example (Only rate, no total, no counter) rate in mm/hour x 10000, so all decimals will fit
 
 #define sTypeTHBFloat 0x10   //Weather Station
 #define sTypeWINDNoTemp 0x30    //Weather Station
+#define sTypeWINDNoTempNoChill 0x31    //Weather Station
 
 #define wsbaroforcast_heavy_snow 0x01
 #define wsbaroforcast_snow 0x01

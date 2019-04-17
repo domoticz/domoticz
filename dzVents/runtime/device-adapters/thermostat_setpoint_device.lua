@@ -1,5 +1,3 @@
-local TimedCommand = require('TimedCommand')
-
 return {
 
 	baseType = 'device',
@@ -19,7 +17,7 @@ return {
 		device.setPoint = tonumber(device.rawData[1] or 0)
 
 		function device.updateSetPoint(setPoint)
-			return TimedCommand(domoticz, 'SetSetPoint:' .. tostring(device.id), tostring(setPoint) , 'setpoint')
+			return device.update(0, setPoint)
 		end
 
 	end

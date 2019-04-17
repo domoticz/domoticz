@@ -15,6 +15,17 @@ define(function () {
             throw new Error('Please start with a control block');
         }
 
+        var json = {
+            eventlogic: []
+        };
+        
+		if ($(xml).find('block').first().attr('disabled') !== undefined) {
+			alert($(xml).find('block').first().attr('disabled'));
+			alert("disabled!!");
+			return json;
+		}
+        
+
         var elseIfCount = 0;
         if (firstBlockType == 'domoticzcontrols_ifelseif') {
             var elseIfString = $(xml).find('mutation:first').attr('elseif');
@@ -22,16 +33,15 @@ define(function () {
         }
         elseIfCount++;
 
-        var json = {
-            eventlogic: []
-        };
 
         for (var i = 0; i < elseIfCount; i++) {
             var conditionActionPair = parseXmlBlocks(xml, i);
             var oneevent = {};
             oneevent.conditions = conditionActionPair[0].toString();
             oneevent.actions = conditionActionPair[1].toString();
-            json.eventlogic.push(oneevent);
+            if (oneevent.actions.length>0) {
+				json.eventlogic.push(oneevent);
+			}
         }
 
         return json;
@@ -189,7 +199,6 @@ define(function () {
             var compareString = parseLogicCompare(ifBlock);
             boolString += compareString;
         }
-
         else if (ifBlock.attr('type') == 'logic_operation') {
             // nested logic operation, drill down
             var compareString = parseLogicOperation(ifBlock);
@@ -214,6 +223,9 @@ define(function () {
         var setArray = [];
         var doBlock = $($(xml).find('statement[name=\'DO' + pairId + '\']')[0]);
         $(doBlock).find('block').each(function () {
+			if (typeof $(this).attr('disabled') != 'undefined') {
+				return;
+			}
             if ($(this).attr('type') == 'logic_set') {
                 var valueA = $(this).find('value[name=\'A\']')[0];
                 var fieldA = $(valueA).find('field')[0];
@@ -228,7 +240,7 @@ define(function () {
                     setString += '=' + dtext + '';
                     setArray.push(setString);
                 }
-                if (blockA.attr('type').indexOf('textvariables') >= 0) {
+                else if (blockA.attr('type').indexOf('textvariables') >= 0) {
                     var setString = 'commandArray[Text:' + $(fieldA).text() + ']';
                     var valueB = $(this).find('value[name=\'B\']')[0];
                     var fieldB = $(valueB).find('field')[0];
@@ -423,6 +435,14 @@ define(function () {
                 var urlBlock = $(this).find('value[name=\'urlToOpen\']')[0];
                 var urlText = $(urlBlock).find('field[name=\'TEXT\']')[0];
                 var setString = 'commandArray["OpenURL"]="' + $(urlText).text() + '"';
+                setArray.push(setString);
+            }
+            else if ($(this).attr('type') == 'open_url_after') {
+                var urlBlock = $(this).find('value[name=\'urlToOpen\']')[0];
+                var urlText = $(urlBlock).find('field[name=\'TEXT\']')[0];
+                var urlAfter = $(this).children('field[name=\'urlAfter\']')[0];
+                var setString = 'commandArray["OpenURL"]="' + $(urlText).text();
+                setString += ' AFTER ' + $(urlAfter).text() + '"';
                 setArray.push(setString);
             }
             else if ($(this).attr('type') == 'writetolog') {

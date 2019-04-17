@@ -154,6 +154,10 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return (pLen == 0x0B);
 	case pTypeASYNCDATA:
 		return (pLen > 0x03);
+	case pTypeWEATHER:
+		return (pLen == 0x1F);
+	case pTypeSOLAR:
+		return (pLen == 0x0A);
 	default:
 		return false;//unknown Type
 	}

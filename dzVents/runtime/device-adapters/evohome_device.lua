@@ -16,6 +16,7 @@ return {
 
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'updateSetPoint')
+			adapterManager.addDummyMethod(device, 'setHotWater')
 		end
 
 		return res
@@ -24,17 +25,36 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device.setPoint = tonumber(device.rawData[1] or 0)
+		if (device.deviceSubType == "Hot Water" ) then
 
-		function device.updateSetPoint(setPoint, mode, untilDate)
-			return TimedCommand(domoticz,
-				'SetSetPoint:' ..
-				tostring(device.id),
-			   tostring(setPoint) ..
-			   '#' .. tostring(mode) ..
-			   '#' .. tostring(untilDate) , 'setpoint')
+			if device.rawData[2] == "On" then device.state = "On" else device.state = "Off" end
+			device.mode = tostring(device.rawData[3] or "n/a")
+			device.untilDate = tostring(device.rawData[4] or "n/a")
+
+			function device.setHotWater(state, mode, untilDate)
+				 if mode == 'TemporaryOverride' and untilDate then
+					mode = mode .. "&until=" .. untilDate
+				 end
+				local url = domoticz.settings['Domoticz url'] ..
+					"/json.htm?type=setused&idx=" .. device.id ..
+					"&setpoint=&state=" .. state ..
+					"&mode=" .. mode ..
+					"&used=true"
+				return domoticz.openURL(url)
+			end
+		else
+
+			device.setPoint = tonumber(device.rawData[1] or 0)
+			device.mode = tostring(device.rawData[3])
+			device.untilDate = tostring(device.rawData[4] or "n/a")
+
+			function device.updateSetPoint(setPoint, mode, untilDate)
+				return TimedCommand(domoticz,
+					'SetSetPoint:' .. tostring(device.id),
+					tostring(setPoint) .. '#' ..
+					tostring(mode) .. '#' ..
+					tostring(untilDate) , 'setpoint')
+			end
 		end
-
 	end
-
 }

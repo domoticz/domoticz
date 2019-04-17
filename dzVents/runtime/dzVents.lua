@@ -5,7 +5,6 @@ globalvariables['testmode'] = false
 if (_G.TESTMODE) then
 	TESTMODE = false
 	globalvariables['testmode'] = false
-
 end
 
 local scriptPath = globalvariables['script_path'] -- should be ${szUserDataFolder}/scripts/dzVents/
@@ -31,7 +30,6 @@ local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 local utils = require('Utils')
 
-
 if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE) then
 	print('Debug: Dumping domoticz data to ' .. scriptPath .. 'domoticzData.lua')
 	local persistence = require('persistence')
@@ -39,7 +37,7 @@ if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMOD
 
 	local events, length = helpers.getEventSummary()
 	if (length > 0) then
-		print('Debug: dzVents version: 2.4.7')
+		print('Debug: dzVents version: '.. globalvariables.dzVents_version)
 
 		print('Debug: Event triggers:')
 		for i, event in pairs(events) do
@@ -51,7 +49,6 @@ if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMOD
 		print('Debug: Event triggers:')
 		print('Debug: - Timer')
 	end
-
 end
 
 commandArray = {}
@@ -68,6 +65,5 @@ helpers.dispatchSecurityEventsToScripts()
 helpers.dispatchSceneGroupEventsToScripts()
 helpers.dispatchHTTPResponseEventsToScripts()
 commandArray = helpers.domoticz.commandArray
-
 
 return commandArray

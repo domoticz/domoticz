@@ -16,7 +16,6 @@ return {
 
 		-- from data radiation
 
-
 		function device.updateRadiation(radiation)
 			return device.update(0, radiation)
 		end

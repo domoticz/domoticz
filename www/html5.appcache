@@ -92,6 +92,10 @@ images/Alert48_4.png
 images/Amplifier.png
 images/Amplifier48_Off.png
 images/Amplifier48_On.png
+images/arrow_down.png
+images/arrow_stable.png
+images/arrow_unk.png
+images/arrow_up.png
 images/back_disabled.png
 images/back_enabled.png
 images/back_enabled_hover.png
@@ -126,8 +130,8 @@ images/Computer48_Off.png
 images/Computer48_On.png
 images/contact.png
 images/contact_open.png
-images/contact48.png
-images/contact48_open.png
+images/Contact48_Off.png
+images/Contact48_On.png
 images/copy.png
 images/copy_hover.png
 images/counter.png
@@ -153,8 +157,8 @@ images/devices.png
 images/Dimmer48_Off.png
 images/Dimmer48_On.png
 images/door.png
-images/door48.png
-images/door48open.png
+images/Door48_Off.png
+images/Door48_On.png
 images/doorbell.png
 images/doorbell48.png
 images/down.png
@@ -255,9 +259,9 @@ images/program.png
 images/program_mini.png
 images/proxy.png
 images/push.png
-images/push48.png
+images/Push48_On.png
+images/Push48_Off.png
 images/pushoff.png
-images/pushoff48.png
 images/pushon.png
 images/pushon48.png
 images/PV48.png
@@ -476,6 +480,9 @@ app/components/rgbw-picker/RgbwPicker.html
 app/components/rgbw-picker/RgbwPicker.js
 
 app/devices/deviceFactory.js
+app/devices/Devices.css
+app/devices/Devices.html
+app/devices/Devices.js
 
 app/events/blockly_blocks_domoticz.js
 app/events/blockly_messages_domoticz_en.js
@@ -490,13 +497,38 @@ app/events/EventViewer.html
 app/events/EventViewer.js
 app/events/factories.js
 
-app/log/components.js
+app/hardware/Hardware.html
+app/hardware/Hardware.js
+app/hardware/HardwareSetup.html
+app/hardware/HardwareSetup.js
+app/hardware/setup/BleBox.html
+app/hardware/setup/BleBox.js
+app/hardware/setup/Kodi.html
+app/hardware/setup/Kodi.js
+app/hardware/setup/MySensors.html
+app/hardware/setup/MySensors.js
+app/hardware/setup/PanasonicTV.html
+app/hardware/setup/PanasonicTV.js
+app/hardware/setup/Pinger.html
+app/hardware/setup/Pinger.js
+app/hardware/setup/WakeOnLan.html
+app/hardware/setup/WakeOnLan.js
+app/hardware/setup/ZWave.html
+app/hardware/setup/ZWave.js
+
+app/log/components/DeviceLevelChart.js
+app/log/components/DeviceOnOffChart.js
+app/log/components/DeviceTextLogTable.js
+app/log/DeviceLog.html
 app/log/DeviceLog.js
 app/log/factories.js
 app/log/GraphLog.js
+app/log/LightLog.html
 app/log/LightLog.js
+app/log/SceneLog.html
 app/log/SceneLog.js
 app/log/TemperatureLog.js
+app/log/TextLog.html
 app/log/TextLog.js
 
 app/notifications/constants.js
@@ -522,12 +554,13 @@ app/timers/SceneTimersController.js
 
 app/AboutController.js
 app/app.js
+app/app.permissions.js
 app/app.routes.js
 app/CamController.js
 app/CustomIconsController.js
 app/DashboardController.js
 app/DeviceLightEdit.js
-app/DevicesController.js
+app/domoticz.api.js
 app/DPFibaroController.js
 app/DPHttpController.js
 app/DPInfluxController.js
@@ -537,7 +570,6 @@ app/FloorplanController.js
 app/FloorplanEditController.js
 app/ForecastController.js
 app/FrontpageController.js
-app/HardwareController.js
 app/HistoryController.js
 app/LightsController.js
 app/LogController.js
@@ -567,7 +599,15 @@ js/blockly/blockly_compressed.js
 js/blockly/blocks_compressed.js
 js/blockly/msg/en.js
 
-js/modules/exporting.js
+js/data-tables/dataTables.select.min.js.gz
+js/data-tables/dataTables.tableTools.min.js.gz
+js/data-tables/jquery.dataTables.min.js.gz
+
+js/highcharts/highcharts.js
+js/highcharts/highcharts-more.js
+js/highcharts/modules/exporting.js
+js/highcharts/modules/xrange.js
+js/highcharts/themes/dark-unica.js
 
 js/noty/jquery.noty.js
 js/noty/layouts/top.js
@@ -590,21 +630,16 @@ js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
 js/d3.min.js
-js/dataTables.select.min.js
-js/dataTables.tableTools.min.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
 js/export-csv.js
 js/FileSaver.js
-js/highcharts-more.js
 js/highcharts-ng.min.js
-js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
 js/jquery-3.3.1.min.js
 js/jquery-ui.min.js
-js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js
 js/jquery.isotope.min.js
 js/jquery.jeditable.mini.js
@@ -612,6 +647,7 @@ js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
 js/jquery.wheelcolorpicker.js
+js/luxon.min.js
 js/md5.js
 js/ng-grid-flexible-height.js
 js/ng-grid.min.js
@@ -619,8 +655,6 @@ js/ngDraggable.js
 js/ngload.min.js
 js/require.js
 js/respond.min.js
-js/themes/dark-blue.js
-js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
@@ -638,17 +672,12 @@ secpanel/js/ion.sound.min.js
 
 # HTML pages
 views/log/device_graph_log.html
-views/log/device_light_log.html
-views/log/device_log.html
 views/log/device_temperature_log.html
-views/log/device_text_log.html
-views/log/scene_log.html
 views/about.html
 views/cam.html
 views/customicons.html
 views/dashboard.html
 views/device_light_edit.html
-views/devices.html
 views/dpfibaro.html
 views/dphttp.html
 views/dpinflux.html
@@ -656,7 +685,6 @@ views/dpgooglepubsub.html
 views/frontpage_example.html
 views/floorplanedit.html
 views/floorplans.html
-views/hardware.html
 views/history.html
 views/lights.html
 views/log.html

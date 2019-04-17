@@ -1018,19 +1018,19 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						break;
 					case STYPE_Contact:
 						notValue = "Open";
-						szExtraData += "Image=contact48_open|";
+						szExtraData += "Image=Contact48_On|";
 						break;
 					case STYPE_DoorContact:
 						notValue = "Open";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_DoorLock:
 						notValue = "Locked";
-						szExtraData += "Image=door48|";
+						szExtraData += "Image=Door48_Off|";
 						break;
 					case STYPE_DoorLockInverted:
 						notValue = "Unlocked";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_Motion:
 						notValue = "movement detected";
@@ -1053,11 +1053,11 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						break;
 					case STYPE_DoorLock:
 						notValue = "Unlocked";
-						szExtraData += "Image=door48open|";
+						szExtraData += "Image=Door48_On|";
 						break;
 					case STYPE_DoorLockInverted:
 						notValue = "Locked";
-						szExtraData += "Image=door48|";
+						szExtraData += "Image=Door48_Off|";
 						break;
 					default:
 						notValue = ">> OFF";
@@ -1205,7 +1205,14 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	ltime.tm_mday = tm1.tm_mday;
 	sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
-	if (subType != sTypeRAINWU)
+	if (subType == sTypeRAINWU || subType == sTypeRAINByRate)
+	{
+		//value is already total rain
+		double total_real = mvalue;
+		total_real *= AddjMulti;
+		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
+	}
+	else
 	{
 		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 			Idx, szDateEnd);
@@ -1219,13 +1226,6 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 			total_real *= AddjMulti;
 			CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
 		}
-	}
-	else
-	{
-		//value is already total rain
-		double total_real = mvalue;
-		total_real *= AddjMulti;
-		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
 	}
 	return false;
 }

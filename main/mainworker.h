@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include <deque>
 #include "WindCalculation.h"
+#include "TrendCalculator.h"
 #include "StoppableTask.h"
 #include "../tcpserver/TCPServer.h"
 #include "concurrent_queue.h"
@@ -132,7 +133,8 @@ public:
 	std::vector<int> m_SunRiseSetMins;
 	std::string m_DayLength;
 	std::vector<std::string> m_webthemes;
-	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
+	std::map<unsigned short, _tWindCalculator> m_wind_calculator;
+	std::map<uint64_t, _tTrendCalculator> m_trend_calculator;
 
 	time_t m_LastHeartbeat = 0;
 private:
@@ -286,6 +288,8 @@ private:
 	void decode_CartelectronicEncoder(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_ASyncPort(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_ASyncData(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Weather(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Solar(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 };
 
 extern MainWorker m_mainworker;

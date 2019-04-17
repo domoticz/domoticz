@@ -1,0 +1,1381 @@
+<div id="hardwarecontent" class="container">
+</div>
+
+<div id="opentherm" style="display:none;">
+	<center>
+	<form id="openthermform">
+		<br>
+		<center>
+			<table border="0" cellpadding="10" cellspacing="10">
+			<tr>
+				<td align="right" style="width:310px">
+					<span data-i18n="Outside Temperature Sensor">Outside Temperature Sensor</span>:
+				</td>
+				<td>
+					<select id="combooutsidesensor" name="combooutsidesensor" style="width:300px" class="combobox ui-corner-all"></select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right">
+					<span data-i18n="Command">Command</span>:
+				</td>
+				<td>
+					<input type="input" id="otgwcmnd" name="otgwcmnd" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Send" class="btn btn-info" id="buttonsendotgwcmnd">Send</button>
+				</td>
+			</tr>
+			</table>
+			<br><br>
+			<input type="hidden" id="idx" name="idx" value="-1">
+			<button class="btn btn-danger" id="submitbuttonopentherm">Save</button>
+		</center>
+	</form>
+	</center>
+</div>
+<div id="sbfspot" style="display:none;">
+	<center>
+	<form id="sbfspot">
+		<br>
+		<center>
+			<button class="btn btn-warning" id="btnimportolddata">Import old Month Data</button>
+			<br><br>
+			<p>
+			You can retreive old month records by running SBFSpot/SMASpot with commandline parameter -v -amXX,<br>
+			where XX is the amount of months you would like to retreive, for example:<br>
+			<b>./SBFSpot -v -am12</b> , this will retreive up to 2 years from now.<br><br>
+			This process can take a while, when pressing the above button, please wait until the dashboard is shown again!.
+			</p>
+			<input type="hidden" id="idx" name="idx" value="-1">
+		</center>
+	</form>
+	</center>
+</div>
+
+<div id="lms" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="lmssettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetLMSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+    </table>
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Devices">Devices</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="lmsnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="70" align="center" data-i18n="ID">ID</th>
+                <th align="left" data-i18n="Name">Name</th>
+                <th width="120" align="left" data-i18n="Mac Address">Mac Address</th>
+                <th width="60" align="left" data-i18n="Status">Status</th>
+            </tr>
+        </thead>
+    </table>
+    <table class="display" id="lmsnodesettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="DeleteUnusedLMSDevices();" data-i18n="Delete Unused Devices">Delete Unused Devices</a></td>
+        </tr>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
+<div id="heos" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="heossettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="SetHEOSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
+<div id="rfxhardwaremode" style="display:none;">
+<center>
+<form id="settings">
+	<table>
+		<tr>
+			<td align="left" style="width:150px"><input type="checkbox" id="Keeloq" name="Keeloq">&nbsp;<label for="Keeloq">Keeloq</label></td>
+			<td align="left" style="width:160px"><input type="checkbox" id="undecon" name="undecon">&nbsp;<label for="undecon">undec on</label></td>
+			<td align="left" style="width:180px"><input type="checkbox" id="BlindT1T2T3T4" name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="Visonic" name="Visonic">&nbsp;<label for="Visonic">Visonic</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="HC" name="HC">&nbsp;<label for="HC">Home Confort</label></td>
+			<td><input type="checkbox" id="ImaginTronix" name="ImaginTronix">&nbsp;<label for="ImaginTronix">ImaginTronix</label></td>
+			<td><input type="checkbox" id="BlindT0" name="BlindT0">&nbsp;<label for="BlindT0">Blind T0</label></td>
+			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI/Cartelectronic</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="checkbox" id="ByronSX" name="ByronSX">&nbsp;<label for="ByronSX">Byron SX</label></td>
+			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
+			<td><input type="checkbox" id="OregonScientific" name="OregonScientific">&nbsp;<label for="OregonScientific">Oregon Scientific</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="checkbox" id="RSL" name="RSL">&nbsp;<label for="RSL">Conrad RSL</label></td>
+			<td><input type="checkbox" id="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand CAD</label></td>
+			<td><input type="checkbox" id="Meiantech" name="Meiantech">&nbsp;<label for="Meiantech">Meiantech</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="checkbox" id="Lighting4" name="Lighting4">&nbsp;<label for="Lighting4">Lighting4</label></td>
+			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse</label></td>
+			<td><input type="checkbox" id="HomeEasyEU" name="HomeEasyEU">&nbsp;<label for="HomeEasyEU">HomeEasy EU</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="checkbox" id="FineOffsetViking" name="FineOffsetViking">&nbsp;<label for="FineOffsetViking">FineOffset/Viking</label></td>
+			<td><input type="checkbox" id="HidekiUPM" name="HidekiUPM">&nbsp;<label for="HidekiUPM">Hideki/UPM</label></td>
+			<td><input type="checkbox" id="AC" name="AC">&nbsp;<label for="AC">AC</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="checkbox" id="Rubicson" name="Rubicson">&nbsp;<label for="Rubicson">Rubicson</label></td>
+			<td><input type="checkbox" id="ADLightwaveRF" name="ADLightwaveRF">&nbsp;<label for="ADLightwaveRF">AD/LightwaveRF</label></td>
+			<td><input type="checkbox" id="ARC" name="ARC">&nbsp;<label for="ARC">ARC</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><input type="checkbox" id="AEBlyss" name="AEBlyss">&nbsp;<label for="AEBlyss">AE/Blyss</label></td>
+			<td><input type="checkbox" id="Mertik" name="Mertik">&nbsp;<label for="Mertik">Mertik</label></td>
+			<td><input type="checkbox" id="X10" name="X10">&nbsp;<label for="X10">X10</label></td>
+		</tr>
+	</table>
+	<div id="rfx_xl_settings" style="display:none;">
+		<br>
+		<table >
+			<tr>
+				<td><label for="combo_rfx_xl_async_type">Async Type</label>:</td>
+				<td><select id="combo_rfx_xl_async_type" name="combo_rfx_xl_async_type" style="width:200px" class="combobox ui-corner-all">
+					<option value="0">Disabled</option>
+					<option value="1">DSMR_1</option>
+					<option value="2">DSMR_2</option>
+					<option value="3">DSMR_3</option>
+					<option value="4">DSMR_4</option>
+					<option value="5">DSMR_5</option>
+					<option value="6">Teleinfo (1200)</option>
+					<option value="7">Teleinfo (19200)</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>(Only for ProXL hardware devices!)</td>
+			</tr>
+		</table>
+	</div>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-warning" id="defaultbutton">Default</button>
+	<button class="btn btn-danger" id="submitbutton">Set Mode</button>
+	<br>
+	<br>
+	<button class="btn btn-info" id="firmwarebutton">Upgrade Firmware</button>
+</form>
+</center>
+</div>
+
+<div id="rfx868hardwaremode" style="display:none;">
+<center>
+<form id="settings">
+	<table>
+		<tr>
+			<td align="left" style="width:160px"><font color="yellow">868.30MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.30MHz FSK</font></td>
+			<td align="left" style="width:170px"><font color="yellow">868.35MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.35MHz FSK</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.95MHz</font></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse (not IT+)</label></td>
+			<td><input type="checkbox" id="Alecto" name="Alecto">&nbsp;<label for="Alecto">Alecto</label></td>
+			<td><input type="checkbox" id="Legrand" name="Legrand">&nbsp;<label for="Legrand">Legrand CAD</label></td>
+			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
+			<td><input type="checkbox" id="VionicPowerCode" name="VionicPowerCode">&nbsp;<label for="VionicPowerCode">VionicPowerCode</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="Hideki" name="Hideki">&nbsp;<label for="Hideki">Hideki<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Honeywell<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Irox<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Mebux<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Nexus</label></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="FHT8" name="FHT8">&nbsp;<label for="FHT8">FHT8</label></td>
+			<td></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="VionicCodeSecure" name="VionicCodeSecure">&nbsp;<label for="VionicCodeSecure">VionicCodeSecure</label></td>
+		</tr>
+	</table>
+	<br>
+	You can only enable protocols for the same frequency!
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-warning" id="defaultbutton">Default</button>
+	<button class="btn btn-danger" id="submitbutton">Set Mode</button>
+	<br>
+	<br>
+	<button class="btn btn-info" id="firmwarebutton">Upgrade Firmware</button>
+</form>
+</center>
+</div>
+
+<div id="rego6xxtypeedit" style="display:none;">
+<center>
+<form id="regotype">
+    <table>
+        <tr>
+            <td><label>Rego 6XX type: </label></td>
+            <td><select id="comborego6xxtype" name="Rego6XXType" style="width:200px" class="combobox ui-corner-all">
+                <option value="0">600-635, 637 single language</option>
+                <option value="1">636</option>
+                <option value="2">637 multi language</option>
+            </select></td>
+        </tr>
+        <tr><td colspan="2">Note: Any change will take effect after restarting Domoticz!</td></tr>
+    </table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonrego">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="s0metertypeedit" style="display:none;">
+<center>
+<form id="s0metertype">
+	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<br>
+	<h2>Meter 1:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom1type" name="S0M1Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M1PulsesPerHour" name="M1PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 2:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom2type" name="S0M2Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M2PulsesPerHour" name="M2PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 3:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom3type" name="S0M3Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M3PulsesPerHour" name="M3PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 4:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom4type" name="S0M4Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M4PulsesPerHour" name="M4PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 5:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom5type" name="S0M5Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M5PulsesPerHour" name="M5PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttons0meter">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="ccusbeedit" style="display:none;">
+<center>
+<form id="ccusbtype">
+	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+			<td><select id="CCBaudrate" name="CCBaudrate" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">9600</option>
+				<option value="1">57600</option>
+			</select></td>
+		</tr>
+	</table>
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonccusb">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="limitlessmetertype" style="display:none;">
+	<center>
+	<form id="limitform">
+		<br>
+		<center>
+			<label><span data-i18n="Bridge Type"></span>: </label>
+			<select id="CCBridgeType" name="CCBridgeType" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">V4/V5</option>
+				<option value="2">V6</option>
+			</select>
+			<br><br>
+			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
+				<option value="1">RGBW</option>
+				<option value="2">RGB</option>
+				<option value="8">White with adjustable color temperature</option>
+				<option value="4">RGBWW</option>
+			</select>
+			<br><br>
+			<input type="hidden" id="idx" name="idx" value="-1">
+			<button class="btn btn-danger" id="submitbuttonlimitless">Set Mode</button>
+		</center>
+	</form>
+	</center>
+</div>
+<div id="hardwaremain" style="display:none;">
+    <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+				<th width="30" align="left">Idx</th>
+                <th width="120" align="left" data-i18n="Name">Name</th>
+                <th width="60" align="left" data-i18n="Enabled">Enabled</th>
+                <th width="240" align="left" data-i18n="Type">Type</th>
+                <th width="200" align="left" data-i18n="Address">Address</th>
+                <th width="80" align="center" data-i18n="Port">Port</th>
+                <th width="120" align="center" data-i18n="Data Timeout">Data Timeout</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="hardwareupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="hardwaredelete" data-i18n="Delete">Delete</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+				<td><input type="checkbox" id="enabled" checked><label for="enabled"/></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="hardwarename"><span data-i18n="Name"></span>:</label></td>
+				<td><input type="text" id="hardwarename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
+				<td><select id="combotype" style="width:410px" class="combobox ui-corner-all"></select></td>
+			</tr>
+			<tr valign="top">
+				<td align="right" style="width:110px"><label for="combodatatimeout"><span data-i18n="Data Timeout">Data Timeout</span>:</label></td>
+				<td><select id="combodatatimeout" style="width:200px" class="combobox ui-corner-all">
+					<option data-i18n="Disabled" value="0">Disabled</option>
+					<option data-i18n="1 Minute" value="60">1 Minute</option>
+					<option data-i18n="5 Minutes" value="300">5 Minutes</option>
+					<option data-i18n="10 Minutes" value="600">10 Minutes</option>
+					<option data-i18n="15 Minutes" value="900">15 Minutes</option>
+					<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
+					<option data-i18n="1 Hour" value="3600">1 Hour</option>
+					<option data-i18n="2 Hours" value="7200">2 Hours</option>
+					<option data-i18n="3 Hours" value="10800">3 Hours</option>
+					<option data-i18n="4 Hours" value="14400">4 Hours</option>
+					<option data-i18n="5 Hours" value="18000">5 Hours</option>
+					<option data-i18n="6 Hours" value="21600">6 Hours</option>
+					<option data-i18n="7 Hours" value="25200">7 Hours</option>
+					<option data-i18n="8 Hours" value="28800">8 Hours</option>
+					<option data-i18n="9 Hours" value="32400">9 Hours</option>
+					<option data-i18n="10 Hours" value="36000">10 Hours</option>
+					<option data-i18n="11 Hours" value="39600">11 Hours</option>
+					<option data-i18n="12 Hours" value="43200">12 Hours</option>
+					<option data-i18n="13 Hours" value="46800">13 Hours</option>
+					<option data-i18n="14 Hours" value="50400">14 Hours</option>
+					<option data-i18n="15 Hours" value="54000">15 Hours</option>
+					<option data-i18n="16 Hours" value="57600">16 Hours</option>
+					<option data-i18n="17 Hours" value="61200">17 Hours</option>
+					<option data-i18n="18 Hours" value="64800">18 Hours</option>
+					<option data-i18n="19 Hours" value="68400">19 Hours</option>
+					<option data-i18n="20 Hours" value="72000">20 Hours</option>
+					<option data-i18n="21 Hours" value="75600">21 Hours</option>
+					<option data-i18n="22 Hours" value="79200">22 Hours</option>
+					<option data-i18n="23 Hours" value="82800">23 Hours</option>
+					<option data-i18n="24 Hours" value="86400">24 Hours</option>
+					</select>
+					<br />
+					<span data-i18n="Specifying a Data Timeout will restart the hardware device if no data is received for the specified time."></span>
+					<br />
+					<strong><font class="warning-text"><span data-i18n="Do not enable this option for devices that do not receive data!"></span></font></strong>
+				</td>
+			</tr>
+		</table>
+		<div id="div1wire">
+			<br>
+			<table class="display" id="hardwareparams1wire" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="OWFS Path">OWFS Path</span>:</label></td>
+					<td><input type="text" id="owfspath" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="/mnt/1wire" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Sensor Poll Period">Sensor Poll Period</span>:</label></td>
+					<td><input type="text" id="OneWireSensorPollPeriod" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="300000" />(<span data-i18n="milliseconds"></span>)</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Switch Poll Period">Switch Poll Period</span>:</label></td>
+					<td><input type="text" id="OneWireSwitchPollPeriod" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="100" />(<span data-i18n="milliseconds"></span>)</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divserial">
+			<br>
+			<table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblserialport" for="name"><span data-i18n="Serial Port"></span>:</label></td>
+					<td><select id="comboserialport" style="width:600px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divusbtin">
+			<br>
+			<table class="display" id="hardwareparamsusbtin" border="0" cellpadding="0" cellspacing="20">
+                <tr valign="top">
+                    <td align="right" style="width:110px"><label><span data-i18n="Multibloc V8">Multibloc V8</span>:</label></td>
+                    <td>
+					    <input type="checkbox" id="activateMultiblocV8" checked="checked" name="activateMultiblocV8"><label for="activateMultiblocV8"/><br />
+					</td>
+				</tr>
+				<tr valign="top">
+                    <td align="right" style="width:110px"><label><span data-i18n="Free Can">Free Can</span>:</label></td>
+                    <td>
+					    <input type="checkbox" id="activateCanFree" checked="checked" name="activateCanFree"><label for="activateCanFree"/><br />
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbldebugusbtin" for="name"><span data-i18n="Mode Debug">Mode Debug</span>: </label></td>
+                    <td>
+                        <select id="combodebugusbtin" style="width:210px" class="combobox ui-corner-all">
+                            <option value="0">False</option>
+                            <option value="1">True</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+		</div>
+		<div id="divi2clocal">
+			<br>
+			<table class="display" id="hardwareparamsi2clocal" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2cname" for="name"><span data-i18n="SubType"></span>:</label></td>
+					<td><select id="comboi2clocal" style="width:410px" class="combobox ui-corner-all"></select></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2cpath" for="name"><span data-i18n="Path to I2C bus:"></span>Path to I2C bus:</label></td>
+					<td>
+						<input type="text" id="i2cpath" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<span data-i18n="(etc. /dev/i2c-1, or empty for autodetection)">(etc. /dev/i2c-1, or empty for autodetection)</span>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divi2caddress">
+			<br>
+			<table class="display" id="hardwareparami2caddress" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address:"></span>I2C address:</label></td>
+					<td>
+						<input type="text" id="i2caddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<span data-i18n="(decimal value)">(decimal value)</span>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divi2cinvert">
+			<br>
+			<table class="display" id="hardwareparami2cinvert" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address"></span>Invert GPIO:</label></td>
+					<td><input type="checkbox" id="i2cinvert" checked><label for="i2cinvert"/></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divgpio">
+			<br>
+			<table class="display" id="hardwareparamsgpio" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblgpiodebounce" for="name"><span data-i18n="Debounce"></span>Debounce:</label></td>
+					<td><input type="text" id="gpiodebounce" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
+					<br />
+						<span data-i18n="Make sure the correct pin status is read by introducing a bounce delay.">Make sure the correct pin status is read by introducing a bounce delay.</span>
+						<br />
+						</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblgpioperiod" for="name"><span data-i18n="Period"></span>Period:</label></td>
+					<td><input type="text" id="gpioperiod" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
+					<br />
+						<span data-i18n="Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).">Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).</span>
+						<br />
+					</td>
+				</tr>
+                <tr valign="top">
+                    <td align="right" style="width:110px"><label id="lblgpiopollinterval" for="name"><span data-i18n="Pollinterval"></span>Poll interval:</label></td>
+                    <td><input type="text" id="gpiopollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled"></span>
+                    </td>
+                </tr>
+			</table>
+		</div>
+        <div id="divsysfsgpio">
+            <br>
+            <table class="display" id="hardwareparamssysfsgpio" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><span data-i18n="Auto configure devices">Auto configure devices</span>:</td>
+                    <td><input type="checkbox" id="sysfsautoconfigure" checked/><label for="sysfsautoconfigure"/></td>
+                </tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="sysfsdebounce"><span data-i18n="sysfsdebounce">Debounce</span>:</label></td>
+					<td><select id="sysfsdebounce" style="width:110" class="combobox ui-corner-all">
+						<option data-i18n="Default" value="50">default</option>
+						<option data-i18n="1 msec" value="1">1 msec</option>
+						<option data-i18n="2 msec" value="2">2 msec</option>
+						<option data-i18n="5 msec" value="5">5 msec</option>
+						<option data-i18n="10 msec" value="10">10 msec</option>
+						<option data-i18n="25 msec" value="25">25 msec</option>
+						<option data-i18n="50 msec" value="50">50 msec</option>
+						<option data-i18n="75 msec" value="75">75 msec</option>
+						<option data-i18n="100 msec" value="100">100 msec</option>
+						<option data-i18n="150 msec" value="150">150 msec</option>
+						<option data-i18n="200 msec" value="200">200 msec</option>
+						<option data-i18n="250 msec" value="250">250 msec</option>
+						<option data-i18n="300 msec" value="300">300 msec</option>
+						<option data-i18n="350 msec" value="350">350 msec</option>
+						<option data-i18n="400 msec" value="400">400 msec</option>
+						<option data-i18n="450 msec" value="450">450 msec</option>
+						<option data-i18n="500 msec" value="500">500 msec</option>
+					</select>
+					</td>
+				</tr>
+            </table>
+        </div>
+        <div id="divevohome">
+			<br>
+			<table class="display" id="hardwareparamsevohome" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label id="lblbaudrateevohome" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+                    <td>
+                        <select id="combobaudrateevohome" style="width:210px" class="combobox ui-corner-all">
+                            <option value="115200">115200 (for genuine Honeywell HGI80/HGS80)</option>
+                            <option value="76800">76800</option>
+                            <option value="38400">38400</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Controller ID (hex)">Controller ID (hex)</span>:</label></td>
+                    <td><input type="text" id="controllerid" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+			</table>
+		</div>
+    <div id="divbaudratemysensors">
+      <table class="display" id="hardwareparamsbaudratemysensors" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblbaudratemysensors" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+          <td><select id="combobaudrate" style="width:210px" class="combobox ui-corner-all">
+            <option value="0">115200</option>
+            <option value="1">38400 (SenseBender / Arduino Pro Mini 3.3V)</option>
+          </select></td>
+      </tr>
+      </table>
+    </div>
+		<div id="divbaudratep1">
+			<table class="display" id="hardwareparamsbaudratep1" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblbaudratep1" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+					<td>
+						<select id="combobaudratep1" style="width:210px" class="combobox ui-corner-all">
+						<option value="0">9600</option>
+						<option value="1">115200</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divbaudrateteleinfo">
+                        <table class="display" id="hardwareparamsbaudrateteleinfo" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+                                        <td align="right" style="width:110px"><label id="lblbaudrateteleinfo" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+                                        <td>
+                                                <select id="combobaudrateteleinfo" style="width:210px" class="combobox ui-corner-all">
+                                                <option value="0">1200</option>
+                                                <option value="1">9600</option>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
+                </div>
+               <div id="divmodelecodevices">
+                        <table class="display" id="hardwareparamsmodelecodevices" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+                                        <td align="right" style="width:110px"><label id="lblmodelecodevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                                        <td>
+                                                <select id="combomodelecodevices" style="width:210px" class="combobox ui-corner-all">
+                                                <option value="0">EcoDevices</option>
+                                                <option value="1">EcoDevices RT2</option>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
+                </div>
+               <div id="divmodeldenkovidevices">
+                   <table class="display" id="hardwareparamsmodeldenkovidevices" border="0" cellpadding="0" cellspacing="20">
+                       <tr>
+                           <td align="right" style="width:110px"><label id="lblmodeldenkovidevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                           <td>
+                               <select id="combomodeldenkovidevices" style="width:210px" class="combobox ui-corner-all">
+                                   <option value="0">DAEnetIP4</option>
+                                   <option value="1">SmartDEN IP-16R</option>
+                                   <option value="2">SmartDEN IP-32IN</option>
+                                   <option value="3">SmartDEN IP-Maxi</option>
+                                   <option value="4">SmartDEN IP-Watchdog</option>
+                                   <option value="5">SmartDEN Logger</option>
+                                   <option value="6">SmartDEN Notifier</option>
+                                   <option value="7">DAEnetIP3</option>
+                                   <option value="8">DAEnetIP2</option>
+                                   <option value="9">DAEnetIP2 8 Relay Module - LM35DZ</option>
+                                   <option value="10">SmartDEN Opener</option>
+                               </select>
+                               <br />
+                               <span data-i18n="For DAEnetIP2 boards password field must contain username:password. Example admin:admin">For DAEnetIP2 boards password field must contain username:password. Example admin:admin</span>
+                           </td>
+                          </tr>
+                   </table>
+                </div>
+               <div id="divmodeldenkoviusbdevices">
+                   <table class="display" id="hardwareparamsmodeldenkoviusbdevices" border="0" cellpadding="0" cellspacing="20">
+                       <tr>
+                           <td align="right" style="width:110px"><label id="lblmodeldenkoviusbdevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                           <td>
+                               <select id="combomodeldenkoviusbdevices" style="width:210px" class="combobox ui-corner-all">
+                                   <option value="0">USB 16 Relays-VCP</option>
+                                   <!--<option value="1">USB 16 Relays-RTU Modbus</option>-->
+                               </select>
+							</td>
+                          </tr>
+                   </table>
+                </div>
+               <div id="divmodeldenkovitcpdevices">
+                   <table class="display" id="hardwareparamsmodeldenkovitcpdevices" border="0" cellpadding="0" cellspacing="20">
+                       <tr>
+                           <td align="right" style="width:110px"><label id="lblmodeldenkovitcpdevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                           <td>
+                               <select id="combomodeldenkovitcpdevices" style="width:210px" class="combobox ui-corner-all">
+                                   <option value="0">WiFi 16 Relays-VCP</option>
+                                   <option value="1">WiFi 16 Relays-TCP Modbus</option>
+                               </select>
+							</td>
+                          </tr>
+						<tr>
+							<td align="right" style="width:110px"><label id="lbldenkovislaveid" for="name"><span data-i18n="Slave ID"></span>Slave ID</label></td>
+							<td><input type="text" id="denkovislaveid" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+						</tr>
+                   </table>
+                </div>
+		<div id="divremote">
+			<br>
+			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblremoteaddress" for="name"><span data-i18n="Remote Address"></span>:</label></td>
+					<td><input type="text" id="tcpaddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblremoteport" for="name"><span data-i18n="Port"></span>:</label></td>
+					<td><input type="text" id="tcpport" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divevohometcp">
+			<br>
+			<table class="display" id="hardwareparamsevohometcp" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Controller ID (hex)">Controller ID (hex)</span>:</label></td>
+					<td><input type="text" id="controlleridevohometcp" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divcrcp1">
+			<table class="display" id="hardwareparamscrcp1" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><span data-i18n="CRC message validation">CRC message validation</span>:</td>
+					<td>
+						<input type="checkbox" id="disablecrcp1" checked="checked" name="disablecrcp1"><label for="disablecrcp1"/><br />
+						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span><br />
+						<strong><font class="warning-text"><span data-i18n="Should normally not be disabled!"></span></font></strong>
+					</td>
+				</tr>
+			</table>
+		</div>
+    <div id="divratelimitp1">
+			<br>
+			<table class="display" id="hardwareparamsratelimitp1" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="ratelimitp1"><span data-i18n="Rate Limit">Rate Limit</span>: </label></td>
+					<td><input type="text" id="ratelimitp1" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled">Seconds</span>
+            <br />
+						<span data-i18n="This limits the amount of meter updates.">This limits the amount of meter updates.</span>
+						<br />
+          </td>
+				</tr>
+			</table>
+		</div>
+		<div id="divhttppoller">
+			<br>
+			<table class="display" id="hardwareparamshttp" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblmethod" for="name"><span data-i18n="Method">Method</span>: </label></td>
+					<td>
+						<select id="combomethod" style="width:100px" class="combobox ui-corner-all">
+						<option value="0">GET</option>
+						<option value="1">POST</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblcontenttype" for="name"><span data-i18n="ContentType">Content Type</span>: </label></td>
+					<td><input type="text" id="contenttype" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblheaders" for="name"><span data-i18n="Headers">Headers</span>: </label></td>
+					<td align="left"><textarea id="headers" name="Headers" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px" id="divpostdatalabel"><label id="lblpostdata" for="name"><span data-i18n="PostData">POST Data</span>: </label></td>
+					<td align="left" id="divpostdatatextarea"><textarea id="postdata" name="POST DATA" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="URL"></span>:</label></td>
+					<td><input type="text" id="url" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Command"></span>:</label></td>
+					<td><input type="text" id="script" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>:</label></td>
+					<td><input type="text" id="refresh" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divpollinterval">
+			<br>
+			<table class="display" id="hardwareparamspollinterval" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>(ms):</label></td>
+					<td><input type="text" id="pollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+        <div id="divrelaynet">
+            <br>
+            <table class="display" id="hardwareparamsrelaynet" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><span data-i18n="Poll inputs">Poll inputs</span>:</td>
+                    <td><input type="checkbox" id="relaynetpollinputs" checked><label for="relaynetpollinputs"/></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><span data-i18n="Poll relays">Poll relays</span>:</td>
+                    <td><input type="checkbox" id="relaynetpollrelays" checked><label for="relaynetpollrelays"/></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><span data-i18n="Poll interval">Poll interval</span>:</td>
+                    <td><input type="text" id="relaynetpollinterval" style="width: 25px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="5" /> &nbsp; Seconds </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Input count">Input count</span>:</label></td>
+                    <td><input type="text" id="relaynetinputcount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Relay count">Relay count</span>:</label></td>
+                    <td><input type="text" id="relaynetrelaycount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+            </tr>
+            </table>
+        </div>
+        <div id="divehouse">
+            <br>
+            <table class="display" id="hardwareparamsehouse" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><span data-i18n="Auto Discovery">Auto Discovery</span>:</td>
+                    <td><input type="checkbox" id="ehouseautodiscovery" checked><label for="ehouseautodiscovery"/></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><span data-i18n="Alarm Inputs">Alarm Inputs</span>:</td>
+                    <td><input type="checkbox" id="ehouseaddalarmin"><label for="ehouseaddalarmin"/></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><span data-i18n="eHousePRO Enable">eHousePRO Enable</span>:</td>
+                    <td><input type="checkbox" id="ehouseprodiscovery"><label for="ehouseprodiscovery"/></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Option A">Option A</span>:</label></td>
+                    <td><input type="text" id="ehouseopts" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Option B">Option B</span>:</label></td>
+                    <td><input type="text" id="ehouseopts2" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" /></td>
+                </tr>
+            </tr>
+            </table>
+        </div>
+		<div id="divunderground">
+			<br>
+			<table class="display" id="hardwareparamsunderground" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
+					<td><input type="text" id="apikey" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
+					<td><input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br />
+					<span data-i18n="StationLatLong"></span>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divsolaredgeapi">
+			<br>
+			<table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
+					<td><input type="text" id="apikey" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+        <div id="divnestoauthapi">
+			<table class="display" id="hardwareparamsnestoauthapi" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td></td>
+                    <td><br>
+                        <ul>
+                            <li>If you enter an API key all the other fields are optional.</li>
+                            <li>If you enter a Product Id, Secret and PIN but leave the API Key blank Domoticz will attempt to grab an API key from Nest using that information.</li>
+                            <li>To obtain an API Key you will need to register with Nest. See the Domoticz Wiki (<a href="http://www.domoticz.com/wiki/NestDeveloperApiKey">NestDeveloperApiKey</a>) for more information.</li>
+                        </ul>
+                    </td>
+                </tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
+					<td><input type="text" id="apikey" style="width: 550px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client Id">Client Id</span>:</label></td>
+                    <td><input type="text" id="productid" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client Secret">Client Secret</span>:</label></td>
+                    <td><input type="text" id="productsecret" style="width: 220px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="OAuth PIN">OAuth PIN</span>:</label></td>
+                    <td><input type="text" id="productpin" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+			</table>
+		</div>
+		<div id="divenecotoon">
+			<br>
+			<table class="display" id="hardwareparamsenecotoon" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Agreement">Agreement</span>:</label></td>
+					<td><input type="text" id="agreement" value="0" style="width: 20px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>    <td></td>
+					<td><span data-i18n="Toon Agreement">Change only to select another Toon when having multiple agreements</span></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divlocation">
+			<br>
+			<table class="display" id="hardwareparamslocation" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
+					<td><input type="text" id="location" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divlogin">
+			<br>
+			<table class="display" id="hardwareparamslogin" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
+					<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblpassword" for="name"><span data-i18n="Password"></span>:</label></td>
+					<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divphilipshue">
+			<br>
+			<table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+                    <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+                </tr>
+				<tr>
+                    <td align="right" style="width:110px"><label for="addgroups"><span data-i18n="Add Groups">Add Groups</span>:</label></td>
+                    <td><input type="checkbox" id="addgroups"/>&nbsp;<label for="addgroups">&nbsp;</label></td>
+                </tr>
+				<tr>
+                    <td align="right" style="width:110px"><label for="addscenes"><span data-i18n="Add Scenes">Add Scenes</span>:</label></td>
+                    <td><input type="checkbox" id="addscenes"/>&nbsp;<label for="addscenes">&nbsp;</label></td>
+                </tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
+					<td>
+						<input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<br />
+						<span data-i18n="Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.">Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.</span>
+					</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><span class="label label-important lcursor" onclick="RegisterPhilipsHue();">Register on Bridge</span></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divhoneywell">
+			<br>
+			<table class="display" id="hardwareparamshoneywell" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:140px"><label><span data-i18n="API key">Consumer API Key</span>:</label></td>
+					<td><input type="text" id="hwApiKey" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:140px"><label><span data-i18n="API secret">Consumer API Secret</span>:</label></td>
+					<td><input type="text" id="hwApiSecret" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:140px"><label><span data-i18n="Access token">Access token</span>:</label></td>
+					<td><input type="text" id="hwAccessToken" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:140px"><label><span data-i18n="Refresh token">Refresh token</span>:</label></td>
+					<td><input type="text" id="hwRefreshToken" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"></td>
+					<td>You need to sign up at Honeywell to get the API key and secret. <br/>
+					    Please follow the instructions on <a href="https://www.domoticz.com/wiki/HoneywellDeveloperApiKey" target="_blank">domoticz.com/wiki/HoneywellDeveloperApiKey</a></td>
+				</tr>
+			</table>
+		</div>
+    <div id="divwinddelen">
+			<br>
+			<table class="display" id="hardwareparamswinddelen" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label for="combomillselect"><span data-i18n="Select a Mill">Select a Mill</span>:</label></td>
+					<td><select id="combomillselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="1">De Grote Geert</option>
+						<option value="2">De Jonge Held</option>
+						<option value="31">Het Rode Hert</option>
+						<option value="41">De Ranke Zwaan</option>
+						<option value="51">De Witte Juffer</option>
+						<option value="111">De Bonte Hen</option>
+						<option value="121">De Trouwe Wachter</option>
+						<option value="131">De Blauwe Reiger</option>
+						<option value="141">De Vier Winden</option>
+						<option value="191">De Boerenzwaluw</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Number of winddelen">Number of winddelen</span>:</label></td>
+					<td><input type="text" id="nrofwinddelen" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divgoodweweb">
+                        <br>
+                        <table class="display" id="hardwareparamsgoodweweb" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+					<td align="right" style="width:110px"><label for="comboserverselect"><span data-i18n="Location"></span>:</label></td>
+					<td><select id="comboserverselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">Global</option>
+						<option value="1">Oceania</option>
+						<option value="2">Europe</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Username"></span>:</label></td>
+					<td><input type="text" id="username" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                </tr>
+                        </table>
+                </div>
+		<div id="divpythonplugin"/>
+		<div id="divmqtt">
+			<br>
+			<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
+				<tr id="mqtt_publish" valign="top">
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
+					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="1">out</option>
+						<option value="2"><Floor>/<Room></option>
+						<option value="3">out + <Floor>/<Room></option>
+						<option value="0">None</option>
+						</select>
+					<br />
+					<span>Select the Topic('s) Domoticz will use to publish outgoing messages. <br />
+						<b>Flat</b> - publish outgoing messagen on topic domoticz/out.<br />
+						<b>Hierarchical</b> - publish outgoing messagen on topic domoticz/out/${floorplan name}/${plan name}.<br />
+						<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br />
+						<b>None</b> - disable outgoing messages.<br />
+						<br />
+						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divrtl433">
+			<br>
+			<table class="display" id="hardwareparamsrtl433" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblcmdline" for="cmdline"><span data-i18n="rtl_433 parameters">rtl_433 parameters</span>:</label></td>
+					<td><input type="text" id="rtl433cmdline" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+					<br />
+					Add extra parameteres to rtl_433 command line. You may for instance :<ul>
+					<li>specify device number (if you have more than one) : -d 1</li>
+					<li>specify other frequencies and hop time : -f 433.92e6 -f 868.24e6 -H 60 </li></ul>
+					Be careful not to conflict with the options affecting output.</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divmysensorsmqtt">
+			<br>
+			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix">Topic Prefix</span>:</label></td>
+					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">MyMQTT (default)</option>
+						<option value="1">Gateway Node Name</option>
+						</select>
+					<br />
+					<span>Select the Topic(s) where Domoticz publish/receive messages.<br />
+						<b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT <br />
+						<b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field (above))<br />
+						<br />
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divevohomeweb" style="display:none;">
+			<br />
+			<table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblupdfreqevohomeweb"><span data-i18n="Poll Interval">Poll Interval</span>: </label>
+					</td>
+					<td><input type="text" id="updatefrequencyevohomeweb" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"  value="60"/>&nbsp;<span data-i18n="(Seconds)">(Seconds)</span><br />
+						<span data-i18n="This sets the interval between status requests.">This sets the interval between status requests.</span><br />
+						<strong><font class="warning-text"><span data-i18n="If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!">If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!</span></font></strong>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><span data-i18n="Synchronize installation">Synchronize installation</span>:</td>
+					<td>
+						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><label for="disableautoevohomeweb"/><br />
+						<span data-i18n="When enabled this will automatically register and keep your zone names in sync with the Evohome controller.">When enabled this will automatically register and keep your zone names in sync with the Evohome controller.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><span data-i18n="Show schedule">Show schedule</span>:</td>
+					<td>
+						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><label for="showscheduleevohomeweb"/><br />
+						<span data-i18n="When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.">When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><span data-i18n="Show location">Show location</span>:</td>
+					<td>
+						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb"><label for="showlocationevohomeweb"/>
+						<span data-i18n="(implies synchronize installation)">(implies synchronize installation)</span><br />&nbsp;<br />
+					</td>
+				</tr>
+
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Select location">Select location</span>: </label>
+					</td>
+					<td>
+						<select id="comboevolocation" name="comboevolocation" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevogateway" name="comboevogateway" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevotcs" name="comboevotcs" class="combobox ui-corner-all"><option value="0">0</option></select>
+						<span data-i18n="(keep at [0,0,0] if you only have one Evohome installation)">(keep at [0,0,0] if you only have one Evohome installation)</span><br />&nbsp;<br />
+					</td>
+				</tr>
+
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblprecisionevohomeweb" for="name"><span data-i18n="Temperature precision">Temperature precision</span>: </label>
+					</td>
+					<td><select id="comboevoprecision" style="width:200px" class="combobox ui-corner-all">
+						<option selected="selected" value="0">Same as controller (quickest)</option>
+						<option value="8">1 decimal</option>
+						<option value="24">2 decimals</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div>
+			<br>
+			<table border="0" cellpadding="0" cellspacing="14">
+				<tr>
+					<td align="right" style="width:110px"></td>
+					<td><a class="btnstyle3" onclick="AddHardware();" data-i18n="Add">Add</a></td>
+				</tr>
+			</table>
+		</div>
+</div>
+<div id="dialog-createsensor" title="Create Virtual Sensor" style="display:none;">
+		<form>
+			<table border="0" cellpadding="0" cellspacing="10">
+			<tr>
+				<td align="right" style="width:200px"><label for="sensorname"><span data-i18n="Name"></span>:</label></td>
+				<td><input type="text" id="sensorname" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" ><label for="sensortype"><span data-i18n="Sensor Type"></span>: </label></td>
+				<td>
+				<select id="sensortype" style="width:250px" class="combobox ui-corner-all">
+					<option value="0xF901" data-i18n="Air Quality">Air Quality</option>
+					<option value="0xF316" data-i18n="Alert">Alert</option>
+					<option value="0x5901" data-i18n="Ampere (3 Phase)">Ampere (3 Phase)"</option>
+					<option value="0xF317" data-i18n="Ampere (1 Phase)">Ampere (1 Phase)</option>
+					<option value="0xF31A" data-i18n="Barometer">Barometer</option>
+					<option value="0x7100" data-i18n="Counter">Counter</option>
+					<option value="0xF31C" data-i18n="Counter Incremental">Counter Incremental</option>
+					<option value="0xF31F" data-i18n="Custom Sensor">Custom Sensor</option>
+					<option value="0xF31B" data-i18n="Distance">Distance</option>
+					<option value="0xF31D" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
+					<option value="0xF321" data-i18n="Managed counter">Managed counter</option>
+					<option value="0xFB02" data-i18n="Gas">Gas</option>
+					<option value="0x5101" data-i18n="Humidity">Humidity</option>
+					<option value="0xF304" data-i18n="Leaf Wetness">Leaf Wetness</option>
+					<option value="0xF601" data-i18n="Lux">Lux</option>
+					<option value="0xFA01" data-i18n="P1 Smart Meter (Electric)">P1 Smart Meter (Electric)</option>
+					<option value="0xF306" data-i18n="Percentage">Percentage</option>
+					<option value="0xF309" data-i18n="Pressure (Bar)">Pressure (Bar)</option>
+					<option value="0x5503" data-i18n="Rain">Rain</option>
+					<option value="0xF102" data-i18n="RGB Switch">RGB Switch</option>
+					<option value="0xF101" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="0xF104" data-i18n="RGBWW Switch">RGBWW Switch</option>
+					<option value="0xF106" data-i18n="RGBWZ Switch">RGBWZ Switch</option>
+					<option value="0xF107" data-i18n="RGBWWZ Switch">RGBWWZ Switch</option>
+					<option value="0x5D01" data-i18n="Scale">Scale (Weight)</option>
+					<option value="0xF43E" data-i18n="Selector Switch">Selector Switch</option>
+					<option value="0xF303" data-i18n="Soil Moisture">Soil Moisture</option>
+					<option value="0xF302" data-i18n="Solar Radiation">Solar Radiation</option>
+					<option value="0xF318" data-i18n="Sound Level">Sound Level</option>
+					<option value="0xF449" data-i18n="Switch">Switch</option>
+					<option value="0x5005" data-i18n="Temperature">Temperature</option>
+					<option value="0x5201" data-i18n="Temp+Hum">Temp+Hum</option>
+					<option value="0x5401" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+                    <option value="0xF701" data-i18n="Temp+Baro">Temp+Baro</option>
+					<option value="0xF313" data-i18n="Text">Text</option>
+					<option value="0xF201" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
+					<option value="0xF801" data-i18n="Usage (Electric)">Usage (Electric)</option>
+					<option value="0x5701" data-i18n="UV">UV</option>
+					<option value="0xF301" data-i18n="Visibility">Visibility</option>
+					<option value="0xF308" data-i18n="Voltage">Voltage</option>
+					<option value="0xF31E" data-i18n="Waterflow">Waterflow</option>
+					<option value="0x5601" data-i18n="Wind">Wind</option>
+					<option value="0x5604" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
+				</select>
+				</td>
+			</tr>
+			<tr id="vsensoraxis">
+				<td align="right" style="width:200px"><label for="sensoraxis"><span data-i18n="Axis Label"></span>:</label></td>
+				<td><input type="text" id="sensoraxis" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			</table>
+		</form>
+</div>
+<div id="dialog-addyeelight" title="Add YeeLight Light" style="display: none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width: 200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width: 150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">Mono</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="dialog-addArilux" title="Add Arilux AL-C0x controller" style="display:none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width:200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width:150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">RGB</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="dialog-createevohomesensor" title="Create evohome device" style="display:none;">
+		<form>
+				<label for="sensortype"><span data-i18n="Devices"></span>: </label>
+				<select id="sensortype" style="width:250px" class="combobox ui-corner-all">
+					<option value="69" data-i18n="Controller">Controller</option>
+					<option value="70" data-i18n="Zone">Zone</option>
+					<option value="71" data-i18n="Hot Water">Hot Water</option>
+				</select>
+		</form>
+</div>
+<div id="dialog-createrflinkdevice" title="Manual Create RFLink devices" style="display:none;">
+		<form>
+				<label for="sensorname"><span data-i18n="Command"></span>:</label>
+				<input type="text" id="sensorname" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+		</form>
+</div>
+<div id="tellstick" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="tellstickSettingsTable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="repeats"><span data-i18n="Repeats">Repeats</span>:</label></td>
+            <td><input type="text" id="repeats" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="repeatInterval"><span data-i18n="Repeat Interval">Repeat Interval</span>:</label></td>
+            <td><input type="text" id="repeatInterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn btn-danger sub-tabs-apply" onclick="TellstickApplySettings();" data-i18n="Apply Settings"></a></td>
+        </tr>
+    </table>
+</div>
