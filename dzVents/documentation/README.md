@@ -540,6 +540,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
     - **civTwilightStartInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
     - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
+ - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
     - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
     - **dumpTable(table,levelIndicator)**: *Function*: <sup>2.4.17</sup> print table structure and contents to log
@@ -681,9 +682,9 @@ If for some reason you miss a specific attribute or data for a device, then like
 Note that if you do not find your specific device type here you can always inspect what is in the `rawData` attribute. Please let us know that it is missing so we can write an adapter for it (or you can write your own and submit it). Calling `myDevice.dump()` will dump all attributes and values for myDevice to the Domoticz log.
 
 #### Air quality
-  - **co2**: *Number*. PPM
-  - **quality**: *String*. Air quality string.
-  - **updateAirQuality(ppm)**: Pass the CO<sub>2</sub> concentration. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **co2**: *Number*. PPM
+ - **quality**: *String*. Air quality string.
+ - **updateAirQuality(ppm)**: Pass the CO<sub>2</sub> concentration. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Alert sensor
  - **color**: *Number*. Color of the alert. See domoticz color constants for possible values.
@@ -783,7 +784,7 @@ Note that if you do not find your specific device type here you can always inspe
  - **setVolume(level)**: *Function*. <sup>2.4.0</sup> Sets the volume (0 <= level <= 100). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **startPlaylist(name)**: *Function*. <sup>2.4.0</sup> Will start the playlist by its `name`. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **stop()**: *Function*. <sup>2.4.0</sup> Will stop the device (only effective if the device is streaming). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
-  - **volumeUp()**: *Function*. <sup>2.4.16</sup> Will turn the device volume up with 2 points. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **volumeUp()**: *Function*. <sup>2.4.16</sup> Will turn the device volume up with 2 points. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **volumeDown()**: *Function*. <sup>2.4.16</sup> Will turn the device volume down with 2 points. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Lux sensor
@@ -925,8 +926,8 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **updateText(text)**: Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Thermostat set point
-- **setPoint**: *Number*.
-- **updateSetPoint(setPoint)**:*Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setPoint**: *Number*.
+ - **updateSetPoint(setPoint)**:*Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### UV sensor
  - **uv**: *Number*. UV index.
@@ -1030,15 +1031,15 @@ light.switchOn().checkFirst().forMin(5)
 ####Availability
 Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`. For thermostat setpoint devices and snapshot command silent() is not available.  See table below   
 
-| option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  |
-|--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|
-| `afterXXX()`             |  •                       |  •              | •              | •              | •          |
-| `forXXX()`               |  •                       |  n/a            | n/a            | n/a            | n/a        |
-| `withinXXX()`            |  •                       |  •              | •              | •              | •          |
-| `silent()`               |  •                       |  •              | •              | n/a            | n/a        |
-| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            | n/a            | n/a        |
-| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a        |
-| `cancelQueuedCommands()` |  •                       |  •              | •              | n/a            | n/a        |
+| option                   | state changes            | update commands | user variables | updateSetpoint |  snapshot  | triggerIFTTT |
+|--------------------------|:------------------------:|:---------------:|:--------------:|:--------------:|:-----------|:-------------|
+| `afterXXX()`             |  •                       |  •              | •              | •              | •          | •            |
+| `forXXX()`               |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
+| `withinXXX()`            |  •                       |  •              | •              | •              | •          | n/a          |
+| `silent()`               |  •                       |  •              | •              | n/a            | n/a        | n/a          |
+| `repeatAfterXXX()`       |  •                       |  n/a            | n/a            | n/a            | n/a        | n/a          |
+| `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            | n/a            | n/a        | n/a          |
+| `cancelQueuedCommands()` |  •                       |  •              | •              | n/a            | n/a        | n/a          |
 
 **Note**: XXX is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
 **Note**: for `domoticz.openURL()` only `afterXXX()` and `withinXXX()` is available.
@@ -1987,6 +1988,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.18]
+- Add triggerIFTTT() to domoticz
+
 ##[2.4.17]
 - Add dumpTable() to domoticz.utils
 - Add setValues for devices
@@ -2162,7 +2166,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added missing color attribute to alert sensor devices
  - Added updateEnergy() to electric usage devices
  - Fixed casing for WhTotal, WhActual methods on kWh devices (Watt's in a name?)
- - Added toCelsius() helper method to domoticz object as the various update temperature methods all need celsius.
+ - Added toCelsius() helper method to domoticz object as the various update temperature methods all need Celsius.
  - Added lastLevel for dimmers so you can see the level of the dimmer just before it was switched off (and while is it still on).
  - Added integration tests for full round-trip Domoticz > dzVents > Domoticz > dzVents tests (100 tests). Total tests (unit+integration) now counts 395!
  - Fixed setting uservariables. It still uses json calls to update the variable in Domoticz otherwise you won't get uservariable event scripts triggered in dzVents.
@@ -2219,13 +2223,13 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed updateLux (thanks to neutrino)
  - Added Kodi commands to the device methods.
  - Fixed updateCounter
- - Added counterToday and counterTotal attributes for counter devices. Only available when http fetching is enabled.
+ - Added counterToday and counterTotal attributes for counter devices. Only available when http fetching is enabled. See [Using dzVents with Domoticz](#Using_dzVents_with_Domoticz).
 
 ##[1.0.2]
 
  - Added device description attribute.
  - Added support for setting the setpoint for opentherm gateway.
- - Added timedOut boolean attribute to devices. Requires http data fetching to be anabled.
+ - Added timedOut boolean attribute to devices. Requires http data fetching to be enabled. See [Using dzVents with Domoticz](#Using_dzVents_with_Domoticz).
  - Properly detects usage devices and their Wattage.
 
 ##[1.0.1]

@@ -1,3 +1,6 @@
+[2.4.18]
+- Add triggerIFTTT()
+
 [2.4.17]
 - Add function dumpTable() to domoticz.utils
 - Add setValues() method to devices 
