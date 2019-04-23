@@ -308,9 +308,10 @@ void SatelIntegra::DestroySocket()
 
 bool SatelIntegra::ReadNewData()
 {
-	unsigned char cmd[1];
+	unsigned char cmd[2];
 	cmd[0] = 0x7F; // list of new data
-	if (SendCommand(cmd, 1, m_newData, 6, 7) > 0)
+	cmd[1] = 0x00;
+	if (SendCommand(cmd, 2, m_newData, 7) > 0)
 	{
 		return true;
 	}
@@ -402,7 +403,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x00; // read zones violation
-	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16, 33) > 0)
+	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool violate;
 		unsigned int byteNumber;
@@ -436,7 +437,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 					}
 					else
 					{
-						_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
+						_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed (probably zone is not used)", index + 1);
 					}
 				}
 				else if (m_zonesLastState[index] != violate)
@@ -543,7 +544,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x17; // read outputs state
-	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16, 33) > 0)
+	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool findBlindOutput = false;
 		bool outputState;
@@ -1112,7 +1113,7 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 	result = crc;
 }
 
-int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2)
+int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const int expectedLength)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -1154,14 +1155,15 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	int totalRet = 0;
 	do
 	{
-		int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER - totalRet, 0);
+		int ret = recv(m_socket, (char*)&buffer[totalRet], MAX_LENGTH_OF_ANSWER - totalRet, 0);
 		totalRet += ret;
 		if ((ret <= 0) || (totalRet >= MAX_LENGTH_OF_ANSWER))
 		{
 			_log.Log(LOG_ERROR, "Satel Integra: bad data length received (-1)");
+			DestroySocket();
 			return -1;
 		}
-	} while (totalRet < expectedLength1);
+	} while (totalRet < expectedLength);
 
 	// remove special chars
 	int offset = 0;
@@ -1181,8 +1183,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[totalRet - 1] == 0x0D && buffer[totalRet - 2] == 0xFE) // check prefix and sufix
 		{
 			if ((buffer[2] != 0xEF)
-				&& ((totalRet - 6) != expectedLength1)
-				&& ((totalRet - 6) != expectedLength2))
+				&& ((totalRet - 6) != expectedLength))
 			{
 				_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
 				return -1;
