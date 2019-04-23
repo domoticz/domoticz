@@ -154,7 +154,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	rise = UtcToLocal(rise, timezone);
 	set = UtcToLocal(set, timezone);
-	result.SunAtSouthMin = static_cast<int>(modf((rise+set)/2.0, &_tmpH)*60+0,5);
+	result.SunAtSouthMin = static_cast<int>(modf((rise+set)/2.0, &_tmpH)*60+0.5);
 	result.SunAtSouthHour = static_cast<int>(_tmpH);
 
 	switch(rs) {

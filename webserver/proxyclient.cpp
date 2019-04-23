@@ -221,7 +221,7 @@ namespace http {
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
-			std::unique_lock<std::mutex>(writeMutex);
+			std::unique_lock<std::mutex> lock(writeMutex);
 			if (connection_status != status_connected) {
 				return;
 			}

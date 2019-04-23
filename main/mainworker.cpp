@@ -10965,7 +10965,7 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 		}
 		pRFXDevice->SendWind(windID, BatteryLevel, intDirection, (float)intSpeed, (float)intGust, temp, chill, true, bHaveChill, procResult.DeviceName, SignalLevel);
 
-		if (subType = sTypeWEATHER2)
+		if (subType == sTypeWEATHER2)
 		{
 			int Humidity = (int)pResponse->WEATHER.humidity;
 			uint8_t HumidityStatus = pResponse->WEATHER.humidity_status;
@@ -10976,7 +10976,7 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 		}
 
 		//Rain
-		if ((subType = sTypeWEATHER1) || (subType = sTypeWEATHER2))
+		if ((subType == sTypeWEATHER1) || (subType == sTypeWEATHER2))
 		{
 			float TotalRain = 0;
 
@@ -10992,14 +10992,14 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 		}
 
 		//UV
-		if (subType = sTypeWEATHER2)
+		if (subType == sTypeWEATHER2)
 		{
 			float UV = (float)pResponse->WEATHER.uv;
 			pRFXDevice->SendUVSensor(windID, 1, BatteryLevel, UV, procResult.DeviceName, SignalLevel);
 		}
 
 		//Solar
-		if (subType = sTypeWEATHER2)
+		if (subType == sTypeWEATHER2)
 		{
 			float radiation = (float)((pResponse->WEATHER.solarhigh * 256) + pResponse->WEATHER.solarlow);
 			pRFXDevice->SendSolarRadiationSensor((const uint8_t)windID, BatteryLevel, radiation, procResult.DeviceName);
@@ -11141,7 +11141,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 
 			unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
 			unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-			unsigned long long total_real = total_real = total_max - total_min;
+			unsigned long long total_real = total_max - total_min;
 			sprintf(szTmp, "%llu", total_real);
 
 			float musage = 0;
