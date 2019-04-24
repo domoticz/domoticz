@@ -554,6 +554,7 @@ app/timers/SceneTimersController.js
 
 app/AboutController.js
 app/app.js
+app/app.constants.js
 app/app.permissions.js
 app/app.routes.js
 app/CamController.js

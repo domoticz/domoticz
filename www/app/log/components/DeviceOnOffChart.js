@@ -10,7 +10,7 @@ define(['app', 'luxon'], function (app, luxon) {
         controller: DeviceOnOffChartController
     });
 
-    function DeviceOnOffChartController($element) {
+    function DeviceOnOffChartController($element, dzSettings) {
         var vm = this;
 
         vm.$onChanges = function (changes) {
@@ -34,7 +34,7 @@ define(['app', 'luxon'], function (app, luxon) {
 
             var firstIndex = min === undefined
                 ? data.findIndex(function (point) {
-                    return Date.parse(point.Date) >= min
+                    return DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf() >= min
                 })
                 : 0;
 
@@ -54,8 +54,8 @@ define(['app', 'luxon'], function (app, luxon) {
             getFilteredData(data).forEach(function (point, index, points) {
                 if (point.Status === 'On' || (point.Status.includes('Set Level') && point.Level > 0)) {
                     chartData.push({
-                        x: Date.parse(point.Date),
-                        x2: points[index + 1] ? Date.parse(points[index + 1].Date) : Date.now(),
+                        x: DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf(),
+                        x2: points[index + 1] ? DateTime.fromFormat(points[index + 1].Date,  dzSettings.serverDateFormat) : Date.now(),
                         y: 0
                     });
                 }
