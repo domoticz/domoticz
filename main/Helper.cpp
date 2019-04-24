@@ -916,7 +916,6 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 
 std::string GenerateUserAgent()
 {
-	// srand((unsigned int)time(NULL)); // srand moved to domoticz.cpp so it's only called once This prevents same seed when called again same second 
 	int cversion = rand() % 0xFFFF;
 	int mversion = rand() % 3;
 	int sversion = rand() % 3;
@@ -1273,7 +1272,6 @@ bool IsWSL(void)
 const std::string hexCHARS = "0123456789abcdef";
 std::string GenerateUUID() // DCE/RFC 4122
 {
-	// std::srand((unsigned int)std::time(nullptr)); // srand moved to domoticz.cpp so it's only called once This prevents same seed when called again same second 
 	std::string uuid = std::string(36, ' ');
 
 	uuid[8] = '-';
