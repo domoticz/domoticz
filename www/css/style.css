@@ -2032,3 +2032,8 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 .battery.empty {background-color: #ED3745;}
 .battery.empty:before, .battery.empty:after {border-color: #ED3745;}
 .battery.half {background-color: #F9D023;}
+
+/* Prevent touch scroll while using jQuery Wheel color picker */
+.jQWCP-wWidget {
+	touch-action: none;
+}
