@@ -587,6 +587,20 @@ define(['app'], function (app) {
 
 					ctrl.nbackstyle = function () {
 						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+						if(ctrl.displaySetPoint()){
+							if (ctrl.sHeatMode() == "HeatingOff" || !ctrl.isSetPointOn())//seems to be used whenever the heating is off
+                                        			backgroundClass="statusEvoSetPointOff";
+                                			else if (item.SetPoint >= 25)
+                                        			backgroundClass="statusEvoSetPoint25";
+                                			else if (item.SetPoint >= 22)
+                                        			backgroundClass="statusEvoSetPoint22";
+                                			else if (item.SetPoint >= 19)
+                                        			backgroundClass="statusEvoSetPoint19";
+                                			else if (item.SetPoint >= 16)
+                                        			backgroundClass="statusEvoSetPoint16";
+                                			else //min on temp 5 or greater
+                                        			backgroundClass="statusEvoSetPointMin";	
+						}
 						return backgroundClass;
 					};
 
