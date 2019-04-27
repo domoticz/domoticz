@@ -8162,7 +8162,7 @@ namespace http {
 				}
 			}
 
-			char szData[250];
+			char szData[320];
 			if (totUserDevices == 0)
 			{
 				//All
