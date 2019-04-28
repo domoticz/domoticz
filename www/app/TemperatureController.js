@@ -104,23 +104,6 @@ define(['app'], function (app) {
 			$("#dialog-editstate").i18n();
 			$("#dialog-editstate").dialog("open");
 		}
-		EvoSetPointColor = function (item, sHeatMode, bkcolor) {
-			if (typeof item.SetPoint != 'undefined') {
-				if (sHeatMode == "HeatingOff" || item.SetPoint == 325.1)//seems to be used whenever the heating is off
-					bkcolor = "#9b9b9b";
-				else if (item.SetPoint >= 25)
-					bkcolor = "#ff0302";
-				else if (item.SetPoint >= 22)
-					bkcolor = "#ff6a2a";
-				else if (item.SetPoint >= 19)
-					bkcolor = "#fe9b2d";
-				else if (item.SetPoint >= 16)
-					bkcolor = "#79bc5c";
-				else //min on temp 5 or greater
-					bkcolor = "#6ca5fd";
-			}
-			return bkcolor;
-		}
 		//FIXME move this to a shared js ...see lightscontroller.js
 		EvoDisplayTextMode = function (strstatus) {
 			if (strstatus == "Auto")//FIXME better way to convert?
