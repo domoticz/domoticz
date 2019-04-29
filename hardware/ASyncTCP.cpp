@@ -3,7 +3,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
-#include <boost/lexical_cast.hpp>
 
 struct hostent;
 
@@ -66,7 +65,7 @@ void ASyncTCP::connect(const std::string &ip, unsigned short port)
 
 	m_Ip = ip;
 	m_Port = port;
-	std::string port_str = boost::lexical_cast<std::string>(port);
+	std::string port_str = std::to_string(port);
 	// resolve hostname
 	boost::asio::ip::tcp::resolver::query query(ip, port_str);
 	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
@@ -433,7 +432,7 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& err)
 	}
 	mReconnectTimer.cancel();
 	// try to reconnect, then call handle_connect
-	std::string port_str = boost::lexical_cast<std::string>(m_Port);
+	std::string port_str = std::to_string(m_Port);
 	// resolve hostname
 	boost::asio::ip::tcp::resolver::query query(m_Ip, port_str);
 	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
