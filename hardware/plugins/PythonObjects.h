@@ -204,6 +204,7 @@ namespace Plugins {
 		CPluginTransport*	pTransport;
 		PyObject*			Protocol;
 		CPluginProtocol*	pProtocol;
+		PyObject*			Parent;
 	} CConnection;
 
 	void CConnection_dealloc(CConnection* self);
@@ -224,6 +225,7 @@ namespace Plugins {
 		{ "Address", T_OBJECT,	offsetof(CConnection, Address), READONLY, "Address" },
 		{ "Port", T_OBJECT,	offsetof(CConnection, Port), READONLY, "Port" },
 		{ "Baud", T_INT, offsetof(CConnection, Baud), READONLY, "Baud" },
+		{ "Parent", T_OBJECT, offsetof(CConnection, Parent), READONLY, "Parent connection" },
 		{ NULL }  /* Sentinel */
 	};
 
