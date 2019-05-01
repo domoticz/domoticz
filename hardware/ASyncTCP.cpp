@@ -206,7 +206,7 @@ void ASyncTCP::write(const uint8_t *pData, size_t length)
 
 void ASyncTCP::write(const std::string &msg)
 {
-	boost::unique_lock<boost::mutex> lock(m_writeMutex);
+	std::unique_lock<std::mutex> lock(m_writeMutex);
 	if (mWriteInProgress) {
 		m_writeQ.push_back(msg);
 	}
@@ -366,7 +366,7 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 			}
 		}
 		else {
-			boost::unique_lock<boost::mutex> lock(m_writeMutex);
+			std::unique_lock<std::mutex> lock(m_writeMutex);
 			if (!m_writeQ.empty()) {
 				std::string msg = m_writeQ.front();
 				m_writeQ.pop_front();

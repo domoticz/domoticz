@@ -9,7 +9,6 @@
 #include <boost/asio/ssl/stream.hpp>	   // for secure sockets
 #include <boost/function.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr
-#include <boost/thread/mutex.hpp>		   // to protect writeQ
 #include <exception>                       // for exception
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
@@ -104,7 +103,7 @@ private:
 	boost::asio::ip::tcp::resolver	m_Resolver;
 	std::deque<std::string>			m_writeQ; // we need a write queue to allow concurrent writes
 	std::string						m_MsgBuffer; // we keep the message buffer static so it keeps being available in between do_write and write_end (so boost has time to send it)
-	boost::mutex					m_writeMutex; // to protect writeQ
+	std::mutex						m_writeMutex; // to protect writeQ
 	std::string	m_Ip;
 	unsigned short	m_Port;
 };
