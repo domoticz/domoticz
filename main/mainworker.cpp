@@ -532,6 +532,9 @@ bool MainWorker::GetSunSettings()
 	asttwend = szRiseSet;
 
 	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
+
+	bool bFirstTime = m_LastSunriseSet.empty();
+
 	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3) + ";" + daylength.substr(0, daylength.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
@@ -573,11 +576,11 @@ bool MainWorker::GetSunSettings()
 		else
 			_log.Log(LOG_NORM, "Astronomical twilight start: %s Astronomical twilight end: %s", asttwstart.c_str(), asttwend.c_str());
 
-		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
-		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
+		if (!bFirstTime)
+			m_eventsystem.LoadEvents();
 
-									// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
-									// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
+		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
+		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
 	return true;
 }
