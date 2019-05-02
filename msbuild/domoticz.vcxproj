@@ -113,6 +113,7 @@
   <ItemGroup>
     <None Include="..\CMakeLists.txt" />
     <None Include="..\getsvn.cmake" />
+    <None Include="..\webserver\proxydef.def" />
     <None Include="..\www\app\AboutController.js" />
     <None Include="..\www\app\app.js" />
     <None Include="..\www\app\CamController.js" />
@@ -634,8 +635,8 @@
     <ClInclude Include="..\push\BasePush.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
+    <ClInclude Include="..\webserver\proxycereal.hpp" />
     <ClInclude Include="..\webserver\proxyclient.h" />
-    <ClInclude Include="..\webserver\proxycommon.h" />
     <ClInclude Include="..\webserver\WebsocketHandler.h" />
     <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\zip\ioapi.h" />
@@ -1017,8 +1018,11 @@
     <ClCompile Include="..\webserver\cWebem.cpp" />
     <ClCompile Include="..\webserver\fastcgi.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
+    <ClCompile Include="..\webserver\proxycereal.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\webserver\proxyclient.cpp" />
-    <ClCompile Include="..\webserver\proxycommon.cpp" />
     <ClCompile Include="..\webserver\reply.cpp" />
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />

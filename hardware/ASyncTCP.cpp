@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>     // for error_code
+
 struct hostent;
 
 #ifndef WIN32
@@ -13,19 +14,26 @@ struct hostent;
 
 #define RECONNECT_TIME 30
 
-ASyncTCP::ASyncTCP()
-	: mIsConnected(false), mIsClosing(false),
-	mSocket(mIos), mReconnectTimer(mIos),
+ASyncTCP::ASyncTCP(const bool secure)
+	: mIsConnected(false), mIsClosing(false), mWriteInProgress(false),
+	m_tcpwork(std::make_shared<boost::asio::io_service::work>(mIos)),
+	m_Resolver(mIos),
+#ifdef WWW_ENABLE_SSL
+	mSecure(secure), m_Context(boost::asio::ssl::context::sslv23),
+#endif
+	m_Socket(mIos), mReconnectTimer(mIos),
 	mDoReconnect(true), mIsReconnecting(false),
-	m_tcpwork(mIos),
 	mAllowCallbacks(true),
 	m_reconnect_delay(RECONNECT_TIME)
 {
-	// Reset IO Service
-	mIos.reset();
-
-	//Start IO Service worker thread
-	m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
+#ifdef WWW_ENABLE_SSL
+	// we do not authenticate the server
+	m_Context.set_verify_mode(boost::asio::ssl::verify_none);
+	if (mSecure) {
+		// we give mSslSocket an initial value
+		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, m_Context));
+	}
+#endif
 }
 
 ASyncTCP::~ASyncTCP(void)
@@ -33,7 +41,9 @@ ASyncTCP::~ASyncTCP(void)
 	disconnect();
 
 	// tell the IO service to stop
-	mIos.stop();
+	// we dont call mIos.stop() because our stop handlers wont be called anymore
+	// in stead, empty the work object and wait for all handlers to complete
+	m_tcpwork.reset();
 	if (m_tcpthread)
 	{
 		m_tcpthread->join();
@@ -48,56 +58,67 @@ void ASyncTCP::SetReconnectDelay(int Delay)
 
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
 {
-	std::stringstream fip;
-	// resolve hostname
-	try
-	{
-		boost::asio::ip::tcp::resolver resolver(mIos);
-		boost::asio::ip::tcp::resolver::query query(ip, "");
-		for(auto i = resolver.resolve(query); i != boost::asio::ip::tcp::resolver::iterator(); ++i)
-		{
-			boost::asio::ip::tcp::endpoint end = *i;
-			fip << end.address();
-			break; // only retrieve the first address
-		}
-	}
-	catch (const std::exception &e)
-	{
-		Q_UNUSED(e);
-		if (!mAllowCallbacks)
-			return;
-		OnError(boost::system::error_code(boost::asio::error::host_not_found));
+	if (!m_tcpthread) {
+		//Start IO Service worker thread
+		m_tcpthread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &mIos));
 	}
 
-	// connect socket
-	try
-	{
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(fip.str()), port);
-		connect(endpoint);
-	}
-	catch(const std::exception &e)
-	{
-		if (mAllowCallbacks)
-			OnError(e);
-	}
+	m_Ip = ip;
+	m_Port = port;
+	std::string port_str = std::to_string(port);
+	// resolve hostname
+	boost::asio::ip::tcp::resolver::query query(ip, port_str);
+	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 }
 
-void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
+void ASyncTCP::handle_resolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+{
+	if (err) {
+		if (mAllowCallbacks) {
+			OnError(boost::system::error_code(err));
+		}
+		if (!mDoReconnect)
+		{
+			if (mAllowCallbacks)
+				OnDisconnect();
+			return;
+		}
+		if (!mIsReconnecting)
+		{
+			StartReconnect();
+		}
+		return;
+	}
+	connect(endpoint_iterator);
+}
+
+void ASyncTCP::connect(boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 {
 	if(mIsConnected) return;
 	if(mIsClosing) return;
 
 	mAllowCallbacks = true;
 
-	mEndPoint = endpoint;
+	m_EndPoint = *endpoint_iterator++;
 
+#ifdef WWW_ENABLE_SSL
 	// try to connect, then call handle_connect
-	mSocket.async_connect(endpoint,
-        boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	if (mSecure) {
+		// we reset the ssl socket, because the ssl context needs to be reinitialized after a reconnect
+		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, m_Context));
+		mSslSocket->lowest_layer().async_connect(m_EndPoint,
+			boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error, endpoint_iterator));
+	}
+	else
+#endif
+	{
+		m_Socket.async_connect(m_EndPoint, boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error, endpoint_iterator));
+	}
 }
 
 void ASyncTCP::disconnect(const bool silent)
 {
+	mReconnectTimer.cancel();
 	try
 	{
 		// tell socket to close the connection
@@ -124,6 +145,21 @@ void ASyncTCP::StartReconnect()
 {
 	if (m_reconnect_delay != 0)
 	{
+		boost::system::error_code ec;
+#ifdef WWW_ENABLE_SSL
+		if (mSecure) {
+			if (mSslSocket->lowest_layer().is_open()) {
+				mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+				mSslSocket->lowest_layer().close(ec);
+			}
+		}
+		else
+#endif
+		{
+			if (m_Socket.is_open()) {
+				m_Socket.close(ec);
+			}
+		}
 		mIsReconnecting = true;
 		// schedule a timer to reconnect after xx seconds
 		mReconnectTimer.expires_from_now(boost::posix_time::seconds(m_reconnect_delay));
@@ -144,11 +180,23 @@ void ASyncTCP::read()
 	if (!mIsConnected) return;
 	if (mIsClosing) return;
 
-	mSocket.async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
-		boost::bind(&ASyncTCP::handle_read,
-			this,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
+#ifdef WWW_ENABLE_SSL
+	if (mSecure) {
+		mSslSocket->async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
+			boost::bind(&ASyncTCP::handle_read,
+				this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+	}
+	else
+#endif
+	{
+		m_Socket.async_read_some(boost::asio::buffer(m_rx_buffer, sizeof(m_rx_buffer)),
+			boost::bind(&ASyncTCP::handle_read,
+				this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+	}
 }
 
 void ASyncTCP::write(const uint8_t *pData, size_t length)
@@ -158,33 +206,58 @@ void ASyncTCP::write(const uint8_t *pData, size_t length)
 
 void ASyncTCP::write(const std::string &msg)
 {
-	mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+	std::unique_lock<std::mutex> lock(m_writeMutex);
+	if (mWriteInProgress) {
+		m_writeQ.push_back(msg);
+	}
+	else {
+		mWriteInProgress = true;
+		//do_write(msg);
+		mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+	}
 }
 
 // callbacks
 
-void ASyncTCP::handle_connect(const boost::system::error_code& error)
+void ASyncTCP::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 {
 	if(mIsClosing) return;
 
 	if (!error) {
-		// we are connected!
-		mIsConnected = true;
+#ifdef WWW_ENABLE_SSL
+		if (mSecure) {
+			// start ssl handshake to server
+			mSslSocket->async_handshake(boost::asio::ssl::stream_base::client,
+				boost::bind(&ASyncTCP::handle_handshake, this,
+					boost::asio::placeholders::error));
+		}
+		else
+#endif
+		{
+			// we are connected!
+			mIsConnected = true;
 
-		//Enable keep alive
-		boost::asio::socket_base::keep_alive option(true);
-		mSocket.set_option(option);
+			//Enable keep alive
+			boost::asio::socket_base::keep_alive option(true);
+			m_Socket.set_option(option);
 
-		//set_tcp_keepalive();
+			//set_tcp_keepalive();
 
-		if (mAllowCallbacks)
-			OnConnect();
+			if (mAllowCallbacks)
+				OnConnect();
 
-		// Start Reading
-		//This gives some work to the io_service before it is started
-		mIos.post(boost::bind(&ASyncTCP::read, this));
+			// Start Reading
+			//This gives some work to the io_service before it is started
+			mIos.post(boost::bind(&ASyncTCP::read, this));
+		}
+
 	}
 	else {
+		if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator()) {
+			// The connection failed. Try the next endpoint in the list.
+			connect(endpoint_iterator);
+			return;
+		}
 		// there was an error :(
 		mIsConnected = false;
 
@@ -203,6 +276,37 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 		}
 	}
 }
+
+#ifdef WWW_ENABLE_SSL
+void ASyncTCP::handle_handshake(const boost::system::error_code& error)
+{
+	if (error) {
+		if (mAllowCallbacks) {
+			OnError(boost::system::error_code(error));
+		}
+		if (!mDoReconnect)
+		{
+			if (mAllowCallbacks)
+				OnDisconnect();
+			return;
+		}
+		if (!mIsReconnecting)
+		{
+			StartReconnect();
+		}
+		return;
+	}
+	// we are connected!
+	mIsConnected = true;
+
+	if (mAllowCallbacks)
+		OnConnect();
+
+	// Start Reading
+	//This gives some work to the io_service before it is started
+	mIos.post(boost::bind(&ASyncTCP::read, this));
+}
+#endif
 
 void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 {
@@ -235,8 +339,6 @@ void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_
 				StartReconnect();
 			}
 		}
-		else
-			do_close();
 	}
 }
 
@@ -263,6 +365,18 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 				StartReconnect();
 			}
 		}
+		else {
+			std::unique_lock<std::mutex> lock(m_writeMutex);
+			if (!m_writeQ.empty()) {
+				std::string msg = m_writeQ.front();
+				m_writeQ.pop_front();
+				mIos.post(boost::bind(&ASyncTCP::do_write, this, msg));
+				//do_write(msg);
+			}
+			else {
+				mWriteInProgress = false;
+			}
+		}
 	}
 }
 
@@ -272,16 +386,45 @@ void ASyncTCP::do_close()
 
 	mIsClosing = true;
 
-	mSocket.close();
+	boost::system::error_code ec;
+#ifdef WWW_ENABLE_SSL
+	if (mSecure) {
+		if (mSslSocket->lowest_layer().is_open()) {
+			mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+			mSslSocket->lowest_layer().close(ec);
+		}
+	}
+	else
+#endif
+	{
+		if (m_Socket.is_open()) {
+			m_Socket.close(ec);
+		}
+	}
 }
 
-void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
+void ASyncTCP::do_reconnect(const boost::system::error_code& err)
 {
 	if(mIsConnected) return;
 	if(mIsClosing) return;
+	if (err) return; // timer was cancelled
 
-	// close current socket if necessary
-	mSocket.close();
+	boost::system::error_code ec;
+#ifdef WWW_ENABLE_SSL
+	if (mSecure) {
+		if (mSslSocket->lowest_layer().is_open()) {
+			// close current socket if necessary
+			mSslSocket->lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+			mSslSocket->lowest_layer().close(ec);
+		}
+	}
+	else
+#endif
+	{
+		if (m_Socket.is_open()) {
+			m_Socket.close(ec);
+		}
+	}
 
 	if (!mDoReconnect)
 	{
@@ -289,8 +432,10 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& /*error*/)
 	}
 	mReconnectTimer.cancel();
 	// try to reconnect, then call handle_connect
-	mSocket.async_connect(mEndPoint,
-        boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	std::string port_str = std::to_string(m_Port);
+	// resolve hostname
+	boost::asio::ip::tcp::resolver::query query(m_Ip, port_str);
+	m_Resolver.async_resolve(query, boost::bind(&ASyncTCP::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 	mIsReconnecting = false;
 }
 
@@ -300,9 +445,20 @@ void ASyncTCP::do_write(const std::string &msg)
 
 	if (!mIsClosing)
 	{
-		boost::asio::async_write(mSocket,
-			boost::asio::buffer(msg.c_str(), msg.size()),
-			boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
+		m_MsgBuffer = msg;
+#ifdef WWW_ENABLE_SSL
+		if (mSecure) {
+			boost::asio::async_write(*mSslSocket,
+				boost::asio::buffer(m_MsgBuffer.c_str(), m_MsgBuffer.size()),
+				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
+		}
+		else
+#endif
+		{
+			boost::asio::async_write(m_Socket,
+				boost::asio::buffer(m_MsgBuffer.c_str(), m_MsgBuffer.size()),
+				boost::bind(&ASyncTCP::write_end, this, boost::asio::placeholders::error));
+		}
 	}
 }
 
