@@ -10983,11 +10983,11 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 		{
 			float TotalRain = 0;
 
-			if (subType = sTypeWEATHER1)
+			if (subType == sTypeWEATHER1)
 			{
 				TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.3f;
 			}
-			else if (subType = sTypeWEATHER2)
+			else if (subType == sTypeWEATHER2)
 			{
 				TotalRain = float((pResponse->WEATHER.raintotal2 * 256) + (pResponse->WEATHER.raintotal3)) * 0.254f;
 			}
