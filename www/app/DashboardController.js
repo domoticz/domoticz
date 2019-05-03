@@ -481,7 +481,7 @@ define(['app'], function (app) {
 														}
 														xhtm += '<button type="button" class="btn btn-small ';
 														if ((index * 10) == item.LevelInt) {
-															xhtm += 'btn-info"';
+															xhtm += 'btn-danger"';
 														}
 														else {
 															xhtm += 'btn-default"';
@@ -937,7 +937,7 @@ define(['app'], function (app) {
 														}
 														xhtm += '<button type="button" class="btn btn-small ';
 														if ((index * 10) == item.LevelInt) {
-															xhtm += 'btn-info"';
+															xhtm += 'btn-danger"';
 														}
 														else {
 															xhtm += 'btn-default"';
@@ -2364,7 +2364,7 @@ define(['app'], function (app) {
 												}
 												xhtm += '<button type="button" class="btn btn-small ';
 												if ((index * 10) == item.LevelInt) {
-													xhtm += 'btn-info"';
+													xhtm += 'btn-danger"';
 												}
 												else {
 													xhtm += 'btn-default"';
@@ -2752,7 +2752,7 @@ define(['app'], function (app) {
 												}
 												xhtm += '<button type="button" class="btn btn-small ';
 												if ((index * 10) == item.LevelInt) {
-													xhtm += 'btn-info"';
+													xhtm += 'btn-danger"';
 												}
 												else {
 													xhtm += 'btn-default"';

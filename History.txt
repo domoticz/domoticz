@@ -82,6 +82,7 @@ Version 4.xxxx (May xxth 2019)
 - Fixed: Put correct node name in button titles in association group view
 - Fixed: Python Plugin protocols now always use Parameters values for Username/Password during authentication rather than cached values
 - Fixed: Rain device for DarkSky
+- Fixed: Selector selected color
 - Fixed: Shared server via mydomoticz bug.
 - Fixed: Temp+Hum log button in devices view
 - Fixed: Temperature sorting in report
