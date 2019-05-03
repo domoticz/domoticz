@@ -1320,7 +1320,7 @@ namespace http {
 		void cWebemRequestHandler::send_remove_cookie(reply& rep)
 		{
 			std::stringstream sstr;
-			sstr << "SID=none";
+			sstr << "DMZSID=none";
 			// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
 			sstr << "; HttpOnly; Expires=" << make_web_time(0);
 			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
@@ -1365,7 +1365,7 @@ namespace http {
 		void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 		{
 			std::stringstream sstr;
-			sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
+			sstr << "DMZSID=" << session.id << "_" << session.auth_token << "." << session.expires;
 			sstr << "; HttpOnly; path=/; Expires=" << make_web_time(session.expires);
 			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 		}
@@ -1586,8 +1586,8 @@ namespace http {
 
 				// Parse session id and its expiration date
 				std::string scookie = cookie_header;
-				size_t fpos = scookie.find("SID=");
-				if (fpos != std::string::npos)
+				size_t fpos = scookie.find("DMZSID=");
+				if (fpos == 0)
 				{
 					scookie = scookie.substr(fpos);
 					fpos = 0;
@@ -1931,9 +1931,9 @@ namespace http {
 				if (cookie != NULL)
 				{
 					std::string scookie = cookie;
-					int fpos = scookie.find("SID=");
+					int fpos = scookie.find("DMZSID=");
 					int upos = scookie.find("_", fpos);
-					if ((fpos != std::string::npos) && (upos != std::string::npos))
+					if ((fpos == 0) && (upos != std::string::npos))
 					{
 						std::string sSID = scookie.substr(fpos + 4, upos - fpos - 4);
 						_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());
