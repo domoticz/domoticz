@@ -71,6 +71,7 @@ Version 4.xxxx (May xxth 2019)
 - Fixed: I2C/BME280, Corrected oversampling
 - Fixed: Increased heartbeat_check timeout to 5 minutes (process rebooted while doing a large database operation (migration of a sensor))
 - Fixed: Kodi Notification setup display (hops)
+- Fixed: Light Log Set 'Level' for RGB switches
 - Fixed: MySensors IR switching
 - Fixed: Next Protect, removing Heat/US checks
 - Fixed: On/Off actions where incorrectly handled when setting the a RGB/W Color
