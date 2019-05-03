@@ -1587,7 +1587,7 @@ namespace http {
 				// Parse session id and its expiration date
 				std::string scookie = cookie_header;
 				size_t fpos = scookie.find("DMZSID=");
-				if (fpos == 0)
+				if (fpos != std::string::npos)
 				{
 					scookie = scookie.substr(fpos);
 					fpos = 0;
@@ -1602,7 +1602,7 @@ namespace http {
 				time_t now = mytime(NULL);
 				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 				{
-					sSID = scookie.substr(fpos + 4, upos - fpos - 4);
+					sSID = scookie.substr(fpos + 7, upos - fpos - 7);
 					sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
 					szTime = scookie.substr(ppos + 1);
 
@@ -1933,9 +1933,9 @@ namespace http {
 					std::string scookie = cookie;
 					int fpos = scookie.find("DMZSID=");
 					int upos = scookie.find("_", fpos);
-					if ((fpos == 0) && (upos != std::string::npos))
+					if ((fpos != std::string::npos) && (upos != std::string::npos))
 					{
-						std::string sSID = scookie.substr(fpos + 4, upos - fpos - 4);
+						std::string sSID = scookie.substr(fpos + 7, upos - fpos - 7);
 						_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());
 						std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
 						if (itt != myWebem->m_sessions.end())
@@ -1949,6 +1949,8 @@ namespace http {
 				session.rights = -1;
 				session.forcelogin = true;
 				bCheckAuthentication = false; // do not authenticate the user, just logout
+				send_authorization_request(rep);
+				return;
 			}
 
 			// Check if this is an upgrade request to a websocket connection
