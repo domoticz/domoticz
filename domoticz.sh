@@ -59,7 +59,7 @@ do_start()
         #   2 if daemon could not be started
         start-stop-daemon --chuid $USERNAME --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
                 || return 1
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
+        start-stop-daemon --chuid $USERNAME --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
                 $DAEMON_ARGS \
                 || return 2
 }
