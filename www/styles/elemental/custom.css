@@ -132,6 +132,10 @@ li {
 	line-height: 4px;
 }
 
+.ui-popup li {
+	line-height: 20px;
+}
+
 .navbar .nav .dropdown-toggle .caret {
 	margin-top: 0px;
 }
