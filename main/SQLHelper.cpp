@@ -3267,7 +3267,7 @@ void CSQLHelper::Do_Work()
 				}
 				else if (method == HTTPClient::HTTP_METHOD_POST)
 				{
-					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData);
+					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData, true, true);
 				}
 
 				if (m_bEnableEventSystem && !callback.empty())
