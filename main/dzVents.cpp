@@ -104,11 +104,11 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEven
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
 			lua_pushstring(lua_state, "headers");
-			lua_createtable(lua_state, (int)itt->vData.size(), 0);
+			lua_createtable(lua_state, (int)itt->vData.size() + 1, 0);
 			if (itt->vData.size() > 0)
 			{
 				std::vector<std::string>::const_iterator itt2;
-				for (itt2 = itt->vData.begin(); itt2 != itt->vData.end() - 1; ++itt2)
+				for (itt2 = itt->vData.begin(); itt2 != itt->vData.end(); ++itt2)
 				{
 					size_t pos = (*itt2).find(": ");
 					if (pos != std::string::npos)
@@ -117,8 +117,18 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEven
 						lua_pushstring(lua_state, (*itt2).substr(pos + 2).c_str());
 						lua_rawset(lua_state, -3);
 					}
+					else
+					{
+						size_t pos = (*itt2).find("HTTP/");
+						if (pos != std::string::npos)
+						{
+							lua_pushstring(lua_state, "status");
+							lua_pushstring(lua_state, (*itt2).c_str());
+							lua_rawset(lua_state, -3);
+						}	
+					}	
 				}
-				// last item in vector is always the status code
+				// last item in vector is status code when method = GET
 				itt2 = itt->vData.end() - 1;
 				std::stringstream ss(*itt2);
 				ss >> statusCode;

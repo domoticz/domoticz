@@ -4,18 +4,19 @@ local utils = require('Utils')
 local function HTTPResponce(domoticz, responseData)
 
     local self = {}
-
+     
     self.headers = responseData.headers or {}
     self.baseType = domoticz.BASETYPE_HTTP_RESPONSE
-
     self.data = responseData.data or nil
-
+    self.statusCode = _.get(responseData, {'statusCode'}, 0)
     self._contentType = _.get(self.headers, {'Content-Type'}, '')
-
+    
     self.isJSON = false
 
-    self.statusCode = responseData.statusCode
-
+    if self.headers.status then
+        self.statusCode = tonumber((self.headers.status):match("%s+(%S+)")) 
+    end
+    
     self.ok = false
     if (self.statusCode >= 200 and self.statusCode <= 299) then
         self.ok = true
@@ -40,6 +41,8 @@ local function HTTPResponce(domoticz, responseData)
             self.json = json
         end
     end
+
+    utils.log('HTTPResponse: headers = ' .. _.str(self.headers), utils.LOG_DEBUG)
 
     return self
 end
