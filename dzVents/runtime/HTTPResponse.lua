@@ -3,45 +3,49 @@ local utils = require('Utils')
 
 local function HTTPResponce(domoticz, responseData)
 
-    local self = {}
+	local self = {}
+	 
+	self.headers = responseData.headers or {}
+	self.baseType = domoticz.BASETYPE_HTTP_RESPONSE
+	self.data = responseData.data or nil
 
-    self.headers = responseData.headers or {}
-    self.baseType = domoticz.BASETYPE_HTTP_RESPONSE
+	self.statusCode = _.get(responseData, {'statusCode'}, 0)
+	self._contentType = _.get(self.headers, {'Content-Type'}, '')
 
-    self.data = responseData.data or nil
+	self.isJSON = false
 
-    self._contentType = _.get(self.headers, {'Content-Type'}, '')
+	if self.headers.status then
+		self.statusCode = tonumber((self.headers.status):match("%s+(%S+)"))
+	end
 
-    self.isJSON = false
+	self.ok = false
+	if (self.statusCode >= 200 and self.statusCode <= 299) then
+		self.ok = true
+	end
 
-    self.statusCode = responseData.statusCode
+	self.isHTTPResponse = true
+	self.isDevice = false
+	self.isScene = false
+	self.isGroup = false
+	self.isTimer = false
+	self.isVariable = false
+	self.isSecurity = false
 
-    self.ok = false
-    if (self.statusCode >= 200 and self.statusCode <= 299) then
-        self.ok = true
-    end
+	self.callback = responseData.callback
+	self.trigger = responseData.callback
 
-    self.isHTTPResponse = true
-    self.isDevice = false
-    self.isScene = false
-    self.isGroup = false
-    self.isTimer = false
-    self.isVariable = false
-    self.isSecurity = false
+	if (string.match(self._contentType, 'application/json') and self.data) then
+		local json = utils.fromJSON(self.data)
 
-    self.callback = responseData.callback
-    self.trigger = responseData.callback
+		if (json) then
+			self.isJSON = true
+			self.json = json
+		end
+	end
 
-    if (string.match(self._contentType, 'application/json') and self.data) then
-        local json = utils.fromJSON(self.data)
+	utils.log('HTTPResponse: headers = ' .. _.str(self.headers), utils.LOG_DEBUG)
 
-        if (json) then
-            self.isJSON = true
-            self.json = json
-        end
-    end
-
-    return self
+	return self
 end
 
 return HTTPResponce
