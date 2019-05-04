@@ -740,7 +740,7 @@ define(['app'], function (app) {
 												}
 												xhtm += '<button type="button" class="btn btn-small ';
 												if ((index * 10) == item.LevelInt) {
-													xhtm += 'btn-danger"';
+													xhtm += 'btn-selected"';
 												}
 												else {
 													xhtm += 'btn-default"';
@@ -1317,7 +1317,7 @@ define(['app'], function (app) {
 										}
 										xhtm += '<button type="button" class="btn btn-small ';
 										if ((index * 10) == item.LevelInt) {
-											xhtm += 'btn-danger"';
+											xhtm += 'btn-selected"';
 										}
 										else {
 											xhtm += 'btn-default"';
