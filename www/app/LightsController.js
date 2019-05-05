@@ -371,6 +371,7 @@ define(['app'], function (app) {
 								}
 								else if (item.SubType == "Evohome") {
 									img = EvohomeImg(item);
+									bigtext = GetLightStatusText(item);
 								}
 								else if (item.SwitchType == "X10 Siren") {
 									if (
@@ -915,7 +916,7 @@ define(['app'], function (app) {
 								'\t      <td id="name">' + item.Name + '</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
-							if (item.SwitchType === "Selector") {
+							if (item.SwitchType === "Selector" || item.SubType == "Evohome") {
 								bigtext = GetLightStatusText(item);
 							}
 							if (item.UsedByCamera == true) {
