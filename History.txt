@@ -75,7 +75,7 @@ Version 4.xxxx (May xxth 2019)
 - Fixed: MySensors IR switching
 - Fixed: Next Protect, removing Heat/US checks
 - Fixed: On/Off actions where incorrectly handled when setting the a RGB/W Color
-- Fixed: P1 Smart Meter report chart, limit amount of decimals in tooltip
+- Fixed: P1 Smart Meter report chart, limit number of decimals in tooltip
 - Fixed: Philips Hue, should work correctly now again
 - Fixed: Possible SQL Injection Vulnerability (Thanks to Fabio Carretto!)
 - Fixed: Prevent touch stcroll while using jQuery wheel color picker
@@ -90,6 +90,7 @@ Version 4.xxxx (May xxth 2019)
 - Fixed: Xiaomi Gateway Lum issue
 - Fixed: Xiaomi, using correct (application default) way to update temp/hum/pressure
 - Fixed: YouLess meter report
+- Fixed: Various, see github, thanks to all who contributed!!
 - Updated: dzVents (version 2.4.18, See dzVents/documentation/history.md)
 - Updated: Event Editor
 - Updated: New Gui pages/code for Utility/Weather/Temperature/Devices/Hardware Setup
