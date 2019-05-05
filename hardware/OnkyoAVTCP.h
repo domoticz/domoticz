@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 
@@ -13,22 +12,23 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 	bool SendPacket(const char *pdata);
 private:
-	bool isConnected() { return mIsConnected; };
 	bool SendPacket(const char *pCmd, const char *pArg);
 	bool StartHardware() override;
 	bool StopHardware() override;
-	bool CustomCommand(uint64_t idx, const std::string &sCommand);
+	bool CustomCommand(uint64_t idx, const std::string &sCommand) override;
 	void ReceiveMessage(const char *pData, int Len);
 	void ReceiveSwitchMsg(const char *pData, int Len, bool muting, int ID);
 	bool ReceiveXML(const char *pData, int Len);
 	void EnsureSwitchDevice(int Unit, const char *options = NULL);
 	std::string BuildSelectorOptions(const std::string & names, const std::string & ids);
 	void Do_Work();
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
+
 	void ParseData(const unsigned char *pData, int Len);
 private:
 	int m_retrycntr;
@@ -36,7 +36,5 @@ private:
 	int m_PPktLen;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
 };

@@ -128,7 +128,7 @@ define(['app'], function (app) {
 			$("#dialog-editdistancedevice").dialog("open");
 		}
 
-		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, valuequantity, valueunits) {
+		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -137,6 +137,7 @@ define(['app'], function (app) {
 			$("#dialog-editmeterdevice #devicename").val(unescape(name));
 			$("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 			$("#dialog-editmeterdevice #combometertype").val(switchtype);
+			$("#dialog-editmeterdevice #meterdivider").val(meterdivider);
 			$("#dialog-editmeterdevice #meteroffset").val(meteroffset);
 			$("#dialog-editmeterdevice #valuequantity").val(unescape(valuequantity));
 			$("#dialog-editmeterdevice #valueunits").val(unescape(valueunits));
@@ -161,7 +162,7 @@ define(['app'], function (app) {
 			$("#dialog-editmeterdevice").dialog("open");
 		}
 
-		EditEnergyDevice = function (idx, name, description, switchtype, devoptions) {
+		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -171,9 +172,9 @@ define(['app'], function (app) {
 			$("#dialog-editenergydevice #devicedescription").val(unescape(description));
 			$("#dialog-editenergydevice #combometertype").val(switchtype);
 
-			$('#dialog-editenergydevice input:radio[name=devoptions][value="' + devoptions + '"]').attr('checked', true);
-			$('#dialog-editenergydevice input:radio[name=devoptions][value="' + devoptions + '"]').prop('checked', true);
-			$('#dialog-editenergydevice input:radio[name=devoptions][value="' + devoptions + '"]').trigger('change');
+			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').attr('checked', true);
+			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').prop('checked', true);
+			$('#dialog-editenergydevice input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').trigger('change');
 			$("#dialog-editenergydevice").i18n();
 			$("#dialog-editenergydevice").dialog("open");
 		}
@@ -335,7 +336,7 @@ define(['app'], function (app) {
 									status = "";
 									bigtext = item.Data;
 								}
-								else if (item.Type == "Fan") {
+								else if (item.SubType == "Fan") {
 									status = "";
 									bigtext = item.Data;
 								}
@@ -532,6 +533,7 @@ define(['app'], function (app) {
 								bHaveAddedDevider = true;
 							}
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+							var graphLogLink = '#/Devices/' + item.idx + '/Log';
 
 							var xhtm =
 								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
@@ -570,7 +572,7 @@ define(['app'], function (app) {
 							else if (item.SubType == "Percentage") {
 								xhtm += item.Data;
 							}
-							else if (item.Type == "Fan") {
+							else if (item.SubType == "Fan") {
 								xhtm += item.Data;
 							}
 							else if (item.SubType == "Soil Moisture") {
@@ -598,32 +600,32 @@ define(['app'], function (app) {
 								xhtm += item.Data;
 							}
 							xhtm += '</td>\n';
-							xhtm += '\t      <td id="img"><img src="images/';
+							xhtm += '\t      <td id="img">';
 							var status = "";
 							if (typeof item.Counter != 'undefined') {
 								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 									if (item.SwitchTypeVal == 1) {
-										xhtm += 'Gas48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 2) {
-										xhtm += 'Water48_On.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Water48_On.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 3) {
-										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
 									}
 									else if (item.SwitchTypeVal == 4) {
-										xhtm += 'PV48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
 									}
 									else {
-										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
 									}
 								}
 								else {
 									if (item.SubType == "Gas") {
-										xhtm += 'Gas48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Gas48.png" height="48" width="48"></td>\n';
 									}
 									else {
-										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
+										xhtm += '<img src="images/Counter48.png" height="48" width="48"></td>\n';
 									}
 								}
 								if (
@@ -638,98 +640,98 @@ define(['app'], function (app) {
 								}
 							}
 							else if (item.Type == "Current") {
-								xhtm += 'current48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 								if (((item.Type == "Energy") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
-									xhtm += 'PV48.png" height="48" width="48"></td>\n';
+									xhtm += '<img src="images/PV48.png" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += 'current48.png" height="48" width="48"></td>\n';
+									xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								}
 								if (typeof item.CounterToday != 'undefined') {
 									status += $.t("Today") + ': ' + item.CounterToday;
 								}
 							}
 							else if (item.Type == "Air Quality") {
-								xhtm += 'air48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/air48.png" height="48" width="48"></td>\n';
 								status = item.Quality;
 							}
 							else if (item.SubType == "Custom Sensor") {
-								xhtm += item.Image + '48_On.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Soil Moisture") {
-								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
 								status = item.Desc;
 							}
 							else if (item.SubType == "Percentage") {
-								xhtm += 'Percentage48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/Percentage48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Fan") {
-								xhtm += 'Fan48_On.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/Fan48_On.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Leaf Wetness") {
-								xhtm += 'leaf48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/leaf48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Distance") {
-								xhtm += 'visibility48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/visibility48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
-								xhtm += 'current48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Text") {
-								xhtm += 'text48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/text48.png" height="48" width="48"></td>\n';
 								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Alert") {
-								xhtm += 'Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
 								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Pressure") {
-								xhtm += 'gauge48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/gauge48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Lux") {
-								xhtm += 'lux48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/lux48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Weight") {
-								xhtm += 'scale48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/scale48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.Type == "Usage") {
-								xhtm += 'current48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/current48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
-								xhtm += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
+								xhtm += '<img src="images/override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Clock") {
-								xhtm += 'clock48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/clock48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Mode") {
-								xhtm += 'mode48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Thermostat Fan Mode") {
-								xhtm += 'mode48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/mode48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Sound Level") {
-								xhtm += 'Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
+								xhtm += '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Speaker48_On.png" class="lcursor" height="48" width="48"></a></td>\n';
 								status = "";
 							}
 							else if (item.SubType == "Waterflow") {
-								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
+								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
 								status = "";
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
@@ -752,21 +754,14 @@ define(['app'], function (app) {
 							}
 
 							if (typeof item.Counter != 'undefined') {
-								if ((item.Type == "P1 Smart Meter") && (item.SubType == "Energy")) {
-									xhtm += '<a class="btnsmall" onclick="ShowSmartLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
-								}
-								else if ((item.Type == "YouLess Meter") && (item.SwitchTypeVal == 0 || item.SwitchTypeVal == 4)) {
-									xhtm += '<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
-								}
-								else {
-									xhtm += '<a class="btnsmall" onclick="ShowCounterLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
-								}
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
+
 								if (permissions.hasPermission("Admin")) {
 									if (item.Type == "P1 Smart Meter") {
 										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 									}
 									else {
-										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',' + item.AddjValue2 + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\');" data-i18n="Edit">Edit</a> ';
 									}
 								}
 							}
@@ -777,54 +772,55 @@ define(['app'], function (app) {
 								}
 							}
 							else if (item.SubType == "Custom Sensor") {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.SensorUnit) + '\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditCustomSensorDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', ' + item.SensorType + ', \'' + escape(item.SensorUnit) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.SubType == "Percentage") {
-								xhtm += '<a class="btnsmall" onclick="ShowPercentageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
-							else if (item.Type == "Fan") {
+							else if (item.SubType == "Fan") {
 								xhtm += '<a class="btnsmall" onclick="ShowFanLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.SubType == "Soil Moisture") || (item.SubType == "Leaf Wetness") || (item.SubType == "Waterflow")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Lux") {
-								xhtm += '<a class="btnsmall" onclick="ShowLuxLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Weight") {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.Type + '\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if (item.Type == "Usage") {
-								xhtm += '<a class="btnsmall" onclick="ShowUsageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.Type == "Power")) {
-								xhtm += '<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
+
 								if (permissions.hasPermission("Admin")) {
 									if ((item.Type == "Energy") || (item.SubType == "kWh")) {
-										if (item.Options == "") { item.Options = "0" }
+										if (item.EnergyMeterMode == "") { item.EnergyMeterMode = "0" }
 										xhtm += '<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', '
-										xhtm += item.SwitchTypeVal + ',' + item.Options + ');" data-i18n="Edit">Edit</a> ';
+										xhtm += item.SwitchTypeVal + ',' + item.EnergyMeterMode + ');" data-i18n="Edit">Edit</a> ';
 									} else {
 										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 									}
@@ -839,7 +835,7 @@ define(['app'], function (app) {
 							else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 								if (permissions.hasPermission("Admin")) {
 									var timerLink = '#/Devices/'+item.idx+'/Timers';
-									var logLink = '#/Devices/'+item.idx+'/TemperatureLog';
+									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
@@ -854,7 +850,7 @@ define(['app'], function (app) {
 							else if (item.Type == "Radiator 1") {
 								if (permissions.hasPermission("Admin")) {
 									var timerLink = '#/Devices/'+item.idx+'/Timers';
-									var logLink = '#/Devices/'+item.idx+'/TemperatureLog';
+									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
@@ -867,7 +863,7 @@ define(['app'], function (app) {
 								}
 							}
 							else if (item.SubType == "Text") {
-                                var logLink = '#/Devices/'+item.idx+'/TextLog';
+                                var logLink = '#/Devices/'+item.idx+'/Log';
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
@@ -890,43 +886,43 @@ define(['app'], function (app) {
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Voltage")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'VoltageGeneral\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Distance")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'DistanceGeneral\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Current")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'CurrentGeneral\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Pressure")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'Pressure\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Sound Level")) {
-								xhtm += '<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
 									xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Alert")) {
-                                var logLink = '#/Devices/'+item.idx+'/TextLog';
+                                var logLink = '#/Devices/'+item.idx+'/Log';
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
@@ -1247,6 +1243,7 @@ define(['app'], function (app) {
 				bValid = bValid && checkLength($("#dialog-editmeterdevice #devicename"), 2, 100);
 				if (bValid) {
 					var meteroffset = $("#dialog-editmeterdevice #meteroffset").val();
+					var meterdivider = $("#dialog-editmeterdevice #meterdivider").val();
 					if (meterType == 3) //Counter
 					{
 						devOptions.push("ValueQuantity:");
@@ -1264,6 +1261,7 @@ define(['app'], function (app) {
 						'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) +
 						'&switchtype=' + meterType +
 						'&addjvalue=' + meteroffset +
+						'&addjvalue2=' + meterdivider +
 						'&used=true' +
 						'&options=' + b64EncodeUnicode(devOptionsParam.join('')),
 						async: false,
@@ -1324,7 +1322,7 @@ define(['app'], function (app) {
 						url: "json.htm?type=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
-						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&devoptions=' + $("#dialog-editenergydevice input:radio[name=devoptions]:checked").val() +
+						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&EnergyMeterMode=' + $("#dialog-editenergydevice input:radio[name=EnergyMeterMode]:checked").val() +
 						'&used=true',
 						async: false,
 						dataType: 'json',

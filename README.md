@@ -23,6 +23,12 @@ Your first place for support is the [Domoticz Forum](http://www.domoticz.com/for
 
 The Github issue tracker is NOT for end-user support.
 
+## Donations
+Donations are more than welcome and will be used to buy new hardware, devices, sensors, hosting and coffee.
+If you like the product or encourage the development, please use thelink:
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=6S2CXM772QY84&currency_code=EUR&source=url)
+
 # More information
 * Website: http://www.domoticz.com
 * Forum http://www.domoticz.com/forum
@@ -32,5 +38,5 @@ The Github issue tracker is NOT for end-user support.
 
 Status | Operating system
 ------------ | -------------
-![image](https://travis-ci.org/domoticz/domoticz.svg?branch=master "Linux Build Status") | Linux x86_64
-![image](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true "Windows Build Status") | Windows
+[![Status Linux](https://travis-ci.org/domoticz/domoticz.svg?branch=master)](https://travis-ci.org/domoticz/domoticz) | Linux x86_64
+[![Status Windows](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows

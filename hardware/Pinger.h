@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 
 #include <string>
-#include <vector>
 
 class CPinger : public CDomoticzHardwareBase
 {
@@ -24,7 +23,6 @@ public:
 	void RemoveNode(const int ID);
 	void RemoveAllNodes();
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
-	void Restart();
 private:
 	void Do_Work();
 	bool StartHardware() override;
@@ -38,8 +36,7 @@ private:
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::vector<PingNode> m_nodes;
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
-	boost::mutex m_mutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::mutex m_mutex;
 };
 

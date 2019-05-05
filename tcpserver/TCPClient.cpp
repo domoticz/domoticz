@@ -3,6 +3,8 @@
 #include "TCPServer.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
+#include "../webserver/proxyclient.h"
+
 namespace tcp {
 namespace server {
 
@@ -64,6 +66,9 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 					if (!m_bIsLoggedIn)
 					{
 						//Wrong username/password
+						boost::asio::async_write(*socket_, boost::asio::buffer("NOAUTH", 6),
+							boost::bind(&CTCPClient::handleWrite, shared_from_this(),
+							boost::asio::placeholders::error));
 						pConnectionManager->stopClient(shared_from_this());
 						return;
 					}
@@ -107,7 +112,7 @@ void CTCPClient::handleWrite(const boost::system::error_code& error)
 
 #ifndef NOCLOUD
 /* shared server via proxy client class */
-CSharedClient::CSharedClient(CTCPServerIntBase *pManager, boost::shared_ptr<http::server::CProxyClient> proxy, const std::string &token, const std::string &username) :
+CSharedClient::CSharedClient(CTCPServerIntBase *pManager, std::shared_ptr<http::server::CProxyClient> proxy, const std::string &token, const std::string &username) :
 	CTCPClientBase(pManager),
 	m_token(token)
 {

@@ -125,7 +125,6 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
 
 CEventSystem::CEventSystem(void)
 {
-	m_stoprequested = false;
 	m_bEnabled = false;
 }
 
@@ -138,8 +137,12 @@ CEventSystem::~CEventSystem(void)
 void CEventSystem::StartEventSystem()
 {
 	StopEventSystem();
+
 	if (!m_bEnabled)
 		return;
+
+	RequestStart();
+	m_TaskQueue.RequestStart();
 
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 
@@ -151,27 +154,28 @@ void CEventSystem::StartEventSystem()
 	Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
 
-	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
-	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
+	m_thread = std::make_shared<std::thread>(&CEventSystem::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "EventSystem");
+	m_eventqueuethread = std::make_shared<std::thread>(&CEventSystem::EventQueueThread, this);
+	SetThreadName(m_eventqueuethread->native_handle(), "EventSystemQueue");
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
 void CEventSystem::StopEventSystem()
 {
+	RequestStop();
+	m_TaskQueue.RequestStop();
 
 	if (m_eventqueuethread)
 	{
-		m_stoprequested = true;
 		UnlockEventQueueThread();
 		m_eventqueuethread->join();
-		m_eventqueue.clear();
+		m_eventqueuethread.reset();
 	}
-
 	if (m_thread)
 	{
-		m_stoprequested = true;
 		m_thread->join();
+		m_thread.reset();
 	}
 
 #ifdef ENABLE_PYTHON
@@ -224,8 +228,7 @@ void CEventSystem::LoadEvents()
 			std::vector<std::string> sd = *itt;
 
 			_tEventItem eitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> eitem.ID;
+			eitem.ID = std::stoull(sd[0]);
 			eitem.Name = sd[1] + "_" + sd[5];
 			eitem.Interpreter = sd[6];
 			std::transform(sd[7].begin(), sd[7].end(), sd[7].begin(), ::tolower);
@@ -237,31 +240,32 @@ void CEventSystem::LoadEvents()
 			m_events.push_back(eitem);
 		}
 	}
+
+	std::vector<std::string> FileEntries;
+	std::string filename;
+
+	// Remove dzVents DB files from disk
+	DirectoryListing(FileEntries, dzv_Dir, false, true);
+	std::vector<std::string>::const_iterator itt;
+	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+	{
+		filename = dzv_Dir + *itt;
+		if (filename.find("README.md") == std::string::npos)
+			std::remove(filename.c_str());
+	}
+
 	result = m_sql.safe_query(
 		"SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster "
 		"WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
+
 	if (!result.empty())
 	{
-		std::vector<std::string> FileEntries;
-		std::string filename;
-
-		// Remove dzVents DB files from disk
-		DirectoryListing(FileEntries, dzv_Dir, false, true);
-		std::vector<std::string>::const_iterator itt;
-		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
-		{
-			filename = dzv_Dir + *itt;
-			if (filename.find("README.md") == std::string::npos)
-				std::remove(filename.c_str());
-		}
-
 		std::vector<std::vector<std::string> >::const_iterator itt2;
 		for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
 		{
 			std::vector<std::string> sd = *itt2;
 			CEventSystem::_tEventItem eitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> eitem.ID;
+			eitem.ID = std::stoull(sd[0]);
 			eitem.Name = sd[1];
 			eitem.Interpreter = sd[2];
 			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
@@ -308,10 +312,8 @@ void CEventSystem::Do_Work()
 	int _LastMinute = tmptime.tm_min;
 
 	_log.Log(LOG_STATUS, "EventSystem: Started");
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
-		//sleep 500 milliseconds
-		sleep_milliseconds(500);
 		time_t atime = mytime(NULL);
 
 		if (atime != lasttime)
@@ -385,10 +387,7 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 	item.JsonMapBool.clear();
 
 	Json::Value tempjson;
-	std::stringstream sstr;
-	sstr << ulDevID;
-
-	m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "", "", std::to_string(ulDevID), "", "", true, false, false, 0, "");
 	Json::ArrayIndex rsize = tempjson["result"].size();
 
 	if (rsize > 0)
@@ -459,14 +458,37 @@ void CEventSystem::GetCurrentStates()
 			std::string l_description;		l_description.reserve(200);
 			std::string l_deviceID;			l_deviceID.reserve(25);
 
-			std::stringstream s_str(sd[1]);
-			s_str >> sitem.ID;
+			sitem.ID = std::stoull(sd[1]);
 			sitem.deviceName = l_deviceName.assign(sd[2]);
+
+			sitem.devType = atoi(sd[5].c_str());
+			sitem.subType = atoi(sd[6].c_str());
+
+			if ((sitem.devType == pTypeGeneral) && (sitem.subType == sTypeCounterIncremental))
+			{
+				//special case for incremental counter, need to calculate the actual count value
+
+				uint64_t total_min, total_max, total_real;
+				std::vector<std::vector<std::string> > result2;
+
+				result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
+				total_max = std::stoull(result2[0][0]);
+
+				//get value of today
+				std::string szDate = TimeToString(NULL, TF_Date);
+				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
+				if (!result2.empty())
+				{
+					total_min = std::stoull(result2[0][0]);
+					total_real = total_max - total_min;
+
+					sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
+				}
+			}
 
 			sitem.nValue = atoi(sd[3].c_str());
 			sitem.sValue = l_sValue.assign(sd[4]);
-			sitem.devType = atoi(sd[5].c_str());
-			sitem.subType = atoi(sd[6].c_str());
+
 			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
@@ -506,8 +528,7 @@ void CEventSystem::GetCurrentUserVariables()
 		{
 			std::vector<std::string> sd = *itt;
 			_tUserVariable uvitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> uvitem.ID;
+			uvitem.ID = std::stoull(sd[0]);
 			uvitem.variableName = sd[1];
 			uvitem.variableValue = sd[2];
 			uvitem.variableType = atoi(sd[3].c_str());
@@ -534,8 +555,7 @@ void CEventSystem::GetCurrentScenesGroups()
 
 			std::vector<std::string> sd = *itt;
 			_tScenesGroups sgitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> sgitem.ID;
+			sgitem.ID = std::stoull(sd[0]);
 			unsigned char nValue = atoi(sd[2].c_str());
 
 			if (nValue == 0)
@@ -550,15 +570,11 @@ void CEventSystem::GetCurrentScenesGroups()
 			result2 = m_sql.safe_query("SELECT DISTINCT A.DeviceRowID FROM SceneDevices AS A, DeviceStatus AS B WHERE (A.SceneRowID == %" PRIu64 ") AND (A.DeviceRowID == B.ID)", sgitem.ID);
 			if (!result2.empty())
 			{
-				uint64_t deviceID;
 				std::vector<std::vector<std::string> >::const_iterator itt2;
 				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
 				{
-					std::stringstream ss;
 					std::vector<std::string> sd2 = *itt2;
-					ss << sd2[0];
-					ss >> deviceID;
-					sgitem.memberID.push_back(deviceID);
+					sgitem.memberID.push_back(std::stoull(sd2[0]));
 				}
 			}
 			m_scenesgroups[sgitem.ID] = sgitem;
@@ -623,6 +639,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 		_tDeviceStatus sitem = itt->second;
 		std::vector<std::string> splitresults;
 		StringSplit(sitem.sValue, ";", splitresults);
+
+		if ((itt->second.devType == pTypeGeneral) && (itt->second.subType == sTypeCounterIncremental))
+			splitresults.clear();
 
 		float temp = 0;
 		float chill = 0;
@@ -855,8 +874,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		{
 			if (!splitresults.empty())
 			{
-				if ((sitem.subType == sTypeVisibility)
-					|| (sitem.subType == sTypeSolarRadiation))
+				if ((sitem.subType == sTypeVisibility) || (sitem.subType == sTypeSolarRadiation))
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
@@ -893,25 +911,23 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
+					uint64_t total_min, total_max, total_real;
+					std::vector<std::vector<std::string> > result2;
+
+					result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
+					total_max = std::stoull(result2[0][0]);
+
 					//get value of today
 					std::string szDate = TimeToString(NULL, TF_Date);
-					std::vector<std::vector<std::string> > result2;
-					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate.c_str());
 					if (!result2.empty())
 					{
-						std::vector<std::string> sd2 = result2[0];
-
-						unsigned long long total_min, total_max, total_real;
-
-						std::stringstream s_str1(sd2[0]);
-						s_str1 >> total_min;
-						std::stringstream s_str2(sd2[1]);
-						s_str2 >> total_max;
+						total_min = std::stoull(result2[0][0]);
 						total_real = total_max - total_min;
 
 						char szTmp[100];
-						sprintf(szTmp, "%llu", total_real);
+						sprintf(szTmp, "%" PRIu64, total_real);
 
 						float musage = 0;
 						_eMeterType metertype = (_eMeterType)sitem.switchtype;
@@ -931,7 +947,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 							sprintf(szTmp, "%.02f m3", musage);
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%llu", total_real);
+							sprintf(szTmp, "%" PRIu64, total_real);
 							break;
 						default:
 							continue; //not handled
@@ -995,31 +1011,31 @@ void CEventSystem::GetCurrentMeasurementStates()
 				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
-				if (sitem.subType != sTypeRAINWU)
+				if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
 				{
 					result2 = m_sql.safe_query(
-						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 						sitem.ID, szDate.c_str());
 				}
 				else
 				{
 					result2 = m_sql.safe_query(
-						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate.c_str());
 				}
 				if (!result2.empty())
 				{
 					double total_real = 0;
 					std::vector<std::string> sd2 = result2[0];
-					if (sitem.subType != sTypeRAINWU)
+					if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
+					{
+						total_real = atof(sd2[1].c_str());
+					}
+					else
 					{
 						float total_min = static_cast<float>(atof(sd2[0].c_str()));
 						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
 						total_real = total_max - total_min;
-					}
-					else
-					{
-						total_real = atof(sd2[1].c_str());
 					}
 					rainmm = float(total_real);
 				}
@@ -1037,13 +1053,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				std::vector<std::string> sd2 = result2[0];
 
-				unsigned long long total_min_gas, total_real_gas;
-				unsigned long long gasactual;
+				uint64_t total_min_gas, total_real_gas;
+				uint64_t gasactual;
 
-				std::stringstream s_str1(sd2[0]);
-				s_str1 >> total_min_gas;
-				std::stringstream s_str2(sitem.sValue);
-				s_str2 >> gasactual;
+				total_min_gas = std::stoull(sd2[0]);
+				gasactual = std::stoull(sitem.sValue);
 				total_real_gas = gasactual - total_min_gas;
 				utilityval = float(total_real_gas) / GasDivider;
 				isUtility = true;
@@ -1062,16 +1076,14 @@ void CEventSystem::GetCurrentMeasurementStates()
 				{
 					std::vector<std::string> sd2 = result2[0];
 
-					unsigned long long total_min, total_max, total_real;
+					uint64_t total_min, total_max, total_real;
 
-					std::stringstream s_str1(sd2[0]);
-					s_str1 >> total_min;
-					std::stringstream s_str2(sd2[1]);
-					s_str2 >> total_max;
+					total_min = std::stoull(sd2[0]);
+					total_max = std::stoull(sd2[1]);
 					total_real = total_max - total_min;
 
 					char szTmp[100];
-					sprintf(szTmp, "%llu", total_real);
+					sprintf(szTmp, "%" PRIu64, total_real);
 
 					float musage = 0;
 					_eMeterType metertype = (_eMeterType)sitem.switchtype;
@@ -1091,7 +1103,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 						sprintf(szTmp, "%.02f m3", musage);
 						break;
 					case MTYPE_COUNTER:
-						sprintf(szTmp, "%llu", total_real);
+						sprintf(szTmp, "%" PRIu64, total_real);
 						break;
 					default:
 						continue; //not handled
@@ -1269,11 +1281,12 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	if (m_eventtrigger.size() > 0)
 	{
 		time_t atime = mytime(NULL) + static_cast<int>(fDelayTime);
-		std::vector<_tEventTrigger>::iterator itt;
-		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
+		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
-			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later queued items
-				itt = m_eventtrigger.erase(itt) - 1;
+			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later or equal queued items
+			{
+				m_eventtrigger.erase(itt--);
+			}
 		}
 	}
 	_tEventTrigger item;
@@ -1321,7 +1334,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 }
 
 
-void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate)
+void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
@@ -1329,29 +1342,24 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(ulDevID);
-	if (itt != m_uservariables.end())
+	if (itt == m_uservariables.end())
+		return; //not found
+
+	_tUserVariable replaceitem = itt->second;
+
+	replaceitem.variableValue = varValue;
+
+	if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 	{
-		_tUserVariable replaceitem = itt->second;
-		if (!varName.empty())
-			replaceitem.variableName = varName;
-		if (!varValue.empty())
-			replaceitem.variableValue = varValue;
-		if (varType != -1)
-			replaceitem.variableType = varType;
-
-		if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
-		{
-			_tEventQueue item;
-			item.reason = REASON_USERVARIABLE;
-			item.id = ulDevID;
-			item.sValue = varValue;
-			item.lastUpdate = itt->second.lastUpdate;
-			m_eventqueue.push(item);
-		}
-		replaceitem.lastUpdate = lastUpdate;
-		itt->second = replaceitem;
-
+		_tEventQueue item;
+		item.reason = REASON_USERVARIABLE;
+		item.id = ulDevID;
+		item.sValue = varValue;
+		item.lastUpdate = itt->second.lastUpdate;
+		m_eventqueue.push(item);
 	}
+	replaceitem.lastUpdate = lastUpdate;
+	itt->second = replaceitem;
 }
 
 std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
@@ -1430,14 +1438,13 @@ void CEventSystem::EventQueueThread()
 	std::vector<_tEventQueue> items;
 	std::vector<_tEventQueue>::const_iterator itt;
 
-	while (!m_stoprequested)
+	while (!m_TaskQueue.IsStopRequested(0))
 	{
-		bool hasPopped = m_eventqueue.timed_wait_and_pop<boost::posix_time::milliseconds>(item, boost::posix_time::milliseconds(5000));
-
+		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
 		if (!hasPopped)
 			continue;
 
-		if (m_stoprequested)
+		if (m_TaskQueue.IsStopRequested(0))
 			break;
 #ifdef _DEBUG
 		//_log.Log(LOG_STATUS, "EventSystem: \n reason => %d\n id => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n lastUpdate => %s\n lastLevel => %d\n",
@@ -1459,6 +1466,9 @@ void CEventSystem::EventQueueThread()
 		EvaluateEvent(items);
 		items.clear();
 	}
+	m_eventqueue.clear();
+
+	_log.Log(LOG_STATUS, "EventSystem: Queue thread stopped...");
 }
 
 
@@ -1477,6 +1487,31 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
+		std::string osValue = sValue;
+
+		if ((devType == pTypeGeneral) && (subType == sTypeCounterIncremental))
+		{
+			//special case for incremental counter, need to calculate the actual count value
+
+			//get value of today
+			std::string szDate = TimeToString(NULL, TF_Date);
+			std::vector<std::vector<std::string> > result2;
+
+			uint64_t total_min, total_max, total_real;
+
+			result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", ulDevID);
+			total_max = std::stoull(result2[0][0]);
+
+			result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", ulDevID, szDate.c_str());
+			if (!result2.empty())
+			{
+				total_min = std::stoull(result2[0][0]);
+				total_real = total_max - total_min;
+
+				osValue = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
+			}
+		}
+
 		if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 		{
 			_tEventQueue item;
@@ -1484,8 +1519,8 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			item.id = ulDevID;
 			item.devname = devname;
 			item.nValue = nValue;
-			item.sValue = sValue;
-			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
+			item.sValue = osValue;
+			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, "", 255, options);
 			item.trigger = NULL;
 			boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 			std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
@@ -1508,7 +1543,7 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			m_eventqueue.push(item);
 		}
 		else
-			UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
+			UpdateSingleState(ulDevID, devname, nValue, osValue.c_str(), devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
 	}
 	else
 	{
@@ -1726,7 +1761,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "variable");
 	uservariablesMutexLock.unlock();
 
-	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
+	std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
 
 	if (m_tempValuesByID.size() > 0) {
@@ -1885,17 +1920,11 @@ lua_State *CEventSystem::ParseBlocklyLua(lua_State *lua_state, const _tEventItem
 	// Replace Sunrise and sunset placeholder with actual time for query
 	if (conditions.find("@Sunrise") != std::string::npos)
 	{
-		int intRise = getSunRiseSunSetMinutes("Sunrise");
-		std::stringstream ssRise;
-		ssRise << intRise;
-		stdreplace(conditions, "@Sunrise", ssRise.str());
+		stdreplace(conditions, "@Sunrise", std::to_string(getSunRiseSunSetMinutes("Sunrise")));
 	}
 	if (conditions.find("@Sunset") != std::string::npos)
 	{
-		int intSet = getSunRiseSunSetMinutes("Sunset");
-		std::stringstream ssSet;
-		ssSet << intSet;
-		stdreplace(conditions, "@Sunset", ssSet.str());
+		stdreplace(conditions, "@Sunset", std::to_string(getSunRiseSunSetMinutes("Sunset")));
 	}
 
 	std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
@@ -2266,61 +2295,45 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		else if (deviceName.find("Variable:") == 0)
 		{
 			std::string variableNo = deviceName.substr(9);
-			float afterTimerSeconds = 0;
-			size_t aFind = doWhat.find(" AFTER ");
-			if ((aFind > 0) && (aFind != std::string::npos)) {
-				std::string delayString = doWhat.substr(aFind + 7);
-				std::string newAction = doWhat.substr(0, aFind);
-				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-				doWhat = newAction;
-				StripQuotes(doWhat);
-			}
-			doWhat = ProcessVariableArgument(doWhat);
-			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0;
+			ParseActionString(doWhat, parseResult);
+			StripQuotes(parseResult.sCommand);
+
+			doWhat = ProcessVariableArgument(parseResult.sCommand);
+			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == '%q')", variableNo.c_str());
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
-					std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
-					if (updateResult != "OK") {
-						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+					std::string errorMessage;
+					if (!m_sql.UpdateUserVariable(variableNo, sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), doWhat, false, errorMessage))
+					{
+						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
 				}
 			}
 			else
-			{
-				float DelayTime = afterTimerSeconds;
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
-			}
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
+
 			actionsDone = true;
 			continue;
 		}
 		else if (deviceName.find("Text:") == 0)
 		{
 			std::string variableName = deviceName.substr(5);
-			float afterTimerSeconds = 0;
-			size_t aFind = doWhat.find(" AFTER ");
-			if ((aFind > 0) && (aFind != std::string::npos)) {
-				std::string delayString = doWhat.substr(aFind + 7);
-				std::string newAction = doWhat.substr(0, aFind);
-				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-				doWhat = newAction;
-				StripQuotes(doWhat);
-			}
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0;
+			ParseActionString(doWhat, parseResult);
+			StripQuotes(parseResult.sCommand);
 
-			std::vector<std::vector<std::string> > result;
-
-			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
-			{
-				UpdateDevice(atoi(variableName.c_str()), 0, doWhat, false, false);
-			}
+			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
+				UpdateDevice(atoi(variableName.c_str()), 0, parseResult.sCommand, false, false);
 			else
-			{
-				float DelayTime = afterTimerSeconds;
-				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(DelayTime, (const uint64_t)atol(variableName.c_str()), 0, doWhat, false, false));
-			}
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(parseResult.fAfterSec, (const uint64_t)atol(variableName.c_str()), 0, parseResult.sCommand, false, false));
+
 			actionsDone = true;
 		}
 		else if (deviceName.find("SendCamera:") == 0)
@@ -2411,7 +2424,10 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		}
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
-			OpenURL(doWhat);
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0.2f;
+			ParseActionString(doWhat, parseResult);
+			OpenURL(parseResult.fAfterSec, parseResult.sCommand);
 			actionsDone = true;
 			continue;
 		}
@@ -2476,6 +2492,8 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			}
 			else if (aParam.size() == 5)
 			{
+				priority = aParam[2];
+				sound = aParam[3];
 				subsystem = aParam[4];
 			}
 			m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, std::string(""), atoi(priority.c_str()), sound, subsystem));
@@ -2485,15 +2503,10 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		else if (deviceName.find("CustomCommand:") == 0)
 		{
 			int idx = atoi(deviceName.substr(14).c_str());
-			float afterTimerSeconds = 0;
-			size_t aFind = doWhat.find(" AFTER ");
-			if ((aFind > 0) && (aFind != std::string::npos)) {
-				std::string delayString = doWhat.substr(aFind + 7);
-				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-				doWhat = doWhat.substr(0, aFind);
-				StripQuotes(doWhat);
-			}
-			m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, doWhat));
+			_tActionParseResults parseResult;
+			parseResult.fAfterSec = 0;
+			ParseActionString(doWhat, parseResult);
+			m_sql.AddTaskItem(_tTaskItem::CustomCommand(parseResult.fAfterSec, idx, doWhat));
 			actionsDone = true;
 			continue;
 		}
@@ -2529,6 +2542,9 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 			iLastTokenType = 5;
 		}
 		else if (sToken == "TURN") {
+			iLastTokenType = 0;
+		}
+		else if (sToken == "TRIGGER") {
 			iLastTokenType = 0;
 		}
 		else if (sToken == "NOTRIGGER")
@@ -2612,17 +2628,14 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 		std::vector<std::string> sd = result[0];
 
 		std::string doWhat = std::string(Action);
-		float afterTimerSeconds = 0;
-		size_t aFind = doWhat.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = doWhat.substr(aFind + 7);
-			doWhat = doWhat.substr(0, aFind);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-		}
-		doWhat = ProcessVariableArgument(doWhat);
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(doWhat, parseResult);
+
+		doWhat = ProcessVariableArgument(parseResult.sCommand);
 
 		uint64_t idx = atol(sd[0].c_str());
-		m_sql.AddTaskItem(_tTaskItem::SetVariable(afterTimerSeconds, idx, doWhat, false));
+		m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, idx, doWhat, false));
 
 		return true;
 	}
@@ -2653,15 +2666,10 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 	else if (ID.find("CustomCommand:") == 0) {
 		int idx = atoi(ID.substr(14).c_str());
 		std::string doWhat = std::string(Action);
-		float afterTimerSeconds = 0;
-		size_t aFind = Action.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = doWhat.substr(aFind + 7);
-			doWhat = doWhat.substr(0, aFind);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			StripQuotes(doWhat);
-		}
-		m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, doWhat));
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(doWhat, parseResult);
+		m_sql.AddTaskItem(_tTaskItem::CustomCommand(parseResult.fAfterSec, idx, doWhat));
 		return true;
 	}
 	return ScheduleEvent(ID, Action, eventName);
@@ -2742,7 +2750,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	lua_setglobal(lua_state, "print");
 
 	{
-		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
+		std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 		GetCurrentMeasurementStates();
 
 		float thisDeviceTemp = 0;
@@ -3157,7 +3165,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString)
 {
-	boost::lock_guard<boost::mutex> l(luaMutex);
+	std::lock_guard<std::mutex> l(luaMutex);
 
 	lua_State *lua_state;
 	lua_state = luaL_newstate();
@@ -3211,12 +3219,21 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		else
 			dayTimeBool = true; // Sun above horizon in the space of 24 hours
 	}
-	else if ((minutesSinceMidnight > sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
+	else if ((minutesSinceMidnight >= sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
 		dayTimeBool = true;
 	}
 	else {
 		nightTimeBool = true;
 	}
+
+	bool civilDaytTime = false;
+	bool civilNightTime = false;
+    if ((minutesSinceMidnight >= sunTimers[3]) && (minutesSinceMidnight < sunTimers[4])) {
+        civilDaytTime = true;
+    }
+    else {
+        civilNightTime = true;
+    }
 
 	lua_createtable(lua_state, 4, 0);
 	lua_pushstring(lua_state, "Daytime");
@@ -3224,6 +3241,12 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "Nighttime");
 	lua_pushboolean(lua_state, nightTimeBool);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "Civildaytime");
+	lua_pushboolean(lua_state, civilDaytTime);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "Civilnighttime");
+	lua_pushboolean(lua_state, civilNightTime);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunriseInMinutes");
 	lua_pushnumber(lua_state, sunTimers[0]);
@@ -3274,10 +3297,10 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	if (status == 0)
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
-		//luaThread = boost::thread(&CEventSystem::luaThread, lua_state, filename);
-		//boost::shared_ptr<boost::thread> luaThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename)));
+
 		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
-		//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
+		SetThreadName(luaThread.native_handle(), "luaThread");
+
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());
@@ -3490,7 +3513,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	else if (lCommand == "OpenURL")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
-		OpenURL(luaString);
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0.2f;
+		ParseActionString(luaString, parseResult);
+		OpenURL(parseResult.fAfterSec, parseResult.sCommand);
 		scriptTrue = true;
 	}
 	else if (lCommand == "UpdateDevice")
@@ -3503,10 +3529,8 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			return false;
 		}
 		int nValue = -1, Protected = -1;
-		uint64_t idx;
 		std::string sValue;
-		std::stringstream ssIdx(strarray[0]);
-		ssIdx >> idx;
+		uint64_t idx = std::stoull(strarray[0]);
 		if (strarray.size() > 1 && !strarray[1].empty())
 			nValue = atoi(strarray[1].c_str());
 		if (strarray.size() > 2 && !strarray[2].empty())
@@ -3524,37 +3548,28 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		std::vector<std::vector<std::string> > result;
 
-		float afterTimerSeconds = 0;
-		size_t aFind = variableValue.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos))
-		{
-			std::string delayString = variableValue.substr(aFind + 7);
-			std::string newAction = variableValue.substr(0, aFind);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			variableValue = newAction;
-		}
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(variableValue, parseResult);
 
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
-			variableValue = ProcessVariableArgument(variableValue);
+			variableValue = ProcessVariableArgument(parseResult.sCommand);
 
-			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
+			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
-				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
-				if (updateResult != "OK") {
-					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
+				std::string errorMessage;
+				if (!m_sql.UpdateUserVariable(sd[0], variableName, (const _eUsrVariableType)atoi(sd[1].c_str()), variableValue, false, errorMessage))
+				{
+					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), errorMessage.c_str());
 				}
 			}
 			else
 			{
-				float DelayTime = afterTimerSeconds;
-				uint64_t idx;
-				std::stringstream sstr;
-				sstr << sd[0];
-				sstr >> idx;
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, false));
+				uint64_t idx = std::stoull(sd[0]);
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, idx, variableValue, false));
 			}
 			scriptTrue = true;
 		}
@@ -3588,15 +3603,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	{
 		int idx = atoi(lCommand.substr(14).c_str());
 		std::string luaString = lua_tostring(lua_state, -1);
-		float afterTimerSeconds = 0;
-		size_t aFind = luaString.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = luaString.substr(aFind + 7);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			luaString = luaString.substr(0, aFind);
-			StripQuotes(luaString);
-		}
-		m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, luaString));
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(luaString, parseResult);
+		m_sql.AddTaskItem(_tTaskItem::CustomCommand(parseResult.fAfterSec, idx, luaString));
 	}
 	else
 	{
@@ -3634,7 +3644,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 {
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate, HardwareID, DeviceID FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
+	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate, HardwareID, DeviceID, Unit FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
 		idx);
 	if (!result.empty())
 	{
@@ -3652,6 +3662,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		std::string db_LastUpdate = sd[9];
 		int HardwareID = atoi(sd[10].c_str());
 		std::string DeviceID = sd[11];
+		int Unit = atoi(sd[12].c_str());
 
 		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
@@ -3729,27 +3740,24 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			break;
 		}
 
-		std::stringstream sIdx;
-		sIdx << idx;
-
 		//Check if it's a setpoint device, and if so, set the actual setpoint
 		if (
 			((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
 			(devType == pTypeRadiator1 && !sValue.empty())
 			)
 		{
-			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
-			m_mainworker.SetSetPoint(sIdx.str(), static_cast<float>(atof(sValue.c_str())));
+			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device '%s' (%g) ....", dname.c_str(), static_cast<float>(atof(sValue.c_str())));
+			m_mainworker.SetSetPoint(std::to_string(idx), static_cast<float>(atof(sValue.c_str())));
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nValue != -1)
 		{
-			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
-			m_mainworker.SetZWaveThermostatMode(sIdx.str(), nValue);
+			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device '%s' ....", dname.c_str());
+			m_mainworker.SetZWaveThermostatMode(std::to_string(idx), nValue);
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nValue != -1)
 		{
-			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
-			m_mainworker.SetZWaveThermostatFanMode(sIdx.str(), nValue);
+			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device '%s' ....", dname.c_str());
+			m_mainworker.SetZWaveThermostatFanMode(std::to_string(idx), nValue);
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeTextStatus))
 		{
@@ -3777,16 +3785,22 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		}
 		if (bEventTrigger)
 			ProcessDevice(0, idx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname);
+
+		//Handle notifications
+		m_notifications.CheckAndHandleNotification(idx, HardwareID, DeviceID, dname, Unit, devType, subType, nValue, sValue);
 	}
 	else
 		_log.Log(LOG_ERROR, "EventSystem: UpdateDevice IDX %" PRIu64 " not found!", idx);
 }
 
-void CEventSystem::OpenURL(const std::string &URL)
+void CEventSystem::OpenURL(const float delay, const std::string &URL)
 {
-	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
+	if (!delay)
+		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s...", URL.c_str());
+	else
+		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s after %.1f seconds...", URL.c_str(), delay);
 
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL"));
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delay, URL, "OpenURL"));
 	// maybe do something with sResult in the future.
 }
 
@@ -3843,25 +3857,18 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 		if (result.empty())
 			return false;
 
-		std::string cAction = Action;
-		float delay = 0;
-		size_t aFind = Action.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = Action.substr(aFind + 7);
-			std::string newAction = Action.substr(0, aFind);
-			delay = static_cast<float>(atof(delayString.c_str()));
-			cAction = newAction;
-		}
-		StripQuotes(cAction);
+		_tActionParseResults parseResult;
+		parseResult.fAfterSec = 0;
+		ParseActionString(Action, parseResult);
+		StripQuotes(parseResult.sCommand);
 
-
-		std::string subject = cAction;
-		if (delay < (1. / timer_resolution_hz / 2))
+		std::string subject = parseResult.sCommand;
+		if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 		{
 			m_mainworker.m_cameras.EmailCameraSnapshot(deviceName, subject);
 		}
 		else
-			m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(delay, deviceName, subject));
+			m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(parseResult.fAfterSec, deviceName, subject));
 		return true;
 	}
 
@@ -3892,7 +3899,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	int level = 0;
 	devicestatesMutexLock.unlock();
 
-	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0, true };
+	_tActionParseResults oParseResults;
+	oParseResults.bEventTrigger = true;
+
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {
@@ -4092,16 +4101,13 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	}
 	else if (dType == pTypeHUM)
 	{
-		std::stringstream sstr; sstr << nValue;
-		lstatus = sstr.str();
+		lstatus = std::to_string(nValue);
 	}
 	else if (switchtype == STYPE_Selector)
 	{
 		std::map<std::string, std::string> statuses;
 		GetSelectorSwitchStatuses(options, statuses);
-		std::stringstream sslevel;
-		sslevel << llevel;
-		lstatus = statuses[sslevel.str()];
+		lstatus = statuses[std::to_string(llevel)];
 	}
 	else if ((switchtype == STYPE_Contact) || (switchtype == STYPE_DoorContact))
 	{
@@ -4201,9 +4207,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		//OJO if lstatus  is still empty we use nValue for lstatus. ss for conversion
 		if (lstatus == "")
 		{
-			std::stringstream ss;
-			ss << (unsigned int)nValue;
-			lstatus = ss.str();
+			lstatus = std::to_string(nValue);
 		}
 	}
 	return lstatus;

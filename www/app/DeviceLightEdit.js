@@ -1,63 +1,94 @@
-define(['app'], function (app) {
+define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
     app.component('deviceIconSelect', {
         template: '<select id="icon-select"></select>',
+        bindings: {
+            switchType: '<'
+        },
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function ($element, domoticzApi) {
+        controller: function ($element, domoticzApi, dzDefaultSwitchIcons) {
             var vm = this;
-            var icons = [];
+            var switch_icons = [];
+
+            function updateSelector(bFromUser) {
+                switch_icons[0].imageSrc = dzDefaultSwitchIcons[vm.switchType]
+                    ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
+                    : 'images/Generic48_On.png';
+
+                $element.find('#icon-select').ddslick('destroy');
+                $element.find('#icon-select').ddslick({
+                    data: switch_icons,
+                    width: 260,
+                    height: 390,
+                    selectText: 'Select Switch Icon',
+                    imagePosition: 'left',
+                    onSelected: function (data) {
+                        vm.ngModelCtrl.$setViewValue(data.selectedData.value);
+                    }
+                });
+                if (bFromUser) {
+					$element.find('#icon-select').ddslick('select', { index: 0 });
+				}
+
+                vm.ngModelCtrl.$render();
+            }
 
             vm.$onInit = function () {
                 // TODO: Add caching mechanism for this request
                 domoticzApi.sendRequest({
                     type: 'custom_light_icons'
                 }).then(function (data) {
-                    icons = (data.result || []).map(function (item) {
-                        return {
-                            text: item.text,
-                            value: item.idx,
-                            selected: false,
-                            description: item.description,
-                            imageSrc: 'images/' + item.imageSrc + '48_On.png'
-                        };
+                    switch_icons = (data.result || [])
+                        .filter(function (item) {
+                            return item.idx !== 0;
+                        })
+                        .map(function (item) {
+                            return {
+                                text: item.text,
+                                value: item.idx,
+                                selected: false,
+                                description: item.description,
+                                imageSrc: 'images/' + item.imageSrc + '48_On.png'
+                            };
+                        });
+
+                    switch_icons.unshift({
+                        text: 'Default',
+                        value: 0,
+                        selected: false,
+                        description: 'Default icon'
                     });
 
-                    $element.find('#icon-select').ddslick({
-                        data: icons,
-                        width: 260,
-                        height: 390,
-                        selectText: "Select Switch Icon",
-                        imagePosition: "left",
-                        onSelected: function (data) {
-                            vm.ngModelCtrl.$setViewValue(data.selectedData.value);
-                        }
-                    });
-
-                    vm.ngModelCtrl.$render();
+                    updateSelector(false);
                 });
 
                 vm.ngModelCtrl.$render = function () {
                     var value = vm.ngModelCtrl.$modelValue;
 
-                    icons.forEach(function (item, index) {
+                    switch_icons.forEach(function (item, index) {
                         if (item.value === value) {
-                            $element.find('#icon-select').ddslick('select', {index: index});
+                            $element.find('#icon-select').ddslick('select', { index: index });
                         }
                     });
                 };
             };
+
+            vm.$onChanges = function (changes) {
+                if (changes.switchType && switch_icons.length > 0) {
+                    updateSelector(true);
+                }
+            }
         }
     });
 
-    // TODO: Try to reuse this component
-    app.component('rgbwPicker', {
+    app.component('deviceColorSettings', {
         templateUrl: 'views/rgbwPicker.html',
         bindings: {
             device: '='
         },
-        controller: function ($element, domoticzApi, deviceLightApi) {
+        controller: function ($scope, domoticzApi, deviceLightApi) {
             var $ctrl = this;
 
             $ctrl.$onInit = init;
@@ -73,21 +104,17 @@ define(['app'], function (app) {
             $ctrl.colorColder = withDevice(deviceLightApi.colorColder);
 
             function init() {
-                var maxDimLevel = 100;
-                var className = 'js-rgbwPicker-' + (+new Date());
-                $element.addClass(className);
+                var getColor = function () {
+                    return $ctrl.device.Color + $ctrl.device.LevelInt;
+                };
 
-                ShowRGBWPicker(
-                    '.' + className,
-                    $ctrl.device.idx,
-                    $ctrl.device.Protected,
-                    $ctrl.device.MaxDimLevel || maxDimLevel,
-                    $ctrl.device.LevelInt || 0,
-                    $ctrl.device.Color,
-                    $ctrl.device.SubType,
-                    $ctrl.device.DimmerType,
-                    updateColor
-                )
+                $scope.$watch(getColor, function (newValue, oldValue) {
+                    if (oldValue === newValue) {
+                        return;
+                    }
+
+                    deviceLightApi.setColor($ctrl.device.idx, $ctrl.device.Color, $ctrl.device.LevelInt)
+                });
             }
 
             function withDevice(fn) {
@@ -98,23 +125,14 @@ define(['app'], function (app) {
 
             // returns true if the light does not support absolute dimming, used to control display of Brightness Up / Brightness Down buttons
             function isRelativeDimmer() {
-                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === "rel";
+                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === 'rel';
             }
 
             // returns true if the light does not support absolute color temperature, used to control display of Warmer White / Colder White buttons
             function isRelativeColorTemperature() {
                 var ledType = getLEDType($ctrl.device.SubType);
 
-                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === "rel" && ledType.bHasTemperature;
-            }
-
-            function updateColor(deviceIdx, JSONColor, dimlevel) {
-                deviceLightApi
-                    .setColor(deviceIdx, JSONColor, dimlevel)
-                    .then(function() {
-                        $ctrl.device.Color = JSONColor;
-                        $ctrl.device.LevelInt = dimlevel;
-                    });
+                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === 'rel' && ledType.bHasTemperature;
             }
         }
     });
@@ -125,7 +143,7 @@ define(['app'], function (app) {
             deviceIdx: '<'
         },
         controllerAs: 'vm',
-        controller: function ($scope, $element, domoticzApi, dataTableDefaultSettings) {
+        controller: function ($scope, $element, domoticzApi, deviceApi, dataTableDefaultSettings) {
             var vm = this;
             var table;
 
@@ -138,7 +156,7 @@ define(['app'], function (app) {
                 table = $element.find('#subdevicestable').dataTable(Object.assign({}, dataTableDefaultSettings, {
                     sDom: '<"H"frC>t<"F"i>',
                     columns: [
-                        {title: $.t('Name'), data: 'Name'}
+                        { title: $.t('Name'), data: 'Name' }
                     ],
                     select: {
                         className: 'row_selected',
@@ -153,8 +171,8 @@ define(['app'], function (app) {
                 });
 
                 // TODO: Add caching mechanism for this request
-                domoticzApi.sendCommand('getlightswitches').then(function (data) {
-                    vm.lightsAndSwitches = (data.result || [])
+                deviceApi.getLightsDevices().then(function (devices) {
+                    vm.lightsAndSwitches = devices;
                 });
 
                 refreshTable();
@@ -182,7 +200,7 @@ define(['app'], function (app) {
             }
 
             function deleteSubDevice() {
-                bootbox.confirm($.t("Are you sure to delete this Sub/Slave Device?\n\nThis action can not be undone..."), function (result) {
+                bootbox.confirm($.t('Are you sure to delete this Sub/Slave Device?\n\nThis action can not be undone...'), function (result) {
                     if (result !== true) {
                         return
                     }
@@ -194,7 +212,7 @@ define(['app'], function (app) {
             }
 
             function clearSubDevices() {
-                bootbox.confirm($.t("Are you sure to delete ALL Sub/Slave Devices?\n\nThis action can not be undone!"), function (result) {
+                bootbox.confirm($.t('Are you sure to delete ALL Sub/Slave Devices?\n\nThis action can not be undone!'), function (result) {
                     if (result !== true) {
                         return;
                     }
@@ -226,10 +244,10 @@ define(['app'], function (app) {
                     searching: false,
                     paging: false,
                     columns: [
-                        {title: $.t('Level'), data: 'level', render: levelRenderer},
-                        {title: $.t('Level name'), data: 'name'},
-                        {title: $.t('Order'), data: 'level', render: orderRenderer},
-                        {title: '', data: 'level', render: actionsRenderer},
+                        { title: $.t('Level'), data: 'level', render: levelRenderer },
+                        { title: $.t('Level name'), data: 'name' },
+                        { title: $.t('Order'), data: 'level', render: orderRenderer },
+                        { title: '', data: 'level', render: actionsRenderer },
                     ],
                 });
 
@@ -254,7 +272,7 @@ define(['app'], function (app) {
                     $modal.open({
                         templateUrl: 'views/device/levelRenameModal.html',
                         scope: scope
-                    }).result.then(function(name) {
+                    }).result.then(function (name) {
                         setLevelName(row.level, name);
                     });
                 });
@@ -304,7 +322,7 @@ define(['app'], function (app) {
 
             function addLevel() {
                 var levels = vm.ngModelCtrl.$modelValue;
-                var levelName = vm.newLevelName.replace(/[:;|<>]/g, "").trim();
+                var levelName = vm.newLevelName.replace(/[:;|<>]/g, '').trim();
 
                 var newItem = {
                     level: levels.length,
@@ -323,7 +341,7 @@ define(['app'], function (app) {
                         return item.level !== index;
                     })
                     .map(function (item, index) {
-                        return Object.assign({}, item, {level: index});
+                        return Object.assign({}, item, { level: index });
                     });
 
                 vm.ngModelCtrl.$setViewValue(levels);
@@ -337,13 +355,13 @@ define(['app'], function (app) {
             function orderRenderer(level) {
                 var images = [];
 
-                if (level > 0 && level < (vm.ngModelCtrl.$modelValue.length - 1)) {
+                if (level < (vm.ngModelCtrl.$modelValue.length - 1)) {
                     images.push('<img src="images/down.png" class="lcursor js-order-down" width="16" height="16"></img>');
                 } else {
                     images.push('<img src="images/empty16.png" width="16" height="16"></img>');
                 }
 
-                if (level >= 2) {
+                if (level > 0) {
                     images.push('<img src="images/up.png" class="lcursor js-order-up" width="16" height="16"></img>');
                 }
 
@@ -358,9 +376,7 @@ define(['app'], function (app) {
                     actions.push('<img src="images/delete.png" title="' + $.t('Delete') + '" class="lcursor js-delete" width="16" height="16"></img>');
                 }
 
-                return level === 0
-                    ? ''
-                    : actions.join('&nbsp;');
+                return actions.join('&nbsp;');
             }
         }
     });
@@ -381,9 +397,9 @@ define(['app'], function (app) {
                     info: false,
                     paging: false,
                     columns: [
-                        {title: $.t('Level'), data: 'level', render: levelRenderer},
-                        {title: $.t('Action'), data: 'action', render: actionRenderer},
-                        {title: '', data: null, render: actionsRenderer}
+                        { title: $.t('Level'), data: 'level', render: levelRenderer },
+                        { title: $.t('Action'), data: 'action', render: actionRenderer },
+                        { title: '', data: null, render: actionsRenderer }
                     ]
                 });
 
@@ -402,7 +418,7 @@ define(['app'], function (app) {
                     $modal.open({
                         templateUrl: 'views/device/editSelectorActionModal.html',
                         scope: scope
-                    }).result.then(function(action) {
+                    }).result.then(function (action) {
                         setLevelAction(row.level, action);
                     });
                 });
@@ -435,23 +451,24 @@ define(['app'], function (app) {
             function levelRenderer(level) {
                 return level * 10;
             }
-            
-            var escapeHTML = function(unsafe) {
-				return unsafe.replace(/[&<"']/g, function(m) {
-					switch (m) {
-						case '&':
-							return '&amp;';
-						case '<':
-							return '&lt;';
-						case '"':
-							return '&quot;';
-						default:
-							return '&#039;';
-						}
-					});
-			};
+
+            var escapeHTML = function (unsafe) {
+                return unsafe.replace(/[&<"']/g, function (m) {
+                    switch (m) {
+                        case '&':
+                            return '&amp;';
+                        case '<':
+                            return '&lt;';
+                        case '"':
+                            return '&quot;';
+                        default:
+                            return '&#039;';
+                    }
+                });
+            };
+
             function actionRenderer(action) {
-				return escapeHTML(action);
+                return escapeHTML(action);
             }
 
             function actionsRenderer() {
@@ -526,7 +543,7 @@ define(['app'], function (app) {
                         names: acc.names.concat(level.name),
                         actions: acc.actions.concat(level.action)
                     };
-                }, {names: [], actions: []});
+                }, { names: [], actions: [] });
 
                 options.push('LevelNames:' + levelParams.names.join('|'));
                 options.push('LevelActions:' + levelParams.actions.join('|'));
@@ -559,7 +576,7 @@ define(['app'], function (app) {
                     return;
                 }
 
-                deviceApi.removeDevice(vm.deviceIdx).then(function() {
+                deviceApi.removeDevice(vm.deviceIdx).then(function () {
                     $window.history.back();
                 });
             });
@@ -590,7 +607,7 @@ define(['app'], function (app) {
         }
 
         function isSwitchIconAvailable() {
-            return [0, 7, 17, 18].includes(vm.device.SwitchTypeVal);
+            return vm.device.icon.isConfigurable();
         }
 
         function isLevelsAvailable() {

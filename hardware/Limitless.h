@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CLimitLess : public CDomoticzHardwareBase
 {
@@ -41,7 +40,6 @@ private:
 	SOCKET	m_RemoteSocket;
 	sockaddr_in m_stRemoteDestAddr;
 
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

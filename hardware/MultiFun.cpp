@@ -106,7 +106,6 @@ static std::string errors[4] =
 MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
-	m_stoprequested(false),
 	m_socket(NULL),
 	m_LastAlarms(0),
 	m_LastWarnings(0),
@@ -130,14 +129,17 @@ MultiFun::~MultiFun()
 
 bool MultiFun::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_MultiFun
 	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
 #endif
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MultiFun::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&MultiFun::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool MultiFun::StopHardware()
@@ -146,15 +148,12 @@ bool MultiFun::StopHardware()
 	_log.Log(LOG_STATUS, "MultiFun: Stop hardware");
 #endif
 
-	m_stoprequested = true;
-	
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
-
-	DestroySocket();
-
 	m_bIsStarted = false;
 	return true;
 }
@@ -169,11 +168,8 @@ void MultiFun::Do_Work()
 
 	bool firstTime = true;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -190,6 +186,7 @@ void MultiFun::Do_Work()
 #endif
 		}
 	}
+	DestroySocket();
 }
 
 bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
@@ -204,11 +201,11 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			int change;
 			if (general->cmnd == gswitch_sOn)
-			{ 
+			{
 				change = m_LastQuickAccess | (general->unitcode);
 			}
 			else
-			{ 
+			{
 				change = m_LastQuickAccess & ~(general->unitcode);
 			}
 
@@ -221,7 +218,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 			cmd[4] = 0x00; // length (2 bytes)
 			cmd[5] = 0x09;
 			cmd[6] = 0xFF; // unit id
-			cmd[7] = 0x10; // function code 
+			cmd[7] = 0x10; // function code
 			cmd[8] = 0x00; // start address (2 bytes)
 			cmd[9] = 0x21;
 			cmd[10] = 0x00; // number of sensor (2 bytes)
@@ -259,11 +256,11 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		cmd[4] = 0x00; // length (2 bytes)
 		cmd[5] = 0x09;
 		cmd[6] = 0xFF; // unit id
-		cmd[7] = 0x10; // function code 
+		cmd[7] = 0x10; // function code
 		cmd[8] = 0x00; // start address (2 bytes)
 		cmd[9] = therm->id2;
 		cmd[10] = 0x00; // number of sensor (2 bytes)
-		cmd[11] = 0x01; 
+		cmd[11] = 0x01;
 		cmd[12] = 0x02; // number of bytes
 		cmd[13] = 0x00;
 		cmd[14] = calculatedTemp;
@@ -304,14 +301,7 @@ void MultiFun::DestroySocket()
 #ifdef DEBUG_MultiFun
 		_log.Log(LOG_STATUS, "MultiFun: destroy socket");
 #endif
-		try
-		{
-			delete m_socket;
-		}
-		catch (...)
-		{
-		}
-
+		delete m_socket;
 		m_socket = NULL;
 	}
 }
@@ -327,7 +317,7 @@ void MultiFun::GetTemperatures()
 	cmd[4] = 0x00; // length (2 bytes)
 	cmd[5] = 0x06;
 	cmd[6] = 0xFF; // unit id
-	cmd[7] = 0x04; // function code 
+	cmd[7] = 0x04; // function code
 	cmd[8] = 0x00; // start address (2 bytes)
 	cmd[9] = 0x00;
 	cmd[10] = 0x00; // number of sensor (2 bytes)
@@ -349,7 +339,7 @@ void MultiFun::GetTemperatures()
 				float temp = signedVal / sensors[i].div;
 
 				if ((temp > -39) && (temp < 1000))
-				{			
+				{
 					SendTempSensor(i, 255, temp, sensors[i].name);
 				}
 				if ((i == 1) || (i == 2))
@@ -377,7 +367,7 @@ void MultiFun::GetRegisters(bool firstTime)
 	cmd[4] = 0x00; // length (2 bytes)
 	cmd[5] = 0x06;
 	cmd[6] = 0xFF; // unit id
-	cmd[7] = 0x03; // function code 
+	cmd[7] = 0x03; // function code
 	cmd[8] = 0x00; // start address (2 bytes)
 	cmd[9] = 0x00;
 	cmd[10] = 0x00; // number of sensor (2 bytes)
@@ -419,7 +409,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					m_LastAlarms = value;
 					break;
 				}
-				case 0x01: 
+				case 0x01:
 				{
 					dictionary::iterator it = warningsType.begin();
 					for (; it != warningsType.end(); ++it)
@@ -463,7 +453,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					break;
 				}
 				case 0x03:
-				{ 
+				{
 					dictionary::iterator it = statesType.begin();
 					for (; it != statesType.end(); ++it)
 					{
@@ -520,7 +510,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					else
 					{
 						//SendGeneralSwitch(i, 1, 255, state, level, name); // TODO - send level (dimmer)
-					}					
+					}
 					break;
 				}
 
@@ -562,7 +552,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 		return -1;
 	}
 
-	boost::lock_guard<boost::mutex> lock(m_mutex);
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	unsigned char databuffer[BUFFER_LENGHT];
 	int ret = -1;

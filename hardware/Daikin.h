@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CDaikin : public CDomoticzHardwareBase
 {
@@ -40,7 +39,10 @@ private:
 	std::string m_stemp;
 	std::string m_shum;
 	std::string m_led;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
+	int m_sec_counter;            
+	std::string m_dt[8];     // Memorized Temp target for each mode. 
+        std::string m_dh[8];     // Memorized Humidity target for each mode. 
+	
 };
 

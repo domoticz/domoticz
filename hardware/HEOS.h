@@ -1,12 +1,8 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-
 #include "ASyncTCP.h"
-
-#include <iosfwd>
 #include <string>
-#include <vector>
 
 class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 {
@@ -20,7 +16,7 @@ class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 		std::string		sStatus;
 		std::string		sShortStatus;
 	};
-	
+
 public:
 	CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
 	~CHEOS(void);
@@ -30,17 +26,17 @@ public:
 	void SendCommand(const std::string&, const int iValue);
 private:
 	void SendCommand(const std::string&);
-	bool isConnected() { return mIsConnected; };
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool WriteInt(const std::string &sendStr);
 	void Do_Work();
-	void OnConnect();
-	void OnDisconnect();
-	void OnData(const unsigned char *pData, size_t length);
-	void OnError(const std::exception e);
-	void OnError(const boost::system::error_code& error);
+
+	void OnConnect() override;
+	void OnDisconnect() override;
+	void OnData(const unsigned char *pData, size_t length) override;
+	void OnError(const std::exception e) override;
+	void OnError(const boost::system::error_code& error) override;
 
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
@@ -56,7 +52,7 @@ private:
 	int m_retrycntr;
 
 	int m_lastUpdate;
-	
+
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::string	m_IP;
@@ -65,10 +61,7 @@ private:
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	bool m_bDoRestart;
 	unsigned char m_buffer[1028];
-	int m_bufferpos;	
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
-
+	int m_bufferpos;
+	std::shared_ptr<std::thread> m_thread;
 };

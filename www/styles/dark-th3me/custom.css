@@ -65,21 +65,15 @@ li {
   background-image: none;
   border: none;
 }
-.bannercontent {
-  padding-top: 40px;
-  padding-bottom: 12px;
+
+#holder > .container-fluid {
+  padding-top: 51px;
 }
-/*OLD
-body {
-  background: #444 url(images/domoticz_bg.jpg) center fixed;
-  color: #ffffff;
-  background-attachment: fixed !important;
-  background-size: cover !important;
-}
-*/
+
 body {
   background: #7d7e7d;
 }
+
 /*only show special background when screen is min 1000px width, so tablets show normal background*/
 @media (min-width: 1025px) {
   body {
@@ -507,10 +501,6 @@ ul#noty_topRight_layout_container {
 .sub-tabs-apply {
   border: 1px solid transparent !important;
 }
-.btn-danger {
-  background-color: #B94A48 !important;
-  color: #d0d0d0 !important;
-}
 #bannav,
 #scenecontent > table{
   margin-top: 10px;
@@ -524,7 +514,7 @@ ul#noty_topRight_layout_container {
       margin-bottom: 10px;
   }
 }
-/* GZ changed to show history.txt in normal way */ 
+/* GZ changed to show history.txt in normal way */
 /*
 div.log {
   color: #FFF;
@@ -616,48 +606,118 @@ input[type="search"] {
   color: #d0d0d0;
   text-transform: uppercase;
 }
-.btn.btn-info,
-.btn.btn-danger {
-  border: 0px !important;
-  margin-left: 5px !important;
-}
 /*buttons database backup*/
-.btn-primary {
-  border: 0px !important;
-  background: #0088cc;
-  text-transform: uppercase;
-  padding: 8px;
-  text-decoration: none;
+
+/* Bootstrap Buttons */
+
+/*border on button and text before button*/
+.btnstyle3:before,
+.btnstyle3-dis:before,
+.btnstyle3-sel:before,
+.btn.btn-info:before,
+.btnstyle:before,
+.btnstylerev:before,
+.label.label-info.lcursor:before,
+.btn-danger:before,
+.nav-tabs  > li > a:before,
+.btn-small:before,
+.btn-success:before {
 }
-.btn-warning  {
-  border: 0px !important;
-  background: #f89406;
-  text-transform: uppercase;
-  padding: 8px;
-  text-decoration: none;
+.btnstyle3,
+.btnstyle3:disabled,
+.btnstyle3-dis,
+.btnstyle3-sel,
+.btnstyle,
+.btnstylerev,
+.label.label-info.lcursor {
+  border: 1px !important;
+  border-color: rgba(51, 51, 51, 0.51) !important;
+  border-style: solid !important;
+  color: #d0d0d0 !important;
 }
-.btn-primary:hover {
+
+.btnstyle3-sel {
+  margin-bottom: 3px;
+  color: #FFBB3F;
+  background: #353535;
+  text-transform: uppercase;
+}
+.btnstyle3:hover,
+.btnstyle3-sel:hover {
+  margin-bottom: 3px;
   color: yellow !important;
-  border: 0px !important;
+  background: #353535;
+}
+.btnstyle3:disabled {
+  opacity: 0.35;
+  background: #3c3e40;
+  text-transform: uppercase;
+}
+
+.btn {
+  border: 1px solid rgba(51, 51, 51, 0.51);
+  padding: 4px 16px;
+  text-transform: uppercase;
+  text-shadow: none;
+  color: #d0d0d0;
+}
+
+.btn.active {
+  color: yellow;
+}
+
+.btn:hover,
+.btn:focus {
+  color: yellow;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  cursor: default;
+  color: #d0d0d0;
+  opacity: 0.35;
+}
+
+.btn-default {
+  background: #3c3e40;
+}
+
+.btn-default:hover,
+.btn-default:focus,
+.btn-default.active {
+  background: #353535;
+}
+
+.btn-primary,
+.btn-primary:focus {
   background: #0088cc;
-  text-transform: uppercase;
-  padding: 8px
 }
-.btn-warning:hover  {
-  color: yellow !important;
-  border: 0px !important;
+
+.btn-danger {
+  background: #B94A48;
+  color: #d0d0d0;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background: #B94A48;
+}
+
+.btn-warning,
+.btn-warning:focus {
   background: #f89406;
-  text-transform: uppercase;
-  padding: 8px
 }
+
+.btn-link {
+  border-color: transparent;
+}
+
 .label.label-info.lcursor:hover {
   color: yellow !important;
   background: #353535 !important;
 }
 /*buttons in settings page - start*/
-.nav-tabs  > li > a,
-.btn.btn-danger,
-.btn-danger {
+.nav-tabs  > li > a {
   margin: -1px;
   margin-bottom: 3px;
   background: #444141;
@@ -667,13 +727,11 @@ input[type="search"] {
   border-color: #444141;
   position: relative;
   bottom: 0;
-  padding: 7px 11px 7px 11px !important;
+  padding: 7px 10px !important;
   text-transform: uppercase !important;
 }
 .nav-tabs  > li > a:hover,
-.sub-tabs > .active > a:hover,
-.btn.btn-danger:hover,
-.btn-danger:hover {
+.sub-tabs > .active > a:hover {
   background-image: none;
   background-color: #353535 !important;
   color: yellow !important;
@@ -699,25 +757,7 @@ input[type="search"] {
   text-transform: uppercase !important;
 }
 /*buttons in settings page - end*/
-.btnstyle3-sel {
-  margin-bottom: 3px;
-  color: #FFBB3F;
-  background: #353535;
-  text-transform: uppercase;
-}
-.btnstyle3:hover,
-.btnstyle3-sel:hover,
-.btn.btn-info:hover
- {
-  margin-bottom: 3px;
-  color: yellow !important;
-  background: #353535;
-}
-.btnstyle3:disabled {
-  opacity: 0.35;
-  background: #3c3e40;
-  text-transform: uppercase;
-}
+
 #type br {
   display: none;
 }
@@ -761,7 +801,7 @@ body table#itemtablenotype tr td:first-child+td+td+td+td+td img {
 
 /*bar color behind buttons*/
 body table#itemtable tr td:first-child + td + td + td + td + td + td,
-body table#itemtablenotype tr td:first-child + td + td + td + td + td, 
+body table#itemtablenotype tr td:first-child + td + td + td + td + td,
 body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td,
 body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td,
 body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
@@ -835,8 +875,7 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 /*Devices table*/
 .DataTables_sort_wrapper {
   text-transform: uppercase;
-  text-align: left;
-  padding: 0px 0px 0px 8px;
+  padding: 0;
   font-size: 0.9em;
 }
 .sorting,
@@ -864,35 +903,6 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   color: yellow;
 }
 
-/*border on button and text before button*/
-.btnstyle3:before,
-.btnstyle3-dis:before,
-.btnstyle3-sel:before,
-.btn.btn-info:before,
-.btnstyle:before,
-.btnstylerev:before,
-.label.label-info.lcursor:before,
-.btn-danger:before,
-.nav-tabs  > li > a:before,
-.btn-small:before,
-.btn-success:before {
-}
-.btnstyle3,
-.btnstyle3:disabled,
-.btnstyle3-dis,
-.btnstyle3-sel,
-.btn.btn-info,
-.btnstyle,
-.btnstylerev,
-.label.label-info.lcursor,
-.btn-danger,
-.btn-small,
-.btn-success {
-  border: 1px !important;
-  border-color: rgba(51, 51, 51, 0.51) !important;
-  border-style: solid !important;
-  color: #d0d0d0 !important;
-}
 /*Layout of color-picker*/
 #rgbw_popup {
   padding-right: 40px;
@@ -909,7 +919,8 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 }
 /*apply settings button in settings page*/
 .btn-danger.sub-tabs-apply {
-  margin-right: 4px !important;
+  background: #B94A48 !important;
+  color: #d0d0d0 !important;
 }
 /*button for Zwave initialization*/
 .label-important {
@@ -944,6 +955,83 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 .dropdown-submenu > a:after {
     margin-right: 0px;
 }
-.modal-body form {
-  color: #000;
+
+.page-header {
+    margin: 12px 0;
+}
+
+.events-editor {
+  top: 64px;
+  bottom: 32px;
+}
+
+.events-editor__search {
+  margin-left: 0 !important;
+}
+
+.events-editor__menu {
+  border: 1px solid #616261;
+  background-color: #777;
+  background-image: initial;
+}
+
+.events-editor__menu-item {
+  color: white !important;
+  padding: 8px !important;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.events-editor__menu-item:hover {
+  color: yellow !important;
+  background: #353535 !important;
+}
+
+.events-editor__splitter {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.events-editor__splitter:hover {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+.events-editor-file__content-table {
+  background-color: #606060;
+}
+
+.battery {
+  background-color: #FFF;
+}
+
+.battery:before, .battery:after {
+  border-color: #FFF;
+}
+
+.modal-content {
+  color: #fff;
+  background-color: #303030;
+  border: 1px solid #444;
+}
+
+.modal-header {
+  border-bottom-color: #444;
+}
+
+.modal-footer {
+  background-color: inherit;
+  border-top-color: #444;
+  box-shadow: none;
+}
+
+.modal-title,
+.bootbox-body {
+  color: inherit;
+}
+
+.modal .form-control {
+  line-height: 1.5;
+  color: #444;
+  background-color: #fff;
+  padding: 0.125rem 0.25rem;
+  border: 1px solid transparent;
 }

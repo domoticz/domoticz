@@ -78,9 +78,6 @@
     <Filter Include="Devices\ZWave">
       <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\ZWave\Razberry-ZWave">
-      <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\LimitlessLed">
       <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
     </Filter>
@@ -459,12 +456,6 @@
     <Filter Include="Devices\Teleinfo">
       <UniqueIdentifier>{b6226872-73d2-4b12-8eba-80be3ad6835f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Teleinfo\TeleinfoBase">
-      <UniqueIdentifier>{9b098c6e-b49d-aaaa-b9a2-5904c1d92edd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Teleinfo\TeleinfoSerial">
-      <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="IFTTT">
       <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
     </Filter>
@@ -494,6 +485,18 @@
     </Filter>
     <Filter Include="Devices\Tado">
       <UniqueIdentifier>{5905109f-f97e-4e18-a1dd-8baf541d6f13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\The Things Network">
+      <UniqueIdentifier>{e0229d23-0d03-456e-8b42-ef664c588bde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\The Things Network\CayenneLPP">
+      <UniqueIdentifier>{a5d41479-757d-4c56-bc6c-2943c4ada95a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{28b4175c-7997-44b0-8cf5-a27fe0b661cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Logger">
+      <UniqueIdentifier>{00a6f809-e840-406e-bb5e-4796d71ed4a4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1328,6 +1331,18 @@
     <None Include="..\www\secpanel\css\style.css">
       <Filter>www\secpanel\css</Filter>
     </None>
+    <None Include="..\www\app\DeviceLightEdit.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DummyController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\TemperatureCustomLogController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\TimerplanController.js">
+      <Filter>www\app</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1402,13 +1417,7 @@
     <ClInclude Include="..\main\appversion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\CmdLine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\Helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\localtime_r.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\mainworker.h">
@@ -1432,17 +1441,11 @@
     <ClInclude Include="..\main\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\SunRiseSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\WebServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WindowsHelper.h">
       <Filter>Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\Logger.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\Camera.h">
       <Filter>Camera</Filter>
@@ -1456,17 +1459,11 @@
     <ClInclude Include="..\hardware\TE923.h">
       <Filter>Devices\TE923</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\WindCalculation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\Rego6XXSerial.h">
       <Filter>Devices\Rego6XX</Filter>
     </ClInclude>
     <ClInclude Include="..\smtpclient\SMTPClient.h">
       <Filter>SMTP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Razberry.h">
-      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\DavisLoggerSerial.h">
       <Filter>Devices\Davis</Filter>
@@ -1509,12 +1506,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\TeleinfoSerial.h">
-      <Filter>Devices\Teleinfo\TeleinfoSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\TeleinfoBase.h">
-      <Filter>Devices\Teleinfo\TeleinfoBase</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\ZWaveBase.h">
       <Filter>Devices\ZWave</Filter>
@@ -1822,6 +1813,9 @@
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\TelldusFunctions.h">
+      <Filter>Devices\Tellstick</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\Tellstick.h">
       <Filter>Devices\Tellstick</Filter>
     </ClInclude>
@@ -1848,9 +1842,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Nest.h">
       <Filter>Devices\Nest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\concurrent_queue.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Netatmo.h">
       <Filter>Devices\Netatmo</Filter>
@@ -1911,9 +1902,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\S0MeterTCP.h">
       <Filter>Devices\S0 Meter</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\DenkoviSmartdenLan.h">
-      <Filter>Devices\Denkovi</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\AccuWeather.h">
       <Filter>Devices\AccuWeather</Filter>
@@ -2032,9 +2020,6 @@
     <ClInclude Include="..\main\IFTTT.h">
       <Filter>IFTTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
-      <Filter>Devices\Denkovi</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\USBtin.h">
       <Filter>Devices\USBtin</Filter>
     </ClInclude>
@@ -2110,6 +2095,63 @@
     <ClInclude Include="..\zip\minizip_crypt.h">
       <Filter>zip\Base</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\TTNMQTT.h">
+      <Filter>Devices\The Things Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.h">
+      <Filter>Devices\The Things Network\CayenneLPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP.h">
+      <Filter>Devices\The Things Network\CayenneLPP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviTCPDevices.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviUSBDevices.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\BaroForecastCalculator.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WindCalculation.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Noncopyable.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\concurrent_queue.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\CmdLine.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\localtime_r.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\SignalHandler.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\SunRiseSet.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Logger.h">
+      <Filter>Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\StoppableTask.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoSerial.h">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoBase.h">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\TrendCalculator.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\HardwareCereal.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2172,16 +2214,10 @@
     <ClCompile Include="..\httpclient\UrlEncode.cpp">
       <Filter>HTTPClient</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\CmdLine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\domoticz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\main\Helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\localtime_r.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\main\mainworker.cpp">
@@ -2199,17 +2235,11 @@
     <ClCompile Include="..\main\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\SunRiseSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\WebServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WindowsHelper.cpp">
       <Filter>Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\Logger.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\main\Camera.cpp">
       <Filter>Camera</Filter>
@@ -2229,9 +2259,6 @@
     <ClCompile Include="..\smtpclient\SMTPClient.cpp">
       <Filter>SMTP</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\Razberry.cpp">
-      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp">
       <Filter>Devices\Davis</Filter>
     </ClCompile>
@@ -2250,9 +2277,6 @@
     <ClCompile Include="..\hardware\Dummy.cpp">
       <Filter>Devices\Dummy</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\WindCalculation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\S0MeterSerial.cpp">
       <Filter>Devices\S0 Meter</Filter>
     </ClCompile>
@@ -2270,12 +2294,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\TeleinfoBase.cpp">
-      <Filter>Devices\Teleinfo\TeleinfoBase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\TeleinfoSerial.cpp">
-      <Filter>Devices\Teleinfo\TeleinfoSerial</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
@@ -2553,6 +2571,9 @@
     <ClCompile Include="..\hardware\Tellstick.cpp">
       <Filter>Devices\Tellstick</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\TellstickFactory.cpp">
+      <Filter>Devices\Tellstick</Filter>
+    </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
@@ -2685,9 +2706,6 @@
     <ClCompile Include="..\hardware\S0MeterTCP.cpp">
       <Filter>Devices\S0 Meter</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp">
-      <Filter>Devices\Denkovi</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\AccuWeather.cpp">
       <Filter>Devices\AccuWeather</Filter>
     </ClCompile>
@@ -2799,9 +2817,6 @@
     <ClCompile Include="..\main\IFTTT.cpp">
       <Filter>IFTTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
-      <Filter>Devices\Denkovi</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\USBtin.cpp">
       <Filter>Devices\USBtin</Filter>
     </ClCompile>
@@ -2873,6 +2888,48 @@
     </ClCompile>
     <ClCompile Include="..\zip\unzip.c">
       <Filter>zip\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TTNMQTT.cpp">
+      <Filter>Devices\The Things Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.cpp">
+      <Filter>Devices\The Things Network\CayenneLPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviTCPDevices.cpp">
+      <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviUSBDevices.cpp">
+      <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\BaroForecastCalculator.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WindCalculation.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\CmdLine.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\localtime_r.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\SignalHandler.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\SunRiseSet.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Logger.cpp">
+      <Filter>Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoSerial.cpp">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoBase.cpp">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\TrendCalculator.cpp">
+      <Filter>Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

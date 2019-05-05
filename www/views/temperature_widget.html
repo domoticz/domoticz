@@ -4,6 +4,7 @@
             <tr>
                 <td id="name" ng-bind="item.Name"></td>
                 <td id="bigtext" class="ng-cloak">
+					<img ng-show="ctrl.displayTrend({{item.trend}})" height="12" ng-src="images/arrow_{{ctrl.trendState(item.trend)}}.png">
                     <span ng-show="ctrl.displayTemp()">{{item.Temp}}&#176; {{tempsign}}</span>
                     <span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{item.SetPoint}}&#176; {{tempsign}})</span>
                     <span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">(Off)</span>
@@ -39,7 +40,7 @@
                     <img ng-show="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
                     <img ng-show="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
                     &nbsp;&nbsp;
-                    <a class="btnsmall" ng-href="#/Devices/{{ ::item.idx }}/TemperatureLog">{{:: 'Log' | translate }}</a>
+                    <a class="btnsmall" ng-href="#/Devices/{{ ::item.idx }}/Log">{{:: 'Log' | translate }}</a>
 
                     <span has-permission="Admin">
                         <a ng-show="item.Type=='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDeviceSmall()" data-i18n="Edit">Edit</a>

@@ -24,7 +24,6 @@ CScheduler::CScheduler(void)
 	m_tNautTwEnd = 0;
 	m_tAstTwStart = 0;
 	m_tAstTwEnd = 0;
-	m_stoprequested = false;
 	srand((int)mytime(NULL));
 }
 
@@ -34,21 +33,23 @@ CScheduler::~CScheduler(void)
 
 void CScheduler::StartScheduler()
 {
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CScheduler::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CScheduler::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "Scheduler");
 }
 
 void CScheduler::StopScheduler()
 {
 	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 }
 
 std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	std::vector<tScheduleItem> ret;
 	for (const auto & itt : m_scheduleitems)
 		ret.push_back(itt);
@@ -57,7 +58,7 @@ std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 
 void CScheduler::ReloadSchedules()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 	m_scheduleitems.clear();
 
 	std::vector<std::vector<std::string> > result;
@@ -91,14 +92,8 @@ void CScheduler::ReloadSchedules()
 				titem.bIsThermostat = false;
 
 				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
-
-				{
-					std::stringstream s_str(sd[0]);
-					s_str >> titem.RowID; }
-				{
-					std::stringstream s_str(sd[14]);
-					s_str >> titem.TimerID; }
-
+				titem.RowID = std::stoull(sd[0]);
+				titem.TimerID= std::stoull(sd[14]);
 				titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
 				titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
 				titem.startTime = 0;
@@ -358,7 +353,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 	bool bReloadSchedules = false;
 
 	{	//needed private scope for the lock
-		boost::lock_guard<boost::mutex> l(m_mutex);
+		std::lock_guard<std::mutex> l(m_mutex);
 
 		time_t temptime;
 		time_t atime = mytime(NULL);
@@ -703,11 +698,8 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 
 void CScheduler::Do_Work()
 {
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		//sleep 1 second
-		sleep_seconds(1);
-
 		time_t atime = mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
@@ -728,7 +720,7 @@ void CScheduler::Do_Work()
 
 void CScheduler::CheckSchedules()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	time_t atime = mytime(NULL);
 	struct tm ltime;
@@ -937,8 +929,8 @@ void CScheduler::CheckSchedules()
 
 void CScheduler::DeleteExpiredTimers()
 {
-	char szDate[20];
-	char szTime[20];
+	char szDate[40];
+	char szTime[40];
 	time_t now = mytime(NULL);
 	struct tm tmnow;
 	localtime_r(&now, &tmnow);
@@ -1128,8 +1120,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			if (idx == 0)
 				return;
@@ -1504,8 +1495,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			if (idx == 0)
 				return;
@@ -1826,8 +1816,7 @@ namespace http {
 			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(request::findValue(&req, "idx"));
-				s_str >> idx;
+				idx = std::strtoull(request::findValue(&req, "idx").c_str(), nullptr, 10);
 			}
 			if (idx == 0)
 				return;
@@ -2163,5 +2152,199 @@ namespace http {
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
+
+		void CWebServer::Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			root["status"] = "OK";
+			root["title"] = "GetTimerPlans";
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
+			if (!result.empty())
+			{
+				int ii = 0;
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string name = request::findValue(&req, "name");
+			root["status"] = "OK";
+			root["title"] = "AddTimerPlan";
+			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
+		}
+
+		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			std::string name = request::findValue(&req, "name");
+			if (
+				(name.empty())
+				)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "UpdateTimerPlan";
+
+			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
+		}
+
+		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			int iPlan = atoi(idx.c_str());
+			if (iPlan < 1)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DeletePlan";
+			
+			m_sql.safe_query("DELETE FROM Timers WHERE (TimerPlan == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM SceneTimers WHERE (TimerPlan == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM SetpointTimers WHERE (TimerPlan == '%q')", idx.c_str());
+
+			m_sql.safe_query("DELETE FROM TimerPlans WHERE (ID == '%q')", idx.c_str());
+
+			if (m_sql.m_ActiveTimerPlan == iPlan)
+			{
+				//Set active timer plan to default
+				m_sql.UpdatePreferencesVar("ActiveTimerPlan", 0);
+				m_sql.m_ActiveTimerPlan = 0;
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
+		}
+
+		void CWebServer::Cmd_DuplicateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
+				return;
+			std::string name = request::findValue(&req, "name");
+			if (
+				(name.empty())
+				)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DuplicateTimerPlan";
+
+			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
+
+			std::vector<std::vector<std::string> > result;
+
+			result = m_sql.safe_query("SELECT MAX(ID) FROM TimerPlans WHERE (Name=='%q')", name.c_str());
+			if (!result.empty())
+			{
+				std::string nID = result[0][0];
+
+				//Normal Timers
+				result = m_sql.safe_query("SELECT Active, DeviceRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], MDay, Month, Occurence, Color FROM Timers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					m_sql.safe_query(
+						"INSERT INTO Timers (Active, DeviceRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], MDay, Month, Occurence, Color, TimerPlan) VALUES (%q, %q, '%q', %q, %q, %q, %q, %q, %q, '%q', %q, %q, %q, '%q', %q)",
+						sd[0].c_str(),
+						sd[1].c_str(),
+						sd[2].c_str(),
+						sd[3].c_str(),
+						sd[4].c_str(),
+						sd[5].c_str(),
+						sd[6].c_str(),
+						sd[7].c_str(),
+						sd[8].c_str(),
+						sd[9].c_str(),
+						sd[10].c_str(),
+						sd[11].c_str(),
+						sd[12].c_str(),
+						sd[13].c_str(),
+						nID.c_str()
+					);
+				}
+				//Scene Timers
+				result = m_sql.safe_query("SELECT Active, SceneRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], Month, MDay, Occurence FROM SceneTimers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					m_sql.safe_query(
+						"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, Cmd, Level, Days, UseRandomness, Hue, [Date], Month, MDay, Occurence, TimerPlan) VALUES (%q, %q, '%q', %q, %q, %q, %q, %q, %q, '%q', %q, %q, %q, %q)",
+						sd[0].c_str(),
+						sd[1].c_str(),
+						sd[2].c_str(),
+						sd[3].c_str(),
+						sd[4].c_str(),
+						sd[5].c_str(),
+						sd[6].c_str(),
+						sd[7].c_str(),
+						sd[8].c_str(),
+						sd[9].c_str(),
+						sd[10].c_str(),
+						sd[11].c_str(),
+						sd[12].c_str(),
+						nID.c_str()
+					);
+				}
+				//Setpoint Timers
+				result = m_sql.safe_query("SELECT Active, DeviceRowID, [Date], Time, Type, Temperature, Days, Month, MDay, Occurence FROM SetpointTimers WHERE (TimerPlan==%q) ORDER BY ID", idx.c_str());
+				for (const auto & itt : result)
+				{
+					std::vector<std::string> sd = itt;
+					m_sql.safe_query(
+						"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, Month, MDay, Occurence, TimerPlan) VALUES (%q, %q, '%q', '%q', %q, %q, %q, %q, %q, %q, %q)",
+						sd[0].c_str(),
+						sd[1].c_str(),
+						sd[2].c_str(),
+						sd[3].c_str(),
+						sd[4].c_str(),
+						sd[5].c_str(),
+						sd[6].c_str(),
+						sd[7].c_str(),
+						sd[8].c_str(),
+						sd[9].c_str(),
+						nID.c_str()
+					);
+				}
+			}
+		}
+
 	}
 }

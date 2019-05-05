@@ -1,4 +1,4 @@
-define(['app', 'timers/factories'], function (app) {
+define(['app', 'components/rgbw-picker/RgbwPicker', 'timers/factories'], function (app) {
     app.component('timerForm', {
         templateUrl: 'views/timers/timerForm.html',
         bindings: {
@@ -35,10 +35,6 @@ define(['app', 'timers/factories'], function (app) {
 
                 initDatePicker();
                 initDaysSelection();
-
-                if (vm.isColorSettingsAvailable) {
-                    initLEDLightSettings();
-                }
             }
 
             function initDatePicker() {
@@ -134,34 +130,6 @@ define(['app', 'timers/factories'], function (app) {
                 });
             }
 
-            function initLEDLightSettings() {
-                var maxDimLevel = 100; // Always 100 for LED type
-
-                var onColorChange = function (idx, color, brightness) {
-                    vm.timerSettings.color = color;
-                    vm.timerSettings.level = brightness;
-                    $scope.$apply();
-                };
-
-                var getColor = function() {
-                    return vm.timerSettings.color + vm.timerSettings.level;
-                };
-
-                $scope.$watch(getColor, function () {
-                    ShowRGBWPicker(
-                        '#TimersLedColor',
-                        null,
-                        0,
-                        maxDimLevel,
-                        vm.timerSettings.level || 0,
-                        vm.timerSettings.color,
-                        vm.colorSettingsType,
-                        vm.dimmerType,
-                        onColorChange
-                    );
-                });
-            }
-
             function isLevelVisible() {
                 return vm.levelOptions && vm.levelOptions.length > 0;
             }
@@ -223,7 +191,7 @@ define(['app', 'timers/factories'], function (app) {
                 var columns = [
                     {title: $.t('Active'), data: 'Active', render: activeRenderer},
                     {title: $.t('Type'), data: 'Type', render: timerTypeRenderer},
-                    {title: $.t('Date'), data: 'Date', type: 'date'},
+                    {title: $.t('Date'), data: 'Date', type: 'date-us'},
                     {title: $.t('Time'), data: 'Time'},
                     {title: $.t('Randomness'), data: 'Randomness', render: activeRenderer},
                     {title: $.t('Command'), data: 'idx', render: commandRenderer},
@@ -314,7 +282,7 @@ define(['app', 'timers/factories'], function (app) {
 
                 if ((timer.Type <= 4) || (timer.Type === 8) || (timer.Type === 9) || ((timer.Type >= 14) && (timer.Type <= 27))) {
                     var dayflags = parseInt(timer.Days);
-                    
+
                     if (dayflags & 0x80) {
                         DayStrOrig = 'Everyday';
                     } else if (dayflags & 0x100) {

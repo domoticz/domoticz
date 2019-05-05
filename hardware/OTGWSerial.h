@@ -13,13 +13,10 @@ private:
 	bool StopHardware() override;
 	bool OpenSerialDevice();
 
-	void StartPollerThread();
-	void StopPollerThread();
-	void Do_PollWork();
-	bool WriteInt(const unsigned char *pData, const unsigned char Len);
+	void Do_Work();
+	bool WriteInt(const unsigned char *pData, const unsigned char Len) override;
 	int m_retrycntr;
-	boost::shared_ptr<boost::thread> m_pollerthread;
-	volatile bool m_stoprequestedpoller;
+	std::shared_ptr<std::thread> m_thread;
     void readCallback(const char *data, size_t len);
 };
 

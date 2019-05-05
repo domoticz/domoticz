@@ -1,3 +1,104 @@
+Version 4.xxxx (May xxth 2019)
+- Implemented: [BleBox] Add support for airSensor and use the newest api for shutterBox
+- Implemented: Alecto WS5500 implemented (pTypeWeather)
+- Implemented: Anna Thermostat Added ability to select presets on the Anna via selector switch. Added ability to update the state of the proximity switch in the Anna thermostat.
+- Implemented: Better graph display for thermostat devices
+- Implemented: Blinds T14/R15/T16 to lights.html
+- Implemented: CayenneLPP, added initial support for LPP_UNIXTIME
+- Implemented: Cereal Proxy
+- Implemented: Custom icons for: Contact Door Contact Push On Push Off Door Lock Door Lock Inverted
+- Implemented: Devices Tab, Scene/Group log icon added
+- Implemented: EnOcean3 implemented EPP D2-03-0A
+- Implemented: EventSystem logging name when issuing thermostat SetPoint/Mode/Fan command
+- Implemented: EvoHome radiator Valve Value to Pushers InfluxDB worker
+- Implemented: Experimental support for WebSockets protocol
+- Implemented: Hardware setup, support /dev/serial/by-id on Linux
+- Implemented: InfluxDB Data push, support for Username/Password
+- Implemented: InfluxDB: added option for remote proxy path
+- Implemented: Logitech Media Server, added 'daphile' to the list of supported models
+- Implemented: Make Telegram notification silent when priority is negative
+- Implemented: Maverick 773 BBQ Temperature meter now using fixed ID as there is a new id generated between transmitter and controller every 15 minutes
+- Implemented: New Aqara Wireless Mini Switch
+- Implemented: New Hardware, The Things Network with CayenneLPP application(s)
+- Implemented: On/Off chart to Lights log
+- Implemented: OpenZWave, controller options for RetryTimeout, AssumeAwake and PerformReturnRoutes can now be set
+- Implemented: OpenZWave, handling 'kVAh' unit
+- Implemented: OpenZWave, support for Seismic Intensity sensor
+- Implemented: Report for Counter Incremental devices
+- Implemented: RFLink support for Blyss type (with high unit number)
+- Implemented: RFXCom Implemented Noise Level for Pro firmware
+- Implemented: RFXCom Lucci Fan DC
+- Implemented: RFXCom ProXL implementation
+- Implemented: RFXCom Supporting detection of Pro2, Pro XL1
+- Implemented: RFXMeter, Option to specify meter divider
+- Implemented: RFXMeter, Option to specify meter divider
+- Implemented: RTL433, Add support for wind_speed wind_gust wind_direction
+- Implemented: RTL433, added support for WGR800,PCR800
+- Implemented: RTL433, implemented Moisture sensor
+- Implemented: RTL433, support for sensors reporting in Fahrenheit
+- Implemented: Serial port for Freescale imx6 devices
+- Implemented: Support Aqara Vibration Sensor (v1)
+- Implemented: Support double click and long press feature for "Xiaomi Wireless Dual Wall Switch"
+- Implemented: Support for NodeOn Soft Button TSB-2-1-01
+- Implemented: Support for Westinghouse FAN
+- Implemented: Taiwanese language (big thanks to berry lin!)
+- Implemented: The Things Network, add GPS coordinate in Uservariable
+- Implemented: Time/Sun set/rise to events frame
+- Implemented: Timer Plan, duplicate option
+- Implemented: Touch Device unction
+- Implemented: Trend calculator (only for temperatures at the moment)
+- Implemented: Using MapQuest Geo API in settings
+- Implemented: Wind sensor without Temp and Chill
+- Implemented: Xiaomi Gateway Aqara Cube report battery status
+- Removed: LogitechMediaServer: HTTP timeout as a configurable option
+- Fixed: [Satel Integra] fix for Inetgra256 and allow to change names
+- Fixed: Anna to work with both firmwares
+- Fixed: Arilux
+- Fixed: Corrected water graph display
+- Fixed: Correcting cost calculation for P1 Meter reports with return usage
+- Fixed: Custom Icon upload message
+- Fixed: DarkSky possible wind-chill callsign issue
+- Fixed: Date parsing in Safari
+- Fixed: Devices tab, removed unnecessary zwave node id as this is part of the ID already
+- Fixed: Do not allow enters/returns in arguments (thanks to Fabio Carretto)
+- Fixed: Doorcontact, On/Off delay where hidden
+- Fixed: EvoHome hot water graphs
+- Fixed: Evohome SYNC bug
+- Fixed: Fan/RMP sensor
+- Fixed: Fix for running as non-privileged user
+- Fixed: Forecast button, displaying correct units
+- Fixed: Honeywell thermostat fixes and improvements
+- Fixed: I2C/BME280, Corrected oversampling
+- Fixed: Increased heartbeat_check timeout to 5 minutes (process rebooted while doing a large database operation (migration of a sensor))
+- Fixed: Kodi Notification setup display (hops)
+- Fixed: Light Log Set 'Level' for RGB switches
+- Fixed: MySensors IR switching
+- Fixed: Next Protect, removing Heat/US checks
+- Fixed: On/Off actions where incorrectly handled when setting the a RGB/W Color
+- Fixed: P1 Smart Meter report chart, limit number of decimals in tooltip
+- Fixed: Philips Hue, should work correctly now again
+- Fixed: Possible SQL Injection Vulnerability (Thanks to Fabio Carretto!)
+- Fixed: Prevent touch stcroll while using jQuery wheel color picker
+- Fixed: Put correct node name in button titles in association group view
+- Fixed: Python Plugin protocols now always use Parameters values for Username/Password during authentication rather than cached values
+- Fixed: Rain device for DarkSky
+- Fixed: Selector selected color
+- Fixed: Shared server via mydomoticz bug.
+- Fixed: Temp+Hum log button in devices view
+- Fixed: Temperature sorting in report
+- Fixed: timer where one part of the combination is even or odd week
+- Fixed: Xiaomi Gateway Lum issue
+- Fixed: Xiaomi, using correct (application default) way to update temp/hum/pressure
+- Fixed: YouLess meter report
+- Fixed: Various, see github, thanks to all who contributed!!
+- Updated: dzVents (version 2.4.18, See dzVents/documentation/history.md)
+- Updated: Event Editor
+- Updated: New Gui pages/code for Utility/Weather/Temperature/Devices/Hardware Setup
+- Updated: OZW configuration files
+- Updated: Translations
+- Updated: Weather Underground for use with the new API, option to specify Lat/Long as location
+- Updated: Winddelen, using new API URL now, and including some more sensors
+
 Version 4.9700 (June 23th 2018)
 - Implemented: Blockly, now possible to directly add/update Text devices
 - Implemented: Blockly: now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)

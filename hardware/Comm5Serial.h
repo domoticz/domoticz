@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
@@ -28,17 +27,16 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool Connect();
-	void requestDigitalInputResponseHandler(const std::string& frame);
-	void requestDigitalOutputResponseHandler(const std::string& frame);
-	void enableNotificationResponseHandler(const std::string& frame);
+	void requestDigitalInputResponseHandler(const std::string& mframe);
+	void requestDigitalOutputResponseHandler(const std::string& mframe);
+	void enableNotificationResponseHandler(const std::string& mframe);
 	void readCallBack(const char* data, size_t len);
 protected:
-	void OnData(const unsigned char *pData, size_t length);
 	void OnError(const std::exception e);
 
 	void Do_Work();
 	void ParseData(const unsigned char *data, const size_t len);
-	void parseFrame(std::string& frame);
+	void parseFrame(const std::string& mframe);
 	bool writeFrame(const std::string&);
 
 
@@ -61,7 +59,6 @@ private:
 
 	bool m_bReceiverStarted;
 
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
 };
 

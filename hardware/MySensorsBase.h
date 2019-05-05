@@ -2,8 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "../main/concurrent_queue.h"
-#include <map>
-#include <vector>
 
 class MySensorsBase : public CDomoticzHardwareBase
 {
@@ -63,7 +61,7 @@ public:
 		S_INFO = 36,					// LCD text device / Simple information device on controller, V_TEXT
 		S_GAS = 37,						// Gas meter, V_FLOW, V_VOLUME
 		S_GPS = 38,						//!< GPS Sensor, V_POSITION
-		S_WATER_QUALITY = 39,			//!< V_TEMP, V_PH, V_ORP, V_EC, V_STATUS 
+		S_WATER_QUALITY = 39,			//!< V_TEMP, V_PH, V_ORP, V_EC, V_STATUS
 		S_UNKNOWN = 200,				//No Type received
 	};
 
@@ -119,7 +117,7 @@ public:
 		V_HVAC_SETPOINT_HEAT = 45,		//HVAC / Heater setpoint(Integer between 0 - 100)	S_HVAC, S_HEATER
 		V_HVAC_FLOW_MODE = 46,			//Flow mode for HVAC("Auto", "ContinuousOn", "PeriodicOn")	S_HVAC
 		V_TEXT = 47,					//Text/Info message S_INFO
-		V_CUSTOM = 48, 					// Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type. 
+		V_CUSTOM = 48, 					// Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type.
 		V_POSITION = 49,				// GPS position and altitude. Payload: latitude;longitude;altitude(m). E.g. "55.722526;13.017972;18"
 		V_IR_RECORD = 50,				// Record IR codes S_IR for playback
 		V_PH = 51,						//!< S_WATER_QUALITY, water PH
@@ -447,7 +445,7 @@ private:
 
 	void UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
 
-	void UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit);
+	void UpdateSwitchLastUpdate(const unsigned char NodeID, const int ChildID);
 	void UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID);
 	void UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID);
 
@@ -476,12 +474,12 @@ private:
 
 	bool StartSendQueue();
 	void StopSendQueue();
-	void Do_Send_Work();
+	void Do_Work();
 private:
 	std::string m_szSerialPort;
 	std::map<int, _tMySensorNode> m_nodes;
 	concurrent_queue<std::string > m_sendQueue;
-	boost::shared_ptr<boost::thread> m_send_thread;
+	std::shared_ptr<std::thread> m_thread;
 	std::string m_GatewayVersion;
 	bool m_bAckReceived;
 	int m_AckNodeID;
@@ -490,6 +488,6 @@ private:
 	std::string m_LineReceived;
 	std::map<int, bool> m_node_sleep_states;
 	std::map<int, std::vector<_tMySensorSmartSleepQueueItem> > m_node_sleep_queue;
-	boost::mutex m_node_sleep_mutex;
+	std::mutex m_node_sleep_mutex;
 };
 

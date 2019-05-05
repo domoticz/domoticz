@@ -14,14 +14,14 @@
     <ProjectGuid>{6AD96441-5B2C-467B-AAB6-A1B8368D503A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>domoticz</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -59,7 +59,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost;./libusb;../MQTT;..\hardware\openzwave;..\zip;..\zlib;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;../tinyxpath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost;../MQTT;..\hardware\openzwave;..\zip;..\zlib;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;../tinyxpath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -68,7 +68,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./Windows Libraries/Boost/Stage;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/Stage;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>false</Profile>
@@ -88,7 +88,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost;./libusb;../MQTT;..\hardware\openzwave;..\zip;..\zlib;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;../tinyxpath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost;../MQTT;..\hardware\openzwave;..\zip;..\zlib;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;../tinyxpath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -97,7 +97,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>./Windows Libraries/Boost/Stage;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/Stage;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Release/LuaMSVS.lib;./Windows Libraries/OpenZwave/Release/OpenZWave.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
@@ -118,11 +118,13 @@
     <None Include="..\www\app\CamController.js" />
     <None Include="..\www\app\CustomIconsController.js" />
     <None Include="..\www\app\DashboardController.js" />
+    <None Include="..\www\app\DeviceLightEdit.js" />
     <None Include="..\www\app\DevicesController.js" />
     <None Include="..\www\app\DPFibaroController.js" />
     <None Include="..\www\app\DPGooglePubSubController.js" />
     <None Include="..\www\app\DPHttpController.js" />
     <None Include="..\www\app\DPInfluxController.js" />
+    <None Include="..\www\app\DummyController.js" />
     <None Include="..\www\app\EventsController.js" />
     <None Include="..\www\app\FloorplanController.js" />
     <None Include="..\www\app\FloorplanEditController.js" />
@@ -144,6 +146,8 @@
     <None Include="..\www\app\ScenesController.js" />
     <None Include="..\www\app\SetupController.js" />
     <None Include="..\www\app\TemperatureController.js" />
+    <None Include="..\www\app\TemperatureCustomLogController.js" />
+    <None Include="..\www\app\TimerplanController.js" />
     <None Include="..\www\app\UpdateController.js" />
     <None Include="..\www\app\UsersController.js" />
     <None Include="..\www\app\UserVariablesController.js" />
@@ -413,6 +417,8 @@
     <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
+    <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP.h" />
+    <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.h" />
     <ClInclude Include="..\hardware\Comm5Serial.h" />
     <ClInclude Include="..\hardware\Comm5SMTCP.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
@@ -423,9 +429,9 @@
     <ClInclude Include="..\hardware\Daikin.h" />
     <ClInclude Include="..\hardware\DarkSky.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
-    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h" />
-    <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\DenkoviDevices.h" />
+    <ClInclude Include="..\hardware\DenkoviTCPDevices.h" />
+    <ClInclude Include="..\hardware\DenkoviUSBDevices.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoCompteur.h" />
@@ -456,6 +462,7 @@
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
+    <ClInclude Include="..\hardware\HardwareCereal.h" />
     <ClInclude Include="..\hardware\Honeywell.h" />
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
@@ -510,7 +517,6 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\RAVEn.h" />
-    <ClInclude Include="..\hardware\Razberry.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
     <ClInclude Include="..\hardware\RelayNet.h" />
     <ClInclude Include="..\hardware\RFLinkBase.h" />
@@ -532,9 +538,11 @@
     <ClInclude Include="..\hardware\TE923Tool.h" />
     <ClInclude Include="..\hardware\TeleinfoBase.h" />
     <ClInclude Include="..\hardware\TeleinfoSerial.h" />
+    <ClInclude Include="..\hardware\TelldusFunctions.h" />
     <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
+    <ClInclude Include="..\hardware\TTNMQTT.h" />
     <ClInclude Include="..\hardware\USBtin.h" />
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
@@ -551,6 +559,7 @@
     <ClInclude Include="..\httpclient\HTTPClient.h" />
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />
+    <ClInclude Include="..\main\BaroForecastCalculator.h" />
     <ClInclude Include="..\main\Camera.h" />
     <ClInclude Include="..\main\CmdLine.h" />
     <ClInclude Include="..\hardware\ColorSwitch.h" />
@@ -574,6 +583,9 @@
     <ClInclude Include="..\main\LuaCommon.h" />
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
+    <ClInclude Include="..\main\Noncopyable.h" />
+    <ClInclude Include="..\main\StoppableTask.h" />
+    <ClInclude Include="..\main\TrendCalculator.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
     <ClInclude Include="..\main\WebServerHelper.h" />
@@ -634,6 +646,7 @@
     <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
+    <ClInclude Include="..\main\SignalHandler.h" />
     <ClInclude Include="..\main\SQLHelper.h" />
     <ClInclude Include="..\main\Helper.h" />
     <ClInclude Include="..\hardware\RFXComSerial.h" />
@@ -694,6 +707,7 @@
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
+    <ClCompile Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.cpp" />
     <ClCompile Include="..\hardware\ColorSwitch.cpp" />
     <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5SMTCP.cpp" />
@@ -705,9 +719,9 @@
     <ClCompile Include="..\hardware\Daikin.cpp" />
     <ClCompile Include="..\hardware\DarkSky.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
-    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp" />
-    <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\DenkoviDevices.cpp" />
+    <ClCompile Include="..\hardware\DenkoviTCPDevices.cpp" />
+    <ClCompile Include="..\hardware\DenkoviUSBDevices.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
     <ClCompile Include="..\hardware\EcoCompteur.cpp" />
@@ -802,7 +816,6 @@
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\RAVEn.cpp" />
-    <ClCompile Include="..\hardware\Razberry.cpp" />
     <ClCompile Include="..\hardware\RelayNet.cpp" />
     <ClCompile Include="..\hardware\RFLinkBase.cpp" />
     <ClCompile Include="..\hardware\RFLinkSerial.cpp" />
@@ -825,8 +838,10 @@
     <ClCompile Include="..\hardware\TeleinfoBase.cpp" />
     <ClCompile Include="..\hardware\TeleinfoSerial.cpp" />
     <ClCompile Include="..\hardware\Tellstick.cpp" />
+    <ClCompile Include="..\hardware\TellstickFactory.cpp" />
     <ClCompile Include="..\hardware\Thermosmart.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
+    <ClCompile Include="..\hardware\TTNMQTT.cpp" />
     <ClCompile Include="..\hardware\USBtin.cpp" />
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
@@ -839,6 +854,7 @@
     <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
+    <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
     <ClCompile Include="..\main\CmdLine.cpp" />
@@ -858,6 +874,7 @@
     <ClCompile Include="..\main\LuaCommon.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
+    <ClCompile Include="..\main\SignalHandler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
     <ClCompile Include="..\json\json_reader.cpp" />
@@ -873,6 +890,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\main\SunRiseSet.cpp" />
+    <ClCompile Include="..\main\TrendCalculator.cpp" />
     <ClCompile Include="..\main\WebServerHelper.cpp" />
     <ClCompile Include="..\main\WindCalculation.cpp" />
     <ClCompile Include="..\MQTT\logging_mosq.c">

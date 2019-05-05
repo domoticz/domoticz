@@ -456,7 +456,7 @@ define(['app'], function (app) {
 
 						var level = data["Level"];
 						$("#scenecontent #combolevel").val(level);
-						
+
 						var SubType = "";
 						var DimmerType = "";
 						$.each($.LightsAndSwitches, function (i, item) {
@@ -566,23 +566,22 @@ define(['app'], function (app) {
 			$("#scenecontent #LevelDiv").hide();
 			if (isLED(SubType)) {
 				$("#ScenesLedColor").show();
-			} else {
-				if (bShowLevel == true) {
-					var levelDiv$ = $("#scenecontent #LevelDiv");
-					levelDiv$.find("option").show().end().show();
+			}
+			if (bShowLevel == true && !isLED(SubType)) { // TODO: Show level combo box also for LED
+				var levelDiv$ = $("#scenecontent #LevelDiv");
+				levelDiv$.find("option").show().end().show();
 
-					var dimmerValues = [];
+				var dimmerValues = [];
 
-					$.each(dimmerLevels.split(','), function (i, level) {
-						dimmerValues[i] = level;
-					});
+				$.each(dimmerLevels.split(','), function (i, level) {
+					dimmerValues[i] = level;
+				});
 
-					levelDiv$.find("option").remove();
-					for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
-						var option = $('<option />');
-						option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
-						$("#scenecontent #combolevel").append(option);
-					}
+				levelDiv$.find("option").remove();
+				for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
+					var option = $('<option />');
+					option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
+					$("#scenecontent #combolevel").append(option);
 				}
 			}
 		}
@@ -694,7 +693,24 @@ define(['app'], function (app) {
 				$(this).change();
 			});
 
+            $('#scenecontent #combodevice').trigger('change');
+
 			OnSelChangeDevice();
+
+			var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
+			if (typeof DeviceIdx != 'undefined') {
+				var SubType = "";
+				var DimmerType = "";
+				$.each($.LightsAndSwitches, function (i, item) {
+					if (item.idx == DeviceIdx) {
+						SubType = item.SubType;
+						DimmerType = item.DimmerType;
+					}
+				});
+				var MaxDimLevel = 100; // Always 100 for LED type
+				if (isLED(SubType))
+					ShowRGBWPicker('#scenecontent #ScenesLedColor', DeviceIdx, 0, MaxDimLevel, 50, "", SubType, DimmerType);
+			}
 
 			RefreshDeviceTable(idx);
 			RefreshActivators();
@@ -775,7 +791,7 @@ define(['app'], function (app) {
 							}
 
 							if (item.Type == "Scene") {
-								img1 = '<img src="images/push48.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+								img1 = '<img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 							}
 							else {
 								var onclass = "";
@@ -789,8 +805,8 @@ define(['app'], function (app) {
 									offclass = "transimg";
 								}
 
-								img1 = '<img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
-								img2 = '<img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
+								img1 = '<img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
+								img2 = '<img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48">';
 								if ($(id + " #img2").html() != img2) {
 									$(id + " #img2").html(img2);
 								}
@@ -917,7 +933,7 @@ define(['app'], function (app) {
 							xhtm += bigtext + '</span></td>\n';
 
 							if (item.Type == "Scene") {
-								xhtm += '<td id="img1" class="img img1"><img src="images/push48.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img src="images/Push48_On.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								xhtm += '\t      <td id="status" class="status"><span>&nbsp;</span></td>\n';
 							}
 							else {
@@ -932,8 +948,8 @@ define(['app'], function (app) {
 									offclass = "transimg";
 								}
 
-								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/Push48_On.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/Push48_Off.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
 								xhtm += '\t      <td id="status" class="status"><span class="wrapper">&nbsp;</span></td>\n';
 							}
 							xhtm +=

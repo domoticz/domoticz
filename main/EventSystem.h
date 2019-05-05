@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <boost/thread/shared_mutex.hpp>
 
 extern "C" {
 #ifdef WITH_EXTERNAL_LUA
@@ -18,8 +18,9 @@ extern "C" {
 
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
+#include "StoppableTask.h"
 
-class CEventSystem : public CLuaCommon
+class CEventSystem : public CLuaCommon, StoppableTask
 {
 	friend class CdzVents;
 	friend class CLuaHandler;
@@ -41,12 +42,12 @@ class CEventSystem : public CLuaCommon
 	struct _tActionParseResults
 	{
 		std::string sCommand;
-		float fForSec;
-		float fAfterSec;
-		float fRandomSec;
-		int iRepeat;
-		float fRepeatSec;
-		bool bEventTrigger;
+		float fForSec = 0;
+		float fAfterSec = 0;
+		float fRandomSec = 0;
+		int iRepeat = 1;
+		float fRepeatSec = 0;
+		bool bEventTrigger = false;
 	};
 public:
 	enum _eReason
@@ -126,7 +127,7 @@ public:
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
-	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate);
+	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
@@ -184,10 +185,11 @@ private:
 	boost::shared_mutex m_uservariablesMutex;
 	boost::shared_mutex m_scenesgroupsMutex;
 	boost::shared_mutex m_eventtriggerMutex;
-	boost::mutex m_measurementStatesMutex;
-	boost::mutex luaMutex;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread, m_eventqueuethread;
+	std::mutex m_measurementStatesMutex;
+	std::mutex luaMutex;
+	std::shared_ptr<std::thread> m_thread;
+	std::shared_ptr<std::thread> m_eventqueuethread;
+	StoppableTask m_TaskQueue;
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;
@@ -215,7 +217,7 @@ private:
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
-	void OpenURL(const std::string &URL);
+	void OpenURL(const float delay, const std::string &URL);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, const std::string &Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);

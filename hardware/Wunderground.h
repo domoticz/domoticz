@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 
 class CWunderground : public CDomoticzHardwareBase
 {
@@ -16,12 +15,12 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
+	std::string GetWeatherStationFromGeo();
 private:
 	bool m_bForceSingleStation;
 	bool m_bFirstTime;
 	std::string m_APIKey;
 	std::string m_Location;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

@@ -154,15 +154,13 @@ master occurs once, 30 seconds after startup.
 #define GPIO_MAX_PATH		64
 #define GPIO_PATH			"/sys/class/gpio/gpio"
 #define GPIO_DEVICE_ID_BASE	0x030E0E00
-using namespace std;
 
-vector<gpio_info> CSysfsGpio::m_saved_state;
+std::vector<gpio_info> CSysfsGpio::m_saved_state;
 int CSysfsGpio::m_sysfs_hwdid;
 int CSysfsGpio::m_sysfs_req_update;
 
 CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices, const int Debounce)
 {
-	m_stoprequested = false;
 	m_bIsStarted = false;
 	m_polling_enabled = false;
 	m_interrupts_enabled = false;
@@ -179,44 +177,47 @@ CSysfsGpio::~CSysfsGpio(void)
 
 bool CSysfsGpio::StartHardware()
 {
+	RequestStart();
+
 	Init();
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGpio::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CSysfsGpio::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CSysfsGpio::StopHardware()
 {
-	m_stoprequested = true;
+	RequestStop();
 
 	try
 	{
 		if (m_thread)
 		{
 			m_thread->join();
+			m_thread.reset();
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_STATUS, "Sysfs GPIO: Worker - error during rundown");
-	}
 
+	}
 	try
 	{
 		if (m_edge_thread)
 		{
 			m_edge_thread->join();
+			m_edge_thread.reset();
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection - error during rundown");
+
 	}
 
 	m_bIsStarted = false;
-
 	return true;
 }
 
@@ -249,9 +250,8 @@ void CSysfsGpio::Do_Work()
 	bool bUpdateMaster = true;
 	int counter = 0;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(GPIO_POLL_MSEC))
 	{
-		sleep_milliseconds(GPIO_POLL_MSEC);
 		counter++;
 
 		if (counter % HEARTBEAT_COUNT == 0)	/* Heartbeat maintenance */
@@ -259,13 +259,10 @@ void CSysfsGpio::Do_Work()
 			m_LastHeartbeat = mytime(NULL);
 		}
 
-		if (!m_stoprequested)
+		if (m_polling_enabled)
 		{
-			if (m_polling_enabled)
-			{
-				PollGpioInputs(false);
-				UpdateDomoticzInputs(false);
-			}
+			PollGpioInputs(false);
+			UpdateDomoticzInputs(false);
 		}
 
 		if (bUpdateMaster)
@@ -273,7 +270,7 @@ void CSysfsGpio::Do_Work()
 			if (counter == UPDATE_MASTER_COUNT)	/* only executes once, and only if we have a master/slave configuration */
 			{
 				bUpdateMaster = false;
-				vector<vector<string> > result;
+				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
 
 				if (!result.empty())
@@ -319,7 +316,7 @@ void CSysfsGpio::EdgeDetectThread()
 
 	After one or more GPIO state change interrupts have been detected a poll is done to make
 	sure the domoticz database reflects the actual states of all GPIO pins in all cases. A
-	missed interrupt can occur when a GPIO pin changes state twice within m_debounce_msec. 
+	missed interrupt can occur when a GPIO pin changes state twice within m_debounce_msec.
 	Therefore it is a good practice to set m_debounce_msec to a value not higher then needed
 	depending on the input switch behavior.
 	*/
@@ -355,7 +352,7 @@ void CSysfsGpio::EdgeDetectThread()
 
 	_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection started");
 
-	while (!m_stoprequested) /* detect gpio state changes */
+	while (!IsStopRequested(0)) /* detect gpio state changes */
 	{
 		tv.tv_sec = 1;	// Set select timeout to 1 second.
 		tv.tv_usec = 0;
@@ -366,7 +363,7 @@ void CSysfsGpio::EdgeDetectThread()
 		//
 		int retval = select(m_maxfd + 1, NULL, NULL, &tmp_fds, &tv);
 
-		if (m_stoprequested)
+		if (IsStopRequested(0))
 		{
 			break;
 		}
@@ -487,15 +484,16 @@ void CSysfsGpio::Init()
 	UpdateDomoticzInputs(false); /* Make sure database inputs are in sync with actual hardware */
 
 	_log.Log(LOG_STATUS, "Sysfs GPIO: Startup - polling:%s interrupts:%s debounce:%dmsec inputs:%d outputs:%d",
-		m_polling_enabled ? "yes":"no", 
-		m_interrupts_enabled ? "yes":"no", 
-		m_debounce_msec, 
-		input_count, 
+		m_polling_enabled ? "yes":"no",
+		m_interrupts_enabled ? "yes":"no",
+		m_debounce_msec,
+		input_count,
 		output_count);
 
 	if (m_interrupts_enabled)
 	{
-		m_edge_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGpio::EdgeDetectThread, this)));
+		m_edge_thread = std::make_shared<std::thread>(&CSysfsGpio::EdgeDetectThread, this);
+		SetThreadName(m_edge_thread->native_handle(), "SysfsGpio_Edge");
 	}
 }
 
@@ -554,8 +552,8 @@ void CSysfsGpio::PollGpioInputs(bool PollOnce)
 
 void CSysfsGpio::CreateDomoticzDevices()
 {
-	vector<vector<string> > result;
-	vector<string> deviceid;
+	std::vector<std::vector<std::string> > result;
+	std::vector<std::string> deviceid;
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
@@ -578,7 +576,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 			{
 				if (!result.empty()) /* found */
 				{
-					vector<string> sd = result[0];
+					std::vector<std::string> sd = result[0];
 
 					if (sd[1].empty())
 					{
@@ -625,7 +623,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 			{
 				if (!result.empty()) /* found */
 				{
-					vector<string> sd = result[0];
+					std::vector<std::string> sd = result[0];
 
 					if (sd[1].empty())
 					{
@@ -669,13 +667,13 @@ void CSysfsGpio::UpdateDomoticzDatabase()
 	{
 		if (m_saved_state[i].request_update == 1)
 		{
-			vector<vector<string> > result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+			std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID,
 				m_saved_state[i].pin_number);
 
 			if (!result.empty())
 			{
-				//vector<string> sd = result[0];
+				//std::vector<std::string> sd = result[0];
 				m_saved_state[i].value = GpioRead(m_saved_state[i].pin_number, "value");
 
 				m_sql.safe_query(
@@ -718,13 +716,13 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 			{
 				bool	updateDatabase = false;
 				bool	log_db_change = false;
-				vector< vector<string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+				std::vector< std::vector<std::string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 					m_HwdID,
 					m_saved_state[i].pin_number);
 
 				if ((!result.empty()) && (result.size() > 0))
 				{
-					vector<string> sd = result[0];
+					std::vector<std::string> sd = result[0];
 
 					if (atoi(sd[1].c_str()) == 1) /* Check if device is used */
 					{
@@ -800,21 +798,21 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 
 		if (m_saved_state[index].id_valid == -1)
 		{
-			string sdeviceid;
-			vector< vector<string> > result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+			std::string sdeviceid;
+			std::vector< std::vector<std::string> > result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID,
 				pin);
 
 			if ((!result.empty() && (result.size() > 0)))
 			{
 				/* use database device id */
-				vector<string> sd = result[0];
+				std::vector<std::string> sd = result[0];
 				sdeviceid = sd[0];
 			}
 			else
 			{
 				/* use generated device id */
-				vector<string> deviceid = GetGpioDeviceId();
+				std::vector<std::string> deviceid = GetGpioDeviceId();
 				sdeviceid = deviceid[0];
 			}
 
@@ -842,13 +840,13 @@ void CSysfsGpio::UpdateGpioOutputs()
 	{
 		if (m_saved_state[i].direction == GPIO_OUT)
 		{
-			vector<vector<string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+			std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID,
 				m_saved_state[i].pin_number);
 
 			if ((!result.empty()) && (result.size() > 0))
 			{
-				vector<string> sd = result[0];
+				std::vector<std::string> sd = result[0];
 				m_saved_state[i].db_state = atoi(sd[0].c_str());
 
 				if (atoi(sd[1].c_str()))
@@ -862,9 +860,9 @@ void CSysfsGpio::UpdateGpioOutputs()
 	}
 }
 
-vector<string> CSysfsGpio::GetGpioDeviceId()
+std::vector<std::string> CSysfsGpio::GetGpioDeviceId()
 {
-	vector<string> gpio_deviceid;
+	std::vector<std::string> gpio_deviceid;
 	char szIdx[10];
 	int id = GPIO_DEVICE_ID_BASE + m_sysfs_hwdid;
 
@@ -1008,13 +1006,13 @@ int CSysfsGpio::GpioOpenRw(int gpio_pin)
 //---------------------------------------------------------------------------
 //	Called by WebServer when devices are manually configured.
 //
-vector<int> CSysfsGpio::GetGpioIds()
+std::vector<int> CSysfsGpio::GetGpioIds()
 {
-	vector<int> gpio_ids;
+	std::vector<int> gpio_ids;
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
-		vector<vector<string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+		std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 			m_sysfs_hwdid,
 			m_saved_state[i].pin_number);
 
@@ -1028,13 +1026,13 @@ vector<int> CSysfsGpio::GetGpioIds()
 	return gpio_ids;
 }
 
-vector<string> CSysfsGpio::GetGpioNames()
+std::vector<std::string> CSysfsGpio::GetGpioNames()
 {
-	vector<string> gpio_names;
+	std::vector<std::string> gpio_names;
 
 	for (int i = 0; i < m_saved_state.size(); i++)
 	{
-		vector<vector<string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
+		std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT ID, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 			m_sysfs_hwdid,
 			m_saved_state[i].pin_number);
 

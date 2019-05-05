@@ -79,6 +79,7 @@ private:
 
 	// evohome client library - don't ask about naming convention - these are imported from another project
 	bool login(const std::string &user, const std::string &password);
+	bool renew_login();
 	bool user_account();
 
 	void get_gateways(int location);
@@ -120,14 +121,22 @@ private:
 	uint8_t GetUnit_by_ID(unsigned long evoID);
 	std::string local_to_utc(const std::string &local_time);
 
+	// Evohome v1 API
 	bool v1_login(const std::string &user, const std::string &password);
 	void get_v1_temps();
+
+	// HTTP helpers
+	std::string send_receive_data(std::string url, std::vector<std::string> &headers);
+	std::string send_receive_data(std::string url, std::string postdata, std::vector<std::string> &headers);
+	std::string put_receive_data(std::string url, std::string putdata, std::vector<std::string> &headers);
+	std::string process_response(std::vector<unsigned char> vHTTPResponse, std::vector<std::string> vHeaderData, bool httpOK);
+
 private:
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
+	std::shared_ptr<std::thread> m_thread;
 
 	std::string m_username;
 	std::string m_password;
+	std::string m_v2refresh_token;
 	bool m_updatedev;
 	bool m_showschedule;
 	int m_refreshrate;

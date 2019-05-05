@@ -221,7 +221,7 @@ void CRFLinkBase::Add2SendQueue(const char* pData, const size_t length)
 {
 	std::string sBytes;
 	sBytes.insert(0,pData,length);
-	boost::lock_guard<boost::mutex> l(m_sendMutex);
+	std::lock_guard<std::mutex> l(m_sendMutex);
 	m_sendqueue.push_back(sBytes);
 }
 */
@@ -263,7 +263,7 @@ void GetSwitchType(const char* ID, const unsigned char unit, const unsigned char
 	switchType = 0;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", ID, unit, devType, subType);
-	if (result.size() != 0)
+	if (!result.empty())
 	{
 		switchType = atoi(result[0][0].c_str());
 	}
@@ -290,8 +290,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	int m_SwitchType = 0;
 	char szDeviceID[20];
 	sprintf(szDeviceID, "%08X", pSwitch->id);
-	std::string ID = szDeviceID;
-	GetSwitchType(ID.c_str(), pSwitch->unitcode, pSwitch->type, pSwitch->subtype, m_SwitchType);
+
+	GetSwitchType(szDeviceID, pSwitch->unitcode, pSwitch->type, pSwitch->subtype, m_SwitchType);
 	//_log.Log(LOG_ERROR, "RFLink: switch type: %d", m_SwitchType);
 	//_log.Log(LOG_ERROR, "RFLink: switch cmd: %d", pSwitch->cmnd);
 
@@ -334,11 +334,20 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		std::stringstream sstr;
 		//10;NewKaku;00c142;1;ON;     => protocol;address;button number;action (ON/OFF/ALLON/ALLOFF/15 -11-15 for dim level)
 
-		sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd;
-//#ifdef _DEBUG
+		sstr << "10;";
+		if (pSwitch->subtype != sSwitchTypeBlyss) {
+			sstr << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd << ";";
+		}
+		else {
+			//Special case for Blyss
+			char szUnit[10];
+			sprintf(szUnit, "%c%c", (pSwitch->id & 0xFF00) >> 8, pSwitch->id & 0xFF);
+			sstr << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << ((pSwitch->id & 0xFFFF0000) >> 16) << ";" << szUnit << ";" << switchcmnd << ";";
+		}
+		//#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 //#endif
-		sstr << "\n";
+		sstr << '\n';
 		m_bTXokay = false; // clear OK flag
 		WriteInt(sstr.str());
 		time_t atime = mytime(NULL);
@@ -476,9 +485,9 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			std::string tswitchcmnd = "ON";
 			//Build send string
 			std::stringstream sstr;
-			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << tswitchcmnd;
+			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << tswitchcmnd << ";";
 			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
-			sstr << "\n";
+			sstr << '\n';
 			m_bTXokay = false; // clear OK flag
 			WriteInt(sstr.str());
 			time_t atime = mytime(NULL);
@@ -499,11 +508,11 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		std::stringstream sstr;
 		//10;MiLightv1;1234;01;5566;ON;     => protocol;address;unit number;color&brightness;action (ON/OFF/ALLON/ALLOFF etc)
 
-		sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd;
+		sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd << ";";
 		//#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 		//#endif
-		sstr << "\n";
+		sstr << '\n';
 		m_bTXokay = false; // clear OK flag
 		WriteInt(sstr.str());
 		time_t atime = mytime(NULL);
@@ -524,11 +533,11 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			//Build send string
 			sstr.str("");
 
-			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd2;
+			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << colorbright << ";" << switchcmnd2 << ";";
 			//#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 			//#endif
-			sstr << "\n";
+			sstr << '\n';
 			m_bTXokay = false; // clear OK flag
 			WriteInt(sstr.str());
 			time_t atime = mytime(NULL);
@@ -585,6 +594,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
 	sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, BatteryLevel);
+
 	return true;
 }
 
@@ -1039,7 +1049,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		if (!bHaveWindTemp) windtemp = twindtemp;
 		if (!bHaveWindChill) windchill = twindchill;
 
-		SendWind(ID, BatteryLevel, twindir, windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
+		SendWind(ID, BatteryLevel, twindir, windspeed, windgust, windtemp, windchill, bHaveWindTemp, bHaveWindChill, tmp_Name);
 	}
 
 	if (bHaveCO2)
@@ -1110,6 +1120,20 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name);
 	} else if (bHaveSwitch && bHaveSwitchCmd) {
 		std::string switchType = results[2];
+
+		//Special handling of Blyss as it's unit ID's have codes like G1
+		if ((switchType == "Blyss")&&(results[4].size()==9))
+		{
+			//generate new ID
+			char szTmp[20];
+			std::stringstream sstr;
+			sstr << std::hex << results[3].substr(3);
+			sprintf(szTmp, "%02x", results[4][7]);
+			sstr << szTmp;
+			sprintf(szTmp, "%02x", results[4][8]);
+			sstr << szTmp;
+			sstr >> ID;
+		}
 		SendSwitchInt(ID, switchunit, BatteryLevel, switchType, switchcmd, switchlevel);
 	}
 

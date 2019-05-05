@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "WebsocketHandler.h"
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include "../main/localtime_r.h"
 #include "../push/WebsocketPush.h"
 #include "../json/json.h"
@@ -97,7 +95,7 @@ namespace http {
 
 				// Parse session id and its expiration date
 				std::string scookie = cookie_header;
-				size_t fpos = scookie.find("SID=");
+				size_t fpos = scookie.find("DMZSID=");
 				if (fpos != std::string::npos)
 				{
 					scookie = scookie.substr(fpos);

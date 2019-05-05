@@ -1,0 +1,17 @@
+<div ng-if="::!$ctrl.isMonthView" style="margin-bottom: 12px">
+    <div>{{:: 'Total Usage' | translate }}: {{:: $ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}</div>
+    <div ng-if="::!$ctrl.isOnlyUsage">{{:: 'Counter' | translate }}: {{:: $ctrl.data.counter.toFixed(3) }} {{:: $ctrl.unit}}</div>
+    <div ng-hide="!$ctrl.data.cost">{{:: 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+</div>
+
+<div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px">
+    <div>{{:: 'Total Usage' | translate }}: {{:: $ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}</div>
+    <div ng-if="::($ctrl.device.SwitchTypeVal != 3)">{{:: 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+</div>
+
+<div ng-if="::$ctrl.noDataAvailable" class="no-data">
+    {{ ::'No data available' | translate}}
+</div>
+
+<table id="reporttable" class="display myrighttable"></table>
+<div id="usagegraph" class="device-log-chart"></div>

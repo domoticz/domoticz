@@ -7,7 +7,7 @@
 #endif
 #include <stdlib.h>
 
-#if defined (__MINGW32__)
+#if defined (__MINGW32__) || defined (__NetBSD__)
 # define alloca __builtin_alloca
 #endif
 

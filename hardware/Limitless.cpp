@@ -162,7 +162,6 @@ m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	m_RemoteSocket=INVALID_SOCKET;
 	m_bSkipReceiveCheck = true;
 	m_BridgeType = (_eLimitlessBridgeType)BridgeType;
@@ -205,6 +204,8 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 
 bool CLimitLess::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	if (m_RemoteSocket!=INVALID_SOCKET)
 	{
@@ -229,7 +230,7 @@ bool CLimitLess::StartHardware()
 
 	memset(&m_stRemoteDestAddr,0,sizeof(m_stRemoteDestAddr));
 	//m_stRemoteDestAddr.sin_family = AF_UNSPEC;
-	//m_stRemoteDestAddr.sin_family = PF_INET; 
+	//m_stRemoteDestAddr.sin_family = PF_INET;
 	m_stRemoteDestAddr.sin_family = AF_INET;     // host byte order
 	m_stRemoteDestAddr.sin_port = htons(m_usIPPort); // short, network byte order
 	m_stRemoteDestAddr.sin_addr = *((struct in_addr *)he->h_addr);
@@ -262,9 +263,10 @@ bool CLimitLess::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CLimitLess::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CLimitLess::IsDataAvailable(const SOCKET sock)
@@ -416,16 +418,11 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 
 bool CLimitLess::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
-	}
-    if (m_RemoteSocket!=INVALID_SOCKET)
-	{
-		closesocket(m_RemoteSocket);
-		m_RemoteSocket=INVALID_SOCKET;
+		m_thread.reset();
 	}
 	m_bIsStarted=false;
     return true;
@@ -436,9 +433,8 @@ void CLimitLess::Do_Work()
 	int sec_counter = 0;
 	bool bDoInit = true;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (bDoInit)
@@ -460,6 +456,12 @@ void CLimitLess::Do_Work()
 			m_LastHeartbeat=mytime(NULL);
 		}
 	}
+	if (m_RemoteSocket != INVALID_SOCKET)
+	{
+		closesocket(m_RemoteSocket);
+		m_RemoteSocket = INVALID_SOCKET;
+	}
+
 	_log.Log(LOG_STATUS,"AppLamp: Worker stopped...");
 }
 

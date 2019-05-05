@@ -1256,492 +1256,7 @@ function TranslateStatusShort(status) {
 	}
 }
 
-function ShowGeneralGraph(contentdiv, backfunction, id, name, switchtype, sensortype) {
-	clearInterval($.myglobals.refreshTimer);
-	$('#modal').show();
-	$.content = contentdiv;
-	$(window).scrollTop(0);
-	$.backfunction = backfunction;
-	$.devIdx = id;
-	$.devName = name;
-	$.switchtype = switchtype;
-	$.sensortype = sensortype;
-	var htmlcontent = '';
-	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
-	htmlcontent += $('#globaldaylog').html();
-
-	var txtLabelOrg = sensortype;
-	var txtUnit = "?";
-
-	var graphtype = "counter";
-
-	if (sensortype == "Custom Sensor") {
-		txtUnit = unescape(switchtype);
-		graphtype = "Percentage";
-	}
-	else if (sensortype == "Visibility") {
-		txtUnit = "km";
-		if (switchtype == 1) {
-			txtUnit = "mi";
-		}
-	}
-	else if (sensortype == "Radiation") {
-		txtUnit = "Watt/m2";
-	}
-	else if (sensortype == "Pressure") {
-		txtUnit = "Bar";
-	}
-	else if (sensortype == "Soil Moisture") {
-		txtUnit = "cb";
-	}
-	else if (sensortype == "Leaf Wetness") {
-		txtUnit = "Range";
-	}
-	else if ((sensortype == "Voltage") || (sensortype == "A/D")) {
-		txtUnit = "mV";
-	}
-	else if (sensortype == "VoltageGeneral") {
-		txtLabelOrg = "Voltage";
-		txtUnit = "V";
-	}
-	else if ((sensortype == "DistanceGeneral") || (sensortype == "Distance")) {
-		txtLabelOrg = "Distance";
-		txtUnit = "cm";
-		if (switchtype == 1) {
-			txtUnit = "in";
-		}
-	}
-	else if (sensortype == "Sound Level") {
-		txtUnit = "dB";
-	}
-	else if ((sensortype == "CurrentGeneral") || (sensortype == "Current")) {
-		txtLabelOrg = "Current";
-		txtUnit = "A";
-	}
-	else if (switchtype == "Weight") {
-		txtUnit = "kg";
-	}
-	else if (sensortype == "Waterflow") {
-		txtUnit = "l/min";
-		graphtype = "Percentage";
-	}
-	else {
-		return;
-	}
-	$($.content).html(GetBackbuttonHTMLTable(backfunction) + htmlcontent);
-	$($.content).i18n();
-
-	var txtLabel = $.t(txtLabelOrg) + " (" + txtUnit + ")";
-	var txtTopLabel = $.t(txtLabelOrg) + ' ';
-	if (sensortype == "Custom Sensor") {
-		txtLabel = txtUnit;
-		txtTopLabel = "";
-	}
-
-	$.LogChart1 = $($.content + ' #globaldaygraph');
-	$.LogChart1.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=" + graphtype + "&idx=" + id + "&range=day",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var datatable = [];
-								var minValue = 10000000;
-								$.each(data.result, function (i, item) {
-									datatable.push([GetUTCFromString(item.d), parseFloat(item.v)]);
-									minValue = Math.min(item.v, minValue);
-								});
-								$.LogChart1.highcharts().yAxis[0].update({ min: minValue });
-								var series = $.LogChart1.highcharts().series[0];
-								series.setData(datatable);
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: Get5MinuteHistoryDaysGraphTitle()
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: txtLabel
-			},
-			labels: {
-				formatter: function () {
-					if (txtUnit == "mV") {
-						return Highcharts.numberFormat(this.value, 0);
-					}
-					return this.value;
-				}
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			formatter: function () {
-				return '' +
-					$.t(Highcharts.dateFormat('%A', this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + ': ' + this.y + ' ' + txtUnit;
-			}
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewGeneral(event, true, ShowGeneralGraph);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'log1',
-			showInLegend: false,
-			name: txtTopLabel
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.LogChart2 = $($.content + ' #globalmonthgraph');
-	$.LogChart2.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=" + graphtype + "&idx=" + id + "&range=month",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var datatable1 = [];
-								var datatable2 = [];
-								var datatable3 = [];
-								var minValue = 10000000;
-								$.each(data.result, function (i, item) {
-									datatable1.push([GetDateFromString(item.d), parseFloat(item.v_min)]);
-									datatable2.push([GetDateFromString(item.d), parseFloat(item.v_max)]);
-									if (typeof item.v_avg != 'undefined') {
-										var avg_val = parseFloat(item.v_avg);
-										if (avg_val != 0) {
-											datatable3.push([GetDateFromString(item.d), avg_val]);
-										}
-									}
-									minValue = Math.min(item.v_min, minValue);
-									minValue = Math.min(item.v_max, minValue);
-								});
-								$.LogChart2.highcharts().yAxis[0].update({ min: minValue });
-								var series1 = $.LogChart2.highcharts().series[0];
-								var series2 = $.LogChart2.highcharts().series[1];
-								series1.setData(datatable1);
-								series2.setData(datatable2);
-								if (datatable3.length > 0) {
-									var series3 = $.LogChart2.highcharts().series[2];
-									series3.setData(datatable3);
-								}
-								else {
-									$.LogChart2.highcharts().series[2].remove();
-								}
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: txtTopLabel + $.t('Last Month')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: txtLabel
-			},
-			labels: {
-				formatter: function () {
-					if (txtUnit == "mV") {
-						return Highcharts.numberFormat(this.value, 0);
-					}
-					return this.value;
-				}
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'logmin2',
-			name: 'min',
-			tooltip: {
-				valueSuffix: ' ' + txtUnit
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNewGeneral(event, false, ShowGeneralGraph);
-					}
-				}
-			}
-		}, {
-			id: 'logmax2',
-			name: 'max',
-			tooltip: {
-				valueSuffix: ' ' + txtUnit
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNewGeneral(event, false, ShowGeneralGraph);
-					}
-				}
-			}
-		}, {
-			id: 'logavg2',
-			name: 'avg',
-			tooltip: {
-				valueSuffix: ' ' + txtUnit
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNewGeneral(event, false, ShowGeneralGraph);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.LogChart3 = $($.content + ' #globalyeargraph');
-	$.LogChart3.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=" + graphtype + "&idx=" + id + "&range=year",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var datatable1 = [];
-								var datatable2 = [];
-								var datatable3 = [];
-								var minValue = 10000000;
-
-								$.each(data.result, function (i, item) {
-									datatable1.push([GetDateFromString(item.d), parseFloat(item.v_min)]);
-									datatable2.push([GetDateFromString(item.d), parseFloat(item.v_max)]);
-									if (typeof item.v_avg != 'undefined') {
-										var avg_val = parseFloat(item.v_avg);
-										if (avg_val != 0) {
-											datatable3.push([GetDateFromString(item.d), avg_val]);
-										}
-									}
-									minValue = Math.min(item.v_min, minValue);
-									minValue = Math.min(item.v_max, minValue);
-								});
-								$.LogChart3.highcharts().yAxis[0].update({ min: minValue });
-								var series1 = $.LogChart3.highcharts().series[0];
-								var series2 = $.LogChart3.highcharts().series[1];
-								series1.setData(datatable1);
-								series2.setData(datatable2);
-								if (datatable3.length > 0) {
-									var series3 = $.LogChart3.highcharts().series[2];
-									series3.setData(datatable3);
-								}
-								else {
-									$.LogChart3.highcharts().series[2].remove();
-								}
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: txtTopLabel + $.t('Last Year')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: txtLabel
-			},
-			labels: {
-				formatter: function () {
-					if (txtUnit == "mV") {
-						return Highcharts.numberFormat(this.value, 0);
-					}
-					return this.value;
-				}
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			formatter: function () {
-				return '' +
-					$.t(Highcharts.dateFormat('%A', this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + ': ' + this.y + ' ' + txtUnit;
-			}
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'log3min',
-			name: 'min',
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNewGeneral(event, false, ShowGeneralGraph);
-					}
-				}
-			}
-		}, {
-			id: 'log3max',
-			name: 'max',
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNewGeneral(event, false, ShowGeneralGraph);
-					}
-				}
-			}
-		}, {
-			id: 'log3avg',
-			name: 'avg',
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNewGeneral(event, false, ShowGeneralGraph);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-}
-
-function AddDataToTempChart(data, chart, isday) {
+function AddDataToTempChart(data, chart, isday, isthermostat) {
 	var datatablete = [];
 	var datatabletm = [];
 	var datatableta = [];
@@ -1953,7 +1468,7 @@ function AddDataToTempChart(data, chart, isday) {
 						}, false);
 						series = chart.get('setpointmin');
 						series.setData(datatablesm, false);
-			
+
 						chart.addSeries( {
 							id: 'setpointmax',
 							name: $.t('Set Point') + '_max',
@@ -2016,6 +1531,7 @@ function AddDataToTempChart(data, chart, isday) {
 				name: $.t('Temperature'),
 				color: 'yellow',
 				yAxis: 0,
+				step: (isthermostat) ? 'left' : null,
 				tooltip: {
 					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
 					valueDecimals: 1
@@ -2449,7 +1965,7 @@ function AddDataToCurrentChart(data, chart, switchtype, isday) {
 				}, false);
 				chart.addSeries({
 					id: 'current3max',
-					name: 'Current_L3_Min',
+					name: 'Current_L3_Max',
 					color: 'rgba(112,146,190,0.8)',
 					yAxis: 0,
 					tooltip: {
@@ -2577,7 +2093,7 @@ function AddDataToCurrentChart(data, chart, switchtype, isday) {
 				}, false);
 				chart.addSeries({
 					id: 'current3max',
-					name: $.t('Usage') + ' L3_Min',
+					name: $.t('Usage') + ' L3_Max',
 					color: 'rgba(112,146,190,0.8)',
 					yAxis: 0,
 					tooltip: {
@@ -2636,11 +2152,6 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: Get5MinuteHistoryDaysGraphTitle()
@@ -2716,11 +2227,6 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Last Month')
 		},
@@ -2795,11 +2301,6 @@ function ShowCurrentLog(contentdiv, backfunction, id, name, switchtype) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Year')
@@ -2894,11 +2395,6 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: 'UV ' + Get5MinuteHistoryDaysGraphTitle()
@@ -2999,11 +2495,6 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: 'UV ' + $.t('Last Month')
@@ -3119,11 +2610,6 @@ function ShowUVLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: 'UV ' + $.t('Last Year')
@@ -3285,11 +2771,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Wind') + ' ' + $.t('speed/gust') + ' ' + Get5MinuteHistoryDaysGraphTitle()
@@ -3518,11 +2999,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 		pane: {
 			size: '85%'
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		xAxis: {
 			tickmarkPlacement: 'on',
 			tickWidth: 1,
@@ -3618,11 +3094,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Wind') + ' ' + $.t('speed/gust') + ' ' + $.t('Last Month')
@@ -3900,11 +3371,6 @@ function ShowWindLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Wind') + ' ' + $.t('speed/gust') + ' ' + $.t('Last Year')
 		},
@@ -4177,11 +3643,6 @@ function ShowMonthReportRain(actMonth, actYear) {
 		chart: {
 			type: 'column'
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: ''
 		},
@@ -4387,11 +3848,6 @@ function ShowYearReportRain(actYear) {
 		chart: {
 			type: 'column'
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: ''
 		},
@@ -4586,11 +4042,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Rainfall') + ' ' + Get5MinuteHistoryDaysGraphTitle()
 		},
@@ -4650,11 +4101,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Rainfall') + ' ' + $.t('Last Week')
@@ -4737,11 +4183,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Rainfall') + ' ' + $.t('Last Month')
@@ -4855,11 +4296,6 @@ function ShowRainLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Rainfall') + ' ' + $.t('Last Year')
@@ -4980,11 +4416,6 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Barometer') + ' ' + Get5MinuteHistoryDaysGraphTitle()
@@ -5107,11 +4538,6 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Barometer') + ' ' + $.t('Last Month')
 		},
@@ -5233,11 +4659,6 @@ function ShowBaroLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Barometer') + ' ' + $.t('Last Year')
 		},
@@ -5350,11 +4771,6 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Air Quality') + ' ' + Get5MinuteHistoryDaysGraphTitle()
@@ -5537,11 +4953,6 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 					});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Air Quality') + ' ' + $.t('Last Month')
@@ -5753,11 +5164,6 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Air Quality') + ' ' + $.t('Last Year')
 		},
@@ -5904,7 +5310,6 @@ function ShowAirQualityLog(contentdiv, backfunction, id, name) {
 	return false;
 }
 
-
 function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 	clearInterval($.myglobals.refreshTimer);
 	$(window).scrollTop(0);
@@ -5947,11 +5352,6 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('RPM') + ' ' + Get5MinuteHistoryDaysGraphTitle()
 		},
@@ -5962,7 +5362,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			title: {
 				text: 'RPM'
 			},
-			min: 0,
+			allowDecimals: false,
 			minorGridLineWidth: 0,
 			alternateGridColor: null
 		},
@@ -6052,11 +5452,6 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('RPM') + ' ' + $.t('Last Month')
 		},
@@ -6067,7 +5462,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			title: {
 				text: 'RPM'
 			},
-			min: 0,
+			allowDecimals: false,
 			minorGridLineWidth: 0,
 			alternateGridColor: null
 		},
@@ -6166,11 +5561,6 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('RPM') + ' ' + $.t('Last Year')
 		},
@@ -6181,7 +5571,7 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 			title: {
 				text: 'RPM'
 			},
-			min: 0,
+			allowDecimals: false,
 			minorGridLineWidth: 0,
 			alternateGridColor: null
 		},
@@ -6251,397 +5641,6 @@ function ShowFanLog(contentdiv, backfunction, id, name, sensor) {
 	return false;
 }
 
-function ShowPercentageLog(contentdiv, backfunction, id, name) {
-	clearInterval($.myglobals.refreshTimer);
-	$(window).scrollTop(0);
-	$('#modal').show();
-	$.content = contentdiv;
-	$.backfunction = backfunction;
-	$.devIdx = id;
-	$.devName = name;
-	var htmlcontent = '';
-	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
-	htmlcontent += $('#daymonthyearlog').html();
-	$($.content).html(GetBackbuttonHTMLTable(backfunction) + htmlcontent);
-	$($.content).i18n();
-
-	$.DayChart = $($.content + ' #daygraph');
-	$.DayChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=Percentage&idx=" + id + "&range=day", function (data) {
-						if (typeof data.result != 'undefined') {
-							var series = $.DayChart.highcharts().series[0];
-							var datatable = [];
-							var minValue = 10000000;
-							$.each(data.result, function (i, item) {
-								datatable.push([GetUTCFromString(item.d), parseFloat(item.v)]);
-								minValue = Math.min(item.v, minValue);
-							});
-							$.DayChart.highcharts().yAxis[0].update({ min: minValue });
-							series.setData(datatable); // redraws
-						}
-					});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Percentage') + ' ' + Get5MinuteHistoryDaysGraphTitle()
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: 'Percentage'
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNew(event, true, ShowPercentageLog);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'percentage',
-			name: 'Percentage',
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 2
-			},
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.MonthChart = $($.content + ' #monthgraph');
-	$.MonthChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=Percentage&idx=" + id + "&range=month", function (data) {
-						if (typeof data.result != 'undefined') {
-							var datatable1 = [];
-							var datatable2 = [];
-							var datatable3 = [];
-							var minValue = 10000000;
-
-							$.each(data.result, function (i, item) {
-								datatable1.push([GetDateFromString(item.d), parseFloat(item.v_min)]);
-								datatable2.push([GetDateFromString(item.d), parseFloat(item.v_max)]);
-								datatable3.push([GetDateFromString(item.d), parseFloat(item.v_avg)]);
-								minValue = Math.min(item.v_min, minValue);
-							});
-
-							$.MonthChart.highcharts().yAxis[0].update({ min: minValue });
-							var series1 = $.MonthChart.highcharts().series[0];
-							var series2 = $.MonthChart.highcharts().series[1];
-							var series3 = $.MonthChart.highcharts().series[2];
-							series1.setData(datatable1, false);
-							series2.setData(datatable2, false);
-							series3.setData(datatable3, false);
-							$.MonthChart.highcharts().redraw();
-						}
-					});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Percentage') + ' ' + $.t('Last Month')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: 'Percentage'
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'percentage_min',
-			name: 'min',
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 2
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowPercentageLog);
-					}
-				}
-			}
-		}, {
-			id: 'percentage_max',
-			name: 'max',
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 2
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowPercentageLog);
-					}
-				}
-			}
-		}, {
-			id: 'percentage_avg',
-			name: 'avg',
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 2
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowPercentageLog);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.YearChart = $($.content + ' #yeargraph');
-	$.YearChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=Percentage&idx=" + id + "&range=year", function (data) {
-						if (typeof data.result != 'undefined') {
-							var datatable1 = [];
-							var datatable2 = [];
-							var datatable3 = [];
-							var minValue = 10000000;
-
-							$.each(data.result, function (i, item) {
-								datatable1.push([GetDateFromString(item.d), parseFloat(item.v_min)]);
-								datatable2.push([GetDateFromString(item.d), parseFloat(item.v_max)]);
-								datatable3.push([GetDateFromString(item.d), parseFloat(item.v_avg)]);
-								minValue = Math.min(item.v_min, minValue);
-							});
-							$.YearChart.highcharts().yAxis[0].update({ min: minValue });
-							var series1 = $.YearChart.highcharts().series[0];
-							var series2 = $.YearChart.highcharts().series[1];
-							var series3 = $.YearChart.highcharts().series[2];
-							series1.setData(datatable1, false);
-							series2.setData(datatable2, false);
-							series3.setData(datatable3, false);
-							$.YearChart.highcharts().redraw();
-						}
-					});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Percentage') + ' ' + $.t('Last Year')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: 'Percentage'
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'percentage_min',
-			name: 'min',
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 2
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowPercentageLog);
-					}
-				}
-			}
-		}, {
-			id: 'percentage_max',
-			name: 'max',
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 2
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowPercentageLog);
-					}
-				}
-			}
-		}, {
-			id: 'percentage_avg',
-			name: 'avg',
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 2
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowPercentageLog);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-	$('#modal').hide();
-	cursordefault();
-	return false;
-}
-
-
-
-
 function AddDataToUtilityChart(data, chart, switchtype) {
 
 	var datatableEnergyUsed = [];
@@ -6667,6 +5666,8 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 	if (typeof data.ValueQuantity != 'undefined') {
 		valueQuantity = data.ValueQuantity;
 	}
+
+	$.DividerWater = 1000;
 
 	var valueUnits = "";
 	if (typeof data.ValueUnits != 'undefined') {
@@ -7183,9 +6184,8 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 	$.devIdx = id;
 	$.devName = name;
 	$.devSwitchType = switchtype;
-	var htmlcontent = '';
-	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
-	htmlcontent += $('#dayweekmonthyearlog').html();
+
+	var htmlcontent = $('#dayweekmonthyearlog').html();
 
 	$.costsT1 = 0.2389;
 	$.costsT2 = 0.2389;
@@ -7219,7 +6219,7 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 	var actMonth = d.getMonth() + 1;
 	var actYear = d.getYear() + 1900;
 
-	$($.content).html(GetBackbuttonHTMLTableWithRight(backfunction, 'ShowP1YearReport(' + actYear + ')', $.t('Report')) + htmlcontent);
+	$($.content).html(htmlcontent);
 	$($.content).i18n();
 
 	$.DayChart = $($.content + ' #daygraph');
@@ -7244,11 +6244,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: Get5MinuteHistoryDaysGraphTitle()
@@ -7325,11 +6320,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Last Week')
 		},
@@ -7388,11 +6378,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Month')
@@ -7469,11 +6454,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Last Year')
 		},
@@ -7526,231 +6506,6 @@ function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
 	});
 }
 
-function OnSelChangeYearP1ReportGas() {
-	var yearidx = $($.content + ' #comboyear option:selected').val();
-	if (typeof yearidx == 'undefined') {
-		return;
-	}
-	ShowP1YearReportGas(yearidx);
-}
-
-function ShowP1MonthReportGas(actMonth, actYear) {
-	var htmlcontent = '';
-
-	htmlcontent += $('#toptextmonthgas').html();
-	htmlcontent += $('#monthreportviewgas').html();
-	$($.content).html(htmlcontent);
-	$($.content).i18n();
-
-	$($.content + ' #theader').html(unescape($.devName) + " " + $.t($.monthNames[actMonth - 1]) + " " + actYear);
-	$($.content + ' #spanmonthgastotalusage').html(($.devSwitchType == 4) ? $.t('Total Generated') : $.t('Total Usage'));
-
-	var yAxisTitle = $.t('Energy') + ' (kWh)';
-	if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
-		//Electra
-		$($.content + ' #munit').html("kWh");
-		$($.content + ' #thmonthgasusage').html(($.devSwitchType == 4) ? $.t('Generated') : $.t('Usage'));
-	}
-	else if ($.devSwitchType == 1) {
-		//Gas
-		$($.content + ' #munit').html("m3");
-		yAxisTitle = $.t('Usage') + ' (m3)';
-	}
-	else {
-		//Water
-		$($.content + ' #munit').html("m3");
-		yAxisTitle = $.t('Usage') + ' (m3)';
-	}
-
-	$($.content + ' #monthreport').dataTable({
-		"sDom": '<"H"rC>t<"F">',
-		"oTableTools": {
-			"sRowSelect": "single"
-		},
-		"aaSorting": [[0, "asc"]],
-		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [3] }
-		],
-		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": false,
-		"bJQueryUI": true,
-		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
-		"iDisplayLength": 50,
-		language: $.DataTableLanguage
-	});
-	var mTable = $($.content + ' #monthreport');
-	var oTable = mTable.dataTable();
-	oTable.fnClearTable();
-
-	$.UsageChart = $($.content + ' #usagegraph');
-	$.UsageChart.highcharts({
-		chart: {
-			type: 'column'
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: ''
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			min: 0,
-			maxPadding: 0.2,
-			title: {
-				text: yAxisTitle
-			},
-			min: 0
-		},
-		tooltip: {
-			formatter: function () {
-				var unit = GetGraphUnit(this.series.name);
-				return $.t(Highcharts.dateFormat('%A', this.x)) + ' ' + Highcharts.dateFormat('%B %d', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
-			}
-		},
-		plotOptions: {
-			column: {
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	var total = 0;
-	var datachart = [];
-
-	$.getJSON("json.htm?type=graph&sensor=counter&idx=" + $.devIdx + "&range=year&actmonth=" + actMonth + "&actyear=" + actYear,
-		function (data) {
-			var lastTotal = -1;
-			$.each(data.result, function (i, item) {
-				var month = parseInt(item.d.substring(5, 7), 10);
-				var year = parseInt(item.d.substring(0, 4), 10);
-
-				if ((month == actMonth) && (year == actYear)) {
-					var day = parseInt(item.d.substring(8, 10), 10);
-					var Usage = parseFloat(item.v);
-					var Counter = parseFloat(item.c);
-
-					total += Usage;
-
-					var cdate = Date.UTC(actYear, actMonth - 1, day);
-					var cday = $.t(dateFormat(cdate, "dddd"));
-					datachart.push([cdate, parseFloat(item.v)]);
-
-					var rcost;
-					if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
-						//Electra
-						rcost = Usage * $.costsT1;
-					}
-					else if ($.devSwitchType == 1) {
-						//Gas
-						rcost = Usage * $.costsGas;
-					}
-					else {
-						//Water
-						rcost = Usage * $.costsWater;
-					}
-
-					var img;
-					if ((lastTotal == -1) || (lastTotal == Usage)) {
-						img = '<img src="images/equal.png"></img>';
-					}
-					else if (Usage < lastTotal) {
-						if ($.devSwitchType == 4) {
-							img = '<img src="images/up.png" class="vflip"></img>';
-						} else {
-							img = '<img src="images/down.png"></img>';
-						}
-					}
-					else {
-						if ($.devSwitchType == 4) {
-							img = '<img src="images/down.png" class="vflip"></img>';
-						} else {
-							img = '<img src="images/up.png"></img>';
-						}
-					}
-					lastTotal = Usage;
-
-					var addId = oTable.fnAddData([
-						day,
-						cday,
-						Counter.toFixed(3),
-						Usage.toFixed(3),
-						rcost.toFixed(2),
-						img
-					], false);
-				}
-			});
-
-			$($.content + ' #tu').html(total.toFixed(3));
-
-			var montlycosts;
-			if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
-				//Electra
-				montlycosts = (total * $.costsT1)
-				$.UsageChart.highcharts().addSeries({
-					id: 'energy',
-					name: ($.devSwitchType == 0) ? $.t('Usage') : $.t('Generated'),
-					showInLegend: false,
-					color: 'rgba(3,190,252,0.8)',
-					yAxis: 0
-				});
-				var series = $.UsageChart.highcharts().get('energy');
-				series.setData(datachart);
-			}
-			else if ($.devSwitchType == 1) {
-				//Gas
-				montlycosts = (total * $.costsGas)
-				$.UsageChart.highcharts().addSeries({
-					id: 'gas',
-					name: 'Gas',
-					showInLegend: false,
-					color: 'rgba(3,190,252,0.8)',
-					yAxis: 0
-				});
-				var series = $.UsageChart.highcharts().get('gas');
-				series.setData(datachart);
-			}
-			else {
-				//Water
-				montlycosts = (total * $.costsWater)
-				$.UsageChart.highcharts().addSeries({
-					id: 'water',
-					name: 'Water',
-					showInLegend: false,
-					color: 'rgba(3,190,252,0.8)',
-					yAxis: 0
-				});
-				var series = $.UsageChart.highcharts().get('water');
-				series.setData(datachart);
-			}
-			$($.content + ' #mc').html(montlycosts.toFixed(2));
-
-			mTable.fnDraw();
-			/* Add a click handler to the rows - this could be used as a callback */
-			$($.content + ' #monthreport tbody tr').click(function (e) {
-				if ($(this).hasClass('row_selected')) {
-					$(this).removeClass('row_selected');
-				}
-				else {
-					oTable.$('tr.row_selected').removeClass('row_selected');
-					$(this).addClass('row_selected');
-				}
-			});
-		});
-
-	return false;
-}
-
 function addLeadingZeros(n, length) {
 	var str = n.toString();
 	var zeros = "";
@@ -7758,900 +6513,6 @@ function addLeadingZeros(n, length) {
 		zeros += "0";
 	zeros += str;
 	return zeros;
-}
-
-function Add2YearTableP1ReportGas(oTable, total, lastTotal, lastMonth, actYear) {
-	var rcost;
-	if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
-		//Electra
-		rcost = total * $.costsT1;
-	}
-	else if ($.devSwitchType == 1) {
-		//Gas
-		rcost = total * $.costsGas;
-	}
-	else {
-		//Water
-		rcost = total * $.costsWater;
-	}
-
-	var img;
-	if ((lastTotal == -1) || (lastTotal == total)) {
-		img = '<img src="images/equal.png"></img>';
-	}
-	else if (total < lastTotal) {
-		if ($.devSwitchType == 4) {
-			img = '<img src="images/up.png" class="vflip"></img>';
-		} else {
-			img = '<img src="images/down.png"></img>';
-		}
-	}
-	else {
-		if ($.devSwitchType == 4) {
-			img = '<img src="images/down.png" class="vflip"></img>';
-		} else {
-			img = '<img src="images/up.png"></img>';
-		}
-	}
-
-	var monthtxt = addLeadingZeros(parseInt(lastMonth), 2) + ". " + $.t($.monthNames[lastMonth - 1]) + " ";
-	monthtxt += '<img src="images/next.png" onclick="ShowP1MonthReportGas(' + lastMonth + ',' + actYear + ')">';
-
-	var addId = oTable.fnAddData([
-		monthtxt,
-		total.toFixed(3),
-		rcost.toFixed(2),
-		img
-	], false);
-	return total;
-}
-
-function ShowP1YearReportGas(actYear) {
-	if (actYear == 0) {
-		actYear = $.actYear;
-	}
-	else {
-		$.actYear = actYear;
-	}
-	var htmlcontent = '';
-	htmlcontent += $('#toptextyeargas').html();
-	htmlcontent += $('#yearreportviewgas').html();
-
-	$($.content).html(htmlcontent);
-	$($.content + ' #backbutton').click(function (e) {
-		eval($.backfunction)();
-	});
-	$($.content).i18n();
-
-	$($.content + ' #theader').html(unescape($.devName) + " " + actYear);
-	$($.content + ' #spanyeargastotalusage').html(($.devSwitchType == 4) ? $.t('Total Generated') : $.t('Total Usage'));
-
-	var yAxisTitle = $.t('Energy') + ' (kWh)';
-	if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
-		//Electra
-		$($.content + ' #munit').html("kWh");
-		$($.content + ' #thyeargasusage').html(($.devSwitchType == 4) ? $.t('Generated') : $.t('Usage'));
-	}
-	else if ($.devSwitchType == 1) {
-		//Gas
-		$($.content + ' #munit').html("m3");
-		yAxisTitle = $.t('Usage') + ' (m3)';
-	}
-	else {
-		//Water
-		$($.content + ' #munit').html("m3");
-		yAxisTitle = $.t('Usage') + ' (m3)';
-	}
-
-	$($.content + ' #comboyear').val(actYear);
-
-	$($.content + ' #comboyear').change(function () {
-		OnSelChangeYearP1ReportGas();
-	});
-	$($.content + ' #comboyear').keypress(function () {
-		$(this).change();
-	});
-
-	$($.content + ' #yearreport').dataTable({
-		"sDom": '<"H"rC>t<"F">',
-		"oTableTools": {
-			"sRowSelect": "single"
-		},
-		"aaSorting": [[0, "asc"]],
-		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [3] }
-		],
-		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": false,
-		"bJQueryUI": true,
-		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
-		"iDisplayLength": 50,
-		language: $.DataTableLanguage
-	});
-
-	var mTable = $($.content + ' #yearreport');
-	var oTable = mTable.dataTable();
-	oTable.fnClearTable();
-
-	$.UsageChart = $($.content + ' #usagegraph');
-	$.UsageChart.highcharts({
-		chart: {
-			type: 'column'
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: ''
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			min: 0,
-			maxPadding: 0.2,
-			title: {
-				text: yAxisTitle
-			},
-			min: 0
-		},
-		tooltip: {
-			formatter: function () {
-				var unit = GetGraphUnit(this.series.name);
-				return $.t(Highcharts.dateFormat('%B', this.x)) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
-			}
-		},
-		plotOptions: {
-			column: {
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0,
-				dataLabels: {
-					enabled: true,
-					color: 'white'
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	var total = 0;
-	var global = 0;
-	var datachart = [];
-
-	var actual_counter = "Unknown?";
-
-	$.getJSON("json.htm?type=graph&sensor=counter&idx=" + $.devIdx + "&range=year&actyear=" + actYear,
-		function (data) {
-			var lastTotal = -1;
-			var lastMonth = -1;
-			if (typeof data.counter != 'undefined') {
-				actual_counter = data.counter;
-			}
-
-			$.each(data.result, function (i, item) {
-				var month = parseInt(item.d.substring(5, 7), 10);
-				var year = parseInt(item.d.substring(0, 4), 10);
-				if (year == actYear) {
-					if (lastMonth == -1) {
-						lastMonth = month;
-					}
-					if (lastMonth != month) {
-						//add totals to table
-						lastTotal = Add2YearTableP1ReportGas(oTable, total, lastTotal, lastMonth, actYear);
-
-						var cdate = Date.UTC(actYear, lastMonth - 1, 1);
-						datachart.push([cdate, parseFloat(total.toFixed(3))]);
-
-						lastMonth = month;
-						global += total;
-
-						total = 0;
-					}
-					var day = parseInt(item.d.substring(8, 10), 10);
-					var Usage = 0;
-
-					Usage = parseFloat(item.v);
-					total += Usage;
-				}
-			});
-
-			//add last month
-			if (total != 0) {
-				lastTotal = Add2YearTableP1ReportGas(oTable, total, lastTotal, lastMonth, actYear);
-				var cdate = Date.UTC(actYear, lastMonth - 1, 1);
-				datachart.push([cdate, parseFloat(total.toFixed(3))]);
-				global += lastTotal;
-			}
-
-			$($.content + ' #tu').html(global.toFixed(3));
-			var montlycosts = 0;
-			if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
-				//Electra
-				montlycosts = (global * $.costsT1);
-				$.UsageChart.highcharts().addSeries({
-					id: 'energy',
-					name: ($.devSwitchType == 0) ? $.t('Usage') : $.t('Generated'),
-					showInLegend: false,
-					color: 'rgba(3,190,252,0.8)',
-					yAxis: 0
-				});
-				var series = $.UsageChart.highcharts().get('energy');
-				series.setData(datachart);
-			}
-			else if ($.devSwitchType == 1) {
-				//Gas
-				montlycosts = (global * $.costsGas);
-				$.UsageChart.highcharts().addSeries({
-					id: 'gas',
-					name: 'Gas',
-					showInLegend: false,
-					color: 'rgba(3,190,252,0.8)',
-					yAxis: 0
-				});
-				var series = $.UsageChart.highcharts().get('gas');
-				series.setData(datachart);
-			}
-			else {
-				//Water
-				montlycosts = (global * $.costsWater);
-				$.UsageChart.highcharts().addSeries({
-					id: 'water',
-					name: 'Water',
-					showInLegend: false,
-					color: 'rgba(3,190,252,0.8)',
-					yAxis: 0
-				});
-				var series = $.UsageChart.highcharts().get('water');
-				series.setData(datachart);
-			}
-
-			$($.content + ' #mc').html(montlycosts.toFixed(2));
-			$($.content + ' #cntr').html(actual_counter);
-
-			mTable.fnDraw();
-			/* Add a click handler to the rows - this could be used as a callback */
-			$($.content + ' #yearreport tbody tr').click(function (e) {
-				if ($(this).hasClass('row_selected')) {
-					$(this).removeClass('row_selected');
-				}
-				else {
-					oTable.$('tr.row_selected').removeClass('row_selected');
-					$(this).addClass('row_selected');
-				}
-			});
-		});
-
-	return false;
-}
-
-function ShowP1MonthReport(actMonth, actYear) {
-	var htmlcontent = '';
-
-	htmlcontent += $('#toptextmonth').html();
-	htmlcontent += $('#monthreportview').html();
-	$($.content).html(htmlcontent);
-	$($.content).i18n();
-
-	$($.content + ' #theader').html(unescape($.devName) + " " + $.t($.monthNames[actMonth - 1]) + " " + actYear);
-
-	$($.content + ' #monthreport').dataTable({
-		"sDom": '<"H"rC>t<"F">',
-		"oTableTools": {
-			"sRowSelect": "single"
-		},
-		"aaSorting": [[0, "asc"]],
-		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [10] }
-		],
-		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": false,
-		"bJQueryUI": true,
-		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
-		"iDisplayLength": 50,
-		language: $.DataTableLanguage
-	});
-	var mTable = $($.content + ' #monthreport');
-	var oTable = mTable.dataTable();
-	oTable.fnClearTable();
-
-	$.UsageChart = $($.content + ' #usagegraph');
-	$.UsageChart.highcharts({
-		chart: {
-			type: 'column',
-			marginRight: 10
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: ''
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			},
-			min: 0
-		},
-		tooltip: {
-			formatter: function () {
-				var unit = GetGraphUnit(this.series.name);
-				return $.t(Highcharts.dateFormat('%B', this.x)) + " " + Highcharts.dateFormat('%d', this.x) + '<br/>' + $.t(this.series.name) + ': ' + this.y + ' ' + unit + '<br/>Total: ' + this.point.stackTotal + ' ' + unit;
-			}
-		},
-		plotOptions: {
-			column: {
-				stacking: 'normal',
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-	var datachartT1 = [];
-	var datachartT2 = [];
-	var datachartR1 = [];
-	var datachartR2 = [];
-
-	var totalT1 = 0;
-	var totalT2 = 0;
-	var totalR1 = 0;
-	var totalR2 = 0;
-
-	var bHaveDelivered = false;
-
-	$.getJSON("json.htm?type=graph&sensor=counter&idx=" + $.devIdx + "&range=year&actmonth=" + actMonth + "&actyear=" + actYear,
-		function (data) {
-			bHaveDelivered = (typeof data.delivered != 'undefined');
-			if (bHaveDelivered == false) {
-				$($.content + ' #dreturn').hide();
-			}
-			else {
-				$($.content + ' #dreturn').show();
-			}
-
-			oTable.fnSetColumnVis(8, bHaveDelivered);
-			oTable.fnSetColumnVis(9, bHaveDelivered);
-			oTable.fnSetColumnVis(10, bHaveDelivered);
-			oTable.fnSetColumnVis(11, bHaveDelivered);
-			oTable.fnSetColumnVis(12, bHaveDelivered);
-			oTable.fnSetColumnVis(13, bHaveDelivered);
-
-			var lastTotal = -1;
-
-			$.each(data.result, function (i, item) {
-				var month = parseInt(item.d.substring(5, 7), 10);
-				var year = parseInt(item.d.substring(0, 4), 10);
-
-				if ((month == actMonth) && (year == actYear)) {
-					var day = parseInt(item.d.substring(8, 10), 10);
-					var UsageT1 = 0;
-					var UsageT2 = 0;
-					var ReturnT1 = 0;
-					var ReturnT2 = 0;
-
-					UsageT1 = parseFloat(item.v);
-					if (typeof item.v2 != 'undefined') {
-						UsageT2 = parseFloat(item.v2);
-					}
-					if (typeof item.r1 != 'undefined') {
-						ReturnT1 = parseFloat(item.r1);
-					}
-					if (typeof item.r2 != 'undefined') {
-						ReturnT2 = parseFloat(item.r2);
-					}
-
-					var cdate = Date.UTC(actYear, actMonth - 1, day);
-					var cday = $.t(dateFormat(cdate, "dddd"));
-					datachartT1.push([cdate, parseFloat(UsageT1.toFixed(3))]);
-					datachartT2.push([cdate, parseFloat(UsageT2.toFixed(3))]);
-					datachartR1.push([cdate, parseFloat(ReturnT1.toFixed(3))]);
-					datachartR2.push([cdate, parseFloat(ReturnT2.toFixed(3))]);
-
-					totalT1 += UsageT1;
-					totalT2 += UsageT2;
-					totalR1 += ReturnT1;
-					totalR2 += ReturnT2;
-
-					var rcostT1 = UsageT1 * $.costsT1;
-					var rcostT2 = UsageT2 * $.costsT2;
-					var rcostR1 = -(ReturnT1 * $.costsR1);
-					var rcostR2 = -(ReturnT2 * $.costsR2);
-					var rTotal = rcostT1 + rcostT2 + rcostR1 + rcostR2;
-
-					var textR1 = "";
-					var textR2 = "";
-					var textCostR1 = "";
-					var textCostR2 = "";
-
-					if (ReturnT1 != 0) {
-						textR1 = ReturnT1.toFixed(3);
-						textCostR1 = rcostR1.toFixed(2);
-					}
-					if (ReturnT2 != 0) {
-						textR2 = ReturnT2.toFixed(3);
-						textCostR2 = rcostR2.toFixed(2);
-					}
-					var CounterT1 = parseFloat(item.c1).toFixed(3);
-					var CounterT2 = parseFloat(item.c3).toFixed(3);
-					var CounterR1 = parseFloat(item.c2).toFixed(3);
-					var CounterR2 = parseFloat(item.c4).toFixed(3);
-
-					var img;
-					if ((lastTotal == -1) || (lastTotal == rTotal)) {
-						img = '<img src="images/equal.png"></img>';
-					}
-					else if (rTotal < lastTotal) {
-						img = '<img src="images/down.png"></img>';
-					}
-					else {
-						img = '<img src="images/up.png"></img>';
-					}
-					lastTotal = rTotal;
-
-					var addId = oTable.fnAddData([
-						day,
-						cday,
-						CounterT1,
-						UsageT1.toFixed(3),
-						rcostT1.toFixed(2),
-						CounterT2,
-						UsageT2.toFixed(3),
-						rcostT2.toFixed(2),
-						CounterR1,
-						textR1,
-						textCostR1,
-						CounterR2,
-						textR2,
-						textCostR2,
-						rTotal.toFixed(2),
-						img
-					], false);
-				}
-			});
-
-			if (datachartT1.length > 0) {
-				if (datachartT2.length > 0) {
-					$.UsageChart.highcharts().addSeries({
-						id: 'usage1',
-						name: $.t('Usage') + ' 1',
-						color: 'rgba(60,130,252,0.8)',
-						stack: 'susage',
-						yAxis: 0
-					});
-				}
-				else {
-					$.UsageChart.highcharts().addSeries({
-						id: 'usage1',
-						name: 'Usage',
-						color: 'rgba(3,190,252,0.8)',
-						stack: 'susage',
-						yAxis: 0
-					});
-				}
-				series = $.UsageChart.highcharts().get('usage1');
-				series.setData(datachartT1);
-			}
-			if (datachartT2.length > 0) {
-				$.UsageChart.highcharts().addSeries({
-					id: 'usage2',
-					name: $.t('Usage') + ' 2',
-					color: 'rgba(3,190,252,0.8)',
-					stack: 'susage',
-					yAxis: 0
-				});
-				series = $.UsageChart.highcharts().get('usage2');
-				series.setData(datachartT2);
-			}
-			if (bHaveDelivered) {
-				if (datachartR1.length > 0) {
-					$.UsageChart.highcharts().addSeries({
-						id: 'return1',
-						name: $.t('Return') + ' 1',
-						color: 'rgba(30,242,110,0.8)',
-						stack: 'sreturn',
-						yAxis: 0
-					});
-					series = $.UsageChart.highcharts().get('return1');
-					series.setData(datachartR1);
-				}
-				if (datachartR2.length > 0) {
-					$.UsageChart.highcharts().addSeries({
-						id: 'return2',
-						name: $.t('Return') + ' 2',
-						color: 'rgba(3,252,190,0.8)',
-						stack: 'sreturn',
-						yAxis: 0
-					});
-					series = $.UsageChart.highcharts().get('return2');
-					series.setData(datachartR2);
-				}
-			}
-
-			$($.content + ' #tut1').html(totalT1.toFixed(3));
-			$($.content + ' #tut2').html(totalT2.toFixed(3));
-			$($.content + ' #trt1').html(totalR1.toFixed(3));
-			$($.content + ' #trt2').html(totalR2.toFixed(3));
-
-			var gtotal = totalT1 + totalT2;
-			var greturn = totalR1 + totalR2;
-			$($.content + ' #tu').html(gtotal.toFixed(3));
-			$($.content + ' #tr').html(greturn.toFixed(3));
-			var montlycosts = (totalT1 * $.costsT1) + (totalT2 * $.costsT2) - (totalR1 * $.costsR1) - (totalR2 * $.costsR2);
-			$($.content + ' #mc').html(montlycosts.toFixed(2));
-
-			mTable.fnDraw();
-			/* Add a click handler to the rows - this could be used as a callback */
-			$($.content + ' #monthreport tbody tr').click(function (e) {
-				if ($(this).hasClass('row_selected')) {
-					$(this).removeClass('row_selected');
-				}
-				else {
-					oTable.$('tr.row_selected').removeClass('row_selected');
-					$(this).addClass('row_selected');
-				}
-			});
-		});
-
-	return false;
-}
-
-function OnSelChangeYearP1Report() {
-	var yearidx = $($.content + ' #comboyear option:selected').val();
-	if (typeof yearidx == 'undefined') {
-		return;
-	}
-	ShowP1YearReport(yearidx);
-}
-
-function Add2YearTableP1Report(oTable, totalT1, totalT2, totalR1, totalR2, lastTotal, lastMonth, actYear) {
-	var rcostT1 = totalT1 * $.costsT1;
-	var rcostT2 = totalT2 * $.costsT2;
-	var rcostR1 = -(totalR1 * $.costsR1);
-	var rcostR2 = -(totalR2 * $.costsR2);
-	var rTotal = rcostT1 + rcostT2 + rcostR1 + rcostR2;
-
-	var textR1 = "";
-	var textR2 = "";
-	var textCostR1 = "";
-	var textCostR2 = "";
-
-	if (totalR1 != 0) {
-		textR1 = totalR1.toFixed(3);
-		textCostR1 = rcostR1.toFixed(2);
-	}
-	if (totalR2 != 0) {
-		textR2 = totalR2.toFixed(3);
-		textCostR2 = rcostR2.toFixed(2);
-	}
-
-
-	var img;
-	if ((lastTotal == -1) || (lastTotal == rTotal)) {
-		img = '<img src="images/equal.png"></img>';
-	}
-	else if (rTotal < lastTotal) {
-		img = '<img src="images/down.png"></img>';
-	}
-	else {
-		img = '<img src="images/up.png"></img>';
-	}
-
-	var monthtxt = addLeadingZeros(parseInt(lastMonth), 2) + ". " + $.t($.monthNames[lastMonth - 1]) + " ";
-	monthtxt += '<img src="images/next.png" onclick="ShowP1MonthReport(' + lastMonth + ',' + actYear + ')">';
-
-	var addId = oTable.fnAddData([
-		monthtxt,
-		totalT1.toFixed(3),
-		rcostT1.toFixed(2),
-		totalT2.toFixed(3),
-		rcostT2.toFixed(2),
-		textR1,
-		textCostR1,
-		textR2,
-		textCostR2,
-		rTotal.toFixed(2),
-		img
-	], false);
-	return rTotal;
-}
-
-function ShowP1YearReport(actYear) {
-	if (actYear == 0) {
-		actYear = $.actYear;
-	}
-	else {
-		$.actYear = actYear;
-	}
-	var htmlcontent = '';
-	htmlcontent += $('#toptextyear').html();
-	htmlcontent += $('#yearreportview').html();
-
-	$($.content).html(htmlcontent);
-	$($.content + ' #backbutton').click(function (e) {
-		eval($.backfunction)();
-	});
-	$($.content).i18n();
-
-	$($.content + ' #theader').html(unescape($.devName) + " " + actYear);
-
-	$($.content + ' #comboyear').val(actYear);
-
-	$($.content + ' #comboyear').change(function () {
-		OnSelChangeYearP1Report();
-	});
-	$($.content + ' #comboyear').keypress(function () {
-		$(this).change();
-	});
-
-	$($.content + ' #yearreport').dataTable({
-		"sDom": '<"H"rC>t<"F">',
-		"oTableTools": {
-			"sRowSelect": "single"
-		},
-		"aaSorting": [[0, "asc"]],
-		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [10] }
-		],
-		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": false,
-		"bJQueryUI": true,
-		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
-		"iDisplayLength": 50,
-		language: $.DataTableLanguage
-	});
-	var mTable = $($.content + ' #yearreport');
-	var oTable = mTable.dataTable();
-	oTable.fnClearTable();
-
-	$.UsageChart = $($.content + ' #usagegraph');
-	$.UsageChart.highcharts({
-		chart: {
-			type: 'column',
-			marginRight: 10
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: ''
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			},
-			min: 0
-		},
-		tooltip: {
-			formatter: function () {
-				var unit = GetGraphUnit(this.series.name);
-				return $.t(Highcharts.dateFormat('%B', this.x)) + '<br/>' + $.t(this.series.name) + ': ' + this.y + ' ' + unit + '<br/>Total: ' + this.point.stackTotal + ' ' + unit;
-			}
-		},
-		plotOptions: {
-			column: {
-				stacking: 'normal',
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-	var datachartT1 = [];
-	var datachartT2 = [];
-	var datachartR1 = [];
-	var datachartR2 = [];
-
-	var totalT1 = 0;
-	var totalT2 = 0;
-	var totalR1 = 0;
-	var totalR2 = 0;
-
-	var globalT1 = 0;
-	var globalT2 = 0;
-	var globalR1 = 0;
-	var globalR2 = 0;
-
-	var bHaveDelivered = false;
-
-	$.getJSON("json.htm?type=graph&sensor=counter&idx=" + $.devIdx + "&range=year&actyear=" + actYear,
-		function (data) {
-			bHaveDelivered = (typeof data.delivered != 'undefined');
-			if (bHaveDelivered == false) {
-				$($.content + ' #dreturn').hide();
-			}
-			else {
-				$($.content + ' #dreturn').show();
-			}
-
-			oTable.fnSetColumnVis(5, bHaveDelivered);
-			oTable.fnSetColumnVis(6, bHaveDelivered);
-			oTable.fnSetColumnVis(7, bHaveDelivered);
-			oTable.fnSetColumnVis(8, bHaveDelivered);
-
-			var lastTotal = -1;
-			var lastMonth = -1;
-
-			$.each(data.result, function (i, item) {
-				var month = parseInt(item.d.substring(5, 7), 10);
-				var year = parseInt(item.d.substring(0, 4), 10);
-
-				if (year == actYear) {
-					if (lastMonth == -1) {
-						lastMonth = month;
-					}
-					if (lastMonth != month) {
-						//add totals to table
-						lastTotal = Add2YearTableP1Report(oTable, totalT1, totalT2, totalR1, totalR2, lastTotal, lastMonth, actYear);
-
-						var cdate = Date.UTC(actYear, lastMonth - 1, 1);
-						datachartT1.push([cdate, parseFloat(totalT1.toFixed(3))]);
-						datachartT2.push([cdate, parseFloat(totalT2.toFixed(3))]);
-						datachartR1.push([cdate, parseFloat(totalR1.toFixed(3))]);
-						datachartR2.push([cdate, parseFloat(totalR2.toFixed(3))]);
-
-						lastMonth = month;
-						globalT1 += totalT1;
-						globalT2 += totalT2;
-						globalR1 += totalR1;
-						globalR2 += totalR2;
-
-						totalT1 = 0;
-						totalT2 = 0;
-						totalR1 = 0;
-						totalR2 = 0;
-					}
-					var day = parseInt(item.d.substring(8, 10), 10);
-					var UsageT1 = 0;
-					var UsageT2 = 0;
-					var ReturnT1 = 0;
-					var ReturnT2 = 0;
-
-					UsageT1 = parseFloat(item.v);
-					if (typeof item.v2 != 'undefined') {
-						UsageT2 = parseFloat(item.v2);
-					}
-					if (typeof item.r1 != 'undefined') {
-						ReturnT1 = parseFloat(item.r1);
-					}
-					if (typeof item.r2 != 'undefined') {
-						ReturnT2 = parseFloat(item.r2);
-					}
-
-					totalT1 += UsageT1;
-					totalT2 += UsageT2;
-					totalR1 += ReturnT1;
-					totalR2 += ReturnT2;
-				}
-			});
-
-			//add last month
-			if ((totalT1 != 0) || (totalT2 != 0) || (totalR1 != 0) || (totalR2 != 0)) {
-				lastTotal = Add2YearTableP1Report(oTable, totalT1, totalT2, totalR1, totalR2, lastTotal, lastMonth, actYear);
-				var cdate = Date.UTC(actYear, lastMonth - 1, 1);
-				datachartT1.push([cdate, parseFloat(totalT1.toFixed(3))]);
-				datachartT2.push([cdate, parseFloat(totalT2.toFixed(3))]);
-				datachartR1.push([cdate, parseFloat(totalR1.toFixed(3))]);
-				datachartR2.push([cdate, parseFloat(totalR2.toFixed(3))]);
-
-				globalT1 += totalT1;
-				globalT2 += totalT2;
-				globalR1 += totalR1;
-				globalR2 += totalR2;
-			}
-
-			if (datachartT1.length > 0) {
-				if (datachartT2.length > 0) {
-					$.UsageChart.highcharts().addSeries({
-						id: 'usage1',
-						name: $.t('Usage') + ' 1',
-						color: 'rgba(60,130,252,0.8)',
-						stack: 'susage',
-						yAxis: 0
-					});
-				}
-				else {
-					$.UsageChart.highcharts().addSeries({
-						id: 'usage1',
-						name: 'Usage',
-						color: 'rgba(3,190,252,0.8)',
-						stack: 'susage',
-						yAxis: 0
-					});
-				}
-				series = $.UsageChart.highcharts().get('usage1');
-				series.setData(datachartT1);
-			}
-			if (datachartT2.length > 0) {
-				$.UsageChart.highcharts().addSeries({
-					id: 'usage2',
-					name: $.t('Usage') + ' 2',
-					color: 'rgba(3,190,252,0.8)',
-					stack: 'susage',
-					yAxis: 0
-				});
-				series = $.UsageChart.highcharts().get('usage2');
-				series.setData(datachartT2);
-			}
-			if (bHaveDelivered) {
-				if (datachartR1.length > 0) {
-					$.UsageChart.highcharts().addSeries({
-						id: 'return1',
-						name: $.t('Return') + ' 1',
-						color: 'rgba(30,242,110,0.8)',
-						stack: 'sreturn',
-						yAxis: 0
-					});
-					series = $.UsageChart.highcharts().get('return1');
-					series.setData(datachartR1);
-				}
-				if (datachartR2.length > 0) {
-					$.UsageChart.highcharts().addSeries({
-						id: 'return2',
-						name: $.t('Return') + ' 2',
-						color: 'rgba(3,252,190,0.8)',
-						stack: 'sreturn',
-						yAxis: 0
-					});
-					series = $.UsageChart.highcharts().get('return2');
-					series.setData(datachartR2);
-				}
-			}
-
-			$($.content + ' #tut1').html(globalT1.toFixed(3));
-			$($.content + ' #tut2').html(globalT2.toFixed(3));
-			$($.content + ' #trt1').html(globalR1.toFixed(3));
-			$($.content + ' #trt2').html(globalR2.toFixed(3));
-
-			$($.content + ' #cntrt1').html($.CounterT1.toFixed(3));
-			$($.content + ' #cntrt2').html($.CounterT2.toFixed(3));
-			$($.content + ' #cntrr1').html($.CounterR1.toFixed(3));
-			$($.content + ' #cntrr2').html($.CounterR2.toFixed(3));
-
-			var gtotal = globalT1 + globalT2;
-			var greturn = globalR1 + globalR2;
-			$($.content + ' #tu').html(gtotal.toFixed(3));
-			$($.content + ' #tr').html(greturn.toFixed(3));
-			var montlycosts = (globalT1 * $.costsT1) + (globalT2 * $.costsT2) - (globalR1 * $.costsR1) - (globalR2 * $.costsR2);
-			$($.content + ' #mc').html(montlycosts.toFixed(2));
-
-			mTable.fnDraw();
-			/* Add a click handler to the rows - this could be used as a callback */
-			$($.content + ' #tbody tr').click(function (e) {
-				if ($(this).hasClass('row_selected')) {
-					$(this).removeClass('row_selected');
-				}
-				else {
-					oTable.$('tr.row_selected').removeClass('row_selected');
-					$(this).addClass('row_selected');
-				}
-			});
-		});
-
-	return false;
 }
 
 function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
@@ -8668,44 +6529,8 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 	else {
 		switchtype = $.devSwitchType;
 	}
-	var htmlcontent = '';
-	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
-	htmlcontent += $('#dayweekmonthyearlog').html();
-	if ((switchtype == 0) || (switchtype == 1) || (switchtype == 2) || (switchtype == 4)) {
-		$.costsT1 = 0.2389;
-		$.costsT2 = 0.2389;
-		$.costsR1 = 0.08;
-		$.costsR2 = 0.08;
-		$.costsGas = 0.6218;
-		$.costsWater = 1.6473;
-		$.DividerWater = 1000;
-
-		$.ajax({
-			url: "json.htm?type=command&param=getcosts&idx=" + $.devIdx,
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-				$.costsT1 = parseFloat(data.CostEnergy) / 10000;
-				$.costsT2 = parseFloat(data.CostEnergyT2) / 10000;
-				$.costsR1 = parseFloat(data.CostEnergyR1) / 10000;
-				$.costsR2 = parseFloat(data.CostEnergyR2) / 10000;
-				$.costsGas = parseFloat(data.CostGas) / 10000;
-				$.costsWater = parseFloat(data.CostWater) / 10000;
-				$.DividerWater = 1000;//parseFloat(data.DividerWater);
-			}
-		});
-
-		$.monthNames = ["January", "February", "March", "April", "May", "June",
-			"July", "August", "September", "October", "November", "December"];
-
-		var d = new Date();
-		var actMonth = d.getMonth() + 1;
-		var actYear = d.getYear() + 1900;
-		$($.content).html(GetBackbuttonHTMLTableWithRight(backfunction, 'ShowP1YearReportGas(' + actYear + ')', $.t('Report')) + htmlcontent);
-	}
-	else {
-		$($.content).html(GetBackbuttonHTMLTable(backfunction) + htmlcontent);
-	}
+	var htmlcontent = $('#dayweekmonthyearlog').html();
+	$($.content).html(htmlcontent);
 	$($.content).i18n();
 
 	var graph_title = (switchtype == 4) ? $.t('Generated') : $.t('Usage');
@@ -8719,7 +6544,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 			zoomType: 'x',
 			events: {
 				load: function () {
-
 					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=day",
 						function (data) {
 							if (typeof data.result != 'undefined') {
@@ -8729,11 +6553,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: graph_title
@@ -8793,11 +6612,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Week')
@@ -8859,11 +6673,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Month')
@@ -8939,11 +6748,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Year')
@@ -9011,44 +6815,9 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 	else {
 		switchtype = $.devSwitchType;
 	}
-	var htmlcontent = '';
-	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
-	htmlcontent += $('#dayweekmonthyearlog').html();
 
-	if ((switchtype == 0) || (switchtype == 1) || (switchtype == 2) || (switchtype == 4)) {
-		$.costsT1 = 0.2389;
-		$.costsT2 = 0.2389;
-		$.costsR1 = 0.08;
-		$.costsR2 = 0.08;
-		$.costsGas = 0.6218;
-		$.costsWater = 1.6473;
-
-		$.ajax({
-			url: "json.htm?type=command&param=getcosts&idx=" + $.devIdx,
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-				$.costsT1 = parseFloat(data.CostEnergy) / 10000;
-				$.costsT2 = parseFloat(data.CostEnergyT2) / 10000;
-				$.costsR1 = parseFloat(data.CostEnergyR1) / 10000;
-				$.costsR2 = parseFloat(data.CostEnergyR2) / 10000;
-				$.costsGas = parseFloat(data.CostGas) / 10000;
-				$.costsWater = parseFloat(data.CostWater) / 10000;
-			}
-		});
-
-		$.monthNames = ["January", "February", "March", "April", "May", "June",
-			"July", "August", "September", "October", "November", "December"];
-
-		var d = new Date();
-		var actMonth = d.getMonth() + 1;
-		var actYear = d.getYear() + 1900;
-		$($.content).html(GetBackbuttonHTMLTableWithRight(backfunction, 'ShowP1YearReportGas(' + actYear + ')', $.t('Report')) + htmlcontent);
-	}
-	else {
-		$($.content).html(GetBackbuttonHTMLTable(backfunction) + htmlcontent);
-	}
-	$($.content).i18n();
+    var htmlcontent = $('#dayweekmonthyearlog').html();
+	$($.content).html(htmlcontent);
 
 	var graph_title = (switchtype == 4) ? $.t('Generated') : $.t('Usage');
 	graph_title += ' ' + Get5MinuteHistoryDaysGraphTitle();
@@ -9104,11 +6873,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 					}
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: graph_title
@@ -9202,11 +6966,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Last Week')
 		},
@@ -9263,11 +7022,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 						});
 				}
 			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
 		},
 		title: {
 			text: $.t('Last Month')
@@ -9344,11 +7098,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 				}
 			}
 		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
 		title: {
 			text: $.t('Last Year')
 		},
@@ -9400,722 +7149,6 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 	});
 }
 
-function ShowUsageLog(contentdiv, backfunction, id, name) {
-	clearInterval($.myglobals.refreshTimer);
-	$(window).scrollTop(0);
-	$('#modal').show();
-	$.content = contentdiv;
-	$.backfunction = backfunction;
-	$.devIdx = id;
-	$.devName = name;
-	var htmlcontent = '';
-	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
-	htmlcontent += $('#daymonthyearlog').html();
-	$($.content).html(GetBackbuttonHTMLTable(backfunction) + htmlcontent);
-	$($.content).i18n();
-
-	$.DayChart = $($.content + ' #daygraph');
-	$.DayChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=day",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var series = $.DayChart.highcharts().series[0];
-								var datatable = [];
-
-								$.each(data.result, function (i, item) {
-									datatable.push([GetUTCFromString(item.d), parseFloat(item.u)]);
-								});
-								series.setData(datatable);
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Usage') + ' ' + Get5MinuteHistoryDaysGraphTitle()
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Usage') + ' (Watt)'
-			},
-			min: 0
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'usage',
-			name: $.t('Usage'),
-			tooltip: {
-				valueSuffix: ' Watt',
-				valueDecimals: 1
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, true, ShowUsageLog);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.MonthChart = $($.content + ' #monthgraph');
-	$.MonthChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=month",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var datatable1 = [];
-								var datatable2 = [];
-
-								$.each(data.result, function (i, item) {
-									datatable1.push([GetDateFromString(item.d), parseFloat(item.u_min)]);
-									datatable2.push([GetDateFromString(item.d), parseFloat(item.u_max)]);
-								});
-								var series1 = $.MonthChart.highcharts().series[0];
-								var series2 = $.MonthChart.highcharts().series[1];
-								series1.setData(datatable1);
-								series2.setData(datatable2);
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Usage') + ' ' + $.t('Last Month')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Usage') + ' (Watt)'
-			},
-			min: 0
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'usage_min',
-			name: $.t('Usage') + ' min',
-			tooltip: {
-				valueSuffix: ' Watt',
-				valueDecimals: 1
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowUsageLog);
-					}
-				}
-			}
-		}, {
-			id: 'usage_max',
-			name: $.t('Usage') + ' max',
-			tooltip: {
-				valueSuffix: ' Watt',
-				valueDecimals: 1
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowUsageLog);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.YearChart = $($.content + ' #yeargraph');
-	$.YearChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=year",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var datatable1 = [];
-								var datatable2 = [];
-
-								$.each(data.result, function (i, item) {
-									datatable1.push([GetDateFromString(item.d), parseFloat(item.u_min)]);
-									datatable2.push([GetDateFromString(item.d), parseFloat(item.u_max)]);
-								});
-								var series1 = $.YearChart.highcharts().series[0];
-								var series2 = $.YearChart.highcharts().series[1];
-								series1.setData(datatable1);
-								series2.setData(datatable2);
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Usage') + ' ' + $.t('Last Year')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Usage') + ' (Watt)'
-			},
-			min: 0
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'usage_min',
-			name: $.t('Usage') + ' min',
-			tooltip: {
-				valueSuffix: ' Watt',
-				valueDecimals: 1
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowUsageLog);
-					}
-				}
-			}
-		}, {
-			id: 'usage_max',
-			name: $.t('Usage') + ' max',
-			tooltip: {
-				valueSuffix: ' Watt',
-				valueDecimals: 1
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowUsageLog);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-}
-
-function ShowLuxLog(contentdiv, backfunction, id, name) {
-	clearInterval($.myglobals.refreshTimer);
-	$(window).scrollTop(0);
-	$('#modal').show();
-	$.content = contentdiv;
-	$.backfunction = backfunction;
-	$.devIdx = id;
-	$.devName = name;
-	var htmlcontent = '';
-	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
-	htmlcontent += $('#daymonthyearlog').html();
-	$($.content).html(GetBackbuttonHTMLTable(backfunction) + htmlcontent);
-	$($.content).i18n();
-
-	$.DayChart = $($.content + ' #daygraph');
-	$.DayChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=day",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var series = $.DayChart.highcharts().series[0];
-								var datatable = [];
-
-								$.each(data.result, function (i, item) {
-									datatable.push([GetUTCFromString(item.d), parseInt(item.lux)]);
-								});
-								series.setData(datatable);
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Lux') + ' ' + Get5MinuteHistoryDaysGraphTitle()
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Lux')
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			formatter: function () {
-				return '' +
-					$.t(Highcharts.dateFormat('%A', this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + ': ' + this.y + ' ' + $.t('Lux');
-			}
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'lux',
-			name: $.t('Lux'),
-			events: {
-				click: function (event) {
-					chartPointClickNew(event, true, ShowLuxLog);
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.MonthChart = $($.content + ' #monthgraph');
-	$.MonthChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=month",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var datatable1 = [];
-								var datatable2 = [];
-								var datatable3 = [];
-								var minValue = 10000000;
-
-								$.each(data.result, function (i, item) {
-									datatable1.push([GetDateFromString(item.d), parseInt(item.lux_min)]);
-									datatable2.push([GetDateFromString(item.d), parseInt(item.lux_max)]);
-									datatable3.push([GetDateFromString(item.d), parseFloat(item.lux_avg)]);
-									minValue = Math.min(item.lux_min, minValue);
-								});
-								$.MonthChart.highcharts().yAxis[0].update({ min: minValue });
-								var series1 = $.MonthChart.highcharts().series[0];
-								var series2 = $.MonthChart.highcharts().series[1];
-								var series3 = $.MonthChart.highcharts().series[2];
-								series1.setData(datatable1, false);
-								series2.setData(datatable2, false);
-								series3.setData(datatable3, false);
-								$.MonthChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Lux') + ' ' + $.t('Last Month')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Lux')
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'lux_min',
-			name: 'min',
-			tooltip: {
-				valueSuffix: ' lux',
-				valueDecimals: 0
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowLuxLog);
-					}
-				}
-			}
-		}, {
-			id: 'lux_max',
-			name: 'max',
-			tooltip: {
-				valueSuffix: ' lux',
-				valueDecimals: 0
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowLuxLog);
-					}
-				}
-			}
-		}, {
-			id: 'lux_avg',
-			name: 'avg',
-			tooltip: {
-				valueSuffix: ' lux',
-				valueDecimals: 0
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowLuxLog);
-					}
-				}
-			}
-		}],
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-
-	$.YearChart = $($.content + ' #yeargraph');
-	$.YearChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=year",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								var datatable1 = [];
-								var datatable2 = [];
-								var datatable3 = [];
-								var minValue = 10000000;
-
-								$.each(data.result, function (i, item) {
-									datatable1.push([GetDateFromString(item.d), parseInt(item.lux_min)]);
-									datatable2.push([GetDateFromString(item.d), parseInt(item.lux_max)]);
-									datatable3.push([GetDateFromString(item.d), parseFloat(item.lux_avg)]);
-									minValue = Math.min(item.lux_min, minValue);
-								});
-								$.YearChart.highcharts().yAxis[0].update({ min: minValue });
-								var series1 = $.YearChart.highcharts().series[0];
-								var series2 = $.YearChart.highcharts().series[1];
-								var series3 = $.YearChart.highcharts().series[2];
-								series1.setData(datatable1, false);
-								series2.setData(datatable2, false);
-								series3.setData(datatable3, false);
-								$.YearChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		credits: {
-			enabled: true,
-			href: "http://www.domoticz.com",
-			text: "Domoticz.com"
-		},
-		title: {
-			text: $.t('Lux') + ' ' + $.t('Last Year')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Lux')
-			},
-			min: 0,
-			minorGridLineWidth: 0,
-			alternateGridColor: null
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		series: [{
-			id: 'lux_min',
-			name: 'min',
-			tooltip: {
-				valueSuffix: ' lux',
-				valueDecimals: 0
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowLuxLog);
-					}
-				}
-			}
-		}, {
-			id: 'lux_max',
-			name: 'max',
-			tooltip: {
-				valueSuffix: ' lux',
-				valueDecimals: 0
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowLuxLog);
-					}
-				}
-			}
-		}, {
-			id: 'lux_avg',
-			name: 'avg',
-			tooltip: {
-				valueSuffix: ' lux',
-				valueDecimals: 0
-			},
-			point: {
-				events: {
-					click: function (event) {
-						chartPointClickNew(event, false, ShowLuxLog);
-					}
-				}
-			}
-		}]
-		,
-		navigation: {
-			menuItemStyle: {
-				fontSize: '10px'
-			}
-		}
-	});
-}
-
 function SwitchLightPopup(idx, switchcmd, refreshfunction, isprotected) {
 	SwitchLight(idx, switchcmd, refreshfunction, isprotected);
 	$("#rgbw_popup").hide();
@@ -10137,7 +7170,7 @@ function getLEDType(SubType) {
 }
 
 function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType, iDimmerType, callback) {
-	
+
 	var color = {};
 	var devIdx = idx;
 	var SubType = iSubType;
@@ -10151,7 +7184,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		// forget about it :)
 	}
 	var colorPickerMode = "color"; // Default
-	
+
 	// TODO: A little bit hackish, maybe extend the wheelColorPicker instead..
 	$(selector + ' #popup_picker')[0].getJSONColor = function() {
 		var colorJSON = ""; // Empty string, intentionally illegal JSON
@@ -10268,11 +7301,19 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 			}
 		}
 
+		$(selector + ' .pickerrgbcolorrow').hide();
+		// Show RGB hex input
+		if (LEDType.bHasRGB) {
+			if (mode == "color" || mode == "color_no_master") {
+				$(selector + ' .pickerrgbcolorrow').show();
+			}
+		}
+
 		$(selector + ' #popup_picker').wheelColorPicker('refreshWidget');
 		$(selector + ' #popup_picker').wheelColorPicker('updateSliders');
 		$(selector + ' #popup_picker').wheelColorPicker('redrawSliders');
 	}
-	
+
 	/**enum ColorMode {
 		ColorModeNone = 0, // Illegal
 		ColorModeWhite,    // White. Valid fields: none
@@ -10342,10 +7383,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 			colorPickerMode = "customww";
 		}
 	}
-	
-	// Update color picker controls
-	UpdateColorPicker(colorPickerMode);
-	
+
 	$(selector + ' .pickermodergb').off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
@@ -10367,10 +7405,17 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	$(selector + ' #popup_picker').wheelColorPicker('setRgb', color_r/255, color_g/255, color_b/255);
 	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt/MaxDimLevel);
 
+	var rgbhex = $(selector + ' #popup_picker').wheelColorPicker('getValue', 'hex').toUpperCase();
+	$(selector + ' .pickerrgbcolorinput').val(rgbhex);
+
+	// Update color picker controls
+	UpdateColorPicker(colorPickerMode);
+
 	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
 		clearTimeout($.setColValue);
 
 		var color = $(this).wheelColorPicker('getColor');
+		var rgbhex = $(this).wheelColorPicker('getValue', 'hex').toUpperCase();
 		var dimlevel = Math.round((color.m*99)+1); // 1..100
 		var JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
 		//TODO: Rate limit instead of debounce
@@ -10378,6 +7423,10 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 			var fn = callback || SetColValue;
 			fn(devIdx, JSONColor, dimlevel);
 		}, 400);
+		$(selector + ' .pickerrgbcolorinput').val(rgbhex);
+	});
+	$(selector + ' .pickerrgbcolorinput').off('input').on('input', function() {
+		$(selector + ' #popup_picker').wheelColorPicker('setValue', this.value)
 	});
 }
 

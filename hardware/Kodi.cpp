@@ -1,21 +1,19 @@
 #include "stdafx.h"
 #include "Kodi.h"
+#include "../hardware/hardwaretypes.h"
 #include "../json/json.h"
+#include "../main/EventSystem.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../main/SQLHelper.h"
-#include "../notifications/NotificationHelper.h"
-#include "../main/WebServer.h"
 #include "../main/mainworker.h"
-#include "../main/EventSystem.h"
-#include "../hardware/hardwaretypes.h"
-#include <boost/algorithm/string.hpp>
+#include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
+#include "../notifications/NotificationHelper.h"
 
-#include <iostream>
-
-#define round(a) ( int ) ( a + .5 )
 #define MAX_TITLE_LEN 40
-#define DEBUG_LOGGING (m_Port[0] == '-')
+
+//Giz: To Author, please try to rebuild this class using ASyncTCP
+//Giz: Are those 'new'/thread lines not a memory leak ? Maybe use a shared_ptr for them ?
 
 void CKodiNode::CKodiStatus::Clear()
 {
@@ -147,7 +145,6 @@ _eNotificationTypes	CKodiNode::CKodiStatus::NotificationType()
 CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
 	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort)
 {
-	m_stoprequested = false;
 	m_Busy = false;
 	m_Stoppable = false;
 	m_PlaylistPosition = 0;
@@ -165,7 +162,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 
 	m_Socket = NULL;
 
-	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Created.", m_Name.c_str());
 
 	std::vector<std::vector<std::string> > result2;
 	result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, m_szDevID);
@@ -181,7 +178,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 CKodiNode::~CKodiNode(void)
 {
 	handleDisconnect();
-	if (DEBUG_LOGGING) _log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Destroyed.", m_Name.c_str());
 }
 
 void CKodiNode::handleMessage(std::string& pMessage)
@@ -193,7 +190,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		std::string	sMessage;
 		std::stringstream ssMessage;
 
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
+		_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
 		bool bRet = jReader.parse(pMessage, root);
 		if ((!bRet) || (!root.isObject()))
 		{
@@ -234,7 +231,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								m_CurrentStatus.Status(MSTAT_ON);
 								UpdateStatus();
 							}
-							else if (root["method"] == "Player.OnPlay")
+							else if ((root["method"] == "Player.OnPlay") || (root["method"] == "Player.OnResume"))
 							{
 								m_CurrentStatus.Clear();
 								m_CurrentStatus.PlayerID(root["params"]["data"]["player"]["playerid"].asInt());
@@ -252,7 +249,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 									m_CurrentStatus.Status(MSTAT_VIDEO);
 								else
 								{
-									if (DEBUG_LOGGING) _log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
+									_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay/OnResume message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
 								}
 
 								if (m_CurrentStatus.PlayerID() != "")  // if we now have a player id then request more details
@@ -282,27 +279,25 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							}
 							else if (root["method"] == "Application.OnVolumeChanged")
 							{
-								if (DEBUG_LOGGING)
-								{
-									float		iVolume = root["params"]["data"]["volume"].asFloat();
-									bool		bMuted = root["params"]["data"]["muted"].asBool();
-									_log.Log(LOG_NORM, "Kodi: (%s) Volume changed to %3.5f, Muted: %s.", m_Name.c_str(), iVolume, bMuted?"true":"false");
-								}
+								float		iVolume = root["params"]["data"]["volume"].asFloat();
+								bool		bMuted = root["params"]["data"]["muted"].asBool();
+								_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Volume changed to %3.5f, Muted: %s.", m_Name.c_str(), iVolume, bMuted?"true":"false");
 							}
 							else if (root["method"] == "Player.OnSpeedChanged")
 							{
-								if (DEBUG_LOGGING)
-								{
-									_log.Log(LOG_NORM, "Kodi: (%s) Speed changed.", m_Name.c_str());
-								}
+								_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Speed changed.", m_Name.c_str());
 							}
-							else if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Message warning, unhandled method: '%s'", m_Name.c_str(), root["method"].asCString());
+							else
+								_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Message warning, unhandled method: '%s'", m_Name.c_str(), root["method"].asCString());
 						}
-						else _log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no method: '%s'", m_Name.c_str(), pMessage.c_str());
+						else
+							_log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no method: '%s'", m_Name.c_str(), pMessage.c_str());
 					}
-					else _log.Log(LOG_ERROR, "Kodi: (%s) Message error, invalid sender: '%s'", m_Name.c_str(), root["params"]["sender"].asCString());
+					else
+						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, invalid sender: '%s'", m_Name.c_str(), root["params"]["sender"].asCString());
 				}
-				else _log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no sender: '%s'", m_Name.c_str(), pMessage.c_str());
+				else
+					_log.Log(LOG_ERROR, "Kodi: (%s) Message error, params but no sender: '%s'", m_Name.c_str(), pMessage.c_str());
 			}
 			else  // responses to queries
 			{
@@ -412,7 +407,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								bCanSuspend = root["result"]["cansuspend"].asBool();
 								if (bCanSuspend) sAction = "Suspend";
 							}
-							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
+							_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
 								bCanShutdown ? "true" : "false", bCanHibernate ? "true" : "false", bCanSuspend ? "true" : "false", sAction.c_str());
 
 							if (sAction != "Nothing")
@@ -489,12 +484,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								if (m_PlaylistPosition >= iFavCount) m_PlaylistPosition = iFavCount - 1;
 								if (iFavCount)
 									for (int i = 0; i < iFavCount; i++) {
-										if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Favourites %d is '%s', type '%s'.", m_Name.c_str(), i, root["result"]["favourites"][i]["title"].asCString(), root["result"]["favourites"][i]["type"].asCString());
+										_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourites %d is '%s', type '%s'.", m_Name.c_str(), i, root["result"]["favourites"][i]["title"].asCString(), root["result"]["favourites"][i]["type"].asCString());
 										std::string sType = root["result"]["favourites"][i]["type"].asCString();
 										if (i == m_PlaylistPosition) {
 											if (sType == "media") {
 												std::string sPath = root["result"]["favourites"][i]["path"].asCString();
-												if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Favourites %d has path '%s' and will be played.", m_Name.c_str(), i, sPath.c_str());
+												_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourites %d has path '%s' and will be played.", m_Name.c_str(), i, sPath.c_str());
 												ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"file\":\"" << sPath << "\"}},\"id\":2101}";
 												handleWrite(ssMessage.str());
 												break;
@@ -512,7 +507,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						break;
 					case 2101: // signal outcome
 						if (root["result"] == "OK")
-							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Favourite play request successful.", m_Name.c_str());
+							_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Favourite play request successful.", m_Name.c_str());
 						break;
 					default:
 						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown ID found: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -572,7 +567,7 @@ void CKodiNode::handleConnect()
 {
 	try
 	{
-		if (!m_stoprequested && !m_Socket)
+		if (!IsStopRequested(0) && !m_Socket)
 		{
 			m_iMissedPongs = 0;
 			boost::system::error_code ec;
@@ -597,18 +592,16 @@ void CKodiNode::handleConnect()
 			}
 			else
 			{
-				if ((DEBUG_LOGGING) ||
-					(
-						(ec.value() != 113) &&
-						(ec.value() != 111) &&
-						(ec.value() != 10060) &&
-						(ec.value() != 10061) &&
-						(ec.value() != 10064) //&&
-						//(ec.value() != 10061)
-						)
-					) // Connection failed due to no response, no route or active refusal
+				if (
+					(ec.value() != 113) &&
+					(ec.value() != 111) &&
+					(ec.value() != 10060) &&
+					(ec.value() != 10061) &&
+					(ec.value() != 10064) //&&
+					//(ec.value() != 10061)
+					)
 				{
-					_log.Log(LOG_NORM, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+					_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
 				}
 				delete m_Socket;
 				m_Socket = NULL;
@@ -653,7 +646,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		m_RetainedData = sData;
 
 		//ready for next read
-		if (!m_stoprequested && m_Socket)
+		if (!IsStopRequested(0) && m_Socket)
 			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 										boost::bind(&CKodiNode::handleRead,
 										shared_from_this(),
@@ -676,10 +669,10 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 
 void CKodiNode::handleWrite(std::string pMessage)
 {
-	if (!m_stoprequested) {
+	if (!IsStopRequested(0)) {
 		if (m_Socket)
 		{
-			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Sending data: '%s'", m_Name.c_str(), pMessage.c_str());
+			_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Sending data: '%s'", m_Name.c_str(), pMessage.c_str());
 			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
 			m_sLastMessage = pMessage;
 		}
@@ -694,7 +687,7 @@ void CKodiNode::handleDisconnect()
 {
 	if (m_Socket)
 	{
-		_log.Log(LOG_NORM, "Kodi: (%s) Disonnected.", m_Name.c_str());
+		_log.Log(LOG_NORM, "Kodi: (%s) Disconnected.", m_Name.c_str());
 		boost::system::error_code	ec;
 		m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		m_Socket->close();
@@ -706,12 +699,12 @@ void CKodiNode::handleDisconnect()
 void CKodiNode::Do_Work()
 {
 	m_Busy = true;
-	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Entering work loop.", m_Name.c_str());
+	_log.Debug(DEBUG_HARDWARE, "Kodi: (%s) Entering work loop.", m_Name.c_str());
 	int	iPollCount = 2;
 
 	try
 	{
-		while (!m_stoprequested)
+		while (!IsStopRequested(1000))
 		{
 			if (!m_Socket)
 			{
@@ -743,7 +736,6 @@ void CKodiNode::Do_Work()
 				}
 				handleWrite(sMessage);
 			}
-			sleep_milliseconds(1000);
 		}
 	}
 	catch (std::exception& e)
@@ -894,15 +886,15 @@ void CKodiNode::SetExecuteCommand(const std::string& command)
 	m_ExecuteCommand = command;
 }
 
-std::vector<boost::shared_ptr<CKodiNode> > CKodi::m_pNodes;
+std::vector<std::shared_ptr<CKodiNode> > CKodi::m_pNodes;
 
-CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false)
+CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CKodi::CKodi(const int ID) : m_stoprequested(false)
+CKodi::CKodi(const int ID)
 {
 	m_HwdID = ID;
 	SetSettings(10, 3000);
@@ -916,14 +908,17 @@ CKodi::~CKodi(void)
 bool CKodi::StartHardware()
 {
 	StopHardware();
+
+	RequestStart();
+
 	m_bIsStarted = true;
 	sOnConnected(this);
 
 	StartHeartbeatThread();
 
 	//Start worker thread
-	m_stoprequested = false;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CKodi::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CKodi::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
 	return true;
@@ -934,16 +929,17 @@ bool CKodi::StopHardware()
 	StopHeartbeatThread();
 
 	try {
+		//needs to be tested by the author if we can remove the try/catch here
 		if (m_thread)
 		{
-			m_stoprequested = true;
+			RequestStop();
 			m_thread->join();
 			m_thread.reset();
 		}
 	}
 	catch (...)
 	{
-		//Don't throw from a Stop command
+
 	}
 	m_bIsStarted = false;
 	return true;
@@ -955,21 +951,22 @@ void CKodi::Do_Work()
 
 	ReloadNodes();
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(500))
 	{
 		if (scounter++ >= (m_iPollInterval*2))
 		{
-			boost::lock_guard<boost::mutex> l(m_mutex);
+			std::lock_guard<std::mutex> l(m_mutex);
 
 			scounter = 0;
 			bool bWorkToDo = false;
-			std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+			std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 			{
 				if (!(*itt)->IsBusy())
 				{
 					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
 					boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+					SetThreadName(tAsync->native_handle(), "KodiNode");
 					m_ios.stop();
 				}
 				if ((*itt)->IsOn()) bWorkToDo = true;
@@ -982,11 +979,10 @@ void CKodi::Do_Work()
 				// need to worry about locking or concurrency issues when processing messages
 				_log.Log(LOG_NORM, "Kodi: Restarting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
+				SetThreadName(bt.native_handle(), "KodiIO");
 			}
 		}
-		sleep_milliseconds(500);
 	}
-
 	UnloadNodes();
 
 	_log.Log(LOG_STATUS, "Kodi: Worker stopped...");
@@ -1004,12 +1000,6 @@ void CKodi::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPingTimeoutms = PingTimeoutms;
 }
 
-void CKodi::Restart()
-{
-	StopHardware();
-	StartHardware();
-}
-
 bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
@@ -1021,7 +1011,7 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_DevID == DevID)
@@ -1126,7 +1116,7 @@ void CKodi::RemoveNode(const int ID)
 
 void CKodi::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
@@ -1145,39 +1135,39 @@ void CKodi::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		boost::lock_guard<boost::mutex> l(m_mutex);
+		std::lock_guard<std::mutex> l(m_mutex);
 
 		// create a vector to hold the nodes
 		for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-			boost::shared_ptr<CKodiNode>	pNode = (boost::shared_ptr<CKodiNode>) new CKodiNode(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
+			std::shared_ptr<CKodiNode>	pNode = (std::shared_ptr<CKodiNode>) new CKodiNode(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
 			m_pNodes.push_back(pNode);
 		}
 		// start the threads to control each kodi
-		for (std::vector<boost::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		for (std::vector<std::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
 			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+			SetThreadName(tAsync->native_handle(), "KodiNode");
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
+		SetThreadName(bt.native_handle(), "KodiIO");
 	}
 }
 
 void CKodi::UnloadNodes()
 {
-	int iRetryCounter = 0;
-
-	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::lock_guard<std::mutex> l(m_mutex);
 
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
+	while (((!m_pNodes.empty()) || (!m_ios.stopped())))
 	{
-		std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+		std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			(*itt)->StopRequest();
@@ -1188,15 +1178,14 @@ void CKodi::UnloadNodes()
 				break;
 			}
 		}
-		iRetryCounter++;
-		sleep_milliseconds(500);
+		sleep_milliseconds(150);
 	}
 	m_pNodes.clear();
 }
 
 void CKodi::SendCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)
@@ -1211,7 +1200,7 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 
 bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 {
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)
@@ -1225,7 +1214,7 @@ bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 
 bool CKodi::SetExecuteCommand(const int ID, const std::string &command)
 {
-	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	std::vector<std::shared_ptr<CKodiNode> >::iterator itt;
 	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 	{
 		if ((*itt)->m_ID == ID)

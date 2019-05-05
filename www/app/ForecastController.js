@@ -5,7 +5,18 @@ define(['app'], function (app) {
 		function init() {
 			$scope.MakeGlobalConfig();
 			var htmlcontent = '';
-			htmlcontent += '<iframe class="cIFrameLarge" id="IMain" src="//darksky.net/#/f/' + $scope.config.Latitude + ',' + $scope.config.Longitude + '"></iframe>';
+			var units = "ca24";
+			if ($rootScope.config.TempSign == "F") {
+			    units = "us12";
+			} else {
+			    if ($rootScope.config.WindSign == "m/s")
+			        units = "si24";
+			    else if ($rootScope.config.WindSign == "km/h")
+			        units = "ca24";
+			    else if ($rootScope.config.WindSign == "mph")
+			        units = "uk224";
+			}
+			htmlcontent += '<iframe class="cIFrameLarge" id="IMain" src="//darksky.net/forecast/' + $scope.config.Latitude + ',' + $scope.config.Longitude + '/' + units + '/' + $rootScope.config.language + '"></iframe>';
 			$('#maincontent').html(htmlcontent);
 			$('#maincontent').i18n();
 		};

@@ -54,6 +54,10 @@
             <!--#embed metertypes -->
           </select></td>
 		</tr>
+        <tr>
+          <td align="right"><label for="meterdivider"><span data-i18n="Counter Divider">Counter Divider</span>: </label></td>
+          <td><input type="text" id="meterdivider" style="width: 60px; padding: .4em;" class="text ui-widget-content ui-corner-all" />&nbsp;<span data-i18n="(0 = Application default)">(0 = Application default)</span></td>
+		</tr>
 		<tr id="tdmeteroffset">
           <td align="right"><label for="meteroffset"><span data-i18n="Meter Offset">Meter Offset</span>: </label></td>
           <td><input type="text" id="meteroffset" style="width: 120px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -88,10 +92,10 @@
           </select></td>
 		</tr>
         <tr>
-             <td align="right" style="width:120px"><label for="devoptions"><span data-i18n="Energy read">Energy read</span>: </label></td>          
+             <td align="right" style="width:120px"><label for="EnergyMeterMode"><span data-i18n="Energy read">Energy read</span>: </label></td>
              <td>
-             <input type="radio" name="devoptions" id="devoptions2" value="1" >&nbsp;&nbsp;<span data-i18n="Computed">&nbsp;&nbsp;Computed</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
-             <input type="radio" name="devoptions" id="devoptions1" value="0" checked>&nbsp;&nbsp;<span data-i18n="From device">From device</span>
+             <input type="radio" name="EnergyMeterMode" id="EnergyMeterMode2" value="1" >&nbsp;&nbsp;<span data-i18n="Computed">&nbsp;&nbsp;Computed</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
+             <input type="radio" name="EnergyMeterMode" id="EnergyMeterMode1" value="0" checked>&nbsp;&nbsp;<span data-i18n="From device">From device</span>
              </td>
         </tr>
 		</table>
@@ -211,7 +215,9 @@
     </form>
 </div>
 
-<div id="utilitycontent" class="container">
+<div class="container">
+	<gz-back-to-top></gz-back-to-top>
+	<div id="utilitycontent"></div>
 </div>
 
 <div id="percentagelog" style="display:none;">

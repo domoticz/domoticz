@@ -54,8 +54,6 @@
 #include "ozwcp.h"
 //#include "webserver.h"
 
-using namespace OpenZWave;
-
 MyNode *nodes[MAX_NODES];
 int32 MyNode::nodecount = 0;
 uint32 homeId = 0;
@@ -67,7 +65,7 @@ uint8 SUCnodeId = 0;
 const char *cmode = "";
 int32 debug = false;
 bool MyNode::nodechanged = false;
-list<uint8> MyNode::removed;
+std::list<uint8> MyNode::removed;
 extern std::string szUserDataFolder;
 
 //static Webserver *wserver;
@@ -154,7 +152,7 @@ void MyNode::remove (int32 const ind)
 
 /*
  * compareValue
- * Function to compare values in the vector for sorting.
+ * Function to compare values in the std::vector for sorting.
  */
 bool compareValue (MyValue *a, MyValue *b)
 {
@@ -163,7 +161,7 @@ bool compareValue (MyValue *a, MyValue *b)
 
 /*
  * MyNode::sortValues
- * Sort the ValueIDs
+ * Sort the OpenZWave::ValueIDs
  */
 void MyNode::sortValues ()
 {
@@ -174,7 +172,7 @@ void MyNode::sortValues ()
  * MyNode::addValue
  * Per notifications, add a value to a node.
  */
-void MyNode::addValue (ValueID id)
+void MyNode::addValue (OpenZWave::ValueID id)
 {
   MyValue *v = new MyValue(id);
   values.push_back(v);
@@ -186,9 +184,9 @@ void MyNode::addValue (ValueID id)
  * MyNode::removeValue
  * Per notification, remove value from node.
  */
-void MyNode::removeValue (ValueID id)
+void MyNode::removeValue (OpenZWave::ValueID id)
 {
-  vector<MyValue*>::iterator it;
+  std::vector<MyValue*>::iterator it;
   bool found = false;
   for (it = values.begin(); it != values.end(); it++) {
     if ((*it)->id == id) {
@@ -216,7 +214,7 @@ void MyNode::removeValue (ValueID id)
  * Per notification, update value info. Nothing really but update
  * tracking state.
  */
-void MyNode::saveValue (ValueID id)
+void MyNode::saveValue (OpenZWave::ValueID id)
 {
   setTime(time(NULL));
   setChanged(true);
@@ -228,15 +226,15 @@ void MyNode::saveValue (ValueID id)
  */
 void MyNode::newGroup (uint8 node)
 {
-	if (Manager::Get() == NULL)
+	if (OpenZWave::Manager::Get() == NULL)
 		return;
 
-  int n = Manager::Get()->GetNumGroups(homeId, node);
+  int n = OpenZWave::Manager::Get()->GetNumGroups(homeId, node);
   for (int i = 1; i <= n; i++) {
     MyGroup *p = new MyGroup();
     p->groupid = i;
-    p->max = Manager::Get()->GetMaxAssociations(homeId, node, i);
-    p->label = Manager::Get()->GetGroupLabel(homeId, node, i);
+    p->max = OpenZWave::Manager::Get()->GetMaxAssociations(homeId, node, i);
+    p->label = OpenZWave::Manager::Get()->GetGroupLabel(homeId, node, i);
     groups.push_back(p);
   }
 }
@@ -252,7 +250,7 @@ void MyNode::addGroup (uint8 node, uint8 g, uint8 n, uint8 *v)
 #endif
   if (groups.size() == 0)
     newGroup(node);
-  for (vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+  for (std::vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
     if ((*it)->groupid == g) {
       (*it)->grouplist.clear();
       for (int i = 0; i < n; i++)
@@ -272,7 +270,7 @@ void MyNode::addGroup (uint8 node, uint8 g, uint8 n, uint8 *v)
  */
 MyGroup *MyNode::getGroup (uint8 i)
 {
-  for (vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+  for (std::vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
     if ((*it)->groupid == i)
       return *it;
   return NULL;
@@ -285,7 +283,7 @@ MyGroup *MyNode::getGroup (uint8 i)
 void MyNode::updateGroup (uint8 node, uint8 grp, char *glist)
 {
   char *p = glist;
-  vector<MyGroup*>::iterator it;
+  std::vector<MyGroup*>::iterator it;
   char *np;
   uint8 *v;
   uint8 n;
@@ -309,22 +307,22 @@ void MyNode::updateGroup (uint8 node, uint8 grp, char *glist)
     v[n++] = (uint8)strtol(np, NULL, 10);
   }
   /* Look for nodes in the passed-in argument list, if not present add them */
-  vector<uint8>::iterator nit;
+  std::vector<uint8>::iterator nit;
   for (j = 0; j < n; j++) {
     for (nit = (*it)->grouplist.begin(); nit != (*it)->grouplist.end(); ++nit)
       if (*nit == v[j])
 	break;
     if (nit == (*it)->grouplist.end()) // not found
-      Manager::Get()->AddAssociation(homeId, node, grp, v[j]);
+      OpenZWave::Manager::Get()->AddAssociation(homeId, node, grp, v[j]);
   }
-  /* Look for nodes in the vector (current list) and those not found in
+  /* Look for nodes in the std::vector (current list) and those not found in
      the passed-in list need to be removed */
   for (nit = (*it)->grouplist.begin(); nit != (*it)->grouplist.end(); ++nit) {
     for (j = 0; j < n; j++)
       if (*nit == v[j])
 	break;
     if (j >= n)
-      Manager::Get()->RemoveAssociation(homeId, node, grp, *nit);
+      OpenZWave::Manager::Get()->RemoveAssociation(homeId, node, grp, *nit);
   }
   delete [] v;
 }
@@ -334,8 +332,8 @@ void MyNode::updateGroup (uint8 node, uint8 grp, char *glist)
  */
 void MyNode::updatePoll(char *ilist, char *plist)
 {
-  vector<char*> ids;
-  vector<bool> polls;
+  std::vector<char*> ids;
+  std::vector<bool> polls;
   MyValue *v;
   char *p;
   char *np;
@@ -357,8 +355,8 @@ void MyNode::updatePoll(char *ilist, char *plist)
 #endif
     return;
   }
-  vector<char*>::iterator it = ids.begin();
-  vector<bool>::iterator pit = polls.begin();
+  std::vector<char*>::iterator it = ids.begin();
+  std::vector<bool>::iterator pit = polls.begin();
   while (it != ids.end() && pit != polls.end()) {
     v = lookup(*it);
     if (v == NULL) {
@@ -369,9 +367,9 @@ void MyNode::updatePoll(char *ilist, char *plist)
     }
     /* if poll requested, see if not on list */
     if (*pit) {
-		if (!Manager::Get()->isPolled(v->getId()))
+		if (!OpenZWave::Manager::Get()->isPolled(v->getId()))
 		{
-			if (!Manager::Get()->EnablePoll(v->getId()))
+			if (!OpenZWave::Manager::Get()->EnablePoll(v->getId()))
 			{
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Error, "updatePoll: enable polling for %s failed\n", *it);
@@ -379,9 +377,9 @@ void MyNode::updatePoll(char *ilist, char *plist)
 			}
 		}
     } else {			// polling not requested and it is on, turn it off
-		if (Manager::Get()->isPolled(v->getId()))
+		if (OpenZWave::Manager::Get()->isPolled(v->getId()))
 		{
-			if (!Manager::Get()->DisablePoll(v->getId()))
+			if (!OpenZWave::Manager::Get()->DisablePoll(v->getId()))
 			{
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Error, "updatePoll: disable polling for %s failed\n", *it);
@@ -399,25 +397,25 @@ void MyNode::updatePoll(char *ilist, char *plist)
  * 2-SWITCH MULTILEVEL-user-byte-1-0
  * node-class-genre-type-instance-index
  */
-MyValue *MyNode::lookup (string data)
+MyValue *MyNode::lookup (std::string data)
 {
   uint8 node = 0;
   uint8 cls;
   uint8 inst;
   uint8 ind;
-  ValueID::ValueGenre vg;
-  ValueID::ValueType typ;
+  OpenZWave::ValueID::ValueGenre vg;
+  OpenZWave::ValueID::ValueType typ;
   size_t pos1, pos2;
-  string str;
+  std::string str;
 
   node = (uint8)strtol(data.c_str(), NULL, 10);
   if (node == 0)
     return NULL;
   pos1 = data.find("-", 0);
-  if (pos1 == string::npos)
+  if (pos1 == std::string::npos)
     return NULL;
   pos2 = data.find("-", ++pos1);
-  if (pos2 == string::npos)
+  if (pos2 == std::string::npos)
     return NULL;
   str = data.substr(pos1, pos2 - pos1);
   cls = cclassNum(str.c_str());
@@ -425,30 +423,30 @@ MyValue *MyNode::lookup (string data)
     return NULL;
   pos1 = pos2;
   pos2 = data.find("-", ++pos1);
-  if (pos2 == string::npos)
+  if (pos2 == std::string::npos)
     return NULL;
   str = data.substr(pos1, pos2 - pos1);
   vg = valueGenreNum(str.c_str());
   pos1 = pos2;
   pos2 = data.find("-", ++pos1);
-  if (pos2 == string::npos)
+  if (pos2 == std::string::npos)
     return NULL;
   str = data.substr(pos1, pos2 - pos1);
   typ = valueTypeNum(str.c_str());
   pos1 = pos2;
   pos2 = data.find("-", ++pos1);
-  if (pos2 == string::npos)
+  if (pos2 == std::string::npos)
     return NULL;
   str = data.substr(pos1, pos2 - pos1);
   inst = (uint8)strtol(str.c_str(), NULL, 10);
   pos1 = pos2 + 1;
   str = data.substr(pos1);
   ind = (uint8)strtol(str.c_str(), NULL, 10);
-  ValueID id(homeId, node, vg, cls, inst, ind, typ);
+  OpenZWave::ValueID id(homeId, node, vg, cls, inst, ind, typ);
   MyNode *n = nodes[node];
   if (n == NULL)
     return NULL;
-  for (vector<MyValue*>::iterator it = n->values.begin(); it != n->values.end(); it++)
+  for (std::vector<MyValue*>::iterator it = n->values.begin(); it != n->values.end(); it++)
     if ((*it)->id == id)
       return *it;
   return NULL;
@@ -512,13 +510,13 @@ void COpenZWaveControlPanel::SetAllNodesChanged()
 // <OnNotification>
 // Callback that is triggered when a value, group or node changes
 //-----------------------------------------------------------------------------
-void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
+void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _notification)
 {
-  ValueID id = _notification->GetValueID();
+  OpenZWave::ValueID id = _notification->GetValueID();
   int nodeID = _notification->GetNodeId();
 
   switch (_notification->GetType()) {
-  case Notification::Type_ValueAdded:
+  case OpenZWave::Notification::Type_ValueAdded:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Value Added Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -531,7 +529,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 		nodes[nodeID]->setTime(time(NULL));
 		nodes[nodeID]->setChanged(true);
 	    break;
-  case Notification::Type_ValueRemoved:
+  case OpenZWave::Notification::Type_ValueRemoved:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Value Removed Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -544,7 +542,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 		nodes[nodeID]->setTime(time(NULL));
 		nodes[nodeID]->setChanged(true);
     break;
-  case Notification::Type_ValueChanged:
+  case OpenZWave::Notification::Type_ValueChanged:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Value Changed Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -555,7 +553,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 			return;
 		nodes[nodeID]->saveValue(id);
 		break;
-  case Notification::Type_ValueRefreshed:
+  case OpenZWave::Notification::Type_ValueRefreshed:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Value Refreshed Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -567,14 +565,14 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	  nodes[_notification->GetNodeId()]->setTime(time(NULL));
     nodes[_notification->GetNodeId()]->setChanged(true);
     break;
-  case Notification::Type_Group:
+  case OpenZWave::Notification::Type_Group:
     {
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Group Home 0x%08x Node %d Group %d",
 		 _notification->GetHomeId(), _notification->GetNodeId(), _notification->GetGroupIdx());
 #endif
       uint8 *v = NULL;
-      int8 n = Manager::Get()->GetAssociations(homeId, _notification->GetNodeId(), _notification->GetGroupIdx(), &v);
+      int8 n = OpenZWave::Manager::Get()->GetAssociations(homeId, _notification->GetNodeId(), _notification->GetGroupIdx(), &v);
 	  if (nodes[nodeID] == NULL)
 		  return;
 	  nodes[_notification->GetNodeId()]->addGroup(_notification->GetNodeId(), _notification->GetGroupIdx(), n, v);
@@ -582,7 +580,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	delete [] v;
     }
     break;
-  case Notification::Type_NodeNew:
+  case OpenZWave::Notification::Type_NodeNew:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node New Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -591,7 +589,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 #endif
     needsave = true;
     break;
-  case Notification::Type_NodeAdded:
+  case OpenZWave::Notification::Type_NodeAdded:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node Added Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -601,7 +599,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	  new MyNode(_notification->GetNodeId());
     needsave = true;
     break;
-  case Notification::Type_NodeRemoved:
+  case OpenZWave::Notification::Type_NodeRemoved:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node Removed Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -611,7 +609,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
     MyNode::remove(_notification->GetNodeId());
     needsave = true;
     break;
-  case Notification::Type_NodeProtocolInfo:
+  case OpenZWave::Notification::Type_NodeProtocolInfo:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node Protocol Info Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -623,7 +621,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	  nodes[_notification->GetNodeId()]->saveValue(id);
     needsave = true;
     break;
-  case Notification::Type_NodeNaming:
+  case OpenZWave::Notification::Type_NodeNaming:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node Naming Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -634,7 +632,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 		  return;
 	  nodes[_notification->GetNodeId()]->saveValue(id);
     break;
-  case Notification::Type_NodeEvent:
+  case OpenZWave::Notification::Type_NodeEvent:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node Event Home %08x Node %d Status %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(), _notification->GetEvent(),
@@ -645,7 +643,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 		  return;
 	  nodes[_notification->GetNodeId()]->saveValue(id);
     break;
-  case Notification::Type_PollingDisabled:
+  case OpenZWave::Notification::Type_PollingDisabled:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Polling Disabled Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -654,7 +652,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 #endif
     //nodes[_notification->GetNodeId()]->setPolled(false);
     break;
-  case Notification::Type_PollingEnabled:
+  case OpenZWave::Notification::Type_PollingEnabled:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Polling Enabled Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -663,7 +661,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 #endif
     //nodes[_notification->GetNodeId()]->setPolled(true);
     break;
-  case Notification::Type_SceneEvent:
+  case OpenZWave::Notification::Type_SceneEvent:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Scene Event Home %08x Node %d Genre %s Class %s Instance %d Index %d Type %s Scene Id %d",
 	       _notification->GetHomeId(), _notification->GetNodeId(),
@@ -671,46 +669,46 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       id.GetIndex(), valueTypeStr(id.GetType()), _notification->GetSceneId());
 #endif
     break;
-  case Notification::Type_CreateButton:
+  case OpenZWave::Notification::Type_CreateButton:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Create button Home %08x Node %d Button %d",
 	       _notification->GetHomeId(), _notification->GetNodeId(), _notification->GetButtonId());
 #endif
     break;
-  case Notification::Type_DeleteButton:
+  case OpenZWave::Notification::Type_DeleteButton:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Delete button Home %08x Node %d Button %d",
 	       _notification->GetHomeId(), _notification->GetNodeId(), _notification->GetButtonId());
 #endif
     break;
-  case Notification::Type_ButtonOn:
+  case OpenZWave::Notification::Type_ButtonOn:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Button On Home %08x Node %d Button %d",
 	       _notification->GetHomeId(), _notification->GetNodeId(), _notification->GetButtonId());
 #endif
     break;
-  case Notification::Type_ButtonOff:
+  case OpenZWave::Notification::Type_ButtonOff:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Button Off Home %08x Node %d Button %d",
 	       _notification->GetHomeId(), _notification->GetNodeId(), _notification->GetButtonId());
 #endif
     break;
-  case Notification::Type_DriverReady:
+  case OpenZWave::Notification::Type_DriverReady:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Driver Ready, homeId %08x, nodeId %d", _notification->GetHomeId(),
 	       _notification->GetNodeId());
 #endif
     homeId = _notification->GetHomeId();
     nodeId = _notification->GetNodeId();
-    if (Manager::Get()->IsStaticUpdateController(homeId)) {
+    if (OpenZWave::Manager::Get()->IsStaticUpdateController(homeId)) {
       cmode = "SUC";
-      SUCnodeId = Manager::Get()->GetSUCNodeId(homeId);
-    } else if (Manager::Get()->IsPrimaryController(homeId))
+      SUCnodeId = OpenZWave::Manager::Get()->GetSUCNodeId(homeId);
+    } else if (OpenZWave::Manager::Get()->IsPrimaryController(homeId))
       cmode = "Primary";
     else
       cmode = "Slave";
     break;
-  case Notification::Type_DriverFailed:
+  case OpenZWave::Notification::Type_DriverFailed:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Driver Failed, homeId %08x", _notification->GetHomeId());
 #endif
@@ -721,24 +719,24 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
     for (int i = 1; i < MAX_NODES; i++)
       MyNode::remove(i);
     break;
-  case Notification::Type_DriverReset:
+  case OpenZWave::Notification::Type_DriverReset:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Driver Reset, homeId %08x", _notification->GetHomeId());
 #endif
     done = false;
     needsave = true;
     homeId = _notification->GetHomeId();
-    if (Manager::Get()->IsStaticUpdateController(homeId)) {
+    if (OpenZWave::Manager::Get()->IsStaticUpdateController(homeId)) {
       cmode = "SUC";
-      SUCnodeId = Manager::Get()->GetSUCNodeId(homeId);
-    } else if (Manager::Get()->IsPrimaryController(homeId))
+      SUCnodeId = OpenZWave::Manager::Get()->GetSUCNodeId(homeId);
+    } else if (OpenZWave::Manager::Get()->IsPrimaryController(homeId))
       cmode = "Primary";
     else
       cmode = "Slave";
     for (int i = 1; i < MAX_NODES; i++)
       MyNode::remove(i);
     break;
-  case Notification::Type_EssentialNodeQueriesComplete:
+  case OpenZWave::Notification::Type_EssentialNodeQueriesComplete:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Essential Node %d Queries Complete", _notification->GetNodeId());
 #endif
@@ -747,7 +745,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	  nodes[_notification->GetNodeId()]->setTime(time(NULL));
     nodes[_notification->GetNodeId()]->setChanged(true);
     break;
-  case Notification::Type_NodeQueriesComplete:
+  case OpenZWave::Notification::Type_NodeQueriesComplete:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node %d Queries Complete", _notification->GetNodeId());
 #endif
@@ -758,43 +756,43 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
     nodes[_notification->GetNodeId()]->setChanged(true);
     needsave = true;
     break;
-  case Notification::Type_AwakeNodesQueried:
+  case OpenZWave::Notification::Type_AwakeNodesQueried:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Awake Nodes Queried");
 #endif
     break;
-  case Notification::Type_AllNodesQueriedSomeDead:
+  case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Awake Nodes Queried Some Dead");
 #endif
     break;
-  case Notification::Type_AllNodesQueried:
+  case OpenZWave::Notification::Type_AllNodesQueried:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: All Nodes Queried");
 #endif
     break;
-  case Notification::Type_Notification:
+  case OpenZWave::Notification::Type_Notification:
     switch (_notification->GetNotification()) {
-    case Notification::Code_MsgComplete:
+    case OpenZWave::Notification::Code_MsgComplete:
 #ifdef OZW_WRITE_LOG
 		Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Message Complete",
 		 _notification->GetHomeId(), _notification->GetNodeId());
 #endif
       break;
-    case Notification::Code_Timeout:
+    case OpenZWave::Notification::Code_Timeout:
 #ifdef OZW_WRITE_LOG
 		Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Timeout",
 		 _notification->GetHomeId(), _notification->GetNodeId());
 #endif
       break;
-    case Notification::Code_NoOperation:
+    case OpenZWave::Notification::Code_NoOperation:
 #ifdef OZW_WRITE_LOG
 		Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d No Operation Message Complete",
 		 _notification->GetHomeId(), _notification->GetNodeId());
 #endif
       noop = true;
       break;
-    case Notification::Code_Awake:
+    case OpenZWave::Notification::Code_Awake:
 #ifdef OZW_WRITE_LOG
 		Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Awake",
 		 _notification->GetHomeId(), _notification->GetNodeId());
@@ -804,7 +802,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 		nodes[_notification->GetNodeId()]->setTime(time(NULL));
       nodes[_notification->GetNodeId()]->setChanged(true);
       break;
-    case Notification::Code_Sleep:
+    case OpenZWave::Notification::Code_Sleep:
 #ifdef OZW_WRITE_LOG
 		Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Sleep",
 			_notification->GetHomeId(), _notification->GetNodeId());
@@ -816,7 +814,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 			nodes[nodeID]->setChanged(true);
 		}
 	    break;
-	case Notification::Code_Dead:
+	case OpenZWave::Notification::Code_Dead:
 		{
 #ifdef OZW_WRITE_LOG
 			Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Dead",
@@ -865,50 +863,50 @@ COpenZWaveControlPanel::~COpenZWaveControlPanel()
 * Handle controller function feedback from library.
 */
 
-void web_controller_update(Driver::ControllerState cs, Driver::ControllerError err, void *ct)
+void web_controller_update(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void *ct)
 {
 	COpenZWaveControlPanel *cp = (COpenZWaveControlPanel *)ct;
-	string s;
+	std::string s;
 	bool more = true;
 
 	switch (cs) {
-	case Driver::ControllerState_Normal:
+	case OpenZWave::Driver::ControllerState_Normal:
 		s = ": no command in progress.";
 		break;
-	case Driver::ControllerState_Starting:
+	case OpenZWave::Driver::ControllerState_Starting:
 		s = ": starting controller command.";
 		break;
-	case Driver::ControllerState_Cancel:
+	case OpenZWave::Driver::ControllerState_Cancel:
 		s = ": command was cancelled.";
 		more = false;
 		break;
-	case Driver::ControllerState_Error:
+	case OpenZWave::Driver::ControllerState_Error:
 		s = ": command returned an error: ";
 		more = false;
 		break;
-	case Driver::ControllerState_Sleeping:
+	case OpenZWave::Driver::ControllerState_Sleeping:
 		s = ": device went to sleep.";
 		more = false;
 		break;
-	case Driver::ControllerState_Waiting:
+	case OpenZWave::Driver::ControllerState_Waiting:
 		s = ": waiting for a user action.";
 		break;
-	case Driver::ControllerState_InProgress:
+	case OpenZWave::Driver::ControllerState_InProgress:
 		s = ": communicating with the other device.";
 		break;
-	case Driver::ControllerState_Completed:
+	case OpenZWave::Driver::ControllerState_Completed:
 		s = ": command has completed successfully.";
 		more = false;
 		break;
-	case Driver::ControllerState_Failed:
+	case OpenZWave::Driver::ControllerState_Failed:
 		s = ": command has failed.";
 		more = false;
 		break;
-	case Driver::ControllerState_NodeOK:
+	case OpenZWave::Driver::ControllerState_NodeOK:
 		s = ": the node is OK.";
 		more = false;
 		break;
-	case Driver::ControllerState_NodeFailed:
+	case OpenZWave::Driver::ControllerState_NodeFailed:
 		s = ": the node has failed.";
 		more = false;
 		break;
@@ -916,7 +914,7 @@ void web_controller_update(Driver::ControllerState cs, Driver::ControllerError e
 		s = ": unknown response.";
 		break;
 	}
-	if (err != Driver::ControllerError_None)
+	if (err != OpenZWave::Driver::ControllerError_None)
 		s = s + controllerErrorStr(err);
 	cp->setAdminMessage(s);
 	cp->setAdminState(more);
@@ -942,7 +940,7 @@ void COpenZWaveControlPanel::web_get_groups(int n, TiXmlElement *ep)
 		groupElement->SetAttribute("ind", i);
 		groupElement->SetAttribute("max", p->max);
 		groupElement->SetAttribute("label", p->label.c_str());
-		string str = "";
+		std::string str = "";
 		for (unsigned int j = 0; j < p->grouplist.size(); j++) {
 			char s[12];
 			snprintf(s, sizeof(s), "%d", p->grouplist[j]);
@@ -962,7 +960,7 @@ void COpenZWaveControlPanel::web_get_groups(int n, TiXmlElement *ep)
 */
 void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 {
-	if (Manager::Get() == NULL)
+	if (OpenZWave::Manager::Get() == NULL)
 		return;
 
 	int32 idcnt = nodes[i]->getValueCount();
@@ -970,25 +968,25 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 	for (int j = 0; j < idcnt; j++) {
 		TiXmlElement* valueElement = new TiXmlElement("value");
 		MyValue *vals = nodes[i]->getValue(j);
-		ValueID id = vals->getId();
+		OpenZWave::ValueID id = vals->getId();
 		valueElement->SetAttribute("genre", valueGenreStr(id.GetGenre()));
 		valueElement->SetAttribute("type", valueTypeStr(id.GetType()));
 		valueElement->SetAttribute("class", cclassStr(id.GetCommandClassId()));
 		valueElement->SetAttribute("instance", id.GetInstance());
 		valueElement->SetAttribute("index", id.GetIndex());
-		valueElement->SetAttribute("label", Manager::Get()->GetValueLabel(id).c_str());
-		valueElement->SetAttribute("units", Manager::Get()->GetValueUnits(id).c_str());
-		valueElement->SetAttribute("readonly", Manager::Get()->IsValueReadOnly(id) ? "true" : "false");
-		if (id.GetGenre() != ValueID::ValueGenre_Config)
-			valueElement->SetAttribute("polled", Manager::Get()->isPolled(id) ? "true" : "false");
-		if (id.GetType() == ValueID::ValueType_List) {
-			vector<string> strs;
-			Manager::Get()->GetValueListItems(id, &strs);
+		valueElement->SetAttribute("label", OpenZWave::Manager::Get()->GetValueLabel(id).c_str());
+		valueElement->SetAttribute("units", OpenZWave::Manager::Get()->GetValueUnits(id).c_str());
+		valueElement->SetAttribute("readonly", OpenZWave::Manager::Get()->IsValueReadOnly(id) ? "true" : "false");
+		if (id.GetGenre() != OpenZWave::ValueID::ValueGenre_Config)
+			valueElement->SetAttribute("polled", OpenZWave::Manager::Get()->isPolled(id) ? "true" : "false");
+		if (id.GetType() == OpenZWave::ValueID::ValueType_List) {
+			std::vector<std::string> strs;
+			OpenZWave::Manager::Get()->GetValueListItems(id, &strs);
 			valueElement->SetAttribute("count", strs.size());
-			string str;
-			Manager::Get()->GetValueListSelection(id, &str);
+			std::string str;
+			OpenZWave::Manager::Get()->GetValueListSelection(id, &str);
 			valueElement->SetAttribute("current", str.c_str());
-			for (vector<string>::iterator it = strs.begin(); it != strs.end(); it++) {
+			for (std::vector<std::string>::iterator it = strs.begin(); it != strs.end(); it++) {
 				TiXmlElement* itemElement = new TiXmlElement("item");
 				valueElement->LinkEndChild(itemElement);
 				TiXmlText *textElement = new TiXmlText((*it).c_str());
@@ -996,9 +994,9 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 			}
 		}
 		else {
-			string str;
+			std::string str;
 			TiXmlText *textElement;
-			if (Manager::Get()->GetValueAsString(id, &str))
+			if (OpenZWave::Manager::Get()->GetValueAsString(id, &str))
 			{
 				//make valid string
 				for (size_t ii = 0; ii < str.size(); ii++)
@@ -1010,9 +1008,9 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 			}
 			else
 				textElement = new TiXmlText("");
-			if (id.GetType() == ValueID::ValueType_Decimal) {
+			if (id.GetType() == OpenZWave::ValueID::ValueType_Decimal) {
 				uint8 precision;
-				if (Manager::Get()->GetValueFloatPrecision(id, &precision))
+				if (OpenZWave::Manager::Get()->GetValueFloatPrecision(id, &precision))
 				{
 #ifdef OZW_WRITE_LOG
 					Log::Write(LogLevel_Info,"node = %d id = %d value = %s precision = %d\n", i, j, str.c_str(), precision);
@@ -1022,7 +1020,7 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 			valueElement->LinkEndChild(textElement);
 		}
 
-		string str = Manager::Get()->GetValueHelp(id);
+		std::string str = OpenZWave::Manager::Get()->GetValueHelp(id);
 		if (str.length() > 0) {
 			TiXmlElement* helpElement = new TiXmlElement("help");
 			TiXmlText *textElement = new TiXmlText(str.c_str());
@@ -1103,7 +1101,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 	pollElement->LinkEndChild(adminElement);
 	adminElement->SetAttribute("active", getAdminState() ? "true" : "false");
 	if (adminmsg.length() > 0) {
-		string msg = getAdminFunction() + getAdminMessage();
+		std::string msg = getAdminFunction() + getAdminMessage();
 		TiXmlText *textElement = new TiXmlText(msg.c_str());
 		adminElement->LinkEndChild(textElement);
 		adminmsg.clear();
@@ -1136,55 +1134,55 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 				TiXmlElement* nodeElement = new TiXmlElement("node");
 				pollElement->LinkEndChild(nodeElement);
 				nodeElement->SetAttribute("id", i);
-				zwaveplus = Manager::Get()->IsNodeZWavePlus(homeId, i); 
+				zwaveplus = OpenZWave::Manager::Get()->IsNodeZWavePlus(homeId, i); 
 				if (zwaveplus) {
-					string value = Manager::Get()->GetNodePlusTypeString(homeId, i);
-					value += " " + Manager::Get()->GetNodeRoleString(homeId, i);
+					std::string value = OpenZWave::Manager::Get()->GetNodePlusTypeString(homeId, i);
+					value += " " + OpenZWave::Manager::Get()->GetNodeRoleString(homeId, i);
 					nodeElement->SetAttribute("btype", value.c_str());
-					nodeElement->SetAttribute("gtype", Manager::Get()->GetNodeDeviceTypeString(homeId, i).c_str());
+					nodeElement->SetAttribute("gtype", OpenZWave::Manager::Get()->GetNodeDeviceTypeString(homeId, i).c_str());
 				}
 				else {
-					nodeElement->SetAttribute("btype", nodeBasicStr(Manager::Get()->GetNodeBasic(homeId, i)));
-					nodeElement->SetAttribute("gtype", Manager::Get()->GetNodeType(homeId, i).c_str());
+					nodeElement->SetAttribute("btype", nodeBasicStr(OpenZWave::Manager::Get()->GetNodeBasic(homeId, i)));
+					nodeElement->SetAttribute("gtype", OpenZWave::Manager::Get()->GetNodeType(homeId, i).c_str());
 				}
-				nodeElement->SetAttribute("name", Manager::Get()->GetNodeName(homeId, i).c_str());
-				nodeElement->SetAttribute("location", Manager::Get()->GetNodeLocation(homeId, i).c_str());
-				nodeElement->SetAttribute("manufacturer", Manager::Get()->GetNodeManufacturerName(homeId, i).c_str());
-				nodeElement->SetAttribute("product", Manager::Get()->GetNodeProductName(homeId, i).c_str());
-				listening = Manager::Get()->IsNodeListeningDevice(homeId, i);
+				nodeElement->SetAttribute("name", OpenZWave::Manager::Get()->GetNodeName(homeId, i).c_str());
+				nodeElement->SetAttribute("location", OpenZWave::Manager::Get()->GetNodeLocation(homeId, i).c_str());
+				nodeElement->SetAttribute("manufacturer", OpenZWave::Manager::Get()->GetNodeManufacturerName(homeId, i).c_str());
+				nodeElement->SetAttribute("product", OpenZWave::Manager::Get()->GetNodeProductName(homeId, i).c_str());
+				listening = OpenZWave::Manager::Get()->IsNodeListeningDevice(homeId, i);
 				nodeElement->SetAttribute("listening", listening ? "true" : "false");
-				flirs = Manager::Get()->IsNodeFrequentListeningDevice(homeId, i);
+				flirs = OpenZWave::Manager::Get()->IsNodeFrequentListeningDevice(homeId, i);
 				nodeElement->SetAttribute("frequent", flirs ? "true" : "false");
 				nodeElement->SetAttribute("zwaveplus", zwaveplus ? "true" : "false");
-				nodeElement->SetAttribute("beam", Manager::Get()->IsNodeBeamingDevice(homeId, i) ? "true" : "false");
-				nodeElement->SetAttribute("routing", Manager::Get()->IsNodeRoutingDevice(homeId, i) ? "true" : "false");
-				nodeElement->SetAttribute("security", Manager::Get()->IsNodeSecurityDevice(homeId, i) ? "true" : "false");
+				nodeElement->SetAttribute("beam", OpenZWave::Manager::Get()->IsNodeBeamingDevice(homeId, i) ? "true" : "false");
+				nodeElement->SetAttribute("routing", OpenZWave::Manager::Get()->IsNodeRoutingDevice(homeId, i) ? "true" : "false");
+				nodeElement->SetAttribute("security", OpenZWave::Manager::Get()->IsNodeSecurityDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("time", (int)nodes[i]->getTime()); 
 #ifdef OZW_WRITE_LOG
-				Log::Write(LogLevel_Info,"i=%d failed=%d\n", i, Manager::Get()->IsNodeFailed(homeId, i));
-				Log::Write(LogLevel_Info,"i=%d awake=%d\n", i, Manager::Get()->IsNodeAwake(homeId, i));
-				Log::Write(LogLevel_Info,"i=%d state=%s\n", i, Manager::Get()->GetNodeQueryStage(homeId, i).c_str());
+				Log::Write(LogLevel_Info,"i=%d failed=%d\n", i, OpenZWave::Manager::Get()->IsNodeFailed(homeId, i));
+				Log::Write(LogLevel_Info,"i=%d awake=%d\n", i, OpenZWave::Manager::Get()->IsNodeAwake(homeId, i));
+				Log::Write(LogLevel_Info,"i=%d state=%s\n", i, OpenZWave::Manager::Get()->GetNodeQueryStage(homeId, i).c_str());
 				Log::Write(LogLevel_Info,"i=%d listening=%d flirs=%d\n", i, listening, flirs);
 #endif
-				if (Manager::Get()->IsNodeFailed(homeId, i))
+				if (OpenZWave::Manager::Get()->IsNodeFailed(homeId, i))
 					nodeElement->SetAttribute("status", "Dead");
 				else {
-					string s = Manager::Get()->GetNodeQueryStage(homeId, i);
+					std::string s = OpenZWave::Manager::Get()->GetNodeQueryStage(homeId, i);
 					if (s == "Complete") {
 						if (i != nodeId && !listening && !flirs)
-							nodeElement->SetAttribute("status", Manager::Get()->IsNodeAwake(homeId, i) ? "Awake" : "Sleeping");
+							nodeElement->SetAttribute("status", OpenZWave::Manager::Get()->IsNodeAwake(homeId, i) ? "Awake" : "Sleeping");
 						else
 							nodeElement->SetAttribute("status", "Ready");
 					}
 					else {
 						if (i != nodeId && !listening && !flirs)
-							s = s + (Manager::Get()->IsNodeAwake(homeId, i) ? " (awake)" : " (sleeping)");
+							s = s + (OpenZWave::Manager::Get()->IsNodeAwake(homeId, i) ? " (awake)" : " (sleeping)");
 						nodeElement->SetAttribute("status", s.c_str());
 					}
 				} 
 				web_get_groups(i, nodeElement);
 				// Don't think the UI needs these
-				//web_get_genre(ValueID::ValueGenre_Basic, i, nodeElement);
+				//web_get_genre(OpenZWave::ValueID::ValueGenre_Basic, i, nodeElement);
 				web_get_values(i, nodeElement);
 				nodes[i]->setChanged(false);
 				j++;
@@ -1209,13 +1207,13 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 
 std::string COpenZWaveControlPanel::SendNodeConfResponse(int node_id)
 {
-	Manager::Get()->RequestAllConfigParams(homeId, node_id);
+	OpenZWave::Manager::Get()->RequestAllConfigParams(homeId, node_id);
 	return "OK";
 }
 
 std::string COpenZWaveControlPanel::SendNodeValuesResponse(int node_id)
 {
-	Manager::Get()->RequestNodeDynamic(homeId, node_id);
+	OpenZWave::Manager::Get()->RequestNodeDynamic(homeId, node_id);
 	return "OK";
 }
 
@@ -1223,7 +1221,7 @@ std::string COpenZWaveControlPanel::SetNodeValue(const std::string &arg1, const 
 {
 	MyValue *val = MyNode::lookup(arg1);
 	if (val != NULL) {
-		if (!Manager::Get()->SetValue(val->getId(), arg2))
+		if (!OpenZWave::Manager::Get()->SetValue(val->getId(), arg2))
 		{
 #ifdef OZW_WRITE_LOG
 			Log::Write(LogLevel_Error, "SetValue string failed type=%s\n", valueTypeStr(val->getId().GetType()));
@@ -1238,7 +1236,7 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const
 	MyValue *val = MyNode::lookup(arg1);
 	if (val != NULL) {
 		if (arg2 == "true") {
-			if (!Manager::Get()->PressButton(val->getId()))
+			if (!OpenZWave::Manager::Get()->PressButton(val->getId()))
 			{
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Error, "PressButton failed");
@@ -1246,7 +1244,7 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const
 			}
 		}
 		else {
-			if (!Manager::Get()->ReleaseButton(val->getId()))
+			if (!OpenZWave::Manager::Get()->ReleaseButton(val->getId()))
 			{
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Error, "ReleaseButton failed");
@@ -1259,79 +1257,79 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const
 std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const int node_id, const int button_id)
 {
 	if (fun == "cancel") { /* cancel controller function */
-		Manager::Get()->CancelControllerCommand(homeId);
+		OpenZWave::Manager::Get()->CancelControllerCommand(homeId);
 		setAdminState(false);
 	}
 	else if (fun == "addd") {
 		setAdminFunction("Add Device");
-		setAdminState(Manager::Get()->AddNode(homeId, false));
+		setAdminState(OpenZWave::Manager::Get()->AddNode(homeId, false));
 	}
 	else if (fun == "addds") {
 		setAdminFunction("Add Device");
-		setAdminState(Manager::Get()->AddNode(homeId, true));
+		setAdminState(OpenZWave::Manager::Get()->AddNode(homeId, true));
 	}
 	else if (fun == "cprim") {
 		setAdminFunction("Create Primary");
-		setAdminState(Manager::Get()->CreateNewPrimary(homeId));
+		setAdminState(OpenZWave::Manager::Get()->CreateNewPrimary(homeId));
 	}
 	else if (fun == "rconf") {
 		setAdminFunction("Receive Configuration");
-		setAdminState(Manager::Get()->ReceiveConfiguration(homeId));
+		setAdminState(OpenZWave::Manager::Get()->ReceiveConfiguration(homeId));
 	}
 	else if (fun == "remd") {
 		setAdminFunction("Remove Device");
-		setAdminState(Manager::Get()->RemoveNode(homeId));
+		setAdminState(OpenZWave::Manager::Get()->RemoveNode(homeId));
 	}
 	else if (fun == "hnf") {
 		setAdminFunction("Has Node Failed");
-		setAdminState(Manager::Get()->HasNodeFailed(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->HasNodeFailed(homeId, node_id));
 	}
 	else if (fun == "remfn") {
 		setAdminFunction("Remove Failed Node");
-		setAdminState(Manager::Get()->RemoveFailedNode(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->RemoveFailedNode(homeId, node_id));
 	}
 	else if (fun == "repfn") {
 		setAdminFunction("Replace Failed Node");
-		setAdminState(Manager::Get()->ReplaceFailedNode(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->ReplaceFailedNode(homeId, node_id));
 	}
 	else if (fun == "tranpr") {
 		setAdminFunction("Transfer Primary Role");
-		setAdminState(Manager::Get()->TransferPrimaryRole(homeId));
+		setAdminState(OpenZWave::Manager::Get()->TransferPrimaryRole(homeId));
 	}
 	else if (fun == "reqnu") {
 		setAdminFunction("Request Network Update");
-		setAdminState(Manager::Get()->RequestNetworkUpdate(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->RequestNetworkUpdate(homeId, node_id));
 	}
 	else if (fun == "reqnnu") {
 		setAdminFunction("Request Node Neighbor Update");
-		setAdminState(Manager::Get()->RequestNodeNeighborUpdate(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->RequestNodeNeighborUpdate(homeId, node_id));
 	}
 	else if (fun == "assrr") {
 		setAdminFunction("Assign Return Route");
-		setAdminState(Manager::Get()->AssignReturnRoute(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->AssignReturnRoute(homeId, node_id));
 	}
 	else if (fun == "delarr") {
 		setAdminFunction("Delete All Return Routes");
-		setAdminState(Manager::Get()->DeleteAllReturnRoutes(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->DeleteAllReturnRoutes(homeId, node_id));
 	}
 	else if (fun == "snif") {
 		setAdminFunction("Send Node Information");
-		setAdminState(Manager::Get()->SendNodeInformation(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->SendNodeInformation(homeId, node_id));
 	}
 	else if (fun == "reps") {
 		setAdminFunction("Replication Send");
-		setAdminState(Manager::Get()->ReplicationSend(homeId, node_id));
+		setAdminState(OpenZWave::Manager::Get()->ReplicationSend(homeId, node_id));
 	}
 	else if (fun == "addbtn") {
 		setAdminFunction("Add Button");
-		setAdminState(Manager::Get()->CreateButton(homeId, node_id, button_id));
+		setAdminState(OpenZWave::Manager::Get()->CreateButton(homeId, node_id, button_id));
 	}
 	else if (fun == "delbtn") {
 		setAdminFunction("Delete Button");
-		setAdminState(Manager::Get()->DeleteButton(homeId, node_id, button_id));
+		setAdminState(OpenZWave::Manager::Get()->DeleteButton(homeId, node_id, button_id));
 	}
 	else if (fun == "refreshnode") {
-		Manager::Get()->RefreshNodeInfo(homeId, node_id);
+		OpenZWave::Manager::Get()->RefreshNodeInfo(homeId, node_id);
 	}
 	return "OK";
 }
@@ -1340,7 +1338,7 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string &fun, const
 {
 	TiXmlDocument doc;
 	char str[16];
-	string s;
+	std::string s;
 	int cnt;
 	int i;
 	uint8 sid;
@@ -1350,7 +1348,7 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string &fun, const
 	doc.LinkEndChild(scenesElement);
 
 	if (fun == "create") {
-		sid = Manager::Get()->CreateScene();
+		sid = OpenZWave::Manager::Get()->CreateScene();
 		if (sid == 0) {
 			fprintf(stderr, "sid = 0, out of scene ids\n");
 			return "";
@@ -1365,26 +1363,26 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string &fun, const
 		(fun == "remove")) {
 		sid = (uint8)atoi(arg1.c_str());
 		if (fun == "delete")
-			Manager::Get()->RemoveScene(sid);
+			OpenZWave::Manager::Get()->RemoveScene(sid);
 		else if (fun == "execute")
-			Manager::Get()->ActivateScene(sid);
+			OpenZWave::Manager::Get()->ActivateScene(sid);
 		else if (fun == "label")
-			Manager::Get()->SetSceneLabel(sid, string(arg2));
+			OpenZWave::Manager::Get()->SetSceneLabel(sid, std::string(arg2));
 		if ((fun == "addvalue") ||
 			(fun == "update") ||
 			(fun == "remove")) {
-			MyValue *val = MyNode::lookup(string(arg2));
+			MyValue *val = MyNode::lookup(std::string(arg2));
 			if (val != NULL) {
 				if (fun == "addvalue") {
-					if (!Manager::Get()->AddSceneValue(sid, val->getId(), string(arg3)))
+					if (!OpenZWave::Manager::Get()->AddSceneValue(sid, val->getId(), std::string(arg3)))
 						fprintf(stderr, "AddSceneValue failure\n");
 				}
 				else if (fun == "update") {
-					if (!Manager::Get()->SetSceneValue(sid, val->getId(), string(arg3)))
+					if (!OpenZWave::Manager::Get()->SetSceneValue(sid, val->getId(), std::string(arg3)))
 						fprintf(stderr, "SetSceneValue failure\n");
 				}
 				else if (fun == "remove") {
-					if (!Manager::Get()->RemoveSceneValue(sid, val->getId()))
+					if (!OpenZWave::Manager::Get()->RemoveSceneValue(sid, val->getId()))
 						fprintf(stderr, "RemoveSceneValue failure\n");
 				}
 			}
@@ -1395,13 +1393,13 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string &fun, const
 		(fun=="label") ||
 		(fun=="delete")) { // send all sceneids
 		uint8 *sptr;
-		cnt = Manager::Get()->GetAllScenes(&sptr);
+		cnt = OpenZWave::Manager::Get()->GetAllScenes(&sptr);
 		scenesElement->SetAttribute("sceneid", cnt);
 		for (i = 0; i < cnt; i++) {
 			TiXmlElement* sceneElement = new TiXmlElement("sceneid");
 			snprintf(str, sizeof(str), "%d", sptr[i]);
 			sceneElement->SetAttribute("id", str);
-			s = Manager::Get()->GetSceneLabel(sptr[i]);
+			s = OpenZWave::Manager::Get()->GetSceneLabel(sptr[i]);
 			sceneElement->SetAttribute("label", s.c_str());
 			scenesElement->LinkEndChild(sceneElement);
 		}
@@ -1411,10 +1409,10 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string &fun, const
 		(fun=="addvalue") ||
 		(fun=="remove") ||
 		(fun=="update")) {
-		vector<ValueID> vids;
-		cnt = Manager::Get()->SceneGetValues(sid, &vids);
+		std::vector<OpenZWave::ValueID> vids;
+		cnt = OpenZWave::Manager::Get()->SceneGetValues(sid, &vids);
 		scenesElement->SetAttribute("scenevalue", cnt);
-		for (vector<ValueID>::iterator it = vids.begin(); it != vids.end(); it++) {
+		for (std::vector<OpenZWave::ValueID>::iterator it = vids.begin(); it != vids.end(); it++) {
 			TiXmlElement* valueElement = new TiXmlElement("scenevalue");
 			valueElement->SetAttribute("id", sid);
 			snprintf(str, sizeof(str), "0x%x", (*it).GetHomeId());
@@ -1425,9 +1423,9 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string &fun, const
 			valueElement->SetAttribute("index", (*it).GetIndex());
 			valueElement->SetAttribute("type", valueTypeStr((*it).GetType()));
 			valueElement->SetAttribute("genre", valueGenreStr((*it).GetGenre()));
-			valueElement->SetAttribute("label", Manager::Get()->GetValueLabel(*it).c_str());
-			valueElement->SetAttribute("units", Manager::Get()->GetValueUnits(*it).c_str());
-			Manager::Get()->SceneGetValueAsString(sid, *it, &s);
+			valueElement->SetAttribute("label", OpenZWave::Manager::Get()->GetValueLabel(*it).c_str());
+			valueElement->SetAttribute("units", OpenZWave::Manager::Get()->GetValueUnits(*it).c_str());
+			OpenZWave::Manager::Get()->SceneGetValueAsString(sid, *it, &s);
 			TiXmlText *textElement = new TiXmlText(s.c_str());
 			valueElement->LinkEndChild(textElement);
 			scenesElement->LinkEndChild(valueElement);
@@ -1452,10 +1450,10 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string &fun, const
 std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue)
 {
 	if (fun == "nam") { /* Node naming */
-		Manager::Get()->SetNodeName(homeId, node_id, svalue.c_str());
+		OpenZWave::Manager::Get()->SetNodeName(homeId, node_id, svalue.c_str());
 	}
 	else if (fun == "loc") { /* Node location */
-		Manager::Get()->SetNodeLocation(homeId, node_id, svalue.c_str());
+		OpenZWave::Manager::Get()->SetNodeLocation(homeId, node_id, svalue.c_str());
 	}
 	else if (fun == "pol") { /* Node polling */
 	}
@@ -1477,7 +1475,7 @@ std::string COpenZWaveControlPanel::UpdateGroup(const std::string &fun, const in
 
 std::string COpenZWaveControlPanel::SaveConfig()
 {
-	Manager::Get()->WriteConfig(homeId);
+	OpenZWave::Manager::Get()->WriteConfig(homeId);
 	return "OK";
 }
 
@@ -1491,9 +1489,9 @@ std::string COpenZWaveControlPanel::DoTestNetwork(const int node_id, const int c
 	doc.LinkEndChild(testElement);
 
 	if (node_id == 0)
-		Manager::Get()->TestNetwork(homeId, cnt);
+		OpenZWave::Manager::Get()->TestNetwork(homeId, cnt);
 	else
-		Manager::Get()->TestNetworkNode(homeId, node_id, cnt);
+		OpenZWave::Manager::Get()->TestNetworkNode(homeId, node_id, cnt);
 	
 	char fntemp[200];
 	sprintf(fntemp, "%sozwcp.testheal.XXXXXX", szUserDataFolder.c_str());
@@ -1521,9 +1519,9 @@ std::string COpenZWaveControlPanel::HealNetworkNode(const int node_id, const boo
 	doc.LinkEndChild(testElement);
 
 	if (node_id == 0)
-		Manager::Get()->HealNetwork(homeId, healrrs);
+		OpenZWave::Manager::Get()->HealNetwork(homeId, healrrs);
 	else
-		Manager::Get()->HealNetworkNode(homeId, node_id, healrrs);
+		OpenZWave::Manager::Get()->HealNetworkNode(homeId, node_id, healrrs);
 
 	char fntemp[200];
 	sprintf(fntemp, "%sozwcp.testheal.XXXXXX", szUserDataFolder.c_str());
@@ -1559,12 +1557,12 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 	j = 1;
 	while (j <= cnt && i < MAX_NODES) {
 		if (nodes[i] != NULL) {
-			len = Manager::Get()->GetNodeNeighbors(homeId, i, &neighbors);
+			len = OpenZWave::Manager::Get()->GetNodeNeighbors(homeId, i, &neighbors);
 			if (len > 0) {
 				TiXmlElement* nodeElement = new TiXmlElement("node");
 				snprintf(str, sizeof(str), "%d", i);
 				nodeElement->SetAttribute("id", str);
-				string list = "";
+				std::string list = "";
 				for (k = 0; k < len; k++) {
 					snprintf(str, sizeof(str), "%d", neighbors[k]);
 					list += str;
@@ -1627,12 +1625,12 @@ std::string COpenZWaveControlPanel::GetCPStats()
 	TiXmlElement* statElement = new TiXmlElement("stats");
 	doc.LinkEndChild(statElement);
 
-	struct Driver::DriverData data;
+	struct OpenZWave::Driver::DriverData data;
 	int i, j;
 	int cnt;
 	char str[16];
 
-	Manager::Get()->GetDriverStatistics(homeId, &data);
+	OpenZWave::Manager::Get()->GetDriverStatistics(homeId, &data);
 
 	TiXmlElement* errorsElement = new TiXmlElement("errors");
 	errorsElement->LinkEndChild(newstat("stat", "ACK Waiting", data.m_ACKWaiting));
@@ -1668,10 +1666,10 @@ std::string COpenZWaveControlPanel::GetCPStats()
 	i = 0;
 	j = 1;
 	while (j <= cnt && i < MAX_NODES) {
-		struct Node::NodeData ndata;
+		struct OpenZWave::Node::NodeData ndata;
 
 		if (nodes[i] != NULL) {
-			Manager::Get()->GetNodeStatistics(homeId, i, &ndata);
+			OpenZWave::Manager::Get()->GetNodeStatistics(homeId, i, &ndata);
 			TiXmlElement* nodeElement = new TiXmlElement("node");
 			snprintf(str, sizeof(str), "%d", i);
 			nodeElement->SetAttribute("id", str);
@@ -1689,7 +1687,7 @@ std::string COpenZWaveControlPanel::GetCPStats()
 			nodeElement->LinkEndChild(newstat("nstat", "Average Response RTT", ndata.m_averageResponseRTT));
 			nodeElement->LinkEndChild(newstat("nstat", "Quality", ndata.m_quality));
 			while (!ndata.m_ccData.empty()) {
-				Node::CommandClassData ccd = ndata.m_ccData.front();
+				OpenZWave::Node::CommandClassData ccd = ndata.m_ccData.front();
 				TiXmlElement* ccElement = new TiXmlElement("commandclass");
 				snprintf(str, sizeof(str), "%d", ccd.m_commandClassId);
 				ccElement->SetAttribute("id", str);

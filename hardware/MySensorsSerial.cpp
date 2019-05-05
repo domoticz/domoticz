@@ -6,20 +6,20 @@
 #include "../main/localtime_r.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <boost/bind.hpp>
 
+#include <algorithm>
+#include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
+#include <iostream>
+#include <string>
 
 //#define DEBUG_MYSENSORS
 
 #define RETRY_DELAY 30
 
 MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const int Mode1) :
-	m_retrycntr(RETRY_DELAY),
-	m_stoprequested(false)
+	m_retrycntr(RETRY_DELAY)
 {
 	switch (Mode1)
 	{
@@ -41,6 +41,8 @@ MySensorsSerial::~MySensorsSerial()
 
 bool MySensorsSerial::StartHardware()
 {
+	RequestStart();
+
 	m_LineReceived.clear();
 	LoadDevicesFromDatabase();
 
@@ -50,20 +52,21 @@ bool MySensorsSerial::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsSerial::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&MySensorsSerial::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	StartSendQueue();
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool MySensorsSerial::StopHardware()
 {
 	StopSendQueue();
-	m_stoprequested = true;
-	if (m_thread != NULL)
+	if (m_thread)
+	{
+		RequestStop();
 		m_thread->join();
-	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-	sleep_milliseconds(10);
-	terminate();
+		m_thread.reset();
+	}
 	m_bIsStarted = false;
 	return true;
 }
@@ -71,17 +74,17 @@ bool MySensorsSerial::StopHardware()
 void MySensorsSerial::Do_Work()
 {
 	int sec_counter = 0;
-	while (!m_stoprequested)
+
+	_log.Log(LOG_STATUS, "MySensors: Worker started...");
+
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
 			mytime(&m_LastHeartbeat);
 		}
 
-		if (m_stoprequested)
-			break;
 		if (!isOpen())
 		{
 			if (m_retrycntr == 0)
@@ -95,9 +98,10 @@ void MySensorsSerial::Do_Work()
 				OpenSerialDevice();
 			}
 		}
-
 	}
-	_log.Log(LOG_STATUS, "MySensors: Serial Worker stopped...");
+	terminate();
+
+	_log.Log(LOG_STATUS, "MySensors: Worker stopped...");
 }
 
 bool MySensorsSerial::OpenSerialDevice()
@@ -177,7 +181,7 @@ bool MySensorsSerial::OpenSerialDevice()
 		if (results.size() != 6)
 			continue;
 
-		sLine += "\n";
+		sLine += '\n';
 		ParseData((const unsigned char*)sLine.c_str(), sLine.size());
 	}
 	infile.close();
@@ -192,7 +196,6 @@ bool MySensorsSerial::OpenSerialDevice()
 
 void MySensorsSerial::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	if (!m_bIsStarted)
 		return;
 

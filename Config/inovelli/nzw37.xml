@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" value="0" label="LED Indicator Control" units="" size="1" min="0" max="255" type="list">
+      <Help>Choose if you want the LED indicator to turn on when switch is on or off or disable completely.</Help>
+      <Item value="0" label="LED on when switch is off"/>
+      <Item value="1" label="LED on when switch is on"/>
+      <Item value="2" label="LED is disabled"/>
+    </Value>
+    <Value genre="config" index="2" value="0" label="Automatically turn channel 1 off after interval" units="seconds" size="2" min="0" max="32767" type="short">
+      <Help>Automatically turn channel 1 off after this many seconds. 0 is disabled</Help>
+    </Value>
+    <Value genre="config" index="3" value="0" label="Automatically turn channel 2 off after interval" units="seconds" size="2" min="0" max="32767" type="short">
+      <Help>Automatically turn channel 2 off after this many seconds. 0 is disabled</Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5" />
+    </Associations>
+  </CommandClass>
+
+</Product>

@@ -20,7 +20,6 @@ m_Password(password)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	m_bOutputLog = false;
 	Init();
 }
@@ -35,22 +34,25 @@ void CSterbox::Init()
 
 bool CSterbox::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSterbox::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CSterbox::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Sterbox: Started");
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CSterbox::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -60,9 +62,8 @@ void CSterbox::Do_Work()
 {
 	int sec_counter = STERBOX_POLL_INTERVAL - 2;
 
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -195,7 +196,7 @@ void CSterbox::GetMeterDetails()
 	//	szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
 	//}
 
-	szURL << "/x.cgi"; 
+	szURL << "/x.cgi";
 
 	if (!HTTPClient::GET(szURL.str(),sResult))
 	{
@@ -239,12 +240,12 @@ void CSterbox::GetMeterDetails()
 			tmpstr = tmpstr.substr(strlen("OU"));
 			pos1 = tmpstr.find("=");
 			if (pos1 != std::string::npos)
-			{	
+			{
 				tmpstr = tmpstr.substr(pos1+1);
 				//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr.c_str());
 				StringSplit(tmpstr, ",", outputs);
-				for (jj = 0; jj < inputs.size(); jj++) 
-				{	
+				for (jj = 0; jj < inputs.size(); jj++)
+				{
 					tmpinp = inputs[jj];
 					//if (( jj < 4 || jj > 7  ))
 					pos1 = tmpinp.find("o");
@@ -275,12 +276,12 @@ void CSterbox::GetMeterDetails()
 			tmpstr = tmpstr.substr(strlen("IN"));
 			pos1 = tmpstr.find("=");
 			if (pos1 != std::string::npos)
-			{	
+			{
 				tmpstr = tmpstr.substr(pos1+1);
 				//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr.c_str());
 				StringSplit(tmpstr, ",", outputs);
-				for (jj = 0; jj < inputs.size(); jj++) 
-				{	
+				for (jj = 0; jj < inputs.size(); jj++)
+				{
 					tmpinp = inputs[jj];
 					//if (( jj > 3 && jj < 8  ))
 					pos1 = tmpinp.find("i");
@@ -342,19 +343,19 @@ void CSterbox::GetMeterDetails()
 					pos1 = tmpinp.find("v");
 					if (pos1 != std::string::npos)
 					{
-						SendVoltageSensor(0, jj, 255, lValue, sstr.str());
+						SendVoltageSensor(0, (uint8_t)jj, 255, lValue, sstr.str());
 					}
 					pos1 = tmpinp.find("l");
 					if (pos1 != std::string::npos)
 					{
-						SendLuxSensor(0, jj, 255,lValue, sstr.str());
+						SendLuxSensor(0, (uint8_t)jj, 255,lValue, sstr.str());
 					}
 					pos1 = tmpinp.find("h");
 					if (pos1 != std::string::npos)
 					{
 						SendHumiditySensor(jj,255,int(lValue), sstr.str());
 					}
-	
+
 					//SendTempSensor(jj,255,lValue, sstr.str());
 					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
 

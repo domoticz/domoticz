@@ -1,0 +1,44 @@
+<div ng-if="::!$ctrl.isMonthView" style="margin-bottom: 12px">
+    <div>{{:: 'Total Usage' | translate }}:
+        {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'Total' | translate }}: {{:: $ctrl.data.totalUsage.toFixed(3) }} {{:: $ctrl.unit}}
+    </div>
+    <div>{{:: 'Counter' | translate }}:
+        {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.counter.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.counter.toFixed(3) }} {{:: $ctrl.unit}}
+    </div>
+    <div ng-if="::$ctrl.hasReturn">{{:: 'Total Return' | translate }}:
+        {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'Total' | translate }}: {{:: $ctrl.data.totalReturn.toFixed(3) }} {{:: $ctrl.unit}}
+    </div>
+    <div ng-if="::$ctrl.hasReturn">{{:: 'Counter Return' | translate }}:
+        {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.counter.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.counter.toFixed(3) }} {{:: $ctrl.unit}}
+    </div>
+    <div>{{:: 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+</div>
+
+<div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px">
+    <div>{{:: 'Total Usage' | translate }}:
+        {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'Total' | translate }}: {{:: $ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}
+    </div>
+
+    <div ng-if="::$ctrl.hasReturn">{{:: 'Total Return' | translate }}:
+        {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.usage.toFixed(3) }} {{:: $ctrl.unit}},
+        {{:: 'Total' | translate }}: {{:: $ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}
+    </div>
+
+    <div>{{:: 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+</div>
+
+<div ng-if="::$ctrl.noDataAvailable" class="no-data">
+    {{ ::'No data available' | translate}}
+</div>
+
+<table class="display myrighttable"></table>
+<div id="usagegraph" class="device-log-chart"></div>

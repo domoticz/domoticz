@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
@@ -252,7 +251,6 @@ MySensorsBase::~MySensorsBase(void)
 
 void MySensorsBase::LoadDevicesFromDatabase()
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string> > result, result2;
@@ -565,7 +563,7 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &s
 		}
 	}
 	int cNode = (nodeID << 8) | ChildID;
-	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp, sname);
+	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp, true, sname);
 }
 
 void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pChild, const _eSetType vType)
@@ -1081,13 +1079,12 @@ void MySensorsBase::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit)
+void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char NodeID, const int ChildID)
 {
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	sprintf(szIdx, "%08X", NodeID);
 	std::vector<std::vector<std::string> > result;
-	// LLEMARINEL : #1312  Changed pTypeLighting2 to pTypeGeneralSwitch
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, ChildID, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
 	if (result.empty())
 		return; //not found!
 	time_t now = time(0);
@@ -1235,11 +1232,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 		sSwitchValue = (nvalue == Color_LedOn) ? "1" : "0";
 		return true;
 	}
-
-	int slevel = atoi(result[0][2].c_str());
-	std::stringstream sstr;
-	sstr << int(slevel);
-	sSwitchValue = sstr.str();
+	sSwitchValue = std::to_string(atoi(result[0][2].c_str()));
 	return true;
 }
 
@@ -1251,7 +1244,7 @@ std::string MySensorsBase::GetGatewayVersion()
 bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
 {
 	//Check if Node is asleep, and if so, add the command to it's message queue
-	boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+	std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 	bool bIsAsleep = false;
 	std::map<int, bool>::iterator itt = m_node_sleep_states.find(NodeID);
 	if (itt != m_node_sleep_states.end())
@@ -1385,10 +1378,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
 				int svalue = round(fvalue);
-
-				std::stringstream sstr;
-				sstr << svalue;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 		}
 		else {
@@ -1400,65 +1390,84 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	{
 		//Light command
 		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-
-		int node_id = pSwitch->id;
-		int child_sensor_id = pSwitch->unitcode;
-
-		if (_tMySensorNode *pNode = FindNode(node_id))
+		if (pSwitch->subtype != sSwitchTypeMDREMOTE)
 		{
-			_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
-			if (!pChild)
+			int node_id = pSwitch->id;
+			int child_sensor_id = pSwitch->unitcode;
+
+			if (_tMySensorNode *pNode = FindNode(node_id))
 			{
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+				_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
+				if (!pChild)
+				{
+					_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+					return false;
+				}
+
+				int level = pSwitch->level;
+				int cmnd = pSwitch->cmnd;
+
+				if (cmnd == gswitch_sSetLevel)
+				{
+					// Set command based on level value
+					if (level == 0)
+						cmnd = gswitch_sOff;
+					else if (level == 255)
+						cmnd = gswitch_sOn;
+					else
+					{
+						// For dimmers we only allow level 0-100
+						level = (level > 100) ? 100 : level;
+					}
+				}
+
+				if ((cmnd == gswitch_sOn) || (cmnd == gswitch_sOff))
+				{
+					std::string lState = (cmnd == gswitch_sOn) ? "1" : "0";
+					if (pChild->presType == S_LOCK)
+					{
+						//Door lock/contact
+						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
+					}
+					else if (pChild->presType == S_SCENE_CONTROLLER)
+					{
+						//Scene Controller
+						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (cmnd == gswitch_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
+					}
+					else
+					{
+						//normal
+						return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
+					}
+				}
+				else if (cmnd == gswitch_sSetLevel)
+				{
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(level), pChild->useAck, pChild->ackTimeout);
+				}
+			}
+			else {
+				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
 				return false;
 			}
-
-			int level = pSwitch->level;
-			int cmnd = pSwitch->cmnd;
-
-			if (cmnd == gswitch_sSetLevel)
-			{
-				// Set command based on level value
-				if (level == 0)
-					cmnd = gswitch_sOff;
-				else if (level == 255)
-					cmnd = gswitch_sOn;
-				else
-				{
-					// For dimmers we only allow level 0-100
-					level = (level > 100) ? 100 : level;
-				}
-			}
-
-			if ((cmnd == gswitch_sOn) || (cmnd == gswitch_sOff))
-			{
-				std::string lState = (cmnd == gswitch_sOn) ? "1" : "0";
-				if (pChild->presType == S_LOCK)
-				{
-					//Door lock/contact
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
-				}
-				else if (pChild->presType == S_SCENE_CONTROLLER)
-				{
-					//Scene Controller
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (cmnd == gswitch_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
-				}
-				else
-				{
-					//normal
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
-				}
-			}
-			else if (cmnd == gswitch_sSetLevel)
-			{
-				std::stringstream sstr;
-				sstr << level;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
-			}
 		}
-		else {
-			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
-			return false;
+		else
+		{
+			//Used to store IR codes
+			int node_id = pSwitch->unitcode;
+			unsigned int ir_code = pSwitch->id;
+
+			if (_tMySensorNode *pNode = FindNode(node_id))
+			{
+				_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
+				if (pChild)
+				{
+					return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, std::to_string(ir_code), pChild->useAck, pChild->ackTimeout);
+				}
+			}
+			else {
+				_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
+				return false;
+			}
 		}
 	}
 	else if (packettype == pTypeColorSwitch)
@@ -1539,9 +1548,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				int svalue = pLed->value;
 				if (svalue > 100)
 					svalue = 100;
-				std::stringstream sstr;
-				sstr << svalue;
-				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
 			else if ((pLed->command == Color_LedOff) || (pLed->command == Color_LedOn))
 			{
@@ -1549,8 +1556,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 			}
 		}
-		else
-		{
+		else {
 			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
 			return false;
 		}
@@ -1615,29 +1621,6 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			return false;
 		}
 	}
-	else if (packettype == pTypeGeneralSwitch)
-	{
-		//Used to store IR codes
-		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch *>(pCmd);
-
-		int node_id = pSwitch->unitcode;
-		unsigned int ir_code = pSwitch->id;
-
-		if (_tMySensorNode *pNode = FindNode(node_id))
-		{
-			_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
-			if (pChild)
-			{
-				std::stringstream sstr;
-				sstr << ir_code;
-				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str(), pChild->useAck, pChild->ackTimeout);
-			}
-		}
-		else {
-			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
-			return false;
-		}
-	}
 	else
 	{
 		_log.Log(LOG_ERROR, "MySensors: Unknown action received");
@@ -1650,7 +1633,7 @@ void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int Var
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ROWID FROM MySensorsVars WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d) AND (VarID=%d)", m_HwdID, NodeID, ChildID, VarID);
-	if (result.size() == 0)
+	if (result.empty())
 	{
 		//Insert
 		m_sql.safe_query("INSERT INTO MySensorsVars (HardwareID, NodeID, ChildID, VarID, [Value]) VALUES (%d, %d, %d, %d,'%q')", m_HwdID, NodeID, ChildID, VarID, svalue.c_str());
@@ -1730,7 +1713,6 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			payload = results[5 + ip];
 		}
 	}
-	std::stringstream sstr;
 #ifdef _DEBUG
 	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s", node_id, child_sensor_id, message_type, ack, sub_type, payload.c_str());
 #endif
@@ -1757,10 +1739,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			//Set a unique node id from the controller
 			int newID = FindNextNodeID();
 			if (newID != -1)
-			{
-				sstr << newID;
-				SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
-			}
+				SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, std::to_string(newID));
 		}
 		break;
 		case I_CONFIG:
@@ -1811,8 +1790,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			boost::posix_time::ptime tlocal(boost::posix_time::second_clock::local_time());
 			boost::posix_time::time_duration dur = tlocal - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1));
 			time_t fltime(dur.total_seconds());
-			sstr << fltime;
-			SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+			SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, std::to_string(fltime));
 		}
 		break;
 		case I_HEARTBEAT:
@@ -1852,7 +1830,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			while (1 == 0);
 			if (node_id != 255)
 			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 				std::map<int, std::vector<_tMySensorSmartSleepQueueItem> >::const_iterator itt = m_node_sleep_queue.find(node_id);
 				if (itt != m_node_sleep_queue.end())
 				{
@@ -1873,7 +1851,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			while (1 == 0);
 			if (node_id != 255)
 			{
-				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				std::lock_guard<std::mutex> l(m_node_sleep_mutex);
 				m_node_sleep_states[node_id] = false;
 			}
 			break;
@@ -2101,14 +2079,17 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			bHaveValue = true;
 			break;
 		case V_IR_RECEIVE:
-			pChild->SetValue(vType, (int)boost::lexical_cast<unsigned int>(payload));
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
+			break;
+		case V_IR_SEND:
+			//Not for use, probably an ACK
 			break;
 		case V_CUSTOM:
 			//Request for a sensor state
 			if (!payload.empty())
 			{
-				uint64_t idx = boost::lexical_cast<uint64_t>(payload);
+				uint64_t idx = std::stoull(payload);
 				int nValue;
 				std::string sValue;
 				if (m_mainworker.GetSensorData(idx, nValue, sValue))
@@ -2359,28 +2340,29 @@ void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, con
 bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread
-	m_send_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsBase::Do_Send_Work, this)));
-	return (m_send_thread != NULL);
+	m_thread = std::make_shared<std::thread>(&MySensorsBase::Do_Work, this);
+	SetThreadName(m_thread->native_handle(), "MySensorsBase");
+	return (m_thread != NULL);
 }
 
 void MySensorsBase::StopSendQueue()
 {
-	if (m_send_thread != NULL)
+	if (m_thread)
 	{
-		assert(m_send_thread);
 		//Add a dummy queue item, so we stop
 		std::string emptyString;
 		m_sendQueue.push(emptyString);
-		m_send_thread->join();
+		m_thread->join();
+		m_thread.reset();
 	}
 }
 
-void MySensorsBase::Do_Send_Work()
+void MySensorsBase::Do_Work()
 {
 	while (true)
 	{
 		std::string toSend;
-		bool hasPopped = m_sendQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(toSend, boost::posix_time::milliseconds(2000));
+		bool hasPopped = m_sendQueue.timed_wait_and_pop<std::chrono::duration<int> >(toSend, std::chrono::duration<int>(2));
 		if (!hasPopped) {
 			continue;
 		}

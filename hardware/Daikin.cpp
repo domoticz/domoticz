@@ -24,8 +24,8 @@
 //		A	auto     10
 //		B	silence  20
 //		3	lvl_1    30
-//		4	lvl_2    40 
-//		5	lvl_3    50 
+//		4	lvl_2    40
+//		5	lvl_3    50
 //		6	lvl_4    60
 //		7	lvl_5    70
 // 7  : f_dir : represents the fan direction
@@ -34,10 +34,10 @@
 //		1	vertical wings motion	20
 //		2	horizontal wings motion	30
 //		3	vertical and horizontal wings motion	40
-// 10 : temperature exterieure
-// 11 : temperature interieure
+// 10 : Outside temperature
+// 11 : Inside temperature
 // 12 : shum : description: represents the target humidity
-// 20 : consigne thermostat 
+// 20 : SetPoint
 
 
 #define Daikin_POLL_INTERVAL 300
@@ -86,7 +86,6 @@ m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	m_bOutputLog = false;
 	Init();
 }
@@ -101,54 +100,55 @@ void CDaikin::Init()
 
 bool CDaikin::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDaikin::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CDaikin::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
-	_log.Log(LOG_STATUS, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CDaikin::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
-	_log.Log(LOG_STATUS, "Daikin: Stopped hardware %s ...", m_szIPAddress.c_str());
 	m_bIsStarted=false;
 	return true;
 }
 
 void CDaikin::Do_Work()
 {
-	int sec_counter = Daikin_POLL_INTERVAL - 2;
+	m_sec_counter = Daikin_POLL_INTERVAL - 2; // Trigger immediatly (in 2s) a POLL after startup.
 
-	while (!m_stoprequested)
+	Log(LOG_STATUS, "Worker started %s ...", m_szIPAddress.c_str());
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		sec_counter++;
+		m_sec_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (m_sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (sec_counter % Daikin_POLL_INTERVAL == 0)
+		if (m_sec_counter % Daikin_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS, "Daikin: Worker stopped %s ...", m_szIPAddress.c_str());
+	Log(LOG_STATUS, "Worker stopped %s ...", m_szIPAddress.c_str());
 }
 
 // pData = _tThermostat
 
-bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
-	_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
+	Debug(DEBUG_HARDWARE, "Worker %s, Write to Hardware...", m_szIPAddress.c_str());
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
@@ -159,13 +159,13 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		//Light command
 		int node_id = pCmd->LIGHTING2.id4;
-		int child_sensor_id = pCmd->LIGHTING2.unitcode;
+		//int child_sensor_id = pCmd->LIGHTING2.unitcode;
 		bool command = pCmd->LIGHTING2.cmnd;
 		if (node_id == 1)
 		{
 			SetGroupOnOFF(command);
 		}
-		else if (node_id==2) 
+		else if (node_id==2)
 		{
 			SetLedOnOFF(command);
 		}
@@ -176,10 +176,10 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		//Light command
 		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		int node_id = pSwitch->id;
-		int child_sensor_id = pSwitch->unitcode;
+		//int child_sensor_id = pSwitch->unitcode;
 		bool command = pSwitch->cmnd;
 
-		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
+		Debug(DEBUG_HARDWARE, "Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
 
 
 		if (node_id == 1)
@@ -211,17 +211,17 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 	else if (packettype == pTypeBlinds)
 	{
 		//Blinds/Window command
-		int node_id = pCmd->BLINDS1.id3;
-		int child_sensor_id = pCmd->BLINDS1.unitcode;
+		//int node_id = pCmd->BLINDS1.id3;
+		//int child_sensor_id = pCmd->BLINDS1.unitcode;
 	}
 	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
 	{
 		//Set Point
 		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat *>(pCmd);
 		int node_id = pMeter->id2;
-		int child_sensor_id = pMeter->id3;
+		//int child_sensor_id = pMeter->id3;
 
-		_log.Debug(DEBUG_HARDWARE, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
+		Debug(DEBUG_HARDWARE, "Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
 
 		char szTmp[10];
 		sprintf(szTmp, "%.1f", pMeter->temp);
@@ -229,7 +229,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "Daikin : Unknown action received");
+		Log(LOG_ERROR, "Unknown action received");
 		return false;
 	}
 
@@ -239,11 +239,11 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 // https://github.com/ael-code/daikin-control
 // sample aircon/set_control_info?pow=1&mode=4&f_rate=A&f_dir=0&stemp=18.0&shum=0
 
-void CDaikin::SetSetpoint(const int idx, const float temp)
+void CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 {
 	std::string sResult;
 
-	_log.Debug(DEBUG_HARDWARE, "Daikin: Set Point...");
+	Debug(DEBUG_HARDWARE, "Set Point...");
 
 	std::stringstream szURL;
 
@@ -260,7 +260,7 @@ void CDaikin::SetSetpoint(const int idx, const float temp)
 	szURL << "pow=" << m_pow;
 	szURL << "&mode=" << m_mode;
 
-	// cibre température 
+	// cible température
 	char szTmp[100];
 	sprintf(szTmp, "%.1f", temp);
 	szURL << "&stemp=" << szTmp;
@@ -270,14 +270,14 @@ void CDaikin::SetSetpoint(const int idx, const float temp)
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid response");
+		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
 
@@ -288,7 +288,7 @@ void CDaikin::SetSetpoint(const int idx, const float temp)
 // sample aircon/set_control_info?pow=1&mode=4&f_rate=A&f_dir=0&stemp=18.0&shum=0
 
 
-void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, const bool bOn, const double Level, const std::string &defaultname)
 {
 	_tGeneralSwitch gswitch;
 	gswitch.subtype = sSwitchGeneralSwitch;
@@ -297,7 +297,7 @@ void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const 
 	gswitch.id = Idx;
 
 	// Get device level to set
-	int level = static_cast<int>(Level);
+	//int level = static_cast<int>(Level);
 
 	// Now check the values
 	if (bOn)
@@ -335,10 +335,10 @@ void CDaikin::GetBasicInfo()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
-	/*	
+	/*
 	ret=OK,
 	type=aircon,
 	reg=eu,
@@ -353,14 +353,14 @@ void CDaikin::GetBasicInfo()
 	*/
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error getting data (check IP/Port)");
+		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
 	}
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
 	if (results.size() < 8)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 	for (const auto & itt : results)
@@ -398,25 +398,25 @@ void CDaikin::GetControlInfo()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
-	/*	ret = OK, 
-		pow = 1, 
-		mode = 4, adv=, 
-		stemp = 20.0, shum = 0, 
-		dt1 = 20.0, dt2 = M, dt3 = 25.0, dt4 = 20.0, dt5 = 20.0, dt7 = 20.0, 
-		dh1 = 0, dh2 = 0, dh3 = 0, dh4 = 0, dh5 = 0, dh7 = 0, 
-		dhh = 50, 
-		b_mode = 4, 
-		b_stemp = 20.0, 
-		b_shum = 0, 
-		alert = 255, 
-		f_rate = A, 
-		f_dir = 0, 
-		b_f_rate = A, 
-		b_f_dir = 0, 
-		dfr1 = A, dfr2 = A, dfr3 = 5, dfr4 = A, dfr5 = A, dfr6 = 5, dfr7 = A, dfrh = 5, 
+	/*	ret = OK,
+		pow = 1,
+		mode = 4, adv=,
+		stemp = 20.0, shum = 0,
+		dt1 = 20.0, dt2 = M, dt3 = 25.0, dt4 = 20.0, dt5 = 20.0, dt7 = 20.0,
+		dh1 = 0, dh2 = 0, dh3 = 0, dh4 = 0, dh5 = 0, dh7 = 0,
+		dhh = 50,
+		b_mode = 4,
+		b_stemp = 20.0,
+		b_shum = 0,
+		alert = 255,
+		f_rate = A,
+		f_dir = 0,
+		b_f_rate = A,
+		b_f_dir = 0,
+		dfr1 = A, dfr2 = A, dfr3 = 5, dfr4 = A, dfr5 = A, dfr6 = 5, dfr7 = A, dfrh = 5,
 		dfd1 = 0, dfd2 = 0, dfd3 = 0, dfd4 = 0, dfd5 = 0, dfd6 = 0, dfd7 = 0, dfdh = 0
 	*/
 #ifdef DEBUG_DaikinW
@@ -424,14 +424,14 @@ void CDaikin::GetControlInfo()
 #endif
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error getting data (check IP/Port)");
+		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
 	}
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
 	if (results.size() < 8)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 	for (const auto & itt : results)
@@ -458,9 +458,9 @@ void CDaikin::GetControlInfo()
 					InsertUpdateSwitchSelector(5, true, 30, "Mode");
 				else if (m_mode == "4") // HOT
 					InsertUpdateSwitchSelector(5, true, 40, "Mode");
-				else if (m_mode == "6") 
+				else if (m_mode == "6") // FAN
 					InsertUpdateSwitchSelector(5, true, 50, "Mode");
-				else if ((m_mode == "0") || (m_mode == "1" ) || ( m_mode == "7") )
+				else if ((m_mode == "0") || (m_mode == "1" ) || ( m_mode == "7") ) // AUTO
 					InsertUpdateSwitchSelector(5, true, 10, "Mode");
 			}
 		}
@@ -490,33 +490,33 @@ void CDaikin::GetControlInfo()
 		}
 		else if (results2[0] == "f_rate")
 		{
-			 
+
 			m_f_rate=results2[1];
-			if (m_f_rate == "A") // DEHUMDIFICATOR
+			if (m_f_rate == "A") // AUTOMATIC
 				InsertUpdateSwitchSelector(6, true, 10, "Ventillation");
-			else if (m_f_rate == "B") // COLD
+			else if (m_f_rate == "B") // SILENCE
 				InsertUpdateSwitchSelector(6, true, 20, "Ventillation");
-			else if (m_f_rate == "3") // HOT
+			else if (m_f_rate == "3") // Level 1
 				InsertUpdateSwitchSelector(6, true, 30, "Ventillation");
-			else if (m_f_rate == "4")
+			else if (m_f_rate == "4") // Level 2
 				InsertUpdateSwitchSelector(6, true, 40, "Ventillation");
-			else if (m_f_rate == "5")
+			else if (m_f_rate == "5") // Level 3
 				InsertUpdateSwitchSelector(6, true, 50, "Ventillation");
-			else if (m_f_rate == "6")
+			else if (m_f_rate == "6") // Level 4
 				InsertUpdateSwitchSelector(6, true, 60, "Ventillation");
-			else if (m_f_rate == "7")
+			else if (m_f_rate == "7") // Level 5
 				InsertUpdateSwitchSelector(6, true, 70, "Ventillation");
 		}
 		else if (results2[0] == "f_dir")
 		{
 			m_f_dir = results2[1];
-			if (m_f_dir == "0") // 
+			if (m_f_dir == "0") // All wings off
 				InsertUpdateSwitchSelector(7, true, 10, "Winds");
-			else if (m_f_dir == "1") // COLD
+			else if (m_f_dir == "1") // Vertical wings in motion
 				InsertUpdateSwitchSelector(7, true, 20, "Winds");
-			else if (m_f_dir == "2") // COLD
+			else if (m_f_dir == "2") // Horizontal wings in motion
 				InsertUpdateSwitchSelector(7, true, 30, "Winds");
-			else if (m_f_dir == "3") // COLD
+			else if (m_f_dir == "3") // Vertical and Horizontal wings in motion
 				InsertUpdateSwitchSelector(7, true, 40, "Winds");
 
 		}
@@ -524,7 +524,30 @@ void CDaikin::GetControlInfo()
 		{
 			m_shum = results2[1];
 		}
-
+                else if (results2[0] == "dt1" )
+                        m_dt[1] = results2[1];
+                else if (results2[0] == "dt2" )
+                        m_dt[2] = results2[1];
+                else if (results2[0] == "dt3" )
+                        m_dt[3] = results2[1];
+                else if (results2[0] == "dt4" )
+                        m_dt[4] = results2[1];
+                else if (results2[0] == "dt5" )
+                        m_dt[5] = results2[1];
+                else if (results2[0] == "dt7" )
+                        m_dt[7] = results2[1];
+                else if (results2[0] == "dh1" )
+                        m_dh[1] = results2[1];
+                else if (results2[0] == "dh2" )
+                        m_dh[2] = results2[1];
+                else if (results2[0] == "dh3" )
+                        m_dh[3] = results2[1];
+                else if (results2[0] == "dh4" )
+                        m_dh[4] = results2[1];
+                else if (results2[0] == "dh5" )
+                        m_dh[5] = results2[1];
+                else if (results2[0] == "dh7" )
+                        m_dh[7] = results2[1];
 	}
 
 }
@@ -550,7 +573,7 @@ void CDaikin::GetSensorInfo()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 #ifdef DEBUG_DaikinW
@@ -564,14 +587,14 @@ void CDaikin::GetSensorInfo()
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error getting data (check IP/Port)");
+		Log(LOG_ERROR, "Error getting data (check IP/Port)");
 		return;
 	}
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
 	if (results.size() < 6)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 	float htemp = -1;
@@ -612,8 +635,8 @@ void CDaikin::SetLedOnOFF(const bool OnOFF)
 {
 	std::string sResult;
 
-	_log.Debug(DEBUG_HARDWARE, "Daikin: Set Led ...");
-	
+	Debug(DEBUG_HARDWARE, "Set Led ...");
+
 	std::stringstream szURL;
 
 	if (m_Password.empty())
@@ -631,16 +654,16 @@ void CDaikin::SetLedOnOFF(const bool OnOFF)
 		szURL << "1";
 	else
 		szURL << "0";
-	
+
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid response");
+		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
 }
@@ -649,7 +672,7 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 {
 	std::string sResult;
 
-	_log.Debug(DEBUG_HARDWARE, "Daikin: Group On/Off...");
+	Debug(DEBUG_HARDWARE, "Group On/Off...");
 
 	std::stringstream szURL;
 
@@ -665,11 +688,11 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 
 	if (OnOFF)
 		szURL << "pow=1";
-	else 
+	else
 		szURL << "pow=0";
 
 	szURL << "&mode=" << m_mode;
-	
+
 	szURL << "&stemp=" << m_stemp;
 
 	szURL << "&shum=" << m_shum;
@@ -680,17 +703,17 @@ void CDaikin::SetGroupOnOFF(const bool OnOFF)
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid response");
+		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
-
+	if (OnOFF) m_sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s as we have Powe On
 }
 
 
@@ -727,28 +750,27 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 
 	xcmd.subtype = sSwitchTypeSelector;
 	if (level > 0) {
-		xcmd.level = level;
+		xcmd.level = (uint8_t)level;
 	}
 
 	//check if this switch is already in the database
 	std::vector<std::vector<std::string> > result;
-	
+
 	// block this device if it is already added for another gateway hardware id
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID!=%d) AND (DeviceID=='%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-	
+
 	if (!result.empty()) {
 		return;
 	}
-	
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
-	
+
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, defaultname.c_str(), 255);
 	if (result.empty())
 	{
 		// New Hardware -> Create the corresponding devices Selector
 		if (customimage == 0) {
 			if (sID == 5) {
-				customimage = 16; //wall socket			
+				customimage = 16; //wall socket
 			}
 			else if ((sID == 6) || (sID == 7)) {
 				customimage = 7;
@@ -759,17 +781,17 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx,  const bool bI
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
 		// SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03"
 		if (!result.empty()) {
-			std::string Idx = result[0][0];
+			std::string sIdx = result[0][0];
 			if (defaultname == "Mode") {
-				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));
+				m_sql.SetDeviceOptions(atoi(sIdx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|DEHUMDIFICATOR|COLD|HOT|FAN;LevelOffHidden:true;LevelActions:00|01|02|03|04|06", false));
 			}
 			else if (defaultname == "Ventillation") {
 				//for the Fans
-				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|Silence|Lev 1|Lev 2|Lev 3|Lev 4|Lev 5;LevelOffHidden:true;LevelActions:00|10|20|30|40|50|60|70", false));
+				m_sql.SetDeviceOptions(atoi(sIdx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|AUTO|Silence|Lev 1|Lev 2|Lev 3|Lev 4|Lev 5;LevelOffHidden:true;LevelActions:00|10|20|30|40|50|60|70", false));
 			}
 			else if (defaultname == "Winds") {
 				//for the Wings
-				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
+				m_sql.SetDeviceOptions(atoi(sIdx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Stopped|Vert|Horiz|Both;LevelOffHidden:true", false));
 			}
 		}
 	}
@@ -780,7 +802,7 @@ void CDaikin::SetModeLevel(const int NewLevel)
 
 	std::string sResult;
 
-	_log.Debug(DEBUG_HARDWARE, "Daikin: Mode Level...");
+	Debug(DEBUG_HARDWARE, "Mode Level...");
 
 	std::stringstream szURL;
 
@@ -809,29 +831,38 @@ void CDaikin::SetModeLevel(const int NewLevel)
         else if (NewLevel == 50)
                 szURL << "&mode=6"; /* 50-FAN   6 */
 
-	szURL << "&stemp=" << m_stemp;
-
-	szURL << "&shum=" << m_shum;
-
+	if (NewLevel == 0 ) // 0 is AUTO, but there is no dt0! So in case lets force to dt1 and dh1
+        {
+                szURL << "&stemp=" << m_dt[1];
+                szURL << "&shum=" << m_dh[1];
+        }
+        else if (NewLevel == 6 ) // FAN mode, there is no temp/hum memorized.
+        {
+                szURL << "&stemp=" << "20";
+                szURL << "&shum=" << "0";
+        }
+        else // DEHUMDIFICATOR, COLD, HOT ( 2,3,6 )
+        {
+                szURL << "&stemp=" << m_dt[(NewLevel/10)];
+                szURL << "&shum=" << m_dh[(NewLevel/10)];
+        }
+	
 	szURL << "&f_rate=" << m_f_rate;
 
 	szURL << "&f_dir=" << m_f_dir;
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
-
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid response");
+		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
-
-
-
+	m_sec_counter = Daikin_POLL_INTERVAL - 5; // Trigger a poll in the next 5s
 }
 
 void CDaikin::SetF_RateLevel(const int NewLevel)
@@ -839,7 +870,7 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 
 	std::string sResult;
 
-	_log.Debug(DEBUG_HARDWARE, "Daikin: Rate ...");
+	Debug(DEBUG_HARDWARE, "Rate ...");
 
 	std::stringstream szURL;
 
@@ -875,18 +906,18 @@ void CDaikin::SetF_RateLevel(const int NewLevel)
 		szURL << "&f_rate=6";
 	else if (NewLevel == 70)
 		szURL << "&f_rate=7";
-	
+
 	szURL << "&f_dir=" << m_f_dir;
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid response");
+		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
 }
@@ -894,7 +925,7 @@ void CDaikin::SetF_DirLevel(const int NewLevel)
 {
 	std::string sResult;
 
-	_log.Debug(DEBUG_HARDWARE, "Daikin: Dir Level ...");
+	Debug(DEBUG_HARDWARE, "Dir Level ...");
 
 	std::stringstream szURL;
 
@@ -929,13 +960,13 @@ void CDaikin::SetF_DirLevel(const int NewLevel)
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "Daikin: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "Daikin: Invalid response");
+		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
 }

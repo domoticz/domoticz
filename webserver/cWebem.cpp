@@ -6,11 +6,6 @@
 #include "stdafx.h"
 #include "cWebem.h"
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // uuid generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"
@@ -21,6 +16,7 @@
 #include <stdarg.h>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -53,12 +49,13 @@ namespace http {
 			myRequestHandler(doc_root, this),
 			m_DigistRealm("Domoticz.com"),
 			m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
-			m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
 			m_sessions(), // Rene, make sure we initialize m_sessions first, before starting a server
 			myServer(server_factory::create(settings, myRequestHandler))
 		{
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
+			m_io_service_thread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &m_io_service));
+			SetThreadName(m_io_service_thread->native_handle(), "Webem_ssncleaner");
 		}
 
 		cWebem::~cWebem()
@@ -101,7 +98,11 @@ namespace http {
 				if (!m_io_service.stopped())
 				{
 					m_io_service.stop();
-					m_io_service_thread.join();
+				}
+				if (m_io_service_thread)
+				{
+					m_io_service_thread->join();
+					m_io_service_thread.reset();
 				}
 			}
 			catch (...)
@@ -851,7 +852,7 @@ namespace http {
 		{
 			m_userpasswords.clear();
 
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			m_sessions.clear(); //TODO : check if it is really necessary
 		}
 
@@ -997,7 +998,7 @@ namespace http {
 
 		WebEmSession * cWebem::GetSession(const std::string & ssid)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
 			{
@@ -1008,7 +1009,7 @@ namespace http {
 
 		void cWebem::AddSession(const WebEmSession & session)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			m_sessions[session.id] = session;
 		}
 
@@ -1019,7 +1020,7 @@ namespace http {
 
 		void cWebem::RemoveSession(const std::string & ssid)
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
 			if (itt != m_sessions.end())
 			{
@@ -1029,7 +1030,7 @@ namespace http {
 
 		int cWebem::CountSessions()
 		{
-			boost::mutex::scoped_lock lock(m_sessionsMutex);
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
 			return (int)m_sessions.size();
 		}
 
@@ -1041,7 +1042,7 @@ namespace http {
 			// Clean up timed out sessions from memory
 			std::vector<std::string> ssids;
 			{
-				boost::mutex::scoped_lock lock(m_sessionsMutex);
+				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				time_t now = mytime(NULL);
 				std::map<std::string, WebEmSession>::iterator itt;
 				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
@@ -1061,7 +1062,7 @@ namespace http {
 			int after = CountSessions();
 			std::stringstream ss;
 			{
-				boost::mutex::scoped_lock lock(m_sessionsMutex);
+				std::unique_lock<std::mutex> lock(m_sessionsMutex);
 				std::map<std::string, WebEmSession>::iterator itt;
 				int i = 0;
 				for (itt = m_sessions.begin(); itt != m_sessions.end(); ++itt)
@@ -1319,7 +1320,7 @@ namespace http {
 		void cWebemRequestHandler::send_remove_cookie(reply& rep)
 		{
 			std::stringstream sstr;
-			sstr << "SID=none";
+			sstr << "DMZSID=none";
 			// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
 			sstr << "; HttpOnly; Expires=" << make_web_time(0);
 			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
@@ -1328,15 +1329,9 @@ namespace http {
 		std::string cWebemRequestHandler::generateSessionID()
 		{
 			// Session id should not be predictable
-			boost::uuids::random_generator gen;
-			std::stringstream ss;
-			std::string randomValue;
+			std::string randomValue = GenerateUUID();
 
-			boost::uuids::uuid u = gen();
-			ss << u;
-			randomValue = ss.str();
-
-			std::string sessionId = GenerateMD5Hash(base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size()));
+			std::string sessionId = GenerateMD5Hash(base64_encode(randomValue));
 
 			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new session id token %s", myWebem->GetPort().c_str(), sessionId.c_str());
 
@@ -1346,15 +1341,9 @@ namespace http {
 		std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session, const request & req)
 		{
 			// Authentication token should not be predictable
-			boost::uuids::random_generator gen;
-			std::stringstream ss;
-			std::string randomValue;
+			std::string randomValue = GenerateUUID();
 
-			boost::uuids::uuid u = gen();
-			ss << u;
-			randomValue = ss.str();
-
-			std::string authToken = base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size());
+			std::string authToken = base64_encode(randomValue);
 
 			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token %s", myWebem->GetPort().c_str(), authToken.c_str());
 
@@ -1376,7 +1365,7 @@ namespace http {
 		void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 		{
 			std::stringstream sstr;
-			sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
+			sstr << "DMZSID=" << session.id << "_" << session.auth_token << "." << session.expires;
 			sstr << "; HttpOnly; path=/; Expires=" << make_web_time(session.expires);
 			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 		}
@@ -1506,7 +1495,7 @@ namespace http {
 				rep = reply::stock_reply(reply::internal_server_error);
 				return true;
 			}
-			int version = boost::lexical_cast<int>(h);
+			int version = atoi(h);
 			// we support versions 13 (and higher)
 			if (version < 13)
 			{
@@ -1597,8 +1586,8 @@ namespace http {
 
 				// Parse session id and its expiration date
 				std::string scookie = cookie_header;
-				size_t fpos = scookie.find("SID=");
-				if (fpos != std::string::npos)
+				size_t fpos = scookie.find("DMZSID=");
+				if (fpos == 0)
 				{
 					scookie = scookie.substr(fpos);
 					fpos = 0;
@@ -1942,9 +1931,9 @@ namespace http {
 				if (cookie != NULL)
 				{
 					std::string scookie = cookie;
-					int fpos = scookie.find("SID=");
+					int fpos = scookie.find("DMZSID=");
 					int upos = scookie.find("_", fpos);
-					if ((fpos != std::string::npos) && (upos != std::string::npos))
+					if ((fpos == 0) && (upos != std::string::npos))
 					{
 						std::string sSID = scookie.substr(fpos + 4, upos - fpos - 4);
 						_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());

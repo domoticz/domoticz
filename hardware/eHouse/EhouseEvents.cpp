@@ -24,6 +24,7 @@
  * RE_TIME_REPLAY  - Timer for retry in (RE_TIME_RETRY-RE_SEND_RETRIES) *0.1s
  *
  * Events.cpp - Event Queue processing
+ Recent update: 2018-08-16
  */
 
 #include "stdafx.h"
@@ -41,7 +42,7 @@ signed int eHouseTCP::GetIndexOfEvent(unsigned char *TempEvent)
 	unsigned int i;
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 	{
-		if (memcmp(TempEvent, (struct EventQueueT *) &EvQ[i]->LocalEventsToRun, EVENT_SIZE) == 0)
+		if (memcmp(TempEvent, (struct EventQueueT *) &m_EvQ[i]->LocalEventsToRun, EVENT_SIZE) == 0)
 			return i;	//Exist on Event Queue
 	}
 	return -1;
@@ -52,22 +53,22 @@ void eHouseTCP::ExecQueuedEvents(void)
 {
 	unsigned int i;
 	unsigned char localy = 1;
-	DisablePerformEvent = 0;
-	if (!EventsCountInQueue) return;	//nothing availabla - we don't waste time here
-	EventsCountInQueue = 0;
+	m_DisablePerformEvent = 0;
+	if (!m_EventsCountInQueue) return;	//nothing availabla - we don't waste time here
+	m_EventsCountInQueue = 0;
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 	{
-		if (EvQ[i]->LocalEventsToRun[2])	//not empty event
+		if (m_EvQ[i]->LocalEventsToRun[2])	//not empty event
 		{
-			EventsCountInQueue++;
-			if (EvQ[i]->LocalEventsTimeOuts == RUN_NOW)				//Should be Performed Right Now !!!
+			m_EventsCountInQueue++;
+			if (m_EvQ[i]->LocalEventsTimeOuts == RUN_NOW)				//Should be Performed Right Now !!!
 			{
-				if (EvQ[i]->LocalEventsDrop) _log.Log(LOG_STATUS, "[Perform Queue Event] Q[%d] Now -> Retry: %d", i, EvQ[i]->LocalEventsDrop);
-				EvQ[i]->LocalEventsDrop++;						//retries in case of failure
-				if (EvQ[i]->LocalEventsDrop > RE_SEND_RETRIES)	//to much retries (no controller or no communication)
+				if (m_EvQ[i]->LocalEventsDrop) _log.Log(LOG_STATUS, "[Perform Queue Event] Q[%d] Now -> Retry: %d", i, m_EvQ[i]->LocalEventsDrop);
+				m_EvQ[i]->LocalEventsDrop++;						//retries in case of failure
+				if (m_EvQ[i]->LocalEventsDrop > RE_SEND_RETRIES)	//to much retries (no controller or no communication)
 				{
-					if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Exec Event] Q[%d] Drop Event", i);
-					memset(EvQ[i], 0, sizeof(EventQueueT));		//delete event permanently and immediatelly                
+					if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Exec Event] Q[%d] Drop Event", i);
+					memset(m_EvQ[i], 0, sizeof(EventQueueT));		//delete event permanently and immediatelly                
 				}
 				else
 				{
@@ -76,12 +77,12 @@ void eHouseTCP::ExecQueuedEvents(void)
 				}
 			}
 			else
-				if (EvQ[i]->LocalEventsTimeOuts)			//scheduled event
-					EvQ[i]->LocalEventsTimeOuts--;		//decrement timer
+				if (m_EvQ[i]->LocalEventsTimeOuts)			//scheduled event
+					m_EvQ[i]->LocalEventsTimeOuts--;		//decrement timer
 				else										//Timer reach 0 - remove event from Queue
 				{
-					memset(EvQ[i], 0, sizeof(EventQueueT));
-					if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Exec Event] Remove Event");
+					memset(m_EvQ[i], 0, sizeof(EventQueueT));
+					if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Exec Event] Remove Event");
 				}
 		}
 	}
@@ -102,8 +103,8 @@ void eHouseTCP::ExecEvent(unsigned int i)
 	unsigned int m = 0;
 	EventBuffSize = 0;
 	EventSize = 0;
-	devh = EvQ[i]->LocalEventsToRun[0];                        //get address from DirectEvent
-	devl = EvQ[i]->LocalEventsToRun[1];
+	devh = m_EvQ[i]->LocalEventsToRun[0];                        //get address from DirectEvent
+	devl = m_EvQ[i]->LocalEventsToRun[1];
 	int ind = IndexOfEthDev(devh, devl);						//should be transmited directly to controller or not?
 	if (ind == 0)											//Via eHouse Pro Server
 	{
@@ -111,10 +112,10 @@ void eHouseTCP::ExecEvent(unsigned int i)
 		int mmm = 0;
 		for (m = 0; m < EVENT_QUEUE_MAX; m++)					//for all events in queue
 		{
-			if ((IndexOfEthDev(devh, devl) == 0) && (EvQ[m]->LocalEventsTimeOuts == RUN_NOW))	//group all events in the queue for the same controller scheduled for sending
+			if ((IndexOfEthDev(devh, devl) == 0) && (m_EvQ[m]->LocalEventsTimeOuts == RUN_NOW))	//group all events in the queue for the same controller scheduled for sending
 			{
-				EvQ[m]->LocalEventsTimeOuts = RE_TIME_REPLAY;      //Retry timer interval - next time if failed
-				memcpy(&EventBuff[EventBuffSize], EvQ[m]->LocalEventsToRun, EVENT_SIZE);   //Add to send buffer                
+				m_EvQ[m]->LocalEventsTimeOuts = RE_TIME_REPLAY;      //Retry timer interval - next time if failed
+				memcpy(&EventBuff[EventBuffSize], m_EvQ[m]->LocalEventsToRun, EVENT_SIZE);   //Add to send buffer                
 		//        printf("[ via PRO ] %02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\r\n",EvQ[m].LocalEventsToRun[0],EvQ[m].LocalEventsToRun[1],EvQ[m].LocalEventsToRun[2],EvQ[m].LocalEventsToRun[3],EvQ[m].LocalEventsToRun[4],EvQ[m].LocalEventsToRun[5],EvQ[m].LocalEventsToRun[6],EvQ[m].LocalEventsToRun[7],EvQ[m].LocalEventsToRun[8],EvQ[m].LocalEventsToRun[9]);
 				EventBuffSize += EVENT_SIZE;
 				EventsToRun[EventSize] = m;
@@ -122,7 +123,7 @@ void eHouseTCP::ExecEvent(unsigned int i)
 				if (EventSize >= MAX_EVENTS_IN_PACK) break;       //As many events as possible
 			}
 		}
-		SendTCPEvent(EventBuff, EventSize, SrvAddrH, SrvAddrL, EventsToRun);       //Submit via tcp client to desired Ethernet eHouse controller
+		SendTCPEvent(EventBuff, EventSize, m_SrvAddrH, m_SrvAddrL, EventsToRun);       //Submit via tcp client to desired Ethernet eHouse controller
 		return;
 	}
 	else
@@ -134,11 +135,11 @@ void eHouseTCP::ExecEvent(unsigned int i)
 		int mmm = 0;
 		for (m = 0; m < EVENT_QUEUE_MAX; m++)
 		{
-			if ((EvQ[m]->LocalEventsToRun[0] == devh) && (EvQ[m]->LocalEventsToRun[1] == devl) && (EvQ[m]->LocalEventsTimeOuts == RUN_NOW))
+			if ((m_EvQ[m]->LocalEventsToRun[0] == devh) && (m_EvQ[m]->LocalEventsToRun[1] == devl) && (m_EvQ[m]->LocalEventsTimeOuts == RUN_NOW))
 			{
 				//          printf("[Directly ] %02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\r\n",EvQ[m].LocalEventsToRun[0],EvQ[m].LocalEventsToRun[1],EvQ[m].LocalEventsToRun[2],EvQ[m].LocalEventsToRun[3],EvQ[m].LocalEventsToRun[4],EvQ[m].LocalEventsToRun[5],EvQ[m].LocalEventsToRun[6],EvQ[m].LocalEventsToRun[7],EvQ[m].LocalEventsToRun[8],EvQ[m].LocalEventsToRun[9]);
-				EvQ[m]->LocalEventsTimeOuts = RE_TIME_REPLAY;								 //Retry timer interval
-				memcpy(&EventBuff[EventBuffSize], EvQ[m]->LocalEventsToRun, EVENT_SIZE);   //Add to send buffer
+				m_EvQ[m]->LocalEventsTimeOuts = RE_TIME_REPLAY;								 //Retry timer interval
+				memcpy(&EventBuff[EventBuffSize], m_EvQ[m]->LocalEventsToRun, EVENT_SIZE);   //Add to send buffer
 				EventBuffSize += EVENT_SIZE;
 				EventsToRun[EventSize] = m;			//We store index of events to control it
 				EventSize++;
@@ -220,32 +221,32 @@ signed int eHouseTCP::AddToLocalEvent(unsigned char *Even, unsigned char offset)
 
 	if (i >= 0)       //event already exists in EventQueue
 	{
-		if (EvQ[i]->LocalEventsTimeOuts >= RUN_NOW)                //Wasn't confirmed - No Successful Execution so far
+		if (m_EvQ[i]->LocalEventsTimeOuts >= RUN_NOW)                //Wasn't confirmed - No Successful Execution so far
 		{
 
 		}
-		else 	EvQ[i]->LocalEventsTimeOuts = RUN_NOW - 1;		//Increase time of event not to disappear from queue if it recently run
-		EventsCountInQueue++;
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Add Event] Already Exists Q[%d]", i);
+		else 	m_EvQ[i]->LocalEventsTimeOuts = RUN_NOW - 1;		//Increase time of event not to disappear from queue if it recently run
+		m_EventsCountInQueue++;
+		if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Add Event] Already Exists Q[%d]", i);
 		return i;
 	}
 	//Event was not found in event Queue
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 	{
-		if (!EvQ[i]->LocalEventsToRun[2])	// Free space then add
+		if (!m_EvQ[i]->LocalEventsToRun[2])	// Free space then add
 		{
-			if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Add Event] Adding Q[%d]", i);
-			memcpy(&EvQ[i]->LocalEventsToRun, Event, EVENT_SIZE);
-			EventsCountInQueue++;                     //Event count in queue to perform EventQueue
-			EvQ[i]->LocalEventsTimeOuts = RUN_NOW;     //Immediate Run
-			EvQ[i]->LocalEventsDrop = 0;               //First try
-			EvQ[i]->iface = 0;                         //local interface not a gateway
-			if (EvQ[i]->LocalEventsToRun[0] == SrvAddrH)
-				EvQ[i]->iface = EV_ETHERNET_EVENT;
-			else EvQ[i]->iface = EV_VIA_EHOUSE_PRO;
+			if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Add Event] Adding Q[%d]", i);
+			memcpy(&m_EvQ[i]->LocalEventsToRun, Event, EVENT_SIZE);
+			m_EventsCountInQueue++;                     //Event count in queue to perform EventQueue
+			m_EvQ[i]->LocalEventsTimeOuts = RUN_NOW;     //Immediate Run
+			m_EvQ[i]->LocalEventsDrop = 0;               //First try
+			m_EvQ[i]->iface = 0;                         //local interface not a gateway
+			if (m_EvQ[i]->LocalEventsToRun[0] == m_SrvAddrH)
+				m_EvQ[i]->iface = EV_ETHERNET_EVENT;
+			else m_EvQ[i]->iface = EV_VIA_EHOUSE_PRO;
 			return i;
 		}
 	}
-	if (DEBUG_TCPCLIENT)  _log.Log(LOG_STATUS, "[Add Event] End of proc");
+	if (m_DEBUG_TCPCLIENT)  _log.Log(LOG_STATUS, "[Add Event] End of proc");
 	return -1;
 }

@@ -68,7 +68,6 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	m_ActHome = 0;
 
-	m_stoprequested = false;
 	m_bPollThermostat = true;
 	m_bPollWeatherData = true;
 	m_bFirstTimeThermostat = true;
@@ -103,20 +102,24 @@ void CNetatmo::Init()
 
 bool CNetatmo::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CNetatmo::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CNetatmo::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CNetatmo::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -128,11 +131,8 @@ void CNetatmo::Do_Work()
 	bool bFirstTimeWS = true;
 	bool bFirstTimeTH = true;
 	_log.Log(LOG_STATUS, "Netatmo: Worker started...");
-	while (!m_stoprequested)
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
-		if (m_stoprequested)
-			break;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
@@ -443,6 +443,41 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 
 	int batValue = GetBatteryLevel(ModuleType, battery_percent);
 
+	// check for Netatmo cloud data timeout, except if we deal with a thermostat
+	if (ModuleType != "NATherm1")
+	{
+		std::time_t tNetatmoLastUpdate = 0;
+		std::time_t tNow = time(NULL);
+
+		// initialize the relevant device flag
+		if ( m_bNetatmoRefreshed.find(ID) == m_bNetatmoRefreshed.end() )
+		{
+			m_bNetatmoRefreshed[ID] = true;
+		}
+		// Check when dashboard data was last updated
+		if ( !root["time_utc"].empty() )
+		{
+			tNetatmoLastUpdate = root["time_utc"].asUInt();
+		}
+		_log.Debug(DEBUG_HARDWARE, "Netatmo: Module [%s] last update = %s", name.c_str(), ctime(&tNetatmoLastUpdate));
+		// check if Netatmo data was updated in the past 10 mins (+1 min for sync time lags)... if not means sensors failed to send to cloud
+		if (tNetatmoLastUpdate > (tNow - 660))
+		{
+			if (!m_bNetatmoRefreshed[ID])
+			{
+				_log.Log(LOG_STATUS, "Netatmo: cloud data for module [%s] is now updated again", name.c_str());
+				m_bNetatmoRefreshed[ID] = true;
+			}
+		}
+		else
+		{
+			if (m_bNetatmoRefreshed[ID])
+				_log.Log(LOG_ERROR, "Netatmo: cloud data for module [%s] no longer updated (module possibly disconnected)", name.c_str());
+			m_bNetatmoRefreshed[ID] = false;
+			return false;
+		}
+	}
+
 	if (!root["Temperature"].empty())
 	{
 		bHaveTemp = true;
@@ -513,33 +548,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 
 	if (bHaveTemp && bHaveHum && bHaveBaro)
 	{
-		int nforecast = CalculateBaroForecast(baro);
-		if (temp < 0)
-		{
-			if (
-				(nforecast == wsbaroforcast_rain) ||
-				(nforecast == wsbaroforcast_heavy_rain)
-				)
-			{
-				nforecast = wsbaroforcast_snow;
-			}
-		}
-		if (nforecast == wsbaroforcast_unknown)
-		{
-			nforecast = wsbaroforcast_some_clouds;
-			float pressure = baro;
-			if (pressure <= 980)
-				nforecast = wsbaroforcast_heavy_rain;
-			else if (pressure <= 995)
-			{
-				if (temp > 1)
-					nforecast = wsbaroforcast_rain;
-				else
-					nforecast = wsbaroforcast_snow;
-			}
-			else if (pressure >= 1029)
-				nforecast = wsbaroforcast_sunny;
-		}
+		int nforecast = m_forecast_calculators[ID].CalculateBaroForecast(temp, baro);
 		SendTempHumBaroSensorFloat(ID, batValue, temp, hum, baro, nforecast, name, rssiLevel);
 	}
 	else if (bHaveTemp && bHaveHum)
@@ -598,7 +607,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 
 	if (bHaveWind)
 	{
-		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, name, rssiLevel);
+		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, false, name, rssiLevel);
 	}
 	return true;
 }

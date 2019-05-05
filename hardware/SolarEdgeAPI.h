@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include <string>
-#include <vector>
 
 class SolarEdgeAPI : public CDomoticzHardwareBase
 {
@@ -21,7 +20,7 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void GetSite();
+	bool GetSite();
 	void GetInverters();
 	void GetMeterDetails();
 	void GetInverterDetails(const _tInverterSettings *pInverterSettings, const int iInverterNumber);
@@ -34,7 +33,6 @@ private:
 	double m_totalActivePower;
 	double m_totalEnergy;
 
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::shared_ptr<std::thread> m_thread;
 };
 

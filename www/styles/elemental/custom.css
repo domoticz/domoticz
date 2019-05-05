@@ -63,8 +63,8 @@ body table#itemtablenostatus tr td:first-child + td{
 	white-space: nowrap;
 	color: #000000;
 }
- 
-body table#itemtable tr td:first-child + td{ 
+
+body table#itemtable tr td:first-child + td{
 	float: right;
 	margin: -30px 10px 0px 0px;
 	font-size: 120%;
@@ -72,7 +72,7 @@ body table#itemtable tr td:first-child + td{
 	white-space: nowrap;
 	color: #000000;
 }
-body table#itemtablenotype tr td:first-child + td{ 
+body table#itemtablenotype tr td:first-child + td{
 	float: right;
 	margin: -30px 10px 0px 0px;
 	font-size: 120%;
@@ -80,7 +80,7 @@ body table#itemtablenotype tr td:first-child + td{
 	white-space: nowrap;
 	color: #000000;
 }
-body table#itemtabledoubleicon tr td:first-child + td{ 
+body table#itemtabledoubleicon tr td:first-child + td{
 	float: right;
 	margin: -30px 10px 0px 0px;
 	font-size: 120%;
@@ -95,6 +95,11 @@ body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td +
 	padding: 0px 5% 2px 5%;
 	line-height: 130%;
 }
+
+#holder > .container-fluid {
+	padding-top: 40px;
+}
+
 .navbar .nav {margin: 7.5px !important;}
 
 .navbar .divider-vertical {
@@ -127,6 +132,10 @@ li {
 	line-height: 4px;
 }
 
+.ui-popup li {
+	line-height: 20px;
+}
+
 .navbar .nav .dropdown-toggle .caret {
 	margin-top: 0px;
 }
@@ -151,7 +160,7 @@ li {
 .brand,
 .brand h1,
 .brand h2,
-.brand img { display: none; } 
+.brand img { display: none; }
 
 body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtablesmall tbody tr,
@@ -167,7 +176,7 @@ body table#itemtablenostatus tbody tr{
 	background-image: none;
 	background-repeat: no-repeat;
 	filter: none;
-}	
+}
 
 .btnstyle {
 	margin-top: 10px;
@@ -180,7 +189,7 @@ body table#itemtablenostatus tbody tr{
         font-family: Open Sans,sans-serif;
 }
 
-#room, 
+#room,
 .room {
 	background-color: #eee;
 	color: #666 !important;
@@ -197,7 +206,7 @@ body table#itemtablenostatus tbody tr{
 	/* Voor nu even niet */
 	display: none;
 }
-	
+
 h2{
 	font-family: Open Sans,sans-serif;
 	text-decoration: none;
@@ -349,7 +358,7 @@ body table#mobileitem tr td:first-child{
 	position: relative;
 	background-color: #8e8d8d;
 	background: url('images/bg-track.png') repeat top left;
-	box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5), 
+	box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5),
     				  0 1px 0 0px rgba(250, 250, 250, .5);
 }
 
@@ -391,7 +400,7 @@ body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td{
 	.navbar-static-top .container,
 	.navbar-fixed-top .container,
 	.navbar-fixed-bottom .container {
-	  	width: 100% !important; 
+	  	width: 100% !important;
 	}
 	[class*="span"] {
 		margin-left: 9px;
@@ -423,7 +432,7 @@ body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td{
 
 .mobileitem tr:hover {
 	background: 0 !important;
-}  
+}
 
 table.mobileitem {
 	background-color: rgba(250, 250, 250, .8);
@@ -431,4 +440,18 @@ table.mobileitem {
 
 .mobileitem td:first-child, .mobileitem th:first-child {
     white-space: nowrap;
+}
+
+.events-editor {
+	bottom: 20px;
+}
+
+.events-editor__tree {
+	padding-top: 20px;
+}
+
+.events-editor-tree__file:link,
+.events-editor-tree-item__file:link,
+.devices-filters__item {
+	line-height: normal;
 }

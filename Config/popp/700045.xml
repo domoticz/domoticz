@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Popp: Universal Z-Wave Keypad
+    http://products.z-wavealliance.org/products/2481
+     -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" instance="1" index="1" label="Door Lock Automatic Secure Timeout" size="1" min="0" max="127" units="seconds" value="0">
+            <Help>
+                After this time a CLOSE command is sent to the controlled door lock.
+                On default no CLOSE command is sent assuming that the strike lock has its own timeout set.
+                Default Value: 0
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="2" label="Ring Button Press Basic Command OFF Timeout" size="1" min="3" max="127" units="seconds" value="3">
+            <Help>
+                After this time the Door Bell will receive an OF command regardless of the actual button is pressed or not.
+                Default Value: 3
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="3" label="Ring Button ON Command" size="1" min="0" max="255" units="" value="255">
+            <Help>
+                This value is sent into Association Group 3 when the door bell button is pressed.
+                Default Value: 255
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="4" label="Ring Button OFF Command" size="1" min="0" max="255" units="" value="0">
+            <Help>
+                This value is sent into Association Group 3 when the door bell button is released or the timeout has reached.
+                Default Value: 0
+            </Help>
+        </Value>
+        <Value type="list" index="5" genre="config" label="Central Scene ID for User Codes" units="" min="0" max="1" size="1" value="1">
+            <Help>This parameter defines if different user codes shall cause individual or similar scene ID sent to the main controller.</Help>
+            <Item label="Constant Scene ID" value="0"/>
+            <Item label="Individual User Codes" value="1"/>
+        </Value>
+        <Value type="list" index="6" genre="config" label="Buzzer Confirmation" units="" min="0" max="1" size="1" value="0">
+            <Help>Buzzer Confirmation</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+            <Group index="1" max_associations="10" label="Lifeline"/>
+            <Group index="2" max_associations="10" label="Lock door control"/>
+	        <Group index="3" max_associations="10" label="Ring button"/>
+        </Associations>
+    </CommandClass>
+</Product>
+

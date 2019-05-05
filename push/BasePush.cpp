@@ -69,7 +69,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRAIN, sTypeRAIN6, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN7, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN8, "Rain rate,Total rain" },
-		{ pTypeRAIN, sTypeRAIN9, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAINWU, "Rain rate,Total rain" },
 
 		{ pTypeWIND, sTypeWIND1, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
@@ -79,8 +78,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeWIND, sTypeWIND5, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND6, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND7, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
-		{ pTypeWIND, sTypeWIND8, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
-		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Chill" },
+		{ pTypeWIND, sTypeWINDNoTempNoChill, "Direction,Direction string,Speed,Gust" },
 
 		{ pTypeUV, sTypeUV1, "UV,Temperature" },
 		{ pTypeUV, sTypeUV2, "UV,Temperature" },
@@ -119,7 +118,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeTRC02_2, "Status" },
 		{ pTypeLighting5, sTypeAoke, "Status" },
 		{ pTypeLighting5, sTypeEurodomest, "Status" },
-		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
+		{ pTypeLighting5, sTypeLivolo1to10, "Status" },
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
@@ -266,8 +265,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeChime, sTypeByronSX, "Status" },
 		{ pTypeChime, sTypeByronMP001, "Status" },
 		{ pTypeChime, sTypeSelectPlus, "Status" },
-		{ pTypeChime, sTypeSelectPlus3, "Status" },
+		{ pTypeChime, sTypeByronBY, "Status" },
 		{ pTypeChime, sTypeEnvivo, "Status" },
+		{ pTypeChime, sTypeAlfawise, "Status" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
 
@@ -290,9 +290,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohome, sTypeEvohome, "Status" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
-		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
-
-		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
+		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status,Value" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeARC, "Status" },
@@ -647,7 +645,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Value")
 	{
-		sprintf(szData, "%d", atoi(rawsendValue.c_str())); //??
+		sprintf(szData, "%d", atoi(rawsendValue.c_str()));
 	}
 	else if (vType == "Visibility")
 	{

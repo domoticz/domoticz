@@ -104,23 +104,6 @@ define(['app'], function (app) {
 			$("#dialog-editstate").i18n();
 			$("#dialog-editstate").dialog("open");
 		}
-		EvoSetPointColor = function (item, sHeatMode, bkcolor) {
-			if (typeof item.SetPoint != 'undefined') {
-				if (sHeatMode == "HeatingOff" || item.SetPoint == 325.1)//seems to be used whenever the heating is off
-					bkcolor = "#9b9b9b";
-				else if (item.SetPoint >= 25)
-					bkcolor = "#ff0302";
-				else if (item.SetPoint >= 22)
-					bkcolor = "#ff6a2a";
-				else if (item.SetPoint >= 19)
-					bkcolor = "#fe9b2d";
-				else if (item.SetPoint >= 16)
-					bkcolor = "#79bc5c";
-				else //min on temp 5 or greater
-					bkcolor = "#6ca5fd";
-			}
-			return bkcolor;
-		}
 		//FIXME move this to a shared js ...see lightscontroller.js
 		EvoDisplayTextMode = function (strstatus) {
 			if (strstatus == "Auto")//FIXME better way to convert?
@@ -587,8 +570,25 @@ define(['app'], function (app) {
 
 					ctrl.nbackstyle = function () {
 						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+						if(ctrl.displaySetPoint()){
+							if (ctrl.sHeatMode() == "HeatingOff" || !ctrl.isSetPointOn())//seems to be used whenever the heating is off
+                                        			backgroundClass="statusEvoSetPointOff";
+                                			else if (item.SetPoint >= 25)
+                                        			backgroundClass="statusEvoSetPoint25";
+                                			else if (item.SetPoint >= 22)
+                                        			backgroundClass="statusEvoSetPoint22";
+                                			else if (item.SetPoint >= 19)
+                                        			backgroundClass="statusEvoSetPoint19";
+                                			else if (item.SetPoint >= 16)
+                                        			backgroundClass="statusEvoSetPoint16";
+                                			else //min on temp 5 or greater
+                                        			backgroundClass="statusEvoSetPointMin";	
+						}
 						return backgroundClass;
 					};
+
+					ctrl.displayTrend = $rootScope.DisplayTrend;
+					ctrl.trendState  = $rootScope.TrendState;
 
 					// TODO use angular isDefined
 					ctrl.displayTemp = function () {
@@ -619,7 +619,7 @@ define(['app'], function (app) {
 					ctrl.displayChill = function () {
 						return typeof item.Chill != 'undefined';
 					};
-
+					
 					ctrl.image = function () {
 						if (typeof item.Temp != 'undefined') {
 							return GetTemp48Item(item.Temp);

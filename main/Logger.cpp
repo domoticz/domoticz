@@ -128,7 +128,7 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 
 void CLogger::SetOutputFile(const char *OutputFile)
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	if (m_outputfile.is_open())
 		m_outputfile.close();
 
@@ -213,7 +213,7 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 
 	{
 		// Locked region to allow multiple threads to print at the same time
-		boost::unique_lock< boost::mutex > lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 
 		if ((level & LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
 		{
@@ -340,7 +340,7 @@ bool compareLogByTime(const CLogger::_tLogLineStruct &a, CLogger::_tLogLineStruc
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, const time_t lastlogtime)
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
 
 	if (level != LOG_ALL)
@@ -374,13 +374,13 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel level, cons
 
 void CLogger::ClearLog()
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	m_lastlog.clear();
 }
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
 	for (const auto & itt : m_notification_log)
 		mlist.push_back(itt);

@@ -1,7 +1,6 @@
 define(['app'], function (app) {
 	app.controller('UserVariablesController', ['$scope', '$rootScope', '$location', '$http', '$interval', function ($scope, $rootScope, $location, $http, $interval) {
 
-		$scope.userVariableIdx = 0;
 		$scope.varNames = [];
 
 		DeleteVariable = function (idx) {
@@ -19,8 +18,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		AddVariable = function (type) {
-			var idx = $scope.userVariableIdx;
+		AddUpdateVariable = function (type, idx) {
 			var uservariablename = $('#uservariablesedittable #uservariablename').val();
 			var uservariabletype = $('#uservariablesedittable #uservariabletype option:selected').val();
 			var uservariablevalue = $('#uservariablesedittable #uservariablevalue').val();
@@ -30,7 +28,7 @@ define(['app'], function (app) {
 			}
 			else {
 				if (type == "a") {
-					var url = "json.htm?type=command&param=saveuservariable&vname=" + uservariablename + "&vtype=" + uservariabletype + "&vvalue=" + uservariablevalue;
+					var url = "json.htm?type=command&param=adduservariable&vname=" + uservariablename + "&vtype=" + uservariabletype + "&vvalue=" + uservariablevalue;
 				}
 				else if (type == "u") {
 					var url = "json.htm?type=command&param=updateuservariable&idx=" + idx + "&vname=" + uservariablename + "&vtype=" + uservariabletype + "&vvalue=" + uservariablevalue;
@@ -50,7 +48,7 @@ define(['app'], function (app) {
 								$('#uservariablesedittable #uservariabletype').val("0");
 							}
 							else {
-								ShowNotify($.t(data.status), 2500, true);
+								ShowNotify($.t(data.message), 2500, true);
 							}
 						}
 					},
@@ -64,7 +62,6 @@ define(['app'], function (app) {
 
 		$scope.RefreshUserVariablesTable = function () {
 			$('#modal').show();
-			$scope.userVariableIdx = 0;
 			$('#uservariableupdate').attr("class", "btnstyle3-dis");
 			$('#uservariabledelete').attr("class", "btnstyle3-dis");
 			$("#uservariableupdate").attr("href", "");
@@ -135,8 +132,7 @@ define(['app'], function (app) {
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
-						$scope.userVariableIdx = idx;
-						$("#uservariableupdate").attr("href", "javascript:AddVariable('u')");
+						$("#uservariableupdate").attr("href", "javascript:AddUpdateVariable('u', " + idx + ")");
 						$("#uservariabledelete").attr("href", "javascript:DeleteVariable(" + idx + ")");
 						$('#uservariableupdate').attr("class", "btnstyle3");
 						$('#uservariabledelete').attr("class", "btnstyle3");

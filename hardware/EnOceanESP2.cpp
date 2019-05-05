@@ -12,6 +12,8 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
+#include <boost/exception/diagnostic_information.hpp>
+#include <cmath>
 #include <ctime>
 
 #define ENOCEAN_RETRY_DELAY 30
@@ -631,7 +633,6 @@ CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int t
 	memset(&m_buffer, 0, sizeof(m_buffer));
 	m_id_base = 0;
 	m_receivestate = ERS_SYNC1;
-	m_stoprequested = false;
 }
 
 CEnOceanESP2::~CEnOceanESP2()
@@ -641,24 +642,25 @@ CEnOceanESP2::~CEnOceanESP2()
 
 bool CEnOceanESP2::StartHardware()
 {
+	RequestStart();
+
 	m_retrycntr = ENOCEAN_RETRY_DELAY * 5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEnOceanESP2::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CEnOceanESP2::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool CEnOceanESP2::StopHardware()
 {
-	m_stoprequested = true;
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
-		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-		sleep_milliseconds(10);
+		m_thread.reset();
 	}
-	terminate();
 	m_bIsStarted = false;
 	return true;
 }
@@ -668,12 +670,11 @@ void CEnOceanESP2::Do_Work()
 {
 	int msec_counter = 0;
 	int sec_counter = 0;
-	while (!m_stoprequested)
-	{
-		sleep_milliseconds(200);
-		if (m_stoprequested)
-			break;
 
+	_log.Log(LOG_STATUS, "EnOcean: Worker started...");
+
+	while (!IsStopRequested(200))
+	{
 		msec_counter++;
 		if (msec_counter == 5)
 		{
@@ -701,7 +702,7 @@ void CEnOceanESP2::Do_Work()
 		}
 		if (m_sendqueue.size() > 0)
 		{
-			boost::lock_guard<boost::mutex> l(m_sendMutex);
+			std::lock_guard<std::mutex> l(m_sendMutex);
 
 			std::vector<std::string>::iterator itt = m_sendqueue.begin();
 			if (itt != m_sendqueue.end())
@@ -712,14 +713,16 @@ void CEnOceanESP2::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS, "EnOcean: Serial Worker stopped...");
+	terminate();
+
+	_log.Log(LOG_STATUS, "EnOcean: Worker stopped...");
 }
 
 void CEnOceanESP2::Add2SendQueue(const char* pData, const size_t length)
 {
 	std::string sBytes;
 	sBytes.insert(0, pData, length);
-	boost::lock_guard<boost::mutex> l(m_sendMutex);
+	std::lock_guard<std::mutex> l(m_sendMutex);
 	m_sendqueue.push_back(sBytes);
 }
 
@@ -1001,7 +1004,6 @@ bool CEnOceanESP2::OpenSerialDevice()
 
 void CEnOceanESP2::readCallback(const char *data, size_t len)
 {
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	size_t ii = 0;
 	while (ii < len)
 	{
@@ -1054,7 +1056,7 @@ void CEnOceanESP2::readCallback(const char *data, size_t len)
 	}
 }
 
-bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 {
 	if (m_id_base == 0)
 		return false;
@@ -1093,7 +1095,7 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length
 	//First we need to find out if this is a Dimmer switch,
 	//because they are threaded differently
 	bool bIsDimmer = false;
-	int LastLevel = 0;
+	uint8_t LastLevel = 0;
 	std::vector<std::vector<std::string> > result;
 	char szDeviceID[20];
 	sprintf(szDeviceID, "%08X", (unsigned int)sID);
@@ -1103,10 +1105,10 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length
 		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
 		if (switchtype == STYPE_Dimmer)
 			bIsDimmer = true;
-		LastLevel = atoi(result[0][1].c_str());
+		LastLevel = (uint8_t)atoi(result[0][1].c_str());
 	}
 
-	int iLevel = tsen->LIGHTING2.level;
+	uint8_t iLevel = tsen->LIGHTING2.level;
 	int cmnd = tsen->LIGHTING2.cmnd;
 	int orgcmd = cmnd;
 	if ((tsen->LIGHTING2.level == 0) && (!bIsDimmer))
@@ -1126,7 +1128,7 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length
 			float fLevel = (100.0f / 15.0f)*float(iLevel);
 			if (fLevel > 99.0f)
 				fLevel = 100.0f;
-			iLevel = int(fLevel);
+			iLevel = (uint8_t)(fLevel);
 		}
 		cmnd = light2_sSetLevel;
 	}
@@ -1173,7 +1175,7 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length
 	return true;
 }
 
-void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char length)
+void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char /*length*/)
 {
 	if (m_id_base == 0)
 		return;
@@ -1200,8 +1202,8 @@ void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 		iframe.ID_BYTE0 = (unsigned char)(sID & 0x0000FF);//tsen->LIGHTING2.id4;
 
 		unsigned char RockerID = 0;
-		unsigned char UpDown = 1;
-		unsigned char Pressed = 1;
+		//unsigned char UpDown = 1;
+		//unsigned char Pressed = 1;
 
 		if (tsen->LIGHTING2.unitcode < 10)
 			RockerID = tsen->LIGHTING2.unitcode - 1;
@@ -1501,7 +1503,7 @@ bool CEnOceanESP2::ParseData()
 							nightReduction = 4;
 						else if (pFrame->DATA_BYTE3 == 0x1F)
 							nightReduction = 5;
-						float setpointTemp = GetValueRange(pFrame->DATA_BYTE2, 40);
+						//float setpointTemp = GetValueRange(pFrame->DATA_BYTE2, 40);
 					}
 					else
 					{
@@ -1514,7 +1516,7 @@ bool CEnOceanESP2::ParseData()
 							fspeed = 0;
 						else if (pFrame->DATA_BYTE3 >= 210)
 							fspeed = -1; //auto
-						int iswitch = pFrame->DATA_BYTE0 & 1;
+						//int iswitch = pFrame->DATA_BYTE0 & 1;
 					}
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));

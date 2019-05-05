@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
 #include "hardwaretypes.h"
 
 namespace Json
@@ -12,7 +11,7 @@ namespace Json
 class CHoneywell : public CDomoticzHardwareBase
 {
 public:
-	CHoneywell(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
+	CHoneywell(const int ID, const std::string &Username, const std::string &Password, const std::string &Extra);
 	~CHoneywell(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) override;
 private:
@@ -24,16 +23,17 @@ private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void GetMeterDetails();
+	void GetThermostatData();
 private:
+	std::string mApiKey;
+	std::string mApiSecret;
 	std::string mAccessToken;
 	std::string mRefreshToken;
+	time_t mTokenExpires = { 0 };
 	std::string mThermostatID;
 	int mOutsideTemperatureIdx;
-	volatile bool mStopRequested;
-	bool mNeedsTokenRefresh;
 	bool mIsStarted;
-	boost::shared_ptr<boost::thread> mThread;
+	std::shared_ptr<std::thread> m_thread;
 	std::vector<std::string> mSessionHeaders;
 	std::map<int, Json::Value> mDeviceList;
 	std::map<int, std::string> mLocationList;

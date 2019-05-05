@@ -17,7 +17,6 @@ m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
-	m_stoprequested=false;
 	Init();
 }
 
@@ -55,21 +54,24 @@ void CYouLess::Init()
 
 bool CYouLess::StartHardware()
 {
+	RequestStart();
+
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CYouLess::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&CYouLess::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return (m_thread != nullptr);
 }
 
 bool CYouLess::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
-		m_stoprequested = true;
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
     m_bIsStarted=false;
     return true;
@@ -79,9 +81,9 @@ void CYouLess::Do_Work()
 {
 	int sec_counter = YOULESS_POLL_INTERVAL - 2;
 
-	while (!m_stoprequested)
+	_log.Log(LOG_STATUS, "YouLess: Worker started...");
+	while (!IsStopRequested(1000))
 	{
-		sleep_seconds(1);
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
@@ -133,52 +135,49 @@ bool CYouLess::GetP1Details()
 	if (root.size() < 1)
 		return false;
 	root = root[0];
-	if (root["p1"].empty() == true)
-		return false;
 
-	int Pwr = root["pwr"].asInt();
-	
-	unsigned long temp_usage;
-	temp_usage= (unsigned long)(root["p1"].asDouble() * 1000);
-	m_p1power.powerusage1 = temp_usage;
-	temp_usage = (unsigned long)(root["p2"].asDouble() * 1000);
-	m_p1power.powerusage2 = temp_usage;
-	temp_usage = (unsigned long)(root["n1"].asDouble() * 1000);
-	m_p1power.powerdeliv1 = temp_usage;
-	temp_usage = (unsigned long)(root["n2"].asDouble() * 1000);
-	m_p1power.powerdeliv2 = temp_usage;
 
-	if (Pwr >= 0)
+	if (!root["p1"].empty())
 	{
-		m_p1power.usagecurrent = Pwr;
-		m_p1power.delivcurrent = 0;
-	}
-	else
-	{
-		m_p1power.delivcurrent = -Pwr;
-		m_p1power.usagecurrent = 0;
-	}
-	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+		int Pwr = root["pwr"].asInt();
 
-	temp_usage = (unsigned long)(root["gas"].asDouble() * 1000);
-	m_p1gas.gasusage = temp_usage;
-	time_t atime = mytime(NULL);
-	if (
-		(m_p1gas.gasusage != m_lastgasusage) ||
-		(difftime(atime, m_lastSharedSendGas) >= 300)
-		)
-	{
-		m_lastgasusage = temp_usage;
-		m_lastSharedSendGas = atime;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+		m_p1power.powerusage1 = (unsigned long)(root["p1"].asDouble() * 1000);
+		m_p1power.powerusage2 = (unsigned long)(root["p2"].asDouble() * 1000);
+		m_p1power.powerdeliv1 = (unsigned long)(root["n1"].asDouble() * 1000);
+		m_p1power.powerdeliv2 = (unsigned long)(root["n2"].asDouble() * 1000);
+
+		if (Pwr >= 0)
+		{
+			m_p1power.usagecurrent = Pwr;
+			m_p1power.delivcurrent = 0;
+		}
+		else
+		{
+			m_p1power.delivcurrent = -Pwr;
+			m_p1power.usagecurrent = 0;
+		}
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+
+		m_p1gas.gasusage = (unsigned long)(root["gas"].asDouble() * 1000);
+		time_t atime = mytime(NULL);
+		if (
+			(m_p1gas.gasusage != m_lastgasusage) ||
+			(difftime(atime, m_lastSharedSendGas) >= 300)
+			)
+		{
+			m_lastgasusage = m_p1gas.gasusage;
+			m_lastSharedSendGas = atime;
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+		}
+		m_bHaveP1 = true;
 	}
-	m_bHaveP1 = true;
-/*
-	//Old Meter
-	m_meter.powerusage = (unsigned long)(root["net"].asDouble()*1000);
-	m_meter.usagecurrent = Pwr;
-	sDecodeRXMessage(this, (const unsigned char *)&m_meter, NULL, 255);
-*/
+
+	if (!root["cs0"].empty())
+	{
+		//S0 Meter
+		double musage = root["ps0"].asDouble();
+		SendKwhMeter(m_HwdID, 1, 255, musage, root["cs0"].asDouble(), "S0");
+	}
 	return true;
 }
 

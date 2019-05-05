@@ -11,7 +11,7 @@
 #include "../main/SQLHelper.h"
 
 #ifdef _DEBUG
-	#define DEBUG_SatelIntegra
+#define DEBUG_SatelIntegra
 #endif
 
 #define SATEL_TEMP_POLL_INTERVAL_MS 120*1000 // 120 sec
@@ -49,7 +49,6 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	m_socket(INVALID_SOCKET),
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
-	m_stoprequested(false),
 	m_pollInterval(pollInterval)
 {
 	_log.Log(LOG_STATUS, "Satel Integra: Create instance");
@@ -57,7 +56,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	memset(m_newData, 0, sizeof(m_newData));
 
 	// clear last local state of zones and outputs
-	for (unsigned int i = 0; i< 256; ++i)
+	for (unsigned int i = 0; i < 256; ++i)
 	{
 		m_zonesLastState[i] = false;
 		m_outputsLastState[i] = false;
@@ -65,7 +64,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 		m_isTemperature[i] = false;
 	}
 
-	for (unsigned int i = 0; i< 32; ++i)
+	for (unsigned int i = 0; i < 32; ++i)
 	{
 		m_isPartitions[i] = false;
 		m_armLastState[i] = false;
@@ -124,6 +123,8 @@ SatelIntegra::~SatelIntegra()
 
 bool SatelIntegra::StartHardware()
 {
+	RequestStart();
+
 #ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_STATUS, "Satel Integra: Start hardware");
 #endif
@@ -133,109 +134,100 @@ bool SatelIntegra::StartHardware()
 		return false;
 	}
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SatelIntegra::Do_Work, this)));
+	m_thread = std::make_shared<std::thread>(&SatelIntegra::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
 bool SatelIntegra::StopHardware()
 {
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: Stop hardware");
-#endif
-
-	m_stoprequested = true;
-	
 	if (m_thread)
 	{
+		RequestStop();
 		m_thread->join();
+		m_thread.reset();
 	}
-
-	DestroySocket();
-
 	m_bIsStarted = false;
 	return true;
 }
 
 void SatelIntegra::Do_Work()
 {
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: Start work");
-#endif
+	if (!GetInfo())
+		return;
 
-	if (GetInfo())
+	_log.Log(LOG_STATUS, "Satel Integra: worker started");
+
+	ReadZonesState(true);
+	ReadAlarm(true);
+	ReadArmState(true);
+	ReadTemperatures(true);
+	ReadOutputsState(true);
+
+	UpdateAlarmAndArmName();
+
+	int heartbeatInterval = 0;
+	long msec_poll_counter = 0;
+	long msec_temp_counter = 0;
+	long interval = m_pollInterval;
+	if (interval > HEARTBEAT_INTERVAL_MS)
+		interval = HEARTBEAT_INTERVAL_MS;
+
+	while (!IsStopRequested(interval))
 	{
-		ReadZonesState(true);
-		ReadAlarm(true);
-		ReadArmState(true);
-		ReadTemperatures(true);
-		ReadOutputsState(true);
+		msec_poll_counter += interval;
+		msec_temp_counter += interval;
+		heartbeatInterval += interval;
 
-		UpdateAlarmAndArmName();
-
-		int heartbeatInterval = 0;
-		long msec_poll_counter = 0;
-		long msec_temp_counter = 0;
-		long interval = m_pollInterval;
-		if (interval > HEARTBEAT_INTERVAL_MS)
-			interval = HEARTBEAT_INTERVAL_MS;
-
-		while (!m_stoprequested)
-		{
-			sleep_milliseconds(interval);
-			if (m_stoprequested)
-				break;
-			msec_poll_counter += interval;
-			msec_temp_counter += interval;
-			heartbeatInterval += interval;
-
-			if (heartbeatInterval >= HEARTBEAT_INTERVAL_MS) {
-				m_LastHeartbeat = mytime(NULL);
-				heartbeatInterval = 0;
-			}
-
-			if (msec_poll_counter >= m_pollInterval)
-			{
-				msec_poll_counter = 0;
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: fetching changed data");
-#endif
-
-				if (ReadNewData())
-				{
-					SetHeartbeatReceived();
-
-					if (m_newData[3] & 8)
-					{
-						ReadAlarm();
-					}
-					if (m_newData[2] & 4)
-					{
-						ReadArmState();
-					}
-					if (m_newData[1] & 1)
-					{
-						ReadZonesState();
-					}
-					if (m_newData[3] & 128)
-					{
-						ReadOutputsState();
-					}
-				}
-			//	ReadEvents();
-			}
-
-			if (msec_temp_counter >= SATEL_TEMP_POLL_INTERVAL_MS)
-			{
-				msec_temp_counter = 0;
-#ifdef DEBUG_SatelIntegra
-				_log.Log(LOG_STATUS, "Satel Integra: fetching temperature");
-#endif
-				ReadTemperatures();
-			}
+		if (heartbeatInterval >= HEARTBEAT_INTERVAL_MS) {
+			m_LastHeartbeat = mytime(NULL);
+			heartbeatInterval = 0;
 		}
-	}
+
+		if (msec_poll_counter >= m_pollInterval)
+		{
+			msec_poll_counter = 0;
+#ifdef DEBUG_SatelIntegra
+			_log.Log(LOG_STATUS, "Satel Integra: fetching changed data");
+#endif
+
+			if (ReadNewData())
+			{
+				SetHeartbeatReceived();
+
+				if (m_newData[3] & 8)
+				{
+					ReadAlarm();
+				}
+				if (m_newData[2] & 4)
+				{
+					ReadArmState();
+				}
+				if (m_newData[1] & 1)
+				{
+					ReadZonesState();
+				}
+				if (m_newData[3] & 128)
+				{
+					ReadOutputsState();
+				}
+			}
+			//	ReadEvents();
+		}
+
+		if (msec_temp_counter >= SATEL_TEMP_POLL_INTERVAL_MS)
+		{
+			msec_temp_counter = 0;
+#ifdef DEBUG_SatelIntegra
+			_log.Log(LOG_STATUS, "Satel Integra: fetching temperature");
+#endif
+			ReadTemperatures();
+		}
+	}//while (!IsStopRequested())
+	DestroySocket();
+	_log.Log(LOG_STATUS, "Satel Integra: worker stopped");
 }
 
 bool SatelIntegra::CheckAddress()
@@ -309,23 +301,17 @@ void SatelIntegra::DestroySocket()
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: destroy socket");
 #endif
-		try
-		{
-			closesocket(m_socket);
-		}
-		catch (...)
-		{
-		}
-
+		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
 	}
 }
 
 bool SatelIntegra::ReadNewData()
 {
-	unsigned char cmd[1];
+	unsigned char cmd[2];
 	cmd[0] = 0x7F; // list of new data
-	if (SendCommand(cmd, 1, m_newData, 6, 7) > 0)
+	cmd[1] = 0x00;
+	if (SendCommand(cmd, 2, m_newData, 7) > 0)
 	{
 		return true;
 	}
@@ -368,13 +354,10 @@ bool SatelIntegra::GetInfo()
 				cmd[0] = 0x7C; // INT-RS/ETHM version
 				if (SendCommand(cmd, 1, buffer, 13) > 0)
 				{
-					if (buffer[12] == 1)
-					{
-						m_data32 = true;
-					}
+					m_data32 = ((buffer[12] & 1) == 1) && (m_modelIndex == 72); // supported and required 256 PLUS
 
-					_log.Log(LOG_STATUS, "Satel Integra: ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c",
-						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11]);
+					_log.Log(LOG_STATUS, "Satel Integra: ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c (32 bytes mode = %s)",
+						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], m_data32 ? "true" : "false");
 					return true;
 				}
 				else
@@ -420,7 +403,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x00; // read zones violation
-	if (SendCommand(cmd, 1, buffer, 17, 33) > 0)
+	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool violate;
 		unsigned int byteNumber;
@@ -428,7 +411,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 		for (unsigned int index = 0; index < zonesCount; ++index)
 		{
-			if (!m_stoprequested)
+			if (!IsStopRequested(0))
 			{
 				byteNumber = index / 8;
 				bitNumber = index % 8;
@@ -445,7 +428,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 					unsigned char cmd[3];
 					cmd[0] = 0xEE;
 					cmd[1] = 0x05;
-					cmd[2] = (unsigned char)(index + 1);
+					cmd[2] = (index != 255) ? (index + 1) : 0; // send 0 instead of 256 in INTEGRA 256 PLUS
 					if (SendCommand(cmd, 3, buffer, 21) > 0)
 					{
 						m_isPartitions[buffer[20] - 1] = true;
@@ -454,7 +437,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 					}
 					else
 					{
-						_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
+						_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed (probably zone is not used)", index + 1);
 					}
 				}
 				else if (m_zonesLastState[index] != violate)
@@ -495,7 +478,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 	}
 
 	for (unsigned int index = 0; index < zonesCount; ++index)
-		if ((m_isTemperature[index]) && (!m_stoprequested))
+		if ((m_isTemperature[index]) && (!IsStopRequested(0)))
 		{
 #ifdef DEBUG_SatelIntegra
 			_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d temperature", index + 1);
@@ -520,7 +503,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 						unsigned char cmd[3];
 						cmd[0] = 0xEE;
 						cmd[1] = 0x05;
-						cmd[2] = (unsigned char)(index + 1);
+						cmd[2] = (index != 255) ? (index + 1) : 0; // send 0 instead of 256 in INTEGRA 256 PLUS
 						if (SendCommand(cmd, 3, buffer, 21) > 0)
 						{
 							ReportTemperature(index + 1, temp);
@@ -561,7 +544,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x17; // read outputs state
-	if (SendCommand(cmd, 1, buffer, 17, 33) > 0)
+	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool findBlindOutput = false;
 		bool outputState;
@@ -576,7 +559,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 
 		for (unsigned int index = 0; index < outputsCount; ++index)
 		{
-			if (!m_stoprequested)
+			if (!IsStopRequested(0))
 			{
 				byteNumber = index / 8;
 				bitNumber = index % 8;
@@ -591,7 +574,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 					unsigned char cmd[3];
 					cmd[0] = 0xEE;
 					cmd[1] = 0x04;
-					cmd[2] = (unsigned char)(index + 1);
+					cmd[2] = (index != 255) ? (index + 1) : 0; // send 0 instead of 256 in INTEGRA 256 PLUS
 					if (SendCommand(cmd, 3, buffer, 20) > 0)
 					{
 						if (buffer[3] != 0x00)
@@ -751,7 +734,7 @@ bool SatelIntegra::ReadEvents()
 			int ret = SendCommand(cmd, 4, buffer, 15);
 			if (ret > 0)
 			{
-				std::string val(1,buffer[6]);
+				std::string val(1, buffer[6]);
 				SendTextSensor(1, 1, 255, val, "Events");
 			}
 			else
@@ -791,7 +774,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 
 void SatelIntegra::ReportArmState(const int Idx, const bool isArm)
 {
-	m_armLastState[Idx-1] = isArm;
+	m_armLastState[Idx - 1] = isArm;
 
 	SendGeneralSwitch(Idx, 2, 255, isArm ? gswitch_sOn : gswitch_sOff, 0, "");
 }
@@ -914,7 +897,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			{
 				id = id - 1024;
 				if (cmnd == gswitch_sOn)
-				{ 
+				{
 					id++;
 				}
 				cmnd = gswitch_sOn;
@@ -1070,7 +1053,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	std::vector<std::vector<std::string> > result;
 
 	// Alarm
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Name=='Alarm') AND (Unit=2)", m_HwdID);
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Name!='Unknown') AND (Unit=2)", m_HwdID);
 	if (result.empty())
 	{
 		//Assign name for Alarm
@@ -1081,20 +1064,20 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	}
 
 	//Arm
-	for (unsigned int i = 0; i< 32; ++i)
+	for (unsigned int i = 0; i < 32; ++i)
 	{
 		if (m_isPartitions[i])
 		{
 			char szTmp[10];
-			sprintf(szTmp, "%08X", (int)i+1);
-			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Arm %d partition') AND (Unit=2)", m_HwdID, szTmp, i+1);
+			sprintf(szTmp, "%08X", (int)i + 1);
+			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=2)", m_HwdID, szTmp, i + 1);
 			if (result.empty())
 			{
 				//Assign name for Arm
 #ifdef DEBUG_SatelIntegra
-				_log.Log(LOG_STATUS, "Satel Integra: update Arm name to 'Arm %d partition'", i+1);
+				_log.Log(LOG_STATUS, "Satel Integra: update Arm name to 'Arm %d partition'", i + 1);
 #endif
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i+1, m_HwdID, szTmp);
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i + 1, m_HwdID, szTmp);
 			}
 		}
 	}
@@ -1130,9 +1113,9 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 	result = crc;
 }
 
-int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2)
+int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const int expectedLength)
 {
-	boost::lock_guard<boost::mutex> lock(m_mutex);
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	if (!ConnectToIntegra())
 	{
@@ -1147,11 +1130,11 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Send command '%02X' failed", cmdPayload.first[2]);
 		DestroySocket();
-		delete [] cmdPayload.first;
+		delete[] cmdPayload.first;
 		return -1;
 	}
 
-	delete [] cmdPayload.first;
+	delete[] cmdPayload.first;
 
 	unsigned char buffer[MAX_LENGTH_OF_ANSWER];
 	// Receive answer
@@ -1169,49 +1152,53 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 		return -1;
 	}
 
-	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
-
-	if ((ret <= 0) || (ret >= MAX_LENGTH_OF_ANSWER))
+	int totalRet = 0;
+	do
 	{
-		_log.Log(LOG_ERROR, "Satel Integra: bad data length received (-1)");
-		return -1;
-	}
+		int ret = recv(m_socket, (char*)&buffer[totalRet], MAX_LENGTH_OF_ANSWER - totalRet, 0);
+		totalRet += ret;
+		if ((ret <= 0) || (totalRet >= MAX_LENGTH_OF_ANSWER))
+		{
+			_log.Log(LOG_ERROR, "Satel Integra: bad data length received (-1)");
+			DestroySocket();
+			return -1;
+		}
+	} while (totalRet < expectedLength);
 
 	// remove special chars
 	int offset = 0;
-	for (int i = 0; i < ret; i++) 
+	for (int i = 0; i < totalRet; i++)
 	{
 		buffer[i] = buffer[i + offset];
 		if (buffer[i] == 0xFE && buffer[i + 1] == 0xF0)
 		{
 			++offset;
-			ret--;
+			totalRet--;
 		}
 	}
-	buffer[ret] = 0x00; // not needed but look nice :)
+	buffer[totalRet] = 0x00; // not needed but look nice :)
 
-	if (ret > 6)
+	if (totalRet > 6)
 	{
-		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ret - 2] == 0xFE) // check prefix and sufix
+		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[totalRet - 1] == 0x0D && buffer[totalRet - 2] == 0xFE) // check prefix and sufix
 		{
-			if ( (buffer[2] != 0xEF) 
-		 	  && ((ret - 6) != expectedLength1) 
-			  && ((ret - 6) != expectedLength2))
+			if ((buffer[2] != 0xEF)
+				&& ((totalRet - 6) != expectedLength))
 			{
 				_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
 				return -1;
 			}
 
 			unsigned int answerLength = 0;
-			for (int i = 0; i < ret - 6; i++) // skip prefix, suffix and crc
+			for (int i = 0; i < totalRet - 6; i++) // skip prefix, suffix and crc
 			{
 				answer[i] = buffer[i + 2];
 			}
-			answerLength = ret - 6; // answer = frame - prefix - suffix - crc
+			answerLength = totalRet - 6; // answer = frame - prefix - suffix - crc
 
 			unsigned short crc;
 			calculateCRC(answer, answerLength, crc);
-			if ((crc & 0xFF) == buffer[ret - 3] && (crc >> 8) == buffer[ret - 4]) // check crc
+			if ((crc & 0xFF) == buffer[totalRet - 3] && (crc >> 8) == buffer[totalRet - 4]) // check crc
 			{
 				if (buffer[2] == 0xEF)
 				{
@@ -1271,7 +1258,7 @@ std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigne
 {
 	std::list<unsigned char> result;
 
-	for (unsigned int i = 0; i< cmdLength; ++i)
+	for (unsigned int i = 0; i < cmdLength; ++i)
 	{
 		result.push_back(pCmd[i]);
 	}

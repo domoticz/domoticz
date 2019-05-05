@@ -43,6 +43,7 @@ namespace Plugins {
 		bool				IsConnecting() { return m_bConnecting; };
 		bool				IsConnected() { return m_bConnected; };
 		time_t				LastSeen() { return m_tLastSeen; };
+		virtual bool		AsyncDisconnect() { return false; };
 		virtual bool		ThreadPoolRequired() { return false; };
 		long				TotalBytes() { return m_iTotalBytes; };
 		virtual void		VerifyConnection();
@@ -55,9 +56,10 @@ namespace Plugins {
 		std::string			m_IP;
 	public:
 		CPluginTransportIP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransport(HwdID, pConnection), m_IP(Address) { m_Port = Port; };
+		virtual bool		AsyncDisconnect() { return IsConnected() || IsConnecting(); };
 	};
 
-	class CPluginTransportTCP : public CPluginTransportIP, boost::enable_shared_from_this<CPluginTransportTCP>
+	class CPluginTransportTCP : public CPluginTransportIP, std::enable_shared_from_this<CPluginTransportTCP>
 	{
 	public:
 		CPluginTransportTCP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : 

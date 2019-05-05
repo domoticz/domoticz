@@ -3,7 +3,7 @@
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include <string>
-#include <vector>
+#include "StoppableTask.h"
 
 struct tScheduleItem
 {
@@ -18,7 +18,7 @@ struct tScheduleItem
 	unsigned short startYear;
 	unsigned char startHour;
 	unsigned char startMin;
-	_eTimerType	timerType; 
+	_eTimerType	timerType;
 	_eTimerCommand timerCmd;
 	int Level;
 	_tColor Color;
@@ -62,7 +62,7 @@ struct tScheduleItem
 	}
 };
 
-class CScheduler
+class CScheduler : public StoppableTask
 {
 public:
 	CScheduler(void);
@@ -87,9 +87,8 @@ private:
 	time_t m_tNautTwEnd;
 	time_t m_tAstTwStart;
 	time_t m_tAstTwEnd;
-	boost::mutex m_mutex;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	std::mutex m_mutex;
+	std::shared_ptr<std::thread> m_thread;
 	std::vector<tScheduleItem> m_scheduleitems;
 
 	//our thread

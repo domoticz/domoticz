@@ -18,12 +18,11 @@ public:
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
 
-	virtual void on_connect(int rc);
-	void on_disconnect(int rc);
-	virtual void on_message(const struct mosquitto_message *message);
-	void on_subscribe(int mid, int qos_count, const int *granted_qos);
+	virtual void on_connect(int rc) override;
+	void on_disconnect(int rc) override;
+	virtual void on_message(const struct mosquitto_message *message) override;
+	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
 
-	void OnMQTTMessage(char *topicName, int topicLen,  void *pMessage);
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
 	bool m_bDoReconnect;
@@ -49,10 +48,8 @@ protected:
 	void StopMQTT();
 	void Do_Work();
 	virtual void SendHeartbeat();
-	void OnData(const unsigned char *pData, size_t length);
-	void WriteInt(const std::string &sendStr);
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
+	void WriteInt(const std::string &sendStr) override;
+	std::shared_ptr<std::thread> m_thread;
 	boost::signals2::connection m_sDeviceReceivedConnection;
 	boost::signals2::connection m_sSwitchSceneConnection;
 	enum _ePublishTopics {

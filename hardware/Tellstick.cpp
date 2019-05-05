@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#ifdef WITH_TELLDUSCORE
 #include "Tellstick.h"
 
 #include "../main/Helper.h"
@@ -9,12 +8,10 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
-#include <telldus-core.h>
 
-using namespace std;
-
-CTellstick::CTellstick(const int ID, int repeats, int repeatInterval)
-    : m_deviceEventId(-1),
+CTellstick::CTellstick(const TelldusFunctions& functions, const int ID, int repeats, int repeatInterval)
+    : m_td(functions),
+      m_deviceEventId(-1),
       m_rawDeviceEventId(-1),
       m_sensorEventId(-1),
       m_numRepeats(repeats),
@@ -28,7 +25,7 @@ CTellstick::CTellstick(const int ID, int repeats, int repeatInterval)
 void CTellstick::SetSettings(int repeats, int repeatInterval)
 {
     m_numRepeats = repeats;
-    m_repeatInterval = boost::posix_time::milliseconds(repeatInterval);
+    m_repeatInterval = std::chrono::milliseconds(repeatInterval);
 }
 
 bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
@@ -39,7 +36,7 @@ bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
     if (pSwitch->type != pTypeGeneralSwitch)
         return false; //only allowed to control switches
 
-    boost::unique_lock<boost::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_commands[pSwitch->id] = Command(*pSwitch);
     m_cond.notify_all();
     return true;
@@ -49,9 +46,9 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
 {
     char sid[16];
     sprintf(sid, "%08X", id);
-  
+
     std::vector<std::vector<std::string> > result;
-    result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", 
+    result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)",
                               m_HwdID, sid, pTypeGeneralSwitch, sSwitchTypeAC);
 	if (result.empty())
     {
@@ -69,13 +66,13 @@ void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *mod
     switch (dataType)
     {
     case TELLSTICK_TEMPERATURE:
-        SendTempSensor(deviceId, 255, atof(value), "Temp");
+        SendTempSensor(deviceId, 255, static_cast<float>(atof(value)), "Temp");
         break;
     case TELLSTICK_HUMIDITY:
-        SendHumiditySensor(deviceId, 255, atof(value), "Humid");
+        SendHumiditySensor(deviceId, 255, atoi(value), "Humidity");
         break;
     case TELLSTICK_RAINRATE:
-        SendRainSensor(deviceId, 255, atof(value), "Rain");
+        SendRainSensor(deviceId, 255, static_cast<float>(atof(value)), "Rain");
         break;
     case TELLSTICK_RAINTOTAL:
     case TELLSTICK_WINDDIRECTION:
@@ -90,12 +87,12 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
     _log.Log(LOG_NORM, "Tellstick: deviceEvent %d %d: %s", deviceId, method, data);
 
     char sid[16];
-    sprintf(sid, "%08d", deviceId);  
+    sprintf(sid, "%08d", deviceId);
 
     _tGeneralSwitch gswitch;
     gswitch.id = deviceId;
     gswitch.unitcode = 3;
-  
+
     switch (method)
     {
     case TELLSTICK_TURNON:
@@ -120,7 +117,7 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 {
     _log.Log(LOG_NORM, "Tellstick: rawDeviceEvent %d: %s", controllerId, data);
-	
+
     if (!data)
         return;
 
@@ -149,17 +146,17 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
         } else if (param.substr(0, delim).compare("windgust") == 0) {
             windgust = param.substr(delim+1, param.length()-delim);
         }
-        pos = message.find(";", pos+1);	
+        pos = message.find(";", pos+1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
-        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), atof(windaverage.c_str()), atof(windgust.c_str()), 0, 0, false, "Wind");
+        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, false, "Wind");
     }
 }
 
 void CTellstick::deviceEventCallback(int deviceId, int method, const char *data, int callbackId, void *context)
 {
     CTellstick *t = reinterpret_cast<CTellstick *>(context);
-    if (t) 
+    if (t)
     {
         /** Please note!
         * We are here in another thread than the main. Some measures to syncronize
@@ -172,7 +169,7 @@ void CTellstick::deviceEventCallback(int deviceId, int method, const char *data,
 void CTellstick::rawDeviceEventCallback(const char *data, int controllerId, int callbackId, void *context)
 {
     CTellstick *t = reinterpret_cast<CTellstick *>(context);
-    if (t) 
+    if (t)
     {
         /** Please note!
         * We are here in another thread than the main. Some measures to syncronize
@@ -186,7 +183,7 @@ void CTellstick::sensorEventCallback(const char *protocol, const char *model, in
                                      const char *value, int timestamp, int callbackId, void *context)
  {
     CTellstick *t = reinterpret_cast<CTellstick *>(context);
-    if (t) 
+    if (t)
     {
         /** Please note!
         * We are here in another thread than the main. Some measures to syncronize
@@ -198,49 +195,56 @@ void CTellstick::sensorEventCallback(const char *protocol, const char *model, in
 
 void CTellstick::Init()
 {
-    tdInit();
-    m_deviceEventId = tdRegisterDeviceEvent(reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this);
-    m_rawDeviceEventId = tdRegisterRawDeviceEvent(reinterpret_cast<TDRawDeviceEvent>(&CTellstick::rawDeviceEventCallback), this);
-    m_sensorEventId = tdRegisterSensorEvent(reinterpret_cast<TDSensorEvent>(&CTellstick::sensorEventCallback), this);
+    m_td.Init();
+    m_deviceEventId = m_td.RegisterDeviceEvent(reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this);
+    m_rawDeviceEventId = m_td.RegisterRawDeviceEvent(reinterpret_cast<TDRawDeviceEvent>(&CTellstick::rawDeviceEventCallback), this);
+    m_sensorEventId = m_td.RegisterSensorEvent(reinterpret_cast<TDSensorEvent>(&CTellstick::sensorEventCallback), this);
 
-    for (int i = 0; i < tdGetNumberOfDevices(); i++)
+    const int numDevices = m_td.GetNumberOfDevices();
+    for (int i = 0; i < numDevices; i++)
     {
-        int id = tdGetDeviceId(i);
-        char *name = tdGetName(id);
-        _log.Log(LOG_NORM, "Tellstick: %s method %d", name, tdMethods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
-        bool isDimmer = tdMethods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM;
+        int id = m_td.GetDeviceId(i);
+        char *name = m_td.GetName(id);
+        _log.Log(LOG_NORM, "Tellstick: %s method %d", name, m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
+        bool isDimmer = m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM;
         AddSwitchIfNotExits(id, name, isDimmer);
-        tdReleaseString(name);
+        m_td.ReleaseString(name);
     }
 }
 
 bool CTellstick::StartHardware()
 {
+	RequestStart();
+
     Init();
     m_bIsStarted=true;
     sOnConnected(this);
     _log.Log(LOG_NORM, "Tellstick: StartHardware");
     //Start worker thread
-    m_thread = boost::thread(boost::bind(&CTellstick::ThreadSendCommands, this));
-    return true;
+	m_thread = std::make_shared<std::thread>(&CTellstick::ThreadSendCommands, this);
+	SetThreadNameInt(m_thread->native_handle());
+	return true;
 }
 
 bool CTellstick::StopHardware()
 {
     if (m_deviceEventId != -1)
-        tdUnregisterCallback(m_deviceEventId);
+        m_td.UnregisterCallback(m_deviceEventId);
     if (m_rawDeviceEventId != -1)
-        tdUnregisterCallback(m_rawDeviceEventId);
+        m_td.UnregisterCallback(m_rawDeviceEventId);
     if (m_sensorEventId != -1)
-        tdUnregisterCallback(m_sensorEventId);
-  
-    tdClose();
-    boost::unique_lock<boost::mutex> lock(m_mutex);
+        m_td.UnregisterCallback(m_sensorEventId);
+
+    m_td.Close();
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_bIsStarted = false;
     m_cond.notify_all();
     lock.unlock();
-    if (m_thread.joinable())
-        m_thread.join();
+    if (m_thread)
+	{
+		m_thread->join();
+		m_thread.reset();
+	}
     return true;
 }
 
@@ -252,28 +256,29 @@ void CTellstick::SendCommand(int devID, const _tGeneralSwitch &genSwitch)
     {
     case gswitch_sOn:
         _log.Log(LOG_NORM, "Tellstick: Switch ON");
-        tdTurnOn(genSwitch.id);
+        m_td.TurnOn(genSwitch.id);
         break;
     case gswitch_sOff:
         _log.Log(LOG_NORM, "Tellstick: Switch OFF");
-        tdTurnOff(genSwitch.id);
+        m_td.TurnOff(genSwitch.id);
         break;
     case gswitch_sSetLevel:
         _log.Log(LOG_NORM, "Tellstick: Dim level %d %d",
                  genSwitch.level, genSwitch.level * 255 / 99);
-        tdDim(genSwitch.id, genSwitch.level * 255 / 99);
+        m_td.Dim(genSwitch.id, genSwitch.level * 255 / 99);
         break;
     }
 }
 
 void CTellstick::ThreadSendCommands()
 {
-    boost::unique_lock<boost::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     while (m_bIsStarted)
     {
-        boost::system_time now = boost::get_system_time();
-        boost::system_time nextTime = now + m_repeatInterval;
-        for (map<int, Command>::iterator it = m_commands.begin();
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        auto nextTime = now + m_repeatInterval;
+
+        for (std::map<int, Command>::iterator it = m_commands.begin();
              it != m_commands.end();
              /* no increment */)
         {
@@ -299,7 +304,7 @@ void CTellstick::ThreadSendCommands()
         if (m_commands.empty())
             m_cond.wait(lock);
         else
-            m_cond.timed_wait(lock, nextTime);
+            m_cond.wait_until(lock, nextTime);
     }
 }
 
@@ -314,9 +319,9 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-            string hwIdStr = request::findValue(&req, "idx");
-            string repeatsStr = request::findValue(&req, "repeats");
-            string repeatIntervalStr = request::findValue(&req, "repeatInterval");
+            std::string hwIdStr = request::findValue(&req, "idx");
+            std::string repeatsStr = request::findValue(&req, "repeats");
+            std::string repeatIntervalStr = request::findValue(&req, "repeatInterval");
 
             if (hwIdStr.empty() || repeatsStr.empty() || repeatIntervalStr.empty())
                 return;
@@ -338,5 +343,3 @@ namespace http {
         }
     }
 }
-
-#endif //WITH_TELLDUSCORE
