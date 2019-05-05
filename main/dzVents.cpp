@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.18")
+	m_version("2.4.19")
 {
 	m_bdzVentsExist = false;
 }
@@ -93,8 +93,8 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	int index = 1;
-	int statusCode;
-
+	std::string status = "" ;
+	
 	lua_createtable(lua_state, 0, 0);
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); ++itt)
@@ -117,25 +117,14 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEven
 						lua_pushstring(lua_state, (*itt2).substr(pos + 2).c_str());
 						lua_rawset(lua_state, -3);
 					}
-					else
-					{
-						size_t pos = (*itt2).find("HTTP/");
-						if (pos != std::string::npos)
-						{
-							lua_pushstring(lua_state, "status");
-							lua_pushstring(lua_state, (*itt2).c_str());
-							lua_rawset(lua_state, -3);
-						}	
-					}	
 				}
-				// last item in vector is status code when method = GET
-				itt2 = itt->vData.end() - 1;
-				std::stringstream ss(*itt2);
-				ss >> statusCode;
+				size_t pos = (*itt->vData.begin()).find("HTTP/");
+				if (pos != std::string::npos)
+					status = *itt->vData.begin();
 			}
 			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "statusCode");
-			lua_pushnumber(lua_state, (lua_Number)statusCode);
+			lua_pushstring(lua_state, "status");
+			lua_pushstring(lua_state, status.c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "data");
 			lua_pushstring(lua_state, itt->sValue.c_str());

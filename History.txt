@@ -91,7 +91,7 @@ Version 4.xxxx (May xxth 2019)
 - Fixed: Xiaomi, using correct (application default) way to update temp/hum/pressure
 - Fixed: YouLess meter report
 - Fixed: Various, see github, thanks to all who contributed!!
-- Updated: dzVents (version 2.4.18, See dzVents/documentation/history.md)
+- Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
 - Updated: Event Editor
 - Updated: New Gui pages/code for Utility/Weather/Temperature/Devices/Hardware Setup
 - Updated: OZW configuration files

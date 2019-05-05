@@ -3273,8 +3273,6 @@ void CSQLHelper::Do_Work()
 
 				if (m_bEnableEventSystem && !callback.empty())
 				{
-					if (ret)
-						headerData.push_back("200");
 					m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
 				}
 
