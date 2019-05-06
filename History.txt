@@ -1,4 +1,4 @@
-Version 4.10658 (May 5th 2019)
+Version 4.10693 (May 5th 2019)
 - Implemented: [BleBox] Add support for airSensor and use the newest api for shutterBox
 - Implemented: Alecto WS5500 implemented (pTypeWeather)
 - Implemented: Anna Thermostat Added ability to select presets on the Anna via selector switch. Added ability to update the state of the proximity switch in the Anna thermostat.
