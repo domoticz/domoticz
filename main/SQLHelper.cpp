@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 133
+#define DB_VERSION 134
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -241,7 +241,8 @@ const char *sqlCreateHardware =
 "[Mode4] CHAR DEFAULT 0, "
 "[Mode5] CHAR DEFAULT 0, "
 "[Mode6] CHAR DEFAULT 0, "
-"[DataTimeout] INTEGER DEFAULT 0);";
+"[DataTimeout] INTEGER DEFAULT 0, "
+"[Configuration] TEXT DEFAULT (''));";
 
 const char *sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
@@ -2596,7 +2597,7 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-		if (dbversion < 133)
+		if (dbversion < 134)
 		{
 			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
 			query(sqlCreateHardware);
