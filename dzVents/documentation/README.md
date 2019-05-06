@@ -1667,7 +1667,7 @@ The response object <sup>2.4.0</sup> (second parameter in your execute function)
  - **json**. *Table*. When the response data is `application/json` then the response data is automatically converted to a Lua table for quick and easy access.
  - **ok**: *Boolean*. `True` when the request was successful. It checks for statusCode to be in range of 200-299.
  - **statusCode**: *Number*. HTTP status codes. See [HTTP response status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes).
- - **statusMessage**: *String*. <sup>2.4.19</sup> HTTP status message. See [HTTP response status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes).
+ - **statusText**: *String*. <sup>2.4.19</sup> HTTP status message. See [HTTP response status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes).
  - **protocol**: *String*. <sup>2.4.19</sup> HTTP protocol. See [HTTP response status codes](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol).
  - **trigger**, **callback**: *String*. The callback string that triggered this response instance. This is useful if you have a script that is triggered by multiple different callback strings.
 
@@ -1993,7 +1993,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 # Change log
 ##[2.4.19]
 - Add stringSplit function to domoticz.utils.
-- Add statusMessage and protocol to HTTPResponse
+- Add statusText and protocol to HTTPResponse
 
 ##[2.4.18]
 - Add triggerIFTTT() to domoticz

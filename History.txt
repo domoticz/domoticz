@@ -1,4 +1,7 @@
-Version 4.xxxx (May xxth 2019)
+Version 4.xxxxx (yyy Xth 20XX)
+- Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
+
+Version 4.10658 (May 5th 2019)
 - Implemented: [BleBox] Add support for airSensor and use the newest api for shutterBox
 - Implemented: Alecto WS5500 implemented (pTypeWeather)
 - Implemented: Anna Thermostat Added ability to select presets on the Anna via selector switch. Added ability to update the state of the proximity switch in the Anna thermostat.
@@ -91,7 +94,7 @@ Version 4.xxxx (May xxth 2019)
 - Fixed: Xiaomi, using correct (application default) way to update temp/hum/pressure
 - Fixed: YouLess meter report
 - Fixed: Various, see github, thanks to all who contributed!!
-- Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
+- Updated: dzVents (version 2.4.18, See dzVents/documentation/history.md)
 - Updated: Event Editor
 - Updated: New Gui pages/code for Utility/Weather/Temperature/Devices/Hardware Setup
 - Updated: OZW configuration files

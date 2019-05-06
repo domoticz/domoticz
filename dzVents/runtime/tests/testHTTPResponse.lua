@@ -2,6 +2,7 @@ local _ = require 'lodash'
 
 local scriptPath = ''
 
+--package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
 package.path = package.path .. ";../?.lua;../../../scripts/lua/?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 local HTTPResponse = require('HTTPResponse')
@@ -16,7 +17,7 @@ describe('HTTPResponse', function()
 			headers = {['Content-Type'] = 'application/json'},
 			data  = '{"a":1}',
 			callback = 'trigger1',
-			status = 'HTTP/1.4 404 What is this'
+			statusCode = 404
 		})
 
 		assert.is_same({a = 1}, r.json)
@@ -42,27 +43,30 @@ describe('HTTPResponse', function()
 			headers = {['Content-Type'] = 'application/json'},
 			data  = '{"a":1}',
 			callback = 'trigger1',
-			status  = 'HTTP/1.4 200 OK'
+			statusCode = 200
 		})
+
 		assert.is_true(r.ok)
 	end)
 
-	it('should have a valid statuscode based on status ', function()
+    it('should have a valid statuscode', function()
 
 		local r = HTTPResponse({
 			BASETYPE_HTTP_RESPONSE = 'httpResponse'
 		}, {
 			headers = {['Content-Type'] = 'application/json' },
-			status  = 'HTTP/1.4 404 Empty response' ,
+            statusText = 'Empty response' ,
+            protocol = 'HTTP/1.4' ,
+            statusCode  = 404 ,
 			data  = '{"a":1}',
 			callback = 'trigger1',
-			
+            
 			
 		})
-		assert.is_same('HTTP/1.4', r.protocol)
-		assert.is_same(404, r.statusCode)
+        assert.is_same('HTTP/1.4', r.protocol)
+        assert.is_same(404, r.statusCode)
 		assert.is_false(r.ok)
-		assert.is.same('Empty response',r.statusMessage)
+        assert.is.same('Empty response',r.statusText)
 	end)
 
 end)

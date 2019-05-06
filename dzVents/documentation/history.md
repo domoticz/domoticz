@@ -1,6 +1,6 @@
 [2.4.19]
 - Add stringSplit function to domoticz.utils.
-- Add statusMessage and protocol to HTTPResponse
+- Add statusText and protocol to HTTPResponse
 
 [2.4.18]
 - Add triggerIFTTT()
