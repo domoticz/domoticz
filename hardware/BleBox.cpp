@@ -330,21 +330,22 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 					break;
 				}
 
-
 				Json::Value root = SendCommand(IPAddress, "/s/p/" + std::to_string(percentage));
 
 				if (root.empty())
 					return false;
 
-				if (DoesNodeExists(root, "state") == false)
+				if (DoesNodeExists(root, "shutter") == false)
 					return false;
 
-				// TODO - add check
-				//if (root["state"].asString() != state)
-				//{
-				//	Log(LOG_ERROR, "state not changed!");
-				//	return false;
-				//}
+				root = root["shutter"];
+
+				if (DoesNodeExists(root, "desiredPos", "position") == false)
+					return false;
+
+				if (root["desiredPos"]["position"].asInt() != percentage)
+					return false;
+
 				break;
 			}
 
