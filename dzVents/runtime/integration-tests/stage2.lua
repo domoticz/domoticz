@@ -770,7 +770,7 @@ end
 local testHTTPSwitch = function(name)
 	local res = true
 	local trigger = dz.globalData.httpTrigger
-	res = res and expectEql('trigger2', trigger)
+	res = res and expectEql('OKOKOK', trigger)
 	handleResult('Test http trigger switch device', res)
 	return res
 end

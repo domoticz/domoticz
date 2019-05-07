@@ -8505,4 +8505,3 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 	}
 	return divider;
 }
-

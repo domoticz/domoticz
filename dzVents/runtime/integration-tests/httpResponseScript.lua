@@ -26,23 +26,23 @@ end
 return {
 	on = {
 		devices = { 'vdHTTPSwitch' },
-		httpResponses = {'trigger1', 'trigger2'}
+		httpResponses = {'trigger1', 'trigger2','trigger3'}
 	},
-	execute = function(domoticz, triggerItem, info)
+	execute = function(domoticz, item)
 
 		dz = domoticz
 		log = dz.log
 		local res = true
 
-		if (triggerItem.baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
+		if item.isHTTPResponse then
 
-			if (triggerItem.trigger == 'trigger1') then
+			if item.callback == 'trigger1' then
 
-				res = res and expectEql(triggerItem.json.p, '1', 'p == 1')
-				res = res and expectEql(triggerItem.statusCode, 200, 'statusCode')
+				res = res and expectEql(item.json.p, '1', 'p == 1')
+				res = res and expectEql(item.statusCode, 200, 'statusCode')
 
 				if (res) then
-					domoticz.globalData.httpTrigger = 'trigger1'
+					domoticz.globalData.httpTrigger = 'OK'
 					domoticz.openURL({
 						url = 'http://localhost:4000/testpost',
 						method = 'POST',
@@ -52,20 +52,31 @@ return {
 						}
 					})
 				end
-
-			elseif (triggerItem.trigger == 'trigger2') then
-				res = res and expectEql(triggerItem.statusCode, 200, 'statusCode')
-				res = res and expectEql(triggerItem.json.p, 2, 'p == 2')
-				if (res) then domoticz.globalData.httpTrigger = 'trigger2' end
+		
+			elseif (item.callback == 'trigger2') then
+				res = res and expectEql(item.statusCode, 200, 'statusCode')
+				res = res and expectEql(item.json.p, 2, 'p == 2')
+				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
+				
+			elseif (item.callback == 'trigger3') then
+				res = res and expectEql(item.statusCode, 0, 'statusCode')
+				if (res) then domoticz.globalData.httpTrigger = domoticz.globalData.httpTrigger .. "OK"  end
+		
 			end
-
-		elseif (triggerItem.baseType == domoticz.BASETYPE_DEVICE) then
+		
+		elseif item.isDevice then
 			domoticz.openURL({
 				url = 'http://localhost:4000/testget?p=1',
 				method = 'GET',
 				callback = 'trigger1',
 			})
+			domoticz.openURL({
+				url = 'http://noplaceToGo:4000/testget?p=1',
+				method = 'GET',
+				callback = 'trigger3',
+			}).afterSec(7)
+			
+			
 		end
-
 	end
 }

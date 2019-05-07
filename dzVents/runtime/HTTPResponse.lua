@@ -7,22 +7,17 @@ local function HTTPResponce(domoticz, responseData)
 	 
 	self.headers = responseData.headers or {}
 	self.baseType = domoticz.BASETYPE_HTTP_RESPONSE
-	self.data = responseData.data or nil
-
-	self.statusCode = _.get(responseData, {'statusCode'}, 0)
+	self.data = responseData.data
 	self._contentType = _.get(self.headers, {'Content-Type'}, '')
+    
+    self.isJSON = false
 
-	self.isJSON = false
-
-	if self.headers.status then
-		self.statusCode = tonumber((self.headers.status):match("%s+(%S+)"))
-	end
-
-	self.ok = false
-	if (self.statusCode >= 200 and self.statusCode <= 299) then
-		self.ok = true
-	end
-
+    self.statusText = responseData.statusText
+    self.protocol = responseData.protocol
+    self.statusCode = responseData.statusCode
+    
+    self.ok = ( self.statusCode >= 200 and self.statusCode <= 299 )
+	
 	self.isHTTPResponse = true
 	self.isDevice = false
 	self.isScene = false
@@ -42,9 +37,6 @@ local function HTTPResponce(domoticz, responseData)
 			self.json = json
 		end
 	end
-
-	utils.log('HTTPResponse: headers = ' .. _.str(self.headers), utils.LOG_DEBUG)
-
 	return self
 end
 

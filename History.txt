@@ -1,3 +1,6 @@
+Version 4.beta (xx 2019)
+- Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
+
 Version 4.10658 (May 5th 2019)
 - Implemented: [BleBox] Add support for airSensor and use the newest api for shutterBox
 - Implemented: Alecto WS5500 implemented (pTypeWeather)
