@@ -887,12 +887,13 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Gets the user-friendly label for the value.
 		 * \param _id The unique identifier of the value.
+		 * \param _pos the Bit To Get the Label for if its a BitSet ValueID
 		 * \return The value label.
  		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
-		string GetValueLabel( ValueID const& _id );
+		string GetValueLabel( ValueID const& _id, int32 _pos = -1 );
 
 		/**
 		 * \brief Sets the user-friendly label for the value.
@@ -927,12 +928,13 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Gets a help string describing the value's purpose and usage.
 		 * \param _id The unique identifier of the value.
+		 * \param _pos Get the Help for associated Bits (Valid with ValueBitSet only)
 		 * \return The value help text.
  		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
-		string GetValueHelp( ValueID const& _id );
+		string GetValueHelp( ValueID const& _id, int32 _pos = -1 );
 
 		/**
 		 * \brief Sets a help string describing the value's purpose and usage.
