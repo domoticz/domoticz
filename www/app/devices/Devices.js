@@ -187,9 +187,9 @@ define(['app'], function (app) {
 
                 table.on('change', '.js-select-devices', function () {
                     if (this.checked) {
-                        table.api().rows().select();
+                        table.api().rows({ page: 'current' }).select();
                     } else {
-                        table.api().rows().deselect();
+                        table.api().rows({ page: 'current' }).deselect();
                     }
 
                     table.find('.js-select-row').attr('checked', this.checked);

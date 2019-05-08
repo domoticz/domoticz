@@ -194,7 +194,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	}
 
 #else
-	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
+	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC* or /dev/ttymxc*
 	//also scan /dev/serial/by-id/* on Linux
 
 	bool bHaveTtyAMAfree=false;
@@ -238,6 +238,11 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				ret.push_back("/dev/" + fname);
 			}
 			else if (fname.find("ttySAC") != std::string::npos)
+			{
+				bUseDirectPath = true;
+				ret.push_back("/dev/" + fname);
+			}
+			else if (fname.find("ttymxc") != std::string::npos)
 			{
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
@@ -490,7 +495,7 @@ int mkdir_deep(const char *szDirName, int secattr)
 	{
 		if (('\\' == *p) || ('/' == *p))
 		{
-			if (':' != *(p-1))
+			if ((p > szDirName) && (':' != *(p-1)))
 			{
 				ret = createdir(DirName, secattr);
 			}
@@ -916,7 +921,6 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 
 std::string GenerateUserAgent()
 {
-	srand((unsigned int)time(NULL));
 	int cversion = rand() % 0xFFFF;
 	int mversion = rand() % 3;
 	int sversion = rand() % 3;
@@ -1014,6 +1018,7 @@ const char *szInsecureArgumentOptions[] = {
 	"$",
 	"<",
 	">",
+	"`",
 	"\n",
 	"\r",
 	NULL
@@ -1273,7 +1278,6 @@ bool IsWSL(void)
 const std::string hexCHARS = "0123456789abcdef";
 std::string GenerateUUID() // DCE/RFC 4122
 {
-	std::srand((unsigned int)std::time(nullptr));
 	std::string uuid = std::string(36, ' ');
 
 	uuid[8] = '-';

@@ -328,6 +328,24 @@ local function Domoticz(settings)
 
 	end
 
+	-- have domoticz trigger an IFTTTT maker event
+	function self.triggerIFTTT(sID, ...)
+		if sID then
+			local luaTable = {}
+			luaTable.sID = sID
+			for i,value in ipairs({...}) do
+				luaTable["sValue" .. i] = tostring(value)
+			end
+			utils.log('IFFTT Maker Event = ' .. sID, utils.LOG_DEBUG)
+			if luaTable.sValue1 then
+				utils.log('IFFTT extra value(s) = ' .. luaTable.sValue1 .. " " .. (luaTable.sValue2 or "") .. " " .. (luaTable.sValue3 or ""), utils.LOG_DEBUG)
+			end
+			return TimedCommand(self, 'TriggerIFTTT', luaTable, 'triggerIFTTT') -- works with afterXXX
+		else
+			utils.log('No maker event sID is provided', utils.LOG_ERROR)
+		end
+	end
+
 	-- send a scene switch command
 	function self.setScene(scene, value)
 		utils.log('setScene is deprecated. Please use the scene object directly.', utils.LOG_INFO)

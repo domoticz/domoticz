@@ -371,6 +371,7 @@ define(['app'], function (app) {
 								}
 								else if (item.SubType == "Evohome") {
 									img = EvohomeImg(item);
+									bigtext = GetLightStatusText(item);
 								}
 								else if (item.SwitchType == "X10 Siren") {
 									if (
@@ -740,7 +741,7 @@ define(['app'], function (app) {
 												}
 												xhtm += '<button type="button" class="btn btn-small ';
 												if ((index * 10) == item.LevelInt) {
-													xhtm += 'btn-info"';
+													xhtm += 'btn-selected"';
 												}
 												else {
 													xhtm += 'btn-default"';
@@ -915,7 +916,7 @@ define(['app'], function (app) {
 								'\t      <td id="name">' + item.Name + '</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
-							if (item.SwitchType === "Selector") {
+							if (item.SwitchType === "Selector" || item.SubType == "Evohome") {
 								bigtext = GetLightStatusText(item);
 							}
 							if (item.UsedByCamera == true) {
@@ -1317,7 +1318,7 @@ define(['app'], function (app) {
 										}
 										xhtm += '<button type="button" class="btn btn-small ';
 										if ((index * 10) == item.LevelInt) {
-											xhtm += 'btn-info"';
+											xhtm += 'btn-selected"';
 										}
 										else {
 											xhtm += 'btn-default"';

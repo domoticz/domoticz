@@ -13,7 +13,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <queue>
+#include <deque>
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_handler.hpp"
@@ -79,7 +79,7 @@ private:
   /// Protect the write queue
   std::mutex writeMutex;
   /// Is protected by writeMutex
-  std::queue<std::string> writeQ;
+  std::deque<std::string> writeQ;
   /// indicates if we are currently writing
   bool write_in_progress;
   void SocketWrite(const std::string &buf);

@@ -3,7 +3,6 @@ local dz
 local _ = require('lodash')
 local resTable = {}
 
-
 local err = function(msg)
 	log(msg, dz.LOG_ERROR)
 end
@@ -307,7 +306,6 @@ local testSelectorSwitch = function(name)
 	handleResult('Test selector switch device', res)
 	return res
 end
-
 
 local testSoilMoisture = function(name)
 	local dev = dz.devices(name)
@@ -751,6 +749,16 @@ local testSettingsDump = function()
 	return res
 end
 
+local testIFTTT = function(event)
+	res = true
+	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2'  )
+	dz.triggerIFTTT(event) 
+	dz.triggerIFTTT(event).afterSec(3) 
+	handleResult('Test IFTTT call', res)
+	return res
+end
+
+
 local testCancelledScene = function(name)
 	local res = true
 	local count = dz.globalData.cancelledScene
@@ -762,7 +770,7 @@ end
 local testHTTPSwitch = function(name)
 	local res = true
 	local trigger = dz.globalData.httpTrigger
-	res = res and expectEql('trigger2', trigger)
+	res = res and expectEql('OKOKOK', trigger)
 	handleResult('Test http trigger switch device', res)
 	return res
 end
@@ -786,15 +794,10 @@ local testVersion = function(name)
 end
 
 local writeResultsTofile = function(file, resTable)
-		local utils = require('Utils')
-		local results = assert(io.open(file, "wb"))
-		--[[
-		for key,value in pairs(results) do
-			results:write(key .. ";" .. tostring(value))
-		end ]]
-		local utils = require('Utils')
-		results:write(utils.toJSON(resTable))
-		results:close()
+	local utils = require('Utils')
+	local results = assert(io.open(file, "wb"))
+	results:write(utils.toJSON(resTable))
+	results:close()
 end
 
 return {
@@ -868,12 +871,13 @@ return {
 		res = res and testVarCancelled('varCancelled')
 		res = res and testCancelledScene('scCancelledScene')
 		res = res and testHTTPSwitch('vdHTTPSwitch');
-		res = res and testDescription('vdDescriptionSwitch',descriptionString,"device")
-		res = res and testDescription('sceneDescriptionSwitch1',descriptionString,"scene")
-	   	res = res and testDescription('groupDescriptionSwitch1',descriptionString,"group")
+		res = res and testDescription('vdDescriptionSwitch', descriptionString, "device")
+		res = res and testDescription('sceneDescriptionSwitch1', descriptionString, "scene")
+	   	res = res and testDescription('groupDescriptionSwitch1', descriptionString, "group")
 		res = res and testDeviceDump(vdSwitchDimmer)
 		res = res and testCameraDump()
 		res = res and testSettingsDump()
+		res = res and testIFTTT('myEvent')
 		res = res and testVersion('version')
 
 		-- test a require
@@ -892,7 +896,7 @@ return {
 			dz.devices('endResult').updateText('ENDRESULT SUCCEEDED')
 		end
 
-		writeResultsTofile("/tmp/Stage2results.json",resTable)
+		writeResultsTofile("/tmp/Stage2results.json", resTable)
 		log('Finishing stage 2')
 	end
 }

@@ -10,34 +10,34 @@ basedir=${1:-$test}
 # Root required
 #
 if [[ $EUID -ne 0 ]]; then
-   # This script must be run as root
-   echo "This script must be run as root. You are $USER"
-   exit 1
+	# This script must be run as root
+	echo "This script must be run as root. You are $USER"
+	exit 1
 fi
 
 busted --version 2>&1 >/dev/null
 if [[ $? -ne 0 ]];then
-   echo "This script requires an installed busted"
-   exit 1
+	echo "This script requires an installed busted"
+	exit 1
 fi
 
 which npm 2>&1 >/dev/null
 if [[ $? -ne 0 ]];then
-   echo "This script requires an installed npm (npm install)"
-   exit 1
+	echo "This script requires an installed npm (npm install)"
+	exit 1
 fi
 
 if [ ! -f "$basedir/dzVents/runtime/integration-tests/testIntegration.lua" ]; then
-   echo "testIntegration was not found; exiting"
-   exit 1
+	echo "testIntegration was not found; exiting"
+	exit 1
 fi
 
 
 NewVersion=$($basedir/domoticz --help | grep Giz | awk '{print $5}') 2>&1 >/dev/null
 export NewVersion
 if [[ $? -ne 0 ]];then
-   echo "This script requires an domoticz"
-   exit 1
+	echo "This script requires an domoticz"
+	exit 1
 else
 	echo dzVents will be tested against domoticz version $NewVersion.
 fi
@@ -86,6 +86,13 @@ checkStarted()
 	done
 }
 
+function cleanup
+	{
+		ps -ef | grep domoticz
+		rm domoticz.log[0-9][0-9]*
+		find . -type f -name 'domoticz.db_*' -mmin +30 -exec rm {} \;
+	}
+
 function stopBackgroundProcesses
 	{
 		pkill node 2>&1 >/dev/null
@@ -94,7 +101,6 @@ function stopBackgroundProcesses
 			exit $1 2>&1 >/dev/null
 		fi	
 	}
-
 
 function fillTimes
 	{
@@ -114,7 +120,6 @@ function fillTimes
 		Integration_ExpectedSeconds=300
 		SelectorSwitch_ExpectedSeconds=100
 	}
-
 
 function testDir
 	{
@@ -186,12 +191,20 @@ echo
 
 
 cd $basedir
+expectedErrorCount=4
 grep "Results stage 2: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
-		echo -n
+		errorCount=$(grep "Error" domoticz.log$$ | wc -l)
+		if [[ $errorCount -eq $expectedErrorCount ]];then
+			#echo Errors are to be expected
+			echo -n
+		else
+			grep -i Error domoticz.log$$
+			stopBackgroundProcesses 1
+		fi		
 	else
 		echo Stage 1 of integration test was not completely succesfull
 		grep -i fail domoticz.log$$
@@ -199,12 +212,13 @@ if [[ $? -eq 0 ]];then
 		stopBackgroundProcesses 1
 	fi
 else
-   echo Stage 2 of integration test was not completely succesfull
-   grep -i fail domoticz.log$$
-   grep -i 'not ok' domoticz.log$$
-   stopBackgroundProcesses 1
+	echo Stage 2 of integration test was not completely succesfull
+	grep -i fail domoticz.log$$
+	grep -i 'not ok' domoticz.log$$
+	stopBackgroundProcesses 1
 fi
 
 echo Total tests: $totalTest
 echo Finished without erors after $(showTime)
 stopBackgroundProcesses 0
+cleanup

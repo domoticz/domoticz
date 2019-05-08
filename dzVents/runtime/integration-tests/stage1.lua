@@ -1223,7 +1223,7 @@ local testSetValueSensor = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 	})
-	dev.setValues(nil,12,34,45)
+	dev.setValues(nil, 12, 34, 45)
 	tstMsg('Test setValues device', res)
 	return res
 end
@@ -1349,6 +1349,13 @@ local testDescriptionSwitchScene = function(name)
 	return res
 end
 
+local testIFTTT = function(event)
+	local res = true
+	res = res and dz.triggerIFTTT(event)
+	res = res and dz.triggerIFTTT(event).afterSec(3)
+	return res
+end
+
 return {
 	active = true,
 	on = {
@@ -1375,6 +1382,7 @@ return {
 		res = res and testElectricInstanceCounter('vdElectricInstanceCounter')
 		res = res and testGas('vdGas')
 		res = res and testHumidity('vdHumidity')
+		res = res and testIFTTT('myEvent')
 		res = res and testLeafWetness('vdLeafWetness')
 		res = res and testLux('vdLux')
 		res = res and testP1SmartMeter('vdP1SmartMeterElectric')
