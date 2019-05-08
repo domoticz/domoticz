@@ -123,6 +123,11 @@ void BleBox::GetDevicesState()
 			}
 			case 1:
 			{
+				if (DoesNodeExists(root, "shutter") == false)
+					break;
+
+				root = root["shutter"];
+
 				if (DoesNodeExists(root, "state") == false)
 					break;
 
@@ -132,13 +137,12 @@ void BleBox::GetDevicesState()
 					break;
 
 				const int currentPos = root["currentPos"]["position"].asInt();
-				const int pos = currentPos;
 
 				bool opened = true;
-				if ((state == 2 && pos == 100) || (state == 3))
+				if ((state == 2 && currentPos == 100) || (state == 3))
 					opened = false;
 
-				SendSwitch(IP, 0, 255, opened, pos, DevicesType[itt.second].name);
+				SendSwitch(IP, 0, 255, opened, currentPos, DevicesType[itt.second].name);
 				break;
 			}
 			case 2:
@@ -1170,7 +1174,6 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		return;
 	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
 		return;
-
 
 	std::vector< std::shared_ptr<std::thread> > searchingThreads;
 
