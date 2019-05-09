@@ -1073,20 +1073,18 @@ std::string BleBox::GetUptime(const std::string & IPAddress)
 		uint64_t msec = root["uptime"].asUInt64();
 		total_minutes = msec / (1000 * 60);
 	}
+	else if (root["uptimeS"].empty() == false)
+	{
+		uint64_t sec = root["uptimeS"].asUInt64();
+		total_minutes = sec / 60;
+	}
+	else if (root["timeH"].empty() == false)
+	{
+		uint64_t h = root["timeH"].asUInt64();
+		total_minutes = h * 60;
+	}
 	else
-		if (root["uptimeS"].empty() == false)
-		{
-			uint64_t sec = root["uptimeS"].asUInt64();
-			total_minutes = sec / 60;
-		}
-		else
-			if (root["timeH"].empty() == false)
-			{
-				uint64_t h = root["timeH"].asUInt64();
-				total_minutes = h * 60;
-			}
-			else
-				return "unknown";
+		return "unknown";
 
 	int days = static_cast<int>(total_minutes / (24 * 60));
 	int hours = static_cast<int>(total_minutes / 60 - days * 24);
