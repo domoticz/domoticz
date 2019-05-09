@@ -1,4 +1,4 @@
-Version 4.beta (xx 2019)
+Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)
 - Fixed: EcoCompteur now uses the port specified in the hardware setup (#3184)
 - Fixed: Log for Weight sensor (#3192)
