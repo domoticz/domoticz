@@ -133,7 +133,7 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 							{
 								pos = header.find(results[0]);
 								protocol = header.substr(0, pos + results[0].size());
-								statusCode = (lua_Number)atoi(results[1].c_str());
+								statusCode = atoi(results[1].c_str());
 								pos = header.find(results[2]);
 								statusText = header.substr(pos,pos + results[2].size());
 							}

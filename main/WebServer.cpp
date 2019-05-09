@@ -9530,7 +9530,7 @@ namespace http {
 								total_real *= AddjMulti;
 								if (dSubType == sTypeRAINByRate)
 								{
-									rate = atof(sd2[1].c_str()) / 10000.0f;
+									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0f);
 								}
 								else
 								{
