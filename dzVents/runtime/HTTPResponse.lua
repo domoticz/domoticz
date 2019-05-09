@@ -9,14 +9,19 @@ local function HTTPResponce(domoticz, responseData)
 	self.baseType = domoticz.BASETYPE_HTTP_RESPONSE
 	self.data = responseData.data
 	self._contentType = _.get(self.headers, {'Content-Type'}, '')
-    
-    self.isJSON = false
+	
+	self.isJSON = false
 
-    self.statusText = responseData.statusText
-    self.protocol = responseData.protocol
-    self.statusCode = responseData.statusCode
-    
-    self.ok = ( self.statusCode >= 200 and self.statusCode <= 299 )
+	self.statusText = responseData.statusText
+	self.protocol = responseData.protocol
+	self.statusCode = responseData.statusCode
+	
+	if self.statusCode >= 200 and self.statusCode <= 299 then
+		self.ok = true
+	else
+		self.ok = false
+		domoticz.log(self.protocol .. " response: " .. self.statusCode .. " ==>> " .. self.statusText ,domoticz.LOG_ERROR)
+	end	
 	
 	self.isHTTPResponse = true
 	self.isDevice = false
@@ -37,6 +42,7 @@ local function HTTPResponce(domoticz, responseData)
 			self.json = json
 		end
 	end
+	
 	return self
 end
 

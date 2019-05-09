@@ -68,5 +68,22 @@ describe('HTTPResponse', function()
 		assert.is_false(r.ok)
         assert.is.same('Empty response',r.statusText)
 	end)
+        
+        it('should have a valid statustext', function()
+
+		local r = HTTPResponse({
+			BASETYPE_HTTP_RESPONSE = 'httpResponse'
+		}, {
+			headers = {['Content-Type'] = 'application/json' },
+            data  = '{"a":1}',
+			callback = 'trigger1',
+            
+			
+		})
+        assert.is_same('', r.protocol)
+        assert.is_same(0,r.statusCode)
+		assert.is_false(r.ok)
+        assert.is_same('',r.statusText)
+	end)
 
 end)
