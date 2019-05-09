@@ -1092,7 +1092,7 @@ std::string BleBox::GetUptime(const std::string & IPAddress)
 	int hours = static_cast<int>(total_minutes / 60 - days * 24);
 	int mins = static_cast<int>(total_minutes - days * 24 * 60 - hours * 60);   //sec / 60 - day * (24 * 60) - hour * 60;
 
-	char timestring[32] = "";
+	char timestring[32];
 	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
 
 	return timestring;
