@@ -1,4 +1,5 @@
 Version 4.beta (xx 2019)
+- Fixed: EcoCompteur now uses the port specified in the hardware setup (#3184)
 - Fixed: Log for Weight sensor (#3192)
 - Fixed: issue with Session ID/Login
 - Fixed: issue with slightly  to large labels for the selector switch (#3187)
