@@ -1,5 +1,6 @@
 Version 4.beta (xx 2019)
 - Fixed: issue with Session ID/Login
+- Fixed: issue with slightly  to large labels for the selector switch (#3187)
 - Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
 
 Version 4.10658 (May 5th 2019)
