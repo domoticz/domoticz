@@ -22,23 +22,22 @@ before_install:
   # OpenZWave
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    brew update;
-    brew upgrade boost;
-    fi
+      brew update;
+      brew upgrade boost;
+    fi;
 
 # Install newer CMake
+# brew upgrade returns a non-zero error code if the package is already
+# up-to-date. To avoid this we check if the package is out-of-date first.
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       curl -sSL https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
       sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
     else
-      # brew upgrade returns a non-zero error code if the package is already
-      # up-to-date. To avoid this we check if the package is out-of-date first.
       if (brew outdated | grep -q cmake); then
         brew upgrade cmake;
       fi;
     fi;
-    export PATH=/usr/local/bin:$PATH;
 
 # Build matrix definition
 # * Two builds
