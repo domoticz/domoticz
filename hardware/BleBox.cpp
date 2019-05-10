@@ -20,7 +20,7 @@ struct STR_DEVICE {
 	std::string api_state;
 };
 
-#define TOT_DEVICE_TYPES 8
+#define TOT_DEVICE_TYPES 9
 
 const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
 {
@@ -32,6 +32,7 @@ const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
 	{ 5, "dimmerBox", "Dimmer Box", pTypeLighting2, sTypeAC, STYPE_Dimmer, "dimmer" },
 	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
 	{ 7, "airSensor", "Air Sensor", pTypeAirQuality, sTypeVoltcraft, 0, "air" },
+	{ 8, "tempSensor", "Temp Sensor", pTypeGeneral, sTypeTemperature, 0, "tempsensor" },
 };
 
 BleBox::BleBox(const int id, const int pollIntervalsec)
@@ -112,131 +113,167 @@ void BleBox::GetDevicesState()
 		{
 			switch (itt.second)
 			{
-			case 0:
-			{
-				if (DoesNodeExists(root, "state") == false)
-					break;
-
-				const bool state = root["state"].asBool();
-
-				SendSwitch(IP, 0, 255, state, 0, DevicesType[itt.second].name);
-				break;
-			}
-			case 1:
-			{
-				if (DoesNodeExists(root, "shutter") == false)
-					break;
-
-				root = root["shutter"];
-
-				if (DoesNodeExists(root, "state") == false)
-					break;
-
-				const int state = root["state"].asInt();
-
-				if (DoesNodeExists(root, "currentPos", "position") == false)
-					break;
-
-				const int currentPos = root["currentPos"]["position"].asInt();
-				const int pos = currentPos;
-
-				bool opened = true;
-				if ((state == 2 && pos == 100) || (state == 3))
-					opened = false;
-
-				SendSwitch(IP, 0, 255, opened, 100 - pos, DevicesType[itt.second].name);
-				break;
-			}
-			case 2:
-			{
-				if (DoesNodeExists(root, "light", "currentColor") == false)
-					break;
-
-				const std::string currentColor = root["light"]["currentColor"].asString();
-				unsigned int hexNumber;
-				sscanf(currentColor.c_str(), "%x", &hexNumber);
-				int level = (int)(hexNumber / (255.0 / 100.0));
-
-				SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
-				break;
-			}
-			case 3:
-			{
-				if (DoesNodeExists(root, "rgbw", "currentColor") == false)
-					break;
-
-				const std::string currentColor = root["rgbw"]["currentColor"].asString();
-				unsigned int hexNumber;
-				sscanf(currentColor.c_str(), "%x", &hexNumber);
-
-				SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[itt.second].name);
-				break;
-			}
-			case 4:
-			{
-				if (DoesNodeExists(root, "currentPos") == false)
-					break;
-
-				const float level = root["currentPos"].asFloat();
-
-				SendPercentageSensor(IP, 1, 255, level, DevicesType[itt.second].name);
-				break;
-			}
-			case 5:
-			{
-				if (DoesNodeExists(root, "dimmer", "currentBrightness") == false)
-					break;
-
-				const int currentPos = root["dimmer"]["currentBrightness"].asInt();
-				int level = (int)(currentPos / (255.0 / 100.0));
-
-				SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
-				break;
-			}
-			case 6:
-			{
-				if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
-					break;
-
-				Json::Value relays = root["relays"];
-				Json::ArrayIndex count = relays.size();
-				for (Json::ArrayIndex index = 0; index < count; index++)
+				case 0:
 				{
-					Json::Value relay = relays[index];
-					if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
+					if (DoesNodeExists(root, "state") == false)
 						break;
-					uint8_t relayNumber = (uint8_t)relay["relay"].asInt(); // 0 or 1
-					bool currentState = relay["state"].asBool(); // 0 or 1
-					//std::string name = DevicesType[itt.second].name + " " + relay["state"].asString();
-					SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt.second].name);
+
+					const bool state = root["state"].asBool();
+
+					SendSwitch(IP, 0, 255, state, 0, DevicesType[itt.second].name);
+					break;
 				}
-
-				break;
-			}
-			case 7:
-			{
-				if (DoesNodeExists(root, "air") == false)
-					break;
-
-				root = root["air"];
-
-				if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
-					break;
-
-				Json::Value sensors = root["sensors"];
-				Json::ArrayIndex count = sensors.size();
-				for (Json::ArrayIndex index = 0; index < count; index++)
+				case 1:
 				{
-					Json::Value sensor = sensors[index];
-					if ((DoesNodeExists(sensor, "type") == false) || (DoesNodeExists(sensor, "value") == false))
+					if (DoesNodeExists(root, "shutter") == false)
 						break;
-					uint8_t value = (uint8_t)sensor["value"].asInt();
-					std::string type = sensor["type"].asString();
-					SendAirQualitySensor(IP, index + 1, 255, value, type);
-				}
 
-				break;
-			}
+					root = root["shutter"];
+
+					if (DoesNodeExists(root, "state") == false)
+						break;
+
+					const int state = root["state"].asInt();
+
+					if (DoesNodeExists(root, "currentPos", "position") == false)
+						break;
+
+					const int currentPos = root["currentPos"]["position"].asInt();
+					const int pos = currentPos;
+
+					bool opened = true;
+					if ((state == 2 && pos == 100) || (state == 3))
+						opened = false;
+
+					SendSwitch(IP, 0, 255, opened, 100 - pos, DevicesType[itt.second].name);
+					break;
+				}
+				case 2:
+				{
+					if (DoesNodeExists(root, "light", "currentColor") == false)
+						break;
+
+					const std::string currentColor = root["light"]["currentColor"].asString();
+					unsigned int hexNumber;
+					sscanf(currentColor.c_str(), "%x", &hexNumber);
+					int level = (int)(hexNumber / (255.0 / 100.0));
+
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
+					break;
+				}
+				case 3:
+				{
+					if (DoesNodeExists(root, "rgbw", "currentColor") == false)
+						break;
+
+					const std::string currentColor = root["rgbw"]["currentColor"].asString();
+					unsigned int hexNumber;
+					sscanf(currentColor.c_str(), "%x", &hexNumber);
+
+					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[itt.second].name);
+					break;
+				}
+				case 4:
+				{
+					if (DoesNodeExists(root, "currentPos") == false)
+						break;
+
+					const float level = root["currentPos"].asFloat();
+
+					SendPercentageSensor(IP, 1, 255, level, DevicesType[itt.second].name);
+					break;
+				}
+				case 5:
+				{
+					if (DoesNodeExists(root, "dimmer", "currentBrightness") == false)
+						break;
+
+					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
+					int level = (int)(currentPos / (255.0 / 100.0));
+
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt.second].name);
+					break;
+				}
+				case 6:
+				{
+					if ((DoesNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
+						break;
+
+					Json::Value relays = root["relays"];
+					Json::ArrayIndex count = relays.size();
+					for (Json::ArrayIndex index = 0; index < count; index++)
+					{
+						Json::Value relay = relays[index];
+						if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
+							break;
+						uint8_t relayNumber = (uint8_t)relay["relay"].asInt(); // 0 or 1
+						bool currentState = relay["state"].asBool(); // 0 or 1
+						//std::string name = DevicesType[itt.second].name + " " + relay["state"].asString();
+						SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt.second].name);
+					}
+
+					break;
+				}
+				case 7:
+				{
+					if (DoesNodeExists(root, "air") == false)
+						break;
+
+					root = root["air"];
+
+					if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
+						break;
+
+					Json::Value sensors = root["sensors"];
+					Json::ArrayIndex count = sensors.size();
+					for (Json::ArrayIndex index = 0; index < count; index++)
+					{
+						Json::Value sensor = sensors[index];
+						if ((DoesNodeExists(sensor, "type") == false) || (DoesNodeExists(sensor, "value") == false))
+							break;
+						uint8_t value = (uint8_t)sensor["value"].asInt();
+						std::string type = sensor["type"].asString();
+
+						//TODO - how save IP address ??
+						SendAirQualitySensor(IP, index + 1, 255, value, type);
+					}
+
+					break;
+				}
+				case 8:
+				{
+					if (DoesNodeExists(root, "tempSensor") == false)
+						break;
+
+					root = root["tempSensor"];
+
+					if ((DoesNodeExists(root, "sensors") == false) || (!root["sensors"].isArray()))
+						break;
+
+					Json::Value sensors = root["sensors"];
+					Json::ArrayIndex count = sensors.size();
+					for (Json::ArrayIndex index = 0; index < count; index++)
+					{
+						Json::Value sensor = sensors[index];
+						
+						if ((DoesNodeExists(sensor, "value") == false) || (DoesNodeExists(sensor, "state") == false))
+							break;
+
+						if (sensor["state"] != 2)
+						{
+							Log(LOG_ERROR, "temp sensor error!");
+							break;
+						}
+
+						std::string temperature = sensor["value"].asString(); // xxxx (xx.xx = temperature)
+						float ftemp = static_cast<float>(std::stoi(temperature.substr(0,2)) + std::stoi(temperature.substr(2, 2)) / 100.0);
+
+						//TODO - how save IP address ??
+						SendTempSensor(IP, 255, ftemp, DevicesType[itt.second].name);
+					}
+
+					break;
+				}
 			}
 			SetHeartbeatReceived();
 		}
