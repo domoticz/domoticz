@@ -1,5 +1,13 @@
-Version 4.beta (xx 2019)
+Version 4.xxxxx (xxx 2019)
+- Implemented: DarkSky CloudCover sensor
+- Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
+
+Version 4.10717 (May 9th 2019)
+- Fixed: dzVents, Allowing no error message for HTTP calls (#3191)
+- Fixed: EcoCompteur now uses the port specified in the hardware setup (#3184)
+- Fixed: Log for Weight sensor (#3192)
 - Fixed: issue with Session ID/Login
+- Fixed: issue with slightly  to large labels for the selector switch (#3187)
 - Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
 
 Version 4.10658 (May 5th 2019)

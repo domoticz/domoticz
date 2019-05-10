@@ -985,4 +985,22 @@ describe('Domoticz', function()
 		}, domoticz.utils.fromJSON(json))
 	end)
 
+	it('should convert a table to json', function()
+		local t = { a= 1 }
+		local res = domoticz.utils.toJSON(t)
+		assert.is_same('{"a":1}', res)
+	end)
+	
+	it('should dump a table to log', function()
+		local t = { a=1,b=2,c={d=3,e=4, "test"} }
+		local res = domoticz.utils.dumpTable(t,"> ")
+		assert.is_nil(res)
+	end)
+
+	it('should split a string ', function()
+		assert.is_same(domoticz.utils.stringSplit("A-B-C", "-")[2],"B")
+		assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+	end)
+
+
 end)

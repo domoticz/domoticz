@@ -3795,10 +3795,20 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 
 void CEventSystem::OpenURL(const float delay, const std::string &URL)
 {
-	if (!delay)
-		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s...", URL.c_str());
+	if (m_sql.m_bEnableEventSystemFullURLLog)
+	{
+		if (!delay)
+			_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s...", URL.c_str());
+		else
+			_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s after %.1f seconds...", URL.c_str(), delay);
+	}
 	else
-		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s after %.1f seconds...", URL.c_str(), delay);
+	{
+		if (!delay)
+			_log.Log(LOG_STATUS, "EventSystem: Opening a URL...");
+		else
+			_log.Log(LOG_STATUS, "EventSystem: Opening a URL after %.1f seconds...", delay);
+	}
 
 	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delay, URL, "OpenURL"));
 	// maybe do something with sResult in the future.

@@ -79,7 +79,7 @@ define(['app', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLo
                 return undefined;
             }
 
-            return vm.device.Type === 'Usage' || [
+            return vm.device.Type === 'Usage' || vm.device.Type === 'Weight' || [
                 'Voltage', 'Current', 'Pressure', 'Custom Sensor',
                 'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                 'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage'

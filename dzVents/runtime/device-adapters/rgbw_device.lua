@@ -155,7 +155,7 @@ return {
 				return false
 			end
 			if not(hue) or not(inRange(hue, 0, 360)) then
-				domoticz.log('Brightness value need to be number from 0-100', utils.LOG_ERROR)
+				domoticz.log('hue value need to be number from 0-360', utils.LOG_ERROR)
 				return false
 			end
 			if isWhite and type(isWhite) ~= "boolean" then

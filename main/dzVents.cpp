@@ -129,13 +129,19 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 						{
 							std::vector<std::string> results;
 							StringSplit(header, " ", results);
-							if (results.size() >= 3)
+							if (results.size() >= 2)
 							{
 								pos = header.find(results[0]);
 								protocol = header.substr(0, pos + results[0].size());
-								statusCode = (lua_Number)atoi(results[1].c_str());
-								pos = header.find(results[2]);
-								statusText = header.substr(pos,pos + results[2].size());
+								statusCode = atoi(results[1].c_str());
+								if (results.size() >= 3)
+								{
+									statusText = header.substr(header.find(results[2]));
+								}
+								else
+								{
+									statusText = ((statusCode >= 200) && (statusCode <= 299)) ? "OK" : "No reason returned!";
+								}
 							}
 						}
 					}

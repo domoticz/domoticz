@@ -7749,6 +7749,9 @@ namespace http {
 				m_mainworker.m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
+			std::string EnableEventSystemFullURLLog = request::findValue(&req, "EventSystemLogFullURL");
+			m_sql.m_bEnableEventSystemFullURLLog = EnableEventSystemFullURLLog == "on" ? true : false;
+			m_sql.UpdatePreferencesVar("EventSystemLogFullURL", (int)m_sql.m_bEnableEventSystemFullURLLog);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
@@ -9530,7 +9533,7 @@ namespace http {
 								total_real *= AddjMulti;
 								if (dSubType == sTypeRAINByRate)
 								{
-									rate = atof(sd2[1].c_str()) / 10000.0f;
+									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0f);
 								}
 								else
 								{
@@ -12843,6 +12846,10 @@ namespace http {
 				else if (Key == "EnableEventScriptSystem")
 				{
 					root["EnableEventScriptSystem"] = nValue;
+				}
+				else if (Key == "EventSystemLogFullURL")
+				{
+					root["EventSystemLogFullURL"] = nValue;
 				}
 				else if (Key == "DisableDzVentsSystem")
 				{
