@@ -635,6 +635,7 @@ CSQLHelper::CSQLHelper(void)
 	m_bAcceptHardwareTimerActive = false;
 	m_iAcceptHardwareTimerCounter = 0;
 	m_bEnableEventSystem = true;
+	m_bEnableEventSystemFullURLLog = true;
 	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bPreviousAcceptNewHardware = false;
@@ -2940,6 +2941,14 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 1;
 	}
 	m_bEnableEventSystem = (nValue == 1);
+
+	nValue = 0;
+	if (!GetPreferencesVar("EventSystemLogFullURL", nValue))
+	{
+		UpdatePreferencesVar("EventSystemLogFullURL", 1);
+		nValue = 1;
+	}
+	m_bEnableEventSystemFullURLLog = (nValue == 1);
 
 	nValue = 0;
 	if (!GetPreferencesVar("DisableDzVentsSystem", nValue))

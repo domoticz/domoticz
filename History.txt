@@ -1,5 +1,6 @@
 Version 4.xxxxx (xxx 2019)
 - Implemented: DarkSky CloudCover sensor
+- Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)
