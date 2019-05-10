@@ -127,4 +127,10 @@ describe('event helpers', function()
 		assert.is_nil(res)
 	end)
 
+	it('should split a string ', function()
+		assert.is_same(utils.stringSplit("A-B-C", "-")[2],"B")
+		assert.is_same(utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+	end)
+
+
 end)
