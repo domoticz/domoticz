@@ -26,19 +26,6 @@ before_install:
       brew upgrade boost;
     fi;
 
-# Install newer CMake
-# brew upgrade returns a non-zero error code if the package is already
-# up-to-date. To avoid this we check if the package is out-of-date first.
-install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      curl -sSL https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
-      sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
-    else
-      if (brew outdated | grep -q cmake); then
-        brew upgrade cmake;
-      fi;
-    fi;
-
 # Build matrix definition
 # * Two builds
 #   1. Linux x86_64
@@ -74,9 +61,12 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
     script:
-      - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz >> /dev/null 2>&1
-      - tar xfz boost_1_67_0.tar.gz
-      - cd boost_1_67_0/
+      - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
+      - sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
+      - export PATH=/usr/local/bin:$PATH;
+      - wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz >> /dev/null 2>&1
+      - tar xfz boost_1_70_0.tar.gz
+      - cd boost_1_70_0/
       - ./bootstrap.sh
       - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
@@ -98,6 +88,7 @@ matrix:
   #     - brew link openssl --force
   #     - brew install md5sha1sum
   #     - brew upgrade python
+  #     - brew upgrade cmake
   #     - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
   #   script:
   #     - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
