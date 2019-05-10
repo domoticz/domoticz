@@ -205,6 +205,10 @@ local function Domoticz(settings)
 			dumpTable = function(t, level)
 				return utils.dumpTable(t, level)
 			end,
+
+			stringSplit = function(text, sep)
+				return utils.stringSplit(text, sep)
+			end,
 			
 		}
 	}
