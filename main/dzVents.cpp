@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.18")
+	m_version("2.4.19")
 {
 	m_bdzVentsExist = false;
 }
@@ -90,11 +90,15 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 	lua_setglobal(lua_state, "securityupdates");
 }
 
-void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items)
 {
 	int index = 1;
-	int statusCode;
-
+	int statusCode = 0;
+	
+	std::string protocol;
+	std::string statusText;
+	
+	
 	lua_createtable(lua_state, 0, 0);
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); ++itt)
@@ -104,28 +108,55 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEven
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
 			lua_pushstring(lua_state, "headers");
-			lua_createtable(lua_state, (int)itt->vData.size(), 0);
-			if (itt->vData.size() > 0)
+			lua_createtable(lua_state, (int)itt->vData.size() + 2, 0); // status is split into 3 parts
+			if (!itt->vData.empty())
 			{
 				std::vector<std::string>::const_iterator itt2;
-				for (itt2 = itt->vData.begin(); itt2 != itt->vData.end() - 1; ++itt2)
+				for (itt2 = itt->vData.begin(); itt2 != itt->vData.end(); ++itt2)
 				{
-					size_t pos = (*itt2).find(": ");
+					std::string header = (*itt2);
+
+					size_t pos = header.find(": ");
 					if (pos != std::string::npos)
 					{
-						lua_pushstring(lua_state, (*itt2).substr(0, pos).c_str());
-						lua_pushstring(lua_state, (*itt2).substr(pos + 2).c_str());
+						lua_pushstring(lua_state, header.substr(0, pos).c_str());
+						lua_pushstring(lua_state, header.substr(pos + 2).c_str());
 						lua_rawset(lua_state, -3);
 					}
+					else
+					{
+						if (header.find("HTTP/") == 0)
+						{
+							std::vector<std::string> results;
+							StringSplit(header, " ", results);
+							if (results.size() >= 2)
+							{
+								pos = header.find(results[0]);
+								protocol = header.substr(0, pos + results[0].size());
+								statusCode = atoi(results[1].c_str());
+								if (results.size() >= 3)
+								{
+									statusText = header.substr(header.find(results[2]));
+								}
+								else
+								{
+									statusText = ((statusCode >= 200) && (statusCode <= 299)) ? "OK" : "No reason returned!";
+								}
+							}
+						}
+					}
 				}
-				// last item in vector is always the status code
-				itt2 = itt->vData.end() - 1;
-				std::stringstream ss(*itt2);
-				ss >> statusCode;
 			}
+			lua_rawset(lua_state, -3); //end of table
+
+			lua_pushstring(lua_state, "protocol");
+			lua_pushstring(lua_state, protocol.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "statusText");
+			lua_pushstring(lua_state, statusText.c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "statusCode");
-			lua_pushnumber(lua_state, (lua_Number)statusCode);
+			lua_pushnumber(lua_state, statusCode);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "data");
 			lua_pushstring(lua_state, itt->sValue.c_str());

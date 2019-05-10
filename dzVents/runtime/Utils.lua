@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.18',
+	DZVERSION = '2.4.19',
 }
 
 function self.fileExists(name)
@@ -18,6 +18,15 @@ function self.fileExists(name)
 	else
 		return false
 	end
+end
+
+function self.stringSplit(text, sep)
+	local sep = sep or '%s'
+	local t = {}
+	for str in string.gmatch(text, "([^"..sep.."]+)") do
+		table.insert(t, str)
+	end
+	return t
 end
 
 function self.osExecute(cmd)
@@ -169,6 +178,7 @@ function self.rgbToHSB(r, g, b)
 end
 
 function self.dumpTable(t, level)
+	local level = level or "> "
 	for attr, value in pairs(t or {}) do
 		if (type(value) ~= 'function') then
 			if (type(value) == 'table') then

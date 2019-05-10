@@ -191,7 +191,7 @@ echo
 
 
 cd $basedir
-expectedErrorCount=3
+expectedErrorCount=4
 grep "Results stage 2: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null

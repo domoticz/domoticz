@@ -35,7 +35,7 @@ describe('HTTPResponse', function()
 		assert.is_false(r.ok)
 	end)
 
-	it('should have valid statuscode', function()
+	it('should have a valid statuscode based on statusCode', function()
 
 		local r = HTTPResponse({
 			BASETYPE_HTTP_RESPONSE = 'httpResponse'
@@ -47,6 +47,26 @@ describe('HTTPResponse', function()
 		})
 
 		assert.is_true(r.ok)
+	end)
+
+    it('should have a valid statuscode', function()
+
+		local r = HTTPResponse({
+			BASETYPE_HTTP_RESPONSE = 'httpResponse'
+		}, {
+			headers = {['Content-Type'] = 'application/json' },
+            statusText = 'Empty response' ,
+            protocol = 'HTTP/1.4' ,
+            statusCode  = 404 ,
+			data  = '{"a":1}',
+			callback = 'trigger1',
+            
+			
+		})
+        assert.is_same('HTTP/1.4', r.protocol)
+        assert.is_same(404, r.statusCode)
+		assert.is_false(r.ok)
+        assert.is.same('Empty response',r.statusText)
 	end)
 
 end)

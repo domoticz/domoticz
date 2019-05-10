@@ -507,7 +507,7 @@ webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/fastcgi.cpp
 webserver/mime_types.cpp
-webserver/proxycommon.cpp
+webserver/proxycereal.cpp
 webserver/proxyclient.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
