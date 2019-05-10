@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(domoticz)
 
 ## required min. libBoost version
-SET(DOMO_MIN_LIBBOOST_VERSION 106000)
+SET(DOMO_MIN_LIBBOOST_VERSION 1.60.0)
 ##
 
 MACRO(Gitversion_GET_REVISION dir variable)
