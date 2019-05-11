@@ -1,5 +1,3 @@
-local socket = require("socket");
-
 local testLastUpdate = function(dz, trigger, expectedDifference)
 	local now = dz.time.secondsSinceMidnight
 	local lastUpdate = trigger.lastUpdate.secondsSinceMidnight
