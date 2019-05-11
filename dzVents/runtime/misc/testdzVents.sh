@@ -73,7 +73,7 @@ checkStarted()
 		# echo $result $loopCounter $maxSeconds
 		if [[ $result -eq 1 && $loopCounter -le $maxSeconds ]];then
 			printf "%s" "."
-			(($loopCounter++))
+			loopCounter=$((loopCounter+1))
 		else
 			if [[ $result -eq 1 ]];then
 				 echo

@@ -1,7 +1,7 @@
 local _  = require('lodash')
 local utils = require('Utils')
 
-local function HTTPResponce(domoticz, responseData)
+local function HTTPResponce(domoticz,responseData,testResponse)
 
 	local self = {}
 	 
@@ -20,7 +20,7 @@ local function HTTPResponce(domoticz, responseData)
 		self.ok = true
 	else
 		self.ok = false
-		domoticz.log(self.protocol .. " response: " .. self.statusCode .. " ==>> " .. self.statusText ,domoticz.LOG_ERROR)
+		if ( not testResponse ) and ( utils.log(self.protocol .. " response: " .. self.statusCode .. " ==>> " .. self.statusText ,utils.LOG_ERROR) ) then end
 	end	
 	
 	self.isHTTPResponse = true

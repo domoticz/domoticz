@@ -886,6 +886,8 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **levelNames**: *Table*. Table holding the level names for selector switch devices.
  - **maxDimLevel**: *Number*.
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **quietOn()**: *Function*. <sup>2.4.20</sup> Set deviceStatus to on without physical switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **quietOff()**: *Function*. <sup>2.4.20</sup> set deviceStatus to off without physical switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **stop()**: *Function*. Set device to Stop if it supports it (e.g. blinds). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Switch device off it is supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Switch device on if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -1991,6 +1993,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.20]
+- Add quietOn() and quietOff() method to switchType devices 
+
 ##[2.4.19]
 - Add stringSplit function to domoticz.utils.
 - Add statusText and protocol to HTTPResponse
