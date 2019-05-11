@@ -1,6 +1,11 @@
 <div class="container js-device-logs">
     <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
-    <a class="btnstyle pull-right" ng-href="#/Devices/{{ ::vm.deviceIdx }}/Report">{{ ::'Report' | translate }}</a>
+    <a class="btnstyle pull-right"
+       ng-if="::vm.isReportAvailable()"
+       ng-href="#/Devices/{{ ::vm.deviceIdx }}/Report"
+    >
+        {{ ::'Report' | translate }}
+    </a>
 
     <h2 class="page-header">{{ ::vm.pageName }}</h2>
 
