@@ -55,7 +55,7 @@ define(['app', 'luxon'], function (app, luxon) {
                 if (point.Status === 'On' || (point.Status.includes('Set Level') && point.Level > 0)) {
                     chartData.push({
                         x: DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf(),
-                        x2: points[index + 1] ? DateTime.fromFormat(points[index + 1].Date,  dzSettings.serverDateFormat) : Date.now(),
+                        x2: points[index + 1] ? DateTime.fromFormat(points[index + 1].Date,  dzSettings.serverDateFormat).valueOf() : Date.now(),
                         y: 0
                     });
                 }

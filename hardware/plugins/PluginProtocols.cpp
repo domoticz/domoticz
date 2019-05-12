@@ -151,6 +151,14 @@ namespace Plugins {
 		Py_DECREF(pObj);
 	}
 
+	static void AddBoolToDict(PyObject* pDict, const char* key, const bool value)
+	{
+		PyObject* pObj = Py_BuildValue("N", PyBool_FromLong(value));
+		if (PyDict_SetItemString(pDict, key, pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
+		Py_DECREF(pObj);
+	}
+
 	PyObject*	CPluginProtocolJSON::JSONtoPython(Json::Value*	pJSON)
 	{
 		PyObject*	pRetVal = NULL;
@@ -212,12 +220,94 @@ namespace Plugins {
 				}
 				else if (it->isUInt()) AddUIntToDict(pRetVal, KeyName.c_str(), it->asUInt());
 				else if (it->isInt()) AddIntToDict(pRetVal, KeyName.c_str(), it->asInt());
+				else if (it->isBool()) AddBoolToDict(pRetVal, KeyName.c_str(), it->asInt());
 				else if (it->isDouble()) AddDoubleToDict(pRetVal, KeyName.c_str(), it->asDouble());
 				else if (it->isConvertibleTo(Json::stringValue)) AddStringToDict(pRetVal, KeyName.c_str(), it->asString());
 				else _log.Log(LOG_ERROR, "(%s) failed to process entry for '%s'.", __func__, KeyName.c_str());
 			}
 		}
 		return pRetVal;
+	}
+
+	PyObject* CPluginProtocolJSON::JSONtoPython(std::string	sData)
+	{
+		Json::Reader	jReader;
+		Json::Value		root;
+		PyObject*		pRetVal = Py_None;
+
+		bool bRet = jReader.parse(sData, root);
+		if ((!bRet) || (!root.isObject()))
+		{
+			_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
+			Py_INCREF(Py_None);
+		}
+		else
+		{
+			pRetVal = JSONtoPython(&root);
+		}
+
+		return pRetVal;
+	}
+
+	std::string CPluginProtocolJSON::PythontoJSON(PyObject* pObject)
+	{
+		std::string	sJson;
+
+		if (PyUnicode_Check(pObject))
+		{
+			sJson += '"' + std::string(PyUnicode_AsUTF8(pObject)) + '"';
+		}
+		else if (pObject->ob_type->tp_name == std::string("bool"))
+		{
+			sJson += (PyObject_IsTrue(pObject) ? "true" : "false");
+		}
+		else if (PyLong_Check(pObject))
+		{
+			sJson += std::to_string(PyLong_AsLong(pObject));
+		}
+		else if (PyBytes_Check(pObject))
+		{
+			sJson += '"' + std::string(PyBytes_AsString(pObject)) + '"';
+		}
+		else if (pObject->ob_type->tp_name == std::string("bytearray"))
+		{
+			sJson += '"' + std::string(PyByteArray_AsString(pObject)) + '"';
+		}
+		else if (pObject->ob_type->tp_name == std::string("float"))
+		{
+			sJson += std::to_string(PyFloat_AsDouble(pObject));
+		}
+		else if (PyDict_Check(pObject))
+		{
+			sJson += "{ ";
+			PyObject* key, * value;
+			Py_ssize_t pos = 0;
+			while (PyDict_Next(pObject, &pos, &key, &value))
+			{
+				sJson += PythontoJSON(key) + ':' + PythontoJSON(value) + ',';
+			}
+			sJson[sJson.length()-1] = '}';
+		}
+		else if (PyList_Check(pObject))
+		{
+			sJson += "[ ";
+			for (Py_ssize_t i = 0; i < PyList_Size(pObject); i++)
+			{
+				sJson += PythontoJSON(PyList_GetItem(pObject, i)) + ',';
+			}
+			sJson[sJson.length()-1] = ']';
+		}
+		else if (PyTuple_Check(pObject))
+		{
+			sJson += "[ ";
+			for (Py_ssize_t i = 0; i < PyTuple_Size(pObject); i++)
+			{
+				sJson += PythontoJSON(PyTuple_GetItem(pObject, i)) + ',';
+			}
+			sJson[sJson.length() - 1] = ']';
+		}
+
+		return sJson;
 	}
 
 	void CPluginProtocolJSON::ProcessInbound(const ReadEvent* Message)

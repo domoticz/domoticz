@@ -490,6 +490,65 @@ namespace Plugins {
 		return Py_None;
 	}
 
+	static PyObject*	PyDomoticz_Configuration(PyObject *self, PyObject *args, PyObject* kwds)
+	{
+		PyObject*		pConfig = Py_None;
+		std::string		sConfig;
+		std::vector<std::vector<std::string> > result;
+
+		Py_INCREF(Py_None);
+
+		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			CPluginProtocolJSON* pProtocol = (CPluginProtocolJSON*)CPluginProtocol::Create("JSON");
+			PyObject* pNewConfig = NULL;
+			static char* kwlist[] = { "Config", NULL };
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist , &pNewConfig))
+			{
+				// Python object supplied if it is not a dictionary
+				if (!PyDict_Check(pNewConfig))
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
+					return pConfig;
+				}
+				else
+				{
+					//  Convert to JSON and store
+					sConfig = pProtocol->PythontoJSON(pNewConfig);
+
+					// Update database
+					m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				}
+			}
+			PyErr_Clear();
+
+			// Read the configuration 
+			result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			if (result.empty())
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
+				return pConfig;
+			}
+
+			// Build a Python structure to return 
+			Py_DECREF(Py_None);
+			std::vector<std::vector<std::string> >::const_iterator itt = result.begin();
+			std::vector<std::string> sd = *itt;
+			pConfig = pProtocol->JSONtoPython(sd[0]);
+		}
+
+		return pConfig;
+	}
+
 	static PyMethodDef DomoticzMethods[] = {
 		{ "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
 		{ "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
@@ -499,6 +558,7 @@ namespace Plugins {
 		{ "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
 		{ "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
 		{ "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
+		{ "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
 		{ NULL, NULL, 0, NULL }
 	};
 
