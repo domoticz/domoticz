@@ -67,6 +67,8 @@ local VIRTUAL_DEVICES = {
 	SOLAR_RADIATION = {20, 'vdSolarRadiation'},
 	SOUND_LEVEL = {10, 'vdSoundLevel'},
 	SWITCH = {6, 'vdSwitch'},
+	QUIET_ON_SWITCH = {6, 'vdQuietOnSwitch'},
+	QUIET_OFF_SWITCH = {6, 'vdQuietOffSwitch'},
 	TEMP_BARO = { 247, 'vdTempBaro' },
 	TEMP_HUM = {82, 'vdTempHum'},
 	TEMP_HUM_BARO = {84, 'vdTempHumBaro'},
@@ -83,7 +85,7 @@ local VIRTUAL_DEVICES = {
 	-- increment SECPANEL_INDEX_CHECK when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX_CHECK = 57
+local SECPANEL_INDEX_CHECK = 59
 local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 10 -- 10 is number of groups / scenes + managed counter + dimmer switch+ ?
 
 local VAR_TYPES = {
@@ -97,17 +99,17 @@ local VAR_TYPES = {
 }
 
 local getResultsFromfile = function(file)
-		local utils = require('Utils')
-		local results = assert(io.open(file, "r"))
-		resTable = utils.fromJSON(results:read("*all"))
-		results:close()
-		return resTable
+	local utils = require('Utils')
+	local results = assert(io.open(file, "r"))
+	resTable = utils.fromJSON(results:read("*all"))
+	results:close()
+	return resTable
 end
 
 
-describe('Integration test', function ()
-
-	setup(function()
+describe('Integration test', 
+	function ()
+		setup(function()
 		assert.is_true(TestTools.deleteAllDevices())
 		assert.is_true(TestTools.deleteAllVariables())
 		assert.is_true(TestTools.deleteAllHardware())
@@ -149,6 +151,7 @@ describe('Integration test', function ()
 	local secArmedAwayIdx
 	local scSceneResultsIdx
 	local switchSilentResultsIdx
+	local switchQuietResultsIdx
 
 	-- it('a', function() end)
 	describe('Settings', function()
@@ -428,6 +431,16 @@ describe('Integration test', function ()
 			assert.is_true(ok)
 		end)
 
+		it('should create a quietOn switch', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.QUIET_ON_SWITCH[2], VIRTUAL_DEVICES.QUIET_ON_SWITCH[1])
+			assert.is_true(ok)
+		end)
+
+		it('should create a quietOff switch', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.QUIET_OFF_SWITCH[2], VIRTUAL_DEVICES.QUIET_OFF_SWITCH[1])
+			assert.is_true(ok)
+		end)
+
 	end)
 
 	describe('ManagedCounter', function()
@@ -651,6 +664,10 @@ describe('Integration test', function ()
 			TestTools.createFSScript('silent.lua')
 		end)
 
+		it('Should move quiet script in place', function()
+			TestTools.createFSScript('quiet.lua')
+		end)
+		  
 		it('Should move description script in place', function()
 			TestTools.createFSScript('descriptionScript.lua')
 		end)
@@ -700,6 +717,11 @@ describe('Integration test', function ()
 
 		it('Should create results for silent script', function()
 			ok, switchSilentResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchSilentResults', VIRTUAL_DEVICES.SWITCH[1])
+			assert.is_true(ok)
+		end)
+		  
+		  it('Should create results for quiet script', function()
+			ok, switchQuietResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchQuietResults', VIRTUAL_DEVICES.SWITCH[1])
 			assert.is_true(ok)
 		end)
 
@@ -752,6 +774,7 @@ describe('Integration test', function ()
 			local secArmedAwayDevice
 			local scSceneResultsDevice
 			local switchSilentResultsDevice
+			local switchQuietResultsDevice
 			local ok = false
 			local endResultsDevice
 
@@ -772,6 +795,9 @@ describe('Integration test', function ()
 			ok = false
 			ok, switchSilentResultsDevice = TestTools.getDevice(switchSilentResultsIdx)
 			assert.is_true(ok)
+				ok = false
+			ok, switchQuietResultsDevice = TestTools.getDevice(switchQuietResultsIdx)
+			assert.is_true(ok)
 
 			assert.is_same('ENDRESULT SUCCEEDED', endResultsDevice['Data'])
 			assert.is_same('DIMMER SUCCEEDED', switchDimmerResultsDevice['Data'])
@@ -779,6 +805,7 @@ describe('Integration test', function ()
 			assert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])
 			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
 			assert.is_same('Off', switchSilentResultsDevice['Status'])
+			assert.is_same('On', switchQuietResultsDevice['Status'])
 
 		end)
 

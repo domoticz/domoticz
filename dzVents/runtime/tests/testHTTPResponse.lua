@@ -6,6 +6,10 @@ local scriptPath = ''
 package.path = package.path .. ";../?.lua;../../../scripts/lua/?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 local HTTPResponse = require('HTTPResponse')
+local utils = require('Utils')
+
+domoticz = {}
+domoticz.LOG = utils.LOG
 
 describe('HTTPResponse', function()
 
@@ -17,8 +21,10 @@ describe('HTTPResponse', function()
 			headers = {['Content-Type'] = 'application/json'},
 			data  = '{"a":1}',
 			callback = 'trigger1',
-			statusCode = 404
-		})
+			statusCode = 404,
+			statusText = "empty",
+			protocol = "HTTP/1.1",
+		},"testHTTPResponse")
 
 		assert.is_same({a = 1}, r.json)
 		assert.is_true(r.isJSON)
@@ -62,7 +68,7 @@ describe('HTTPResponse', function()
 			callback = 'trigger1',
 			
 			
-		})
+		},"testHTTPResponse")
 		assert.is_same('HTTP/1.4', r.protocol)
 		assert.is_same(404, r.statusCode)
 		assert.is_false(r.ok)
@@ -77,9 +83,11 @@ describe('HTTPResponse', function()
 			headers = {['Content-Type'] = 'application/json' },
 			data  = '{"a":1}',
 			callback = 'trigger1',
+			statusText = '' ,
+			protocol = '' ,
+			statusCode = 0 ,
 			
-			
-		})
+		},"testHTTPResponse")
 		assert.is_same('', r.protocol)
 		assert.is_same(0,r.statusCode)
 		assert.is_false(r.ok)

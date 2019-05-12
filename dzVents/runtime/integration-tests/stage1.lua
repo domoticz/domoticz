@@ -72,12 +72,62 @@ local testSwitch = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 		["deviceType"] = "Light/Switch";
-		["description"] = 'desc vdSwitch'
+		["description"] = 'desc vdSwitch';
 	})
 	dev.switchOn().afterSec(1)
 	tstMsg('Test switch device', res)
 	return res
 end
+
+local testQuietOnSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = 49,
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.quietOn().afterSec(3)
+	tstMsg('Test quietOn switch device', res)
+	return res
+end
+
+local testQuietOffSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = 50,
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.switchOff()
+	dev.quietOff()
+	tstMsg('Test quietOff switch device', res)
+	return res
+end
+
 
 local testDimmer = function(name)
 	local dev = dz.devices(name)
@@ -1229,7 +1279,6 @@ local testSetValueSensor = function(name)
 end
 
 local storeLastUpdates = function()
-
 	dz.globalData.stage1Time = dz.time.raw
 end
 
@@ -1388,6 +1437,8 @@ return {
 		res = res and testP1SmartMeter('vdP1SmartMeterElectric')
 		res = res and testPercentage('vdPercentage')
 		res = res and testPressureBar('vdPressureBar')
+		res = res and testQuietOnSwitch('vdQuietOnSwitch')
+		res = res and testQuietOffSwitch('vdQuietOffSwitch')
 		res = res and testRain('vdRain')
 		res = res and testRGB('vdRGBSwitch')
 		res = res and testRGBW('vdRGBWSwitch')

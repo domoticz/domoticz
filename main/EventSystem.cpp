@@ -285,8 +285,12 @@ void CEventSystem::LoadEvents()
 				{
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
 					fclose(fOut);
+					dzvents->m_bdzVentsExist = true;
 				}
-				dzvents->m_bdzVentsExist = true;
+				else
+				{
+					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s",  s.c_str());
+				}
 			}
 		}
 	}

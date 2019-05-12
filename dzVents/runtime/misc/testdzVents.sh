@@ -73,7 +73,7 @@ checkStarted()
 		# echo $result $loopCounter $maxSeconds
 		if [[ $result -eq 1 && $loopCounter -le $maxSeconds ]];then
 			printf "%s" "."
-			(($loopCounter++))
+			loopCounter=$((loopCounter+1))
 		else
 			if [[ $result -eq 1 ]];then
 				 echo
@@ -191,7 +191,7 @@ echo
 
 
 cd $basedir
-expectedErrorCount=4
+expectedErrorCount=5
 grep "Results stage 2: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
