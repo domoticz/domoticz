@@ -38,6 +38,8 @@ return {
 			adapterManager.addDummyMethod(device, 'dimTo')
 			adapterManager.addDummyMethod(device, 'switchSelector')
 			adapterManager.addDummyMethod(device, 'toggleSwitch')
+			adapterManager.addDummyMethod(device, 'quietOn')
+			adapterManager.addDummyMethod(device, 'quietOff')
 		end
 		return res
 	end,
@@ -49,6 +51,16 @@ return {
 		if (data.lastLevel ~= nil) then
 			-- dimmers that are switched off have a last level
 			device.lastLevel = data.lastLevel
+		end
+
+		function device.quietOn()
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=udevice&nvalue=1&svalue=1&idx=' .. device.id
+			return domoticz.openURL(url)
+		end
+
+		function device.quietOff()
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=udevice&nvalue=0&svalue=0&idx=' .. device.id
+			return domoticz.openURL(url)
 		end
 
 		if (device.level == nil) then

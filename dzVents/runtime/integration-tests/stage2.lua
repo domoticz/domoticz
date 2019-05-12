@@ -758,7 +758,6 @@ local testIFTTT = function(event)
 	return res
 end
 
-
 local testCancelledScene = function(name)
 	local res = true
 	local count = dz.globalData.cancelledScene
@@ -784,6 +783,27 @@ local testDescription = function(name, description, type)
 	handleResult('Test description ' .. type ..' device for string: ' .. description, res)
 	return res
 end
+
+local testQuietOn = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	res = res and checkAttributes(dev, {
+		["state"] = "On",
+	})
+	handleResult('Test QuietOn switch device', res)
+	return res
+end
+
+local testQuietOff = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	res = res and checkAttributes(dev, {
+		["state"] = "Off",
+	})
+	handleResult('Test QuietOff switch device', res)
+	return res
+end
+
 
 local testVersion = function(name)
 	local res = true
@@ -831,6 +851,8 @@ return {
 		res = res and testP1SmartMeter('vdP1SmartMeterElectric')
 		res = res and testPercentage('vdPercentage')
 		res = res and testPressureBar('vdPressureBar')
+		res = res and testQuietOff('vdQuietOffSwitch')
+		res = res and testQuietOn('vdQuietOnSwitch')
 		res = res and testRain('vdRain')
 		res = res and testRGB('vdRGBSwitch')
 		res = res and testRGBW('vdRGBWSwitch')
@@ -873,7 +895,7 @@ return {
 		res = res and testHTTPSwitch('vdHTTPSwitch');
 		res = res and testDescription('vdDescriptionSwitch', descriptionString, "device")
 		res = res and testDescription('sceneDescriptionSwitch1', descriptionString, "scene")
-	   	res = res and testDescription('groupDescriptionSwitch1', descriptionString, "group")
+		res = res and testDescription('groupDescriptionSwitch1', descriptionString, "group")
 		res = res and testDeviceDump(vdSwitchDimmer)
 		res = res and testCameraDump()
 		res = res and testSettingsDump()

@@ -59,7 +59,8 @@ local function getDevice_(
 		hardwareTypeValue = 'ht1'
 	end
 
-	local data = {
+	local data = 
+	{
 		["id"] = 1,
 		["name"] = name,
 		["description"] = "Description 1",
@@ -73,13 +74,13 @@ local function getDevice_(
 		["switchTypeValue"] = 2,
 		["lastUpdate"] = "2016-03-20 12:23:00",
 		["data"] = {
-			["_state"] = state,
-			["hardwareName"] = "hw1",
-			["hardwareType"] = hardwareType,
-			["hardwareTypeValue"] = hardwaryTypeValue,
-			["hardwareID"] = 1,
-			['_nValue'] = 123,
-			['unit'] = 1
+		["_state"] = state,
+		["hardwareName"] = "hw1",
+		["hardwareType"] = hardwareType,
+		["hardwareTypeValue"] = hardwaryTypeValue,
+		["hardwareID"] = 1,
+		['_nValue'] = 123,
+		['unit'] = 1
 		},
 		["rawData"] = rawData,
 		["baseType"] = baseType ~= nil and baseType or "device",
@@ -512,19 +513,12 @@ describe('device', function()
 			})
 
 			device.disarm().afterSec(2)
-
 			assert.is_same({ { ['myDevice'] = 'Disarm AFTER 2 SECONDS' } }, commandArray)
-
 			commandArray = {}
-
 			device.armAway().afterSec(3)
-
 			assert.is_same({ { ['myDevice'] = 'Arm Away AFTER 3 SECONDS' } }, commandArray)
-
 			commandArray = {}
-
 			device.armHome().afterSec(4)
-
 			assert.is_same({ { ['myDevice'] = 'Arm Home AFTER 4 SECONDS' } }, commandArray)
 		end)
 
@@ -568,6 +562,8 @@ describe('device', function()
 					"pause",
 					"play",
 					"playFavorites",
+					"quietOff",
+					"quietOn",
 					"setColor",
 					"setColorBrightness",
 					-- "setDescription",
@@ -656,7 +652,7 @@ describe('device', function()
 								[2] = "On";
 								[3] = "TemporaryOverride";
 								[4] = "2016-04-29T06:32:58Z" }
-							   })
+								})
 			
 			local res;
 
@@ -1266,6 +1262,40 @@ describe('device', function()
 			} }, commandArray)
 		end)
 
+		describe('Quiet device ( quietOn and quietOff', function()
+	
+			local commandArray = {}
+			local utils = require('Utils')
+			domoticz.utils  = utils
+
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+				
+			domoticz.log	= function()
+				return
+			end
+
+				local device = getDevice(domoticz, {
+					['name'] = 'quietDevice',
+					['state'] = 'On',
+						  ['type'] = 'Light/Switch',
+					['subType'] = 'RGBWW',
+					['type'] = 'Color Switch'
+				})
+
+			it('should handle the quietOn method correctly )', function()
+				commandArray = {}
+				device.quietOn()
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&nvalue=1&svalue=1&idx=1' }, commandArray)
+			end)
+
+			it('should handle the quietOff method correctly', function()
+				commandArray = {}
+				device.quietOff()
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&nvalue=0&svalue=0&idx=1' }, commandArray)
+			end)
+		end)
 
 		describe('RGBW device #RGB', function()
 
@@ -1277,7 +1307,7 @@ describe('device', function()
 				return table.insert(commandArray, url)
 			end
 
-			domoticz.log    = function()
+			domoticz.log	= function()
 				return
 			end
 
@@ -1378,7 +1408,7 @@ describe('device', function()
 					['state'] = 'Set To White',
 					['type'] = 'Color Switch',
 				})
-			   assert.is_true(device.active)
+				assert.is_true(device.active)
 			end)
 
 			it('should handle getDevice with subtype RGBWW with state NightMode correctly',function()
@@ -1400,6 +1430,10 @@ describe('device', function()
 				})
 			end)
 		end)
+
+
+
+
 
 		describe('Kodi', function()
 

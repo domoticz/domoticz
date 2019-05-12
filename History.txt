@@ -2,6 +2,7 @@ Version 4.xxxxx (xxx 2019)
 - Implemented: DarkSky CloudCover sensor
 - Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
 - Fixed: GUI, Switch Log, date parsing in device log #3206
+- Updated: dzVents (version 2.4.20, See dzVents/documentation/history.md)
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)
