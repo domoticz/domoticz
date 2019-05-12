@@ -1,0 +1,30 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3030:5250</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/45604.png</MetaDataItem>
+    <MetaDataItem id="3030" name="ZWProductPage" type="5250">https://products.z-wavealliance.org/products/671/</MetaDataItem>
+    <MetaDataItem name="Name"> Appliance Module for Schlage</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.nexiahome.com/SupportCenter/Pages/supportcenter.aspx?page=support</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.nexiahome.com/Products/ProductDetail.aspx?model=043156296347</MetaDataItem>
+    <MetaDataItem id="3030" name="FrequencyName" type="5250">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Schlage It’s easy to remotely operate appliances, lamps and other electronics with Nexia™ Home Intelligence and this simple plug-in module. A Nexia outlet on one end and a regular outlet on the other end mean you don’t sacrifice any plug-in space for your other electrical devices. Nexia makes it easy to manage lights and many other plug-in devices from most web-connected computers, tablets or smart phones.
+ 
+
+·         Remote control appliance module is plug-in simple in any AC outlet.
+·         Activate incandescent and fluorescent floor and table lamps alike.
+·         Remotely operate or schedule small compatible appliances too—like fans, video games and stereo components—by plugging into the Nexia compatible module.
+·         Use Nexia to easily set lighting schedules, creating the appearance that someone’s home when the house is empty.
+·         On your way home, make lights come on to greet you.
+·         Forget to turn off a light? Pick up your smart phone and save electricity with one touch.
+·         Set Nexia to conveniently turn on lights when you enter your access code on your Schlage Home Keypad Lock.
+ 
+ 
+Remote management with a Nexia™ Home Intelligence system requires the Nexia Bridge and a monthly subscription of $8.99.</MetaDataItem>
+    <MetaDataItem id="3030" name="Identifier" type="5250">043156296347</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/655/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/671/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

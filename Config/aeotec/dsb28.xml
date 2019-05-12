@@ -1,71 +1,85 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:001C:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsb28.png</MetaDataItem>
+    <MetaDataItem id="001C" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/705/</MetaDataItem>
+    <MetaDataItem id="001C" name="Identifier" type="0002">DSB28-ZWUS</MetaDataItem>
+    <MetaDataItem id="001C" name="FrequencyName" type="0002">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">You hear a lot about energy use these days. About how if we reduce the amount of energy we use we can not only save money but also save the environment. But saving money by using less electricity is only possible if we understand when and how we use it. That’s what Aeotec’s Z-Wave Home Energy Meter provides you with – understanding.
+
+Installed in an electricity box, the energy meter will monitor the total consumption of electricity used by an entire building. And its intelligent clamps will report that energy use back to your Z-Wave gateway or controller, in watts or kilowatt-hours, and in real time. So you can see how much electricity you really use and when you use it.</MetaDataItem>
+    <MetaDataItem name="Name">Home Energy Meter G2</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-home-energy-measure</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/705/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
 Aeotec DSB28 Home Energy Meter (2nd Edition) 
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584508
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" index="2" genre="config" label="Reverse Clamping" units="" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="2" label="Reverse Clamping" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>
       If the reverse clamping pliers, negative power is detected. 
       </Help>
-      <Item label="Disable" value="0" />
-      <Item label="Enable" value="1" />
-    </Value>      
-    <Value type="list" index="3" genre="config" label="Power changed" units="" min="0" max="1" value="0" size="1">
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Power changed" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>
 	Automatic report only when power is changed.
       </Help>
-      <Item label="Disable" value="0" />
-      <Item label="Enable" value="1" />
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
     </Value>
-    <Value type="short" index="4" genre="config" label="Wattage Threshold" units="watts" value="50">
+    <Value genre="config" index="4" label="Wattage Threshold" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (whole HEM).
       </Help>
     </Value>
-    <Value type="short" index="5" genre="config" label="Wattage Threshold C1" units="watts" value="50">
+    <Value genre="config" index="5" label="Wattage Threshold C1" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (Clamp 1).
       </Help>
     </Value>
-    <Value type="short" index="6" genre="config" label="Wattage Threshold C2" units="watts" value="50">
+    <Value genre="config" index="6" label="Wattage Threshold C2" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (Clamp 2).
       </Help>
     </Value>
-    <Value type="short" index="7" genre="config" label="Wattage Threshold C3" units="watts" value="50">
+    <Value genre="config" index="7" label="Wattage Threshold C3" type="short" units="watts" value="50">
       <Help>
 	Threshold change in wattage to induce a automatic report (Clamp 3).
       </Help>
     </Value>
-    <Value type="byte" index="8" genre="config" label="Wattage Percentage Change" units="%" value="10">
+    <Value genre="config" index="8" label="Wattage Percentage Change" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (whole HEM).
       </Help>
     </Value>
-    <Value type="byte" index="9" genre="config" label="Wattage Percentage Change C1" units="%" value="10">
+    <Value genre="config" index="9" label="Wattage Percentage Change C1" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (Clamp 1).
       </Help>
     </Value>
-    <Value type="byte" index="10" genre="config" label="Wattage Percentage Change C2" units="%" value="10">
+    <Value genre="config" index="10" label="Wattage Percentage Change C2" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (Clamp 2).
       </Help>
     </Value>
-    <Value type="byte" index="11" genre="config" label="Wattage Percentage Change C3" units="%" value="10">
+    <Value genre="config" index="11" label="Wattage Percentage Change C3" type="byte" units="%" value="10">
       <Help>
 	Percentage change in wattage to induce a automatic report (Clamp 3).
       </Help>
     </Value>
-    <Value type="int" index="100" genre="config" label="Reset #101-103" units="" value="0" write_only="true" affects="101,102,103">
+    <Value affects="101,102,103" genre="config" index="100" label="Reset #101-103" type="int" units="" value="0" write_only="true">
       <Help>
 	Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.
       </Help>
     </Value>
-    <Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="0">
+    <Value genre="config" index="101" label="Group 1 Reports" type="int" units="" value="0">
       <Help>
 	Which reports need to send in group1. Format is as follows:
 	Byte 1 (msb): Reserved
@@ -88,7 +102,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584508
                 Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
       </Help>
     </Value>
-    <Value type="int" index="102" genre="config" label="Group 2 Reports" units="" value="0">
+    <Value genre="config" index="102" label="Group 2 Reports" type="int" units="" value="0">
       <Help>
 	Which reports need to send in group2. Format is as follows:
 	Byte 1 (msb): Reserved
@@ -111,7 +125,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584508
                 Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
       </Help>
     </Value>
-    <Value type="int" index="103" genre="config" label="Group 3 Reports" units="" value="0">
+    <Value genre="config" index="103" label="Group 3 Reports" type="int" units="" value="0">
       <Help>
 	Which reports need to send in group3. Format is as follows:
 	Byte 1 (msb): Reserved
@@ -134,48 +148,45 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584508
                 Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
       </Help>
     </Value>
-    <Value type="int" index="110" genre="config" label="Reset #111-113" units="" value="0" write_only="true" affects="111,112,113">
+    <Value affects="111,112,113" genre="config" index="110" label="Reset #111-113" type="int" units="" value="0" write_only="true">
       <Help>
 	Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.
       </Help>
     </Value>
-    <Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" value="720">
+    <Value genre="config" index="111" label="Group 1 Interval" type="int" units="seconds" value="720">
       <Help>
 	The interval of sending report group 1.
       </Help>
     </Value>
-    <Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" value="720">
+    <Value genre="config" index="112" label="Group 2 Interval" type="int" units="seconds" value="720">
       <Help>
 	The interval of sending report group 2.
       </Help>
     </Value>
-    <Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" value="720">
+    <Value genre="config" index="113" label="Group 3 Interval" type="int" units="seconds" value="720">
       <Help>
 	The interval of sending report group 3.
       </Help>
     </Value>
-    <Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" size="1" value="0">
-      <Item label="Aeon Labs Standard Product" value="0" />
-      <Item label="AT&amp;T" value="1" />
-    </Value>   
-    <Value type="short" index="254" genre="config" label="Device Tag" units="" value="0">
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Item label="Aeon Labs Standard Product" value="0"/>
+      <Item label="AT&amp;T" value="1"/>
+    </Value>
+    <Value genre="config" index="254" label="Device Tag" type="short" units="" value="0">
       <Help>
 	Device tag.
       </Help>
     </Value>
-    <Value type="int" index="255" genre="config" label="Reset default configuration" units="" value="0" write_only="true" affects="all">
+    <Value affects="all" genre="config" index="255" label="Reset default configuration" type="int" units="" value="0" write_only="true">
       <Help>
 	Reset to the default configuration.
       </Help>
     </Value>
   </CommandClass>
-
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>
-

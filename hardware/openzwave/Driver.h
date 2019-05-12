@@ -51,6 +51,12 @@ namespace OpenZWave
 	class Thread;
 	class ControllerReplication;
 	class Notification;
+	class DNSThread;
+	struct DNSLookup;
+	class TimerThread;
+	class i_HttpClient;
+	struct HttpDownload;
+	class ManufacturerSpecificDB;
 
 	/** \brief The Driver class handles communication between OpenZWave
 	 *  and a device attached via a serial port (typically a controller).
@@ -62,6 +68,8 @@ namespace OpenZWave
 		friend class Group;
 		friend class CommandClass;
 		friend class ControllerReplication;
+		friend class DNSThread;
+		friend class i_HttpClient;
 		friend class Value;
 		friend class ValueStore;
 		friend class ValueButton;
@@ -73,8 +81,11 @@ namespace OpenZWave
 		friend class NoOperation;
 		friend class SceneActivation;
 		friend class WakeUp;
+		friend class ApplicationStatus; /* for Notification messages */
 		friend class Security;
 		friend class Msg;
+		friend class ManufacturerSpecificDB;
+		friend class TimerThread;
 
 	//-----------------------------------------------------------------------------
 	//	Controller Interfaces
@@ -150,6 +161,8 @@ namespace OpenZWave
 		void RemoveQueues( uint8 const _nodeId );
 
 		Thread*					m_driverThread;			/**< Thread for reading from the Z-Wave controller, and for creating and managing the other threads for sending, polling etc. */
+		DNSThread*				m_dns;					/**< DNSThread Class */
+		Thread*					m_dnsThread;			/**< Thread for DNS Queries */
 		Mutex*					m_initMutex;            /**< Mutex to ensure proper ordering of initialization/deinitialization */
 		bool					m_exit;					/**< Flag that is set when the application is exiting. */
 		bool					m_init;					/**< Set to true once the driver has been initialised */
@@ -163,8 +176,18 @@ namespace OpenZWave
 	//-----------------------------------------------------------------------------
 	private:
 		void RequestConfig();							// Get the network configuration from the Z-Wave network
-		bool ReadConfig();								// Read the configuration from a file
-		void WriteConfig();								// Save the configuration to a file
+		bool ReadCache();								// Read the configuration from a file
+		void WriteCache();								// Save the configuration to a file
+
+	//-----------------------------------------------------------------------------
+	//	Timer
+	//-----------------------------------------------------------------------------
+	private:
+		TimerThread*    m_timer;					/**< TimerThread Class */
+		Thread*         m_timerThread;    /**< Thread for timer events */
+
+	public:
+		TimerThread*		GetTimer() { return m_timer; }
 
 	//-----------------------------------------------------------------------------
 	//	Controller
@@ -194,6 +217,7 @@ namespace OpenZWave
 		bool IsBridgeController()const{ return (m_libraryType == 7); }
 		bool IsInclusionController()const{ return ((m_controllerCaps & ControllerCaps_SIS) != 0); }
 
+		bool HasExtendedTxStatus()const{ return m_hasExtendedTxStatus; }
 
 		uint32 GetHomeId()const{ return m_homeId; }
 		uint8 GetControllerNodeId()const{ return m_Controller_nodeId; }
@@ -262,6 +286,7 @@ namespace OpenZWave
 		uint8					m_initVersion;								// Version of the Serial API used by the controller.
 		uint8					m_initCaps;									// Set of flags indicating the serial API capabilities (See IsSlave, HasTimerSupport, IsPrimaryController and IsStaticUpdateController above).
 		uint8					m_controllerCaps;							// Set of flags indicating the controller's capabilities (See IsInclusionController above).
+		bool					m_hasExtendedTxStatus;						// True if the controller accepted SERIAL_API_SETUP_CMD_TX_STATUS_REPORT
 		uint8					m_Controller_nodeId;						// Z-Wave Controller's own node ID.
 		Node*					m_nodes[256];								// Array containing all the node objects.
 		Mutex*					m_nodeMutex;								// Serializes access to node data
@@ -275,10 +300,11 @@ namespace OpenZWave
 	//-----------------------------------------------------------------------------
 	private:
 		bool ReadMsg();
-		void ProcessMsg( uint8* _data );
+		void ProcessMsg( uint8* _data, uint8 _length );
 
 		void HandleGetVersionResponse( uint8* _data );
 		void HandleGetRandomResponse( uint8* _data );
+		void HandleSerialAPISetupResponse( uint8* _data );
 		void HandleGetControllerCapabilitiesResponse( uint8* _data );
 		void HandleGetSerialAPICapabilitiesResponse( uint8* _data );
 		void HandleSerialAPISoftResetResponse( uint8* _data );
@@ -310,7 +336,7 @@ namespace OpenZWave
 		bool HandleNetworkUpdateResponse( uint8* _data );
 		void HandleGetRoutingInfoResponse( uint8* _data );
 
-		void HandleSendDataRequest( uint8* _data, bool _replication );
+		void HandleSendDataRequest( uint8* _data, uint8 _length, bool _replication );
 		void HandleAddNodeToNetworkRequest( uint8* _data );
 		void HandleCreateNewPrimaryRequest( uint8* _data );
 		void HandleControllerChangeRequest( uint8* _data );
@@ -565,7 +591,6 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		enum MsgQueue
 		{
 			MsgQueue_Command = 0,
-			MsgQueue_Security,
 			MsgQueue_NoOp,
 			MsgQueue_Controller,
 			MsgQueue_WakeUp,
@@ -648,7 +673,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		{
 			MsgQueueCmd_SendMsg = 0,
 			MsgQueueCmd_QueryStageComplete,
-			MsgQueueCmd_Controller
+			MsgQueueCmd_Controller,
+			MsgQueueCmd_ReloadNode
 		};
 
 		class MsgQueueItem
@@ -678,6 +704,11 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 					{
 						return( (_other.m_cci->m_controllerCommand == m_cci->m_controllerCommand) && (_other.m_cci->m_controllerCallback == m_cci->m_controllerCallback) );
 					}
+					else if (m_command == MsgQueueCmd_ReloadNode )
+					{
+						return (_other.m_nodeId == m_nodeId);
+					}
+
 				}
 
 				return false;
@@ -751,6 +782,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint32 GetAssociations( uint8 const _nodeId, uint8 const _groupIdx, uint8** o_associations );
 		uint32 GetAssociations( uint8 const _nodeId, uint8 const _groupIdx, InstanceAssociation** o_associations );
 		uint8 GetMaxAssociations( uint8 const _nodeId, uint8 const _groupIdx );
+		bool IsMultiInstance( uint8 const _nodeId, uint8 const _groupIdx );
 		string GetGroupLabel( uint8 const _nodeId, uint8 const _groupIdx );
 		void AddAssociation( uint8 const _nodeId, uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00 );
 		void RemoveAssociation( uint8 const _nodeId, uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00 );
@@ -789,13 +821,13 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 			uint32 m_badroutes;			// Number of failed messages due to bad route response
 			uint32 m_noack;				// Number of no ACK returned errors
 			uint32 m_netbusy;			// Number of network busy/failure messages
-			uint32 m_notidle;
+			uint32 m_notidle;			// Number of RF Network Busy messages
+			uint32 m_txverified;		// Number of TX Verified messages
 			uint32 m_nondelivery;		// Number of messages not delivered to network
 			uint32 m_routedbusy;		// Number of messages received with routed busy status
 			uint32 m_broadcastReadCnt;	// Number of broadcasts read
 			uint32 m_broadcastWriteCnt;	// Number of broadcasts sent
 		};
-
 		void LogDriverStatistics();
 
 	private:
@@ -819,6 +851,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint32 m_noack;				// Number of no ACK returned errors
 		uint32 m_netbusy;			// Number of network busy/failure messages
 		uint32 m_notidle;			// Number of not idle messages
+		uint32 m_txverified;		// Number of TX Verified messages
 		uint32 m_nondelivery;		// Number of messages not delivered to network
 		uint32 m_routedbusy;		// Number of messages received with routed busy status
 		uint32 m_broadcastReadCnt;	// Number of broadcasts read
@@ -846,6 +879,78 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint8 m_nonceReportSent;
 		uint8 m_nonceReportSentAttempt;
 		bool m_inclusionkeySet;
+
+	//-----------------------------------------------------------------------------
+	//	Event Signaling for DNS and HTTP Threads
+	//-----------------------------------------------------------------------------
+	private:
+		struct EventMsg {
+			enum EventType {
+				Event_DNS = 1,
+				Event_Http
+			};
+			EventType type;
+			union {
+					DNSLookup *lookup;
+					HttpDownload *httpdownload;
+			} event;
+		};
+
+		void SubmitEventMsg(EventMsg *);
+		void ProcessEventMsg();
+
+
+		OPENZWAVE_EXPORT_WARNINGS_OFF
+				list<EventMsg *>			m_eventQueueMsg;
+		OPENZWAVE_EXPORT_WARNINGS_ON
+				Event*					m_queueMsgEvent;				// Events for each queue, which are signalled when the queue is not empty
+				Mutex*					m_eventMutex;						// Serialize access to the queues
+
+
+	//-----------------------------------------------------------------------------
+	//	DNS Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		bool CheckNodeConfigRevision(Node *);
+		bool CheckMFSConfigRevision();
+		void ReloadNode(uint8 const _nodeId);
+
+	private:
+		void processConfigRevision(DNSLookup *);
+
+	//-----------------------------------------------------------------------------
+	//	HTTP Client Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		bool setHttpClient(i_HttpClient *client);
+	private:
+		bool startConfigDownload(uint16 _manufacturerId, uint16 _productType, uint16 _productId, string configfile, uint8 node = 0);
+		bool startMFSDownload(string configfile);
+		bool refreshNodeConfig(uint8 node);
+		void processDownload(HttpDownload *);
+		i_HttpClient *m_httpClient;
+
+	//-----------------------------------------------------------------------------
+	//	Metadata Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		string const GetMetaData(	uint8 const _nodeId, Node::MetaDataFields _metadata );
+		Node::ChangeLogEntry const GetChangeLog( uint8 const _nodeId, uint32_t revision);
+
+
+	//-----------------------------------------------------------------------------
+	//	ManufacturerSpecificDB Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		ManufacturerSpecificDB *GetManufacturerSpecificDB();
+		bool downloadConfigRevision(Node *);
+		bool downloadMFSRevision();
+	private:
+		ManufacturerSpecificDB *m_mfs;
 
 	};
 

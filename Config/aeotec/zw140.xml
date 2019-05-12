@@ -3,7 +3,7 @@
 Aeotec ZW140 Dual Nano Switch, base on Engineering Spec 03/19/2018 V2.0
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D 
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="list" index="4" genre="config" label="Over heat protection" units="" min="0" max="1" size="1" value="0">

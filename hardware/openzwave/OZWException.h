@@ -53,7 +53,8 @@ OPENZWAVE_EXPORT_WARNINGS_OFF
 				OZWEXCEPTION_INVALID_HOMEID = 100,
 				OZWEXCEPTION_INVALID_VALUEID,
 				OZWEXCEPTION_CANNOT_CONVERT_VALUEID,
-				OZWEXCEPTION_SECURITY_FAILED
+				OZWEXCEPTION_SECURITY_FAILED,
+				OZWEXCEPTION_INVALID_NODEID
 			};
 
 			//-----------------------------------------------------------------------------
@@ -103,7 +104,10 @@ OPENZWAVE_EXPORT_WARNINGS_OFF
 						ss << " - CannotConvertValueIDError (" << exitCode << ") Msg: " << msg;
 						break;
 					case OZWEXCEPTION_SECURITY_FAILED:
-						ss << " - Security Initilization Failed (" << exitCode << ") Msg: " << msg;
+						ss << " - Security Initialization Failed (" << exitCode << ") Msg: " << msg;
+						break;
+					case OZWEXCEPTION_INVALID_NODEID:
+						ss << " - InvalidNodeIDError (" << exitCode << ") Msg: " << msg;
 						break;
 				}
 				return ss.str();

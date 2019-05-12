@@ -1,15 +1,37 @@
-<Product xmlns="http://code.google.com/p/open-zwave/">
-    <!-- NodOn ASP-3-1-00 Smart Plug Z-Wave+ -->
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0165:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/nodon/asp3100SmartPlug.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1069/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Long press during 2 seconds to send several NIF during 30 seconds or a triple press to send a single NIF</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Long press during 2 seconds to send several NIF during 30 seconds or a triple press to send a single NIF</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">The NodOn Smart Plug can be controlled by any kind of Z-Wave® (or Z-Wave Plus®) gateway or other Z-Wave® controller (standalone mode) such as the NodOn® Soft Remote or Octan Remote.
+In both standard, Type E (French) or Schuko (German), the plug can be mounted in both side (head up or head down). Combined to its ultra-thin design, these both specificities allow an easy integration, without obstructing nearby power holes on a power strip. 
+Equipped with a very small super-capacitor, the NodOn Smart Plug is able to send an emergency frame to the gateway in case of power outage. 
+
+The NodOn Smart Plug is based on brand new 500 series Z-Wave® module from Sigma Designs®, and support all the new features of Z-Wave Plus® standard: 
+Longer range (up to 40m), lower power consumption, higher data rate transmission, and many more new features.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Long press during more than 5 seconds then release.
+Please use this procedure only when the primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave+ Smart Plug ON/OFF (Type E)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1069/NodOn_SmartPlug_ZWave_UserGuide_EN.pdf</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">ASP-3-1-00</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1069/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- NodOn ASP-3-1-00 Smart Plug Z-Wave+ -->
     <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" index="1" genre="config" label="Default State" min="0" max="2" size="1" value="2">
-            <Help>After Power-On-Reset of the device, the Channel Output State is set in Default State</Help>
-            <Item label="Channel output state OFF" value="0"/>
-            <Item label="Channel output state ON" value="1"/>
-            <Item label="Channel output state remembers previous state" value="2"/>
-        </Value>
-        <Value type="byte" index="2" genre="config" label="Power Failure" min="0" max="63" value="0">
-            <Help>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Default State" max="2" min="0" size="1" type="list" value="2">
+      <Help>After Power-On-Reset of the device, the Channel Output State is set in Default State</Help>
+      <Item label="Channel output state OFF" value="0"/>
+      <Item label="Channel output state ON" value="1"/>
+      <Item label="Channel output state remembers previous state" value="2"/>
+    </Value>
+    <Value genre="config" index="2" label="Power Failure" max="63" min="0" type="byte" value="0">
+      <Help>
                 This parameter allows unsolicited Notification Report Commands and/or Basic Set Commands to be sent when a power failure detection and/or a power failure recover occurs. Only the four least significant bits can be addressed.
                 
                 Bit 0: Enable or disable power failure detection and recover. Setting this bit to 1 automatically allows the product to send unsolicited report through Lifeline. If this bit is not set, it is not possible to enable Association Group 4, 5 and 6. Consequently, if a Configuration Set Command is received, enabling one or more Association Groups (4, 5 and / or 6), this bit will be automatically set.
@@ -19,84 +41,84 @@
                 Bit 4: Enable or disable Basic Set ON Command sent to associated nodes of Group 7, when power recover is detected.
                 Bit 5: Enable or disable Basic Set OFF Command sent to associated nodes of Group 8, when power recover is detected.
             </Help>
-        </Value>
-        <Value type="byte" index="3" genre="config" label="Follow State" size="1" min="0" max="3" value="3">
-            <Help>
+    </Value>
+    <Value genre="config" index="3" label="Follow State" max="3" min="0" size="1" type="byte" value="3">
+      <Help>
                 This parameter allows Basic Set Commands to be sent when the channel output state changes (ON or OFF). Only the two least significant bits can be addressed.
                 Bit 0: Enable or disable Basic Set Commands sent to associated nodes of Group 2, when Channel Output State changes.
                 Bit 1: Enable or disable Basic Set Commands sent to associated nodes of Group 3, when Channel Output State changes.
             </Help>
-        </Value>
-        <Value type="list" index="4" genre="config" label="Always ON" size="1" min="0" max="1" value="0">
-            <Help>This parameter forces the channel output state to be always ON. It is not possible to turn OFF the channel output, which means that:
+    </Value>
+    <Value genre="config" index="4" label="Always ON" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter forces the channel output state to be always ON. It is not possible to turn OFF the channel output, which means that:
                 * All Switch OFF Command is rejected
                 * Basic Set OFF Command is rejected
                 * Binary Switch OFF Command is rejected
                 * Local Control does not toggle channel output state
                 * Product cannot be triggered by unsolicited Notification Report Command and enters in Alarm Mode</Help>
-            <Item label="Channel output state always ON disable" value="0"/>
-            <Item label="Channel output state always ON enable" value="1"/>
-        </Value>
-        <Value type="short" index="5" genre="config" label="Alarm 1 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="6" genre="config" label="Alarm 1 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="short" index="7" genre="config" label="Alarm 2 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="8" genre="config" label="Alarm 2 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="short" index="9" genre="config" label="Alarm 3 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="10" genre="config" label="Alarm 3 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="short" index="11" genre="config" label="Alarm 4 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="12" genre="config" label="Alarm 4 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="short" index="13" genre="config" label="Alarm 5 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="14" genre="config" label="Alarm 5 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="short" index="15" genre="config" label="Alarm 6 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="16" genre="config" label="Alarm 6 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="short" index="7" genre="config" label="Alarm 7 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="18" genre="config" label="Alarm 7 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="short" index="19" genre="config" label="Alarm 8 Type" size="2" min="0" max="65535" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-        <Value type="int" index="20" genre="config" label="Alarm 8 Parameters" size="4" min="0" max="4294967295" value="0">
-            <Help>see Appendix C - Description of Alarm Parameters</Help>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="8">
-            <Group index="1" max_associations="5" label="Lifeline" />
-            <Group index="2" max_associations="5" label="Follow State" />
-            <Group index="3" max_associations="5" label="Follow Complementary State" />
-            <Group index="4" max_associations="5" label="Power Failure Notification" auto="true"/>
-            <Group index="5" max_associations="5" label="Power Failure Set On" />
-            <Group index="6" max_associations="5" label="Power Failure Set Off" />
-            <Group index="7" max_associations="5" label="Power Recover Set On" />
-            <Group index="8" max_associations="5" label="Power Recover Set Off" />
-        </Associations>
-    </CommandClass>
+      <Item label="Channel output state always ON disable" value="0"/>
+      <Item label="Channel output state always ON enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Alarm 1 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="6" label="Alarm 1 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="7" label="Alarm 2 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="8" label="Alarm 2 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="9" label="Alarm 3 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="10" label="Alarm 3 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="11" label="Alarm 4 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="12" label="Alarm 4 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="13" label="Alarm 5 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="14" label="Alarm 5 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="15" label="Alarm 6 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="16" label="Alarm 6 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="7" label="Alarm 7 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="18" label="Alarm 7 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="19" label="Alarm 8 Type" max="65535" min="0" size="2" type="short" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+    <Value genre="config" index="20" label="Alarm 8 Parameters" max="4294967295" min="0" size="4" type="int" value="0">
+      <Help>see Appendix C - Description of Alarm Parameters</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="8">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Follow State" max_associations="5"/>
+      <Group index="3" label="Follow Complementary State" max_associations="5"/>
+      <Group auto="true" index="4" label="Power Failure Notification" max_associations="5"/>
+      <Group index="5" label="Power Failure Set On" max_associations="5"/>
+      <Group index="6" label="Power Failure Set Off" max_associations="5"/>
+      <Group index="7" label="Power Recover Set On" max_associations="5"/>
+      <Group index="8" label="Power Recover Set Off" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

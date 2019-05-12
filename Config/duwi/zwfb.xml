@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Popp / Duwi ZW FB Wireless remote control 10-channel -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 
 	<!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
 	<CommandClass id="112">

@@ -1,37 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!--
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!--
     Fibaro FGT-001
     https://products.z-wavealliance.org/products/2586
     config based on https://manuals.fibaro.com/content/manuals/en/FGT-001/FGT-001-EN-T-v1.0.pdf
     -->
     <!-- Thermostat -->
-    <CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE">
-        <Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="255" value="0">
-            <Item label="Off" value="0"/>
-            <Item label="Heat" value="1"/>
-            <Item label="Manual Valve Control" value="31"/>
-        </Value>
-        <SupportedModes>
-            <Mode index="0" label="Off"/>
-            <Mode index="1" label="Heat"/>
-            <Mode index="31" label="Manual Valve Control"/>
-        </SupportedModes>
-    </CommandClass>
-
-    <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
-        <Instance index="1"/>
-        <Value type="decimal" genre="user" instance="1" index="1" label="Heating" units="C" read_only="false" write_only="false" min="16" max="24" value="20"/>
-    </CommandClass>
-
-    <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="int" genre="config" instance="1" index="1" label="Override Schedule duration" min="10" max="10000" value="240">
-            <Help>This parameter determines duration of Override Schedule after turning the knob while normal schedule is active (set by Schedule CC).</Help>
-        </Value>
-        <Value type="int" genre="config" instance="1" index="2" label="Additional functions" value="1" size="4">
-            <Help>This parameter allows to enable different additional functions of the device.
+  <CommandClass id="64">
+    <Value genre="user" index="0" instance="1" label="Mode" max="255" min="0" read_only="false" type="list" units="" value="0" write_only="false">
+      <Item label="Off" value="0"/>
+      <Item label="Heat" value="1"/>
+      <Item label="Manual Valve Control" value="31"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+      <Mode index="31" label="Manual Valve Control"/>
+    </SupportedModes>
+    <Compatibility/>
+  </CommandClass>
+  <CommandClass id="67">
+    <Instance index="1"/>
+    <Value genre="user" index="1" instance="1" label="Heating" max="24" min="16" read_only="false" type="decimal" units="C" value="20" write_only="false"/>
+    <Compatibility>
+      <Base>0</Base>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Override Schedule duration" max="10000" min="10" type="int" value="240">
+      <Help>This parameter determines duration of Override Schedule after turning the knob while normal schedule is active (set by Schedule CC).</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Additional functions" size="4" type="int" value="1">
+      <Help>This parameter allows to enable different additional functions of the device.
                 1) Enable open window detector
                 2) Enable fast open window detector
                 4) Increase receiver sensitivity (shortens battery life)
@@ -39,27 +40,29 @@
                 16) Protect from setting Full ON and Full OFF mode by turning the knob manually
                 NOTE: Parameter values may be combined, e.g. 1+8=9 means than open window detector and LED indications when controlling remotely are enabled.
             </Help>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="3" label="Additional functions status" value="0" size="4" read_only="true">
-            <Help>This parameter allows to check status of different additional functions.
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Additional functions status" read_only="true" size="4" type="list" value="0">
+      <Help>This parameter allows to check status of different additional functions.
                 1) Optional temperature sensor connected and operational
                 2) Open window detected
                 NOTE: Parameter values may be combined, e.g. 1+2=3 means than optional sensor works properly and open window detection was triggered.
             </Help>
-            <Item label="None" value="0"/>
-            <Item label="Optional temperature sensor connected and operational" value="1"/>
-            <Item label="Open window detected" value="2"/>
-            <Item label="Optional temperature sensor and Open window detected" value="3"/>
-        </Value>
-    </CommandClass>
-
-    <!-- Map endpoints to instances -->
-    <CommandClass id="96" mapping="endpoints"/>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="1" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
+      <Item label="None" value="0"/>
+      <Item label="Optional temperature sensor connected and operational" value="1"/>
+      <Item label="Open window detected" value="2"/>
+      <Item label="Optional temperature sensor and Open window detected" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!--
     Wenzhou TKB Control System TZ69 Smart energy plug in switch
     http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1665/TZ69%20english%20manual.pdf

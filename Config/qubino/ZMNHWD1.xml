@@ -1,39 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Qubino: ZMNHWD1 Flush RGBW Dimmer Z-Wave Plus-->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Qubino: ZMNHWD1 Flush RGBW Dimmer Z-Wave Plus-->
 	<!-- Configuration -->
-	<CommandClass id="112">
-		<Value type="list" genre="config" instance="1" index="1" label="Input switch type" size="1" min="1" max="2" value="1">
-			<Help>Please power cycle the device when parameter is changed</Help>
-			<Item label="Bi-stable" value="1"/>
-			<Item label="Mono-stable" value="2"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="2" label="Switch mode" size="1" min="0" max="1" value="3">
-			<Help> Using this parameter, it is possible to select various modes of RGBW Dimmer operation</Help>
-			<Item label="Normal Mode" value="1"/>
-			<Item label="Brightness Mode" value="2"/>
-			<Item label="Rainbow Mode" value="3"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="3" label="Auto scene mode set" size="1" min="0" max="5" value="1">
-			<Help>Activation of the programmed scene changing color shades</Help>
-			<Item label="None" value="0"/>
-			<Item label="Ocean" value="1"/>
-			<Item label="Lightning" value="2"/>
-			<Item label="Rainbow" value="3"/>
-			<Item label="Snow" value="4"/>
-			<Item label="Sun" value="5"/>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="4" label="Auto scene duration" size="1" min="-128" max="127" value="3">
-			<Help>Using this parameter, it is possible to change Auto scene mode duration. 1 - 127 delay duration is from 1s to 127s, -128 ~ -1 delay duration is from 1min. to
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Input switch type" max="2" min="1" size="1" type="list" value="1">
+      <Help>Please power cycle the device when parameter is changed</Help>
+      <Item label="Bi-stable" value="1"/>
+      <Item label="Mono-stable" value="2"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Switch mode" max="1" min="0" size="1" type="list" value="3">
+      <Help> Using this parameter, it is possible to select various modes of RGBW Dimmer operation</Help>
+      <Item label="Normal Mode" value="1"/>
+      <Item label="Brightness Mode" value="2"/>
+      <Item label="Rainbow Mode" value="3"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Auto scene mode set" max="5" min="0" size="1" type="list" value="1">
+      <Help>Activation of the programmed scene changing color shades</Help>
+      <Item label="None" value="0"/>
+      <Item label="Ocean" value="1"/>
+      <Item label="Lightning" value="2"/>
+      <Item label="Rainbow" value="3"/>
+      <Item label="Snow" value="4"/>
+      <Item label="Sun" value="5"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Auto scene duration" max="127" min="-128" size="1" type="byte" value="3">
+      <Help>Using this parameter, it is possible to change Auto scene mode duration. 1 - 127 delay duration is from 1s to 127s, -128 ~ -1 delay duration is from 1min. to
 127min</Help>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Lifeline" />
-		</Associations>
-	</CommandClass>
-	<!-- Map endpoints to instances -->
-	<CommandClass id="96" mapping="endpoints" />
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
 </Product>

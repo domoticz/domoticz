@@ -33,19 +33,24 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_USER_CODE (0x63), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class UserCode: public CommandClass
 	{
-	public:
+	private:
 		enum UserCodeStatus
 		{
 			UserCode_Available		= 0x00,
 			UserCode_Occupied		= 0x01,
 			UserCode_Reserved		= 0x02,
-			UserCode_NotAvailable		= 0xfe,
+			UserCode_NotAvailable	= 0xfe,
 			UserCode_Unset			= 0xff
 		};
-
+		struct UserCodeEntry {
+			UserCodeStatus status;
+			uint8 usercode[10];
+		};
+	public:
 		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new UserCode( _homeId, _nodeId ); }
 		virtual ~UserCode(){}
 
@@ -53,10 +58,8 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_USER_CODE"; }
 
 		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
 		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
@@ -100,9 +103,8 @@ namespace OpenZWave
 		}
 
 		bool		m_queryAll;				// True while we are requesting all the user codes.
-		uint8		m_currentCode;
-		uint8		m_userCodeCount;
-		uint8		m_userCodesStatus[256];
+		uint16		m_currentCode;
+		std::map<uint16, UserCodeEntry>	m_userCode;
 		bool		m_refreshUserCodes;
 	};
 

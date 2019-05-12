@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 <!-- 
 Aeotec DSC08101 Smart Energy Illuminator
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584521
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="list" index="1" genre="config" label="Multilevel Sensor Report Command" size="1" min="0" max="1" value="0">

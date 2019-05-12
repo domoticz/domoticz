@@ -35,6 +35,7 @@ namespace OpenZWave
 	class EventImpl;
 
 	/** \brief Platform-independent definition of event objects.
+	 * \ingroup Platform
 	 */
 	class Event: public Wait
 	{

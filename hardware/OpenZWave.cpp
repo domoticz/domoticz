@@ -85,7 +85,7 @@ static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
 	{ "", 0 }
 };
 
-unsigned char GetIndexFromAlarm(const std::string &sLabel)
+unsigned char GetIndexFromAlarm(const std::string& sLabel)
 {
 	int ii = 0;
 	while (AlarmToIndexMapping[ii].iIndex != 0)
@@ -134,7 +134,7 @@ static const _tAlarmNameToIndexMapping AlarmTypeToIndexMapping[] = {
 	{ "", 0 }
 };
 
-unsigned char GetIndexFromAlarmType(const std::string &sLabel)
+unsigned char GetIndexFromAlarmType(const std::string& sLabel)
 {
 	int ii = 0;
 	while (!AlarmTypeToIndexMapping[ii].sLabel.empty())
@@ -157,7 +157,7 @@ extern std::string szUserDataFolder;
 #define DEBUG_ZWAVE_INT
 #endif
 
-const char *cclassStr(uint8 cc)
+const char* cclassStr(uint8 cc)
 {
 	switch (cc) {
 	default:
@@ -385,7 +385,7 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo(const unsigned int homeID, const i
 std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int nodeID)
 {
 	std::string strState = "Unknown";
-	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	COpenZWave::NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (!pNode)
 		return strState;
 
@@ -402,7 +402,7 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	return strState;
 }
 
-uint8_t COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID &vID)
+uint8_t COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID& vID)
 {
 	uint8_t instance;
 
@@ -463,9 +463,9 @@ void COpenZWave::WriteControllerConfig()
 	m_LastControllerConfigWrite = mytime(NULL);
 }
 
-void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void *_context)
+void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void* _context)
 {
-	COpenZWave *pClass = static_cast<COpenZWave*>(_context);
+	COpenZWave* pClass = static_cast<COpenZWave*>(_context);
 	pClass->OnZWaveDeviceStatusUpdate(cs, err);
 }
 
@@ -475,7 +475,7 @@ void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driv
 //-----------------------------------------------------------------------------
 void OnNotification(OpenZWave::Notification const* _notification, void* _context)
 {
-	COpenZWave *pClass = static_cast<COpenZWave*>(_context);
+	COpenZWave* pClass = static_cast<COpenZWave*>(_context);
 	pClass->OnZWaveNotification(_notification);
 }
 
@@ -599,7 +599,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			_log.Log(LOG_STATUS, "OpenZWave: Invalid NodeID received. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 			return;
 		}
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			// Add the new value to our list
 
@@ -622,7 +622,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		}
 		break;
 	case OpenZWave::Notification::Type_SceneEvent:
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
 
@@ -635,7 +635,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_ValueRemoved:
 		if ((_nodeID == 0) || (_nodeID == 255))
 			return;
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			// Remove the value from out list
 			for (std::list<OpenZWave::ValueID>::iterator it = nodeInfo->Instances[instance][commandClass].Values.begin(); it != nodeInfo->Instances[instance][commandClass].Values.end(); ++it)
@@ -657,7 +657,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			return;
 		}
 		// One of the node values has changed
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
 			nodeInfo->LastSeen = m_updateTime;
@@ -667,7 +667,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_ValueRefreshed:
 		// One of the node values has changed
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
 			//UpdateValue(vID);
@@ -680,7 +680,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		switch (subType)
 		{
 		case OpenZWave::Notification::Code_MsgComplete:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_AWAKE;
@@ -690,7 +690,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			break;
 		case OpenZWave::Notification::Code_Awake:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_AWAKE;
@@ -700,7 +700,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			break;
 		case OpenZWave::Notification::Code_Sleep:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_SLEEP;
@@ -709,7 +709,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			break;
 		case OpenZWave::Notification::Code_Dead:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_DEAD;
@@ -719,7 +719,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			_log.Log(LOG_STATUS, "OpenZWave: Received Node Dead notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 			break;
 		case OpenZWave::Notification::Code_Alive:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_AWAKE;
@@ -737,7 +737,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			break;
 		case OpenZWave::Notification::Code_NoOperation:
 			//Code_NoOperation send to node
-			if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 			}
 			break;
@@ -749,7 +749,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	break;
 	case OpenZWave::Notification::Type_Group:
 		// One of the node's association groups has changed
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->LastSeen = m_updateTime;
 		}
@@ -759,7 +759,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			return;
 		// We have received an event from the node, caused by a
 		// basic_set or hail message.
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
 			UpdateNodeEvent(vID, static_cast<int>(_notification->GetEvent()));
@@ -768,14 +768,14 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		}
 		break;
 	case OpenZWave::Notification::Type_PollingDisabled:
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->polled = false;
 			nodeInfo->LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_PollingEnabled:
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->polled = true;
 			nodeInfo->LastSeen = m_updateTime;
@@ -812,7 +812,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		NodeQueried(_homeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_NodeNaming:
-		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			std::string product_name = m_pManager->GetNodeProductName(_homeID, _nodeID);
 			if (nodeInfo->Product_name != product_name)
@@ -843,17 +843,17 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 	}
 	break;
-/*
-	case OpenZWave::Notification::Type_UserAlerts:
-	{
-		OpenZWave::Notification::UserAlertNofification uacode = (OpenZWave::Notification::UserAlertNofification)_notification->GetUserAlertType();
-		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
-	}
-	break;
+	/*
+		case OpenZWave::Notification::Type_UserAlerts:
+		{
+			OpenZWave::Notification::UserAlertNofification uacode = (OpenZWave::Notification::UserAlertNofification)_notification->GetUserAlertType();
+			_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+		}
+		break;
+	*/
 	case OpenZWave::Notification::Type_ManufacturerSpecificDBReady:
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 		break;
-*/
 	default:
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID, _nodeID);
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
@@ -1088,9 +1088,9 @@ bool COpenZWave::GetFailedState()
 	return m_initFailed;
 }
 
-bool COpenZWave::GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue)
+bool COpenZWave::GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID& nValue)
 {
-	COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	COpenZWave::NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 		return false;
 
@@ -1106,9 +1106,9 @@ bool COpenZWave::GetValueByCommandClass(const int nodeID, const int instanceID, 
 	return false;
 }
 
-bool COpenZWave::GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue)
+bool COpenZWave::GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string& vLabel, OpenZWave::ValueID& nValue)
 {
-	COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	COpenZWave::NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 		return false;
 
@@ -1128,7 +1128,7 @@ bool COpenZWave::GetValueByCommandClassLabel(const int nodeID, const int instanc
 	return false;
 }
 
-bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue)
+bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo* pNode, const int index, OpenZWave::ValueID& nValue)
 {
 	for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance = pNode->Instances.begin(); ittInstance != pNode->Instances.end(); ++ittInstance)
 	{
@@ -1173,7 +1173,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 {
 	if (m_pManager == NULL)
 		return false;
-	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 	{
 		if (!m_awakeNodesQueried)
@@ -1191,7 +1191,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return false;
 	}
 
-	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
+	_tZWaveDevice* pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
 	if (pDevice)
 	{
 		if (
@@ -1294,7 +1294,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			{
 				//Device is switched off, lets see if there is a power sensor for this device,
 				//and set its value to 0 as well
-				_tZWaveDevice *pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+				_tZWaveDevice* pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 				if (pPowerDevice == NULL)
 				{
 					pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
@@ -1329,7 +1329,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			{
 				//Device is switched off, lets see if there is a power sensor for this device,
 				//and set its value to 0 as well
-				_tZWaveDevice *pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+				_tZWaveDevice* pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 				if (pPowerDevice == NULL)
 				{
 					pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
@@ -1354,18 +1354,18 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 
 bool COpenZWave::HasNodeFailed(const int nodeID)
 {
-	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 		return true;
 	return m_pManager->IsNodeFailed(m_controllerID, nodeID);
 }
 
-bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr)
+bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string& ColorStr)
 {
 	if (m_pManager == NULL)
 		return false;
 
-	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 	{
 		if (!m_awakeNodesQueried)
@@ -1476,7 +1476,7 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	m_updateTime = mytime(NULL);
 }
 
-void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeInfo)
+void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeInfo)
 {
 	if (m_pManager == NULL)
 		return;
@@ -1510,7 +1510,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	{
 		if (vLabel == "Application Version")
 		{
-			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (pNode)
 			{
 				std::string strValue;
@@ -1753,7 +1753,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
-					_device.floatValue = fValue*_device.scaleMultiply;
+					_device.floatValue = fValue * _device.scaleMultiply;
 					InsertDevice(_device);
 				}
 			}
@@ -1839,7 +1839,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (vUnits == "F")
 				{
 					//Convert to celcius
-					fValue = float((fValue - 32)*(5.0 / 9.0));
+					fValue = float((fValue - 32) * (5.0 / 9.0));
 				}
 				_device.floatValue = fValue;
 				_device.commandClassID = 49;
@@ -1854,7 +1854,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				if (vUnits != "lux")
 				{
 					//convert from % to Lux (where max is 1000 Lux)
-					fValue = (1000.0f / 100.0f)*fValue;
+					fValue = (1000.0f / 100.0f) * fValue;
 					if (fValue > 1000.0f)
 						fValue = 1000.0f;
 				}
@@ -1899,7 +1899,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
-				_device.floatValue = fValue*10.0f;
+				_device.floatValue = fValue * 10.0f;
 				_device.commandClassID = 49;
 				_device.devType = ZDTYPE_SENSOR_BAROMETER;
 				InsertDevice(_device);
@@ -1938,7 +1938,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
-					_device.floatValue = fValue*_device.scaleMultiply;
+					_device.floatValue = fValue * _device.scaleMultiply;
 					InsertDevice(_device);
 				}
 			}
@@ -2119,7 +2119,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 			if (vUnits == "F")
 			{
 				//Convert to celcius
-				fValue = float((fValue - 32)*(5.0 / 9.0));
+				fValue = float((fValue - 32) * (5.0 / 9.0));
 			}
 			_device.floatValue = fValue;
 			_device.commandClassID = COMMAND_CLASS_THERMOSTAT_SETPOINT;
@@ -2130,7 +2130,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_THERMOSTAT_MODE)
 	{
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
 		if (vType == OpenZWave::ValueID::ValueType_List)
@@ -2167,7 +2167,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_THERMOSTAT_FAN_MODE)
 	{
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
 		if (vType == OpenZWave::ValueID::ValueType_List)
@@ -2204,7 +2204,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_CLOCK)
 	{
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
 
@@ -2244,7 +2244,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					)
 				{
 					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d (0x%02x), Thermostat Clock: %s %02d:%02d", NodeID, NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
-					_device.intvalue = (pNode->tClockDay*(24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
+					_device.intvalue = (pNode->tClockDay * (24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
 					_device.commandClassID = COMMAND_CLASS_CLOCK;
 					_device.devType = ZDTYPE_SENSOR_THERMOSTAT_CLOCK;
 					InsertDevice(_device);
@@ -2265,21 +2265,34 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
 	{
-		if (vLabel == "Scene ID")
+		if (vLabel.find("Scene Count") == 0)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Byte)
+			if (vType == OpenZWave::ValueID::ValueType_Int)
 			{
-				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+				if (m_pManager->GetValueAsInt(vID, &iValue) == true)
 				{
-					if (byteValue == 0)
-						return;
-					instance = byteValue;
-					_device.instanceID = instance;
-					_device.devType = ZDTYPE_CENTRAL_SCENE;
-					_device.intvalue = 0;
-					InsertDevice(_device);
+					while (1 == 0);
 				}
 			}
+		}
+		else if (vLabel.find("Scene ") == 0)
+		{
+			int32 lValue = 0;
+			if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+					return;
+			}
+			if ((lValue == 0)|| (lValue == 2)) // CentralSceneMask_KeyReleased
+				return;
+			if (lValue != 1)
+				return; //only accept CentralSceneMask_KeyPressed1time
+
+			instance = vIndex;
+			_device.instanceID = instance;
+			_device.devType = ZDTYPE_CENTRAL_SCENE;
+			_device.intvalue = 0;
+			InsertDevice(_device);
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
@@ -2314,7 +2327,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	}
 }
 
-void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
+void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 {
 	if (m_pManager == NULL)
 		return;
@@ -2346,7 +2359,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 			return;
 	}
 
-	_tZWaveDevice *pDevice = FindDevice(NodeID, instance, index, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCH_NORMAL);
+	_tZWaveDevice* pDevice = FindDevice(NodeID, instance, index, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCH_NORMAL);
 	if (pDevice == NULL)
 	{
 		//one more try
@@ -2390,7 +2403,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 		SendDevice2Domoticz(pDevice);
 }
 
-void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID)
+void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
 {
 	if (m_pManager == NULL)
 		return;
@@ -2407,7 +2420,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID)
 	int instanceID = 0;
 	int indexID = 0;
 	int commandclass = COMMAND_CLASS_SCENE_ACTIVATION;
-	_tZWaveDevice *pDevice = FindDevice(devID, instanceID, indexID, commandclass, ZDTYPE_SWITCH_NORMAL);
+	_tZWaveDevice* pDevice = FindDevice(devID, instanceID, indexID, commandclass, ZDTYPE_SWITCH_NORMAL);
 	if (pDevice == NULL)
 	{
 		//Add new switch device
@@ -2449,7 +2462,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID)
 		SendDevice2Domoticz(pDevice);
 }
 
-void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
+void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 {
 	if (m_pManager == NULL)
 		return;
@@ -2465,7 +2478,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	uint8_t instance = GetInstanceFromValueID(vID);
 
 	uint8_t vOrgInstance = vID.GetInstance();
-	uint8_t vOrgIndex = (uint8_t) vID.GetIndex();
+	uint8_t vOrgIndex = (uint8_t)vID.GetIndex();
 
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
@@ -2518,16 +2531,27 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 	if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
 	{
-		if (vLabel != "Scene ID")
+		if (vLabel.find("Scene ") != 0)
 		{
 			return;
 		}
-		instance = byteValue;
+		int32 lValue = 0;
+		if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+				return;
+		}
+		if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
+			return;
+		if (lValue != 1)
+			return; //only accept CentralSceneMask_KeyPressed1time
+
+		instance = vOrgIndex;
 	}
 
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 	{
-		NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (pNode)
 		{
 			/*
@@ -2616,7 +2640,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if ((instance == 1) && (vGenre == OpenZWave::ValueID::ValueGenre_User) && (vID.GetIndex() == 0) && (vType == OpenZWave::ValueID::ValueType_Raw))
 		{
 			//Enrollment Code
-			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
 				return;
 			if (pNode->Instances.find(1) == pNode->Instances.end())
@@ -2684,7 +2708,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	}
 	else if (commandclass == COMMAND_CLASS_CLOCK)
 	{
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
 
@@ -2731,7 +2755,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		}
 	}
 
-	_tZWaveDevice *pDevice = NULL;
+	_tZWaveDevice* pDevice = NULL;
 	std::map<std::string, _tZWaveDevice>::iterator itt;
 	std::string path_plus = path + ".";
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
@@ -2761,7 +2785,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		}
 
 		//New device, let's add it
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
 
@@ -2796,7 +2820,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		(pDevice->Product_type == 0)
 		)
 	{
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (pNode)
 		{
 			if (!pNode->Manufacturer_name.empty())
@@ -3038,7 +3062,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return;
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		pDevice->floatValue = fValue*pDevice->scaleMultiply;
+		pDevice->floatValue = fValue * pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_POWERENERGYMETER:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
@@ -3048,7 +3072,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			(vLabel != "Power")
 			)
 			return;
-		pDevice->floatValue = fValue*pDevice->scaleMultiply;
+		pDevice->floatValue = fValue * pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_TEMPERATURE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
@@ -3058,7 +3082,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vUnits == "F")
 		{
 			//Convert to celcius
-			fValue = float((fValue - 32)*(5.0 / 9.0));
+			fValue = float((fValue - 32) * (5.0 / 9.0));
 		}
 		if ((fValue < -200) || (fValue > 380))
 			return;
@@ -3091,7 +3115,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return;
 		if ((vLabel == "Barometric Pressure") || (vLabel == "Atmospheric Pressure"))
 		{
-			pDevice->floatValue = fValue*10.0f;
+			pDevice->floatValue = fValue * 10.0f;
 		}
 		else
 			return;
@@ -3111,7 +3135,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vUnits != "lux")
 		{
 			//convert from % to Lux (where max is 1000 Lux)
-			fValue = (1000.0f / 100.0f)*fValue;
+			fValue = (1000.0f / 100.0f) * fValue;
 		}
 		pDevice->floatValue = fValue;
 		break;
@@ -3135,7 +3159,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vUnits == "F")
 		{
 			//Convert to celcius
-			fValue = float((fValue - 32)*(5.0 / 9.0));
+			fValue = float((fValue - 32) * (5.0 / 9.0));
 		}
 		pDevice->bValidValue = (std::abs(pDevice->floatValue - fValue) < 10);
 		pDevice->floatValue = fValue;
@@ -3210,10 +3234,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
 		if (vLabel == "Minute")
 		{
-			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
 				return;
-			pDevice->intvalue = (pNode->tClockDay*(24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
+			pDevice->intvalue = (pNode->tClockDay * (24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
 		}
 		break;
 	case ZDTYPE_SENSOR_THERMOSTAT_MODE:
@@ -3221,7 +3245,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return;
 		if (vLabel == "Mode")
 		{
-			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
 				return;
 			pNode->tModes.clear();
@@ -3244,7 +3268,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return;
 		if (vLabel == "Fan Mode")
 		{
-			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
 				return;
 			pNode->tFanModes.clear();
@@ -3367,7 +3391,7 @@ bool COpenZWave::HealNode(const int nodeID)
 	return true;
 }
 
-bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &NodeArray)
+bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > >& NodeArray)
 {
 	if (m_pManager == NULL) {
 		return false;
@@ -3386,7 +3410,7 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &
 		std::vector<std::string> sd = *itt;
 		int nodeID = atoi(sd[1].c_str());
 		unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[0]));
-		NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+		NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 		if (pNode == NULL)
 			continue;
 
@@ -3423,7 +3447,7 @@ std::string COpenZWave::GetGroupName(const int nodeID, const int groupID)
 	return m_pManager->GetGroupLabel(m_controllerID, nodeID, groupID);
 }
 
-int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<std::string> &nodesingroup)
+int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<std::string>& nodesingroup)
 {
 
 	if (m_pManager == NULL)
@@ -3530,7 +3554,7 @@ bool COpenZWave::CancelControllerCommand(const bool bForce)
 	return m_pManager->CancelControllerCommand(m_controllerID);
 }
 
-void COpenZWave::GetConfigFile(std::string & filePath, std::string & fileContent)
+void COpenZWave::GetConfigFile(std::string& filePath, std::string& fileContent)
 {
 	std::string retstring = "";
 	if (m_pManager == NULL)
@@ -3618,7 +3642,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 
 void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime)
 {
-	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return; //Not found
 
@@ -3763,7 +3787,7 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 
 void COpenZWave::DisableNodePoll(const unsigned int homeID, const int nodeID)
 {
-	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return; //Not found
 
@@ -3786,7 +3810,7 @@ void COpenZWave::DeleteNode(const unsigned int homeID, const int nodeID)
 		m_HwdID, homeID, nodeID);
 }
 
-void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const NodeInfo *pNode)
+void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const NodeInfo* pNode)
 {
 	if (m_controllerID == 0)
 		return;
@@ -3836,7 +3860,7 @@ std::string COpenZWave::GetVersionLong()
 	return m_pManager->getVersionLongAsString();
 }
 
-void COpenZWave::SetNodeName(const unsigned int homeID, const int nodeID, const std::string &Name)
+void COpenZWave::SetNodeName(const unsigned int homeID, const int nodeID, const std::string& Name)
 {
 	std::string NodeName = Name;
 	if (NodeName.size() > 16)
@@ -3869,7 +3893,7 @@ void COpenZWave::SetClock(const int nodeID, const int instanceID, const int comm
 {
 	//We have to set 3 values here (Later check if we can use COMMAND_CLASS_MULTI_CMD for this to do it in one)
 
-	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 		return;
 
@@ -4000,7 +4024,7 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 
 void COpenZWave::NodeQueried(const unsigned int homeID, const int nodeID)
 {
-	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return;
 	//All nodes have been queried, enable/disable node polling
@@ -4010,19 +4034,19 @@ void COpenZWave::NodeQueried(const unsigned int homeID, const int nodeID)
 
 bool COpenZWave::RequestNodeConfig(const unsigned int homeID, const int nodeID)
 {
-	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return false;
 	m_pManager->RequestAllConfigParams(homeID, nodeID);
 	return true;
 }
 
-void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index)
+void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value& root, const int index)
 {
 	if (!m_pManager)
 		return;
 
-	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return;
 
@@ -4325,9 +4349,9 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 
 }
 
-bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string &svaluelist)
+bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string& svaluelist)
 {
-	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return false;
 
@@ -4521,10 +4545,10 @@ bool COpenZWave::SetUserCodeEnrollmentMode()
 	return false;
 }
 
-bool COpenZWave::GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root)
+bool COpenZWave::GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value& root)
 {
 	int ii = 0;
-	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	COpenZWave::NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (!pNode)
 		return false;
 	if (pNode->Instances.find(1) == pNode->Instances.end())
@@ -4556,7 +4580,7 @@ bool COpenZWave::GetNodeUserCodes(const unsigned int homeID, const int nodeID, J
 
 bool COpenZWave::RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex)
 {
-	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	COpenZWave::NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
 	if (!pNode)
 		return false;
 	if (pNode->Instances.find(1) == pNode->Instances.end())
@@ -4610,19 +4634,19 @@ void COpenZWave::NightlyNodeHeal()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::RType_OpenZWaveNodes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 			if (pHardware == NULL)
 				return;
 			if (pHardware->HwdType != HTYPE_OpenZWave)
 				return;
 			m_ZW_Hwidx = iHardwareID;
-			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+			COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 
 			root["status"] = "OK";
 			root["title"] = "OpenZWaveNodes";
@@ -4645,7 +4669,7 @@ namespace http {
 					int nodeID = atoi(sd[2].c_str());
 					//if (nodeID>1) //Don't include the controller
 					{
-						COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
+						COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
 						if (pNode == NULL)
 							continue;
 						root["result"][ii]["idx"] = sd[0];
@@ -4679,7 +4703,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveUpdateNode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4714,17 +4738,17 @@ namespace http {
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->SetNodeName(homeID, nodeID, name);
 					pOZWHardware->EnableDisableNodePolling(nodeID);
 				}
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveDeleteNode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveDeleteNode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4742,10 +4766,10 @@ namespace http {
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->RemoveFailedDevice(nodeID);
 					root["status"] = "OK";
 					root["title"] = "DeleteZWaveNode";
@@ -4755,7 +4779,7 @@ namespace http {
 
 		}
 
-		void CWebServer::Cmd_ZWaveInclude(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveInclude(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4768,10 +4792,10 @@ namespace http {
 				return;
 			std::string ssecure = request::findValue(&req, "secure");
 			bool bSecure = (ssecure == "true");
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				m_sql.AllowNewHardwareTimer(5);
 				pOZWHardware->IncludeDevice(bSecure);
 				root["status"] = "OK";
@@ -4779,7 +4803,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveExclude(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveExclude(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4790,25 +4814,25 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->ExcludeDevice(1);
 				root["status"] = "OK";
 				root["title"] = "ZWaveExclude";
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveIsNodeIncluded(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveIsNodeIncluded(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				root["status"] = "OK";
 				root["title"] = "ZWaveIsNodeIncluded";
 				bool bIsIncluded = pOZWHardware->IsNodeIncluded();
@@ -4818,7 +4842,7 @@ namespace http {
 					root["node_id"] = pOZWHardware->m_LastIncludedNode;
 					root["node_type"] = pOZWHardware->m_LastIncludedNodeType;
 					std::string productName("Unknown");
-					COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(pOZWHardware->GetControllerID(), pOZWHardware->m_LastIncludedNode);
+					COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(pOZWHardware->GetControllerID(), pOZWHardware->m_LastIncludedNode);
 					if (pNode)
 					{
 						productName = pNode->Product_name;
@@ -4828,15 +4852,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveIsNodeExcluded(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveIsNodeExcluded(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				root["status"] = "OK";
 				root["title"] = "ZWaveIsNodeExcluded";
 				root["result"] = pOZWHardware->IsNodeExcluded();
@@ -4844,7 +4868,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveSoftReset(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveSoftReset(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4855,17 +4879,17 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->SoftResetDevice();
 				root["status"] = "OK";
 				root["title"] = "ZWaveSoftReset";
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveHardReset(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveHardReset(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4876,26 +4900,26 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->HardResetDevice();
 				root["status"] = "OK";
 				root["title"] = "ZWaveHardReset";
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveStateCheck(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveStateCheck(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "ZWaveStateCheck";
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				if (!pOZWHardware->GetFailedState()) {
 					root["status"] = "OK";
 				}
@@ -4903,7 +4927,7 @@ namespace http {
 			return;
 		}
 
-		void CWebServer::Cmd_ZWaveNetworkHeal(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveNetworkHeal(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4914,17 +4938,17 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->HealNetwork();
 				root["status"] = "OK";
 				root["title"] = "ZWaveHealNetwork";
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveNodeHeal(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveNodeHeal(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4938,17 +4962,17 @@ namespace http {
 			std::string node = request::findValue(&req, "node");
 			if (node == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->HealNode(atoi(node.c_str()));
 				root["status"] = "OK";
 				root["title"] = "ZWaveHealNode";
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveNetworkInfo(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveNetworkInfo(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -4962,10 +4986,10 @@ namespace http {
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwID);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwID);
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				std::vector< std::vector< int > > nodevectors;
 
 				if (pOZWHardware->NetworkInfo(hwID, nodevectors)) {
@@ -5009,7 +5033,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRemoveGroupNode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveRemoveGroupNode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5029,10 +5053,10 @@ namespace http {
 			std::string removenode = request::findValue(&req, "removenode");
 			if (removenode == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				int nodeId = 0, instance = 0;
 				sscanf(removenode.c_str(), "%d.%d", &nodeId, &instance);
 				pOZWHardware->RemoveNodeFromGroup(atoi(node.c_str()), atoi(group.c_str()), nodeId, instance);
@@ -5041,7 +5065,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveAddGroupNode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveAddGroupNode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5061,10 +5085,10 @@ namespace http {
 			std::string addnode = request::findValue(&req, "addnode");
 			if (addnode == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				int nodeId = 0, instance = 0;
 				sscanf(addnode.c_str(), "%d.%d", &nodeId, &instance);
 				pOZWHardware->AddNodeToGroup(atoi(node.c_str()), atoi(group.c_str()), nodeId, instance);
@@ -5073,17 +5097,17 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveGroupInfo(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveGroupInfo(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int iHardwareID = atoi(idx.c_str());
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID,HomeID,NodeID,Name FROM ZWaveNodes WHERE (HardwareID==%d)",
@@ -5099,7 +5123,7 @@ namespace http {
 						std::vector<std::string> sd = *itt;
 						unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[1]));
 						int nodeID = atoi(sd[2].c_str());
-						COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
+						COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
 						if (pNode == NULL)
 							continue;
 						std::string nodeName = sd[3].c_str();
@@ -5143,22 +5167,22 @@ namespace http {
 			root["title"] = "ZWaveGroupInfo";
 		}
 
-		void CWebServer::Cmd_ZWaveCancel(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveCancel(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->CancelControllerCommand(true);
 				root["status"] = "OK";
 				root["title"] = "ZWaveCancel";
 			}
 		}
 
-		void CWebServer::Cmd_ApplyZWaveNodeConfig(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ApplyZWaveNodeConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5180,10 +5204,10 @@ namespace http {
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					if (!pOZWHardware->ApplyNodeConfig(homeID, nodeID, svaluelist))
 						return;
 					root["status"] = "OK";
@@ -5192,7 +5216,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRequestNodeConfig(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveRequestNodeConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -5204,10 +5228,10 @@ namespace http {
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->RequestNodeConfig(homeID, nodeID);
 					root["status"] = "OK";
 					root["title"] = "RequestZWaveNodeConfig";
@@ -5215,7 +5239,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5226,17 +5250,17 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->ReceiveConfigurationFromOtherController();
 				root["status"] = "OK";
 				root["title"] = "ZWaveReceiveConfigurationFromOtherController";
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5247,17 +5271,17 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->SendConfigurationToSecondaryController();
 				root["status"] = "OK";
 				root["title"] = "ZWaveSendConfigToSecond";
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveTransferPrimaryRole(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveTransferPrimaryRole(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5268,27 +5292,27 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				pOZWHardware->TransferPrimaryRole();
 				root["status"] = "OK";
 				root["title"] = "ZWaveTransferPrimaryRole";
 			}
 		}
-		void CWebServer::ZWaveGetConfigFile(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveGetConfigFile(WebEmSession& session, const request& req, reply& rep)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::string configFilePath = "";
 					pOZWHardware->GetConfigFile(configFilePath, rep.content);
 					if (!configFilePath.empty() && !rep.content.empty()) {
@@ -5305,28 +5329,28 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::ZWaveCPIndex(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPIndex(WebEmSession& session, const request& req, reply& rep)
 		{
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->m_ozwcp.SetAllNodesChanged();
 					std::string wwwFile = szWWWFolder + "/ozwcp/cp.html";
 					reply::set_content_from_file(&rep, wwwFile);
 				}
 			}
 		}
-		void CWebServer::ZWaveCPPollXml(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPPollXml(WebEmSession& session, const request& req, reply& rep)
 		{
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendPollResponse());
@@ -5334,7 +5358,7 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::ZWaveCPNodeGetConf(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPNodeGetConf(WebEmSession& session, const request& req, reply& rep)
 		{
 			if (req.content.find("node") == std::string::npos)
 				return;
@@ -5344,18 +5368,18 @@ namespace http {
 			if (sNode == "")
 				return;
 			int iNode = atoi(sNode.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode));
 				}
 			}
 		}
-		void CWebServer::ZWaveCPNodeGetValues(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPNodeGetValues(WebEmSession& session, const request& req, reply& rep)
 		{
 			if (req.content.find("node") == std::string::npos)
 				return;
@@ -5365,54 +5389,54 @@ namespace http {
 			if (sNode == "")
 				return;
 			int iNode = atoi(sNode.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode));
 				}
 			}
 		}
-		void CWebServer::ZWaveCPNodeSetValue(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPNodeSetValue(WebEmSession& session, const request& req, reply& rep)
 		{
 			std::vector<std::string> strarray;
 			StringSplit(req.content, "=", strarray);
 			if (strarray.size() != 2)
 				return;
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]));
 				}
 			}
 		}
-		void CWebServer::ZWaveCPNodeSetButton(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPNodeSetButton(WebEmSession& session, const request& req, reply& rep)
 		{
 			std::vector<std::string> strarray;
 			StringSplit(req.content, "=", strarray);
 			if (strarray.size() != 2)
 				return;
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]));
 				}
 			}
 		}
-		void CWebServer::ZWaveCPAdminCommand(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPAdminCommand(WebEmSession& session, const request& req, reply& rep)
 		{
 			if (req.content.find("fun") == std::string::npos)
 				return;
@@ -5427,18 +5451,18 @@ namespace http {
 				sNode = sNode.substr(4);
 			}
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str())));
 				}
 			}
 		}
-		void CWebServer::ZWaveCPNodeChange(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPNodeChange(WebEmSession& session, const request& req, reply& rep)
 		{
 			if (req.content.find("fun") == std::string::npos)
 				return;
@@ -5451,18 +5475,18 @@ namespace http {
 			if (sNode.size() > 4)
 				sNode = sNode.substr(4);
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue));
 				}
 			}
 		}
-		void CWebServer::ZWaveCPSetGroup(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPSetGroup(WebEmSession& session, const request& req, reply& rep)
 		{
 			if (req.content.find("fun") == std::string::npos)
 				return;
@@ -5478,12 +5502,12 @@ namespace http {
 
 			if (!sNode.empty() && !sGroup.empty() && !glist.empty())
 			{
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 				if (pHardware != NULL)
 				{
 					if (pHardware->HwdType == HTYPE_OpenZWave)
 					{
-						COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+						COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 						std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 						reply::set_content(&rep, pOZWHardware->m_ozwcp.UpdateGroup(sFun, atoi(sNode.c_str()), atoi(sGroup.c_str()), glist));
 					}
@@ -5491,48 +5515,48 @@ namespace http {
 			}
 		}
 
-		void CWebServer::ZWaveCPSaveConfig(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPSaveConfig(WebEmSession& session, const request& req, reply& rep)
 		{
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
 				}
 			}
 		}
-		void CWebServer::ZWaveCPGetTopo(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPGetTopo(WebEmSession& session, const request& req, reply& rep)
 		{
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPTopo());
 					reply::add_header_attachment(&rep, "topo.xml");
 				}
 			}
 		}
-		void CWebServer::ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPGetStats(WebEmSession& session, const request& req, reply& rep)
 		{
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 					reply::add_header_attachment(&rep, "stats.xml");
 				}
 			}
 		}
-		void CWebServer::ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPSceneCommand(WebEmSession& session, const request& req, reply& rep)
 		{
 			if (req.content.find("fun") == std::string::npos)
 				return;
@@ -5544,19 +5568,19 @@ namespace http {
 			std::string sLabel = request::findValue(&values, "label");
 			std::string sArg3 = (!sVid.empty()) ? sVid : sLabel;
 			std::string sArg4 = request::findValue(&values, "value");
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 				}
 			}
 		}
 
-		void CWebServer::ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep)
+		void CWebServer::ZWaveCPTestHeal(WebEmSession& session, const request& req, reply& rep)
 		{
 			if (session.rights != 2)
 			{
@@ -5570,14 +5594,14 @@ namespace http {
 			request::makeValuesFromPostContent(&req, values);
 			std::string sFun = request::findValue(&values, "fun");
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware == NULL)
 				return;
-			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+			COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 
 			if (pHardware->HwdType == HTYPE_OpenZWave)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				std::lock_guard<std::mutex> l(pOZWHardware->m_NotificationMutex);
 
 				if (sFun == "test")
@@ -5605,7 +5629,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5616,17 +5640,17 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 				root["status"] = "OK";
 				root["title"] = "SetUserCodeEnrollmentMode";
 				pOZWHardware->SetUserCodeEnrollmentMode();
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveRemoveUserCode(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -5650,10 +5674,10 @@ namespace http {
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					if (!pOZWHardware->RemoveUserCode(homeID, nodeID, iCodeIndex))
 						return;
 					root["status"] = "OK";
@@ -5662,7 +5686,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_ZWaveGetNodeUserCodes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -5675,10 +5699,10 @@ namespace http {
 				int hwid = atoi(result[0][0].c_str());
 				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
 				int nodeID = atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					if (!pOZWHardware->GetNodeUserCodes(homeID, nodeID, root))
 						return;
 					root["status"] = "OK";

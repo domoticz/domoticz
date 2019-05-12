@@ -1,39 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--http://www.pepper1.net/zwavedb/device/72-->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Configuration -->
   <CommandClass id="112">
-
-    <Value type="byte" genre="config" instance="1" index="176" label="Changeover delay (motor protection)" value="100">
+    <Value genre="config" index="176" instance="1" label="Changeover delay (motor protection)" type="byte" value="100">
       <Help>To configure the time (value * 0.1 sec) the motor waits before switching direction.</Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="177" label="Raising time input 1" value="100">
+    <Value genre="config" index="177" instance="1" label="Raising time input 1" type="byte" value="100">
       <Help>To configure input 1 of the raising time calculation (256 * Input 1 + Input 2) * 0.1 sec</Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="178" label="Raising time input 2" value="100">
+    <Value genre="config" index="178" instance="1" label="Raising time input 2" type="byte" value="100">
       <Help>To configure input 1 of the raising time calculation (256 * Input 1 + Input 2) * 0.1 sec</Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="179" label="Lowering time input 1" value="100">
+    <Value genre="config" index="179" instance="1" label="Lowering time input 1" type="byte" value="100">
       <Help>To configure input 1 of the lowering time calculation (256 * Input 1 + Input 2) * 0.1 sec</Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="180" label="Lowering time input 2" value="100">
+    <Value genre="config" index="180" instance="1" label="Lowering time input 2" type="byte" value="100">
       <Help>To configure input 1 of the lowering time calculation (256 * Input 1 + Input 2) * 0.1 sec</Help>
     </Value>
-
   </CommandClass>
-  
   <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
-  <CommandClass id="113" getsupported="false" />
-
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="12" label="Lifeline"/>
+      <Group index="1" label="Lifeline" max_associations="12"/>
     </Associations>
   </CommandClass>
-
 </Product>

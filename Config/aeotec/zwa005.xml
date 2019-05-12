@@ -1,64 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 ZWA005 TriSensor
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="short" index="1" genre="config" label="Motion Re-trigger Time" units="Second" min="0" max="32767" value="30" >
-            <Help>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Configuration Parameters -->
+  <CommandClass id="32">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Motion Re-trigger Time" max="32767" min="0" type="short" units="Second" value="30">
+      <Help>
                 This parameter is configured the delay time before PIR sensor can be triggered again to reset motion timeout counter.
 				Value = 0 will disable PIR sensor from triggering until motion timeout has finished.
             </Help>
-        </Value>
-		<Value type="short" index="2" genre="config" label="Motion clear time" units="Second" min="1" max="32767" value="240" >
-            <Help>
+    </Value>
+    <Value genre="config" index="2" label="Motion clear time" max="32767" min="1" type="short" units="Second" value="240">
+      <Help>
                 This configures the clear time when your motion sensor times out and sends a no motion status.
             </Help>
-        </Value>
-		<Value type="list" genre="config" instance="1" index="3" label="Motion Sensitivity" min="0" max="11" value="8" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Motion Sensitivity" max="11" min="0" size="1" type="list" value="8">
+      <Help>
 				This parameter is configured the sensitivity that motion detect.
 				0  - PIR sensor disabled.
 				1  - Lowest sensitivity.
 				11 - Highest sensitivity.
 			</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="1" value="1"/>
-			<Item label="2" value="2"/>
-			<Item label="3" value="3"/>
-			<Item label="4" value="4"/>
-			<Item label="5" value="5"/>
-			<Item label="6" value="6"/>
-			<Item label="7" value="7"/>
-			<Item label="8" value="8"/>
-			<Item label="9" value="9"/>
-			<Item label="10" value="10"/>
-			<Item label="11" value="11"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="4" label="Binary Sensor Report" min="0" max="1" value="0" size="1">
-			<Help>Enable/disable sensor binary report when motion event is detected or cleared</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="5" label="Disable BASIC_SET to Associated nodes" min="0" max="3" value="3" size="1">
-			<Help>This parameter is configured the enabled or disabled send BASIC_SET command to nodes that associated in group 2 and group 3.</Help>
-			<Item label="Disabled All Group Basic Set Command" value="0"/>
-			<Item label="Enabled Group 2" value="1"/>
-			<Item label="Enabled Group 3 " value="2"/>
-			<Item label="Enabled Group 2 and Group 3" value="3"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="6" label="Basic Set Value Settings for Group 2" min="0" max="5" value="0" size="1">
-			<Help>Define Basic Set Value  when motion event is triggered and / or cleared</Help>
-			<Item label="0xFF when motion is triggered and 0x00 when motion is cleared" value="0"/>
-			<Item label="0x00 when motion is triggered and 0xFF when motion is cleared" value="1"/>
-			<Item label="0xFF when motion is triggered" value="2"/>
-			<Item label="0x00 when motion is triggered" value="3"/>
-			<Item label="0x00 when motion event is cleared" value="4"/>
-			<Item label="0xFF when motion event is cleared" value="5"/>
-		</Value>
-		<Value type="short" index="7" genre="config" label="Temperature Alarm Value" units="0.1" value="239" >
-            <Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="1" value="1"/>
+      <Item label="2" value="2"/>
+      <Item label="3" value="3"/>
+      <Item label="4" value="4"/>
+      <Item label="5" value="5"/>
+      <Item label="6" value="6"/>
+      <Item label="7" value="7"/>
+      <Item label="8" value="8"/>
+      <Item label="9" value="9"/>
+      <Item label="10" value="10"/>
+      <Item label="11" value="11"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Binary Sensor Report" max="1" min="0" size="1" type="list" value="0">
+      <Help>Enable/disable sensor binary report when motion event is detected or cleared</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Disable BASIC_SET to Associated nodes" max="3" min="0" size="1" type="list" value="3">
+      <Help>This parameter is configured the enabled or disabled send BASIC_SET command to nodes that associated in group 2 and group 3.</Help>
+      <Item label="Disabled All Group Basic Set Command" value="0"/>
+      <Item label="Enabled Group 2" value="1"/>
+      <Item label="Enabled Group 3 " value="2"/>
+      <Item label="Enabled Group 2 and Group 3" value="3"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Basic Set Value Settings for Group 2" max="5" min="0" size="1" type="list" value="0">
+      <Help>Define Basic Set Value  when motion event is triggered and / or cleared</Help>
+      <Item label="0xFF when motion is triggered and 0x00 when motion is cleared" value="0"/>
+      <Item label="0x00 when motion is triggered and 0xFF when motion is cleared" value="1"/>
+      <Item label="0xFF when motion is triggered" value="2"/>
+      <Item label="0x00 when motion is triggered" value="3"/>
+      <Item label="0x00 when motion event is cleared" value="4"/>
+      <Item label="0xFF when motion event is cleared" value="5"/>
+    </Value>
+    <Value genre="config" index="7" label="Temperature Alarm Value" type="short" units="0.1" value="239">
+      <Help>
                 This parameter is configured the threshold value that alarm level for temperature.
 				When the current ambient temperature value is larger than this configuration value, device will send a BASIC_SET = 0xFF to nodes associated in group 3.
 				If current temperature value is less than this value, device will send a BASIC_SET = 0x00 to nodes associated in group 3.
@@ -66,136 +70,136 @@ ZWA005 TriSensor
 				Available Settings: -400 to 850 (40.0 to 85.0 Celsius) or -400 to 1185 (-40.0 to 118.5 Fahrenheit).
 				Default value: 239 (23.9 Celsius) or 750 (75.0 Fahrenheit)
             </Help>
-        </Value>
-		<Value type="list" genre="config" instance="1" index="10" label="LED over TriSensor" min="0" max="1" value="1" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="LED over TriSensor" max="1" min="0" size="1" type="list" value="1">
+      <Help>
 				Enable or Disable LED over TriSensor
 				This completely disables all LED reaction regardless of Parameter 9 - 13 settings
 			</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="11" label="Motion report LED" min="0" max="8" value="2" size="1">
-			<Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Motion report LED" max="8" min="0" size="1" type="list" value="2">
+      <Help>
 				This setting changes the color of the LED when your TriSensor sends a motion report.
 			</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="Red" value="1"/>
-			<Item label="Green" value="2"/>
-			<Item label="Blue" value="3"/>
-			<Item label="Yellow" value="4"/>
-			<Item label="Pink" value="5"/>
-			<Item label="Cyan" value="6"/>
-			<Item label="Purple" value="7"/>
-			<Item label="Orange" value="8"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="12" label="Temperature report LED" min="0" max="1" value="0" size="1">
-			<Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Yellow" value="4"/>
+      <Item label="Pink" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="Purple" value="7"/>
+      <Item label="Orange" value="8"/>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Temperature report LED" max="1" min="0" size="1" type="list" value="0">
+      <Help>
 				This setting changes the color of the LED when your TriSensor sends a temperature report.
 			</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="Red" value="1"/>
-			<Item label="Green" value="2"/>
-			<Item label="Blue" value="3"/>
-			<Item label="Yellow" value="4"/>
-			<Item label="Pink" value="5"/>
-			<Item label="Cyan" value="6"/>
-			<Item label="Purple" value="7"/>
-			<Item label="Orange" value="8"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="13" label="Light report LED" min="0" max="8" value="0" size="1">
-			<Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Yellow" value="4"/>
+      <Item label="Pink" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="Purple" value="7"/>
+      <Item label="Orange" value="8"/>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Light report LED" max="8" min="0" size="1" type="list" value="0">
+      <Help>
 				This setting changes the color of the LED when your TriSensor sends a light report.
 			</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="Red" value="1"/>
-			<Item label="Green" value="2"/>
-			<Item label="Blue" value="3"/>
-			<Item label="Yellow" value="4"/>
-			<Item label="Pink" value="5"/>
-			<Item label="Cyan" value="6"/>
-			<Item label="Purple" value="7"/>
-			<Item label="Orange" value="8"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="14" label="Battery report LED" min="0" max="8" value="0" size="1">
-			<Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Yellow" value="4"/>
+      <Item label="Pink" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="Purple" value="7"/>
+      <Item label="Orange" value="8"/>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Battery report LED" max="8" min="0" size="1" type="list" value="0">
+      <Help>
 				It is possible to change the color of what the LED blinks when your TriSensor sends a battery report.
 			</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="Red" value="1"/>
-			<Item label="Green" value="2"/>
-			<Item label="Blue" value="3"/>
-			<Item label="Yellow" value="4"/>
-			<Item label="Pink" value="5"/>
-			<Item label="Cyan" value="6"/>
-			<Item label="Purple" value="7"/>
-			<Item label="Orange" value="8"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="15" label="Wakeup report LED" min="0" max="8" value="0" size="1">
-			<Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Yellow" value="4"/>
+      <Item label="Pink" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="Purple" value="7"/>
+      <Item label="Orange" value="8"/>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Wakeup report LED" max="8" min="0" size="1" type="list" value="0">
+      <Help>
 				This setting changes the color of the LED when your TriSensor sends a wakeup report.
 			</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="Red" value="1"/>
-			<Item label="Green" value="2"/>
-			<Item label="Blue" value="3"/>
-			<Item label="Yellow" value="4"/>
-			<Item label="Pink" value="5"/>
-			<Item label="Cyan" value="6"/>
-			<Item label="Purple" value="7"/>
-			<Item label="Orange" value="8"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="20" label="Temperature Scale Setting" min="0" max="1" value="0" size="1">
-			<Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Red" value="1"/>
+      <Item label="Green" value="2"/>
+      <Item label="Blue" value="3"/>
+      <Item label="Yellow" value="4"/>
+      <Item label="Pink" value="5"/>
+      <Item label="Cyan" value="6"/>
+      <Item label="Purple" value="7"/>
+      <Item label="Orange" value="8"/>
+    </Value>
+    <Value genre="config" index="20" instance="1" label="Temperature Scale Setting" max="1" min="0" size="1" type="list" value="0">
+      <Help>
 				Configure temperature sensor scale type, Temperature to report in Celsius or Fahrenheit
 			</Help>
-			<Item label="Celsius" value="0"/>
-			<Item label="Fahrenheit" value="1"/>
-		</Value>
-		<Value type="short" index="21" genre="config" label="Temperature Threshold reporting" units="0.1" min="0" max="250" value="20" >
-            <Help>
+      <Item label="Celsius" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="21" label="Temperature Threshold reporting" max="250" min="0" type="short" units="0.1" value="20">
+      <Help>
                 Change threshold value for change in temperature to induce an automatic report for temperature sensor.
 				Scale is identical setting in Parameter No.20.
 				0-> Disable Threshold Report for Temperature Sensor.
 				Setting of value 20 can be a change of -2.0 or +2.0 (C or F depending on Parameter No.20) to induce automatic report or setting a value of 2 will be a change of 0.2(C or F).
 				Available Settings: 0 to 250.
             </Help>
-        </Value>
-		<Value type="short" index="22" genre="config" label="Light intensity Threshold Value to Report" units="Lux" min="0" max="10000" value="100" >
-            <Help>
+    </Value>
+    <Value genre="config" index="22" label="Light intensity Threshold Value to Report" max="10000" min="0" type="short" units="Lux" value="100">
+      <Help>
                 Change threshold value for change in lux to induce an automatic report for light sensor.
             </Help>
-        </Value>
-		<Value type="short" index="23" genre="config" label="Temperature Sensor Report Interval" units="Second" min="0" max="32767" value="3600" >
-            <Help>
+    </Value>
+    <Value genre="config" index="23" label="Temperature Sensor Report Interval" max="32767" min="0" type="short" units="Second" value="3600">
+      <Help>
                 This parameter is configured the time interval for temperature sensor report.
 				This value is larger, the battery life is longer.
 				And the temperature value changed is not obvious.
             </Help>
-        </Value>
-		<Value type="short" index="24" genre="config" label="Light Sensor Report Interval" units="Second" min="0" max="32767" value="3600" >
-            <Help>
+    </Value>
+    <Value genre="config" index="24" label="Light Sensor Report Interval" max="32767" min="0" type="short" units="Second" value="3600">
+      <Help>
                 This parameter is configured the time interval for light sensor report.
 				This value is larger, the battery life is longer.
 				And the light intensity changed is not obvious.
             </Help>
-        </Value>
-		<Value type="short" index="30" genre="config" label="Temperature Offset Value" units="0.1" value="0" >
-            <Help>
+    </Value>
+    <Value genre="config" index="30" label="Temperature Offset Value" type="short" units="0.1" value="0">
+      <Help>
                 The current measuring temperature value can be add and minus a value by this setting.
 				The scale can be decided by Parameter Number 20.
 				Temperature Offset Value = [Value] * 0.1(Celsius / Fahrenheit)
 				Available Settings: -200 to 200.
             </Help>
-        </Value>
-		<Value type="short" index="31" genre="config" label="Light Intensity Offset Value" units="Lux" value="0" >
-            <Help>
+    </Value>
+    <Value genre="config" index="31" label="Light Intensity Offset Value" type="short" units="Lux" value="0">
+      <Help>
                 The current measuring light intensity value can be add and minus a value by this setting.
 				Available Settings: -1000 to 1000.
             </Help>
-        </Value>
-		<Value type="short" index="100" genre="config" label="Light Sensor Calibrated Coefficient" units="" min="0" max="32767" value="1024" >
-            <Help>
+    </Value>
+    <Value genre="config" index="100" label="Light Sensor Calibrated Coefficient" max="32767" min="0" type="short" units="" value="1024">
+      <Help>
                 This configuration defines the calibrated scale for ambient light intensity.
 				Because the method and position that the sensor mounted and the cover of sensor will bring measurement error, user can get more real light intensity by this parameter setting.
 				User should run the steps as blows for calibrating
@@ -210,14 +214,14 @@ ZWA005 TriSensor
 					k = 8.6667 * 1024 = 8874.7 => 8875.
 					The parameter should be set to 8875.
             </Help>
-        </Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="3">
-			<Group index="1" max_associations="1" label="Lifeline" />
-			<Group index="2" max_associations="5" label="BasicSet report"/>
-			<Group index="3" max_associations="5" label="Temperature Alarm report"/>
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="BasicSet report" max_associations="5"/>
+      <Group index="3" label="Temperature Alarm report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,10 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- EVERSPRING SP103 MOTION DETECTOR -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" index="1" genre="config" label="ON Phase Level" units="" min="0" max="127" value="0">
-			<Help>
+<!-- EVERSPRING SP103 MOTION DETECTOR --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:0101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/sp103.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/873/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0101">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0101">SP103</MetaDataItem>
+    <MetaDataItem name="Description">The Motion Detector is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Z-Wave enabled devices displaying the Z-Wave logo can also be used with it regardless of the manufacturer, and ours can also be used in other manufacturer’s Z-Wave enabled networks. This Motion Detector is  controllable to our modules, such as On/Off Module AN135 and Lamp Module AD130. Inclusion of this Motion Detector on other manufacturer’s Wireless Controller menu allows remote turn-on of connected modules and their connected lighting when the Detector is triggered. Z-Wave nodes in the system also act as repeaters if they support that function.</MetaDataItem>
+    <MetaDataItem name="Name">Motion Sensor</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/873/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="ON Phase Level" max="127" min="0" type="byte" units="" value="0">
+      <Help>
 				Phase Level of ON Command
 				The Configuration parameter that can be used to adjust the phase level of ON command is transmitted is Configuration Parameter # 1.
 				This parameter can be configured with the value of 0 through 127.
@@ -14,9 +24,9 @@
 				Note: 0xFF means the device will be on to the last phase before the device was turned off.
 				Information reproduced from: http://www.techstyleuk.co.uk/index_files/sp103_manual.pdf
 			</Help>
-		</Value>
-		<Value type="byte" index="3" genre="config" label="Power Saving" units="" min="0" max="127" value="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" label="Power Saving" max="127" min="0" type="byte" units="" value="1">
+      <Help>
 				Enabling/Disabling Power Saving Function (for testing)
 				When no movement has been detected for 10 seconds, the SP103 will enter the power saving mode.
 				It can be disabled or enabled power saving function by setting Configuration Parameter # 3.
@@ -24,16 +34,19 @@
 				PS : As long as the batteries have been refitted, the Detector will enable the power saving function automatically.
 				Information reproduced from: http://www.techstyleuk.co.uk/index_files/sp103_manual.pdf
 			</Help>
-		</Value>
-	</CommandClass>
-	<CommandClass id="32" setasreport="true" />
-	<!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the SP103 -->
-	<CommandClass id="113" action="add" />
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<!-- Groups and attributes based on http://www.pepper1.net/zwavedb/device/59 -->
-		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Motion" />
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the SP103 -->
+  <CommandClass action="add" id="113"/>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Motion" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,6 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
-	<CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" base="0" />
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0010:0009:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/rcs/therm0009.png</MetaDataItem>
+    <MetaDataItem id="0009" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/82/</MetaDataItem>
+    <MetaDataItem name="Description">Z-Wave Thermostat.Separate Heat and Cool Setpoints
+	Up to 3 Stage Heat, 2 Stage Cool
+	Remote control of most functions via Zwave
+	Two part design or New 1 piece design
+	Backlit LCD Wall Display Unit
+	For standard gas/electric or heat pump HVAC systems
+	Replaces existing 4 or more wire thermostats without the need for additional wiring (TZ16/TZ40)
+	Optional Remote Temperature Sensor
+	Power: 24VAC supplied from HVAC system
+	Supports the ZWave thermostat device class
+ </MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.rcstechnology.com/pages/products/thermo-z-wave.html</MetaDataItem>
+    <MetaDataItem name="Name">TZ45 Z-Wave Thermostat</MetaDataItem>
+    <MetaDataItem id="0009" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.rcstechnology.com/oldsite/products/stats/zwave.htm</MetaDataItem>
+    <MetaDataItem id="0009" name="Identifier" type="0001">TZ45</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/82/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
 </Product>
-

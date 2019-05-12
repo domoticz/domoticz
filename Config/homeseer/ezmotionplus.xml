@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" index="1" genre="config" label="Sensitivity" units="" min="0" max="255" value="200">
-			<Help>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Sensitivity" max="255" min="0" type="byte" units="" value="200">
+      <Help>
 				Sensitivity sets the amount of motion required for the device to
 				detect motion. A higher value makes it more sensitive and a
 				lower value makes it less sensitive. Note that values above 200
@@ -13,9 +12,9 @@
 				100 = Medium sensitivity for hallways.
 				200(default) = Highly sensitive for rooms where people are sitting still.
 			</Help>
-		</Value>
-		<Value type="byte" index="2" genre="config" label="On Time" units="minutes" min="0" max="255" value="20">
-			<Help>
+    </Value>
+    <Value genre="config" index="2" label="On Time" max="255" min="0" type="byte" units="minutes" value="20">
+      <Help>
 				On Time sets the number of minutes that the lights stay on when
 				motion has not been detected.
 				A value of 0 On Time is a special mode where the lights are
@@ -29,19 +28,19 @@
 				still for a long time.
 				This may be inaccurate, but default for Homeseer HSM100 may actually be 3 minutes, instead of 20?				
 			</Help>
-		</Value>
-		<Value type="list" index="3" genre="config" label="LED ON/OFF" units="" min="" max="" size="1" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" label="LED ON/OFF" max="" min="" size="1" type="list" units="" value="255">
+      <Help>
 				LED ON/OFF turns the LED on or off. A slight improvement in
 				battery life is obtained by turning the LED off. Setting LED
 				ON/OFF to zero will turn the LED off and 255 turns it on.
 				Default is On (255).
 			</Help>
-			<Item label="Off" value="0"/>
-			<Item label="On" value="255"/>
-		</Value>
-		<Value type="byte" index="4" genre="config" label="Light Threshold" units="%" min="0" max="100" value="100">
-			<Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="255"/>
+    </Value>
+    <Value genre="config" index="4" label="Light Threshold" max="100" min="0" type="byte" units="%" value="100">
+      <Help>
 				Light Threshold is the percentage of light in the room above
 				which the lights will not be turned on. Light Threshold is often
 				used in room with a lot of natural daylight. Setting Light
@@ -61,9 +60,9 @@
 				them on as it is getting dark. Some experimentation is required
 				with each room to determine the proper setting.				
 			</Help>
-		</Value>
-		<Value type="byte" index="5" genre="config" label="Stay Awake" units="" min="0" max="255" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="5" label="Stay Awake" max="255" min="0" type="byte" units="" value="0">
+      <Help>
 				Setting Stay Awake to a non-zero value will cause the device to
 				always be awake. NOTE: this mode should NOT be used when
 				the device is battery powered! Batteries will only last a few days
@@ -79,9 +78,9 @@
 				routing information will be used now that the listening bit is set.
 				Defaults to 0.
 			</Help>
-		</Value>
-		<Value type="byte" index="6" genre="config" label="On Value" units="" min="0" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="6" label="On Value" max="255" min="0" type="byte" units="" value="255">
+      <Help>
 				On Value is the value sent by the Z-Wave BASIC_SET
 				command when motion is detected.
 				A value of 0 will turn the lights off (not recommended).
@@ -90,9 +89,9 @@
 				A value of 255 will turn the light on (default).
 				NB! According to the manual, the value should not be set between 101-254 (inclusive).
 			</Help>
-		</Value>
-		<Value type="byte" index="7" genre="config" label="TempAdj" units="" min="0" max="255" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="7" label="TempAdj" max="255" min="0" type="byte" units="" value="0">
+      <Help>
 				TempAdj is a twos-complement number that is used to adjust the temperature reading to make it more accurate.
 				The value programmed is in tenths of degree Fahrenheit.
 				The temperature reading can be adjusted up to +12.7F to -12.8F.
@@ -101,9 +100,9 @@
 				A value of 123 will adjust the temperature by +12.3F.
 				TempAdj is NOT changed when Excluded (reset) from the Z- Wave network.
 			</Help>
-		</Value>
-		<Value type="byte" index="8" genre="config" label="Reports" units="" min="0" max="255" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="8" label="Reports" max="255" min="0" type="byte" units="" value="0">
+      <Help>
 				Bit mask for disabling the sending of sensor reports at each WakeUp interval.
 				Bit 0=Temperature
 				Bit 1=Luminance
@@ -113,15 +112,23 @@
 				Note that the controller can still request a sensor report but the sensor will not be sent automatically.
 				Disabling sensors will improve battery life.
 			</Help>
-		</Value>
-	</CommandClass>
-    <!-- Basic set as report -->
-    <CommandClass id="32" setasreport="true"/>
-	<!-- Association Groups -->
-	<CommandClass id="96" mapping="endpoints" />
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="4" label="Motion" />
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Motion" max_associations="4"/>
+    </Associations>
+  </CommandClass>
 </Product>

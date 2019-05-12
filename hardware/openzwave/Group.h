@@ -72,13 +72,13 @@ namespace OpenZWave
 		uint8 GetMaxAssociations()const{ return m_maxAssociations; }
 		uint8 GetIdx()const{ return m_groupIdx; }
 		bool Contains( uint8 const _nodeId, uint8 const _instance = 0x00 );
+        bool IsMultiInstance()const{ return m_multiInstance; }
 
 	private:
 		bool IsAuto()const{ return m_auto; }
 		void SetAuto( bool const _state ){ m_auto = _state; }
 		void CheckAuto();
 
-		bool IsMultiInstance()const{ return m_multiInstance; }
 		void SetMultiInstance( bool const _state ){ m_multiInstance = _state; }
 
 		void AddAssociation( uint8 const _nodeId, uint8 const _instance = 0x00 );
