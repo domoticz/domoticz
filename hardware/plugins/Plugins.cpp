@@ -540,10 +540,12 @@ namespace Plugins {
 			}
 
 			// Build a Python structure to return 
-			Py_DECREF(Py_None);
 			std::vector<std::vector<std::string> >::const_iterator itt = result.begin();
 			std::vector<std::string> sd = *itt;
-			pConfig = pProtocol->JSONtoPython(sd[0]);
+			sConfig = sd[0];
+			if (!sConfig.length()) sConfig = "{}";
+			pConfig = pProtocol->JSONtoPython(sConfig);
+			Py_DECREF(Py_None);
 		}
 
 		return pConfig;
