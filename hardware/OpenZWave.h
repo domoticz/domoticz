@@ -156,7 +156,7 @@ private:
 	bool OpenSerialConnector();
 	void CloseSerialConnector();
 
-	void WriteControllerConfig();
+	bool WriteControllerConfig();
 	time_t m_LastControllerConfigWrite;
 
 	OpenZWave::Manager *m_pManager;
