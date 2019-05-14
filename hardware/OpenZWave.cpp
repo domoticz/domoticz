@@ -153,9 +153,9 @@ extern std::string szUserDataFolder;
 
 #define round(a) ( int ) ( a + .5 )
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define DEBUG_ZWAVE_INT
-#endif
+//#endif
 
 const char* cclassStr(uint8 cc)
 {
@@ -632,6 +632,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			AddValue(vID, nodeInfo);
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_ValueAdded, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_SceneEvent:
 		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
@@ -643,6 +645,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_SceneEvent, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueRemoved:
 		if ((_nodeID == 0) || (_nodeID == 255))
@@ -661,6 +665,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				}
 			}
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_ValueRemoved, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueChanged:
 		if ((_nodeID == 0) || (_nodeID == 255))
@@ -676,6 +682,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			UpdateValue(vID);
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_ValueChanged, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueRefreshed:
 		// One of the node values has changed
@@ -685,14 +693,21 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			//UpdateValue(vID);
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_ValueRefreshed, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_Notification:
 	{
+		NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID);
+		if (nodeInfo == NULL)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Type_Notification, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+			return;
+		}
 		uint8 subType = _notification->GetNotification();
 		switch (subType)
 		{
 		case OpenZWave::Notification::Code_MsgComplete:
-			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_AWAKE;
@@ -702,7 +717,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			break;
 		case OpenZWave::Notification::Code_Awake:
-			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_AWAKE;
@@ -712,7 +726,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			break;
 		case OpenZWave::Notification::Code_Sleep:
-			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_SLEEP;
@@ -721,7 +734,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			break;
 		case OpenZWave::Notification::Code_Dead:
-			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_DEAD;
@@ -731,7 +743,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			_log.Log(LOG_STATUS, "OpenZWave: Received Node Dead notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 			break;
 		case OpenZWave::Notification::Code_Alive:
-			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			{
 				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 				nodeInfo->eState = NSTATE_AWAKE;
@@ -740,7 +751,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			break;
 		case OpenZWave::Notification::Code_Timeout:
-			//if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 			//{
 			//	nodeInfo->eState = NSTATE_DEAD;
 			//	ForceUpdateForNodeDevices(m_controllerID, _nodeID);
@@ -749,9 +759,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			break;
 		case OpenZWave::Notification::Code_NoOperation:
 			//Code_NoOperation send to node
-			if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
-			{
-			}
 			break;
 		default:
 			_log.Log(LOG_STATUS, "OpenZWave: Received unknown notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", subType, _homeID, _nodeID, _nodeID);
@@ -765,6 +772,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		{
 			nodeInfo->LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_Group, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_NodeEvent:
 		if ((_nodeID == 0) || (_nodeID == 255))
@@ -778,6 +787,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 			nodeInfo->LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_NodeEvent, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_PollingDisabled:
 		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
@@ -785,6 +796,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->polled = false;
 			nodeInfo->LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_PollingDisabled, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_PollingEnabled:
 		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
@@ -792,6 +805,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->polled = true;
 			nodeInfo->LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_PollingEnabled, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_DriverFailed:
 		m_initFailed = true;
@@ -836,6 +851,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 			nodeInfo->LastSeen = m_updateTime;
 		}
+		else
+			_log.Log(LOG_ERROR, "OpenZWave: Type_NodeNaming, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_EssentialNodeQueriesComplete:
 		//The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages.
@@ -2833,7 +2850,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		//New device, let's add it
 		COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Value_Changed: NodeID not found internally!. Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
 			return;
+		}
 
 		AddValue(vID, pNode);
 		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
@@ -2853,7 +2873,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			}
 		}
 		if (pDevice == NULL)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Value_Changed: Tried adding value, not succeeded!. Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
 			return;
+		}
 	}
 
 	pDevice->bValidValue = true;
@@ -3067,7 +3090,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 					intValue = 255;
 			}
 			else
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: Value_Changed: Unhandled value type ZDTYPE_SWITCH_NORMAL (%d). Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vType, NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
 				return;
+			}
 			if (pDevice->intvalue == intValue)
 			{
 				return; //dont send same value
