@@ -347,7 +347,6 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_HwdID = ID;
 	m_controllerID = 0;
 	m_controllerNodeId = 0;
-	m_LastControllerConfigWrite = 0;
 	m_bIsShuttingDown = false;
 	m_initFailed = false;
 	m_allNodesQueried = false;
@@ -355,7 +354,6 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_bInUserCodeEnrollmentMode = false;
 	m_bNightlyNetworkHeal = false;
 	m_pManager = NULL;
-	m_bNeedSave = false;
 	m_bAeotecBlinkingMode = false;
 }
 
@@ -462,23 +460,6 @@ uint8_t COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID& vID)
 	return instance;
 }
 
-bool COpenZWave::WriteControllerConfig()
-{
-	if (m_controllerID == 0)
-		return false;
-	try
-	{
-		m_pManager->WriteConfig(m_controllerID);
-		m_LastControllerConfigWrite = mytime(NULL);
-		return true;
-	}
-	catch (OpenZWave::OZWException& ex)
-	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
-	}
-	return false;
-}
-
 void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void* _context)
 {
 	COpenZWave* pClass = static_cast<COpenZWave*>(_context);
@@ -553,7 +534,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if ((_nodeID == 0) || (_nodeID == 255))
 			return;
 		_log.Log(LOG_STATUS, "OpenZWave: New Node added. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
-		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_NodeAdded:
 	{
@@ -598,7 +578,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		m_bHaveLastIncludedNodeInfo = !nodeInfo.Product_name.empty();
 		AddNode(_homeID, _nodeID, &nodeInfo);
 		m_bControllerCommandInProgress = false;
-		m_bNeedSave = true;
 	}
 	break;
 	case OpenZWave::Notification::Type_NodeRemoved:
@@ -618,14 +597,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		}
 		m_bControllerCommandInProgress = false;
 		m_LastRemovedNode = _nodeID;
-		WriteControllerConfig();
 	}
 	break;
 	case OpenZWave::Notification::Type_NodeProtocolInfo:
-		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_DriverReset:
-		m_bNeedSave = true;
 		m_nodes.clear();
 		m_controllerID = _notification->GetHomeId();
 		break;
@@ -829,7 +805,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_AwakeNodesQueried:
 		_log.Log(LOG_STATUS, "OpenZWave: Awake Nodes queried");
 		m_awakeNodesQueried = true;
-		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_AllNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
@@ -839,12 +814,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			_log.Log(LOG_STATUS, "OpenZWave: All Nodes queried");
 		else
 			_log.Log(LOG_STATUS, "OpenZWave: All Nodes queried (Some Dead)");
-		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_NodeQueriesComplete:
 		if ((_nodeID == 0) || (_nodeID == 255))
 			return;
-		m_bNeedSave = true;
 		NodeQueried(_homeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_NodeNaming:
@@ -862,7 +835,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				m_bHaveLastIncludedNodeInfo = !product_name.empty();
 			}
 			nodeInfo->LastSeen = m_updateTime;
-			m_bNeedSave = true;
 		}
 		break;
 	case OpenZWave::Notification::Type_EssentialNodeQueriesComplete:
@@ -894,22 +866,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID, _nodeID);
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 		break;
-	}
-
-	//Force configuration flush every hour
-	bool bWriteControllerConfig = false;
-	if (m_bNeedSave)
-	{
-		bWriteControllerConfig = (m_updateTime - m_LastControllerConfigWrite > 60);
-	}
-	else
-	{
-		bWriteControllerConfig = (m_updateTime - m_LastControllerConfigWrite > 3600);
-	}
-	if (bWriteControllerConfig)
-	{
-		m_bNeedSave = false;
-		WriteControllerConfig();
 	}
 }
 
@@ -984,7 +940,6 @@ bool COpenZWave::OpenSerialConnector()
 	CloseSerialConnector();
 
 	m_nodes.clear();
-	m_bNeedSave = false;
 	std::string ConfigPath = szStartupFolder + "Config/";
 	std::string UserPath = ConfigPath;
 	if (szStartupFolder != szUserDataFolder)
@@ -1076,8 +1031,6 @@ bool COpenZWave::OpenSerialConnector()
 #else
 		m_pManager->AddDriver(m_szSerialPort.c_str());
 #endif
-		m_LastControllerConfigWrite = mytime(NULL);
-
 		int nightly_heal = 0;
 		m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
 		m_bNightlyNetworkHeal = (nightly_heal != 0);
@@ -1101,14 +1054,11 @@ void COpenZWave::CloseSerialConnector()
 	if (!m_pManager)
 		return;
 
-	WriteControllerConfig();
 	_log.Log(LOG_STATUS, "OpenZWave: Closed");
 
 	try
 	{
-		m_pManager->RemoveWatcher(OnNotification, this);
-		sleep_seconds(1);
-		//m_pManager->RemoveDriver(m_szSerialPort.c_str()); //not needed according the documentation, destroy will take card of this
+		OpenZWave::Manager::Get()->RemoveWatcher(OnNotification, this);
 		OpenZWave::Manager::Destroy();
 		OpenZWave::Options::Destroy();
 	}
@@ -1677,33 +1627,23 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 	if (commandclass == COMMAND_CLASS_SWITCH_BINARY)
 	{
-		if (
-			(vLabel == "Switch") ||
-			(vLabel == "Sensor") ||
-			(vLabel == "Motion Sensor") ||
-			(vLabel == "Door/Window Sensor") ||
-			(vLabel == "Tamper Sensor") ||
-			(vLabel == "Magnet open")
-			)
+		if (m_pManager->GetValueAsBool(vID, &bValue) == true)
 		{
-			if (m_pManager->GetValueAsBool(vID, &bValue) == true)
-			{
-				_device.devType = ZDTYPE_SWITCH_NORMAL;
-				if (bValue == true)
-					_device.intvalue = 255;
-				else
-					_device.intvalue = 0;
-				InsertDevice(_device);
-			}
-			else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
-			{
-				_device.devType = ZDTYPE_SWITCH_NORMAL;
-				if (byteValue == 0)
-					_device.intvalue = 0;
-				else
-					_device.intvalue = 255;
-				InsertDevice(_device);
-			}
+			_device.devType = ZDTYPE_SWITCH_NORMAL;
+			if (bValue == true)
+				_device.intvalue = 255;
+			else
+				_device.intvalue = 0;
+			InsertDevice(_device);
+		}
+		else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+		{
+			_device.devType = ZDTYPE_SWITCH_NORMAL;
+			if (byteValue == 0)
+				_device.intvalue = 0;
+			else
+				_device.intvalue = 255;
+			InsertDevice(_device);
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_SWITCH_MULTILEVEL)
@@ -1745,32 +1685,22 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_SENSOR_BINARY)
 	{
-		if (
-			(vLabel == "Switch") ||
-			(vLabel == "Sensor") ||
-			(vLabel == "Motion Sensor") ||
-			(vLabel == "Door/Window Sensor") ||
-			(vLabel == "Tamper Sensor") ||
-			(vLabel == "Magnet open")
-			)
+		_device.devType = ZDTYPE_SWITCH_NORMAL;
+		if (m_pManager->GetValueAsBool(vID, &bValue) == true)
 		{
-			_device.devType = ZDTYPE_SWITCH_NORMAL;
-			if (m_pManager->GetValueAsBool(vID, &bValue) == true)
-			{
-				if (bValue == true)
-					_device.intvalue = 255;
-				else
-					_device.intvalue = 0;
-			}
-			else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
-			{
-				if (byteValue == 0)
-					_device.intvalue = 0;
-				else
-					_device.intvalue = 255;
-			}
-			InsertDevice(_device);
+			if (bValue == true)
+				_device.intvalue = 255;
+			else
+				_device.intvalue = 0;
 		}
+		else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+		{
+			if (byteValue == 0)
+				_device.intvalue = 0;
+			else
+				_device.intvalue = 255;
+		}
+		InsertDevice(_device);
 	}
 	else if (commandclass == COMMAND_CLASS_USER_CODE)
 	{
@@ -3103,42 +3033,28 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		}
 		else
 		{
-			if (
-				(vLabel == "Switch") ||
-				(vLabel == "Sensor") ||
-				(vLabel == "Motion Sensor") ||
-				(vLabel == "Door/Window Sensor") ||
-				(vLabel == "Tamper Sensor") ||
-				(vLabel == "Magnet open") ||
-				(vLabel == "Locked") ||
-				(vLabel == "Unlocked")
-				)
+			int intValue = 0;
+			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
-				int intValue = 0;
-				if (vType == OpenZWave::ValueID::ValueType_Bool)
-				{
-					if (bValue == true)
-						intValue = 255;
-					else
-						intValue = 0;
-				}
-				else if (vType == OpenZWave::ValueID::ValueType_Byte)
-				{
-					if (byteValue == 0)
-						intValue = 0;
-					else
-						intValue = 255;
-				}
+				if (bValue == true)
+					intValue = 255;
 				else
-					return;
-				if (pDevice->intvalue == intValue)
-				{
-					return; //dont send same value
-				}
-				pDevice->intvalue = intValue;
+					intValue = 0;
+			}
+			else if (vType == OpenZWave::ValueID::ValueType_Byte)
+			{
+				if (byteValue == 0)
+					intValue = 0;
+				else
+					intValue = 255;
 			}
 			else
 				return;
+			if (pDevice->intvalue == intValue)
+			{
+				return; //dont send same value
+			}
+			pDevice->intvalue = intValue;
 		}
 	}
 	break;
@@ -3801,7 +3717,6 @@ void COpenZWave::GetConfigFile(std::string& filePath, std::string& fileContent)
 		return;
 
 	std::lock_guard<std::mutex> l(m_NotificationMutex);
-	WriteControllerConfig();
 
 	char szFileName[255];
 	sprintf(szFileName, "%sConfig/zwcfg_0x%08x.xml", szUserDataFolder.c_str(), m_controllerID);
@@ -3855,7 +3770,6 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		if (!m_bControllerCommandCanceled)
 		{
 			szLog = "The command has completed successfully";
-			m_bNeedSave = true;
 		}
 		else
 		{
@@ -3933,18 +3847,8 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 
 					if (commandclass == COMMAND_CLASS_SWITCH_BINARY)
 					{
-						if (
-							(vLabel == "Switch") ||
-							(vLabel == "Sensor") ||
-							(vLabel == "Motion Sensor") ||
-							(vLabel == "Door/Window Sensor") ||
-							(vLabel == "Tamper Sensor") ||
-							(vLabel == "Magnet open")
-							)
-						{
-							if (!m_pManager->isPolled(*ittValue))
-								m_pManager->EnablePoll(*ittValue, 1);
-						}
+						if (!m_pManager->isPolled(*ittValue))
+							m_pManager->EnablePoll(*ittValue, 1);
 					}
 					else if (commandclass == COMMAND_CLASS_SWITCH_MULTILEVEL)
 					{
@@ -3960,18 +3864,8 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					}
 					else if (commandclass == COMMAND_CLASS_SENSOR_BINARY)
 					{
-						if (
-							(vLabel == "Switch") ||
-							(vLabel == "Sensor") ||
-							(vLabel == "Motion Sensor") ||
-							(vLabel == "Door/Window Sensor") ||
-							(vLabel == "Tamper Sensor") ||
-							(vLabel == "Magnet open")
-							)
-						{
-							if (!m_pManager->isPolled(*ittValue))
-								m_pManager->EnablePoll(*ittValue, 1);
-						}
+						if (!m_pManager->isPolled(*ittValue))
+							m_pManager->EnablePoll(*ittValue, 1);
 					}
 					else if (commandclass == COMMAND_CLASS_METER)
 					{
