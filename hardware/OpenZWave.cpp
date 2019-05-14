@@ -1576,7 +1576,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	if (commandclass == COMMAND_CLASS_CONFIGURATION)
 	{
 		std::string vUnits = m_pManager->GetValueUnits(vID);
-		_log.Debug(DEBUG_HARDWARE, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex);
+		_log.Debug(DEBUG_HARDWARE, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
+		//_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
 		return;
 	}
 
@@ -1654,19 +1655,27 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		)
 	{
 		_device.devType = ZDTYPE_SWITCH_NORMAL;
-		if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+		if (vType == OpenZWave::ValueID::ValueType_Bool)
 		{
-			if (bValue == true)
-				_device.intvalue = 255;
-			else
-				_device.intvalue = 0;
+			if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+			{
+				if (bValue == true)
+					_device.intvalue = 255;
+				else
+					_device.intvalue = 0;
+			}
 		}
-		else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+		else if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
 			if (byteValue == 0)
 				_device.intvalue = 0;
 			else
 				_device.intvalue = 255;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d", vType);
+			return;
 		}
 		InsertDevice(_device);
 	}
