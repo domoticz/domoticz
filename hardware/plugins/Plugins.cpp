@@ -147,7 +147,7 @@ namespace Plugins {
 			}
 			if (pCode && pCode->co_name)
 			{
-				if (sFuncName.length()) sFuncName += "\\";
+				if (!sFuncName.empty()) sFuncName += "\\";
 				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				sFuncName = pFuncBytes->ob_sval;
 			}
@@ -192,7 +192,7 @@ namespace Plugins {
 			}
 			if (pCode && pCode->co_name)
 			{
-				if (sFuncName.length()) sFuncName += "\\";
+				if (!sFuncName.empty()) sFuncName += "\\";
 				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				sFuncName = pFuncBytes->ob_sval;
 			}
@@ -433,7 +433,7 @@ namespace Plugins {
 			else
 			{
 				std::string		sNotifierName = szNotifier;
-				if ((!sNotifierName.length()) || (sNotifierName.find_first_of(' ') != -1))
+				if ((sNotifierName.empty()) || (sNotifierName.find_first_of(' ') != std::string::npos))
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to parse parameters, valid Notifier Name expected, received '%s'.", pModState->pPlugin->m_Name.c_str(), szNotifier);
 				}
@@ -540,10 +540,8 @@ namespace Plugins {
 			}
 
 			// Build a Python structure to return 
-			std::vector<std::vector<std::string> >::const_iterator itt = result.begin();
-			std::vector<std::string> sd = *itt;
-			sConfig = sd[0];
-			if (!sConfig.length()) sConfig = "{}";
+			sConfig = result[0][0];
+			if (sConfig.empty()) sConfig = "{}";
 			pConfig = pProtocol->JSONtoPython(sConfig);
 			Py_DECREF(Py_None);
 		}
@@ -689,7 +687,7 @@ namespace Plugins {
 					}
 					Py_XDECREF(pString);
 				}
-				if (sError.length())
+				if (!sError.empty())
 				{
 					_log.Log(LOG_ERROR, "(%s) Module Import failed: '%s'", m_Name.c_str(), sError.c_str());
 					sError = "";
@@ -720,7 +718,7 @@ namespace Plugins {
 					Py_XDECREF(pString);
 				}
 
-				if (sError.length())
+				if (!sError.empty())
 				{
 					if ((lineno > 0) && (lineno < 1000))
 					{
@@ -745,7 +743,7 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "(%s) Error Line details not available.", m_Name.c_str());
 				}
 
-				if (sError.length())
+				if (!sError.empty())
 				{
 					_log.Log(LOG_ERROR, "(%s) Import detail: %s", m_Name.c_str(), sError.c_str());
 				}
@@ -824,7 +822,7 @@ namespace Plugins {
 					FuncName = pFuncBytes->ob_sval;
 					Py_XDECREF(pFuncBytes);
 				}
-				if (FileName.length())
+				if (!FileName.empty())
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
 				else
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
@@ -1210,7 +1208,7 @@ namespace Plugins {
 						if (pAttributeValue)
 						{
 							m_Author = pAttributeValue;
-							if (sExtraDetail.length()) sExtraDetail += ", ";
+							if (!sExtraDetail.empty()) sExtraDetail += ", ";
 							sExtraDetail += "author '";
 							sExtraDetail += pAttributeValue;
 							sExtraDetail += "'";
@@ -1419,7 +1417,7 @@ Error:
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			if (!sPort.length())
+			if (sPort.empty())
 			{
 				_log.Log(LOG_ERROR, "(%s) No port number specified for %s connection to: '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
 				return;
@@ -1559,7 +1557,7 @@ Error:
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 				if (m_bDebug & PDM_CONNECTION)
 				{
-					if (sPort.length())
+					if (!sPort.empty())
 						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str(), sConnection.c_str());
 					else
 						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sConnection.c_str());
@@ -1610,7 +1608,7 @@ Error:
 				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if ((sTransport == "Serial") || (!sPort.length()))
+				if ((sTransport == "Serial") || (sPort.empty()))
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1721,7 +1719,7 @@ Error:
 				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if ((sTransport == "Serial") || (!sPort.length()))
+				if ((sTransport == "Serial") || (sPort.empty()))
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1762,7 +1760,7 @@ Error:
 		try
 		{
 			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
-			if (m_PyModule && sHandler.length())
+			if (m_PyModule && !sHandler.empty())
 			{
 				PyObject*	pFunc = PyObject_GetAttrString((PyObject*)m_PyModule, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
@@ -1847,7 +1845,7 @@ Error:
 
 				PyObject*	pKey = PyUnicode_FromString(sd[0].c_str());
 				PyObject*	pValue = NULL;
-				if (sd[2].length())
+				if (!sd[2].empty())
 				{
 					pValue = PyUnicode_FromString(sd[2].c_str());
 				}
