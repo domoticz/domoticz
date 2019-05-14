@@ -58,6 +58,18 @@ define(['app'], function (app) {
         }
 
         OnZWaveAbortInclude = function () {
+            $.ajax({
+                url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+					$('#IncludeZWaveDialog').modal('hide');
+                },
+                error: function () {
+					$('#IncludeZWaveDialog').modal('hide');
+                }
+            });
+        
             $http({
                 url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
                 async: true,
@@ -136,14 +148,16 @@ define(['app'], function (app) {
         }
 
         OnZWaveAbortExclude = function () {
-            $http({
+            $.ajax({
                 url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
-                async: true,
-                dataType: 'json'
-            }).then(function successCallback(response) {
-                $('#ExcludeZWaveDialog').modal('hide');
-            }, function errorCallback(response) {
-                $('#ExcludeZWaveDialog').modal('hide');
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+					$('#ExcludeZWaveDialog').modal('hide');
+                },
+                error: function () {
+					$('#ExcludeZWaveDialog').modal('hide');
+                }
             });
         }
 
