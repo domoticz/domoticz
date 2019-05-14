@@ -98,6 +98,7 @@ public:
 
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);
+	bool RequestNodeInfo(const unsigned int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
 	bool HasNodeFailed(const int nodeID);
 	bool ReceiveConfigurationFromOtherController();

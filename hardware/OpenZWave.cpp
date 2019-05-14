@@ -153,9 +153,9 @@ extern std::string szUserDataFolder;
 
 #define round(a) ( int ) ( a + .5 )
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 #define DEBUG_ZWAVE_INT
-//#endif
+#endif
 
 const char* cclassStr(uint8 cc)
 {
@@ -1648,26 +1648,27 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	int32 intValue = 0;
 
 	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
-	if (commandclass == COMMAND_CLASS_SWITCH_BINARY)
+	if (
+		(commandclass == COMMAND_CLASS_SWITCH_BINARY)||
+		(commandclass == COMMAND_CLASS_SENSOR_BINARY)
+		)
 	{
+		_device.devType = ZDTYPE_SWITCH_NORMAL;
 		if (m_pManager->GetValueAsBool(vID, &bValue) == true)
 		{
-			_device.devType = ZDTYPE_SWITCH_NORMAL;
 			if (bValue == true)
 				_device.intvalue = 255;
 			else
 				_device.intvalue = 0;
-			InsertDevice(_device);
 		}
 		else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 		{
-			_device.devType = ZDTYPE_SWITCH_NORMAL;
 			if (byteValue == 0)
 				_device.intvalue = 0;
 			else
 				_device.intvalue = 255;
-			InsertDevice(_device);
 		}
+		InsertDevice(_device);
 	}
 	else if (commandclass == COMMAND_CLASS_SWITCH_MULTILEVEL)
 	{
@@ -1705,25 +1706,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				InsertDevice(_device);
 			}
 		}
-	}
-	else if (commandclass == COMMAND_CLASS_SENSOR_BINARY)
-	{
-		_device.devType = ZDTYPE_SWITCH_NORMAL;
-		if (m_pManager->GetValueAsBool(vID, &bValue) == true)
-		{
-			if (bValue == true)
-				_device.intvalue = 255;
-			else
-				_device.intvalue = 0;
-		}
-		else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
-		{
-			if (byteValue == 0)
-				_device.intvalue = 0;
-			else
-				_device.intvalue = 255;
-		}
-		InsertDevice(_device);
 	}
 	else if (commandclass == COMMAND_CLASS_USER_CODE)
 	{
@@ -2626,6 +2608,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		{
 			if (HomeID != m_controllerID)
 				m_pManager->AddAssociation(HomeID, NodeID, 1, m_controllerNodeId);
+		}
+		else
+		{
+			//normal
+			_log.Debug(DEBUG_HARDWARE, "OpenZWave: Value_Changed: (Not handling non-user genre: %d!) Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vGenre, NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
 		}
 		return;
 	}
@@ -4296,6 +4283,24 @@ bool COpenZWave::RequestNodeConfig(const unsigned int homeID, const int nodeID)
 	return false;
 }
 
+bool COpenZWave::RequestNodeInfo(const unsigned int homeID, const int nodeID)
+{
+	NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
+	if (pNode == NULL)
+		return false;
+
+	try
+	{
+		m_pManager->RefreshNodeInfo(homeID, (uint8)nodeID);
+		return true;
+	}
+	catch (OpenZWave::OZWException& ex)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
+	}
+	return false;
+}
+
 void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value& root, const int index)
 {
 	if (!m_pManager)
@@ -5518,6 +5523,28 @@ namespace http {
 				{
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->RequestNodeConfig(homeID, nodeID);
+					root["status"] = "OK";
+					root["title"] = "RequestZWaveNodeConfig";
+				}
+			}
+		}
+		void CWebServer::Cmd_ZWaveRequestNodeInfo(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
+			if (!result.empty())
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = static_cast<unsigned int>(std::stoul(result[0][1]));
+				int nodeID = atoi(result[0][2].c_str());
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->RequestNodeInfo(homeID, nodeID);
 					root["status"] = "OK";
 					root["title"] = "RequestZWaveNodeConfig";
 				}

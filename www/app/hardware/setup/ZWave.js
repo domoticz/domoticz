@@ -235,6 +235,23 @@ define(['app'], function (app) {
             });
         }
 
+		//Request Node Information Frame
+        RefreshNode = function (idx) {
+            if ($('#updelclr #noderefresh').attr("class") == "btnstyle3-dis") {
+                return;
+            }
+			$.ajax({
+				url: "json.htm?type=command&param=requestzwavenodeinfo" +
+				"&idx=" + idx,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					bootbox.alert($.t('Node Information Frame requested. This could take some time! (You might need to wake-up the node!)'));
+					RefreshOpenZWaveNodeTable();
+				}
+			});
+        }
+
         RequestZWaveConfiguration = function (idx) {
             $.ajax({
                 url: "json.htm?type=command&param=requestzwavenodeconfig" +
@@ -414,6 +431,8 @@ define(['app'], function (app) {
 
             $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+            $('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
+            
             $("#hardwarecontent #configuration").html("");
             $("#hardwarecontent #nodeparamstable #nodename").val("");
 
@@ -481,10 +500,11 @@ define(['app'], function (app) {
             /* Add a click handler to the rows - this could be used as a callback */
             $("#nodestable tbody").off();
             $("#nodestable tbody").on('click', 'tr', function () {
-                $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
                 if ($(this).hasClass('row_selected')) {
                     $(this).removeClass('row_selected');
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+					$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+					$('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
                     $("#hardwarecontent #configuration").html("");
                     $("#hardwarecontent #nodeparamstable #nodename").val("");
                     $('#hardwarecontent #usercodegrp').hide();
@@ -495,12 +515,15 @@ define(['app'], function (app) {
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3");
+                    $('#updelclr #noderefresh').attr("class", "btnstyle3");
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
                         var data = oTable.fnGetData(anSelected[0]);
                         var idx = data["DT_RowId"];
                         var iNode = parseInt(data["NodeID"]);
                         $("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
+       					$('#updelclr #noderefresh').attr("href", "javascript:RefreshNode(" + idx + ")");
+                        
                         $("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
                         if (iNode != iOwnNodeId) {
                             $('#updelclr #nodedelete').attr("class", "btnstyle3");
