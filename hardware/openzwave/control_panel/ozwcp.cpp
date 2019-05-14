@@ -243,7 +243,7 @@ void MyNode::newGroup(uint8 node)
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 }
 
@@ -404,7 +404,7 @@ void MyNode::updatePoll(char* ilist, char* plist)
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 }
 
@@ -1059,7 +1059,7 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 }
 
@@ -1240,7 +1240,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1254,7 +1254,7 @@ std::string COpenZWaveControlPanel::SendNodeConfResponse(int node_id)
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1268,7 +1268,7 @@ std::string COpenZWaveControlPanel::SendNodeValuesResponse(int node_id)
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1291,7 +1291,7 @@ std::string COpenZWaveControlPanel::SetNodeValue(const std::string& arg1, const 
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1326,7 +1326,7 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string& arg1, const
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1413,7 +1413,7 @@ std::string COpenZWaveControlPanel::DoAdminCommand(const std::string& fun, const
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1534,7 +1534,7 @@ std::string COpenZWaveControlPanel::DoSceneCommand(const std::string& fun, const
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1555,7 +1555,7 @@ std::string COpenZWaveControlPanel::DoNodeChange(const std::string& fun, const i
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1582,7 +1582,7 @@ std::string COpenZWaveControlPanel::SaveConfig()
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1620,7 +1620,7 @@ std::string COpenZWaveControlPanel::DoTestNetwork(const int node_id, const int c
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1658,7 +1658,7 @@ std::string COpenZWaveControlPanel::HealNetworkNode(const int node_id, const boo
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1722,7 +1722,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
@@ -1854,7 +1854,7 @@ std::string COpenZWaveControlPanel::GetCPStats()
 	}
 	catch (OpenZWave::OZWException& ex)
 	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
+		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
 	return "";
 }
