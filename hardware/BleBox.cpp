@@ -91,7 +91,7 @@ void BleBox::Do_Work()
 			GetDevicesState();
 		}
 	}
-	Log(LOG_STATUS, "Worker started...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void BleBox::GetDevicesState()
