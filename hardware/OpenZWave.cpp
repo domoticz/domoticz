@@ -400,7 +400,7 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 				strState = "Sleeping";
 		}
 	}
-	catch (OpenZWave::OZWException &ex)
+	catch (OpenZWave::OZWException& ex)
 	{
 		_log.Log(LOG_ERROR, "OpenZWave: Exception, %s", ex.GetMsg().c_str());
 	}
@@ -1124,7 +1124,7 @@ bool COpenZWave::GetValueByCommandClassLabel(const int nodeID, const int instanc
 			try
 			{
 				std::string cvLabel = m_pManager->GetValueLabel(*itt);
-				if (cvLabel == vLabel)
+				if (cvLabel.find(vLabel) != std::string::npos)
 				{
 					nValue = *itt;
 					return true;
@@ -1539,11 +1539,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	if (
 		(commandclass == COMMAND_CLASS_BASIC) ||
 		(commandclass == COMMAND_CLASS_SWITCH_ALL) ||
-		(commandclass == COMMAND_CLASS_CONFIGURATION) ||
 		(commandclass == COMMAND_CLASS_POWERLEVEL)
 		)
 		return;
-
+		
 	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
@@ -1556,6 +1555,13 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
 	std::string vLabel = m_pManager->GetValueLabel(vID);
+
+	if (commandclass == COMMAND_CLASS_CONFIGURATION)
+	{
+		std::string vUnits = m_pManager->GetValueUnits(vID);
+		_log.Log(LOG_DEBUG, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex);
+		return;
+	}
 
 	if (commandclass == COMMAND_CLASS_VERSION)
 	{
@@ -1580,9 +1586,9 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	uint8_t instance = GetInstanceFromValueID(vID);
 
 	if (
-		(vLabel == "Exporting") ||
-		(vLabel == "Interval") ||
-		(vLabel == "Previous Reading")
+		(vLabel.find("Exporting") != std::string::npos) ||
+		(vLabel.find("Interval") != std::string::npos) ||
+		(vLabel.find("Previous Reading") != std::string::npos)
 		)
 		return;
 
@@ -1615,7 +1621,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	ss3 >> xID;
 	_device.Product_type = xID;
 
-	if (vLabel != "")
+	if (!vLabel.empty())
 		_device.label = vLabel;
 
 	float fValue = 0;
@@ -1648,7 +1654,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_SWITCH_MULTILEVEL)
 	{
-		if (vLabel == "Level")
+		if (vLabel.find("Level") != std::string::npos)
 		{
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 			{
@@ -1670,7 +1676,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_COLOR_CONTROL)
 	{
-		if (vLabel == "Color")
+		if (vLabel.find("Color") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_String)
 			{
@@ -1721,18 +1727,16 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_BASIC_WINDOW_COVERING)
 	{
-		if (vLabel == "Open")
+		_device.devType = ZDTYPE_SWITCH_NORMAL;
+		if (vLabel.find("Open") != std::string::npos)
 		{
-			_device.devType = ZDTYPE_SWITCH_NORMAL;
 			_device.intvalue = 255;
-			InsertDevice(_device);
 		}
-		else if (vLabel == "Close")
+		else if (vLabel.find("Close") != std::string::npos)
 		{
-			_device.devType = ZDTYPE_SWITCH_NORMAL;
 			_device.intvalue = 0;
-			InsertDevice(_device);
 		}
+		InsertDevice(_device);
 	}
 	else if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
 	{
@@ -1752,7 +1756,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		}
 		else
 		{
-			if (vLabel != "SourceNodeId")
+			if (vLabel.find("SourceNodeId") == std::string::npos)
 			{
 				_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s", vLabel.c_str(), vUnits.c_str());
 			}
@@ -1762,15 +1766,15 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	{
 		//Meter device
 		if (
-			(vLabel == "Energy") ||
-			(vLabel == "Power")
+			(vLabel.find("Energy") != std::string::npos) ||
+			(vLabel.find("Power") != std::string::npos)
 			)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
-					if (vLabel == "Energy")
+					if (vLabel.find("Energy") != std::string::npos)
 						_device.scaleID = SCALEID_ENERGY;
 					else
 						_device.scaleID = SCALEID_POWER;
@@ -1789,7 +1793,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Voltage")
+		else if (vLabel.find("Voltage") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -1804,7 +1808,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			}
 
 		}
-		else if (vLabel == "Current")
+		else if (vLabel.find("Current") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -1818,7 +1822,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Power Factor")
+		else if (vLabel.find("Power Factor") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -1832,7 +1836,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Gas")
+		else if (vLabel.find("Gas") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -1846,7 +1850,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Water")
+		else if (vLabel.find("Water") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -1863,7 +1867,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
-		if (vLabel == "Temperature")
+		if (vLabel.find("Temperature") != std::string::npos)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -1878,7 +1882,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if (vLabel == "Luminance")
+		else if (vLabel.find("Luminance") != std::string::npos)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -1896,7 +1900,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if (vLabel == "Relative Humidity")
+		else if (vLabel.find("Relative Humidity") != std::string::npos)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -1906,7 +1910,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if (vLabel == "Ultraviolet")
+		else if (vLabel.find("Ultraviolet") != std::string::npos)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -1916,7 +1920,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if (vLabel == "Velocity")
+		else if (vLabel.find("Velocity") != std::string::npos)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -1926,7 +1930,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if ((vLabel == "Barometric Pressure") || (vLabel == "Atmospheric Pressure"))
+		else if (
+			(vLabel.find("Barometric Pressure") != std::string::npos) ||
+			(vLabel.find("Atmospheric Pressure") != std::string::npos)
+			)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -1936,7 +1943,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if (vLabel == "Dew Point")
+		else if (vLabel.find("Dew Point") != std::string::npos)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -1947,15 +1954,15 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			}
 		}
 		else if (
-			(vLabel == "Energy") ||
-			(vLabel == "Power")
+			(vLabel.find("Energy") != std::string::npos) ||
+			(vLabel.find("Power") != std::string::npos)
 			)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
 				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
-					if (vLabel == "Energy")
+					if (vLabel.find("Energy") != std::string::npos)
 						_device.scaleID = SCALEID_ENERGY;
 					else
 						_device.scaleID = SCALEID_POWER;
@@ -1974,7 +1981,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Voltage")
+		else if (vLabel.find("Voltage") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -1988,7 +1995,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Current")
+		else if (vLabel.find("Current") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2002,7 +2009,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Power Factor")
+		else if (vLabel.find("Power Factor") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2016,7 +2023,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Gas")
+		else if (vLabel.find("Gas") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2030,7 +2037,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Water")
+		else if (vLabel.find("Water") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2044,7 +2051,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "CO2 Level")
+		else if (vLabel.find("CO2 Level") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2058,7 +2065,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Moisture")
+		else if (vLabel.find("Moisture") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2072,7 +2079,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Tank Capacity")
+		else if (vLabel.find("Tank Capacity") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2086,7 +2093,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "General")
+		else if (vLabel.find("General") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2099,7 +2106,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Rain Rate")
+		else if (vLabel.find("Rain Rate") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2114,7 +2121,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				}
 			}
 		}
-		else if (vLabel == "Seismic Intensity")
+		else if (vLabel.find("Seismic Intensity") != std::string::npos)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
@@ -2166,7 +2173,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			return;
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
-			if (vLabel == "Mode") {
+			if (vLabel.find("Mode") != std::string::npos)
+			{
 				pNode->tModes.clear();
 				m_pManager->GetValueListItems(vID, &pNode->tModes);
 				if (!pNode->tModes.empty())
@@ -2203,7 +2211,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			return;
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
-			if (vLabel == "Fan Mode") {
+			if (vLabel.find("Fan Mode") != std::string::npos)
+			{
 				pNode->tFanModes.clear();
 				m_pManager->GetValueListItems(vID, &pNode->tFanModes);
 				if (!pNode->tFanModes.empty())
@@ -2241,7 +2250,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
-			if (vLabel == "Day") {
+			if (vLabel.find("Day") != std::string::npos)
+			{
 				int32 vDay;
 				try
 				{
@@ -2263,10 +2273,12 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		{
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 				return;
-			else if (vLabel == "Hour") {
+			else if (vLabel.find("Hour") != std::string::npos)
+			{
 				pNode->tClockHour = byteValue;
 			}
-			else if (vLabel == "Minute") {
+			else if (vLabel.find("Minute") != std::string::npos)
+			{
 				pNode->tClockMinute = byteValue;
 				if (
 					(pNode->tClockDay != -1) &&
@@ -2314,7 +2326,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
 					return;
 			}
-			if ((lValue == 0)|| (lValue == 2)) // CentralSceneMask_KeyReleased
+			if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
 				return;
 			if (lValue != 1)
 				return; //only accept CentralSceneMask_KeyPressed1time
@@ -2329,8 +2341,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
 	{
 		if (
-			(vLabel == "Locked") ||
-			(vLabel == "Unlocked")
+			(vLabel.find("Locked") != std::string::npos) ||
+			(vLabel.find("Unlocked") != std::string::npos)
 			)
 		{
 			_device.devType = ZDTYPE_SWITCH_NORMAL;
@@ -2461,7 +2473,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
 		_device.indexID = indexID;
 
 		std::string vLabel = m_pManager->GetValueLabel(vID);
-		if (vLabel != "")
+		if (!vLabel.empty())
 			_device.label = vLabel;
 
 		_device.basicType = 1;
@@ -2593,7 +2605,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			}
 			*/
 		}
-		if ((pNode) && (vLabel == "Wake-up Interval"))
+		if ((pNode) && (vLabel.find("Wake-up Interval") != std::string::npos))
 		{
 			if (HomeID != m_controllerID)
 				m_pManager->AddAssociation(HomeID, NodeID, 1, m_controllerNodeId);
@@ -2602,9 +2614,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	}
 
 	if (
-		(vLabel == "Exporting") ||
-		(vLabel == "Interval") ||
-		(vLabel == "Previous Reading")
+		(vLabel.find("Exporting") != std::string::npos) ||
+		(vLabel.find("Interval") != std::string::npos) ||
+		(vLabel.find("Previous Reading") != std::string::npos)
 		)
 		return;
 
@@ -2620,42 +2632,42 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	sstr << int(NodeID) << ".instances." << int(instance) << ".commandClasses." << int(commandclass) << ".data";
 
 	if (
-		(vLabel == "Energy") ||
-		(vLabel == "Power") ||
-		(vLabel == "Voltage") ||
-		(vLabel == "Current") ||
-		(vLabel == "Power Factor") ||
-		(vLabel == "Gas") ||
-		(vLabel == "CO2 Level") ||
-		(vLabel == "Water") ||
-		(vLabel == "Moisture") ||
-		(vLabel == "Tank Capacity")
+		(vLabel.find("Energy") != std::string::npos) ||
+		(vLabel.find("Power") != std::string::npos) ||
+		(vLabel.find("Voltage") != std::string::npos) ||
+		(vLabel.find("Current") != std::string::npos) ||
+		(vLabel.find("Power Factor") != std::string::npos) ||
+		(vLabel.find("Gas") != std::string::npos) ||
+		(vLabel.find("CO2 Level") != std::string::npos) ||
+		(vLabel.find("Water") != std::string::npos) ||
+		(vLabel.find("Moisture") != std::string::npos) ||
+		(vLabel.find("Tank Capacity") != std::string::npos)
 		)
 	{
 		int scaleID = 0;
-		if (vLabel == "Energy")
+		if (vLabel.find("Energy") != std::string::npos)
 			scaleID = SCALEID_ENERGY;
-		else if (vLabel == "Power")
+		else if (vLabel.find("Power") != std::string::npos)
 			scaleID = SCALEID_POWER;
-		else if (vLabel == "Voltage")
+		else if (vLabel.find("Voltage") != std::string::npos)
 			scaleID = SCALEID_VOLTAGE;
-		else if (vLabel == "Current")
+		else if (vLabel.find("Current") != std::string::npos)
 			scaleID = SCALEID_CURRENT;
-		else if (vLabel == "Power Factor")
+		else if (vLabel.find("Power Factor") != std::string::npos)
 			scaleID = SCALEID_POWERFACTOR;
-		else if (vLabel == "Gas")
+		else if (vLabel.find("Gas") != std::string::npos)
 			scaleID = SCALEID_GAS;
-		else if (vLabel == "CO2 Level")
+		else if (vLabel.find("CO2 Level") != std::string::npos)
 			scaleID = SCALEID_CO2;
-		else if (vLabel == "Water")
+		else if (vLabel.find("Water") != std::string::npos)
 			scaleID = SCALEID_WATER;
-		else if (vLabel == "Moisture")
+		else if (vLabel.find("Moisture") != std::string::npos)
 			scaleID = SCALEID_MOISTRUE;
-		else if (vLabel == "Tank Capacity")
+		else if (vLabel.find("Tank Capacity") != std::string::npos)
 			scaleID = SCALEID_TANK_CAPACITY;
-		else if (vLabel == "Rain Rate")
+		else if (vLabel.find("Rain Rate") != std::string::npos)
 			scaleID = SCALEID_RAIN_RATE;
-		else if (vLabel == "Seismic Intensity")
+		else if (vLabel.find("Seismic Intensity") != std::string::npos)
 			scaleID = SCALEID_SEISMIC_INTENSITY;
 
 		sstr << "." << scaleID;
@@ -2745,7 +2757,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
-			if (vLabel == "Day") {
+			if (vLabel.find("Day") != std::string::npos)
+			{
 				try
 				{
 					int32 vDay;
@@ -2768,11 +2781,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		{
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 				return;
-			else if (vLabel == "Hour") {
+			else if (vLabel.find("Hour") != std::string::npos)
+			{
 				pNode->tClockHour = byteValue;
 				return;
 			}
-			else if (vLabel == "Minute") {
+			else if (vLabel.find("Minute") != std::string::npos)
+			{
 				pNode->tClockMinute = byteValue;
 				if (
 					(pNode->tClockDay != -1) &&
@@ -2903,7 +2918,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			else
 				intValue = 255;
 
-			if (vLabel == "Alarm Type")
+			if (vLabel.find("Alarm Type") != std::string::npos)
 			{
 				if (byteValue != 0)
 				{
@@ -2912,7 +2927,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				else
 					m_LastAlarmTypeReceived = -1;
 			}
-			else if (vLabel == "Alarm Level")
+			else if (vLabel.find("Alarm Level") != std::string::npos)
 			{
 				if (m_LastAlarmTypeReceived != -1)
 				{
@@ -2935,16 +2950,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 
 				if (
-					vLabel == "Carbon Monoxide" ||
-					vLabel == "Carbon Dioxide" ||
-					vLabel == "Heat" ||
-					vLabel == "Flood" ||
-					vLabel == "Burglar" ||
-					vLabel == "System" ||
-					vLabel == "Emergency" ||
-					vLabel == "Clock" ||
-					vLabel == "Appliance" ||
-					vLabel == "HomeHealth"
+					(vLabel.find("Carbon Monoxide") != std::string::npos) ||
+					(vLabel.find("Carbon Dioxide") != std::string::npos) ||
+					(vLabel.find("Heat") != std::string::npos) ||
+					(vLabel.find("Flood") != std::string::npos) ||
+					(vLabel.find("Burglar") != std::string::npos) ||
+					(vLabel.find("System") != std::string::npos) ||
+					(vLabel.find("Emergency") != std::string::npos) ||
+					(vLabel.find("Clock") != std::string::npos) ||
+					(vLabel.find("Appliance") != std::string::npos) ||
+					(vLabel.find("HomeHealth") != std::string::npos)
 					)
 				{
 					switch (byteValue) {
@@ -2957,7 +2972,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if (vLabel == "Smoke")
+				else if (vLabel.find("Smoke") != std::string::npos)
 				{
 					switch (byteValue) {
 					case 0x00: 	// Previous Events cleared
@@ -2971,7 +2986,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if (vLabel == "Access Control")
+				else if (vLabel.find("Access Control") != std::string::npos)
 				{
 					switch (byteValue) {
 					case 0x00: 	// Previous Events cleared
@@ -2988,7 +3003,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if (vLabel == "Power Management")
+				else if (vLabel.find("Power Management") != std::string::npos)
 				{
 					switch (byteValue) {
 					case 0x00: 	// Previous Events cleared
@@ -3009,7 +3024,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if ((vLabel != "Alarm Type") && (vLabel != "Alarm Level"))
+				else if (
+					(vLabel.find("Alarm Type") == std::string::npos) &&
+					(vLabel.find("Alarm Level") == std::string::npos)
+					)
 				{
 					if (byteValue != 0)
 					{
@@ -3023,11 +3041,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			}
 			pDevice->intvalue = intValue;
 		}
-		else if (vLabel == "Open")
+		else if (vLabel.find("Open") != std::string::npos)
 		{
 			pDevice->intvalue = 255;
 		}
-		else if (vLabel == "Close")
+		else if (vLabel.find("Close") != std::string::npos)
 		{
 			pDevice->intvalue = 0;
 		}
@@ -3059,7 +3077,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	}
 	break;
 	case ZDTYPE_SWITCH_DIMMER:
-		if (vLabel != "Level")
+		if (vLabel.find("Level") == std::string::npos)
 			return;
 		if (vType != OpenZWave::ValueID::ValueType_Byte)
 			return;
@@ -3073,8 +3091,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		break;
 	case ZDTYPE_SENSOR_POWER:
 		if (
-			(vLabel != "Energy") &&
-			(vLabel != "Power")
+			(vLabel.find("Energy") == std::string::npos) &&
+			(vLabel.find("Power") == std::string::npos)
 			)
 			return;
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
@@ -3085,8 +3103,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		if (
-			(vLabel != "Energy") &&
-			(vLabel != "Power")
+			(vLabel.find("Energy") == std::string::npos) &&
+			(vLabel.find("Power") == std::string::npos)
 			)
 			return;
 		pDevice->floatValue = fValue * pDevice->scaleMultiply;
@@ -3094,7 +3112,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_TEMPERATURE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Temperature")
+		if (vLabel.find("Temperature") == std::string::npos)
 			return;
 		if (vUnits == "F")
 		{
@@ -3109,28 +3127,31 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_HUMIDITY:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Relative Humidity")
+		if (vLabel.find("Relative Humidity") == std::string::npos)
 			return;
 		pDevice->intvalue = round(fValue);
 		break;
 	case ZDTYPE_SENSOR_UV:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Ultraviolet")
+		if (vLabel.find("Ultraviolet") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_VELOCITY:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Velocity")
+		if (vLabel.find("Velocity") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_BAROMETER:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if ((vLabel == "Barometric Pressure") || (vLabel == "Atmospheric Pressure"))
+		if (
+			(vLabel.find("Barometric Pressure") != std::string::npos) ||
+			(vLabel.find("Atmospheric Pressure") != std::string::npos)
+			)
 		{
 			pDevice->floatValue = fValue * 10.0f;
 		}
@@ -3140,14 +3161,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_DEWPOINT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Dew Point")
+		if (vLabel.find("Dew Point") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_LIGHT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Luminance")
+		if (vLabel.find("Luminance") == std::string::npos)
 			return;
 		if (vUnits != "lux")
 		{
@@ -3159,14 +3180,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_VOLTAGE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Voltage")
+		if (vLabel.find("Voltage") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_AMPERE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Current")
+		if (vLabel.find("Current") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
@@ -3184,7 +3205,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_PERCENTAGE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Power Factor")
+		if (vLabel.find("Power Factor") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
@@ -3192,7 +3213,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Gas")
+		if (vLabel.find("Gas") == std::string::npos)
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
@@ -3204,7 +3225,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "CO2 Level")
+		if (vLabel.find("CO2 Level") == std::string::npos)
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
@@ -3214,7 +3235,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Water")
+		if (vLabel.find("Water") == std::string::npos)
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
@@ -3232,7 +3253,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Moisture")
+		if (vLabel.find("Moisture") == std::string::npos)
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
@@ -3242,14 +3263,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Tank Capacity")
+		if (vLabel.find("Tank Capacity") == std::string::npos)
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
 	}
 	break;
 	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
-		if (vLabel == "Minute")
+		if (vLabel.find("Minute") != std::string::npos)
 		{
 			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
@@ -3260,7 +3281,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_THERMOSTAT_MODE:
 		if (vType != OpenZWave::ValueID::ValueType_List)
 			return;
-		if (vLabel == "Mode")
+		if (vLabel.find("Mode") != std::string::npos)
 		{
 			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
@@ -3283,7 +3304,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE:
 		if (vType != OpenZWave::ValueID::ValueType_List)
 			return;
-		if (vLabel == "Fan Mode")
+		if (vLabel.find("Fan Mode") != std::string::npos)
 		{
 			COpenZWave::NodeInfo* pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
@@ -3839,9 +3860,9 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					std::string vLabel = m_pManager->GetValueLabel(*ittValue);
 
 					if (
-						(vLabel == "Exporting") ||
-						(vLabel == "Interval") ||
-						(vLabel == "Previous Reading")
+						(vLabel.find("Exporting") != std::string::npos) ||
+						(vLabel.find("Interval") != std::string::npos) ||
+						(vLabel.find("Previous Reading") != std::string::npos)
 						)
 						continue;
 
@@ -3852,7 +3873,7 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					}
 					else if (commandclass == COMMAND_CLASS_SWITCH_MULTILEVEL)
 					{
-						if (vLabel == "Level")
+						if (vLabel.find("Level") != std::string::npos)
 						{
 							if ((*ittValue).GetIndex() != 0)
 							{
@@ -3871,10 +3892,10 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					{
 						//Meter device
 						if (
-							(vLabel == "Energy") ||
-							(vLabel == "Power") ||
-							(vLabel == "Gas") ||
-							(vLabel == "Water")
+							(vLabel.find("Energy") != std::string::npos) ||
+							(vLabel.find("Power") != std::string::npos) ||
+							(vLabel.find("Gas") != std::string::npos) ||
+							(vLabel.find("Water") != std::string::npos)
 							)
 						{
 							if (bSingleIndexPoll && (ittValue->GetIndex() != 0))
