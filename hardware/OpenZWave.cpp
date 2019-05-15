@@ -5048,6 +5048,22 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 						{
 							m_pManager->SetValue(vID, ValueVal);
 						}
+						else if (vType == OpenZWave::ValueID::ValueType_Int)
+						{
+							m_pManager->SetValue(vID, atoi(ValueVal.c_str()));
+						}
+						else if (vType == OpenZWave::ValueID::ValueType_Byte)
+						{
+							m_pManager->SetValue(vID, (uint8)atoi(ValueVal.c_str()));
+						}
+						else if (vType == OpenZWave::ValueID::ValueType_Short)
+						{
+							m_pManager->SetValue(vID, (int16)atoi(ValueVal.c_str()));
+						}
+						else if (vType == OpenZWave::ValueID::ValueType_Decimal)
+						{
+							m_pManager->SetValue(vID, (float)atof(ValueVal.c_str()));
+						}
 						else
 						{
 							_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
