@@ -1813,6 +1813,14 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 					InsertDevice(_device);
 				}
 			}
+			else if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				int32 listValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &listValue))
+				{
+					//Not handled for now
+				}
+			}
 			else
 			{
 				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
@@ -2347,7 +2355,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		}
 		else
 		{
-			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s", vLabel.c_str(), vUnits.c_str());
+			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s, Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d", vLabel.c_str(), vUnits.c_str(), static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), instance);
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_BATTERY)
