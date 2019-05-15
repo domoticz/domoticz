@@ -1062,7 +1062,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param _pos the Bit you want to test for
 		 * \param o_value Pointer to a bool that will be filled with the value.
-		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_Bool. The type can be tested with a call to ValueID::GetType.
+		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_BitSet. The type can be tested with a call to ValueID::GetType.
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
@@ -1223,7 +1223,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the BitSet value.
 		 * \param _pos the Position of the Bit you want to Set
-		 * \param _value The new value of the bool.
+		 * \param _value The new value of the Bitset at the _pos position.
 		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Bool. The type can be tested with a call to ValueID::GetType.
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
