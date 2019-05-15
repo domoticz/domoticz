@@ -2781,6 +2781,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	int iValue = 0;
 	bool bValue = false;
 	unsigned char byteValue = 0;
+	int16 shortValue = 0;
 	int32 intValue = 0;
 	std::string strValue = "";
 	int32 lValue = 0;
@@ -2803,6 +2804,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	else if (vType == OpenZWave::ValueID::ValueType_Int)
 	{
 		if (m_pManager->GetValueAsInt(vID, &intValue) == false)
+			return;
+	}
+	else if (vType == OpenZWave::ValueID::ValueType_Short)
+	{
+		if (m_pManager->GetValueAsShort(vID, &shortValue) == false)
 			return;
 	}
 	else if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
