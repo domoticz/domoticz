@@ -132,5 +132,10 @@ describe('event helpers', function()
 		assert.is_same(utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
 	end)
 
+	it('should handle inTable ', function()
+		assert.is_same(utils.inTable({ testVersion = "2.5" }, 2.5 ), "value")
+		assert.is_same(utils.inTable({ testVersion = "2.5" }, "testVersion"), "key")
+		assert.is_false(utils.inTable({ testVersion = "2.5" }, 2.4 ), false)
+	end)
 
 end)

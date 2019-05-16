@@ -40,12 +40,14 @@ return {
 			adapterManager.addDummyMethod(device, 'toggleSwitch')
 			adapterManager.addDummyMethod(device, 'quietOn')
 			adapterManager.addDummyMethod(device, 'quietOff')
+		else
+			blindsOff2Close = { "Venetian Blinds US", "Venetian Blinds EU", "Blinds Percentage", "Blinds" }
 		end
+
 		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
-
 		-- from data: levelName, levelOffHidden, levelActions, maxDimLevel
 
 		if (data.lastLevel ~= nil) then
@@ -71,7 +73,6 @@ return {
 			end
 		end
 
-
 		function device.toggleSwitch()
 			local current, inv
 			if (device.state ~= nil) then
@@ -95,11 +96,11 @@ return {
 		end
 
 		function device.close()
-			return TimedCommand(domoticz, device.name, 'Off', 'device', device.state)
+			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'On') or 'Off', 'device', device.state)
 		end
 
 		function device.open()
-			return TimedCommand(domoticz, device.name, 'On', 'device', device.state)
+			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'Off') or 'On', 'device', device.state)
 		end
 
 		function device.stop() -- blinds
@@ -118,7 +119,6 @@ return {
 			device.levelNames = device.levelNames and string.split(device.levelNames, '|') or {}
 			device.level = tonumber(device.rawData[1])
 			device.levelName = device.state
-
 		end
 
 	end

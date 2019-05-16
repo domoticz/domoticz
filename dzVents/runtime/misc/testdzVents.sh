@@ -88,9 +88,11 @@ checkStarted()
 
 function cleanup
 	{
-		ps -ef | grep domoticz
-		rm domoticz.log[0-9][0-9]*
-		find . -type f -name 'domoticz.db_*' -mmin +30 -exec rm {} \;
+		ps -aux | grep [f]domoticz
+		if [[ $? -eq 1 ]]; then
+			rm domoticz.log[0-9][0-9]*
+			find . -type f -name 'domoticz.db_*' -mmin +30 -exec rm {} \;
+		fi
 	}
 
 function stopBackgroundProcesses
@@ -168,6 +170,9 @@ checkStarted "server" 10
 
 # Just to be sure we do not destroy something important without a backup
 cp $basedir/domoticz.db $basedir/domoticz.db_$$
+
+# Make sure we start with a clean sheet
+rm -f $basedir/domoticz.db
 
 cd $basedir
 ./domoticz > domoticz.log$$ &
