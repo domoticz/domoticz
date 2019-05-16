@@ -488,8 +488,13 @@ void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driv
 	{
 		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
+	catch (std::exception& e)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Exception: %s!", e.what());
+	}
 	catch (...)
 	{
+		_log.Log(LOG_ERROR, "OpenZWave: Unknown Exception catched! %s:%d", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
 }
 
@@ -508,8 +513,13 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 	{
 		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
+	catch (std::exception &e)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Exception: %s!", e.what());
+	}
 	catch (...)
 	{
+		_log.Log(LOG_ERROR, "OpenZWave: Unknown Exception catched! %s:%d", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 	}
 }
 
@@ -1996,6 +2006,11 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				return;
 			}
 		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Unhandled Meter type: %s", vLabel.c_str());
+			return;
+		}
 	}
 	else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
@@ -2786,7 +2801,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 {
-	if (m_pManager == NULL)
+	if (m_pManager == NULL) 
 		return;
 	if (m_controllerID == 0)
 		return;
@@ -4794,7 +4809,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			root["result"][index]["config"][ivalue]["index"] = vIndex++;
 			root["result"][index]["config"][ivalue]["label"] = "RetryTimeout";
 			root["result"][index]["config"][ivalue]["units"] = "ms"; //
-			root["result"][index]["config"][ivalue]["help"] = "How long do we wait to timeout messages sent";
+			root["result"][index]["config"][ivalue]["help"] = "How long do we wait to timeout messages sent (default 10000)";
 			root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
 			ivalue++;
 
@@ -4806,7 +4821,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			root["result"][index]["config"][ivalue]["index"] = vIndex++;
 			root["result"][index]["config"][ivalue]["label"] = "Assume Awake";
 			root["result"][index]["config"][ivalue]["units"] = "";
-			root["result"][index]["config"][ivalue]["help"] = "Assume Devices that Support the Wakeup CC are awake when we first query them....";
+			root["result"][index]["config"][ivalue]["help"] = "Assume Devices that Support the Wakeup CC are awake when we first query them.... (default True)";
 			root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
 			root["result"][index]["config"][ivalue]["list_items"] = 2;
 			root["result"][index]["config"][ivalue]["listitem"][0] = "False";
@@ -5180,39 +5195,47 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 
 					if (vstring != ValueVal)
 					{
+						bool bRet = false;
 						if (vType == OpenZWave::ValueID::ValueType_List)
 						{
-							m_pManager->SetValueListSelection(vID, ValueVal);
+							bRet = m_pManager->SetValueListSelection(vID, ValueVal);
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_String)
 						{
-							m_pManager->SetValue(vID, ValueVal);
+							bRet = m_pManager->SetValue(vID, ValueVal);
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_Int)
 						{
-							m_pManager->SetValue(vID, atoi(ValueVal.c_str()));
+							bRet = m_pManager->SetValue(vID, atoi(ValueVal.c_str()));
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_BitSet)
 						{
-							m_pManager->SetValue(vID, atoi(ValueVal.c_str()));
+							bRet = m_pManager->SetValue(vID, atoi(ValueVal.c_str()));
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_Byte)
 						{
-							m_pManager->SetValue(vID, (uint8)atoi(ValueVal.c_str()));
+							bRet = m_pManager->SetValue(vID, (uint8)atoi(ValueVal.c_str()));
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_Short)
 						{
-							m_pManager->SetValue(vID, (int16)atoi(ValueVal.c_str()));
+							bRet = m_pManager->SetValue(vID, (int16)atoi(ValueVal.c_str()));
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_Decimal)
 						{
-							m_pManager->SetValue(vID, (float)atof(ValueVal.c_str()));
+							bRet = m_pManager->SetValue(vID, (float)atof(ValueVal.c_str()));
 						}
 						else
 						{
 							_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 							return false;
 						}
+						if (!bRet)
+						{
+							std::string cvLabel = m_pManager->GetValueLabel(vID);
+							_log.Log(LOG_ERROR, "OpenZWave: Error setting value: %s (%s)", cvLabel.c_str(), ValueVal.c_str());
+							return false;
+						}
+
 					}
 				}
 			}
