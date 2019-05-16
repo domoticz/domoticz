@@ -3230,6 +3230,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		{
 			// default
 			int intValue = 0;
+			int32 intListValue = 0;
+			std::string szListValue;
 			if (vType == OpenZWave::ValueID::ValueType_Byte)
 			{
 				//1.4
@@ -3237,17 +3239,19 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 					intValue = 0;
 				else
 					intValue = 255;
+				intListValue = intValue;
 			}
 			else if (vType == OpenZWave::ValueID::ValueType_List)
 			{
 				//1.6
-				int32 listValue = 0;
-				if (m_pManager->GetValueListSelection(vID, &listValue))
+				if (m_pManager->GetValueListSelection(vID, &intListValue))
 				{
-					if (listValue == 0)
+					if (intListValue == 0)
 						intValue = 0;
 					else
 						intValue = 255;
+					m_pManager->GetValueListSelection(vID, &szListValue);
+					_log.Log(LOG_STATUS, "OpenZWave: Alarm received (%s: %s)", vLabel.c_str(), szListValue.c_str());
 				}
 			}
 			/*
@@ -3287,7 +3291,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				{
 					char szTmp[100];
 					sprintf(szTmp, "Alarm Type: %s %d (0x%02X)", vLabel.c_str(), typeIndex, typeIndex);
-					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, typeIndex, intValue, szTmp);
+					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, typeIndex, intListValue, szTmp);
 				}
 
 				if (
@@ -4915,6 +4919,10 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 							//Not supported now
 							continue;
 						}
+						else if (vType == OpenZWave::ValueID::ValueType_BitSet)
+						{
+							root["result"][index]["config"][ivalue]["type"] = "int"; //int32
+						}
 						else if (vType == OpenZWave::ValueID::ValueType_List)
 						{
 							root["result"][index]["config"][ivalue]["type"] = "list";
@@ -5181,6 +5189,10 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 							m_pManager->SetValue(vID, ValueVal);
 						}
 						else if (vType == OpenZWave::ValueID::ValueType_Int)
+						{
+							m_pManager->SetValue(vID, atoi(ValueVal.c_str()));
+						}
+						else if (vType == OpenZWave::ValueID::ValueType_BitSet)
 						{
 							m_pManager->SetValue(vID, atoi(ValueVal.c_str()));
 						}
