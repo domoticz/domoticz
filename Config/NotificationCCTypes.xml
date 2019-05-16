@@ -468,7 +468,7 @@
 				<Item id="1" label="On" />
 			</AlarmEventParam>
 		</AlarmEvent>
-		<AlarmEvent id="3" name=" Valve Short Circuit">
+		<AlarmEvent id="3" name="Valve Short Circuit">
 		</AlarmEvent>
 		<AlarmEvent id="4" name="Master Valve Short Circuit">
 		</AlarmEvent>
@@ -527,7 +527,7 @@
 	</AlarmType>
 
 	<AlarmType id="18" name="Gas">
-		<AlarmEvent id="0" name=" Clear">
+		<AlarmEvent id="0" name="Clear">
 			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
 		</AlarmEvent>
 		<AlarmEvent id="1" name="Combustable Gas Detected at Location">

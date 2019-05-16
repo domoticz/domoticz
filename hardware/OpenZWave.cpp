@@ -71,17 +71,24 @@ static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
 	{ "Carbon Monoxide",	0x2A },
 	{ "Carbon Dioxide",		0x2B },
 	{ "Heat",				0x2C },
+	{ "Water",				0x2D },
 	{ "Flood",				0x2D },
 	{ "Alarm Level",		0x32 },
 	{ "Alarm Type",			0x33 },
 	{ "Access Control",		0x34 },
 	{ "Burglar",			0x35 },
+	{ "Home Security",		0x35 },
 	{ "Power Management",	0x36 },
 	{ "System",				0x37 },
 	{ "Emergency",			0x38 },
 	{ "Clock",				0x39 },
 	{ "Appliance",			0x3A },
 	{ "HomeHealth",			0x3B },
+	{ "Siren",				0x3C },
+	{ "Water Valve",		0x3D },
+	{ "Weather",			0x3E },
+	{ "Irrigation",			0x3F },
+	{ "Gas",				0x40 },
 	{ "", 0 }
 };
 
@@ -104,15 +111,20 @@ enum _eAlarm_Types
 	Alarm_CarbonMonoxide,
 	Alarm_CarbonDioxide,
 	Alarm_Heat,
-	Alarm_Flood,
+	Alarm_Water,
 	Alarm_Access_Control,
-	Alarm_Burglar,
+	Alarm_HomeSecurity,
 	Alarm_Power_Management,
 	Alarm_System,
 	Alarm_Emergency,
 	Alarm_Clock,
 	Alarm_Appliance,
 	Alarm_HomeHealth,
+	Alarm_Siren,
+	Alarm_Water_Valve,
+	Alarm_Weather,
+	Alarm_Irrigation,
+	Alarm_Gas,
 	Alarm_Count
 };
 
@@ -122,15 +134,20 @@ static const _tAlarmNameToIndexMapping AlarmTypeToIndexMapping[] = {
 	{ "Carbon Monoxide",	Alarm_CarbonMonoxide },
 	{ "Carbon Dioxide",		Alarm_CarbonDioxide },
 	{ "Heat",				Alarm_Heat },
-	{ "Flood",				Alarm_Flood },
+	{ "Water",				Alarm_Water },
 	{ "Access Control",		Alarm_Access_Control },
-	{ "Burglar",			Alarm_Burglar },
+	{ "Home Security",		Alarm_HomeSecurity },
 	{ "Power Management",	Alarm_Power_Management },
 	{ "System",				Alarm_System },
 	{ "Emergency",			Alarm_Emergency },
 	{ "Clock",				Alarm_Clock },
 	{ "Appliance",			Alarm_Appliance },
 	{ "HomeHealth",			Alarm_HomeHealth },
+	{ "Siren",				Alarm_Siren },
+	{ "Water Valve",		Alarm_Water_Valve },
+	{ "Weather",			Alarm_Weather },
+	{ "Irrigation",			Alarm_Irrigation },
+	{ "Gas",				Alarm_Gas },
 	{ "", 0 }
 };
 
@@ -1805,6 +1822,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			{
 				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 				{
+					//1.4
 					_device.devType = ZDTYPE_SWITCH_NORMAL;
 					if (byteValue == 0)
 						_device.intvalue = 0;
@@ -1815,10 +1833,19 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			}
 			else if (vType == OpenZWave::ValueID::ValueType_List)
 			{
+				//1.6
+				std::vector<std::string> tModes;
+				m_pManager->GetValueListItems(vID, &tModes);
+
 				int32 listValue = 0;
 				if (m_pManager->GetValueListSelection(vID, &listValue))
 				{
-					//Not handled for now
+					_device.devType = ZDTYPE_SWITCH_NORMAL;
+					if (listValue == 0) //clear
+						_device.intvalue = 0;
+					else
+						_device.intvalue = 255;
+					InsertDevice(_device);
 				}
 			}
 			else
@@ -1829,7 +1856,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		}
 		else
 		{
-			if (vLabel.find("SourceNodeId") == std::string::npos)
+			if (
+				(vLabel.find("SourceNodeId") == std::string::npos)&&
+				(vLabel.find("Previous Event Cleared") == std::string::npos)
+				)
 			{
 				_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s", vLabel.c_str(), vUnits.c_str());
 			}
@@ -3174,34 +3204,66 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		if (commandclass == COMMAND_CLASS_SENSOR_ALARM)
 		{
 			int intValue = 0;
-			if (byteValue == 0)
-				intValue = 0;
-			else
-				intValue = 255;
+			if (vType == OpenZWave::ValueID::ValueType_Byte)
+			{
+				//1.4
+				if (byteValue == 0)
+					intValue = 0;
+				else
+					intValue = 255;
+			}
+			else if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				//1.6
+				int32 listValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &listValue))
+				{
+					if (listValue == 0)
+						intValue = 0;
+					else
+						intValue = 255;
+				}
+			}
 			pDevice->intvalue = intValue;
 		}
 		else if (commandclass == COMMAND_CLASS_ALARM)
 		{
+			// default
+			int intValue = 0;
+			if (vType == OpenZWave::ValueID::ValueType_Byte)
+			{
+				//1.4
+				if (byteValue == 0)
+					intValue = 0;
+				else
+					intValue = 255;
+			}
+			else if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				//1.6
+				int32 listValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &listValue))
+				{
+					if (listValue == 0)
+						intValue = 0;
+					else
+						intValue = 255;
+				}
+			}
 			/*
 			_log.Log(LOG_STATUS, "------------------------------------");
 			_log.Log(LOG_STATUS, "Label: %s", vLabel.c_str());
 			_log.Log(LOG_STATUS, "vOrgIndex: %d (0x%02x)", vOrgIndex, vOrgIndex);
 			_log.Log(LOG_STATUS, "vOrgInstance: %d (0x%02x)", vOrgInstance, vOrgInstance);
-			_log.Log(LOG_STATUS, "byteValue: %d (0x%02x)", byteValue, byteValue);
+			_log.Log(LOG_STATUS, "Value: %d (0x%02x)", intValue, intValue);
 			_log.Log(LOG_STATUS, "------------------------------------");
 			*/
-			// default
-			int intValue = 0;
-			if (byteValue == 0)
-				intValue = 0;
-			else
-				intValue = 255;
 
 			if (vLabel.find("Alarm Type") != std::string::npos)
 			{
-				if (byteValue != 0)
+				if (intValue != 0)
 				{
-					m_LastAlarmTypeReceived = byteValue;
+					m_LastAlarmTypeReceived = intValue;
 				}
 				else
 					m_LastAlarmTypeReceived = -1;
@@ -3214,7 +3276,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 					char szDeviceName[50];
 					sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
 					std::string tmpstr = szDeviceName;
-					SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
+					SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (intValue != 0) ? true : false, 0, tmpstr);
 					m_LastAlarmTypeReceived = -1;
 				}
 			}
@@ -3225,41 +3287,34 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				{
 					char szTmp[100];
 					sprintf(szTmp, "Alarm Type: %s %d (0x%02X)", vLabel.c_str(), typeIndex, typeIndex);
-					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, typeIndex, byteValue, szTmp);
+					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, typeIndex, intValue, szTmp);
 				}
 
 				if (
+					(vLabel.find("Smoke") != std::string::npos) ||
 					(vLabel.find("Carbon Monoxide") != std::string::npos) ||
 					(vLabel.find("Carbon Dioxide") != std::string::npos) ||
 					(vLabel.find("Heat") != std::string::npos) ||
 					(vLabel.find("Flood") != std::string::npos) ||
+					(vLabel.find("Water") != std::string::npos) ||
+					(vLabel.find("Access Control") != std::string::npos) ||
 					(vLabel.find("Burglar") != std::string::npos) ||
-					(vLabel.find("System") != std::string::npos) ||
+					(vLabel.find("Home Security") != std::string::npos) ||
+					(vLabel.find("Power Management") != std::string::npos) ||
 					(vLabel.find("Emergency") != std::string::npos) ||
-					(vLabel.find("Clock") != std::string::npos) ||
 					(vLabel.find("Appliance") != std::string::npos) ||
-					(vLabel.find("HomeHealth") != std::string::npos)
+					(vLabel.find("HomeHealth") != std::string::npos) ||
+					(vLabel.find("Home Health") != std::string::npos) ||
+					(vLabel.find("Siren") != std::string::npos) ||
+					(vLabel.find("Weather") != std::string::npos) ||
+					(vLabel.find("Gas") != std::string::npos)
 					)
 				{
-					switch (byteValue) {
+					switch (intValue) {
 					case 0x00: 	// Previous Events cleared
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
 						intValue = 0;
 						break;
-					default:	// all others, interpret as alarm
-						intValue = 255;
-						break;
-					}
-				}
-				else if (vLabel.find("Smoke") != std::string::npos)
-				{
-					switch (byteValue) {
-					case 0x00: 	// Previous Events cleared
-					case 0xfe:	// Unkown event; returned when retrieving the current state.
-						intValue = 0;
-						break;
-
-					case 0x03: 	// Smoke Alarm Test
 					default:	// all others, interpret as alarm
 						intValue = 255;
 						break;
@@ -3267,16 +3322,47 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 				else if (vLabel.find("Access Control") != std::string::npos)
 				{
-					switch (byteValue) {
+					switch (intValue) {
+						//ignore
+					case 12:	// All User Codes Deleted
+					case 13:	// Single User Code Deleted
+					case 14:	// New User Code Added
+					case 15:	// Duplicate User Code Not Added
+					case 16:	// Keypad Disabled
+					case 17:	// Keypad Busy
+					case 18:	// New Program Code Entered
+					case 19:	// User Codes Attempt Exceeds Limit
+					case 20:	// Wireless Unlock Invalid UserCode Entered
+					case 21:	// Wireless Lock Invalid UserCode Entered
+					case 64:	// Barrier Initializing
+					case 65:	// Barrier Force Exceeded
+					case 66:	// Barrier Motor Time Exceeded
+					case 67:	// Barrier Physical Limits Exceeded
+					case 68:	// Barrier Failed Operation
+					case 69:	// Barrier Unattended Operation Disabled
+					case 70:	// Barrier Malfunction
+					case 71:	// Barrier Vacaction Mode
+					case 72:	// Barrier Saftey Beam Obstruction
+					case 73:	// Barrier Sensor Not Detected
+					case 74:	// Barrier Battery Low
+					case 75:	// Barrier Short in Wall Station Wires
+					case 76:	// Barrier Associated with Non ZWave Device
+						pDevice->lastreceived = atime;
+						return;
+						//unlocked
 					case 0x00: 	// Previous Events cleared
-					case 0x06:	//Keypad unlock/Arm Home
-					case 0x17: 	// Door closed
+					case 0x02:	// Manual Unlock Operation
+					case 0x04:	// Wireless Unlock Operation
+					case 0x06:	// Keypad unlock/Arm Home
+					case 0x17: 	// Door/Window closed
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
 						intValue = 0;
 						break;
-
-					case 0x05:	//Keypad Lock/Arm Away
-					case 0x16: 	// Door open
+						//locked
+					case 0x01:	// Manual Lock Operation
+					case 0x03:	// Wireless Lock Operation
+					case 0x05:	// Keypad Lock/Arm Away
+					case 0x16: 	// Door/Window open
 					default:	// all others, interpret as alarm
 						intValue = 255;
 						break;
@@ -3284,7 +3370,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 				else if (vLabel.find("Power Management") != std::string::npos)
 				{
-					switch (byteValue) {
+					switch (intValue) {
 					case 0x00: 	// Previous Events cleared
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
 						intValue = 0;
@@ -3303,18 +3389,50 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
+				else if (vLabel.find("System") != std::string::npos)
+				{
+					switch (intValue) {
+						//ignore
+					case 0x05:	// Heartbeat
+						pDevice->lastreceived = atime;
+						return;
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if (vLabel.find("Clock") != std::string::npos)
+				{
+					switch (intValue) {
+						//ignore
+					case 0x03:	// Time Remaining
+						pDevice->lastreceived = atime;
+						return;
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
 				else if (
 					(vLabel.find("Alarm Type") == std::string::npos) &&
 					(vLabel.find("Alarm Level") == std::string::npos)
 					)
 				{
-					if (byteValue != 0)
+					if (intValue != 0)
 					{
 						//Until we figured out what types/levels we have, we create a switch for each of them
 						char szDeviceName[100];
-						sprintf(szDeviceName, "Alarm Type: 0x%02X (%s)", byteValue, vLabel.c_str());
+						sprintf(szDeviceName, "Alarm Type: 0x%02X (%s)", intValue, vLabel.c_str());
 						std::string tmpstr = szDeviceName;
-						SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
+						SendSwitch(NodeID, intValue, pDevice->batValue, true, 0, tmpstr);
 					}
 				}
 			}
@@ -4757,19 +4875,19 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			return;
 		}
 
-		for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance = pNode->Instances.begin(); ittInstance != pNode->Instances.end(); ++ittInstance)
+		for (auto const &ittInstance : pNode->Instances)
 		{
-			for (std::map<int, NodeCommandClass>::const_iterator ittCmds = ittInstance->second.begin(); ittCmds != ittInstance->second.end(); ++ittCmds)
+			for (auto const &ittCmds : ittInstance.second)
 			{
-				for (std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue != ittCmds->second.Values.end(); ++ittValue)
+				for (auto const &ittValue : ittCmds.second.Values)
 				{
-					unsigned char commandclass = ittValue->GetCommandClassId();
+					unsigned char commandclass = ittValue.GetCommandClassId();
 					if ((commandclass == COMMAND_CLASS_CONFIGURATION) || (commandclass == COMMAND_CLASS_PROTECTION))
 					{
-						if (m_pManager->IsValueReadOnly(*ittValue) == true)
+						if (m_pManager->IsValueReadOnly(ittValue) == true)
 							continue;
 
-						OpenZWave::ValueID::ValueType vType = ittValue->GetType();
+						OpenZWave::ValueID::ValueType vType = ittValue.GetType();
 
 						if (vType == OpenZWave::ValueID::ValueType_Decimal)
 						{
@@ -4808,7 +4926,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 							continue;
 						}
 
-						if (m_pManager->GetValueAsString(*ittValue, &szValue) == false)
+						if (m_pManager->GetValueAsString(ittValue, &szValue) == false)
 						{
 							continue;
 						}
@@ -4816,7 +4934,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 						if (vType == OpenZWave::ValueID::ValueType_List)
 						{
 							std::vector<std::string> strs;
-							m_pManager->GetValueListItems(*ittValue, &strs);
+							m_pManager->GetValueListItems(ittValue, &strs);
 							root["result"][index]["config"][ivalue]["list_items"] = static_cast<int>(strs.size());
 							int vcounter = 0;
 							for (std::vector<std::string>::const_iterator it = strs.begin(); it != strs.end(); ++it)
@@ -4824,18 +4942,18 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 								root["result"][index]["config"][ivalue]["listitem"][vcounter++] = *it;
 							}
 						}
-						int i_index = ittValue->GetIndex();
+						int i_index = ittValue.GetIndex();
 						if (commandclass == COMMAND_CLASS_PROTECTION)
 						{
-							i_index = 3000 + ittValue->GetInstance();
+							i_index = 3000 + ittValue.GetInstance();
 						}
 
-						std::string i_label = m_pManager->GetValueLabel(*ittValue);
-						std::string i_units = m_pManager->GetValueUnits(*ittValue);
-						std::string i_help = m_pManager->GetValueHelp(*ittValue);
+						std::string i_label = m_pManager->GetValueLabel(ittValue);
+						std::string i_units = m_pManager->GetValueUnits(ittValue);
+						std::string i_help = m_pManager->GetValueHelp(ittValue);
 
 						struct tm timeinfo;
-						localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
+						localtime_r(&ittCmds.second.m_LastSeen, &timeinfo);
 
 						char szDate[30];
 						strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
@@ -4850,23 +4968,23 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 					else if (commandclass == COMMAND_CLASS_WAKE_UP)
 					{
 						//Only add the Wake_Up_Interval value here
-						if ((ittValue->GetGenre() == OpenZWave::ValueID::ValueGenre_System) && (ittValue->GetInstance() == 1))
+						if ((ittValue.GetGenre() == OpenZWave::ValueID::ValueGenre_System) && (ittValue.GetInstance() == 1))
 						{
-							if ((m_pManager->GetValueLabel(*ittValue) == "Wake-up Interval") && (ittValue->GetType() == OpenZWave::ValueID::ValueType_Int))
+							if ((m_pManager->GetValueLabel(ittValue) == "Wake-up Interval") && (ittValue.GetType() == OpenZWave::ValueID::ValueType_Int))
 							{
-								if (m_pManager->GetValueAsString(*ittValue, &szValue) == false)
+								if (m_pManager->GetValueAsString(ittValue, &szValue) == false)
 								{
 									continue;
 								}
 								root["result"][index]["config"][ivalue]["type"] = "int";
 								root["result"][index]["config"][ivalue]["value"] = szValue;
-								int i_index = 2000 + ittValue->GetIndex(); //special case
-								std::string i_label = m_pManager->GetValueLabel(*ittValue);
-								std::string i_units = m_pManager->GetValueUnits(*ittValue);
-								std::string i_help = m_pManager->GetValueHelp(*ittValue);
+								int i_index = 2000 + ittValue.GetIndex(); //special case
+								std::string i_label = m_pManager->GetValueLabel(ittValue);
+								std::string i_units = m_pManager->GetValueUnits(ittValue);
+								std::string i_help = m_pManager->GetValueHelp(ittValue);
 
 								struct tm timeinfo;
-								localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
+								localtime_r(&ittCmds.second.m_LastSeen, &timeinfo);
 
 								char szDate[30];
 								strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
