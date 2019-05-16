@@ -247,7 +247,6 @@ define(['app'], function (app) {
 				dataType: 'json',
 				success: function (data) {
 					bootbox.alert($.t('Node Information Frame requested. This could take some time! (You might need to wake-up the node!)'));
-					RefreshOpenZWaveNodeTable();
 				}
 			});
         }
