@@ -1,21 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" index="1" genre="config" label="Basic Set Level" units="%" min="0" max="99" value="99">
-			<Help>
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:000B</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/st812.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="000B">https://products.z-wavealliance.org/products/736/</MetaDataItem>
+    <MetaDataItem name="Description">Z-Wave Flood Sensor (US) 300 Series</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="000B">TST01-1</MetaDataItem>
+    <MetaDataItem name="Name">Everspring TST01-1 Flood Detector</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="000B">CEPT (Europe) / U.S. / Canada / Mexico / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/ST812.aspx</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/217/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/585/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/736/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Basic Set Level" max="99" min="0" type="byte" units="%" value="99">
+      <Help>
 				Defines the level in the Basic Set event sent to group 2 when the sensor is triggered.  Default is 99 (full brightness for a Z-Wave dimmer). 0 disables.
 			</Help>
-		</Value>		
-	</CommandClass>
-
-	<!-- COMMAND_CLASS_ASSOCIATION. Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="1" label="Reports" />
-			<Group index="2" max_associations="3" label="Basic" />
-		</Associations>
-	</CommandClass>
-	<CommandClass id="96" mapping="endpoints" />
+    </Value>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Reports" max_associations="1"/>
+      <Group index="2" label="Basic" max_associations="3"/>
+    </Associations>
+  </CommandClass>
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
 </Product>
-

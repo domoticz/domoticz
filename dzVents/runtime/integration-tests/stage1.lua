@@ -72,12 +72,62 @@ local testSwitch = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 		["deviceType"] = "Light/Switch";
-		["description"] = 'desc vdSwitch'
+		["description"] = 'desc vdSwitch';
 	})
 	dev.switchOn().afterSec(1)
 	tstMsg('Test switch device', res)
 	return res
 end
+
+local testQuietOnSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = 49,
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.quietOn().afterSec(3)
+	tstMsg('Test quietOn switch device', res)
+	return res
+end
+
+local testQuietOffSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = 50,
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.switchOff()
+	dev.quietOff()
+	tstMsg('Test quietOff switch device', res)
+	return res
+end
+
 
 local testDimmer = function(name)
 	local dev = dz.devices(name)
@@ -1223,13 +1273,12 @@ local testSetValueSensor = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 	})
-	dev.setValues(nil,12,34,45)
+	dev.setValues(nil, 12, 34, 45)
 	tstMsg('Test setValues device', res)
 	return res
 end
 
 local storeLastUpdates = function()
-
 	dz.globalData.stage1Time = dz.time.raw
 end
 
@@ -1349,6 +1398,13 @@ local testDescriptionSwitchScene = function(name)
 	return res
 end
 
+local testIFTTT = function(event)
+	local res = true
+	res = res and dz.triggerIFTTT(event)
+	res = res and dz.triggerIFTTT(event).afterSec(3)
+	return res
+end
+
 return {
 	active = true,
 	on = {
@@ -1375,11 +1431,14 @@ return {
 		res = res and testElectricInstanceCounter('vdElectricInstanceCounter')
 		res = res and testGas('vdGas')
 		res = res and testHumidity('vdHumidity')
+		res = res and testIFTTT('myEvent')
 		res = res and testLeafWetness('vdLeafWetness')
 		res = res and testLux('vdLux')
 		res = res and testP1SmartMeter('vdP1SmartMeterElectric')
 		res = res and testPercentage('vdPercentage')
 		res = res and testPressureBar('vdPressureBar')
+		res = res and testQuietOnSwitch('vdQuietOnSwitch')
+		res = res and testQuietOffSwitch('vdQuietOffSwitch')
 		res = res and testRain('vdRain')
 		res = res and testRGB('vdRGBSwitch')
 		res = res and testRGBW('vdRGBWSwitch')

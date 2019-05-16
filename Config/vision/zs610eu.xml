@@ -1,0 +1,27 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0403:2004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zs610eu.png</MetaDataItem>
+    <MetaDataItem id="0403" name="ZWProductPage" type="2004">https://products.z-wavealliance.org/products/860/</MetaDataItem>
+    <MetaDataItem name="Name">Smoke Detector</MetaDataItem>
+    <MetaDataItem id="0403" name="Identifier" type="2004">ZS610EU</MetaDataItem>
+    <MetaDataItem name="Description">ZS 6101 Smoke Detector
+ 
+Features:
+*Photoelectron Smoke Detect
+*Smoke sensitivity: 0.5%/ft~4.0%/ft
+*Low battery detection
+*LED Status Indicator
+*100ft Line of Sight
+*Z-Wave 5.02 SDK
+*100ft line of sight
+*Operating temp: -10oC~60oC
+*Working Voltage: 3V
+*Dimensions: 120*120*48.2mm</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.visionsecurity.com.tw/ha_products_page2_154_191.html</MetaDataItem>
+    <MetaDataItem id="0403" name="FrequencyName" type="2004">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/860/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

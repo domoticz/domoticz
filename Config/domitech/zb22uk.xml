@@ -3,7 +3,7 @@
 Domitech Smart LED Light Bulb ZB22UK
 http://products.z-wavealliance.org/MarketCertification/File?folder=&filename=MarketCertificationFiles/1543/Instructions_ZB22UK_10222015%20small.pdf
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" index="1" genre="config" label="Dim level when light is turned ON" units="" min="0" max="1" size="1" value="0">

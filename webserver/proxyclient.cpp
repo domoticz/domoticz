@@ -11,30 +11,21 @@
 extern std::string szAppVersion;
 
 #define TIMEOUT 60
-#define ADDPDUSTRING(value) parameters.AddPart(value)
-#define ADDPDUSTRINGBINARY(value) parameters.AddPart(value, false)
-#define ADDPDULONG(value) parameters.AddLong(value)
-#define ADDPDUBINARY(value, length) parameters.AddPart((void *)value, length)
-#define GETPDUSTRING(value) std::string value; if (!part.GetNextPart(value)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
-#define GETPDUSTRINGBINARY(value) std::string value; if (!part.GetNextPart(value, false)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
-#define GETPDULONG(value) long value; if (!part.GetNextLong(value)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
-#define GETPDUBINARY(value, length) unsigned char *value; size_t length; if (!part.GetNextPart((void **)&value, &length)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
+#define PONG "PONG"
 
 namespace http {
 	namespace server {
 
 		CProxySharedData sharedData;
 
-		CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm)
-			: _context(context),
-			_io_service(io_service),
-			doStop(false),
-			connection_status(status_connecting),
-			we_locked_prefs_mutex(false),
-			timeout_(TIMEOUT),
-			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
-			write_in_progress(false)
+		CProxyClient::CProxyClient() : ASyncTCP(true)
 		{
+			m_pDomServ = NULL;
+		}
+
+		void CProxyClient::Reset()
+		{
+			connection_status = status_httpmode;
 			_allowed_subsystems = 0;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
@@ -42,263 +33,74 @@ namespace http {
 			if (_password != "") {
 				_password = base64_decode(_password);
 			}
-			if (_apikey == "" || _password == "" || _allowed_subsystems == 0) {
-				doStop = true;
-				return;
-			}
-			m_pWebEm = webEm;
-			m_pDomServ = NULL;
-			_socket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(_io_service, _context));
+			readbuf.clear();
 		}
 
 		void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
 		{
 			/* data from slave to master */
-			CValueLengthPart parameters;
-
-			ADDPDUSTRING(token);
-			ADDPDUBINARY(pData, Length);
-
-			MyWrite(PDU_SERV_RECEIVE, parameters);
+			ProxyPdu_SERV_RECEIVE response;
+			response.m_tokenparam = token;
+			response.m_data = std::string(pData, Length);
+			MyWrite(response.ToBinary());
 		}
 
 		void CProxyClient::WriteMasterData(const std::string &token, const char *pData, size_t Length)
 		{
 			/* data from master to slave */
-			CValueLengthPart parameters;
-
-			ADDPDUSTRING(token);
-			ADDPDUBINARY(pData, Length);
-
-			MyWrite(PDU_SERV_SEND, parameters);
+			ProxyPdu_SERV_SEND response;
+			response.m_token = token;
+			response.m_data = std::string(pData, Length);
+			MyWrite(response.ToBinary());
 		}
 
-		void CProxyClient::Reconnect()
+		void CProxyClient::WS_Write(unsigned long long requestid, const std::string &packet_data)
 		{
-			if (we_locked_prefs_mutex) {
-				// avoid deadlock if we got a read or write error in between handle_handshake() and HandleAuthresp()
-				we_locked_prefs_mutex = false;
-				sharedData.UnlockPrefsMutex();
-			}
-			if (doStop) {
-				return;
-			}
-			connection_status = status_connecting;
-			int wait = 1;
-			if (_socket->lowest_layer().is_open()) {
-				wait = 15;
-				boost::system::error_code ec;
-				_socket->lowest_layer().cancel(ec);
-				_socket->lowest_layer().shutdown(boost::asio::socket_base::shutdown_both, ec);
-				_socket->lowest_layer().close(ec);
-			}
-			timer_.expires_from_now(boost::posix_time::seconds(wait));
-			timer_.async_wait(boost::bind(&CProxyClient::ContinueConnect, shared_from_this(), boost::asio::placeholders::error));
+			ProxyPdu_WS_SEND response;
+			response.m_packet_data = packet_data;
+			response.m_requestid = requestid;
+			MyWrite(response.ToBinary());
 		}
 
-		void CProxyClient::ContinueConnect(const boost::system::error_code& error)
+		void CProxyClient::MyWrite(const std::string &msg)
 		{
-			std::string address = "domoproxy.domoticz.com";
-			std::string port = "443";
-			boost::system::error_code ec;
-
-			if (error) {
-				// timer was cancelled?
-				return;
-			}
-			_socket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(_io_service, _context));
-			// set timeout timer
-			timer_.expires_from_now(boost::posix_time::seconds(timeout_));
-			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
-			boost::asio::ip::tcp::resolver resolver(_io_service);
-			boost::asio::ip::tcp::resolver::query query(address, port);
-			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query, ec);
-			if (ec) {
-				_log.Log(LOG_ERROR, "PROXY: Error resolving %s: %s", address.c_str(), ec.message().c_str());
-				Reconnect();
-				return;
-			}
-			boost::asio::ip::tcp::endpoint endpoint = *iterator;
-			_socket->lowest_layer().async_connect(endpoint,
-				boost::bind(&CProxyClient::handle_connect, shared_from_this(),
-					boost::asio::placeholders::error, ++iterator));
-		}
-
-		void CProxyClient::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
-		{
-			if (doStop) {
-				return;
-			}
-			if (!error)
-			{
-				_socket->async_handshake(boost::asio::ssl::stream_base::client,
-					boost::bind(&CProxyClient::handle_handshake, shared_from_this(),
-						boost::asio::placeholders::error));
-			}
-			else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
-			{
-				_socket->lowest_layer().close();
-				boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
-				_socket->lowest_layer().async_connect(endpoint,
-					boost::bind(&CProxyClient::handle_connect, shared_from_this(),
-						boost::asio::placeholders::error, ++endpoint_iterator));
-			}
-			else
-			{
-				if (!doStop) {
-					_log.Log(LOG_ERROR, "PROXY: Connect failed, reconnecting: %s", error.message().c_str());
-					Reconnect();
-				}
-			}
-		}
-
-		void CProxyClient::handle_timeout(const boost::system::error_code& error)
-		{
-			if (error != boost::asio::error::operation_aborted) {
-				_log.Log(LOG_ERROR, "PROXY: timeout occurred, reconnecting");
-				Reconnect();
-			}
-		}
-
-		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
-		{
-			if (doStop) {
-				return;
-			}
-			std::unique_lock<std::mutex>(writeMutex);
-			if (bytes_transferred != SockWriteBuf.length()) {
-				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
-			}
-			SockWriteBuf.clear();
-			switch (connection_status) {
-			case status_connecting:
-				// a write occurred meanwhile a reconnect has been issued
-				break;
-			case status_httpmode:
-				// we now wait for the webserver response
-				break;
-			case status_connected:
-				if (bytes_transferred < SockWriteBuf.length()) {
-					_log.Log(LOG_ERROR, "PROXY: Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
-				}
-				if (error) {
-					_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
-				}
-				write_in_progress = false;
-				if (!writeQ.empty()) {
-					ProxyPdu *pdu = writeQ.front();
-					writeQ.pop();
-					SocketWrite(pdu);
-				}
-				break;
-			}
-		}
-
-		void CProxyClient::SocketWrite(ProxyPdu *pdu)
-		{
-			if (connection_status == status_connecting) {
-				return;
-			}
-			// do not call directly, use MyWrite()
-			if (write_in_progress) {
-				// something went wrong, this shouldnt happen
-				_log.Log(LOG_ERROR, "write_in_progress error"); // debug
-			}
-			write_in_progress = true;
-			CWebsocketFrame frame;
-			SockWriteBuf = frame.Create(opcode_binary, std::string((char *)pdu->content(), pdu->length()), true);
-			delete pdu;
-			boost::asio::async_write(*_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-		}
-
-		void CProxyClient::WS_Write(long requestid, const std::string &packet_data)
-		{
-			CValueLengthPart parameters;
-			ADDPDUSTRINGBINARY(packet_data);
-			ADDPDULONG(requestid);
-			MyWrite(PDU_WS_SEND, parameters);
-		}
-
-		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
-		{
-			std::unique_lock<std::mutex>(writeMutex);
 			if (connection_status != status_connected) {
 				return;
 			}
-			ProxyPdu *pdu = new ProxyPdu(type, &parameters);
-			if (write_in_progress) {
-				// write in progress, add to queue
-				writeQ.push(pdu);
-			}
-			else {
-				SocketWrite(pdu);
-			}
+			write(CWebsocketFrame::Create(opcode_binary, msg, true));
 		}
 
 		void CProxyClient::LoginToService()
 		{
 			std::string instanceid = sharedData.GetInstanceId();
-			const long protocol_version = 2;
+			const long protocol_version = 3;
 
-			// send authenticate pdu
-			CValueLengthPart parameters;
-
-			ADDPDUSTRING(_apikey);
-			ADDPDUSTRING(instanceid);
-			ADDPDUSTRING(_password);
-			ADDPDUSTRING(szAppVersion);
-			ADDPDULONG(_allowed_subsystems);
-			ADDPDULONG(protocol_version);
-
-			MyWrite(PDU_AUTHENTICATE, parameters);
+			ProxyPdu_AUTHENTICATE response;
+			response.m_apikey = _apikey;
+			response.m_instanceid = instanceid;
+			response.m_password = _password;
+			response.m_szAppVersion = szAppVersion;
+			response.m_allowed_subsystems = _allowed_subsystems;
+			response.m_protocol_version = protocol_version;
+			MyWrite(response.ToBinary());
 		}
 
-		void CProxyClient::handle_handshake(const boost::system::error_code& error)
+		void CProxyClient::OnConnect()
 		{
-			if (doStop) {
-				return;
-			}
-			if (!error)
-			{
-				// lock until we have a valid api id
-				sharedData.LockPrefsMutex();
-				we_locked_prefs_mutex = true;
-				connection_status = status_httpmode;
-				WebsocketGetRequest();
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
-				Reconnect();
-			}
+			Reset();
+			WebsocketGetRequest();
 		}
 
 		void CProxyClient::WebsocketGetRequest()
 		{
-			// start read thread
-			ReadMore();
 			// generate random websocket key
 			unsigned char random[16];
 			for (int i = 0; i < sizeof(random); i++) {
 				random[i] = rand();
 			}
 			websocket_key = base64_encode(random, sizeof(random));
-			SockWriteBuf = "GET /proxyrequest HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
-			boost::asio::async_write(*_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-		}
-
-		void CProxyClient::ReadMore()
-		{
-			// read chunks of max 4 KB
-			boost::asio::streambuf::mutable_buffers_type buf = _readbuf.prepare(4096);
-
-			// set timeout timer
-			timer_.expires_from_now(boost::posix_time::seconds(timeout_));
-			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
-
-			_socket->async_read_some(buf,
-				boost::bind(&CProxyClient::handle_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
-			);
+			std::string request = "GET /proxycereal HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
+			write(request);
 		}
 
 		void CProxyClient::GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
@@ -347,7 +149,7 @@ namespace http {
 			return result;
 		}
 
-		PDUFUNCTION(PDU_REQUEST)
+		PDUFUNCTION(REQUEST)
 		{
 			if (!(_allowed_subsystems & SUBSYSTEM_HTTP)) {
 				_log.Log(LOG_ERROR, "PROXY: HTTP access disallowed, denying request.");
@@ -359,176 +161,145 @@ namespace http {
 			http::server::reply reply_;
 
 			std::string request, responseheaders;
-			CValueLengthPart parameters; // response parameters
 
-			GETPDUSTRING(originatingip);
-			GETPDULONG(subsystem);
-
-			if (subsystem == SUBSYSTEM_HTTP) {
+			if (pdu->m_subsystem == SUBSYSTEM_HTTP) {
 				// "normal web request", get parameters
-				GETPDUSTRING(requesturl);
-				GETPDUSTRING(requestheaders);
-				GETPDUSTRINGBINARY(requestbody);
-				// we number the request, because we can send back asynchronously
-				GETPDULONG(requestid);
 
-				if (requestbody.size() > 0) {
+				if (pdu->m_requestbody.size() > 0) {
 					request = "POST ";
 				}
 				else {
 					request = "GET ";
 				}
-				request += requesturl;
+				request += pdu->m_requesturl;
 				request += " HTTP/1.1\r\n";
-				request += requestheaders;
+				request += pdu->m_requestheaders;
 				request += "\r\n";
-				request += requestbody;
+				request += pdu->m_requestbody;
 
 				_buf = boost::asio::buffer((void *)request.c_str(), request.length());
 
-				sharedData.AddConnectedIp(originatingip);
+				sharedData.AddConnectedIp(pdu->m_originatingip);
 
-				GetRequest(originatingip, _buf, reply_);
+				GetRequest(pdu->m_originatingip, _buf, reply_);
 				// assemble response
 				responseheaders = GetResponseHeaders(reply_);
 
-				ADDPDULONG(reply_.status);
-				ADDPDUSTRING(responseheaders);
-				ADDPDUSTRINGBINARY(reply_.content);
-				ADDPDULONG(requestid);
+				ProxyPdu_RESPONSE response;
+				response.m_status = reply_.status;
+				response.m_responseheaders = responseheaders;
+				response.m_content = reply_.content;
+				// we number the request, because we can send back asynchronously
+				response.m_requestid = pdu->m_requestid;
 
 				// send response to proxy
-				MyWrite(PDU_RESPONSE, parameters);
+				MyWrite(response.ToBinary());
 			}
 			else {
 				// unknown subsystem
-				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %ld.", subsystem);
+				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %d.", pdu->m_subsystem);
 			}
 		}
 
-		PDUFUNCTION(PDU_ASSIGNKEY)
+		PDUFUNCTION(ASSIGNKEY)
 		{
-			// get our new api key
-			GETPDUSTRING(newapi);
-			_log.Log(LOG_STATUS, "PROXY: We were assigned an instance id: %s.\n", newapi.c_str());
-			sharedData.SetInstanceId(newapi);
+			_log.Log(LOG_STATUS, "PROXY: We were assigned an instance id: %s.\n", pdu->m_newapi.c_str());
+			sharedData.SetInstanceId(pdu->m_newapi);
 			// re-login with the new instance id
 			LoginToService();
 		}
 
-		PDUFUNCTION(PDU_ENQUIRE)
+		PDUFUNCTION(ENQUIRE)
 		{
 			// assemble response
-			CValueLengthPart parameters;
-
+			ProxyPdu_ENQUIRE response;
 			// send response to proxy
-			MyWrite(PDU_ENQUIRE, parameters);
+			MyWrite(response.ToBinary());
 		}
 
-		PDUFUNCTION(PDU_SERV_ROSTERIND)
+		PDUFUNCTION(SERV_ROSTERIND)
 		{
-			GETPDUSTRING(c_slave);
-
-			_log.Log(LOG_STATUS, "PROXY: Notification received: slave %s online now.", c_slave.c_str());
-			DomoticzTCP *slave = sharedData.findSlaveById(c_slave);
+			_log.Log(LOG_STATUS, "PROXY: Notification received: slave %s online now.", pdu->m_c_slave.c_str());
+			DomoticzTCP *slave = sharedData.findSlaveById(pdu->m_c_slave);
 			if (slave) {
 				slave->SetConnected(true);
 			}
 		}
 
-		PDUFUNCTION(PDU_SERV_DISCONNECT)
+		PDUFUNCTION(SERV_DISCONNECT)
 		{
 			bool success;
 
-			GETPDUSTRING(tokenparam);
-			GETPDULONG(reason);
 			// see if we are slave
-			success = m_pDomServ->OnDisconnect(tokenparam);
+			success = m_pDomServ->OnDisconnect(pdu->m_tokenparam);
 			if (success) {
 				_log.Log(LOG_STATUS, "PROXY: Master disconnected");
 			}
 			// see if we are master
-			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
+			DomoticzTCP *slave = sharedData.findSlaveConnection(pdu->m_tokenparam);
 			if (slave) {
 				if (slave->isConnected()) {
 					_log.Log(LOG_STATUS, "PROXY: Stopping slave connection.");
 					slave->SetConnected(false);
 				}
-				if (reason == 50) {
+				if (pdu->m_reason == 50) {
 					// proxy was restarted, try to reconnect to slave
 					slave->SetConnected(true);
 				}
 			}
 		}
 
-		PDUFUNCTION(PDU_SERV_CONNECT)
+		PDUFUNCTION(SERV_CONNECT)
 		{
 			/* incoming connect from master */
 			if (!(_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ)) {
 				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying connect request.");
 				return;
 			}
-			CValueLengthPart parameters;
 			long authenticated;
 			std::string reason = "";
 
-			GETPDUSTRING(tokenparam);
-			GETPDUSTRING(usernameparam);
-			GETPDUSTRING(passwordparam);
-			GETPDULONG(protocol_version);
-			GETPDUSTRING(ipparam);
-
-			sharedData.AddConnectedServer(ipparam);
-			if (protocol_version > 3) {
+			sharedData.AddConnectedServer(pdu->m_ipparam);
+			if (pdu->m_protocol_version > 4) {
 				authenticated = 0;
 				reason = "Protocol version not supported";
 			}
 			else {
-				authenticated = m_pDomServ->OnNewConnection(tokenparam, usernameparam, passwordparam) ? 1 : 0;
+				authenticated = m_pDomServ->OnNewConnection(pdu->m_tokenparam, pdu->m_usernameparam, pdu->m_passwordparam) ? 1 : 0;
 				reason = authenticated ? "Success" : "Invalid user/password";
 			}
 
-			ADDPDUSTRING(tokenparam);
-			ADDPDUSTRING(sharedData.GetInstanceId());
-			ADDPDULONG(authenticated);
-			ADDPDUSTRING(reason);
-
-			MyWrite(PDU_SERV_CONNECTRESP, parameters);
+			ProxyPdu_SERV_CONNECTRESP response;
+			response.m_tokenparam = pdu->m_tokenparam;
+			response.m_instanceid = sharedData.GetInstanceId();
+			response.m_authenticated = authenticated;
+			response.m_reason = reason;
+			MyWrite(response.ToBinary());
 		}
 
-		PDUFUNCTION(PDU_SERV_CONNECTRESP)
+		PDUFUNCTION(SERV_CONNECTRESP)
 		{
-			GETPDUSTRING(tokenparam);
-			GETPDUSTRING(instanceparam);
-			GETPDULONG(authenticated);
-			GETPDUSTRING(reason);
-
-			if (!authenticated) {
-				_log.Log(LOG_ERROR, "PROXY: Could not log in to slave: %s", reason.c_str());
+			if (!pdu->m_authenticated) {
+				_log.Log(LOG_ERROR, "PROXY: Could not log in to slave: %s", pdu->m_reason.c_str());
 				return;
 			}
-			DomoticzTCP *slave = sharedData.findSlaveConnection(instanceparam);
+			DomoticzTCP *slave = sharedData.findSlaveConnection(pdu->m_instanceid);
 			if (slave) {
-				slave->Authenticated(tokenparam, authenticated == 1);
+				slave->Authenticated(pdu->m_tokenparam, pdu->m_authenticated == 1);
 			}
 		}
 
-		PDUFUNCTION(PDU_SERV_SEND)
+		PDUFUNCTION(SERV_SEND)
 		{
 			/* data from master to slave */
 			bool success;
-
-			GETPDUSTRING(tokenparam);
-			GETPDUBINARY(data, datalen);
-
-			success = m_pDomServ->OnIncomingData(tokenparam, data, datalen);
-			free(data);
+			success = m_pDomServ->OnIncomingData(pdu->m_token, (const unsigned char *)pdu->m_data.c_str(), pdu->m_data.length());
 			if (!success) {
-				SendServDisconnect(tokenparam, 1);
+				SendServDisconnect(pdu->m_token, 1);
 			}
 		}
 
-		PDUFUNCTION(PDU_SERV_RECEIVE)
+		PDUFUNCTION(SERV_RECEIVE)
 		{
 			if (!(_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ)) {
 				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying receive data request.");
@@ -536,103 +307,56 @@ namespace http {
 			}
 			/* data from slave to master */
 
-			GETPDUSTRING(tokenparam);
-			GETPDUBINARY(data, datalen);
-
-			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
+			DomoticzTCP *slave = sharedData.findSlaveConnection(pdu->m_tokenparam);
 			if (slave && slave->isConnected()) {
-				slave->FromProxy(data, datalen);
+				slave->FromProxy((const unsigned char *)pdu->m_data.c_str(), pdu->m_data.length());
 			}
-			free(data);
 		}
 
 		void CProxyClient::SendServDisconnect(const std::string &token, int reason)
 		{
-			CValueLengthPart parameters;
-
-			ADDPDUSTRING(token);
-			ADDPDULONG(reason);
-
-			MyWrite(PDU_SERV_DISCONNECT, parameters);
+			ProxyPdu_SERV_DISCONNECT response;
+			response.m_tokenparam = token;
+			response.m_reason = reason;
+			MyWrite(response.ToBinary());
 		}
 
-		PDUFUNCTION(PDU_AUTHRESP)
+		PDUFUNCTION(AUTHRESP)
 		{
 			// get auth response (0 or 1)
-
-			if (we_locked_prefs_mutex) {
-				// unlock prefs mutex
-				we_locked_prefs_mutex = false;
-				sharedData.UnlockPrefsMutex();
-			}
-
-			GETPDULONG(auth);
-			GETPDUSTRING(reason);
-			_log.Log(LOG_STATUS, "PROXY: Authenticate result: %s.", auth ? "success" : reason.c_str());
-			if (auth) {
+			_log.Log(LOG_STATUS, "PROXY: Authenticate result: %s.", pdu->m_auth ? "success" : pdu->m_reason.c_str());
+			if (pdu->m_auth) {
 				sharedData.RestartTCPClients();
 			}
 			else {
-				Stop();
+				disconnect();
 			}
 		}
 
-		PDUFUNCTION(PDU_WS_OPEN)
+		PDUFUNCTION(WS_OPEN)
 		{
 			// todo: make a map of websocket connections. There can be more than one.
-			GETPDUSTRING(request_url);
-			GETPDULONG(requestid);
-
 			// open new virtual websocket connection
 			// todo: different request_url's can have different websocket handlers
-			websocket_handlers[requestid] = new CWebsocketHandler(m_pWebEm, boost::bind(&CProxyClient::WS_Write, this, requestid, _1));
-			websocket_handlers[requestid]->Start();
+			websocket_handlers[pdu->m_requestid] = new CWebsocketHandler(m_pWebEm, boost::bind(&CProxyClient::WS_Write, this, pdu->m_requestid, _1));
+			websocket_handlers[pdu->m_requestid]->Start();
 		}
 
-		PDUFUNCTION(PDU_WS_CLOSE)
+		PDUFUNCTION(WS_CLOSE)
 		{
-			GETPDULONG(requestid);
-
-			CWebsocketHandler *handler = websocket_handlers[requestid];
+			CWebsocketHandler *handler = websocket_handlers[pdu->m_requestid];
 			if (handler) {
 				handler->Stop();
 				delete handler;
-				websocket_handlers.erase(requestid);
+				websocket_handlers.erase(pdu->m_requestid);
 			}
 		}
 
-		PDUFUNCTION(PDU_WS_RECEIVE)
+		PDUFUNCTION(WS_RECEIVE)
 		{
-			GETPDUSTRING(packet_data);
-			GETPDULONG(requestid);
-
-			CWebsocketHandler *handler = websocket_handlers[requestid];
+			CWebsocketHandler *handler = websocket_handlers[pdu->m_requestid];
 			if (handler) {
-				boost::tribool result = handler->Handle(packet_data);
-			}
-		}
-
-		void CProxyClient::PduHandler(ProxyPdu &pdu)
-		{
-			CValueLengthPart part(pdu);
-
-			switch (pdu._type) {
-				ONPDU(PDU_REQUEST)
-					ONPDU(PDU_ASSIGNKEY)
-					ONPDU(PDU_ENQUIRE)
-					ONPDU(PDU_AUTHRESP)
-					ONPDU(PDU_SERV_CONNECT)
-					ONPDU(PDU_SERV_DISCONNECT)
-					ONPDU(PDU_SERV_CONNECTRESP)
-					ONPDU(PDU_SERV_RECEIVE)
-					ONPDU(PDU_SERV_SEND)
-					ONPDU(PDU_SERV_ROSTERIND)
-					ONPDU(PDU_WS_OPEN)
-					ONPDU(PDU_WS_CLOSE)
-					ONPDU(PDU_WS_RECEIVE)
-			default:
-				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
-				break;
+				boost::tribool result = handler->Handle(pdu->m_packet_data);
 			}
 		}
 
@@ -663,47 +387,46 @@ namespace http {
 			return true;
 		}
 
-		void CProxyClient::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
+		void CProxyClient::OnData(const unsigned char *pData, size_t length)
 		{
-			// data read, no need for timeouts anymore
-			if (connection_status == status_connecting || doStop) {
-				return;
-			}
-			timer_.cancel();
-			if (!error)
-			{
-				const char *data;
-				_readbuf.commit(bytes_transferred);
-				switch (connection_status) {
-				case status_httpmode:
-					data = boost::asio::buffer_cast<const char*>(_readbuf.data());
-					if (parse_response(data, _readbuf.size())) {
-						_readbuf.consume(_readbuf.size());
-						connection_status = status_connected;
-						LoginToService();
-					}
-					break;
-				case status_connected:
-					data = boost::asio::buffer_cast<const char*>(_readbuf.data());
-					CWebsocketFrame frame;
-					if (frame.Parse((const unsigned char *)data, _readbuf.size())) {
-						ProxyPdu pdu(frame.Payload().c_str(), frame.Payload().length());
-						if (!pdu.Disconnected()) {
-							PduHandler(pdu);
-							_readbuf.consume(frame.Consumed());
+			readbuf.append((const char *)pData, length);
+			switch (connection_status) {
+			case status_httpmode:
+				if (parse_response(readbuf.c_str(), readbuf.size())) {
+					readbuf.clear();
+					connection_status = status_connected;
+					LoginToService();
+				}
+				break;
+			case status_connected:
+				CWebsocketFrame frame;
+				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
+					readbuf.clear();
+					switch (frame.Opcode()) {
+					case opcodes::opcode_ping:
+						write(CWebsocketFrame::Create(opcodes::opcode_pong, PONG, true));
+						break;
+					case opcodes::opcode_binary:
+					case opcodes::opcode_text:
+						std::shared_ptr<CProxyPduBase> pdu = CProxyPduBase::FromString(frame.Payload());
+						switch (pdu->pdu_type()) {
+#define PDUSTRING(name)
+#define PDULONG(name)
+#define PDULONGLONG(name)
+#define PROXYPDU(name, members) case ePDU_##name: OnPduReceived(std::dynamic_pointer_cast<ProxyPdu_##name>(pdu)); break;
+#include "proxydef.def"
+						default:
+							// pdu enum not found
+							break;
 						}
+#undef PDUSTRING
+#undef PDULONG
+#undef PDULONGLONG
+#undef PROXYPDU
+						break;
 					}
-					break;
 				}
-				ReadMore();
-			}
-			else
-			{
-				if (!doStop) {
-					_log.Log(LOG_ERROR, "PROXY: Read failed, code = %d. Reconnecting: %s", error.value(), error.message().c_str());
-					// we are disconnected, reconnect
-					Reconnect();
-				}
+				break;
 			}
 		}
 
@@ -712,25 +435,20 @@ namespace http {
 			return ((_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) > 0);
 		}
 
-		void CProxyClient::Stop()
+		void CProxyClient::OnDisconnect()
 		{
-			timer_.cancel(); // to be sure
-			if (we_locked_prefs_mutex) {
-				we_locked_prefs_mutex = false;
-				sharedData.UnlockPrefsMutex();
-			}
+			_log.Log(LOG_NORM, "Proxy: disconnected");
 			// stop and destroy all open websocket handlers
-			for (std::map<long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
+			for (std::map<unsigned long long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
 				it->second->Stop();
 				delete it->second;
 			}
 			websocket_handlers.clear();
+		}
 
-			doStop = true;
-			// signal end of WriteThread
-			boost::system::error_code ec;
-			_socket->shutdown(ec);
-			_socket->lowest_layer().close(ec);
+		void CProxyClient::OnError(const boost::system::error_code & error)
+		{
+			_log.Log(LOG_NORM, "Proxy: Error, reconnecting (%s)", error.message().c_str());
 		}
 
 		void CProxyClient::SetSharedServer(tcp::server::CTCPServerProxied *domserv)
@@ -742,12 +460,27 @@ namespace http {
 		{
 		}
 
-		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ):
-			m_pDocRoot(doc_root)
+		void CProxyClient::Connect(http::server::cWebem *webEm)
 		{
 			m_pWebEm = webEm;
-			m_pDomServ = domServ;
-			_first = true;
+			SetReconnectDelay(15);
+			connect("proxy.mydomoticz.com", 443);
+		}
+
+		void CProxyClient::Disconnect()
+		{
+			disconnect();
+		}
+
+		bool CProxyClient::Enabled()
+		{
+			Reset();
+			return (_apikey != "" && _password != "" && _allowed_subsystems != 0);
+		}
+
+
+		CProxyManager::CProxyManager()
+		{
 		}
 
 		CProxyManager::~CProxyManager()
@@ -755,68 +488,54 @@ namespace http {
 			Stop();
 		}
 
-		int CProxyManager::Start(bool first)
+		bool CProxyManager::Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)
 		{
-			_first = first;
-			m_thread = std::make_shared<std::thread>(&CProxyManager::StartThread, shared_from_this());
-			SetThreadName(m_thread->native_handle(), "ProxyManager");
-			return 1;
-		}
-
-		void CProxyManager::StartThread()
-		{
-			try {
-				boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-				ctx.set_verify_mode(boost::asio::ssl::verify_none);
-
-				proxyclient.reset(new CProxyClient(io_service, ctx, m_pWebEm));
-				proxyclient->Reconnect();
-				if (_first && proxyclient->SharedServerAllowed()) {
-					m_pDomServ->StartServer(proxyclient);
-				}
-				proxyclient->SetSharedServer(m_pDomServ->GetProxiedServer());
-				io_service.run();
+			if (!proxyclient.Enabled()) {
+				// mydomoticz has not been set up
+				return false;
 			}
-			catch (std::exception& e)
-			{
-				_log.Log(LOG_ERROR, "PROXY: StartThread(): Exception: %s", e.what());
+			m_pDomServ = domServ;
+			proxyclient.Connect(webEm);
+			if (proxyclient.SharedServerAllowed()) {
+				m_pDomServ->StartServer(&proxyclient);
 			}
+			proxyclient.SetSharedServer(m_pDomServ->GetProxiedServer());
+			return true;
 		}
 
 		void CProxyManager::Stop()
 		{
-			if (m_thread) {
-				io_service.post(boost::bind(&CProxyClient::Stop, proxyclient));
-				m_thread->join();
-				m_thread.reset();
-			}
+			proxyclient.Disconnect();
 		}
 
-		std::shared_ptr<CProxyClient> CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
+		void CProxyManager::SetWebRoot(const std::string & doc_root)
+		{
+			m_pDocRoot = doc_root;
+		}
+
+		CProxyClient *CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
 			sharedData.AddTCPClient(master);
-			return proxyclient;
+			return &proxyclient;
 		}
 
 		void CProxyClient::ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int protocol_version)
 		{
-			CValueLengthPart parameters;
-
-			ADDPDUSTRING(instancekey);
-			ADDPDUSTRING(username);
-			ADDPDUSTRING(password);
-			ADDPDULONG(protocol_version);
-			MyWrite(PDU_SERV_CONNECT, parameters);
+			ProxyPdu_SERV_CONNECT response;
+			response.m_ipparam = instancekey;
+			response.m_usernameparam = username;
+			response.m_passwordparam = password;
+			response.m_protocol_version = protocol_version;
+			MyWrite(response.ToBinary());
 		}
 
 		void CProxyClient::DisconnectFromDomoticz(const std::string &token, DomoticzTCP *master)
 		{
-			CValueLengthPart parameters;
 			int reason = 2;
 
-			ADDPDUSTRING(token);
-			ADDPDULONG(reason);
-
-			MyWrite(PDU_SERV_DISCONNECT, parameters);
+			ProxyPdu_SERV_DISCONNECT response;
+			response.m_tokenparam = token;
+			response.m_reason = reason;
+			MyWrite(response.ToBinary());
 			DomoticzTCP *slave = sharedData.findSlaveConnection(token);
 			if (slave) {
 				_log.Log(LOG_STATUS, "PROXY: Stopping slave.");
@@ -834,17 +553,6 @@ namespace http {
 		{
 			m_sql.GetPreferencesVar("MyDomoticzInstanceId", _instanceid);
 			return _instanceid;
-		}
-
-		void CProxySharedData::LockPrefsMutex()
-		{
-			// todo: make this a boost::condition?
-			prefs_mutex.lock();
-		}
-
-		void CProxySharedData::UnlockPrefsMutex()
-		{
-			prefs_mutex.unlock();
 		}
 
 		bool CProxySharedData::AddConnectedIp(std::string ip)
@@ -932,6 +640,12 @@ namespace http {
 				TCPClients[i]->DisconnectProxy();
 			}
 		}
+
+		/* pdu handlers not in use (server side) */
+		PDUFUNCTION(AUTHENTICATE) {}
+		PDUFUNCTION(NONE) {}
+		PDUFUNCTION(RESPONSE) {}
+		PDUFUNCTION(WS_SEND) {}
 	}
 }
 #endif

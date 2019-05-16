@@ -35,6 +35,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION (0x8E), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class MultiChannelAssociation: public CommandClass
 	{
@@ -51,7 +52,7 @@ namespace OpenZWave
 		virtual void ReadXML( TiXmlElement const* _ccElement );
 		virtual void WriteXML( TiXmlElement* _ccElement );
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );			
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );			
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }		
 		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
@@ -68,7 +69,6 @@ namespace OpenZWave
 		bool			m_queryAll;			// When true, once a group has been queried, we request the next one.
 		uint8			m_numGroups;		// Number of groups supported by the device.  255 is reported by certain manufacturers and requires special handling.
 		vector<InstanceAssociation>	m_pendingMembers;	// Used to build a list of group members from multiple reports
-		bool			m_alwaysSetInstance; // Should we also set a instance, even if a instance wasn't specified (for Qubino devices - See bug #857)
 			
 	};
 

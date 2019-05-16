@@ -153,6 +153,8 @@ define(function () {
                     return 'lx';
                 } else if (this.SubType === 'Percentage') {
                     return '%';
+                } else if (this.Type === 'Weight') {
+					return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
                 } else {
                     return '?';
                 }

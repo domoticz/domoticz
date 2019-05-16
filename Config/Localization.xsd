@@ -1,0 +1,69 @@
+<?xml version='1.0'?>
+<xs:schema
+  xmlns:xs='http://www.w3.org/2001/XMLSchema'
+  targetNamespace='https://github.com/OpenZWave/open-zwave'
+  xmlns:Localization='https://github.com/OpenZWave/open-zwave'
+  elementFormDefault='qualified'>
+
+ <xs:element name='Localization'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Localization:CommandClass' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Localization:GlobalText' minOccurs='0' maxOccurs='unbounded' />
+   </xs:sequence>
+   <xs:attribute name='Revision' type='xs:integer' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='CommandClass'>
+  <xs:complexType>
+  <xs:sequence>
+   <xs:element ref='Localization:Label' minOccurs='1' maxOccurs='unbounded'/>
+   <xs:element ref='Localization:Value' minOccurs='0' maxOccurs='unbounded'/>
+  </xs:sequence>
+  <xs:attribute name='id' type='xs:string' use='required'/>
+  </xs:complexType>
+</xs:element>
+
+ <xs:element name='Value'>
+  <xs:complexType>
+  <xs:sequence>
+   <xs:element ref='Localization:Help' minOccurs='1' maxOccurs='unbounded'/>
+   <xs:element ref='Localization:Label' minOccurs='1' maxOccurs='unbounded'/>
+   <xs:element ref='Localization:ItemLabel' minOccurs='0' maxOccurs='unbounded'/>
+  </xs:sequence>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='pos' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Label'>
+  <xs:complexType mixed='true'>
+   <xs:attribute name='lang' type='xs:string' use='optional'/>
+   <xs:attribute name='name' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Help'>
+ <xs:complexType mixed='true'>
+  <xs:attribute name='lang' type='xs:string' use='optional'/>
+ </xs:complexType>
+ </xs:element>
+
+ <xs:element name='ItemLabel'>
+ <xs:complexType mixed='true'>
+  <xs:attribute name='lang' type='xs:string' use='optional'/>
+  <xs:attribute name='itemIndex' type='xs:string' use='required'/>
+ </xs:complexType>
+ </xs:element>
+
+ <xs:element name='GlobalText'>
+  <xs:complexType>
+  <xs:sequence>
+   <xs:element ref='Localization:Label' minOccurs='1' maxOccurs='unbounded'/>
+  </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+
+</xs:schema>

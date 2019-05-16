@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- GE(Jasco) 26931 Z-Wave Plus Smart Motion Switch -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2035 -->
 	<CommandClass id="112">
 		<Value type="list" index="1" genre="config" label="Timeout Duration" min="0" max="255" value="5" size="1">

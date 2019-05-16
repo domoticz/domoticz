@@ -28,16 +28,22 @@ local TIMED_OPTIONS = {
 	},
 	setpoint =  {
 		_silent = true,
-		_after = true,      -- 20190112 Added
-		_within = true,     -- 20190112 Added
+		_after = true,
+		_within = true,
 		_triggerMode = 'NOTRIGGER'
 	},
-	camera =  {          -- 20190122 Added
+	camera =  {
 		_silent = false,
 		_after = true,
 		_within = true,
 		_triggerMode = ''
-	}
+	},
+	triggerIFTTT =  {
+		_silent = false,
+		_after = true,
+		_within = false,
+		_triggerMode = ''
+	},
 }
 
 return TIMED_OPTIONS

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
     <!-- Configuration -->
     <CommandClass id="112">
         <Value type="list" genre="config" instance="1" index="20" label="Switch type" size="1" value="2">
@@ -120,7 +120,7 @@
             </Help>
         </Value>
 
-        <Value type="list" genre="config" instance="1" index="41" label="S2 switch - scenes sent" size="1" value="0">
+        <Value type="byte" genre="config" instance="1" index="41" label="S2 switch - scenes sent" size="1" value="0">
             <Help>
                 This parameter determines which actions result in sending scene IDs assigned to them.
                 Sum of:

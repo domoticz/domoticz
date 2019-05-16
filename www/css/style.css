@@ -2032,3 +2032,37 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 .battery.empty {background-color: #ED3745;}
 .battery.empty:before, .battery.empty:after {border-color: #ED3745;}
 .battery.half {background-color: #F9D023;}
+
+/* Prevent touch scroll while using jQuery Wheel color picker */
+.jQWCP-wWidget {
+	touch-action: none;
+}
+
+.btn-selected {
+  color: #ffffff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  background-color: #826db1;
+  *background-color: #695499;
+  background-image: -moz-linear-gradient(top, #826db1, #695499);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#826db1), to(#695499));
+  background-image: -webkit-linear-gradient(top, #826db1, #695499);
+  background-image: -o-linear-gradient(top, #826db1, #695499);
+  background-image: linear-gradient(to bottom, #826db1, #695499);
+  background-repeat: repeat-x;
+  border-color: #695499 #695499 #ad6704;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff826db1', endColorstr='#ff695499', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.btn-selected:hover,
+.btn-selected:focus,
+.btn-selected:active,
+.btn-selected.active,
+.btn-selected.disabled,
+.btn-selected[disabled] {
+  color: #ffffff;
+  background-color: #826db1;
+  *background-color: #695499;
+}
+

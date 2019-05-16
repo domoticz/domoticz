@@ -3,7 +3,7 @@
 ZWA006 Smart Boost Timer Switch
 https://products.z-wavealliance.org/products/3067
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="list" genre="config" instance="1" index="1" label="Power out action" min="0" max="3" value="3" size="1">

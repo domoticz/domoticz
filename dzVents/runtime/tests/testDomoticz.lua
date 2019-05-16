@@ -292,6 +292,44 @@ describe('Domoticz', function()
 
 		end)
 
+		describe('triggerIFTTT', function()
+
+			it('should trigger an IFTTT maker event without extra values', function()
+				domoticz.triggerIFTTT('some maker event')
+				assert.is_same({
+					{
+						['TriggerIFTTT'] = { sID = 'some maker event' }
+					}
+				}, domoticz.commandArray)
+			end)
+
+			it('should trigger an IFTTT maker event with some extra values', function()
+				domoticz.triggerIFTTT('some maker event', 1, 2, 3)
+				assert.is_same({
+					{
+						['TriggerIFTTT'] = { 
+							sID = 'some maker event', 
+							sValue1 = '1',
+							sValue2 = '2',
+							sValue3 = '3',
+					}}
+				}, domoticz.commandArray)
+			end)
+
+			it('should trigger an IFTTT maker event with method afterSec', function()
+				domoticz.triggerIFTTT('some maker event', 1, 'two').afterMin(2)
+				assert.is_same({
+					{
+						['TriggerIFTTT'] = { 
+							_after = 120,
+							sID = 'some maker event', 
+							sValue1 = '1',
+							sValue2 = 'two',
+					}}
+				}, domoticz.commandArray)
+			end)
+		end)
+
 		it('should set a scene', function()
 			local res = domoticz.setScene('scene1', 'on')
 			assert.is_table(res)
@@ -903,7 +941,6 @@ describe('Domoticz', function()
 	end)
 
 	it('should url encode', function()
-
 		local s = 'a b c'
 		assert.is_same('a+b+c', domoticz.utils.urlEncode(s))
 	end)
@@ -948,6 +985,22 @@ describe('Domoticz', function()
 		}, domoticz.utils.fromJSON(json))
 	end)
 
+	it('should convert a table to json', function()
+		local t = { a= 1 }
+		local res = domoticz.utils.toJSON(t)
+		assert.is_same('{"a":1}', res)
+	end)
+	
+	it('should dump a table to log', function()
+		local t = { a=1,b=2,c={d=3,e=4, "test"} }
+		local res = domoticz.utils.dumpTable(t,"> ")
+		assert.is_nil(res)
+	end)
+
+	it('should split a string ', function()
+		assert.is_same(domoticz.utils.stringSplit("A-B-C", "-")[2],"B")
+		assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+	end)
 
 
 end)

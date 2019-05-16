@@ -1,75 +1,85 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- 
 Aeotec DSC11 Smart Strip 
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584527
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>  
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:000B:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsc11.png</MetaDataItem>
+    <MetaDataItem id="000B" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1015/</MetaDataItem>
+    <MetaDataItem name="Name">Aeon Labs Smart Strip DSC11-ZWUS</MetaDataItem>
+    <MetaDataItem id="000B" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="000B" name="Identifier" type="0003">DSC11-ZWUS</MetaDataItem>
+    <MetaDataItem name="Description">Smart Strip</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1015/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <Protocol refreshonnodeinfoframe="false"/>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-   <Value type="list" index="4" genre="config" label="Report threshold" units="" min="0" max="1" size="1" value="1">
+    <Value genre="config" index="4" label="Report threshold" max="1" min="0" size="1" type="list" units="" value="1">
       <Help>Enable selective reporting only when power change reaches a certain threshold or percentage set in 4.11 below.
 	  This is used to reduce network traffic.</Help>
-      <Item label="Disable," value="0" />
-      <Item label="Enable" value="1" />
-    </Value> 
-	<Value type="short" index="5" genre="config" label="Whole Smart Strip Minimum Change to send Report (Watt) " units="watts" min="0" max="60000" size="2" value="25">
+      <Item label="Disable," value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Whole Smart Strip Minimum Change to send Report (Watt) " max="60000" min="0" size="2" type="short" units="watts" value="25">
       <Help>Threshold change in wattage to induce an automatic report (Whole Smart Strip).</Help>
     </Value>
-	<Value type="short" index="6" genre="config" label="Socket 1 Minimum Change to send Report (Watt) " units="watts" min="0" max="60000" size="2" value="25">
+    <Value genre="config" index="6" label="Socket 1 Minimum Change to send Report (Watt) " max="60000" min="0" size="2" type="short" units="watts" value="25">
       <Help>Threshold change in wattage to induce an automatic report (Socket 1).</Help>
     </Value>
-	<Value type="short" index="7" genre="config" label="Socket 2 Minimum Change to send Report (Watt) " units="watts" min="0" max="60000" size="2" value="25">
+    <Value genre="config" index="7" label="Socket 2 Minimum Change to send Report (Watt) " max="60000" min="0" size="2" type="short" units="watts" value="25">
       <Help>Threshold change in wattage to induce an automatic report (Socket 2).</Help>
     </Value>
-	<Value type="short" index="8" genre="config" label="Socket 3 Minimum Change to send Report (Watt) " units="watts" min="0" max="60000" size="2" value="25">
+    <Value genre="config" index="8" label="Socket 3 Minimum Change to send Report (Watt) " max="60000" min="0" size="2" type="short" units="watts" value="25">
       <Help>Threshold change in wattage to induce an automatic report (Socket 3).</Help>
     </Value>
-	<Value type="short" index="9" genre="config" label="Socket 4 Minimum Change to send Report (Watt) " units="watts" min="0" max="60000" size="2" value="25">
+    <Value genre="config" index="9" label="Socket 4 Minimum Change to send Report (Watt) " max="60000" min="0" size="2" type="short" units="watts" value="25">
       <Help>Threshold change in wattage to induce an automatic report (Socket 4).</Help>
     </Value>
-	<Value type="short" index="10" genre="config" label="Socket 5 Minimum Change to send Report (Watt) " units="watts" min="0" max="60000" size="2" value="25">
+    <Value genre="config" index="10" label="Socket 5 Minimum Change to send Report (Watt) " max="60000" min="0" size="2" type="short" units="watts" value="25">
       <Help>Threshold change in wattage to induce an automatic report (Socket 5).</Help>
     </Value>
-	<Value type="short" index="11" genre="config" label="Socket 6 Minimum Change to send Report (Watt) " units="watts" min="0" max="60000" size="2" value="25">
+    <Value genre="config" index="11" label="Socket 6 Minimum Change to send Report (Watt) " max="60000" min="0" size="2" type="short" units="watts" value="25">
       <Help>Threshold change in wattage to induce an automatic report (Socket 6).</Help>
     </Value>
-    <Value type="byte" index="12" genre="config" label="Whole Smart Strip Minimum Change to send Report (%)" units="%" min="0" max="100" value="5">
+    <Value genre="config" index="12" label="Whole Smart Strip Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
       <Help>Percentage change in wattage to induce an automatic report (Whole Smart Strip).</Help>
     </Value>
-	<Value type="byte" index="13" genre="config" label="Socket 1 Minimum Change to send Report (%)" units="%" min="0" max="100" value="5">
+    <Value genre="config" index="13" label="Socket 1 Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
       <Help>Percentage change in wattage to induce an automatic report (Socket 1).</Help>
     </Value>
-	<Value type="byte" index="14" genre="config" label="Socket 2 Minimum Change to send Report (%)" units="%" min="0" max="100" value="5">
+    <Value genre="config" index="14" label="Socket 2 Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
       <Help>Percentage change in wattage to induce an automatic report (Socket 2).</Help>
     </Value>
-	<Value type="byte" index="15" genre="config" label="Socket 3 Minimum Change to send Report (%)" units="%" min="0" max="100" value="5">
+    <Value genre="config" index="15" label="Socket 3 Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
       <Help>Percentage change in wattage to induce an automatic report (Socket 3).</Help>
     </Value>
-	<Value type="byte" index="16" genre="config" label="Socket 4 Minimum Change to send Report (%)" units="%" min="0" max="100" value="5">
+    <Value genre="config" index="16" label="Socket 4 Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
       <Help>Percentage change in wattage to induce an automatic report (Socket 4).</Help>
     </Value>
-	<Value type="byte" index="17" genre="config" label="Socket 5 Minimum Change to send Report (%)" units="%" min="0" max="100" value="5">
+    <Value genre="config" index="17" label="Socket 5 Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
       <Help>Percentage change in wattage to induce an automatic report (Socket 5).</Help>
     </Value>
-	<Value type="byte" index="18" genre="config" label="Socket 6 Minimum Change to send Report (%)" units="%" min="0" max="100" value="5">
+    <Value genre="config" index="18" label="Socket 6 Minimum Change to send Report (%)" max="100" min="0" type="byte" units="%" value="5">
       <Help>Percentage change in wattage to induce an automatic report (Socket 6).</Help>
     </Value>
-    <Value type="list" index="80" genre="config" label="Notification status" units="" min="0" max="2" size="1" value="0">
+    <Value genre="config" index="80" label="Notification status" max="2" min="0" size="1" type="list" units="" value="0">
       <Help>Defines the automated status notification of an associated device when status changes</Help>
-      <Item label="Nothing" value="0" />
-      <Item label="Hail" value="1" />
-      <Item label="Basic" value="2" />
-    </Value>    
-    <Value type="short" index="90" genre="config" label="Temperature of Smart Strip" size="2" units="" value="0"  read_only="true">
+      <Item label="Nothing" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+    </Value>
+    <Value genre="config" index="90" label="Temperature of Smart Strip" read_only="true" size="2" type="short" units="" value="0">
       <Help>Get temperature of Smart Strip</Help>
-    </Value>    
-    <Value type="button" index="100" genre="config" label="Default Group Reports" units="" write_only="true" affects="101,102,103">
+    </Value>
+    <Value affects="101,102,103" genre="config" index="100" label="Default Group Reports" type="button" units="" write_only="true">
       <Help>
 	Set report types for groups 1, 2 and 3 to default.
       </Help>
     </Value>
-    <Value type="int" index="101" genre="config" label="Report type sent in Reporting Group 1" size="4" units="" value="0">
+    <Value genre="config" index="101" label="Report type sent in Reporting Group 1" size="4" type="int" units="" value="0">
       <Help>Configure auto report which information as Group 1.
 	 Value 1 (msb) Reserved
 	 Value 2 Reserved
@@ -93,7 +103,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584527
 			bit 0 Auto report the total power consumption with specified time interval
       </Help>
     </Value>
-    <Value type="int" index="102" genre="config" label="Report type sent in Reporting Group 2" size="4" units="" value="0">
+    <Value genre="config" index="102" label="Report type sent in Reporting Group 2" size="4" type="int" units="" value="0">
       <Help>Configure auto report which information as Group 2.
 	 Value 1 (msb) Reserved
 	 Value 2 Reserved
@@ -117,7 +127,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584527
 			bit 0 Auto report the total power consumption with specified time interval
       </Help>
     </Value>
-    <Value type="int" index="103" genre="config" label="Report type sent in Reporting Group 3" size="4" units="" value="0">
+    <Value genre="config" index="103" label="Report type sent in Reporting Group 3" size="4" type="int" units="" value="0">
       <Help>Configure auto report which information as Group 3.
 	 Value 1 (msb) Reserved
 	 Value 2 Reserved
@@ -141,49 +151,47 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584527
 			bit 0 Auto report the total power consumption with specified time interval
       </Help>
     </Value>
-    <Value type="button" index="110" genre="config" label="Set 111-113 to default" units="" write_only="true" value="0" affects="111,112,113">
+    <Value affects="111,112,113" genre="config" index="110" label="Set 111-113 to default" type="button" units="" value="0" write_only="true">
       <Help>
 	Set time interval for sending reports for groups 1, 2 and 3 to default.
       </Help>
     </Value>
-    <Value type="int" index="111" genre="config" label="Send Interval for Reporting Group 1" units="seconds" min="0" max="65535" value="600">
+    <Value genre="config" index="111" label="Send Interval for Reporting Group 1" max="65535" min="0" type="int" units="seconds" value="600">
       <Help>
 	Defines the time interval when the defined report for group 1 is sent.
       </Help>
     </Value>
-    <Value type="int" index="112" genre="config" label="Send Interval for Reporting Group 2" units="seconds" min="0" max="65535" value="600">
+    <Value genre="config" index="112" label="Send Interval for Reporting Group 2" max="65535" min="0" type="int" units="seconds" value="600">
       <Help>
 	Defines the time interval when the defined report for group 2 is sent.
       </Help>
     </Value>
-    <Value type="int" index="113" genre="config" label="Send Interval for Reporting Group 3" units="seconds" min="0" max="65535" value="600">
+    <Value genre="config" index="113" label="Send Interval for Reporting Group 3" max="65535" min="0" type="int" units="seconds" value="600">
       <Help>
 	Defines the time interval when the defined report for group 3 is sent.
       </Help>
     </Value>
-    <Value type="list" index="252" genre="config" label="Configuration Locked" units="" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="252" label="Configuration Locked" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>Enable/disable Configuration Locked</Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-	<Value type="int" index="253" genre="config" label="Enter Meter Calibration Mode" units="" min="0" max="1" size="4" value="0" write_only="true">
+    <Value genre="config" index="253" label="Enter Meter Calibration Mode" max="1" min="0" size="4" type="int" units="" value="0" write_only="true">
       <Help>Enter Meter Calibration Mode</Help>
-    </Value>	
-    <Value type="short" index="254" genre="config" label="Device tag" units="" min="0" max="65535" value="0">
+    </Value>
+    <Value genre="config" index="254" label="Device tag" max="65535" min="0" type="short" units="" value="0">
       <Help>
 	Device tag.
       </Help>
     </Value>
-    <Value type="button" index="255" genre="config" label="Reset device" units="" write_only="true">
+    <Value genre="config" index="255" label="Reset device" type="button" units="" write_only="true">
       <Help>Reset to the default configuration.</Help>
     </Value>
   </CommandClass>
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="LifeLine"/>
+      <Group index="1" label="LifeLine" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>
-

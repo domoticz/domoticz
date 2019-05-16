@@ -33,7 +33,6 @@
 #include <stdint.h>
 
 
-
 // Compilation export flags
 #if (defined _WINDOWS || defined WIN32 || defined _MSC_VER) && (!defined MINGW && !defined __MINGW32__ && !defined __MINGW64__)
 #	if defined OPENZWAVE_MAKEDLL	// Create the dynamic library.
@@ -62,6 +61,22 @@
 #pragma message("WARNING: You need to implement DEPRECATED for this compiler")
 #define DEPRECATED
 #endif
+
+
+#ifdef _MSC_VER
+#define OPENZWAVE_DEPRECATED_WARNINGS_OFF 	__pragma( warning(push) )\
+                                                __pragma( warning(disable: 4996) )
+#else
+#define OPENZWAVE_DEPRECATED_WARNINGS_OFF 	_Pragma ( "GCC diagnostic push" )\
+                                                _Pragma ( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )
+#endif
+
+#ifdef _MSC_VER
+#define OPENZWAVE_DEPRECATED_WARNINGS_ON 	__pragma( warning(pop) )
+#else
+#define OPENZWAVE_DEPRECATED_WARNINGS_ON 	_Pragma ( "GCC diagnostic pop" )
+#endif
+
 
 
 #ifdef NULL
@@ -146,14 +161,13 @@ static inline int version_cmp(struct ozwversion a, struct ozwversion b)
 }
 
 #include "OZWException.h"
-#define OPENZWAVE_DISABLE_EXCEPTIONS
 #if defined(_MSC_VER)
 #  define __MYFUNCTION__ __FUNCTION__
 #else
 #  define __MYFUNCTION__ __FILE__
 #endif
-// Exceptions : define OPENZWAVE_DISABLE_EXCEPTIONS in compiler flags to enable exceptions instead of exit function
-#ifndef OPENZWAVE_DISABLE_EXCEPTIONS
+// Exceptions : define OPENZWAVE_ENABLE_EXCEPTIONS in compiler flags to enable exceptions instead of exit function
+#ifdef OPENZWAVE_ENABLE_EXCEPTIONS
 
 #  define OZW_FATAL_ERROR(exitCode, msg)   	Log::Write( LogLevel_Error,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
 											throw OZWException(__MYFUNCTION__, __LINE__, exitCode, msg)
@@ -189,6 +203,9 @@ namespace OpenZWave
 #define strcasecmp _stricmp
 #define sscanf sscanf_s
 #define strncpy strncpy_s
+#define strncat strncat_s
+
+
 
 #endif
 
@@ -239,6 +256,7 @@ namespace OpenZWave
 #define TRANSMIT_COMPLETE_FAIL							0x02
 #define TRANSMIT_COMPLETE_NOT_IDLE						0x03
 #define TRANSMIT_COMPLETE_NOROUTE 						0x04
+#define TRANSMIT_COMPLETE_VERIFIED						0x05
 
 #define RECEIVE_STATUS_ROUTED_BUSY						0x01
 #define RECEIVE_STATUS_TYPE_BROAD	 					0x04
@@ -250,6 +268,8 @@ namespace OpenZWave
 #define FUNC_ID_SERIAL_API_SET_TIMEOUTS 				0x06
 #define FUNC_ID_SERIAL_API_GET_CAPABILITIES				0x07
 #define FUNC_ID_SERIAL_API_SOFT_RESET					0x08
+
+#define FUNC_ID_SERIAL_API_SETUP						0x0b
 
 #define FUNC_ID_ZW_SEND_NODE_INFORMATION				0x12
 #define FUNC_ID_ZW_SEND_DATA							0x13
@@ -297,6 +317,23 @@ namespace OpenZWave
 #define FUNC_ID_ZW_IS_VIRTUAL_NODE						0xA6	// Virtual node test
 #define FUNC_ID_ZW_SET_PROMISCUOUS_MODE					0xD0	// Set controller into promiscuous mode to listen to all frames
 #define FUNC_ID_PROMISCUOUS_APPLICATION_COMMAND_HANDLER	0xD1
+
+#define FUNC_ID_PROPRIETARY_0                           0xF0
+#define FUNC_ID_PROPRIETARY_1                           0xF1
+#define FUNC_ID_PROPRIETARY_2                           0xF2
+#define FUNC_ID_PROPRIETARY_3                           0xF3
+#define FUNC_ID_PROPRIETARY_4                           0xF4
+#define FUNC_ID_PROPRIETARY_5                           0xF5
+#define FUNC_ID_PROPRIETARY_6                           0xF6
+#define FUNC_ID_PROPRIETARY_7                           0xF7
+#define FUNC_ID_PROPRIETARY_8                           0xF8
+#define FUNC_ID_PROPRIETARY_9                           0xF9
+#define FUNC_ID_PROPRIETARY_A                           0xFA
+#define FUNC_ID_PROPRIETARY_B                           0xFB
+#define FUNC_ID_PROPRIETARY_C                           0xFC
+#define FUNC_ID_PROPRIETARY_D                           0xFD
+#define FUNC_ID_PROPRIETARY_E                           0xFE
+
 
 #define ADD_NODE_ANY									0x01
 #define ADD_NODE_CONTROLLER								0x02
@@ -396,5 +433,44 @@ namespace OpenZWave
 #define	COMMAND_CLASS_CONTROLLER_REPLICATION			0x21
 #define COMMAND_CLASS_APPLICATION_STATUS 				0x22
 #define COMMAND_CLASS_HAIL								0x82
+
+/* library types */
+#define ZW_LIB_CONTROLLER_STATIC  						0x01
+#define ZW_LIB_CONTROLLER         						0x02
+#define ZW_LIB_SLAVE_ENHANCED     						0x03
+#define ZW_LIB_SLAVE              						0x04
+#define ZW_LIB_INSTALLER          						0x05
+#define ZW_LIB_SLAVE_ROUTING      						0x06
+#define ZW_LIB_CONTROLLER_BRIDGE  						0x07
+#define ZW_LIB_DUT                						0x08
+
+/* Serial API Setup Commands */
+#define SERIAL_API_SETUP_CMD_TX_STATUS_REPORT			0x02
+#define SERIAL_API_SETUP_CMD_TX_POWERLEVEL_SET 			0x04
+#define SERIAL_API_SETUP_CMD_TX_POWERLEVEL_GET 			0x08
+#define SERIAL_API_SETUP_CMD_TX_GET_MAX_PAYLOAD_SIZE	0x10
+
+/* RouteScheme Definitions */
+typedef enum TXSTATUS_ROUTING_SCHEME
+{
+  ROUTINGSCHEME_IDLE = 0,
+  ROUTINGSCHEME_DIRECT = 1,
+  ROUTINGSCHEME_CACHED_ROUTE_SR = 2,
+  ROUTINGSCHEME_CACHED_ROUTE = 3,
+  ROUTINGSCHEME_CACHED_ROUTE_NLWR = 4,
+  ROUTINGSCHEME_ROUTE = 5,
+  ROUTINGSCHEME_RESORT_DIRECT = 6,
+  ROUTINGSCHEME_RESORT_EXPLORE = 7
+} TXSTATUS_ROUTING_SCHEME;
+
+/* RouteSpeed Definitions */
+typedef enum TXSTATUS_ROUTE_SPEED
+{
+	ROUTE_SPEED_AUTO = 0,
+	ROUTE_SPEED_9600 = 1,
+	ROUTE_SPEED_40K = 2,
+	ROUTE_SPEED_100K = 3,
+} TXSTATUS_ROUTE_SPEED;
+
 
 #endif // _Defs_H

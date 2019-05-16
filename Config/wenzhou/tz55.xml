@@ -1,22 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0118:0004:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/wenzhou/tz55.png</MetaDataItem>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1444/</MetaDataItem>
+    <MetaDataItem name="Name">Smart Plug in Switch</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Have Z-Wave controller with exclusion mode
 
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+2. Press the socket on/off button three times within 1.5 seconds to be excluded from the controller</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">1. This plug-in ON/OFF switch in a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. 
+2. Each socket is designed to act as a repeater. Repeaters will re-transmit the RF signal to ensure the signal to ensure that the signal is received by its intended destination.
+3. You can use the button in the socket to include/exclude, manually on/off or act as a indicator. You can use it to turn on/off appliance remotely via smart phone or computer.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Press the socket on/off button three times within 1.5 seconds
+2.  then within 1 second to press and hold on for 5 seconds until the socket button LED is off, reset to factory default successfully
+3. Use this procedure only in the event that the network primary controller is missing or otherwise inoperable 
+</MetaDataItem>
+    <MetaDataItem id="0004" name="Identifier" type="0003">TZ68E</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1444/TZ68G User Manual.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Have Z-Wave controller with inclusion mode
+
+2. Press the socket on/off button three times within 1.5 seconds to be included to the controller</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1444/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration -->
-	<CommandClass id="112">
-		<Value type="byte" genre="config" instance="1" index="1" label="Night light" min="0" max="1" value="1">
-		  <Help>The LED on the TZ55D will by default, turn ON when the load attached is turned OFF. To make the LED turn ON when the load attached is turned ON instead, set parameter to a value of 1.</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="2" label="Memory Function" min="0" max="1" value="1">
-		  <Help>Stated in the above form,switch by default value is 1,when the value is 0,switch memory function not open; when the value is 1,open switch memory function</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="3" label="Invert switch" min="0" max="1" value="0">
-		  <Help>To change the top of the switch to OFF and the bottom of the switch ON , set parameter 4 to 1.</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="4" label="LED Transmission indication" min="0" max="2" value="1">
-		  <Help>The TZ56-D will flicker its LED when it is transmitting to any of its 4 groups. This flickering can be set to not flicker at all (set to 0), to flicker the entire time it is transmitting (set to 1), or to flicker for only 1 second when it begins transmitting (set to 2). By default, the TZ55D is set to flicker for only 1 second.</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="5" label="Suspend Group 4" min="0" max="1" value="0">
-		  <Help>Setting this parameter to the value of 1 will stop the TZ55D from transmitting to devices that are associated into Group 4.</Help>
-		</Value>
-	</CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Night light" max="1" min="0" type="byte" value="1">
+      <Help>The LED on the TZ55D will by default, turn ON when the load attached is turned OFF. To make the LED turn ON when the load attached is turned ON instead, set parameter to a value of 1.</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Memory Function" max="1" min="0" type="byte" value="1">
+      <Help>Stated in the above form,switch by default value is 1,when the value is 0,switch memory function not open; when the value is 1,open switch memory function</Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Invert switch" max="1" min="0" type="byte" value="0">
+      <Help>To change the top of the switch to OFF and the bottom of the switch ON , set parameter 4 to 1.</Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="LED Transmission indication" max="2" min="0" type="byte" value="1">
+      <Help>The TZ56-D will flicker its LED when it is transmitting to any of its 4 groups. This flickering can be set to not flicker at all (set to 0), to flicker the entire time it is transmitting (set to 1), or to flicker for only 1 second when it begins transmitting (set to 2). By default, the TZ55D is set to flicker for only 1 second.</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Suspend Group 4" max="1" min="0" type="byte" value="0">
+      <Help>Setting this parameter to the value of 1 will stop the TZ55D from transmitting to devices that are associated into Group 4.</Help>
+    </Value>
+  </CommandClass>
 </Product>

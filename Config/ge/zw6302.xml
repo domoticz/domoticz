@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 <!--
 GE/Jasco ZW6302 Portable Smart Motion Sensor
 https://products.z-wavealliance.org/products/1902
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
     <!-- Configuration -->
     <CommandClass id="112">
         <Value type="list" index="13" genre="config" label="PIR Sensitivity Setting" units="" min="1" max="3" size="1" value="3">

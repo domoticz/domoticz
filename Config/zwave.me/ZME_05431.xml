@@ -1,7 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--Taken from http://manuals.zwaveeurope.com/make.php?lang=en&type=&sku=ZME_05431-->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
+<!--Taken from http://manuals.zwaveeurope.com/make.php?lang=en&type=&sku=ZME_05431--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0115:0001:1000</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zwave.me/ZME_05431.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="1000">https://products.z-wavealliance.org/products/20/</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="1000">ZME_06431</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.pepper1.net/zwavedb/device/117</MetaDataItem>
+    <MetaDataItem name="Description">This Z-Wave.Me switching Flush-Mountable is intended to control all kinds of electrical loads. A 230V powered pattress box is needed for installation. The Flush-Mountable has two buttons. In order to use them for local control the Flush-Mountable needs to be completed with a switching paddle and a mounting frame of one of the DUWI switching series “Everlux” or “Arcada”. 
+
+Technical data of the hardware:
+•	Power rating: 230V, 50 Hz
+•	Wiring: 3-wire-system
+•	Maximum loads: 2300W
+•	Installation: in pattress box
+•	Distance:  up to 30 m in buildings
+•	Display: Multicolour-LED
+•	Interaction: two buttons to be completed with switching paddle for local operation
+•	Power supply: via 230 V power
+•	Dimensions: 48mmx48mmx23mm
+</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave.Me Flush-Mountable Switch</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://en.z-wave.me/content/z-wave-hardware</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="1000">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/20/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
 	<!--IMPORTANT: Controllers may only allow to configure signed values. 
 	    In order to set values in the range  128?255 for parameters 4,  5 and 6 the
 	    value sent in the application shall be the desired value minus 256. 
@@ -11,85 +35,82 @@
 	    use value equal to desired value minus 65536. For example, to set auto
 	    switch off period to 10 hours =36000s it may be needed to set a value
 	    36000?65536=?29536.-->
-
-	<CommandClass id="112">
-		<Value type="list" index="1" genre="config" label="Set LED indication mode" units="" min="1" max="99" value="3" size="1">
-			<Item label="Disabled" value="0" />
-			<Item label="Show switch/dimmer state / when in motion or inactive (for blinds)" value="1" />
-			<Item label="Night mode (inverted switch state)" value="2" />
-			<Item label="Operated by Indicator Command Class (default)" value="3" />
-			<Item label="Show if not closed (for blinds only)" value="4" />
-		</Value>
-		<Value type="int" index="2" genre="config" label="Automatically switch off after" units="seconds" min="0" max="65535" value="0">
-			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
-		</Value>
-		<Value type="list" index="3" genre="config" label="What to do on RF off command" value="0" size="1">
-			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
-			<Item label="Switch off (default)" value="0" />
-			<Item label="Ignore" value="1" />
-			<Item label="Switch on" value="2" />
- 	                <Item label="Switch on if load is off else switch off" value="3" />
-		</Value>
-		<Value type="list" index="4" genre="config" label="Ignore Start Level" value="1" size="1">
-			<Help>Defines if the dimmer shall ignore start level in StartLevelChange command despite it is specified or not.</Help>
-			<Item label="No" value="0" />
-			<Item label="Yes (default)" value="1" />
-		</Value>
-		<Value type="list" index="5" genre="config" label="Restore switch state after power cycle" size="1" value="1">
-			<Help>Defines if the switch should restore switch state to the last state prior to device power off (power cycle).</Help>
-                        <Item label="No, turn OFF" value="0" />
-                        <Item label="Yes (default)" value="1" />
-		</Value>
-		<Value type="byte" index="10" genre="config" label="Typical click timeout" units="x 10 milliseconds" min="1" max="100" value="50">
-			<Help>Typical time used to differentiate click, hold, double and triple clicks.</Help>
-		</Value>
-		<Value type="list" index="11" genre="config" label="Invert buttons" value="0" size="1">
-		  <Item label="No default)" value="0" />
-		  <Item label="Yes" value="1" />
-		</Value>
-		<Value type="list" index="12" genre="config" label="Switch by buttons" value="1" size="1">
-			<Help>If disabled, the local operations by buttons will not switch the load, but only send commands to On/Off association group. In  this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only. </Help>
-			<Item label="No" value="0" />
-			<Item label="By single press and hold (default)" value="1" />
-			<Item label="By double press and hold" value="2" />
-		</Value>
-		<Value type="list" index="13" genre="config" label="Action on button single press or hold" value="4" size="1">
-			<Help>Defines which command should be sent on button single press or hold. Basic commands are sent to Association group. Switch All commands are sent broadcast. </Help>
-			<Item label="Disabled" value="0" />
-                        <Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (Default)" value="4" />
-			<Item label="Switch On, Off and dim using Basic Set" value="1" />
-			<Item label="Switch All On/Off" value="2" />
-                        <Item label="Send Scenes" value="3" />
-                        <Item label="Send Predefined Scenes" value="5" />
-		</Value>
-		<Value type="list" index="14" genre="config" label="Action on button double press or hold" value="0" size="1">
-			<Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group.   Switch   All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
-			<Item label="Disabled (don't wait for double click,default)" value="0" />
-                        <Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="4" />
-                        <Item label="Switch On, Off and dim using Basic Set" value="1" />
-                        <Item label="Switch All On/Off" value="2" />
-                        <Item label="Send Scenes" value="3" />
-                        <Item label="Send Predefined Scenes" value="5" />
-		</Value>
-		<Value type="list" index="15" genre="config" label="Send the following Switch All commands" value="1" size="1">
-			<Item label="Switch All Off only (default)" value="1" />
-			<Item label="Switch All On only" value="2" />
-			<Item label="Switch All On and Off" value="255" />
-		</Value>
-               <Value type="list" index="16" genre="config" label="What to do on button Down press" value="0" size="1">
-                        <Item label="Switch off (Default)" value="0" />
-                        <Item label="Switch All On only" value="1" />
-                        <Item label="Switch on" value="2" />
-                </Value>
- 
-	</CommandClass>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="3">
-			<Group index="1" max_associations="8" label="Group 1 Single press and hold of up/down buttons" auto="false"/>
-			<Group index="2" max_associations="8" label="Group 2 Double press and press-hold of up/down buttons"  />
-			<Group index="3" max_associations="8" label="Lifeline" auto="true"/>
-		</Associations>
-	</CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Set LED indication mode" max="99" min="1" size="1" type="list" units="" value="3">
+      <Item label="Disabled" value="0"/>
+      <Item label="Show switch/dimmer state / when in motion or inactive (for blinds)" value="1"/>
+      <Item label="Night mode (inverted switch state)" value="2"/>
+      <Item label="Operated by Indicator Command Class (default)" value="3"/>
+      <Item label="Show if not closed (for blinds only)" value="4"/>
+    </Value>
+    <Value genre="config" index="2" label="Automatically switch off after" max="65535" min="0" type="int" units="seconds" value="0">
+      <Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+    </Value>
+    <Value genre="config" index="3" label="What to do on RF off command" size="1" type="list" value="0">
+      <Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+      <Item label="Switch off (default)" value="0"/>
+      <Item label="Ignore" value="1"/>
+      <Item label="Switch on" value="2"/>
+      <Item label="Switch on if load is off else switch off" value="3"/>
+    </Value>
+    <Value genre="config" index="4" label="Ignore Start Level" size="1" type="list" value="1">
+      <Help>Defines if the dimmer shall ignore start level in StartLevelChange command despite it is specified or not.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes (default)" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Restore switch state after power cycle" size="1" type="list" value="1">
+      <Help>Defines if the switch should restore switch state to the last state prior to device power off (power cycle).</Help>
+      <Item label="No, turn OFF" value="0"/>
+      <Item label="Yes (default)" value="1"/>
+    </Value>
+    <Value genre="config" index="10" label="Typical click timeout" max="100" min="1" type="byte" units="x 10 milliseconds" value="50">
+      <Help>Typical time used to differentiate click, hold, double and triple clicks.</Help>
+    </Value>
+    <Value genre="config" index="11" label="Invert buttons" size="1" type="list" value="0">
+      <Item label="No default)" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="12" label="Switch by buttons" size="1" type="list" value="1">
+      <Help>If disabled, the local operations by buttons will not switch the load, but only send commands to On/Off association group. In  this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only. </Help>
+      <Item label="No" value="0"/>
+      <Item label="By single press and hold (default)" value="1"/>
+      <Item label="By double press and hold" value="2"/>
+    </Value>
+    <Value genre="config" index="13" label="Action on button single press or hold" size="1" type="list" value="4">
+      <Help>Defines which command should be sent on button single press or hold. Basic commands are sent to Association group. Switch All commands are sent broadcast. </Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (Default)" value="4"/>
+      <Item label="Switch On, Off and dim using Basic Set" value="1"/>
+      <Item label="Switch All On/Off" value="2"/>
+      <Item label="Send Scenes" value="3"/>
+      <Item label="Send Predefined Scenes" value="5"/>
+    </Value>
+    <Value genre="config" index="14" label="Action on button double press or hold" size="1" type="list" value="0">
+      <Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group.   Switch   All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
+      <Item label="Disabled (don't wait for double click,default)" value="0"/>
+      <Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="4"/>
+      <Item label="Switch On, Off and dim using Basic Set" value="1"/>
+      <Item label="Switch All On/Off" value="2"/>
+      <Item label="Send Scenes" value="3"/>
+      <Item label="Send Predefined Scenes" value="5"/>
+    </Value>
+    <Value genre="config" index="15" label="Send the following Switch All commands" size="1" type="list" value="1">
+      <Item label="Switch All Off only (default)" value="1"/>
+      <Item label="Switch All On only" value="2"/>
+      <Item label="Switch All On and Off" value="255"/>
+    </Value>
+    <Value genre="config" index="16" label="What to do on button Down press" size="1" type="list" value="0">
+      <Item label="Switch off (Default)" value="0"/>
+      <Item label="Switch All On only" value="1"/>
+      <Item label="Switch on" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group auto="false" index="1" label="Group 1 Single press and hold of up/down buttons" max_associations="8"/>
+      <Group index="2" label="Group 2 Double press and press-hold of up/down buttons" max_associations="8"/>
+      <Group auto="true" index="3" label="Lifeline" max_associations="8"/>
+    </Associations>
+  </CommandClass>
 </Product>

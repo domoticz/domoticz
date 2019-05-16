@@ -1,36 +1,49 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0059:0002:0010</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/horstmann/sir321.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0010">https://products.z-wavealliance.org/products/1012/</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0010">SIR 321</MetaDataItem>
+    <MetaDataItem name="Description">Secure Intelligent Relay is having One relay, and support of duration base schedule, measuring of temperature and delta and interval temperature reporting etc</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0010">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Secure Controls SIR 321 Intelligent Relay</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1012/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" instance="1" index="1" genre="config" label="Enable Fails Safe Timer" size="1" value="0">
+    <Value genre="config" index="1" instance="1" label="Enable Fails Safe Timer" size="1" type="list" value="0">
       <Help>Enables or not the Fails Safe Timer</Help>
-      <Item label="Disabled" value="0" />
-	  <Item label="Enabled" value="255" />
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="255"/>
     </Value>
-    <Value type="list" instance="1" index="2" genre="config" label="Temperature Scale" size="1" value="0">
+    <Value genre="config" index="2" instance="1" label="Temperature Scale" size="1" type="list" value="0">
       <Help>Controls the temperature sensor scale</Help>
-      <Item label="Celsius" value="0" />
-	  <Item label="Fahrenheit" value="255" />
+      <Item label="Celsius" value="0"/>
+      <Item label="Fahrenheit" value="255"/>
     </Value>
-    <Value type="short" instance="1" index="3" genre="config" label="Temperature reporting intervals" min="0" max="65534" value="0" size="2">
+    <Value genre="config" index="3" instance="1" label="Temperature reporting intervals" max="65534" min="0" size="2" type="short" value="0">
       <Help>Time interval to trigger a temperature report (step 1s) (Default 0 = disabled)</Help>
     </Value>
-    <Value type="short" instance="1" index="4" genre="config" label="Delta T: Temperature change" min="0" max="100" value="0" size="2">
+    <Value genre="config" index="4" instance="1" label="Delta T: Temperature change" max="100" min="0" size="2" type="short" value="0">
       <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 0 = disabled)</Help>
     </Value>
-    <Value type="short" instance="1" index="5" genre="config" label="Temperature Cutoff" min="0" max="1000" value="0" size="2">
+    <Value genre="config" index="5" instance="1" label="Temperature Cutoff" max="1000" min="0" size="2" type="short" value="0">
       <Help>Temperature that when reached will cut off the switch</Help>
     </Value>
   </CommandClass>
   <!-- Basic set as report -->
-  <CommandClass id="32" setasreport="true"/>
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
   <!-- Association Groups -->
-  <CommandClass id="133">   
+  <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="4" label="Lifeline"/>
-      <Group index="2" max_associations="4" label="Unsolicited Sensor Multilevel Reports" auto="true"/>
+      <Group index="1" label="Lifeline" max_associations="4"/>
+      <Group auto="true" index="2" label="Unsolicited Sensor Multilevel Reports" max_associations="4"/>
     </Associations>
   </CommandClass>
-
 </Product>

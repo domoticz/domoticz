@@ -33,127 +33,51 @@
 
 namespace OpenZWave
 {
-	class OPENZWAVE_EXPORT Bitfield
+class OPENZWAVE_EXPORT Bitfield
+{
+	friend class Iterator;
+
+public:
+	Bitfield();
+	Bitfield(uint32 value);
+	~Bitfield();
+	bool Set( uint8 _idx );
+	bool Clear( uint8 _idx );
+	bool IsSet( uint8 _idx ) const;
+	uint32 GetNumSetBits() const;
+	uint32 GetValue() const;
+	bool SetValue(uint32 val);
+	uint32 GetSize() const;
+	class Iterator
 	{
-		friend class Iterator;
+		friend class Bitfield;
 
 	public:
-		Bitfield():m_numSetBits(0){}
-		~Bitfield(){}
+		uint32 operator *() const;
+		Iterator& operator++();
+		Iterator operator++(int);
 
-		void Set( uint32 _idx )
-		{
-			if( !IsSet(_idx) )
-			{
-				uint32 newSize = (_idx>>5)+1;
-				if( newSize > m_bits.size() )
-				{
-					m_bits.resize( newSize, 0 );
-				}
-				m_bits[_idx>>5] |= (1<<(_idx&0x1f));
-				++m_numSetBits;
-			}
-		}
-
-		void Clear( uint32 _idx )
-		{
-			if( IsSet(_idx) )
-			{
-				m_bits[_idx>>5] &= ~(1<<(_idx&0x1f));
-				--m_numSetBits;
-			}
-		}
-
-		bool IsSet( uint32 _idx )const
-		{
-			if( (_idx>>5) < m_bits.size() )
-			{
-				return( ( m_bits[_idx>>5] & (1<<(_idx&0x1f)) ) !=0 );
-			}
-			return false;
-		}
-
-		uint32 GetNumSetBits()const{ return m_numSetBits; }
-
-		class Iterator
-		{
-			friend class Bitfield;
-
-		public:
-			uint32 operator *() const
-			{
-				return m_idx;
-			}
-
-			Iterator& operator++()
-			{
-				// Search forward to next set bit
-				NextSetBit();
-			  	return *this;
-			}
-
-			Iterator operator++(int)
-			{
-				Iterator tmp = *this;
-				++tmp;
-				return tmp;
-			}
-
-			bool operator ==(const Iterator &rhs)
-			{
-				return m_idx == rhs.m_idx;
-			}
-
-			bool operator !=(const Iterator &rhs)
-			{
-				return m_idx != rhs.m_idx;
-			}
-
-		private:
-			Iterator( Bitfield const* _bitfield, uint32 _idx ): m_idx( _idx ), m_bitfield( _bitfield )
-			{
-				// If this is a begin iterator, move it to the first set bit
-				if( ( _idx == 0 ) && ( !m_bitfield->IsSet(0) ) )
-				{
-					NextSetBit();
-				}
-			}
-
-			void NextSetBit()
-			{
-				while( ((++m_idx)>>5)<m_bitfield->m_bits.size() )
-				{
-					// See if there are any bits left to find in the current uint32
-					if( ( m_bitfield->m_bits[m_idx>>5] & ~((1<<(m_idx&0x1f))-1) ) == 0 )
-					{
-						// No more bits - move on to next uint32 (or rather one less than 
-						// the next uint32 because of the preincrement in the while statement)
-						m_idx = (m_idx&0xffffffe0)+31;
-					}
-					else
-					{
-						if( (m_bitfield->m_bits[m_idx>>5] & (1<<(m_idx&0x1f))) !=0 )
-						{
-							// This bit is set
-							return;
-						}
-					}
-				}
-			}
-
-			uint32				m_idx;
-			Bitfield const*		m_bitfield;
-		};
-
-		Iterator Begin()const{ return Iterator( this, 0 ); }
-		Iterator End()const{ return Iterator( this, (uint32) m_bits.size()<<5 ); }
-
+		bool operator ==(const Iterator &rhs);
+		bool operator !=(const Iterator &rhs);
 	private:
-OPENZWAVE_EXPORT_WARNINGS_OFF
-		vector<uint32>	m_bits;
-OPENZWAVE_EXPORT_WARNINGS_ON
-		uint32			m_numSetBits;
+		Iterator( Bitfield const* _bitfield, uint32 _idx );
+
+		void NextSetBit();
+
+		uint32				m_idx;
+		Bitfield const*		m_bitfield;
 	};
+
+	Iterator Begin() const;
+	Iterator End() const;
+
+private:
+	OPENZWAVE_EXPORT_WARNINGS_OFF
+	vector<uint32>	m_bits;
+	OPENZWAVE_EXPORT_WARNINGS_ON
+	uint32			m_numSetBits;
+	uint32			m_value;
+};
 } // namespace OpenZWave
 
 #endif

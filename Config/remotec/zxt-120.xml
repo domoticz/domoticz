@@ -1,118 +1,146 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-
-	<!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8377:0101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/remotec/zxt-120.png</MetaDataItem>
+    <MetaDataItem id="8377" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/715/</MetaDataItem>
+    <MetaDataItem id="8377" name="Identifier" type="0101">BW8377EU</MetaDataItem>
+    <MetaDataItem name="Name">Remotec ZXT-120EU AC Extender</MetaDataItem>
+    <MetaDataItem name="Description">l   Fully complaint to Z-Wave command class.
+l   Built-in AC IR code library with Configuration Learning capability. 
+l   Able to feedback room temperature.
+l   Build-in 5 direction IR emitters(hemispherical coverage),
+l   3.5mm jack for external wired IR emitter (optional).
+l   Transmit IR control code with a wide range of carrier frequency (15 to 455kHz).
+l   Programmable power level (LOW or HIGH) for external IR emitter to avoid saturation of IR receivers.
+l   Dual mode (FLiRS mode when working on battery, Always Listening mode when work on AC power)
+l   Frequency: US: 908.4MHz,  EU:868.4MHz, AU:921.4MHz
+l   Power Source: USB mini-B,5V DC Jack, or 3xAAA batteries.
+l   Dismountable battery box.
+l   Dimension: Extender unit: 70mm (diameter) *18mm(thickness)  
+l   Battery Box: 70mm(diameter) *15.5mm(thickness)</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.remotec.com.hk/zaspx/product_content.aspx?aboutno=36&amp;subaboutno=45&amp;main=f</MetaDataItem>
+    <MetaDataItem id="8377" name="FrequencyName" type="0101">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/715/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
 	<!-- COMMAND_CLASS_THERMOSTAT_SETPOINT get is not supported -->
-	<CommandClass id="67" base="0" getsupported="false"/>
-
-	<!-- The thermostat does not properly report its operating modes -->
-	<CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE" version="1" request_flags="4" create_vars="true">
-		<Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="0" value="0">
-			<Item label="Off" value="0" />
-			<Item label="Heat" value="1" />
-			<Item label="Cool" value="2" />
-			<Item label="Resume" value="5" />
-			<Item label="Fan Only" value="6" />
-			<Item label="Dry Air" value="8" />
-			<Item label="Auto Changeover" value="10" />
-		</Value>
-		<SupportedModes>
-			<Mode index="0" label="Off" />
-			<Mode index="1" label="Heat" />
-			<Mode index="2" label="Cool" />
-			<Mode index="5" label="Resume" />
-			<Mode index="6" label="Fan Only" />
-			<Mode index="8" label="Dry Air" />
-			<Mode index="10" label="Auto Changeover" />
-		</SupportedModes>
-	</CommandClass>
-  
-	<CommandClass id="112">
-		<Value type="list" index="25" genre="config" label="Indicate a location for IR code learning and start learning" size="1" min="0" max="22" value="0" write_only="true">
-			<Help>
+  <CommandClass id="67">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+  <!-- The thermostat does not properly report its operating modes -->
+  <CommandClass id="64">
+    <Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" type="list" units="" value="0" write_only="false">
+      <Item label="Off" value="0"/>
+      <Item label="Heat" value="1"/>
+      <Item label="Cool" value="2"/>
+      <Item label="Resume" value="5"/>
+      <Item label="Fan Only" value="6"/>
+      <Item label="Dry Air" value="8"/>
+      <Item label="Auto Changeover" value="10"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+      <Mode index="2" label="Cool"/>
+      <Mode index="5" label="Resume"/>
+      <Mode index="6" label="Fan Only"/>
+      <Mode index="8" label="Dry Air"/>
+      <Mode index="10" label="Auto Changeover"/>
+    </SupportedModes>
+    <Compatibility>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="25" label="Indicate a location for IR code learning and start learning" max="22" min="0" size="1" type="list" value="0" write_only="true">
+      <Help>
 				In case none of the code on the code list works for the targeted air conditioner, user can use IR code learning function.
-				See manual at section &quot;IR Code Learning&quot; for a description of the procedure. Value 0-22
+				See manual at section "IR Code Learning" for a description of the procedure. Value 0-22
 			</Help>
-			<Item label="OFF" value="0" />
-			<Item label="ON (resume)" value="1" />
-			<Item label="cool 19 C" value="2" />
-			<Item label="cool 20 C" value="3" />
-			<Item label="cool 21 C" value="4" />
-			<Item label="cool 22 C" value="5" />
-			<Item label="cool 23 C" value="6" />
-			<Item label="cool 24 C" value="7" />
-			<Item label="cool 25 C" value="8" />
-			<Item label="cool 26 C" value="9" />
-			<Item label="cool 27 C" value="10" />
-			<Item label="cool 28 C" value="11" />
-			<Item label="heat 19 C" value="12" />
-			<Item label="heat 20 C" value="13" />
-			<Item label="heat 21 C" value="14" />
-			<Item label="heat 22 C" value="15" />
-			<Item label="heat 23 C" value="16" />
-			<Item label="heat 24 C" value="17" />
-			<Item label="heat 25 C" value="18" />
-			<Item label="heat 26 C" value="19" />
-			<Item label="heat 27 C" value="20" />
-			<Item label="heat 28 C" value="21" />
-		</Value>
-		<Value type="list" index="26" genre="config" label="Learning status register" size="1" read_only="true">
-			<Help>Note: The status value 0x01 and 0x04 will be reset to 0 when the ZXT-120 receive a get command to this parameter.
+      <Item label="OFF" value="0"/>
+      <Item label="ON (resume)" value="1"/>
+      <Item label="cool 19 C" value="2"/>
+      <Item label="cool 20 C" value="3"/>
+      <Item label="cool 21 C" value="4"/>
+      <Item label="cool 22 C" value="5"/>
+      <Item label="cool 23 C" value="6"/>
+      <Item label="cool 24 C" value="7"/>
+      <Item label="cool 25 C" value="8"/>
+      <Item label="cool 26 C" value="9"/>
+      <Item label="cool 27 C" value="10"/>
+      <Item label="cool 28 C" value="11"/>
+      <Item label="heat 19 C" value="12"/>
+      <Item label="heat 20 C" value="13"/>
+      <Item label="heat 21 C" value="14"/>
+      <Item label="heat 22 C" value="15"/>
+      <Item label="heat 23 C" value="16"/>
+      <Item label="heat 24 C" value="17"/>
+      <Item label="heat 25 C" value="18"/>
+      <Item label="heat 26 C" value="19"/>
+      <Item label="heat 27 C" value="20"/>
+      <Item label="heat 28 C" value="21"/>
+    </Value>
+    <Value genre="config" index="26" label="Learning status register" read_only="true" size="1" type="list">
+      <Help>Note: The status value 0x01 and 0x04 will be reset to 0 when the ZXT-120 receive a get command to this parameter.
 				Idle - this IR channel is idle (default).
 				OK - the latest learning process successful and completed.
 				Learning - the ZXT- 120 is busy processing previous learning request.
 				Failed - the latest learning request failed.</Help>
-			<Item label="Idle" value="0" />
-			<Item label="OK" value="1" />
-			<Item label="Learning" value="2" />
-			<Item label="Failed" value="4" />
-		</Value>
-		<Value type="short" index="27" genre="config" label="IR code number for built-in code library" size="2" value="0">
-			<Help>Look up the code list of ZXT-120 according to your AC brand.</Help>
-		</Value>
-		<Value type="list" index="28" genre="config" label="External IR Emitter power level" size="1" value="255">
-			<Help></Help>
-			<Item label="Normal" value="0" />
-			<Item label="High" value="255" />
-		</Value>
-		<Value type="list" index="32" genre="config" label="Surround IR control" size="1" value="255">
-			<Help>
+      <Item label="Idle" value="0"/>
+      <Item label="OK" value="1"/>
+      <Item label="Learning" value="2"/>
+      <Item label="Failed" value="4"/>
+    </Value>
+    <Value genre="config" index="27" label="IR code number for built-in code library" size="2" type="short" value="0">
+      <Help>Look up the code list of ZXT-120 according to your AC brand.</Help>
+    </Value>
+    <Value genre="config" index="28" label="External IR Emitter power level" size="1" type="list" value="255">
+      <Help></Help>
+      <Item label="Normal" value="0"/>
+      <Item label="High" value="255"/>
+    </Value>
+    <Value genre="config" index="32" label="Surround IR control" size="1" type="list" value="255">
+      <Help>
 				To avoid the IR interference by disabling the surrounding IR emitter if 2 air-conditioners in a room are used.
 				Extend the battery life by disabling the Surround IR Emitters
 			</Help>
-			<Item label="Disable" value="0" />
-			<Item label="Enable" value="255" />
-		</Value>
-		<Value type="list" index="33" genre="config" label="AC function SWING control" size="1" value="1">
-			<Help></Help>
-			<Item label="Off" value="0" />
-			<Item label="Auto" value="1" />
-		</Value>
-		<Value type="byte" index="35" genre="config" label="Learn location status" size="1" read_only="true">
-			<Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="255"/>
+    </Value>
+    <Value genre="config" index="33" label="AC function SWING control" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="Off" value="0"/>
+      <Item label="Auto" value="1"/>
+    </Value>
+    <Value genre="config" index="35" label="Learn location status" read_only="true" size="1" type="byte">
+      <Help>
 				Bit mask = 1, learn location has learn data.
 				Otherwise, Bit mask 0 See figure Learn location
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="37" label="Sensor temperature compensation" size="1" min="0" max="255" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="37" instance="1" label="Sensor temperature compensation" max="255" min="0" size="1" type="list" value="0">
+      <Help>
 				This parameter is used to compensate the temperature error at temperature sensor.
 				Formula: Display temperature = sensor reading value + offset value
 				(unit = degree C)
 				0x00 = 0C (Default)
 			</Help>
-			<Item label="0 C" value="0" />
-			<Item label="1 C" value="1" />
-			<Item label="2 C" value="2" />
-			<Item label="3 C" value="3" />
-			<Item label="4 C" value="4" />
-			<Item label="5 C" value="5" />
-			<Item label="-1 C" value="255" />
-			<Item label="-2 C" value="254" />
-			<Item label="-3 C" value="253" />
-			<Item label="-4 C" value="252" />
-			<Item label="-5 C" value="251" />
-		</Value>
-	</CommandClass>
-
+      <Item label="0 C" value="0"/>
+      <Item label="1 C" value="1"/>
+      <Item label="2 C" value="2"/>
+      <Item label="3 C" value="3"/>
+      <Item label="4 C" value="4"/>
+      <Item label="5 C" value="5"/>
+      <Item label="-1 C" value="255"/>
+      <Item label="-2 C" value="254"/>
+      <Item label="-3 C" value="253"/>
+      <Item label="-4 C" value="252"/>
+      <Item label="-5 C" value="251"/>
+    </Value>
+  </CommandClass>
 </Product>

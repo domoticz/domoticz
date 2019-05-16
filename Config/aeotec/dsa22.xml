@@ -3,7 +3,7 @@
 Aeotec DSA22 Key Fob
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584531
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="int" index="0" genre="config" label="Button #1(tap) Value 1" units="" write_only="true" value="0"/>

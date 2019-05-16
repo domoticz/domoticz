@@ -1,66 +1,83 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<!-- Aeon Labs Multi Sensor --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0005:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsb05.png</MetaDataItem>
+    <MetaDataItem id="0005" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/771/</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0002">DSB05-ZWAU</MetaDataItem>
+    <MetaDataItem name="Name">Multisensor</MetaDataItem>
+    <MetaDataItem name="Description">Never before has one device made a single corner of your room so smart. Never before has it done it inside. Never before has it done it outside. And never before has it brought all that intelligence to your Z-Wave network. 
+
+The Aeotec by Aeon Labs MultiSensor looks like a motion sensor and acts like one too. But it’s also so much more. Placing this one piece of Z-Wave technology either in the corner of a room or outside is the same as placing 4 pieces of Z-Wave technology. But those 4 pieces of technology, those 4 pieces of intelligence that you can bring to your Z-Wave network, all live within a single, stunning sensor.</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-sensor</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0002">U.S. / Canada / Mexico / CEPT (Europe) / Australia / New Zealand</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/710/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/763/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/771/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
 Aeotec DSB05 Multisensor
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584510
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="2" genre="config" label="Wake up 10 minutes when batteries are inserted" min="0" max="1" value="0" size="1">
-			<Help>Stay awake for 10 minutes after batteries are inserted</Help>
-			<Item label="No" value="0" />
-			<Item label="Yes" value="1" />
-		</Value>
-		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="1" max="15300" value="240">
-			<Help>How long should the device associated to multi sensor keep state On before sending it Off command (if the value is bigger than 255, the value would be rounded to next integer in minutes)</Help>
-		</Value>
-		<Value type="list" index="4" genre="config" label="Enable Motion Sensor" min="0" max="1" value="1" size="1">
-			<Help>Enable Motion Sensor</Help>
-			<Item label="Disabled" value="0" />
-			<Item label="Enabled" value="1" /> 			
-		</Value>
-		<Value type="list" index="5" genre="config" label="Command Options" min="1" max="2" value="1" size="1">
-			<Help>Which commands to send when PIR motion sensor triggered</Help>
-			<Item label="Basic Set (default)" value="1" />
-			<Item label="Binary Sensor Report" value="2" />  
-		</Value>
-		<Value type="int" index="100" genre="config" label="Reset #101-103" value="0" write_only="true" affects="101,102,103">
-			<Help>Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.</Help>
-		</Value>
-		<Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="0">
-			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
-		</Value>
-		<Value type="int" index="102" genre="config" label="Group 2 Reports" value="0">
-			<Help>Which reports need to send automatically in timing intervals for group 2. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
-		</Value>
-		<Value type="int" index="103" genre="config" label="Group 3 Reports" value="0">
-		<Help>Which reports need to send automatically in timing intervals for group 3. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
-		</Value>
-		<Value type="int" index="110" genre="config" label="Reset #111-113" value="0" write_only="true" affects="111,112,113">
-			<Help>Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.</Help>
-		</Value>
-		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" min="1" max="2678400" value="720">
-			<Help>The interval of sending report group 1. 1 to 2678400 seconds</Help>
-		</Value>
-		<Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" min="1" max="2678400" value="720">
-			<Help>The interval of sending report group 2. 1 to 2678400 seconds</Help>
-		</Value>
-		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" min="1" max="2678400" value="720">
-			<Help>The interval of sending report group 3. 1 to 2678400 seconds</Help>
-		</Value>
-		<Value type="button" index="255" genre="config" label="Reset to default" write_only="true" value="0" >
-			<Help>Reset to factory defaults.</Help>
-		</Value>
-	</CommandClass>
-
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="4" label="Lifeline" />
-		</Associations>
-	</CommandClass>
-
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="Wake up 10 minutes when batteries are inserted" max="1" min="0" size="1" type="list" value="0">
+      <Help>Stay awake for 10 minutes after batteries are inserted</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="On time" max="15300" min="1" type="short" units="seconds" value="240">
+      <Help>How long should the device associated to multi sensor keep state On before sending it Off command (if the value is bigger than 255, the value would be rounded to next integer in minutes)</Help>
+    </Value>
+    <Value genre="config" index="4" label="Enable Motion Sensor" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable Motion Sensor</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Command Options" max="2" min="1" size="1" type="list" value="1">
+      <Help>Which commands to send when PIR motion sensor triggered</Help>
+      <Item label="Basic Set (default)" value="1"/>
+      <Item label="Binary Sensor Report" value="2"/>
+    </Value>
+    <Value affects="101,102,103" genre="config" index="100" label="Reset #101-103" type="int" value="0" write_only="true">
+      <Help>Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.</Help>
+    </Value>
+    <Value genre="config" index="101" label="Group 1 Reports" type="int" units="" value="0">
+      <Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+    </Value>
+    <Value genre="config" index="102" label="Group 2 Reports" type="int" value="0">
+      <Help>Which reports need to send automatically in timing intervals for group 2. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+    </Value>
+    <Value genre="config" index="103" label="Group 3 Reports" type="int" value="0">
+      <Help>Which reports need to send automatically in timing intervals for group 3. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+    </Value>
+    <Value affects="111,112,113" genre="config" index="110" label="Reset #111-113" type="int" value="0" write_only="true">
+      <Help>Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.</Help>
+    </Value>
+    <Value genre="config" index="111" label="Group 1 Interval" max="2678400" min="1" type="int" units="seconds" value="720">
+      <Help>The interval of sending report group 1. 1 to 2678400 seconds</Help>
+    </Value>
+    <Value genre="config" index="112" label="Group 2 Interval" max="2678400" min="1" type="int" units="seconds" value="720">
+      <Help>The interval of sending report group 2. 1 to 2678400 seconds</Help>
+    </Value>
+    <Value genre="config" index="113" label="Group 3 Interval" max="2678400" min="1" type="int" units="seconds" value="720">
+      <Help>The interval of sending report group 3. 1 to 2678400 seconds</Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset to default" type="button" value="0" write_only="true">
+      <Help>Reset to factory defaults.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="4"/>
+    </Associations>
+  </CommandClass>
 </Product>

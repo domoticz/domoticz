@@ -37,6 +37,7 @@ namespace OpenZWave
 	class FileOpsImpl;
 
 	/** \brief Implements platform-independent File Operations.
+	 * \ingroup Platform
 	 */
 	class FileOps
 	{
@@ -55,11 +56,49 @@ namespace OpenZWave
 		static void Destroy();
 
 		/**
-		 * FolderExists. Check for the existance of a folder.
+		 * FolderExists. Check for the existence of a folder.
 		 * \param string. Folder name.
-		 * \return Bool value indicating existance.
+		 * \return Bool value indicating existence.
 		 */
 		static bool FolderExists( const string &_folderName );
+
+		/**
+		 * FileExists. Check for the existence of a file.
+		 * \param string. file name.
+		 * \return Bool value indicating existence.
+		 */
+		static bool FileExists( const string &_fileName );
+
+		/**
+		 * FileWriteable. Check if we can write to a file.
+		 * \param string. file name.
+		 * \return Bool value indicating write permissions.
+		 */
+		static bool FileWriteable( const string &_fileName );
+
+		/**
+		 * FileRotate. Rotate a File
+		 * \param string. file name.
+		 * \return Bool value indicating write permissions.
+		 */
+		static bool FileRotate( const string &_fileName );
+
+		/**
+		 * FileCopy. Copy a File
+		 * \param string. source file name.
+		 * \param string. destination file name
+		 * \return Bool value indicating success.
+		 */
+		static bool FileCopy( const string &_fileName, const string &_destinationfile );
+
+		/**
+		 * FolderCreate. Create a Folder
+		 * \param string. folder name
+		 * \return Bool value indicating success.
+		 */
+		static bool FolderCreate( const string &_folderName);
+
+
 
 	private:
 		FileOps();

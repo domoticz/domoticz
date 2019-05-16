@@ -67,6 +67,8 @@ local VIRTUAL_DEVICES = {
 	SOLAR_RADIATION = {20, 'vdSolarRadiation'},
 	SOUND_LEVEL = {10, 'vdSoundLevel'},
 	SWITCH = {6, 'vdSwitch'},
+	QUIET_ON_SWITCH = {6, 'vdQuietOnSwitch'},
+	QUIET_OFF_SWITCH = {6, 'vdQuietOffSwitch'},
 	TEMP_BARO = { 247, 'vdTempBaro' },
 	TEMP_HUM = {82, 'vdTempHum'},
 	TEMP_HUM_BARO = {84, 'vdTempHumBaro'},
@@ -83,7 +85,7 @@ local VIRTUAL_DEVICES = {
 	-- increment SECPANEL_INDEX_CHECK when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX_CHECK = 57
+local SECPANEL_INDEX_CHECK = 59
 local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 10 -- 10 is number of groups / scenes + managed counter + dimmer switch+ ?
 
 local VAR_TYPES = {
@@ -105,9 +107,9 @@ local getResultsFromfile = function(file)
 end
 
 
-describe('Integration test', function ()
-
-	setup(function()
+describe('Integration test', 
+	function ()
+		setup(function()
 		assert.is_true(TestTools.deleteAllDevices())
 		assert.is_true(TestTools.deleteAllVariables())
 		assert.is_true(TestTools.deleteAllHardware())
@@ -149,15 +151,17 @@ describe('Integration test', function ()
 	local secArmedAwayIdx
 	local scSceneResultsIdx
 	local switchSilentResultsIdx
+	local switchQuietResultsIdx
 
 	-- it('a', function() end)
 	describe('Settings', function()
-		it('Should initialize settings', function()
-			local ok, result, respcode, respheaders, respstatus = TestTools.initSettings()
+		it('Should initialize settings with enabled IFTTT', function()
+			local IFTTTEnabled = "on"
+			local ok, result, respcode, respheaders, respstatus = TestTools.initSettings(IFTTTEnabled)
 			assert.is_true(ok)
 		end)
 	end)
-
+	
 	describe('Hardware', function()
 		it('should create dummy hardware', function()
 			local ok
@@ -427,10 +431,20 @@ describe('Integration test', function ()
 			assert.is_true(ok)
 		end)
 
+		it('should create a quietOn switch', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.QUIET_ON_SWITCH[2], VIRTUAL_DEVICES.QUIET_ON_SWITCH[1])
+			assert.is_true(ok)
+		end)
+
+		it('should create a quietOff switch', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.QUIET_OFF_SWITCH[2], VIRTUAL_DEVICES.QUIET_OFF_SWITCH[1])
+			assert.is_true(ok)
+		end)
+
 	end)
 
 	describe('ManagedCounter', function()
- 		it('should create a Managed counter', function()
+	 it('should create a Managed counter', function()
 			local ok
 			ok = TestTools.createManagedCounter('vdManagedCounter')
 			assert.is_true(ok)
@@ -443,7 +457,7 @@ describe('Integration test', function ()
 			-- first create switch to be put in the scene
 			local ok
 			local switchIdx
-			local sceneIdx  = 1 -- api doesn't return the idx so we assume this is 1
+			local sceneIdx = 1 -- api doesn't return the idx so we assume this is 1
 			ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneSwitch1', 6)
 			assert.is_true(ok)
 
@@ -650,6 +664,10 @@ describe('Integration test', function ()
 			TestTools.createFSScript('silent.lua')
 		end)
 
+		it('Should move quiet script in place', function()
+			TestTools.createFSScript('quiet.lua')
+		end)
+		  
 		it('Should move description script in place', function()
 			TestTools.createFSScript('descriptionScript.lua')
 		end)
@@ -701,6 +719,11 @@ describe('Integration test', function ()
 			ok, switchSilentResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchSilentResults', VIRTUAL_DEVICES.SWITCH[1])
 			assert.is_true(ok)
 		end)
+		  
+		  it('Should create results for quiet script', function()
+			ok, switchQuietResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchQuietResults', VIRTUAL_DEVICES.SWITCH[1])
+			assert.is_true(ok)
+		end)
 
 		it('Should create the final results text device', function()
 			local ok
@@ -725,14 +748,21 @@ describe('Integration test', function ()
 				socket.sleep(1) -- 25 because of repeatAfter tests , the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 				assert.is_true(true)
 			end)
+			if i == 10 then 
+				it('Should reinitialize settings with disabled IFTTT', function()
+					local IFTTTEnabled = "%20"
+					local ok, result, respcode, respheaders, respstatus = TestTools.initSettings(IFTTTEnabled)
+					assert.is_true(ok)
+				end)
+			end
 		end
 	end)
 
 	describe('Stage2', function()
 
 		resTable = getResultsFromfile("/tmp/Stage2results.json")
-		for key,value in pairs (resTable)do
-			it(key , function()
+		for key, value in pairs (resTable)do
+			it(key, function()
 				assert.is_same(true, value)
 			end)
 		end
@@ -744,6 +774,7 @@ describe('Integration test', function ()
 			local secArmedAwayDevice
 			local scSceneResultsDevice
 			local switchSilentResultsDevice
+			local switchQuietResultsDevice
 			local ok = false
 			local endResultsDevice
 
@@ -764,6 +795,9 @@ describe('Integration test', function ()
 			ok = false
 			ok, switchSilentResultsDevice = TestTools.getDevice(switchSilentResultsIdx)
 			assert.is_true(ok)
+				ok = false
+			ok, switchQuietResultsDevice = TestTools.getDevice(switchQuietResultsIdx)
+			assert.is_true(ok)
 
 			assert.is_same('ENDRESULT SUCCEEDED', endResultsDevice['Data'])
 			assert.is_same('DIMMER SUCCEEDED', switchDimmerResultsDevice['Data'])
@@ -771,6 +805,7 @@ describe('Integration test', function ()
 			assert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])
 			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
 			assert.is_same('Off', switchSilentResultsDevice['Status'])
+			assert.is_same('On', switchQuietResultsDevice['Status'])
 
 		end)
 

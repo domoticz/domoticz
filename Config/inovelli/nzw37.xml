@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value genre="config" index="1" value="0" label="LED Indicator Control" units="" size="1" min="0" max="255" type="list">

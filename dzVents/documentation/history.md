@@ -1,3 +1,13 @@
+[2.4.20]
+- Add quietOn() and quietOff() method to switchType devices 
+
+[2.4.19]
+- Add stringSplit function to domoticz.utils.
+- Add statusText and protocol to HTTPResponse
+
+[2.4.18]
+- Add triggerIFTTT()
+
 [2.4.17]
 - Add function dumpTable() to domoticz.utils
 - Add setValues() method to devices 

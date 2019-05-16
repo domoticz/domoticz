@@ -41,6 +41,7 @@ namespace OpenZWave
 	 * On construction, the reference count is set to one.  Calls to AddRef increment 
 	 * the count.  Calls to Release decrement the count.  When the count reaches
 	 * zero, the object is deleted.
+	 * \ingroup Platform
 	 */
 	class Ref
 	{

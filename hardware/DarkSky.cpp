@@ -387,6 +387,18 @@ void CDarkSky::GetMeterDetails()
 			}
 		}
 	}
+	//Cloud Cover
+	if (root["currently"]["cloudCover"].empty() == false)
+	{
+		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
+		{
+			float cloudcover = static_cast<float>(atof(root["currently"]["cloudCover"].asString().c_str()));
+			if (cloudcover >= 0.0f)
+			{
+				SendPercentageSensor(1, 0, 255, cloudcover * 100.0f, "Cloud Cover");
+			}
+		}
+	}
 
 }
 

@@ -1,36 +1,73 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Vision ZP3102 PIR Motion Sensor -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-        <!-- COMMAND_CLASS_CONFIGURATION -->
+<!-- Vision ZP3102 PIR Motion Sensor --><Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0201:2002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zp3102.png</MetaDataItem>
+    <MetaDataItem id="0201" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/84/</MetaDataItem>
+    <MetaDataItem name="Description">The ZP3102 is a Z-Wave enabled motion detector and temperature sensor.  The motion detector has 120 degrees of horizontal visibility and 60 degrees of vertical visibility.  The temperature sensor that is built in to the ZP3102 is capable of reporting in both Celsius and Fahrenheit scales, and may be queried for the temperature and it will report it automatically when it detects changes.  The sensor is battery operated and includes the ability to report the battery level and will transmit an alert signal if the battery assumes a critically low level.  The ZP3102 is future-proofed by also supporting the ability to have its firmware updated over the Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.visionsecurity.com.tw/ha_products_page2_154_161.html</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.visionsecurity.com.tw/ha_products_page2_154_161.html</MetaDataItem>
+    <MetaDataItem id="0201" name="FrequencyName" type="2002">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Motion Detector (with Temperature Sensor)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/72/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/84/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/703/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/728/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/804/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/847/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1070/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0201" name="Identifier" type="2002">ZP 3102</MetaDataItem>
+    <MetaDataItem id="0202" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/728/</MetaDataItem>
+    <MetaDataItem id="0202" name="Identifier" type="2002">2</MetaDataItem>
+    <MetaDataItem id="0202" name="FrequencyName" type="2002">CEPT (Europe) / Brazil</MetaDataItem>
+    <MetaDataItem id="0203" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/804/</MetaDataItem>
+    <MetaDataItem id="0203" name="Identifier" type="2002">ZP3102IN</MetaDataItem>
+    <MetaDataItem id="0203" name="FrequencyName" type="2002">India</MetaDataItem>
+    <MetaDataItem id="0204" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/847/</MetaDataItem>
+    <MetaDataItem id="0204" name="FrequencyName" type="2002">Japan</MetaDataItem>
+    <MetaDataItem id="0204" name="Identifier" type="2002">ZP3102JP</MetaDataItem>
+    <MetaDataItem id="0205" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/1070/</MetaDataItem>
+    <MetaDataItem id="0205" name="Identifier" type="2002">ZP3102EU-5</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Remove the rear cover to wake up the device, or set the wake up interval time from 10 minutes to 1 week.  The battery will be drained quickly if you fail to replace the cover after using that method to wake up the device.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Removing the rear cover to wake up the device.  Press Program Switch 10 times within 10 seconds, ZP3102 will go back to factory default. (This is to be used only in the case of the primary controller being inoperable or otherwise unavailable.)</MetaDataItem>
+    <MetaDataItem id="0205" name="FrequencyName" type="2002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put the Z-Wave Interface Controller into 'inclusion' mode, and follow its instructions to add the ZP3102 to your Z-Wave network. For a successful inclusion, it is suggested to have the sensor and your Z-Wave controller about one meter apart.  Press the Program Switch of the ZP3102 (refer to the manual for the location of the program switch) ready the ZP3102 for inclusion into the Z-Wave network.  If inclusion does not take place or is unsuccessful within 20 seconds, the ZP3102 will go to sleep; if this happens, simply repeat pressing the program switch to try again.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Put the Z-Wave Interface Controller into “exclusion” mode, and following its instruction to delete the ZP3102 to your Z-Wave network.  Press the Program Switch of ZP3102 once to be excluded. The LED on the ZP3102 should start to flash.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1070/20140725 - (Z-WAVE CERTIFICATION) ZP 3102-5 PIR_20140722_500 Series.pdf</MetaDataItem>
+  </MetaData>
+  <!-- COMMAND_CLASS_CONFIGURATION -->
         <!--    IMPORTANT: Controllers may only allow to configure signed values.
                 In order to set values in the range 128...255 the value sent in the application shall be the desired value minus 256.
                 For example: to set a parameter to 200? it may be needed to set a value of 200 minus 256 = minus 56.
                 In case of two byte value the same logic applies: Values greater than 32768 may needed to be given as negative values too.-->
-        <CommandClass id="112">
-                <Value type="byte" genre="config" index="1" label="Re-Trigger Waiting Time" units="minutes" min="1" max="255" value="3">
-                    <Help>Time until an associated device will turn off if no new movement is detected</Help>
-                </Value>
-                <Value type="list" genre="config" index="2" label="Celcius/Fahrenheit" size="1" min="0" max="1" value="0">
-                    <Help>Report temperature in Celcius or Fahrenheit</Help>
-                    <Item label="Celcius" value="0" />
-                    <Item label="Fahrenheit" value="1" />
-                </Value>
-                <Value type="byte" genre="config" index="3" label="Sensitivity" units="" min="1" max="7" value="4">
-                    <Help>Sensitivity 1-7 (1 = most sensitive, 7 = most insensitive. 4 is default)</Help>
-                </Value>
-                <Value type="byte" genre="config" index="4" label="Temperature adjustment" units="Degrees Celsius" min="0" max="255" value="0">
-                    <Help>-10 to -1, 0 to 10 (Signed decimal: 246 to 255, 0 to 10)</Help>
-                </Value>
-        </CommandClass>
-
-        <!-- COMMAND_CLASS_BASIC -->
-        <CommandClass id="32" setasreport="true"/>
-
-        <!-- COMMAND_CLASS_ASSOCIATION -->
-        <CommandClass id="133">
-                <Associations num_groups="1">
-                        <Group index="1" max_associations="5" label="Basic on/off group for detecting movements" />
-                </Associations>
-        </CommandClass>
-
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Re-Trigger Waiting Time" max="255" min="1" type="byte" units="minutes" value="3">
+      <Help>Time until an associated device will turn off if no new movement is detected</Help>
+    </Value>
+    <Value genre="config" index="2" label="Celcius/Fahrenheit" max="1" min="0" size="1" type="list" value="0">
+      <Help>Report temperature in Celcius or Fahrenheit</Help>
+      <Item label="Celcius" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Sensitivity" max="7" min="1" type="byte" units="" value="4">
+      <Help>Sensitivity 1-7 (1 = most sensitive, 7 = most insensitive. 4 is default)</Help>
+    </Value>
+    <Value genre="config" index="4" label="Temperature adjustment" max="255" min="0" type="byte" units="Degrees Celsius" value="0">
+      <Help>-10 to -1, 0 to 10 (Signed decimal: 246 to 255, 0 to 10)</Help>
+    </Value>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Basic on/off group for detecting movements" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

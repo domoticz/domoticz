@@ -205,6 +205,10 @@ local function Domoticz(settings)
 			dumpTable = function(t, level)
 				return utils.dumpTable(t, level)
 			end,
+
+			stringSplit = function(text, sep)
+				return utils.stringSplit(text, sep)
+			end,
 			
 		}
 	}
@@ -326,6 +330,24 @@ local function Domoticz(settings)
 			utils.log('OpenURL: Invalid arguments, use either a string or a table with options', utils.LOG_ERROR)
 		end
 
+	end
+
+	-- have domoticz trigger an IFTTTT maker event
+	function self.triggerIFTTT(sID, ...)
+		if sID then
+			local luaTable = {}
+			luaTable.sID = sID
+			for i,value in ipairs({...}) do
+				luaTable["sValue" .. i] = tostring(value)
+			end
+			utils.log('IFFTT Maker Event = ' .. sID, utils.LOG_DEBUG)
+			if luaTable.sValue1 then
+				utils.log('IFFTT extra value(s) = ' .. luaTable.sValue1 .. " " .. (luaTable.sValue2 or "") .. " " .. (luaTable.sValue3 or ""), utils.LOG_DEBUG)
+			end
+			return TimedCommand(self, 'TriggerIFTTT', luaTable, 'triggerIFTTT') -- works with afterXXX
+		else
+			utils.log('No maker event sID is provided', utils.LOG_ERROR)
+		end
 	end
 
 	-- send a scene switch command

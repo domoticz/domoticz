@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!--
-    Z-Wave Touch Panel Wall Controller - ZSC-01D
-    https://www.tronika.no/en/index.php?controller=attachment&id_attachment=544
+    Z-Wave Wall Controller SR-ZV9001T4-DIM-EU
+    Manual: http://www.sunricher.com/media/resources/manual/Z-Wave%20Wall%20Controller%20SR-ZV9001T4-DIM-EU.pdf
     -->
 
     <!-- Association Groups -->

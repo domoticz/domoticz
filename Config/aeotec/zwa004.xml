@@ -2,7 +2,7 @@
 <!--
 ZWA004 NanoMote One
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="byte" index="32" genre="config" label="Low battery level" units="%" min="10" max="50" value="20">

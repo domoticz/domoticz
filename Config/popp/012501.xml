@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 <!-- 
 Popp 012501 Strike Lock Control 
 http://www.popp.eu/wp-content/uploads/2016/11/Manual_ElectricStrikeLockControl_POPP_en.pdf

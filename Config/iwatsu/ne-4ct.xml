@@ -1,0 +1,16 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0123:0103:0103</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/iwatsu/ne-4ct.png</MetaDataItem>
+    <MetaDataItem id="0103" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/947/</MetaDataItem>
+    <MetaDataItem name="Description">Smart-CONNECT CT. 
+
+Electric power measuring instrument with Z-Wave</MetaDataItem>
+    <MetaDataItem name="Name">Iwatsu Smart Connect NE-4CT</MetaDataItem>
+    <MetaDataItem id="0103" name="Identifier" type="0103">NE-4CT</MetaDataItem>
+    <MetaDataItem id="0103" name="FrequencyName" type="0103">Japan</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/947/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

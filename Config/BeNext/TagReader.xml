@@ -1,49 +1,84 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--http://www.pepper1.net/zwavedb/device/302-->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/008A:0100:0007</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/BeNext/TagReader.png</MetaDataItem>
+    <MetaDataItem id="0100" name="ZWProductPage" type="0007">https://products.z-wavealliance.org/products/43/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">info@benext.eu</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.benext.eu/en/products/tag-reader/</MetaDataItem>
+    <MetaDataItem id="0100" name="FrequencyName" type="0007">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Tag Reader</MetaDataItem>
+    <MetaDataItem id="0100" name="Identifier" type="0007">BeNext / TagReader</MetaDataItem>
+    <MetaDataItem name="Description">By reading your RFID-Tag or pressing a manual code you are able to arm or disarm your security system. The Tag Reader can read multiple RFID-tags protocols. With the sound of the buzzer you will easily hear and see if your action was valid.
 
+Place the Tag Reader close to the main exit of your office or home to enjoy it’s full potential.
+With the Tag Reader you can activate or de-activate your security by simply passing the RFID Tag in front of the reader. It is called a Tag Reader because it uses RFID Tags to identify people and their personal preferences around leaving the house or coming home.
+
+Separately from working with RFID Tags, the Tag Reader also has a numerical keypad. Within the free of charge online manager you can configure a numerical code. This way you prevent being locked out of the system in case you may have lost the RFID Tag.
+
+By using the Tag Reader intelligently you can secure your house and save money on your energy bill at the same time. You can actually let your house ‘fall asleep’ when enabling the ‘Away Scene’. This is especially noted when u are using energy saving products of BeNext such as Radiator Control and of course a Energy Switch.
+- The TagReader has the possibility for the user to manually insert codes.
+- The TagReaders indicator light will react differently on each action.
+- The TagReader has a buzzer, which can be used as walk-in/walk-out notification 
+(alarm is being disabled/activated).
+
+- arm/disarm a security system. 
+- Battery operated device for easy mounting on any place. 
+- Multiple tags support ISO15693, ISO18000-3, Tag-it™ 
+- Easy installation with NWI - get in control of your alarm system.
+
+The dimensions are 6 x 6 x 2 cm (LxBxH). The color of the product is traffic White, RAL 9016.
+Switch between the scenes ‘Home’ and ‘Away’ easily and initiate security measures or instead de-activate them easily without use of complicated coding
+• Let your house ‘wake up’ or instead ‘fall asleep’. This way you can save enormously on your energy bill
+• Product dimensions: 62 x 62 x 20 millimeter (L x W x H)
+• Normal operating voltage: 2x AA 1.5V batteries. From 2.3Vdc to 4.0Vdc. Do not use rechargeable batteries
+• Battery lifetime: normal usage will give approximately a lifetime of 5 years. Notice: long and big networks will increase the battery lifetime
+• Protocols supported: ISO15693, ISO18000-3, Tag-it™, RFID
+• Buzzer-sound: approximately 60dB at 10 centimeters distance
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/43/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">
-
-    <Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="-1">
+    <Value genre="config" index="1" instance="1" label="Set to Default" type="byte" value="-1">
       <Help>Set all configuration values to default values (factory settings).</Help>
     </Value>
-
-    <Value type="list" genre="config" instance="1" index="2"
-	   label="Feedback Time" value="0" size="1">
+    <Value genre="config" index="2" instance="1" label="Feedback Time" size="1" type="list" value="0">
       <Help>To configure the time the beep is automatically turned off in seconds.</Help>
       <Item label="Disabled" value="0"/>
       <Item label="Endless" value="-1"/>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="3" label="Feedback Timeout" value="0">
+    <Value genre="config" index="3" instance="1" label="Feedback Timeout" type="byte" value="0">
       <Help>To configure the timeout to wait for a WAKEUP_NO_MORE_INFORMATION before the error beep is automatically sound. The error beeps are fixed 8 beeps shortly after each other.</Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="4" label="Feedback Beeps per Second" value="2">
+    <Value genre="config" index="4" instance="1" label="Feedback Beeps per Second" type="byte" value="2">
       <Help>To configure the number of beeps per second. Every beep is fixed about 10ms.</Help>
     </Value>
-
-    <Value type="byte" genre="config" instance="1" index="5" label="The Mode" value="1">
+    <Value genre="config" index="5" instance="1" label="The Mode" type="byte" value="1">
       <Help>To configure the operating mode. If any mode other then 3, that value will be reported after a get but will be handled in SW as mode 1.</Help>
       <Item label="Mode 1: Normal operating mode." value="1"/>
       <Item label="Mode 3: Z-Wave chip is always on to request e.g. version or manufacturer id." value="3"/>
     </Value>
-
-	<Value type="byte" genre="config" instance="1" index="6" label="RFID circuit startup time" value="100">
-		<Help>The time (*10 ms) that the RFID circuit is started after home or away is pressed (default 100 = 100*10ms=1s)</Help>
-	</Value>
-
+    <Value genre="config" index="6" instance="1" label="RFID circuit startup time" type="byte" value="100">
+      <Help>The time (*10 ms) that the RFID circuit is started after home or away is pressed (default 100 = 100*10ms=1s)</Help>
+    </Value>
   </CommandClass>
-  
   <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
-  <CommandClass id="113" getsupported="false" />
-
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="99">
+    <Compatibility>
+      <ExposeRawUserCodes>true</ExposeRawUserCodes>
+    </Compatibility>
+  </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Group 1" />
+      <Group index="1" label="Group 1" max_associations="5"/>
     </Associations>
   </CommandClass>
-
 </Product>
