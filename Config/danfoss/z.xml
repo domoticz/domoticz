@@ -1,8 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0002:0003:0005</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/danfoss/z.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0005">https://products.z-wavealliance.org/products/932/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://heating.consumers.danfoss.com/xxTypex/585379.html</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0005">014G0013</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0005">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Devolo Connect</MetaDataItem>
+    <MetaDataItem name="Description">Electronic radiator thermostat</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/932/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/967/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1035/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1258/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0005">https://products.z-wavealliance.org/products/1035/</MetaDataItem>
+    <MetaDataItem id="0004" name="Identifier" type="0005">014G0013</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0005">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0175" name="ZWProductPage" type="0005">https://products.z-wavealliance.org/products/1258/</MetaDataItem>
+    <MetaDataItem id="0175" name="FrequencyName" type="0005">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0175" name="Identifier" type="0005">014G0801</MetaDataItem>
+  </MetaData>
   <!-- http://www.popp.eu/wp-content/uploads/2016/07/Manual_Thermostat_POPP_en.pdf -->
   <!-- COMMAND_CLASS_BASIC does not respond to requests -->
-  <CommandClass id="32" action="remove" />
+  <CommandClass action="remove" id="32"/>
   <!-- This thermostat's setpoint descriptions are 0 based -->
-  <CommandClass id="67" base="0" override_precision="2" />
+  <CommandClass id="67">
+    <Compatibility>
+      <OverridePrecision>2</OverridePrecision>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
 </Product>

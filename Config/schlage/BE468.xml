@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<CommandClass id="112">
 		<Value type="list" genre="config" index="3" label="Beeper" min="0" max="255" size="1" value="255">
 			<Help>

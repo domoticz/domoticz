@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
   <!--
   Coolcam NAS-PD01ZE Motion Sensor (PIR)
   http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1920/Motion%20Detector%20User%20Guide%20EU%20V3.3.pdf

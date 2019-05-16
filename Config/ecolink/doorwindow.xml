@@ -1,16 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Ecolink Door Window Sensor (DWZWAVE2.5-ECO)
 http://products.z-wavealliance.org/products/1498
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Basic set as report-->
-	<CommandClass id="32" setasreport="true"/>    
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Basic Report"/>
-        </Associations>
-    </CommandClass>
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014A:0002:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ecolink/doorwindow.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1498/</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Ecolink Door Window Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Ecolink Z-Wave Door/Window Sensor
+
+-Z-Wave Plus certified
+-Frequency 908.42MHz
+-Range up to 100 feet
+-Battery life up to 3 years with 50 openings/closing per day
+-CR123A Lithium battery
+-Input on the sensor for non-powered external contact
+-BOTH brown and white cases included in each box</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0001">DWZWAVE2.5-ECO</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/790/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1498/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1498/D.W. Zwave Manual R1.04.docx</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">If sensor is sleeping, remove the cover to wake up.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Once the controller is in inclusion mode, either remove the battery isolation tab, OR insert the battery to power up the sensor.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Once the controller is in exclusion mode, either remove the battery isolation tab, OR insert the battery to power up the sensor.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To restore this sensor to factory default settings, follow the instructions in the manual to exclude this sensor from the Z-Wave network. Upon completion of removal from the network the sensor will restore itself to factory default settings automatically.  Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+  </MetaData>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Refresh Battery Level on wakeup-->
+  <CommandClass id="128">
+    <Compatibility>
+      <RefreshOnWakeup>true</RefreshOnWakeup>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

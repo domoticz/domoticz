@@ -14,7 +14,9 @@ return {
 			adapterManager.addDummyMethod(device, 'pause')
 			adapterManager.addDummyMethod(device, 'setVolume')
 			adapterManager.addDummyMethod(device, 'startPlaylist')
-            adapterManager.addDummyMethod(device, 'playFavorites')
+			adapterManager.addDummyMethod(device, 'playFavorites')
+			adapterManager.addDummyMethod(device, 'volumeUp')
+			adapterManager.addDummyMethod(device, 'volumeDown')
 		end
 		return res
 	end,
@@ -40,7 +42,7 @@ return {
 		end
 
 		function device.setVolume(value)
-            value = tonumber(value)
+			value = tonumber(value)
 
 			if (value < 0 or value > 100) then
 				utils.log('Volume must be between 0 and 100. Value = ' .. tostring(value), utils.LOG_ERROR)
@@ -54,13 +56,24 @@ return {
 		end
 
 		function device.playFavorites(position)
-            position = tonumber(position)
+			position = tonumber(position)
 
 			if (position == nil) then
 				position = 0
 			end
 
 			return TimedCommand(domoticz, device.name, 'Play Favorites ' .. tostring(position), 'updatedevice', device.state)
+		end
+
+		function device.volumeDown()
+			local url = domoticz.settings['Domoticz url'] ..  "/json.htm?type=command&param=lmsmediacommand&action=VolumeDown" ..
+					   '&idx=' .. device.id
+			return domoticz.openURL(url)
+		end
+
+		function device.volumeUp()
+			local url = domoticz.settings['Domoticz url'] ..  "/json.htm?type=command&param=lmsmediacommand&action=VolumeUp" .. '&idx=' .. device.id
+			return domoticz.openURL(url)
 		end
 
 	end

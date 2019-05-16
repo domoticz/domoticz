@@ -3,7 +3,7 @@
 Zooz ZEN27 S2 Dimmer Wall Switch
 https://products.z-wavealliance.org/products/3148
  -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="list" genre="config" index="1" label="Paddle Control" size="1" min="0" max="1" value="0">
@@ -19,7 +19,7 @@ https://products.z-wavealliance.org/products/3148
             <Item label="Always On" value="3"/>
         </Value>
         <Value type="list" genre="config" index="3" label="Enable Auto Turn-Off Timer" size="1" min="0" max="1" value="0">
-            <Help> </Help>
+            <Help></Help>
             <Item label="Disabled" value="0"/>
             <Item label="Enabled" value="1"/>
         </Value>
@@ -27,7 +27,7 @@ https://products.z-wavealliance.org/products/3148
             <Help>Time, in minutes, for auto-off timer delay.</Help>
         </Value>
         <Value type="list" genre="config" index="5" label="Enable Auto Turn-On Timer" size="1" min="0" max="1" value="0">
-            <Help> </Help>
+            <Help></Help>
             <Item label="Disabled" value="0"/>
             <Item label="Enabled" value="1"/>
         </Value>
@@ -40,14 +40,14 @@ https://products.z-wavealliance.org/products/3148
             <Item label="ON" value="1"/>
             <Item label="Restore" value="2"/>
         </Value>
-        <Value type="short" genre="config" index="9" label="Ramp Rate Control" size="2" min="1" max="99" value="99" units="seconds">
-            <Help>Time, in seconds, for ramp rate.</Help>
+        <Value type="byte" genre="config" index="9" label="Ramp Rate Control" size="1" min="1" max="99" value="99" units="seconds">
+            <Help>Adjust the ramp rate for your dimmer (fade-in / fade-out effect for on / off operation). Values correspond to the number of seconds it take for the dimmer to reach full brightness or turn off when operated manually.</Help>
         </Value>
-        <Value type="short" genre="config" index="10" label="Minimum Brightness" size="2" min="1" max="99" value="99" units="%">
-            <Help> </Help>
+        <Value type="byte" genre="config" index="10" label="Minimum Brightness" size="1" min="1" max="99" value="99" units="%">
+            <Help>Set the minimum brightness level for your dimmer. You won't be able to dim the light below the set value.</Help>
         </Value>
-        <Value type="short" genre="config" index="11" label="Maximum Brightness" size="2" min="1" max="99" value="99" units="%">
-            <Help> </Help>
+        <Value type="byte" genre="config" index="11" label="Maximum Brightness" size="1" min="1" max="99" value="99" units="%">
+            <Help> Set the maximum brightness level for your dimmer. You won't be able to add brightness to the light beyond the set value. Note: if Parameter 12 is set to value "Full", Parameter 11 is automatically disabled.</Help>
         </Value>
         <Value type="list" genre="config" index="12" label="Double Tap Function" size="1" min="0" max="1" value="0">
             <Help>Double Tap action.  When set to Full, turns light on to 100%.  If set to Maximum Level, turns light on to % set in Parameter 11.</Help>

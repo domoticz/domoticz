@@ -29,14 +29,16 @@
 #define _CentralScene_H
 
 #include "command_classes/CommandClass.h"
+#include "TimerThread.h"
 
 namespace OpenZWave
 {
 	class ValueByte;
 
 	/** \brief Implements COMMAND_CLASS_CENTRAL_SCENE (0x5B), a Z-Wave device command class.
+	 *  \ingroup CommandClass
 	 */
-	class CentralScene: public CommandClass
+	class CentralScene: public CommandClass, private Timer
 	{
 	public:
 		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new CentralScene( _homeId, _nodeId ); }
@@ -57,6 +59,10 @@ namespace OpenZWave
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
 		/** \brief Create Default Vars for this CC */
 		void CreateVars( uint8 const _instance );
+		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
+		bool RequestValue( uint32 const _requestFlags, uint16 const _what, uint8 const _instance, Driver::MsgQueue const _queue );
+		bool SetValue( Value const& _value);
+	private:
 		/**
 		 * Creates the ValueIDs for the keyAttributes
 		 * @param identical
@@ -64,14 +70,12 @@ namespace OpenZWave
 		 * @param sceneNumber
 		 * @return
 		 */
-		void createSupportedKeyAttributesValues(uint8 keyAttributes, uint8 sceneNumber, uint8 index, uint8 instance);
-		void ReadXML( TiXmlElement const* _ccElement	);
-		void WriteXML( TiXmlElement* _ccElement );
-		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		bool RequestValue( uint32 const _requestFlags, uint8 const _what, uint8 const _instance, Driver::MsgQueue const _queue );
-	private:
+		void createSupportedKeyAttributesValues(uint8 keyAttributes, uint8 sceneNumber, uint8 instance);
+		void ClearScene(uint32 sceneID);
 		CentralScene( uint32 const _homeId, uint8 const _nodeId );
-		int32 m_scenecount;
+		bool m_slowrefresh;
+		uint8 m_sequence;
+		std::map<uint32, uint32> m_TimersSet;
 	};
 
 } // namespace OpenZWave

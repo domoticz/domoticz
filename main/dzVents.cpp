@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.h" 
 #include "mainworker.h"
 #include "SQLHelper.h"
 #include "localtime_r.h"
@@ -10,13 +10,13 @@
 #include <inttypes.h>
 #include "../webserver/Base64.h"
 
-extern std::string szUserDataFolder, szWebRoot, szStartupFolder;
+extern std::string szUserDataFolder, szWebRoot, szStartupFolder, szAppVersion;
 extern http::server::CWebServerHelper m_webservers;
 
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.12")
+	m_version("2.4.20")
 {
 	m_bdzVentsExist = false;
 }
@@ -90,11 +90,15 @@ void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSys
 	lua_setglobal(lua_state, "securityupdates");
 }
 
-void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items)
 {
 	int index = 1;
-	int statusCode;
-
+	int statusCode = 0;
+	
+	std::string protocol;
+	std::string statusText;
+	
+	
 	lua_createtable(lua_state, 0, 0);
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); ++itt)
@@ -104,28 +108,55 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEven
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
 			lua_pushstring(lua_state, "headers");
-			lua_createtable(lua_state, (int)itt->vData.size(), 0);
-			if (itt->vData.size() > 0)
+			lua_createtable(lua_state, (int)itt->vData.size() + 2, 0); // status is split into 3 parts
+			if (!itt->vData.empty())
 			{
 				std::vector<std::string>::const_iterator itt2;
-				for (itt2 = itt->vData.begin(); itt2 != itt->vData.end() - 1; ++itt2)
+				for (itt2 = itt->vData.begin(); itt2 != itt->vData.end(); ++itt2)
 				{
-					size_t pos = (*itt2).find(": ");
+					std::string header = (*itt2);
+
+					size_t pos = header.find(": ");
 					if (pos != std::string::npos)
 					{
-						lua_pushstring(lua_state, (*itt2).substr(0, pos).c_str());
-						lua_pushstring(lua_state, (*itt2).substr(pos + 2).c_str());
+						lua_pushstring(lua_state, header.substr(0, pos).c_str());
+						lua_pushstring(lua_state, header.substr(pos + 2).c_str());
 						lua_rawset(lua_state, -3);
 					}
+					else
+					{
+						if (header.find("HTTP/") == 0)
+						{
+							std::vector<std::string> results;
+							StringSplit(header, " ", results);
+							if (results.size() >= 2)
+							{
+								pos = header.find(results[0]);
+								protocol = header.substr(0, pos + results[0].size());
+								statusCode = atoi(results[1].c_str());
+								if (results.size() >= 3)
+								{
+									statusText = header.substr(header.find(results[2]));
+								}
+								else
+								{
+									statusText = ((statusCode >= 200) && (statusCode <= 299)) ? "OK" : "No reason returned!";
+								}
+							}
+						}
+					}
 				}
-				// last item in vector is always the status code
-				itt2 = itt->vData.end() - 1;
-				std::stringstream ss(*itt2);
-				ss >> statusCode;
 			}
+			lua_rawset(lua_state, -3); //end of table
+
+			lua_pushstring(lua_state, "protocol");
+			lua_pushstring(lua_state, protocol.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "statusText");
+			lua_pushstring(lua_state, statusText.c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "statusCode");
-			lua_pushnumber(lua_state, (lua_Number)statusCode);
+			lua_pushnumber(lua_state, statusCode);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "data");
 			lua_pushstring(lua_state, itt->sValue.c_str());
@@ -184,12 +215,28 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 				delayTime = static_cast<float>(itt->iValue);
 		}
 	}
+	
 	if (URL.empty())
 	{
 		_log.Log(LOG_ERROR, "dzVents: No URL supplied!");
 		return false;
 	}
+	
+	// Handle situation where WebLocalNetworks is not open without password for dzVents
+	if (URL.find("127.0.0.1") != std::string::npos)
+	{
+		std::string allowedNetworks;
+		int rnvalue = 0;
+		m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+		if (allowedNetworks.find("127.0.0.") == std::string::npos)
+		{
+			_log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
+			_log.Log(LOG_ERROR, "dzVents: check dzVents wiki (look for 'Using dzVents with Domoticz')");
+			return false;
+		}
+	}
 
+	
 	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
 	if (!method.empty() && method == "POST")
 		eMethod = HTTPClient::HTTP_METHOD_POST;
@@ -237,6 +284,62 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 		return false;
 
 	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger), false);
+	return true;
+}
+
+bool CdzVents::TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
+{
+	std::string sID, sValue1, sValue2, sValue3 ;
+	float delayTime = 1;
+	int rnvalue = 0;
+
+	m_sql.GetPreferencesVar("IFTTTEnabled", rnvalue);
+	if (rnvalue == 0)
+	{
+		_log.Log(LOG_ERROR, "dzVents: IFTTT not enabled" );
+		return false;
+	}
+
+	std::vector<_tLuaTableValues>::const_iterator itt;
+	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); ++itt)
+	{
+		if (itt->type == TYPE_INTEGER )
+		{
+			if (itt->name == "_random")
+				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
+
+			else if (itt->name == "_after")
+				delayTime = static_cast<float>(itt->iValue);
+
+			else if (itt->name == "sID")
+				 sID = std::to_string(itt->iValue);
+
+			else if (itt->name == "sValue1")
+				sValue1 = std::to_string(itt->iValue);
+
+			else if (itt->name == "sValue2")
+				sValue2 = std::to_string(itt->iValue);
+
+			else if (itt->name == "sValue3")
+				sValue2 = std::to_string(itt->iValue);
+		}
+		else if (itt->type == TYPE_STRING)
+		{
+			if (itt->name == "sID")
+				sID = itt->sValue;
+
+			else if (itt->name == "sValue1")
+				sValue1 = itt->sValue;
+
+			else if (itt->name == "sValue2")
+				sValue2 = itt->sValue;
+
+			else if (itt->name == "sValue3")
+				sValue3 = itt->sValue;
+		}
+	}
+
+	m_sql.AddTaskItem(_tTaskItem::SendIFTTTTrigger(delayTime, sID, sValue1, sValue2, sValue3));
 	return true;
 }
 
@@ -325,6 +428,9 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 
 		else if (lCommand == "Cancel")
 			scriptTrue = CancelItem(lua_state, vLuaTable);
+		
+		else if (lCommand == "TriggerIFTTT")
+			scriptTrue = TriggerIFTTT(lua_state, vLuaTable);
 	}
 	return scriptTrue;
 }
@@ -470,6 +576,39 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_pushstring(lua_state, "dzVents_log_level");
 	lua_pushnumber(lua_state, (lua_Number)rnvalue);
 	lua_rawset(lua_state, -3);
+
+	std::string sTitle;
+	m_sql.GetPreferencesVar("Title", sTitle);
+	lua_pushstring(lua_state, "domoticz_title");
+	lua_pushstring(lua_state, sTitle.c_str());
+	lua_rawset(lua_state, -3);
+	
+	// Only when webLocalNetworks has local network defined
+	// Add latitude / longitude to table
+	std::string allowedNetworks;
+	rnvalue = 0;
+	m_sql.GetPreferencesVar("WebLocalNetworks",rnvalue, allowedNetworks);
+	if (allowedNetworks.find("127.0.0.") != std::string::npos)
+	{
+		std::string location;
+		std::vector<std::string> strarray;
+		if (m_sql.GetPreferencesVar("Location", rnvalue, location))
+			StringSplit(location, ";", strarray);
+		if (strarray.size() == 2)
+		{
+			// Only when location entered in the settings
+			// Add to table
+			std::string Latitude = strarray[0];
+			std::string Longitude = strarray[1];
+			lua_pushstring(lua_state, "longitude");
+			lua_pushstring(lua_state, Longitude.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "latitude");
+			lua_pushstring(lua_state, Latitude.c_str());
+			lua_rawset(lua_state, -3);
+		}
+	}
+
 	lua_pushstring(lua_state, "domoticz_listening_port");
 	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
 	lua_rawset(lua_state, -3);
@@ -484,6 +623,12 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "systemUptime");
 	lua_pushnumber(lua_state, (lua_Number)SystemUptime());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "domoticz_version");
+	lua_pushstring(lua_state, szAppVersion.c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "dzVents_version");
+	lua_pushstring(lua_state,(GetVersion().c_str()));
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 }
@@ -866,6 +1011,35 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_settable(lua_state, -3); // end entry
 
 		index++;
+	}
+
+	// Now do the cameras.
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, Name FROM Cameras where enabled = '1' ORDER BY ID ASC");
+	if (!result.empty())
+	{
+		for (const auto & itt : result)
+		{
+			std::vector<std::string> sd = itt;
+			lua_pushnumber(lua_state, (lua_Number)index);
+			lua_createtable(lua_state, 1, 3);
+
+			lua_pushstring(lua_state, "name");
+			lua_pushstring(lua_state, sd[1].c_str());
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "id");
+			lua_pushnumber(lua_state, atoi(sd[0].c_str()));
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "baseType");
+			lua_pushstring(lua_state, "camera");
+			lua_rawset(lua_state, -3);
+
+			lua_settable(lua_state, -3); // end entry
+
+			index++;
+		}
 	}
 
 	lua_setglobal(lua_state, "domoticzData");

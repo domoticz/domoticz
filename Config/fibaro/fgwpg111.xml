@@ -1,216 +1,191 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!--
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!--
     Fibaro FGWPG111 Wall Plug
     https://products.z-wavealliance.org/products/2899
     https://products.z-wavealliance.org/products/2854
     -->
 
     <!-- COMMAND_CLASS_BASIC supported -->
-    <CommandClass id="32" action="add" request_flags="5"/>
-
-    <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="2" label="Remember device status after a power failure" value="1" size="1">
-            <Help>This parameter determines how the Wall Plug will react in the event of power supply failure (e.g. taking out from the electrical outlet).
+  <CommandClass action="add" id="32">
+    <Compatibility/>
+  </CommandClass>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" instance="1" label="Remember device status after a power failure" size="1" type="list" value="1">
+      <Help>This parameter determines how the Wall Plug will react in the event of power supply failure (e.g. taking out from the electrical outlet).
                 After the power supply is back on, the Wall Plug can be restored to previous state or remain switched off.
                 This parameter is ignored in Always On mode - the device automatically turns ON after plugging it into the socket.
                 Default setting: 1
             </Help>
-            <Item label="Device remains switched off" value="0"/>
-            <Item label="Device restores the state from before the power failure" value="1"/>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="3" label="Overload safety switch" value="0" min="0" max="30000" size="2">
-            <Help>This function allows to turning off the controlled device in case of exceeding the defined power.
+      <Item label="Device remains switched off" value="0"/>
+      <Item label="Device restores the state from before the power failure" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Overload safety switch" max="30000" min="0" size="2" type="short" value="0">
+      <Help>This function allows to turning off the controlled device in case of exceeding the defined power.
                 Controlled device can be turned back on via button or sending a control frame.
                 Available settings: 10 - 30000 (1,0W - 3000,0W step 0,1W).
                 Default setting: 0 (function inactive)
             </Help>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="11" label="Power reporting" value="15" min="0" max="100" size="1">
-            <Help>This parameter determines the minimum percentage change inactive power consumption (in relation to the previously reported) that will result in sending new power report.
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Power reporting" max="100" min="0" size="1" type="byte" value="15">
+      <Help>This parameter determines the minimum percentage change inactive power consumption (in relation to the previously reported) that will result in sending new power report.
                 Available settings: 1-100. 0 - power reports inactive.
                 Default Setting: 15 (%)
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="12" label="Energy reporting threshold" value="10" min="0" max="500" size="2">
-            <Help>This parameter determines the minimum change in energy consumption (in relation to the previously reported), that will result in sending a new report.
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Energy reporting threshold" max="500" min="0" size="2" type="short" value="10">
+      <Help>This parameter determines the minimum change in energy consumption (in relation to the previously reported), that will result in sending a new report.
                 Available settings: 1-500 (0,01kWh - 5kWh). 0 - energy reports inactive.
                 Default Setting: 10 (0,1 kWh)
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="13" label="Periodic power reporting" min="0" max="32400" value="3600" size="2">
-            <Help>This parameter defines time period between reports sent when changes in power load have not been record if changes are smaller than defined in parameter 11.
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Periodic power reporting" max="32400" min="0" size="2" type="short" value="3600">
+      <Help>This parameter defines time period between reports sent when changes in power load have not been record if changes are smaller than defined in parameter 11.
                 By default reports are sent every hour.
                 Available settings: 0 - 32400 (s). 0 - periodic reports inactive.
                 Default setting: 3600
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="14" label="Periodic energy reporting" min="0" max="32400" value="3600" size="2">
-            <Help>This parameter defines time period between reports sent when changes in power load have not been recorded or if changes are smaller than in paramater 11.
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Periodic energy reporting" max="32400" min="0" size="2" type="short" value="3600">
+      <Help>This parameter defines time period between reports sent when changes in power load have not been recorded or if changes are smaller than in paramater 11.
                 By default reports are sent every hour.
                 Available settings: 0 - 32400 (s). 0 - periodic reports inactive.
                 Default setting: 3600
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="15" label="Measuring energy consumed by the Wall Plug itself" value="0" size="1">
-            <Help>This parameter determines whether power metering should include the amount of power consumed by the Wall Plug itself.
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Measuring energy consumed by the Wall Plug itself" size="1" type="list" value="0">
+      <Help>This parameter determines whether power metering should include the amount of power consumed by the Wall Plug itself.
                 Results are being added to the value of power consumed by controlled device.
                 Default setting: 0 Inactive
             </Help>
-            <Item label="Inactive" value="0"/>
-            <Item label="Active" value="1"/>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="21" label="UP value association group 3" value="500" min="100" max="30000" size="2">
-            <Help>Upper power threshold, used in parameter 23. Up value cannot be lower than a value specified in parameter 22.
+      <Item label="Inactive" value="0"/>
+      <Item label="Active" value="1"/>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="UP value association group 3" max="30000" min="100" size="2" type="short" value="500">
+      <Help>Upper power threshold, used in parameter 23. Up value cannot be lower than a value specified in parameter 22.
                 Available settings: 100 - 30000 (10,0W - 30000,0W).
                 Default setting: 500 (50W)
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="22" label="DOWN value association group 3" value="300" min="0" max="29900" size="2">
-            <Help>Lower power threshold, used in parameter 23.
+    </Value>
+    <Value genre="config" index="22" instance="1" label="DOWN value association group 3" max="29900" min="0" size="2" type="short" value="300">
+      <Help>Lower power threshold, used in parameter 23.
                 DOWN value cannot be higher than a value specified in parameter 21.
                 Available settings: 0 - 29900 (0,0W - 2990,0W step 0,1W).
                 Default setting: 300 (30W)
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="23" label="Controlling association group 3" value="3" size="1">
-            <Help>This parameter defines the way that 3rd association group devices are controlled.
+    </Value>
+    <Value genre="config" index="23" instance="1" label="Controlling association group 3" size="1" type="list" value="3">
+      <Help>This parameter defines the way that 3rd association group devices are controlled.
                 Depends on the actual measured power(according to parameters 21 and 22 settings).
                 Default setting: 3
             </Help>
-            <Item label="Send frame (with value set in parameter 26) only if power exceeded value of parameter 21 turn the associated devices ON, once the power drops below DOWN value (parameter 21)"
-                  value="1"/>
-            <Item label="Send frame (with value set in parameter 27) only if power dropped below value of paramater 22"
-                  value="2"/>
-            <Item label="Send frame in both cases" value="3"/>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="24" label="Switch ON value - association group 2" value="255" min="0" max="255" size="2">
-            <Help>The value of BASIC SET command frame sent to the devices associated in 2nd group On/Off (Button) when turning the device ON using the button.
+      <Item label="Send frame (with value set in parameter 26) only if power exceeded value of parameter 21 turn the associated devices ON, once the power drops below DOWN value (parameter 21)" value="1"/>
+      <Item label="Send frame (with value set in parameter 27) only if power dropped below value of paramater 22" value="2"/>
+      <Item label="Send frame in both cases" value="3"/>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Switch ON value - association group 2" max="255" min="0" size="2" type="short" value="255">
+      <Help>The value of BASIC SET command frame sent to the devices associated in 2nd group On/Off (Button) when turning the device ON using the button.
                 Available settings: 0-99 or 255.
                 Default setting: 255
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="25" label="Switch OFF value - association group 2" value="255" min="0" max="255" size="2">
-            <Help>The value of BASIC SET command frame sent to the devices associated in 2nd group On/Off (Button) when turning the device OFF using the button.
+    </Value>
+    <Value genre="config" index="25" instance="1" label="Switch OFF value - association group 2" max="255" min="0" size="2" type="short" value="255">
+      <Help>The value of BASIC SET command frame sent to the devices associated in 2nd group On/Off (Button) when turning the device OFF using the button.
                 Available settings: 0-99 or 255.
                 Default setting: 0
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="26" label="THRESHOLD UP value - association group 3" value="255" min="0" max="255" size="2">
-            <Help>The value of BASIC SET command frame sent to the devices associated in 3rd group On/Off (Power) if power exceeded value of parameter 21.
+    </Value>
+    <Value genre="config" index="26" instance="1" label="THRESHOLD UP value - association group 3" max="255" min="0" size="2" type="short" value="255">
+      <Help>The value of BASIC SET command frame sent to the devices associated in 3rd group On/Off (Power) if power exceeded value of parameter 21.
                 Available settings: 0-99 or 255.
                 Default setting: 255
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="27" label="THRESHOLD DOWN value - association group 3" value="255" min="0" max="255" size="2">
-            <Help>The value of BASIC SET command frame sent to the devices associated in 3rd group On/Off (Power) if power dropped below value of parameter 22.
+    </Value>
+    <Value genre="config" index="27" instance="1" label="THRESHOLD DOWN value - association group 3" max="255" min="0" size="2" type="short" value="255">
+      <Help>The value of BASIC SET command frame sent to the devices associated in 3rd group On/Off (Power) if power dropped below value of parameter 22.
                 Available settings: 0-99 or 255.
                 Default setting: 0
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="30" label="Active Alarms" value="63" min="1" max="63" size="1">
-            <Help>Define Z-Wave network alarms to which the Wall Plug will respond.</Help>
-            <Item label="General alarm" value="1"/>
-            <Item label="Smoke alarm" value="2"/>
-            <Item label="CO alarm" value="4"/>
-            <Item label="CO2 alarm" value="8"/>
-            <Item label="High temperature alarm" value="16"/>
-            <Item label="Flood alarm" value="32"/>
-            <Item label="All alarms" value="63"/>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="31" label="Response to alarm frames" value="0" min="0" max="50" size="1">
-            <Help>This parameter defines how the Wall Plug will respond to alarms (device's status change).
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Active Alarms" max="63" min="1" size="1" type="list" value="63">
+      <Help>Define Z-Wave network alarms to which the Wall Plug will respond.</Help>
+      <Item label="General alarm" value="1"/>
+      <Item label="Smoke alarm" value="2"/>
+      <Item label="CO alarm" value="4"/>
+      <Item label="CO2 alarm" value="8"/>
+      <Item label="High temperature alarm" value="16"/>
+      <Item label="Flood alarm" value="32"/>
+      <Item label="All alarms" value="63"/>
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Response to alarm frames" max="50" min="0" size="1" type="byte" value="0">
+      <Help>This parameter defines how the Wall Plug will respond to alarms (device's status change).
                 In case of values 1 or 2 the Wall Plug is operating normally and LED frame signals an alarm through time defined in parameter 32 or until the alarm is cancelled.
                 In case of values 5 to 50 the Wall Plug does not report status change, power changes, ignores BASIC SET command frames.
                 After time defined in parameter 32 or after the alarm cancellation, connected device is set to the previous state.
                 0 - no reaction 1-turn connected device on 2-turn connected device off 5-50(0,5-50,0s step 0,1s)-cyclically change device state with set period.
                 Default setting:0-no reaction
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="32" label="Alarm state duration" value="600" min="1" max="32400" size="2">
-            <Help>This parameter specifies the duration of alarm state.
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Alarm state duration" max="32400" min="1" size="2" type="short" value="600">
+      <Help>This parameter specifies the duration of alarm state.
                 If a device sending an alarm frame through the Z-Wave network sets alarm duration as well, this settings are ignored.
                 Available settings 1-32400(s)
                 Default setting: 600
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="40" label="Power load for violet colour" value="30000" min="1000" max="30000" size="2">
-            <Help>This parameter determines maximum active power value, which when exceeded, causes the LED frame to flash violet. Function is active only when parameter 41 is set to 1 or 2.
+    </Value>
+    <Value genre="config" index="40" instance="1" label="Power load for violet colour" max="30000" min="1000" size="2" type="short" value="30000">
+      <Help>This parameter determines maximum active power value, which when exceeded, causes the LED frame to flash violet. Function is active only when parameter 41 is set to 1 or 2.
                 Available settings: 1000 - 30000 (100,0W - 3000,0W, step 0,1W).
                 Default setting: 30000 (3000W)
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="41" label="LED frame colour when controlled device is on" value="1" size="1">
-            <Help>When set to 1 or 2, LED frame colour will change depending on active power and parameter 40.
+    </Value>
+    <Value genre="config" index="41" instance="1" label="LED frame colour when controlled device is on" size="1" type="list" value="1">
+      <Help>When set to 1 or 2, LED frame colour will change depending on active power and parameter 40.
                 Other colours are set permanently and do not depend on power consumption
             </Help>
-            <Item label="Illumination turned off completely" value="0"/>
-            <Item label="Colour changes smoothly depending on active power" value="1"/>
-            <Item label="Colour changes in steps depending on active power" value="2"/>
-            <Item label="White illumination" value="3"/>
-            <Item label="Red illumination" value="4"/>
-            <Item label="Green illumination" value="5"/>
-            <Item label="Blue illumination" value="6"/>
-            <Item label="Yellow illumination" value="7"/>
-            <Item label="Cyan illumination" value="8"/>
-            <Item label="Magenta illumination" value="9"/>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="42" label="LED frame colour when controlled device is off" value="0" size="1">
-            <Help>This parameter defines the illumination colour after turning off.</Help>
-            <Item label="illumination turned off completely" value="0"/>
-            <Item label="LED frame is illuminated with a colour corresponding to the last measured power, before the controlled device was turned off" value="1"/>
-            <Item label="White illumination" value="3"/>
-            <Item label="Red illumination" value="4"/>
-            <Item label="Green illumination" value="5"/>
-            <Item label="Blue illumination" value="6"/>
-            <Item label="Yellow illumination" value="7"/>
-            <Item label="Cyan illumination" value="8"/>
-            <Item label="Magenta illumination" value="9"/>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="43" label="LED frame colour at the Z-Wave network alarm detection" value="2" size="1">
-            <Help>This parameter defines the illumination colour in case of Z-Wave alarm.</Help>
-            <Item label="Illumination turned off completely" value="0"/>
-            <Item label="No change in colour. LED frame colour is determined by settings of parameters 41 or 42" value="1"/>
-            <Item label="LED frame flashes red / blue / white" value="2"/>
-            <Item label="White illumination" value="3"/>
-            <Item label="Red illumination" value="4"/>
-            <Item label="Green illumination" value="5"/>
-            <Item label="Blue illumination" value="6"/>
-            <Item label="Yellow illumination" value="7"/>
-            <Item label="Cyan illumination" value="8"/>
-            <Item label="Magenta illumination" value="9"/>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="3">
-            <Group index="1" max_associations="1" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="BasicSet forward relay status on local Button event"/>
-            <Group index="3" max_associations="5" label="BasicSet base on Plug power"/>
-        </Associations>
-    </CommandClass>
-
+      <Item label="Illumination turned off completely" value="0"/>
+      <Item label="Colour changes smoothly depending on active power" value="1"/>
+      <Item label="Colour changes in steps depending on active power" value="2"/>
+      <Item label="White illumination" value="3"/>
+      <Item label="Red illumination" value="4"/>
+      <Item label="Green illumination" value="5"/>
+      <Item label="Blue illumination" value="6"/>
+      <Item label="Yellow illumination" value="7"/>
+      <Item label="Cyan illumination" value="8"/>
+      <Item label="Magenta illumination" value="9"/>
+    </Value>
+    <Value genre="config" index="42" instance="1" label="LED frame colour when controlled device is off" size="1" type="list" value="0">
+      <Help>This parameter defines the illumination colour after turning off.</Help>
+      <Item label="illumination turned off completely" value="0"/>
+      <Item label="LED frame is illuminated with a colour corresponding to the last measured power, before the controlled device was turned off" value="1"/>
+      <Item label="White illumination" value="3"/>
+      <Item label="Red illumination" value="4"/>
+      <Item label="Green illumination" value="5"/>
+      <Item label="Blue illumination" value="6"/>
+      <Item label="Yellow illumination" value="7"/>
+      <Item label="Cyan illumination" value="8"/>
+      <Item label="Magenta illumination" value="9"/>
+    </Value>
+    <Value genre="config" index="43" instance="1" label="LED frame colour at the Z-Wave network alarm detection" size="1" type="list" value="2">
+      <Help>This parameter defines the illumination colour in case of Z-Wave alarm.</Help>
+      <Item label="Illumination turned off completely" value="0"/>
+      <Item label="No change in colour. LED frame colour is determined by settings of parameters 41 or 42" value="1"/>
+      <Item label="LED frame flashes red / blue / white" value="2"/>
+      <Item label="White illumination" value="3"/>
+      <Item label="Red illumination" value="4"/>
+      <Item label="Green illumination" value="5"/>
+      <Item label="Blue illumination" value="6"/>
+      <Item label="Yellow illumination" value="7"/>
+      <Item label="Cyan illumination" value="8"/>
+      <Item label="Magenta illumination" value="9"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="BasicSet forward relay status on local Button event" max_associations="5"/>
+      <Group index="3" label="BasicSet base on Plug power" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- https://products.z-wavealliance.org/products/1756 -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="4">
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="button" index="2" genre="config" label="Clear Pulse Meter Counts" units="" min="0" max="255" value="0" write_only="true">

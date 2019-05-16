@@ -302,7 +302,8 @@ private:
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_Cameras(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_Cameras(WebEmSession& session, const request& req, Json::Value& root);
+	void RType_CamerasUser(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Users(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);
@@ -347,7 +348,8 @@ private:
 	void Cmd_ZWaveCancel(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ApplyZWaveNodeConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveStateCheck(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_ZWaveRequestNodeConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ZWaveRequestNodeConfig(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_ZWaveRequestNodeInfo(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_ZWaveReceiveConfigurationFromOtherController(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveSendConfigurationToSecondaryController(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveTransferPrimaryRole(WebEmSession & session, const request& req, Json::Value &root);

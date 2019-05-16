@@ -2,7 +2,7 @@
 <!--
 ZW162 Doorbell 6
 -->
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
   <!--
   Aeotec Doorbell 6
   https://aeotec.freshdesk.com/helpdesk/attachments/6073850754
@@ -179,6 +179,19 @@ ZW162 Doorbell 6
       <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
     </Value>
   </CommandClass>
+
+  <CommandClass id="96"> 
+    <Instance index="1" label="Browse" />
+    <Instance index="2" label="Tampering" />
+    <Instance index="3" label="Doorbell 1" />
+    <Instance index="4" label="Doorbell 2" />
+    <Instance index="5" label="Doorbell 3" />
+    <Instance index="6" label="Enviroment" />
+    <Instance index="7" label="Security" />
+    <Instance index="8" label="Emergency" />
+    <Instance index="9" label="Misc" />
+  </CommandClass>
+
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="9">

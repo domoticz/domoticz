@@ -1,20 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" genre="config" index="99" label="Fault Restore Report" size="1" min="0" max="255" value="255">
-			<Help>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/011F:0002:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ingersoll/dwzwave1.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/647/</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0001">Schlage_DWZWAVE1</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.nexiahome.com/Products/ProductDetail.aspx?model=043156955534</MetaDataItem>
+    <MetaDataItem name="Description">This sensor detects whether a door is open or closed and communicates with a Z-Wave gateway.Door window contacts should blend in with their environment and these contacts does just that by being one of the smallest in the industry. 
+
+Each sensor comes in standard white with an optional and included brown cover. This allows you to quickly change the color to best match the decor. It's designed to work as well or better than the original manufacturer models, uses a long life lithium battery and is compatible with major alarm panel manufacturers.</MetaDataItem>
+    <MetaDataItem name="Name">Schlage Home Door and Window Sensor</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/647/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="99" label="Fault Restore Report" max="255" min="0" size="1" type="list" value="255">
+      <Help>
 				Enable or disable Basic Sets of 0x00 on a fault restore to nodes in Group 2. Default = Enabled.
 			</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="Enabled" value="255"/>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-  	<CommandClass id="133">
-    		<Associations num_groups="2">
-      			<Group index="1" max_associations="1" label="Reports"/>
-      			<Group index="2" max_associations="3" label="Control"/>
-    		</Associations>
-  	</CommandClass>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Reports" max_associations="1"/>
+      <Group index="2" label="Control" max_associations="3"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" value="0" label="Paddle Control" units="" size="1" min="0" max="2" type="list">
+      <Help>Controls the on/off orientation of the rocker switch</Help>
+      <Item value="0" label="Upper paddle turns on"/>
+      <Item value="1" label="Upper paddle turns off"/>
+      <Item value="2" label="Both paddles toggle"/>
+    </Value>
+    <Value genre="config" index="2" value="0" label="LED Indicator Control" units="" size="1" min="0" max="3" type="list">
+      <Help>Control the LED indicator on switch</Help>
+      <Item value="0" label="LED on when switch is off"/>
+      <Item value="1" label="LED on when switch is on"/>
+      <Item value="2" label="LED is always off"/>
+      <Item value="3" label="LED is always on"/>
+    </Value>
+    <Value genre="config" index="3" value="0" label="Auto Turn-off Timer" units="" size="1" min="0" max="1 " type="list">
+      <Help>Use this parameter to enable or disable the auto turn-off timer function </Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Enabled"/>
+    </Value>
+    <Value genre="config" index="4" value="60" label="Timer-off Time" units="minutes" size="4" min="1" max="65535" type="int">
+      <Help>Use this parameter to set the time after which you want the switch to automatically turn off once it has been turned on. The number entered as value corresponds to the number of minutes</Help>
+    </Value>
+    <Value genre="config" index="5" value="0" label="Auto Turn-On Timer" units="" size="1" min="0" max="1 " type="list">
+      <Help>Use this parameter to enable or disable the auto turn-off timer function </Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Enabled"/>
+    </Value>
+    <Value genre="config" index="6" value="60" label="Timer-On Time" units="minutes" size="4" min="1" max="65535" type="int">
+      <Help>Use this parameter to set the time after which you want the switch to automatically turn on once it has been turned off. The number entered as value corresponds to the number of minutes</Help>
+    </Value>
+    <Value genre="config" index="8" value="2" label="On Off Status after Power Failure" units="" size="1" min="0" max="2" type="list">
+      <Help>Set the on off status for switch after power failure</Help>
+      <Item value="0" label="forced to OFF (regardless of state prior to power outage)"/>
+      <Item value="1" label="forced to ON (regardless of state prior to power outage)"/>
+      <Item value="2" label="remembers and restores on/off status after power failure"/>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="Group 2" max_associations="5" />
+    </Associations>
+  </CommandClass>
+
+</Product>

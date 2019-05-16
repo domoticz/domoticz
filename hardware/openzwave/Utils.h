@@ -107,9 +107,19 @@ namespace OpenZWave
 			Mutex* _ref;
 	};
 
+	string ozwdirname(string);
 
+	string intToString( int x );
 
+	const char* rssi_to_string(uint8 _data);
 } // namespace OpenZWave
+
+/* keep this outside of the namespace */
+#if (defined _WINDOWS || defined WIN32 || defined _MSC_VER) && (!defined MINGW && !defined __MINGW32__ && !defined __MINGW64__)
+#include <ctime>
+	struct tm *localtime_r(time_t *_clock, struct tm *_result);
+#endif
+
 
 #endif
 

@@ -112,7 +112,7 @@ void CTCPClient::handleWrite(const boost::system::error_code& error)
 
 #ifndef NOCLOUD
 /* shared server via proxy client class */
-CSharedClient::CSharedClient(CTCPServerIntBase *pManager, std::shared_ptr<http::server::CProxyClient> proxy, const std::string &token, const std::string &username) :
+CSharedClient::CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyClient *proxy, const std::string &token, const std::string &username) :
 	CTCPClientBase(pManager),
 	m_token(token)
 {

@@ -9,6 +9,7 @@
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -95,6 +96,9 @@ bool CWunderground::StopHardware()
 
 void CWunderground::Do_Work()
 {
+#ifdef DEBUG_WUNDERGROUNDR
+	GetMeterDetails();
+#endif
 	int sec_counter = 590;
 	_log.Log(LOG_STATUS, "Wunderground: Worker started...");
 
@@ -125,25 +129,104 @@ std::string CWunderground::GetForecastURL()
 {
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
+	sURL << "https://api.weather.com/v3/location/point?geocode=" << szLoc << "&language=en-US&format=json&apiKey=" << m_APIKey;
 	sURL << "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" << szLoc;
 	return sURL.str();
 }
 
+std::string CWunderground::GetWeatherStationFromGeo()
+{
+	std::string sValue;
+	int nValue;
+	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
+	{
+		std::vector<std::string> strarray;
+		StringSplit(sValue, ";", strarray);
+
+		if (strarray.size() == 2)
+		{
+			std::string Latitude = strarray[0];
+			std::string Longitude = strarray[1];
+
+			std::string sResult;
+#ifdef DEBUG_WUNDERGROUNDR
+			sResult = ReadFile("E:\\wu_location.json");
+#else
+			std::stringstream sURL;
+			sURL << "https://api.weather.com/v3/location/near?geocode=" << Latitude << "," << Longitude << "&product=pws&format=json&apiKey=" << m_APIKey;
+			bool bret;
+			std::string szURL = sURL.str();
+			bret = HTTPClient::GET(szURL, sResult);
+			if (!bret)
+			{
+				_log.Log(LOG_ERROR, "Wunderground: Error getting location/near result! (Check API key!)");
+				return "";
+			}
+#ifdef DEBUG_WUNDERGROUNDW
+			SaveString2Disk(sResult, "E:\\wu_location.json");
+#endif
+#endif
+			Json::Value root;
+
+			Json::Reader jReader;
+			bool ret = jReader.parse(sResult, root);
+			if ((!ret) || (!root.isObject()))
+			{
+				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result. Invalid data received! (Check Station ID!)");
+				return "";
+			}
+
+			bool bValid = true;
+			if (root["location"].empty() == true)
+			{
+				bValid = false;
+			}
+			else if (root["location"]["stationId"].empty())
+			{
+				bValid = false;
+			}
+			if (!bValid)
+			{
+				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result.Invalid data received, or no data returned!");
+				return "";
+			}
+			if (root["location"]["stationId"].size() > 0)
+			{
+				std::string szFirstStation = root["location"]["stationId"][0].asString();
+				return szFirstStation;
+			}
+			else
+				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result. No stations returned!");
+		}
+	}
+	return "";
+}
+
 void CWunderground::GetMeterDetails()
 {
+	if (m_Location.find(",") != std::string::npos)
+	{
+		std::string newLocation = GetWeatherStationFromGeo();
+		if (newLocation.empty())
+			return;
+		m_Location = newLocation;
+	}
+	if (m_Location.empty())
+		return;
+
 	std::string sResult;
 #ifdef DEBUG_WUNDERGROUNDR
 	sResult= ReadFile("E:\\wu.json");
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "http://api.wunderground.com/api/" << m_APIKey << "/conditions/q/" << szLoc << ".json";
+	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=m&apiKey=" << m_APIKey;
 	bool bret;
 	std::string szURL=sURL.str();
 	bret=HTTPClient::GET(szURL,sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR,"Wunderground: Error getting http data!");
+		_log.Log(LOG_ERROR,"Wunderground: Error getting http data! (Check API key!)");
 		return;
 	}
 #ifdef DEBUG_WUNDERGROUNDW
@@ -156,63 +239,22 @@ void CWunderground::GetMeterDetails()
 	bool ret=jReader.parse(sResult,root);
 	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");
+		_log.Log(LOG_ERROR,"WUnderground: Invalid data received! (Check Station ID!)");
 		return;
 	}
 
 	bool bValid = true;
-	if (root["response"].empty() == true)
+	if (root["observations"].empty() == true)
 	{
 		bValid = false;
 	}
-	else if (!root["response"]["error"].empty())
-	{
-		bValid = false;
-		if (!root["response"]["error"]["description"].empty())
-		{
-			_log.Log(LOG_ERROR, "WUnderground: Error: %s", root["response"]["error"]["description"].asString().c_str());
-			return;
-		}
-	}
-	else if (root["current_observation"].empty()==true)
-	{
-		bValid = false;
-		return;
-	}
-	else if (root["current_observation"]["temp_c"].empty() == true)
+	else if (root["observations"][0]["country"].empty())
 	{
 		bValid = false;
 	}
-	else if (m_bForceSingleStation && root["current_observation"]["station_id"].empty())
+	else if (m_Location.find(root["observations"][0]["stationID"].asString()) == std::string::npos)
 	{
 		bValid = false;
-	}
-	else if (m_bForceSingleStation && m_Location.find(root["current_observation"]["station_id"].asString()) == std::string::npos)
-	{
-		bValid = false;
-	}
-	else if (root["current_observation"]["observation_epoch"].empty() == true)
-	{
-		bValid = false;
-	}
-	else if (root["current_observation"]["local_epoch"].empty() == true)
-	{
-		bValid = false;
-	}
-	else
-	{
-		if (!m_bFirstTime)
-		{
-			time_t tlocal = static_cast<time_t>(atoll(root["current_observation"]["local_epoch"].asString().c_str()));
-			time_t tobserver = static_cast<time_t>(atoll(root["current_observation"]["observation_epoch"].asString().c_str()));
-			if (difftime(tlocal, tobserver) >= 1800)
-			{
-				//When we don't get any valid data in 30 minutes, we also stop using the values
-				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more than 30 minutes)");
-				return;
-			}
-		}
-		m_bFirstTime = false;
 	}
 	if (!bValid)
 	{
@@ -220,29 +262,36 @@ void CWunderground::GetMeterDetails()
 		return;
 	}
 
+	root = root["observations"][0];
+
+	if (!m_bFirstTime)
+	{
+		time_t tlocal = time(NULL);
+		time_t tobserver = (time_t)root["epoch"].asInt();
+		if (difftime(tlocal, tobserver) >= 1800)
+		{
+			//When we don't get any valid data in 30 minutes, we also stop using the values
+			_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more than 30 minutes)");
+			return;
+		}
+	}
+	m_bFirstTime = false;
+
 	std::string tmpstr;
 	float temp;
 	int humidity=0;
 	int barometric=0;
 	int barometric_forcast=baroForecastNoInfo;
 
+	temp=root["metric"]["temp"].asFloat();
 
-	temp=root["current_observation"]["temp_c"].asFloat();
-
-	if (root["current_observation"]["relative_humidity"].empty()==false)
+	if (root["humidity"].empty()==false)
 	{
-		tmpstr=root["current_observation"]["relative_humidity"].asString();
-		size_t pos=tmpstr.find("%");
-		if (pos==std::string::npos)
-		{
-			_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");
-			return;
-		}
-		humidity=atoi(tmpstr.substr(0,pos).c_str());
+		humidity = root["humidity"].asInt();
 	}
-	if (root["current_observation"]["pressure_mb"].empty()==false)
+	if (root["metric"]["pressure"].empty()==false)
 	{
-		barometric=atoi(root["current_observation"]["pressure_mb"].asString().c_str());
+		barometric=atoi(root["metric"]["pressure"].asString().c_str());
 		if (barometric<1000)
 			barometric_forcast=baroForecastRain;
 		else if (barometric<1020)
@@ -251,31 +300,6 @@ void CWunderground::GetMeterDetails()
 			barometric_forcast=baroForecastPartlyCloudy;
 		else
 			barometric_forcast=baroForecastSunny;
-
-		if (root["current_observation"]["icon"].empty()==false)
-		{
-			std::string forcasticon=root["current_observation"]["icon"].asString();
-			if (forcasticon=="partlycloudy")
-			{
-				barometric_forcast=baroForecastPartlyCloudy;
-			}
-			else if (forcasticon=="cloudy")
-			{
-				barometric_forcast=baroForecastCloudy;
-			}
-			else if (forcasticon=="sunny")
-			{
-				barometric_forcast=baroForecastSunny;
-			}
-			else if (forcasticon=="clear")
-			{
-				barometric_forcast=baroForecastSunny;
-			}
-			else if (forcasticon=="rain")
-			{
-				barometric_forcast=baroForecastRain;
-			}
-		}
 	}
 
 	if (barometric!=0)
@@ -303,39 +327,29 @@ void CWunderground::GetMeterDetails()
 	int windgust=1;
 	float windchill=-1;
 
-	if (root["current_observation"]["wind_degrees"].empty()==false)
+	if (root["winddir"].empty()==false)
 	{
-		wind_degrees=atoi(root["current_observation"]["wind_degrees"].asString().c_str());
+		wind_degrees=atoi(root["winddir"].asString().c_str());
 	}
-	if (root["current_observation"]["wind_mph"].empty()==false)
+	if (root["metric"]["windSpeed"].empty()==false)
 	{
-		if ((root["current_observation"]["wind_mph"] != "N/A") && (root["current_observation"]["wind_mph"] != "--"))
+		if ((root["metric"]["windSpeed"] != "N/A") && (root["metric"]["windSpeed"] != "--"))
 		{
-			float temp_wind_mph = static_cast<float>(atof(root["current_observation"]["wind_mph"].asString().c_str()));
-			if (temp_wind_mph!=-9999.00f)
-			{
-				//convert to m/s
-				windspeed_ms=temp_wind_mph*0.44704f;
-			}
+			windspeed_ms = static_cast<float>(atof(root["metric"]["windSpeed"].asString().c_str()));
 		}
 	}
-	if (root["current_observation"]["wind_gust_mph"].empty()==false)
+	if (root["metric"]["windGust"].empty()==false)
 	{
-		if ((root["current_observation"]["wind_gust_mph"] != "N/A") && (root["current_observation"]["wind_gust_mph"] != "--"))
+		if ((root["metric"]["windGust"] != "N/A") && (root["metric"]["windGust"] != "--"))
 		{
-			float temp_wind_gust_mph = static_cast<float>(atof(root["current_observation"]["wind_gust_mph"].asString().c_str()));
-			if (temp_wind_gust_mph!=-9999.00f)
-			{
-				//convert to m/s
-				windgust_ms=temp_wind_gust_mph*0.44704f;
-			}
+			windgust_ms = static_cast<float>(atof(root["metric"]["windGust"].asString().c_str()));
 		}
 	}
-	if (root["current_observation"]["feelslike_c"].empty()==false)
+	if (root["metric"]["windChill"].empty()==false)
 	{
-		if ((root["current_observation"]["feelslike_c"] != "N/A") && (root["current_observation"]["feelslike_c"] != "--"))
+		if ((root["metric"]["windChill"] != "N/A") && (root["metric"]["windChill"] != "--"))
 		{
-			wind_chill = static_cast<float>(atof(root["current_observation"]["feelslike_c"].asString().c_str()));
+			wind_chill = static_cast<float>(atof(root["metric"]["windChill"].asString().c_str()));
 		}
 	}
 	if (wind_degrees!=-1)
@@ -392,27 +406,24 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//UV
-	if (root["current_observation"].empty() == false)
+	if (root["uv"].empty() == false)
 	{
-		if (root["current_observation"]["UV"].empty() == false)
+		if ((root["uv"] != "N/A") && (root["uv"] != "--"))
 		{
-			if ((root["current_observation"]["UV"] != "N/A") && (root["current_observation"]["UV"] != "--"))
+			float UV = static_cast<float>(atof(root["uv"].asString().c_str()));
+			if ((UV < 16) && (UV >= 0))
 			{
-				float UV = static_cast<float>(atof(root["current_observation"]["UV"].asString().c_str()));
-				if ((UV < 16) && (UV >= 0))
-				{
-					SendUVSensor(0, 1, 255, UV, "UV");
-				}
+				SendUVSensor(0, 1, 255, UV, "UV");
 			}
 		}
 	}
 
 	//Rain
-	if (root["current_observation"]["precip_today_metric"].empty() == false)
+	if (root["metric"]["precipTotal"].empty() == false)
 	{
-		if ((root["current_observation"]["precip_today_metric"] != "N/A") && (root["current_observation"]["precip_today_metric"] != "--"))
+		if ((root["metric"]["precipTotal"] != "N/A") && (root["metric"]["precipTotal"] != "--"))
 		{
-			float RainCount = static_cast<float>(atof(root["current_observation"]["precip_today_metric"].asString().c_str()));
+			float RainCount = static_cast<float>(atof(root["metric"]["precipTotal"].asString().c_str()));
 			if ((RainCount != -9999.00f) && (RainCount >= 0.00f))
 			{
 				RBUF tsen;
@@ -428,11 +439,11 @@ void CWunderground::GetMeterDetails()
 				tsen.RAIN.rainrateh = 0;
 				tsen.RAIN.rainratel = 0;
 
-				if (root["current_observation"]["precip_1hr_metric"].empty() == false)
+				if (root["metric"]["precipRate"].empty() == false)
 				{
-					if ((root["current_observation"]["precip_1hr_metric"] != "N/A") && (root["current_observation"]["precip_1hr_metric"] != "--"))
+					if ((root["metric"]["precipRate"] != "N/A") && (root["metric"]["precipRate"] != "--"))
 					{
-						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
+						float rainrateph = static_cast<float>(atof(root["metric"]["precipRate"].asString().c_str()));
 						if (rainrateph != -9999.00f)
 						{
 							int at10 = round(std::abs(rainrateph*100.0f));
@@ -454,12 +465,12 @@ void CWunderground::GetMeterDetails()
 		}
 	}
 
-	//Visibility
-	if (root["current_observation"]["visibility_km"].empty() == false)
+	//Visibility (seems not to exist anymore!?)
+	if (root["visibility"].empty() == false)
 	{
-		if ((root["current_observation"]["visibility_km"] != "N/A") && (root["current_observation"]["visibility_km"] != "--"))
+		if ((root["visibility"] != "N/A") && (root["visibility"] != "--"))
 		{
-			float visibility = static_cast<float>(atof(root["current_observation"]["visibility_km"].asString().c_str()));
+			float visibility = static_cast<float>(atof(root["visibility"].asString().c_str()));
 			if (visibility >= 0)
 			{
 				_tGeneralDevice gdevice;
@@ -471,18 +482,15 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//Solar Radiation
-	if (root["current_observation"]["solarradiation"].empty() == false)
+	if (root["solarRadiation"].empty() == false)
 	{
-		if ((root["current_observation"]["solarradiation"] != "N/A") && (root["current_observation"]["solarradiation"] != "--"))
+		float radiation = static_cast<float>(atof(root["solarRadiation"].asString().c_str()));
+		if (radiation >= 0.0f)
 		{
-			float radiation = static_cast<float>(atof(root["current_observation"]["solarradiation"].asString().c_str()));
-			if (radiation >= 0.0f)
-			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype = sTypeSolarRadiation;
-				gdevice.floatval1 = radiation;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
-			}
+			_tGeneralDevice gdevice;
+			gdevice.subtype = sTypeSolarRadiation;
+			gdevice.floatval1 = radiation;
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
 		}
 	}
 }

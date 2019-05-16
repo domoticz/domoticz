@@ -1,0 +1,17 @@
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0001:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsb28-zweu.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1322/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-home-energy-measure</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0002">CEPT (Europe) / Australia / New Zealand / Israel</MetaDataItem>
+    <MetaDataItem name="Description">Door/Window Sensor (2nd Edition)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0002">DSB29-ZWIL</MetaDataItem>
+    <MetaDataItem name="Name">Aeon Labs Door/Window Sensor(2nd Edition) DSB29-ZWIL</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/805/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/806/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1322/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

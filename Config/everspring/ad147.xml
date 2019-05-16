@@ -1,37 +1,60 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- EVERSPRING AD147 Dimming MODULE -->
-<!-- Information from http://www.pepper1.net/zwavedb/device/686 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- EVERSPRING AD147 Dimming MODULE --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0003:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/ad147.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1065/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Put the Z-Wave Controller into exclusion mode.
+2. Press the link key three times within 1.5 seconds to put the unit into exclusion mode. (Please refer to the documentation for the location of the link key.)
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Put the Z-Wave Controller into inclusion mode.
+2. Press the link key three times within 1.5 seconds to put the unit into inclusion mode. (Please refer to the documentation for the location of the link key.)
+</MetaDataItem>
+    <MetaDataItem name="Name">Dimmer Plug</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1065/Manual_AD147_20140728.pdf</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0003">AD147-6</MetaDataItem>
+    <MetaDataItem name="ResetDescription">(This procedure should only be used when the network primary controller is inoperable.)
+1. Press the link key three times within 1.5 seconds to put the unit into exclusion mode.
+2. Within 1 second of step 1, press link key again and hold it until LED is off (about 5 seconds). (Please refer to the documentation for the location of the link key.)
+3. Node ID is excluded.  The device reverts to factory default state and will be in auto-inclusion mode for 4 minutes.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">NR</MetaDataItem>
+    <MetaDataItem name="Description">The mini Dimmer Plug is a Z-Wave enabled device which is fully compatible with any Z-Wave enabled network.  Z-Wave enabled devices displaying the Z-Wave logo can also be used with it regardless of the manufacturer, and ours can also be used in other manufacturer’s Z-Wave enabled networks.  Inclusion of this unit on other manufacturer’s Wireless Controller menu allows remote operation of the unit and the connected load.
+
+The mini Dimmer Plug is designed to control the on/off status of lighting and appliances load in your house.  The unit also provides dimmer function which is only applicable to light bulbs.  At 220-240V voltage, this Dimmer Plug can support connected load of 6 - 250W.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1065/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="short" index="1" genre="config" label="Basic Set Command value" units="" min="0" max="255" value="255">
+    <Value genre="config" index="1" label="Basic Set Command value" max="255" min="0" type="short" units="" value="255">
       <Help>
 	0 is off. 1 to 99 sets output level at specified value. 
 255 sets output level at last memorized level
       </Help>
     </Value>
-    <Value type="byte" index="2" genre="config" label="Delay Time" units="seconds" min="3" max="25" value="3">
+    <Value genre="config" index="2" label="Delay Time" max="25" min="3" type="byte" units="seconds" value="3">
       <Help>
 	Delaying time to report to Group 1
       </Help>
     </Value>
-    <Value type="byte" index="3" genre="config" label="Last Status" units="" min="0" max="1" value="1">
+    <Value genre="config" index="3" label="Last Status" max="1" min="0" type="byte" units="" value="1">
       <Help>
 	Remember the last status: 0 (do not remember) | 1 (remember)
       </Help>
     </Value>
-    <Value type="byte" index="4" genre="config" label="Output Mode" units="" min="0" max="1" value="0">
+    <Value genre="config" index="4" label="Output Mode" max="1" min="0" type="byte" units="" value="0">
       <Help>
 	Output mode setting: 0 (dimming) | 1 (on/off)
       </Help>
     </Value>
   </CommandClass>
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="1" label="Reports" />
-      <Group index="2" max_associations="4" label="Basic"/>
+      <Group index="1" label="Reports" max_associations="1"/>
+      <Group index="2" label="Basic" max_associations="4"/>
     </Associations>
   </CommandClass>
 </Product>

@@ -1,74 +1,65 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<!-- Inovelli Dimmer NZW31 -->
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value genre="config" index="1" label="Dimming/Brightening Step Level" min="0" max="99" units="%" value="3" size="1" type="byte">
+    <Value genre="config" index="1" label="Dimming/Brightening Step Level" max="99" min="0" size="1" type="byte" units="%" value="3">
       <Help>Each step of the dimming process will increase or decrease the brightness by this percentage. Increasing this will make the transition time slower. 0 is instant.</Help>
     </Value>
-    <Value genre="config" index="2" label="Minimum Dimming Level" min="1" max="99" units="%" value="1" size="1" type="byte">
-    <Help>This is the minimum value to which the switch will dim. Useful for CFL or LED lights that otherwise won't come on or come on but flicker/buzz.</Help>
+    <Value genre="config" index="2" label="Minimum Dimming Level" max="99" min="1" size="1" type="byte" units="%" value="1">
+      <Help>This is the minimum value to which the switch will dim. Useful for CFL or LED lights that otherwise won't come on or come on but flicker/buzz.</Help>
     </Value>
-    <Value genre="config" index="3" value="0" label="LED Indicator Control" units="" size="1" min="0" max="255" type="list">
+    <Value genre="config" index="3" label="LED Indicator Control" max="255" min="0" size="1" type="list" units="" value="0">
       <Help>Choose if you want the LED indicator to turn on when switch is on or off or disable completely.</Help>
-      <Item value="0" label="LED on when switch is off"/>
-      <Item value="1" label="LED on when switch is on"/>
-      <Item value="2" label="LED is disabled"/>
-	  <Item value="3" label="LED is always on"/>
+      <Item label="LED on when switch is off" value="0"/>
+      <Item label="LED on when switch is on" value="1"/>
+      <Item label="LED is disabled" value="2"/>
+      <Item label="LED is always on" value="3"/>
     </Value>
-    <Value genre="config" index="4" value="0" label="Orientation" units="" size="1" min="0" max="255" type="list">
+    <Value genre="config" index="4" label="Orientation" max="255" min="0" size="1" type="list" units="" value="0">
       <Help>Controls the on/off orientation of the rocker switch</Help>
-      <Item value="0" label="Normal"/>
-      <Item value="1" label="Inverted"/>
+      <Item label="Normal" value="0"/>
+      <Item label="Inverted" value="1"/>
     </Value>
-    <Value genre="config" index="5" value="0" label="Automatically turn switch off after interval" units="seconds" size="2" min="0" max="32767" type="short">
+    <Value genre="config" index="5" label="Automatically turn switch off after interval" max="32767" min="0" size="2" type="short" units="seconds" value="0">
       <Help>Automatically turn the switch off after this many seconds. 0 is disabled, or up to 32767 seconds</Help>
     </Value>
-	<Value genre="config" index="6" value="0" label="Association Group 3 Behavior" units="" size="1" min="0" max="255" type="list">
+    <Value genre="config" index="6" label="Association Group 3 Behavior" max="255" min="0" size="1" type="list" units="" value="0">
       <Help>Change how devices respond when associated in group 3</Help>
-      <Item value="0" label="Dim up/down"/>
-      <Item value="1" label="Keep in sync"/>
+      <Item label="Dim up/down" value="0"/>
+      <Item label="Keep in sync" value="1"/>
     </Value>
-	<Value genre="config" index="7" value="1" label="Association Group 3 Configuration" units="" size="1" min="0" max="255" type="list">
+    <Value genre="config" index="7" label="Association Group 3 Configuration" max="255" min="0" size="1" type="list" units="" value="1">
       <Help>Send association group 3 commands on these types of actions</Help>
-      <Item value="0" label="none"/>
-      <Item value="1" label="local"/>
-      <Item value="2" label="3way"/>
-	  <Item value="3" label="3way &amp; local"/>
-	  <Item value="4" label="z-wave hub"/>
-      <Item value="5" label="z-wave hub &amp; local"/>
-      <Item value="6" label="z-wave hub &amp; 3-way"/>
-	  <Item value="7" label="z-wave hub &amp; local &amp; 3way"/>
-	  <Item value="8" label="timer"/>
-      <Item value="9" label="timer &amp; local"/>
-      <Item value="10" label="timer &amp; 3-way"/>
-	  <Item value="11" label="timer &amp; 3-way &amp; local"/>
-	  <Item value="12" label="timer &amp; z-wave hub"/>
-      <Item value="13" label="timer &amp; z-wave hub &amp; local"/>
-      <Item value="14" label="timer &amp; z-wave hub &amp; 3-way"/>
-	  <Item value="15" label="all"/>
+      <Item label="none" value="0"/>
+      <Item label="local" value="1"/>
+      <Item label="3way" value="2"/>
+      <Item label="3way &amp; local" value="3"/>
+      <Item label="z-wave hub" value="4"/>
+      <Item label="z-wave hub &amp; local" value="5"/>
+      <Item label="z-wave hub &amp; 3-way" value="6"/>
+      <Item label="z-wave hub &amp; local &amp; 3way" value="7"/>
+      <Item label="timer" value="8"/>
+      <Item label="timer &amp; local" value="9"/>
+      <Item label="timer &amp; 3-way" value="10"/>
+      <Item label="timer &amp; 3-way &amp; local" value="11"/>
+      <Item label="timer &amp; z-wave hub" value="12"/>
+      <Item label="timer &amp; z-wave hub &amp; local" value="13"/>
+      <Item label="timer &amp; z-wave hub &amp; 3-way" value="14"/>
+      <Item label="all" value="15"/>
     </Value>
-    <Value genre="config" index="8" value="0" label="Default value when turned on at switch" min="0" max="99" size="1" type="byte">
+    <Value genre="config" index="8" label="Default value when turned on at switch" max="99" min="0" size="1" type="byte" value="0">
       <Help>Default brightness when switch is turned on locally.  0 is previous. Firmware 1.02+"</Help>
     </Value>
-    <Value genre="config" index="9" value="0" label="Default value when turned on via zwave" min="0" max="99" size="1" type="byte">
+    <Value genre="config" index="9" label="Default value when turned on via zwave" max="99" min="0" size="1" type="byte" value="0">
       <Help>Default brightness when switch is turned on via zwave.  0 is previous.  Firmware 1.02+"</Help>
     </Value>
   </CommandClass>
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="3">
-      <Group index="1" label="Lifeline" max_associations="5" />
-	  <Group index="2" label="Basic_Set" max_associations="5" />
-	  <Group index="3" label="Switch_Multilevel_Set" max_associations="5" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic_Set" max_associations="5"/>
+      <Group index="3" label="Switch_Multilevel_Set" max_associations="5"/>
     </Associations>
   </CommandClass>
-<!-- Central Scene Reports -->
-  <CommandClass id="91" name="COMMAND_CLASS_CENTRAL_SCENE" version="1" request_flags="4" scenecount="0">
-    <Instance index="1" />
-      <Value type="int" genre="system" instance="1" index="0" label="Scene Count" units="" read_only="true" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="2" />
-      <Value type="int" genre="user" instance="1" index="1" label="Top Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
-      <Value type="int" genre="user" instance="1" index="2" label="Bottom Button Scene" units="" read_only="false" write_only="false" verify_changes="false" min="-2147483648" max="2147483647" value="0" />
-  </CommandClass>
-
 </Product>

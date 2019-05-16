@@ -4,8 +4,9 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
-#include "proxycommon.h"
+#include "proxycereal.hpp"
 #include "cWebem.h"
+#include "../hardware/ASyncTCP.h"
 
 namespace tcp {
 	namespace server {
@@ -19,115 +20,76 @@ class DomoticzTCP;
 namespace http {
 	namespace server {
 
-#define ONPDU(type) case type: Handle##type(#type, part); break;
-#define PDUPROTO(type) virtual void Handle##type(const char *pduname, CValueLengthPart &part);
-#define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, CValueLengthPart &part)
+#define PDUFUNCTION(type) void CProxyClient::OnPduReceived(std::shared_ptr<ProxyPdu_##type> pdu)
 
-		class CProxyClient : public std::enable_shared_from_this<CProxyClient> {
+		class CProxyClient : ASyncTCP {
 		public:
-			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
+			CProxyClient();
 			~CProxyClient();
-
-			void Reconnect();
-			void ContinueConnect(const boost::system::error_code& error);
-			void Stop();
+			void Reset();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
 			bool SharedServerAllowed();
 			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int protocol_version);
 			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *master);
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
+			void Connect(http::server::cWebem *webEm);
+			void Disconnect();
+			bool Enabled();
 		private:
-
-			void handle_connect(const boost::system::error_code& error,
-				boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
-
-			void handle_handshake(const boost::system::error_code& error);
-
-			void handle_read(const boost::system::error_code& error,
-				size_t bytes_transferred);
-			void handle_write(const boost::system::error_code& error,
-				size_t bytes_transferred);
-
-			void ReadMore();
-
 			void WebsocketGetRequest();
 			bool parse_response(const char *data, size_t len);
 			std::string websocket_key;
 			std::string compute_accept_header(const std::string &websocket_key);
-			std::string SockWriteBuf;
-			void MyWrite(pdu_type type, CValueLengthPart &parameters);
-			void WS_Write(long handlerid, const std::string &packet_data);
-			void SocketWrite(ProxyPdu *pdu);
-			/// make sure we only write one packet at a time
-			std::mutex writeMutex;
-			bool write_in_progress;
+			std::string readbuf;
+			void MyWrite(const std::string &msg);
+			void WS_Write(unsigned long long handlerid, const std::string &packet_data);
 			void LoginToService();
-
-			PDUPROTO(PDU_REQUEST)
-			PDUPROTO(PDU_ASSIGNKEY)
-			PDUPROTO(PDU_ENQUIRE)
-			PDUPROTO(PDU_AUTHRESP)
-			PDUPROTO(PDU_SERV_CONNECT)
-			PDUPROTO(PDU_SERV_DISCONNECT)
-			PDUPROTO(PDU_SERV_CONNECTRESP)
-			PDUPROTO(PDU_SERV_RECEIVE)
-			PDUPROTO(PDU_SERV_SEND)
-			PDUPROTO(PDU_SERV_ROSTERIND)
-			PDUPROTO(PDU_WS_OPEN)
-			PDUPROTO(PDU_WS_CLOSE)
-			PDUPROTO(PDU_WS_RECEIVE)
 
 			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
 
-			void PduHandler(ProxyPdu &pdu);
+			void PduHandler(const CProxyPduBase *pdu);
+			/* Algorithm execution class */
+#define PDUSTRING(name)
+#define PDULONG(name)
+#define PROXYPDU(name, members) void OnPduReceived(std::shared_ptr<ProxyPdu_##name> pdu);
+#include "proxydef.def"
+#undef PDUSTRING
+#undef PDULONG
+#undef PROXYPDU
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
-			std::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > _socket;
 			std::string _apikey;
 			std::string _password;
-			boost::asio::streambuf _readbuf;
-			boost::asio::io_service& _io_service;
-			boost::asio::ssl::context& _context;
-			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
-			bool we_locked_prefs_mutex;
-			/// read timeout timer
-			boost::asio::deadline_timer timer_;
-			void handle_timeout(const boost::system::error_code& error);
-			/// timeouts (persistent and other) connections in seconds
-			int timeout_;
 			enum status {
-				status_connecting,
 				status_httpmode,
 				status_connected
 			} connection_status;
-
-			// is protected by writeMutex
-			std::queue<ProxyPdu *> writeQ;
-			/// websocket stuff
-			std::map<long, CWebsocketHandler *> websocket_handlers;
+			std::map<unsigned long long, CWebsocketHandler *> websocket_handlers;
+		protected:
+			virtual void OnConnect();
+			virtual void OnData(const unsigned char *pData, size_t length);
+			virtual void OnDisconnect();
+			virtual void OnError(const std::exception e) {}; // todo
+			virtual void OnError(const boost::system::error_code& error);
 		};
 
-		class CProxyManager : public std::enable_shared_from_this<CProxyManager> {
+		class CProxyManager {
 		public:
-			CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
+			CProxyManager();
 			~CProxyManager();
-			int Start(bool first);
+			bool Start(http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
 			void Stop();
-			std::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
+			void SetWebRoot(const std::string& doc_root);
+			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 		private:
-			void StartThread();
-			boost::asio::io_service io_service;
-			std::shared_ptr<CProxyClient> proxyclient;
-			std::shared_ptr<std::thread> m_thread;
+			CProxyClient proxyclient;
 			std::string m_pDocRoot;
-			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServer *m_pDomServ;
-			bool _first;
 		};
 
 		class CProxySharedData {
@@ -135,8 +97,6 @@ namespace http {
 			CProxySharedData() {};
 			void SetInstanceId(const std::string &instanceid);
 			std::string GetInstanceId();
-			void LockPrefsMutex();
-			void UnlockPrefsMutex();
 			bool AddConnectedIp(std::string ip);
 			bool AddConnectedServer(std::string ip);
 			void AddTCPClient(DomoticzTCP *master);
@@ -147,7 +107,6 @@ namespace http {
 			DomoticzTCP *findSlaveById(const std::string &instanceid);
 		private:
 			std::string _instanceid;
-			std::mutex prefs_mutex;
 			std::set<std::string> connectedips_;
 			std::set<std::string> connectedservers_;
 			std::vector<DomoticzTCP *>TCPClients;

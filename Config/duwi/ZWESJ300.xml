@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 
 <!-- Taken from http://www.uk-automation.co.uk/pdf/DUW_blind.pdf -->
 <!-- Duwi: ZW ESJ Blind Control -->

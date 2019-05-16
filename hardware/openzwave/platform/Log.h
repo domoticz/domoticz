@@ -38,6 +38,12 @@ namespace OpenZWave
 {
 	class Mutex;
 	extern char const *LogLevelString[];
+
+	/** \brief Various LogLevels available to the Application
+	 * \ingroup Platform
+	 *
+	 * \see Log::SetLoggingState
+	 */
 	enum LogLevel
 	{
 		LogLevel_Invalid, 		/**< Invalid Log Status */
@@ -55,6 +61,12 @@ namespace OpenZWave
 		LogLevel_Internal		/**< Used only within the log class (uses existing timestamp, etc.) */
 	};
 
+	/** \brief A Abstract class to create a Custom Logging Method
+	 * \ingroup Platform
+	 *
+	 * Use this as the basis to create a custom logging class for your applation.
+	 * \see Log::SetLoggingClass
+	 */
 	class i_LogImpl
 	{
 	public:
@@ -68,12 +80,13 @@ namespace OpenZWave
 	};
 
 	/** \brief Implements a platform-independent log...written to the console and, optionally, a file.
+	 * \ingroup Platform
 	 */
 	class Log
 	{
 	public:
-		/**
-		 * Create a log.
+		/** \brief Create a log.
+		 *
 		 * Creates the cross-platform logging singleton.
 		 * Any previous log will be cleared.
 		 * \return a pointer to the logging object.
@@ -81,8 +94,8 @@ namespace OpenZWave
 		 */
 		static Log* Create( string const& _filename, bool const _bAppend, bool const _bConsoleOutput, LogLevel const _saveLevel, LogLevel const _queueLevel, LogLevel const _dumpTrigger );
 
-		/**
-		 * Create a log.
+		/** \brief Create a log.
+		 *
 		 * Creates the cross-platform logging singleton.
 		 * Any previous log will be cleared.
 		 * \param LogClass a Logging Class that inherits the i_LogImpl Class to use to Log
@@ -92,8 +105,8 @@ namespace OpenZWave
 
 		static Log* Create( i_LogImpl *LogClass );
 
-		/**
-		 * Destroys the log.
+		/** \brief Destroys the log.
+		 *
 		 * Destroys the logging singleton.  The log can no longer
 		 * be written to without another call to Create.
 		 * \see Create, Write
@@ -102,50 +115,53 @@ namespace OpenZWave
 
 		/**
 		 * \brief Set the Logging Implementation Class to replace the standard File/Console logging
+		 *
 		 * \param LogClass A Logging Class that inherits the i_LogImpl Class used to Log to
 		 * \return Bool Value indicating success or failure
 		 */
 		static bool SetLoggingClass(i_LogImpl *LogClass );
 
-		/**
-		 * \brief Enable or disable library logging (retained for backward compatibility)
+		/** \brief Enable or disable library logging (retained for backward compatibility)
+		 *
 		 * \param _dologging  If true, logging is enabled; if false, disabled
 		*/
 		static void SetLoggingState(bool _dologging);
 
-		/**
-		 * \brief Enable or disable library logging.  To disable, set _saveLevel and _queueLevel
-		 * to LogLevel_None.
+		/**\brief Enable or disable library logging.
+		 *
+		 * To disable, set _saveLevel and _queueLevel to LogLevel_None.
+		 *
 		 * \param _saveLevel	LogLevel of messages to write in real-time
 		 * \param _queueLevel	LogLevel of messages to queue to be dumped in case of an error
 		 * \param _dumpTrigger	LogLevel of message that triggers a queue dump (probably LogLevel_Error or LogLevel_Warning)
 		*/
 		static void SetLoggingState( LogLevel _saveLevel, LogLevel _queueLevel, LogLevel _dumpTrigger );
 
-		/**
-		 * \brief Determine whether logging is enabled or not (retained for backward compatibility)
+		/**\brief Determine whether logging is enabled or not (retained for backward compatibility)
+		 *
 		 * \param _dologging  If true, logging is enabled; if false, disabled
 		*/
 		static bool GetLoggingState();
 
-		/**
-		 * \brief Obtain the various logging levels.
+		/**\brief Obtain the various logging levels.
+		 *
 		 * \param _saveLevel	LogLevel of messages to write in real-time
 		 * \param _queueLevel	LogLevel of messages to queue to be dumped in case of an error
 		 * \param _dumpTrigger	LogLevel of message that triggers a queue dump (probably LogLevel_Error or LogLevel_Warning)
 		*/
 		static void GetLoggingState( LogLevel* _saveLevel, LogLevel* _queueLevel, LogLevel* _dumpTrigger );
 
-		/**
-		 * \brief Change the log file name.  This will start a new log file (or potentially start appending
+		/** \brief Change the log file name.
+		 *
+		 * This will start a new log file (or potentially start appending
 		 * information to an existing one.  Developers might want to use this function, together with a timer
 		 * in the controlling application, to create timestamped log file names.
 		 * \param _filename Name of the new (or existing) file to use for log output.
 		*/
 		static void SetLogFileName( const string &_filename );
 
-		/**
-		 * Write an entry to the log.
+		/**\brief Write an entry to the log.
+		 *
 		 * Writes a formatted string to the log.
 		 * \param _level	Specifies the type of log message (Error, Warning, Debug, etc.)
 		 * \param _format.  A string formatted in the same manner as used with printf etc.
@@ -154,8 +170,8 @@ namespace OpenZWave
 		 */
 		static void Write( LogLevel _level, char const* _format, ... );
 
-		/**
-		 * Write an entry to the log.
+		/**\brief Write an entry to the log.
+		 *
 		 * Writes a formatted string to the log.
 		 * \param _level	Specifies the type of log message (Error, Warning, Debug, etc.)
 		 * \param _nodeId	Node Id this entry is about.
@@ -165,8 +181,7 @@ namespace OpenZWave
 		 */
 		static void Write( LogLevel _level, uint8 const _nodeId, char const* _format, ... );
 
-		/**
-		 * Send the queued log messages to the log output.
+		/** \brief Send the queued log messages to the log output.
 		 */
 		static void QueueDump();
 

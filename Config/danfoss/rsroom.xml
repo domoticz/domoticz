@@ -1,77 +1,94 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0002:8010:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/danfoss/rsroom.png</MetaDataItem>
+    <MetaDataItem id="8010" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1188/</MetaDataItem>
+    <MetaDataItem id="8010" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="8010" name="Identifier" type="0003">014G0159</MetaDataItem>
+    <MetaDataItem name="Description">Devolo Z-Wave RS</MetaDataItem>
+    <MetaDataItem name="Name">Devolo RS 014G0159 Thermostat</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1062/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1063/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1187/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1188/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
-  <CommandClass base="0" override_precision="2" request_flags="4" version="1" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" id="67">
+  <CommandClass id="67">
     <Instance index="1"/>
-    <Value index="1" value="0.0" max="0" min="0" verify_changes="false" write_only="false" read_only="false" units="C" label="Heating" instance="1" genre="user" type="decimal"/>
-    <Value index="2" value="0.0" max="0" min="0" verify_changes="false" write_only="false" read_only="false" units="C" label="Cooling" instance="1" genre="user" type="decimal"/>
-    <Value index="3" value="0.0" max="0" min="0" verify_changes="false" write_only="false" read_only="false" units="C" label="Unused" instance="1" genre="user" type="decimal"/>
+    <Value genre="user" index="1" instance="1" label="Heating" max="0" min="0" read_only="false" type="decimal" units="C" value="0.0" verify_changes="false" write_only="false"/>
+    <Value genre="user" index="2" instance="1" label="Cooling" max="0" min="0" read_only="false" type="decimal" units="C" value="0.0" verify_changes="false" write_only="false"/>
+    <Value genre="user" index="3" instance="1" label="Unused" max="0" min="0" read_only="false" type="decimal" units="C" value="0.0" verify_changes="false" write_only="false"/>
+    <Compatibility>
+      <OverridePrecision>2</OverridePrecision>
+      <Base>0</Base>
+    </Compatibility>
   </CommandClass>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="short" index="1" genre="config" label="Temperature Threshold" min="1" max="100" value="5">
+    <Value genre="config" index="1" label="Temperature Threshold" max="100" min="1" type="short" value="5">
       <Help>
        Temperature Report threshold (1=0.1C)
       </Help>
     </Value>
-    <Value type="short" index="2" genre="config" label="Setpoint resolution" min="1" max="100" value="5">
+    <Value genre="config" index="2" label="Setpoint resolution" max="100" min="1" type="short" value="5">
       <Help>
         Set-point display resolution (1=0.1C)
       </Help>
     </Value>
-    <Value type="short" index="3" genre="config" label="Min/Override Setpoint" min="0" max="40" value="12">
+    <Value genre="config" index="3" label="Min/Override Setpoint" max="40" min="0" type="short" value="12">
       <Help>
        Min Set-point and override limit
       </Help>
     </Value>
-	<Value type="short" index="4" genre="config" label="Max/Override Setpoint" min="0" max="40" value="28">
+    <Value genre="config" index="4" label="Max/Override Setpoint" max="40" min="0" type="short" value="28">
       <Help>
        Max Set-point and override limit
       </Help>
     </Value>
-	<Value type="list" index="6" genre="config" label="Setpoint control function" size="1" value="1">
+    <Value genre="config" index="6" label="Setpoint control function" size="1" type="list" value="1">
       <Help>
        Setpoint control function
       </Help>
-	  <Item label="Disabled" value="0"/>
+      <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-	<Value type="list" index="7" genre="config" label="Temporarily override scheduler" size="1" value="1">
+    <Value genre="config" index="7" label="Temporarily override scheduler" size="1" type="list" value="1">
       <Help>
        Temporarily override scheduler
       </Help>
-	  <Item label="Disabled" value="0"/>
+      <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-	<Value type="list" index="8" genre="config" label="Setpoint type" size="1" value="1">
+    <Value genre="config" index="8" label="Setpoint type" size="1" type="list" value="1">
       <Help>
        Setpoint type in thermostat setpoint_reports
       </Help>
-	  <Item label="Heating" value="1"/>
+      <Item label="Heating" value="1"/>
       <Item label="Cooling" value="2"/>
       <Item label="Auto Changeover" value="10"/>
     </Value>
-	<Value type="byte" index="9" genre="config" label="Led on time" min="1" max="5" value="1">
+    <Value genre="config" index="9" label="Led on time" max="5" min="1" type="byte" value="1">
       <Help>
        Led on time (1=100ms)
       </Help>
     </Value>
-	<Value type="short" index="5" genre="config" label="Led Flash Period" min="0" max="65535" value="1">
+    <Value genre="config" index="5" label="Led Flash Period" max="65535" min="0" type="short" value="1">
       <Help>
        Led Flash Period (0 to 65535 seconds)
       </Help>
     </Value>
-	<Value type="byte" index="10" genre="config" label="Number of flash" min="0" max="255" value="5">
+    <Value genre="config" index="10" label="Number of flash" max="255" min="0" type="byte" value="5">
       <Help>
        Number of led flashes (duration)
       </Help>
     </Value>
-	<Value type="list" index="11" genre="config" label="Led Color" size="1" value="1">
+    <Value genre="config" index="11" label="Led Color" size="1" type="list" value="1">
       <Help>
        Led Color
       </Help>
-	  <Item label="Green" value="1"/>
+      <Item label="Green" value="1"/>
       <Item label="Red" value="2"/>
     </Value>
   </CommandClass>

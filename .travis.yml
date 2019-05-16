@@ -22,9 +22,9 @@ before_install:
   # OpenZWave
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    brew update;
-    brew upgrade boost;
-    fi
+      brew update;
+      brew upgrade boost;
+    fi;
 
 # Build matrix definition
 # * Two builds
@@ -61,14 +61,17 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
     script:
-      - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz >> /dev/null 2>&1
-      - tar xfz boost_1_67_0.tar.gz
-      - cd boost_1_67_0/
+      - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
+      - sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
+      - export PATH=/usr/local/bin:$PATH;
+      - wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz >> /dev/null 2>&1
+      - tar xfz boost_1_70_0.tar.gz
+      - cd boost_1_70_0/
       - ./bootstrap.sh
       - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - cd ..
-      - (cd open-zwave-read-only; patch -p1 < ../patches/domoticz-open-zwave.patch; make)
+      - (cd open-zwave-read-only; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
   # Apple OSX
@@ -85,6 +88,7 @@ matrix:
   #     - brew link openssl --force
   #     - brew install md5sha1sum
   #     - brew upgrade python
+  #     - brew upgrade cmake
   #     - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
   #   script:
   #     - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib

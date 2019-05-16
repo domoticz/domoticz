@@ -285,8 +285,12 @@ void CEventSystem::LoadEvents()
 				{
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
 					fclose(fOut);
+					dzvents->m_bdzVentsExist = true;
 				}
-				dzvents->m_bdzVentsExist = true;
+				else
+				{
+					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s",  s.c_str());
+				}
 			}
 		}
 	}
@@ -1011,31 +1015,31 @@ void CEventSystem::GetCurrentMeasurementStates()
 				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
-				if (sitem.subType != sTypeRAINWU)
+				if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
 				{
 					result2 = m_sql.safe_query(
-						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 						sitem.ID, szDate.c_str());
 				}
 				else
 				{
 					result2 = m_sql.safe_query(
-						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate.c_str());
 				}
 				if (!result2.empty())
 				{
 					double total_real = 0;
 					std::vector<std::string> sd2 = result2[0];
-					if (sitem.subType != sTypeRAINWU)
+					if (sitem.subType == sTypeRAINWU || sitem.subType == sTypeRAINByRate)
+					{
+						total_real = atof(sd2[1].c_str());
+					}
+					else
 					{
 						float total_min = static_cast<float>(atof(sd2[0].c_str()));
 						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
 						total_real = total_max - total_min;
-					}
-					else
-					{
-						total_real = atof(sd2[1].c_str());
 					}
 					rainmm = float(total_real);
 				}
@@ -2308,9 +2312,10 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
-					std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
-					if (updateResult != "OK") {
-						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+					std::string errorMessage;
+					if (!m_sql.UpdateUserVariable(variableNo, sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), doWhat, false, errorMessage))
+					{
+						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
 				}
 			}
@@ -3559,9 +3564,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
-				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
-				if (updateResult != "OK") {
-					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
+				std::string errorMessage;
+				if (!m_sql.UpdateUserVariable(sd[0], variableName, (const _eUsrVariableType)atoi(sd[1].c_str()), variableValue, false, errorMessage))
+				{
+					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), errorMessage.c_str());
 				}
 			}
 			else
@@ -3793,10 +3799,20 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 
 void CEventSystem::OpenURL(const float delay, const std::string &URL)
 {
-	if (!delay)
-		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s...", URL.c_str());
+	if (m_sql.m_bEnableEventSystemFullURLLog)
+	{
+		if (!delay)
+			_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s...", URL.c_str());
+		else
+			_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s after %.1f seconds...", URL.c_str(), delay);
+	}
 	else
-		_log.Log(LOG_STATUS, "EventSystem: Fetching URL %s after %.1f seconds...", URL.c_str(), delay);
+	{
+		if (!delay)
+			_log.Log(LOG_STATUS, "EventSystem: Opening a URL...");
+		else
+			_log.Log(LOG_STATUS, "EventSystem: Opening a URL after %.1f seconds...", delay);
+	}
 
 	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delay, URL, "OpenURL"));
 	// maybe do something with sResult in the future.
@@ -3897,7 +3913,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	int level = 0;
 	devicestatesMutexLock.unlock();
 
-	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0, true };
+	_tActionParseResults oParseResults;
+	oParseResults.bEventTrigger = true;
+
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {

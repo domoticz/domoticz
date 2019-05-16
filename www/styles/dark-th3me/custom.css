@@ -657,7 +657,6 @@ input[type="search"] {
 .btn {
   border: 1px solid rgba(51, 51, 51, 0.51);
   padding: 4px 16px;
-  margin-left: 5px;
   text-transform: uppercase;
   text-shadow: none;
   color: #d0d0d0;
@@ -707,6 +706,10 @@ input[type="search"] {
 .btn-warning,
 .btn-warning:focus {
   background: #f89406;
+}
+
+.btn-link {
+  border-color: transparent;
 }
 
 .label.label-info.lcursor:hover {
@@ -872,8 +875,7 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 /*Devices table*/
 .DataTables_sort_wrapper {
   text-transform: uppercase;
-  text-align: right;
-  padding: 0px 0px 0px 8px;
+  padding: 0;
   font-size: 0.9em;
 }
 .sorting,
@@ -953,9 +955,6 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 .dropdown-submenu > a:after {
     margin-right: 0px;
 }
-.modal-body form {
-  color: #000;
-}
 
 .page-header {
     margin: 12px 0;
@@ -1000,4 +999,39 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   background-color: #606060;
 }
 
+.battery {
+  background-color: #FFF;
+}
 
+.battery:before, .battery:after {
+  border-color: #FFF;
+}
+
+.modal-content {
+  color: #fff;
+  background-color: #303030;
+  border: 1px solid #444;
+}
+
+.modal-header {
+  border-bottom-color: #444;
+}
+
+.modal-footer {
+  background-color: inherit;
+  border-top-color: #444;
+  box-shadow: none;
+}
+
+.modal-title,
+.bootbox-body {
+  color: inherit;
+}
+
+.modal .form-control {
+  line-height: 1.5;
+  color: #444;
+  background-color: #fff;
+  padding: 0.125rem 0.25rem;
+  border: 1px solid transparent;
+}

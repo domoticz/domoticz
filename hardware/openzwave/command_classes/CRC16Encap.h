@@ -33,6 +33,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_CRC_16_ENCAP (0x56), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class CRC16Encap: public CommandClass
 	{

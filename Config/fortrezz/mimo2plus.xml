@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!--
     https://products.z-wavealliance.org/products/1893
     https://static1.squarespace.com/static/57363221555986b60e62f0f0/t/5919d919ff7c50802f0b93da/1494866202716/Tech+Appendix+MIMO2%2B+8May2017+removed+MI+address.pdf

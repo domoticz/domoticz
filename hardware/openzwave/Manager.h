@@ -51,6 +51,7 @@ namespace OpenZWave
 	class SerialPort;
 	class Thread;
 	class Notification;
+	class ValueBitSet;
 	class ValueBool;
 	class ValueByte;
 	class ValueDecimal;
@@ -162,12 +163,12 @@ namespace OpenZWave
 		static std::string getVersionAsString();
 
 		/**
-                 * \brief Get the Version Number including Git commit of OZW as a string
-                 * \return a String representing the version number as MAJOR.MINOR.REVISION-gCOMMIT
-                 */
-                static std::string getVersionLongAsString();
+         * \brief Get the Version Number including Git commit of OZW as a string
+         * \return a String representing the version number as MAJOR.MINOR.REVISION-gCOMMIT
+         */
+        static std::string getVersionLongAsString();
 
-                /**
+        /**
 		 * \brief Get the Version Number as the Version Struct (Only Major/Minor returned)
 		 * \return the version struct representing the version
 		 */
@@ -191,16 +192,17 @@ namespace OpenZWave
 	/*@{*/
 	public:
 		/**
-		 * \brief Saves the configuration of a PC Controller's Z-Wave network to the application's user data folder.
+		 * \brief Saves a cache of a PC Controller's Z-Wave network to the application's user data folder.
 		 * This method does not normally need to be called, since OpenZWave will save the state automatically
 		 * during the shutdown process.  It is provided here only as an aid to development.
 		 * The configuration of each PC Controller's Z-Wave network is stored in a separate file.  The filename
-		 * consists of the 8 digit hexadecimal version of the controller's Home ID, prefixed with the string 'zwcfg_'.
+		 * consists of the 8 digit hexadecimal version of the controller's Home ID, prefixed with the string 'ozwcache_'.
 		 * This convention allows OpenZWave to find the correct configuration file for a controller, even if it is
 		 * attached to a different serial port, USB device path, etc.
+		 * \deprecated OZW handles writing out the cache automatically. This does not need to be called anymore.
 		 * \param _homeId The Home ID of the Z-Wave controller to save.
 		 */
-		void WriteConfig( uint32 const _homeId );
+		DEPRECATED void WriteConfig( uint32 const _homeId );
 
 		/**
 		 * \brief Gets a pointer to the locked Options object.
@@ -294,6 +296,15 @@ namespace OpenZWave
 		 * \return true if it is a bridge controller, false if not.
 		 */
 		bool IsBridgeController( uint32 const _homeId );
+
+		/**
+		 * \brief Query if the controller support "extended status information"
+		 * On IMA enabled targets build on SDK >= 6.60.00
+		 * ZW_SendData can return information about TX time, route tries and more.
+		 * \param _homeId The Home ID of the Z-Wave controller.
+		 * \return true if the controller accepted to turn on extended status.
+		 */
+		bool HasExtendedTxStatus( uint32 const _homeId );
 
 		/**
 		 * \brief Get the version of the Z-Wave API library used by a controller.
@@ -434,17 +445,17 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 	/*@{*/
 	public:
 		/**
-		 * \brief Trigger the fetching of fixed data about a node.
-		 * Causes the node's data to be obtained from the Z-Wave network in the same way as if it had just been added.
-		 * This method would normally be called automatically by OpenZWave, but if you know that a node has been
-		 * changed, calling this method will force a refresh of all of the data held by the library.  This can be especially
-		 * useful for devices that were asleep when the application was first run. This is the
-		 * same as the query state starting from the beginning.
+		 * \brief Refresh a Node and Reload it into OZW
+		 * Causes the node's Supported CommandClasses and Capabilities to be obtained from the Z-Wave network
+		 * This method would normally be called automatically by OpenZWave, but if you know that a node's capabilities or command classes
+		 * has been changed, calling this method will force a refresh of that information.
+		 * This call shouldn't be needed except in special circumstances.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to query.
 		 * \return True if the request was sent successfully.
 		 */
 		bool RefreshNodeInfo( uint32 const _homeId, uint8 const _nodeId );
+
 
 		/**
 		 * \brief Trigger the fetching of dynamic value data for a node.
@@ -754,9 +765,11 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * last known level, if supported by the device, otherwise it will turn	it on at 100%.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to be changed.
+		 * \deprecated This method has been depreciated in setting the ValueID's directly (Remove in 1.8)
+		 *
 		 * \see SetNodeOff, SetNodeLevel
 		 */
-		void SetNodeOn( uint32 const _homeId, uint8 const _nodeId );
+		DEPRECATED void SetNodeOn( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Turns a node off
@@ -765,9 +778,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * a ValueChanged notification from that class.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to be changed.
+		 * \deprecated This method has been depreciated in setting the ValueID's directly (Remove in 1.8)
 		 * \see SetNodeOn, SetNodeLevel
 		 */
-		void SetNodeOff( uint32 const _homeId, uint8 const _nodeId );
+		DEPRECATED void SetNodeOff( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Sets the basic level of a node
@@ -778,9 +792,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _nodeId The ID of the node to be changed.
 		 * \param _level The level to set the node.  Valid values are 0-99 and 255.  Zero is off and
 		 * 99 is fully on.  255 will turn on the device at its last known level (if supported).
+		 * \deprecated This method has been depreciated in setting the ValueID's directly (Remove in 1.8)
 		 * \see SetNodeOn, SetNodeOff
 		 */
-		void SetNodeLevel( uint32 const _homeId, uint8 const _nodeId, uint8 const _level );
+		DEPRECATED void SetNodeLevel( uint32 const _homeId, uint8 const _nodeId, uint8 const _level );
 
 		/**
 		 * \brief Get whether the node information has been received
@@ -876,6 +891,40 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 	/*@}*/
 
 	//-----------------------------------------------------------------------------
+	// Instances
+	//-----------------------------------------------------------------------------
+	/** \name Instances
+	 *  Methods for accessing Instance Information.
+	 */
+	/*@{*/
+	public:
+		/**
+		 *\brief Get the Instance Label for a specific ValueID
+		 * returns the Instance Label for a Specific ValueID on a CommandClass, or the Global Instance Label
+		 * if there is no specific label for the CommandClass
+		 *\param _id The unique identifier of the value
+		 *\return The Instance Label
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 */
+		string GetInstanceLabel( ValueID const &_id);
+
+		/**
+		 *\brief Get the Instance Label for a specific CommandClass
+		 * returns the Label for a Specific Instance on a Specific CommandClass, or the Global Instance Label
+		 * if there is no specific label for the CommandClass
+		 *\param _homeId the HomeID for the network you are querying
+		 *\param _node The Node you are interested in.
+		 *\param _cc The CommandClass for the Label you are interested in
+		 *\param _instance the Instance you are querying for
+		 *\return The Instance Label
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 */
+		string GetInstanceLabel(uint32 const _homeId, uint8 const _node, uint8 const _cc, uint8 const _instance);
+
+	/*@}*/
+	//-----------------------------------------------------------------------------
 	// Values
 	//-----------------------------------------------------------------------------
 	/** \name Values
@@ -887,22 +936,24 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Gets the user-friendly label for the value.
 		 * \param _id The unique identifier of the value.
+		 * \param _pos the Bit To Get the Label for if its a BitSet ValueID
 		 * \return The value label.
  		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
-		string GetValueLabel( ValueID const& _id );
+		string GetValueLabel( ValueID const& _id, int32 _pos = -1 );
 
 		/**
 		 * \brief Sets the user-friendly label for the value.
 		 * \param _id The unique identifier of the value.
+		 * \param _pos the Bit To set the Label for if its a BitSet ValueID
 		 * \param _value The new value of the label.
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
-		void SetValueLabel( ValueID const& _id, string const& _value );
+		void SetValueLabel( ValueID const& _id, string const& _value, int32 _pos = -1 );
 
 		/**
 		 * \brief Gets the units that the value is measured in.
@@ -927,22 +978,24 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Gets a help string describing the value's purpose and usage.
 		 * \param _id The unique identifier of the value.
+		 * \param _pos Get the Help for associated Bits (Valid with ValueBitSet only)
 		 * \return The value help text.
  		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
-		string GetValueHelp( ValueID const& _id );
+		string GetValueHelp( ValueID const& _id, int32 _pos = -1 );
 
 		/**
 		 * \brief Sets a help string describing the value's purpose and usage.
 		 * \param _id The unique identifier of the value.
 		 * \param _value The new value of the help text.
+		 * \param __pos Set the Help for a associated Bit (Valid with ValueBitSet Only)
  		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
-		void SetValueHelp( ValueID const& _id, string const& _value );
+		void SetValueHelp( ValueID const& _id, string const& _value, int32 _pos = -1 );
 
 		/**
 		 * \brief Gets the minimum that this value may contain.
@@ -1005,6 +1058,19 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		bool IsValuePolled( ValueID const& _id );
 
 		/**
+		 * \brief Gets a the value of a Bit from a BitSet ValueID
+		 * \param _id The unique identifier of the value.
+		 * \param _pos the Bit you want to test for
+		 * \param o_value Pointer to a bool that will be filled with the value.
+		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_BitSet. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 */
+		bool GetValueAsBitSet( ValueID const& _id, uint8 _pos, bool* o_value );
+
+		/**
 		 * \brief Gets a value as a bool.
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a bool that will be filled with the value.
@@ -1012,7 +1078,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsBool( ValueID const& _id, bool* o_value );
 
@@ -1024,7 +1090,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsByte( ValueID const& _id, uint8* o_value );
 
@@ -1036,7 +1102,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsFloat( ValueID const& _id, float* o_value );
 
@@ -1048,7 +1114,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsInt( ValueID const& _id, int32* o_value );
 
@@ -1060,7 +1126,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsShort( ValueID const& _id, int16* o_value );
 
@@ -1073,7 +1139,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsString( ValueID const& _id, string* o_value );
 
@@ -1086,7 +1152,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueListSelection, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsRaw( ValueID const& _id, uint8** o_value, uint8* o_length );
 
@@ -1098,7 +1164,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueListSelection( ValueID const& _id, string* o_value );
 
@@ -1110,7 +1176,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListItems, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueListSelection( ValueID const& _id, int32* o_value );
 
@@ -1122,7 +1188,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueAsRaw
 		 */
 		bool GetValueListItems( ValueID const& _id, vector<string>* o_value );
 
@@ -1134,7 +1200,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueAsRaw
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueAsRaw
 		 */
 		bool GetValueListValues( ValueID const& _id, vector<int32>* o_value );
 
@@ -1146,9 +1212,25 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
-		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems
+		 * \see ValueID::GetType, GetValueAsBitSet, GetValueAsBool, GetValueAsByte, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems
 		 */
 		bool GetValueFloatPrecision( ValueID const& _id, uint8* o_value );
+
+		/**
+		 * \brief Sets the state of a bit in a BitSet ValueID.
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
+		 * held by the node is updated directly.  This will be reverted by a future status message from the device
+		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
+		 * \param _id The unique identifier of the BitSet value.
+		 * \param _pos the Position of the Bit you want to Set
+		 * \param _value The new value of the Bitset at the _pos position.
+		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Bool. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 *
+		 */
+		bool SetValue( ValueID const& _id,  uint8 _pos, bool const _value );
 
 		/**
 		 * \brief Sets the state of a bool.
@@ -1320,6 +1402,45 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool ReleaseButton( ValueID const& _id );
+
+		/**
+		 * \brief Sets the Valid BitMask for a BitSet ValueID
+		 * Sets a BitMask of Valid Bits for a BitSet ValueID
+		 * \param _id The unique identifier of the integer value.
+		 * \param _mask The Mask to set
+		 * \return true if the mask was applied.  Returns false if the value is not a ValueID::ValueType_BitSet or the Mask was invalid. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 */
+		bool SetBitMask( ValueID const& _id, uint32 _mask );
+
+		/**
+		 * \brief Gets the Valid BitMask for a BitSet ValueID
+		 * Gets a BitMask of Valid Bits for a BitSet ValueID
+		 * \param _id The unique identifier of the integer value.
+		 * \param o_mask The Mask to for the BitSet
+		 * \return true if the mask was retrieved.  Returns false if the value is not a ValueID::ValueType_BitSet or the Mask was invalid. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 */
+		bool GetBitMask( ValueID const& _id, int32* o_mask );
+
+		/**
+		 * \brief Gets the size of a BitMask ValueID 
+		 * Gets the size of a BitMask ValueID - Either 1, 2 or 4
+		 * \param _id The unique identifier of the integer value.
+		 * \param o_size The Size of the BitSet
+		 * \return true if the size was retrieved.  Returns false if the value is not a ValueID::ValueType_BitSet or the Mask was invalid. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 */
+		bool GetBitSetSize( ValueID const& _id, uint8* o_size );
+
+
+
 	/*@}*/
 
 	//-----------------------------------------------------------------------------
@@ -1432,14 +1553,16 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Switch all devices on.
 		 * All devices that support the SwitchAll command class will be turned on.
+		 * \deprecated This method has been depreciated. Please use the ValueID interface instead.
 		 */
-		void SwitchAllOn( uint32 const _homeId );
+		DEPRECATED void SwitchAllOn( uint32 const _homeId );
 
 		/**
 		 * \brief Switch all devices off.
 		 * All devices that support the SwitchAll command class will be turned off.
+		 * \deprecated This method has been depreciated. Please use the ValueID interface instead.
 		 */
-		void SwitchAllOff( uint32 const _homeId );
+		DEPRECATED void SwitchAllOff( uint32 const _homeId );
 
 	/*@}*/
 
@@ -1553,6 +1676,16 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \see GetNumGroups, AddAssociation, RemoveAssociation, GetAssociations
 		 */
 		uint8 GetMaxAssociations( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx );
+
+		/**
+		 * \brief Returns true is group supports multi instance.
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node whose associations we are interested in.
+		 * \param _groupIdx one-based index of the group (because Z-Wave product manuals use one-based group numbering).
+		 * \return True if group supports multi instance.
+		 * \see GetNumGroups, AddAssociation, RemoveAssociation, GetAssociations, GetMaxAssociations
+		 */
+		bool IsMultiInstance( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx );
 
 		/**
 		 * \brief Returns a label for the particular group of a node.
@@ -1724,7 +1857,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * - Driver::ControllerState_InProgress - the controller is in the process of adding or removing the chosen node.  It is now too late to cancel the command.
 		 * - Driver::ControllerState_Complete - the controller has finished adding or removing the node, and the command is complete.
 		 * - Driver::ControllerState_Failed - will be sent if the command fails for any reason.
-		 * \deprecated This method has been depreciated in favour of the methods in the \ref Network_Commands section
+		 * \deprecated This method has been depreciated in favour of the methods in the \ref Network_Commands section (Remove in 1.8)
 		 *
 		 * \see AddNode RemoveNode RemoveFailedNode HasNodeFailed RequestNodeNeighborUpdate AssignReturnRoute DeleteAllReturnRoutes SendNodeInformation CreateNewPrimary ReceiveConfiguration ReplaceFailedNode TransferPrimaryRole RequestNetworkUpdate ReplicationSend CreateButton DeleteButton
 		 *
@@ -2014,6 +2147,25 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 */
 		bool DeleteButton(uint32 const _homeId, uint8 const _nodeId, uint8 const _buttonid);
 
+		/**
+		*  \brief Send a raw packet to a node.
+		*
+		*  Send a Raw Packet to a Node. No confirmation that the node accepted the packet etc will be available.
+		*  This is for testing only and should not be used for anything production
+		*
+		*  \param _homeId the HomeID of the Z-Wave Network
+		*  \param _nodeId the ID of the Node
+		*  \param _logText Text to Log when sending the packet
+		*  \param _msgType The Type of Message to Send
+		*  \param _sendSecure if we should attempt to encrypt the packet
+		*  \param _content A array of bytes to send
+		*  \param _length the length of the array
+		*/
+		void SendRawData(uint32 const _homeId, uint8 const _nodeId, string const& _logText, uint8 const _msgType, const bool _sendSecure, uint8 const* _content, uint8 const _length);
+
+
+
+
 	/*@}*/
 
 	//-----------------------------------------------------------------------------
@@ -2021,46 +2173,53 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 	//-----------------------------------------------------------------------------
 	/** \name Scene Commands
 	 *  Commands for Z-Wave scene interface.
+	 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
+	 *
 	 */
 	/*@{*/
 	public:
 		/**
 		 * \brief Gets the number of scenes that have been defined.
 		 * \return The number of scenes.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetAllScenes, RemoveAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		uint8 GetNumScenes( );
+		DEPRECATED uint8 GetNumScenes( );
 
 		/**
 		 * \brief Gets a list of all the SceneIds.
 		 * \param _sceneIds is a pointer to an array of integers.
 		 * \return The number of scenes. If zero, _sceneIds will be NULL and doesn't need to be freed.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		uint8 GetAllScenes( uint8** _sceneIds );
+		DEPRECATED uint8 GetAllScenes( uint8** _sceneIds );
 
 		/**
 		 * \brief Remove all the SceneIds.
 		 * \param _homeId The Home ID of the Z-Wave controller. 0 for all devices from all scenes.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetAllScenes, GetNumScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		void RemoveAllScenes( uint32 const _homeId );
+		DEPRECATED void RemoveAllScenes( uint32 const _homeId );
 
 		/**
 		 * \brief Create a new Scene passing in Scene ID
 		 * \return uint8 Scene ID used to reference the scene. 0 is failure result.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 
 		 */
-		uint8 CreateScene();
+		DEPRECATED uint8 CreateScene();
 
 		/**
 		 * \brief Remove an existing Scene.
 		 * \param _sceneId is an integer representing the unique Scene ID to be removed.
 		 * \return true if scene was removed.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool RemoveScene( uint8 const _sceneId );
+		DEPRECATED bool RemoveScene( uint8 const _sceneId );
 
 		/**
 		 * \brief Add a bool Value ID to an existing scene.
@@ -2068,9 +2227,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the bool value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, bool const _value );
+		DEPRECATED bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, bool const _value );
 
 		/**
 		 * \brief Add a byte Value ID to an existing scene.
@@ -2078,9 +2238,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the byte value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, uint8 const _value );
+		DEPRECATED bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, uint8 const _value );
 
 		/**
 		 * \brief Add a decimal Value ID to an existing scene.
@@ -2088,9 +2249,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the float value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, float const _value );
+		DEPRECATED bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, float const _value );
 
 		/**
 		 * \brief Add a 32-bit signed integer Value ID to an existing scene.
@@ -2098,9 +2260,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the int32 value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
+		DEPRECATED bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
 
 		/**
 		 * \brief Add a 16-bit signed integer Value ID to an existing scene.
@@ -2108,9 +2271,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the int16 value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, int16 const _value );
+		DEPRECATED bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, int16 const _value );
 
 		/**
 		 * \brief Add a string Value ID to an existing scene.
@@ -2118,9 +2282,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the string value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
+		DEPRECATED bool AddSceneValue( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
 
 		/**
 		 * \brief Add the selected item list Value ID to an existing scene (as a string).
@@ -2128,9 +2293,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the string value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
+		DEPRECATED bool AddSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
 
 		/**
 		 * \brief Add the selected item list Value ID to an existing scene (as a integer).
@@ -2138,27 +2304,30 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the integer value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool AddSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
+		DEPRECATED bool AddSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
 
 		/**
 		 * \brief Remove the Value ID from an existing scene.
 		 * \param _sceneId is an integer representing the unique Scene ID.
 		 * \param _valueId is the Value ID to be removed.
 		 * \return true if Value ID was removed.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool RemoveSceneValue( uint8 const _sceneId, ValueID const& _valueId );
+		DEPRECATED bool RemoveSceneValue( uint8 const _sceneId, ValueID const& _valueId );
 
 		/**
 		 * \brief Retrieves the scene's list of values.
 		 * \param _sceneId The Scene ID of the scene to retrieve the value from.
 		 * \param o_value Pointer to an array of ValueIDs if return is non-zero.
 		 * \return The number of nodes in the o_value array. If zero, the array will point to NULL and does not need to be deleted.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		int SceneGetValues( uint8 const _sceneId, vector<ValueID>* o_value );
+		DEPRECATED int SceneGetValues( uint8 const _sceneId, vector<ValueID>* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as a bool.
@@ -2166,9 +2335,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a bool that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueAsBool( uint8 const _sceneId, ValueID const& _valueId, bool* o_value );
+		DEPRECATED bool SceneGetValueAsBool( uint8 const _sceneId, ValueID const& _valueId, bool* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as an 8-bit unsigned integer.
@@ -2176,9 +2346,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a uint8 that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueAsByte( uint8 const _sceneId, ValueID const& _valueId, uint8* o_value );
+		DEPRECATED bool SceneGetValueAsByte( uint8 const _sceneId, ValueID const& _valueId, uint8* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as a float.
@@ -2186,9 +2357,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a float that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueAsFloat( uint8 const _sceneId, ValueID const& _valueId, float* o_value );
+		DEPRECATED bool SceneGetValueAsFloat( uint8 const _sceneId, ValueID const& _valueId, float* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as a 32-bit signed integer.
@@ -2196,9 +2368,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a int32 that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueAsInt( uint8 const _sceneId, ValueID const& _valueId, int32* o_value );
+		DEPRECATED bool SceneGetValueAsInt( uint8 const _sceneId, ValueID const& _valueId, int32* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as a 16-bit signed integer.
@@ -2206,9 +2379,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a int16 that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueAsShort( uint8 const _sceneId, ValueID const& _valueId, int16* o_value );
+		DEPRECATED bool SceneGetValueAsShort( uint8 const _sceneId, ValueID const& _valueId, int16* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as a string.
@@ -2216,9 +2390,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a string that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueAsString( uint8 const _sceneId, ValueID const& _valueId, string* o_value );
+		DEPRECATED bool SceneGetValueAsString( uint8 const _sceneId, ValueID const& _valueId, string* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as a list (as a string).
@@ -2226,9 +2401,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a string that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueListSelection( uint8 const _sceneId, ValueID const& _valueId, string* o_value );
+		DEPRECATED bool SceneGetValueListSelection( uint8 const _sceneId, ValueID const& _valueId, string* o_value );
 
 		/**
 		 * \brief Retrieves a scene's value as a list (as a integer).
@@ -2236,9 +2412,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The Value ID of the value to retrieve.
 		 * \param o_value Pointer to a integer that will be filled with the returned value.
 		 * \return true if the value was obtained.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SceneGetValueListSelection( uint8 const _sceneId, ValueID const& _valueId, int32* o_value );
+		DEPRECATED bool SceneGetValueListSelection( uint8 const _sceneId, ValueID const& _valueId, int32* o_value );
 
 		/**
 		 * \brief Set a bool Value ID to an existing scene's ValueID
@@ -2246,9 +2423,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the bool value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, bool const _value );
+		DEPRECATED bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, bool const _value );
 
 		/**
 		 * \brief Set a byte Value ID to an existing scene's ValueID
@@ -2256,9 +2434,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the byte value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, uint8 const _value );
+		DEPRECATED bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, uint8 const _value );
 
 		/**
 		 * \brief Set a decimal Value ID to an existing scene's ValueID
@@ -2266,9 +2445,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the float value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, float const _value );
+		DEPRECATED bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, float const _value );
 
 		/**
 		 * \brief Set a 32-bit signed integer Value ID to an existing scene's ValueID
@@ -2276,9 +2456,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the int32 value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
+		DEPRECATED bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
 
 		/**
 		 * \brief Set a 16-bit integer Value ID to an existing scene's ValueID
@@ -2286,9 +2467,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the int16 value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, int16 const _value );
+		DEPRECATED bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, int16 const _value );
 
 		/**
 		 * \brief Set a string Value ID to an existing scene's ValueID
@@ -2296,9 +2478,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the string value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
+		DEPRECATED bool SetSceneValue( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
 
 		/**
 		 * \brief Set the list selected item Value ID to an existing scene's ValueID (as a string).
@@ -2306,9 +2489,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the string value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
+		DEPRECATED bool SetSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, string const& _value );
 
 		/**
 		 * \brief Set the list selected item Value ID to an existing scene's ValueID (as a integer).
@@ -2316,41 +2500,46 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId is the Value ID to be added.
 		 * \param _value is the integer value to be saved.
 		 * \return true if Value ID was added.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		bool SetSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
+		DEPRECATED bool SetSceneValueListSelection( uint8 const _sceneId, ValueID const& _valueId, int32 const _value );
 
 		/**
 		 * \brief Returns a label for the particular scene.
 		 * \param _sceneId The Scene ID
 		 * \return The label string.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, SetSceneLabel, SceneExists, ActivateScene
 		 */
-		string GetSceneLabel( uint8 const _sceneId );
+		DEPRECATED string GetSceneLabel( uint8 const _sceneId );
 
 		/**
 		 * \brief Sets a label for the particular scene.
 		 * \param _sceneId The Scene ID
 		 * \param _value The new value of the label.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SceneExists, ActivateScene
 		 */
-		void SetSceneLabel( uint8 const _sceneId, string const& _value );
+		DEPRECATED void SetSceneLabel( uint8 const _sceneId, string const& _value );
 
 		/**
 		 * \brief Check if a Scene ID is defined.
 		 * \param _sceneId The Scene ID.
 		 * \return true if Scene ID exists.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, ActivateScene
 		 */
-		bool SceneExists( uint8 const _sceneId );
+		DEPRECATED bool SceneExists( uint8 const _sceneId );
 
 		/**
 		 * \brief Activate given scene to perform all its actions.
 		 * \param _sceneId The Scene ID.
 		 * \return true if it is successful.
+		 * \deprecated The Scene Methods have been depreciated. (This is not the same as the CENTRAL_SCENE CommandClass)
 		 * \see GetNumScenes, GetAllScenes, CreateScene, RemoveScene, AddSceneValue, RemoveSceneValue, SceneGetValues, SceneGetValueAsBool, SceneGetValueAsByte, SceneGetValueAsFloat, SceneGetValueAsInt, SceneGetValueAsShort, SceneGetValueAsString, SetSceneValue, GetSceneLabel, SetSceneLabel, SceneExists
 		 */
-		bool ActivateScene( uint8 const _sceneId );
+		DEPRECATED bool ActivateScene( uint8 const _sceneId );
 
 	/*@}*/
 
@@ -2376,6 +2565,118 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _data Pointer to structure NodeData to return values
 		 */
 		void GetNodeStatistics( uint32 const _homeId, uint8 const _nodeId, Node::NodeData* _data );
+
+		/**
+		 * \brief Get a Human Readable String for the RouteScheme in the Extended TX Status Frame
+		 * \param _data Pointer to the structure Node::NodeData return from GetNodeStatistics
+		 * \return String containing the Route Scheme Used
+		 */
+		static string GetNodeRouteScheme(Node::NodeData *_data);
+
+		/**
+		 * \brief Get Humand Readable String for the RouteSpeed in the Extended TX Status Frame
+		 * \param _data Pointer to the structure Node::NodeData returned from GetNodeStatistics
+		 * \return String containing the Speed
+		 */
+		static string GetNodeRouteSpeed(Node::NodeData *_data);
+
+	/*@}*/
+
+	//-----------------------------------------------------------------------------
+	// MetaData interface
+	//-----------------------------------------------------------------------------
+	/** \name MetaData Interface
+	 *  Commands for retrieving information about Devices.
+	 */
+	/*@{*/
+	public:
+		/**
+		 * \brief Retrieve metadata about a node
+		 * \param _homeId The Home ID of the driver for the node
+		 * \param _nodeId The node number
+		 * \param _metadata the MetadataFields you are requesting.
+		 * \return a string containing the requested metadata
+		 */
+		string const GetMetaData( uint32 const _homeId, uint8 const _nodeId, Node::MetaDataFields _metadata );
+		/**
+		 * \brief Retrieve ChangeLogs about a configuration revision
+		 * \param _homeId The Home ID of the driver for the node
+		 * \param _nodeId The node number
+		 * \param revision the revision you are requesting
+		 * \return a Node::ChangeLogEntry struct with the ChangeLog Details. if the revision paramater is -1, then then revision passed to this function is invalid
+		 */
+		Node::ChangeLogEntry const GetChangeLog( uint32 const _homeId, uint8 const _nodeId, uint32_t revision);
+
+	/*@}*/
+		//-----------------------------------------------------------------------------
+		// Config File Revision interface
+		//-----------------------------------------------------------------------------
+		/** \name Config File Revision Methods
+		 *  These commands deal with checking/updating Config File's from the OZW master repository
+		 */
+		/*@{*/
+		public:
+			/**
+			 * \brief Check the Latest Revision of the Config File for this device
+			 *
+			 * and optionally update the local database with the latest version
+			 * Config Revisions are exposed on the ManufacturerSpecific CC. (both the latest and loaded version)
+			 *
+			 * Outdated Config Revisions are signaled via Notifications
+			 *
+			 * \param _homeId The Home ID of the driver for the node
+			 * \param _nodeId The node number
+			 * \return Success/Failure of submitting the request.
+			 */
+			bool checkLatestConfigFileRevision(uint32 const _homeId, uint8 const _nodeId);
+
+			/**
+			 * \brief Check the Latest Revision of the Manufacturer_Specific.xml file
+			 *
+			 * and optionally update to the latest version.
+			 *
+			 * Outdated Config Revisions are signaled via Notifications
+			 *
+			 * \param _homeId The Home ID of the driver for the node
+			 * \return Success/Failure of submitting the request.
+			 */
+			bool checkLatestMFSRevision(uint32 const _homeId);
+
+			/**
+			 * \brief Download the latest Config File Revision
+			 *
+			 * The Node will be reloaded depending upon the Option "ReloadAfterUpdate"
+			 * Valid Options include:
+			 * * Never - Never Reload a Node after updating the Config File. Manual Reload is Required.
+			 * * Immediate - Reload the Node Immediately after downloading the latest revision
+			 * * Awake - Reload Nodes only when they are awake (Always-On Nodes will reload immediately, Sleeping Nodes will reload
+			 * 			 when they wake up
+			 *
+			 * Errors are signaled via Notifications
+			 *
+			 * \param _homeId The Home ID of the driver for the node
+			 * \param _nodeId The Node ID of the Node to update the Config File for
+			 * \return Success/Failure of submitting the request.
+			 */
+			bool downloadLatestConfigFileRevision(uint32 const _homeId, uint8 const _nodeId);
+
+			/**
+			 * \brief Download the latest Config File Revision
+			 *
+			 * The ManufacturerSpecific File will be updated, and any new Config Files will also be downloaded.
+			 * Existing Config Files will not be checked/updated.
+			 *
+			 * Errors are signaled via Notifications
+			 *
+			 * \param _homeId The Home ID of the driver for the node
+			 * \return Success/Failure of submitting the request.
+			 */
+			bool downloadLatestMFSRevision(uint32 const _homeId);
+
+		/*@}*/
+
+
+
 
 	};
 	/*@}*/

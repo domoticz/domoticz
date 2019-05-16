@@ -11,6 +11,7 @@ return {
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'switchOn')
 			adapterManager.addDummyMethod(device, 'switchOff')
+			adapterManager.addDummyMethod(device, 'setDescription')
 		end
 		return res
 	end,
@@ -41,6 +42,16 @@ return {
 			end
 
 			return domoticz._setIterators({}, true, 'device', false , subData)
+		end
+
+		function scene.setDescription(description)
+			local url = domoticz.settings['Domoticz url'] ..
+				"/json.htm?description=" .. domoticz.utils.urlEncode(description) ..
+				"&scenetype=0" ..
+				"&idx=" .. scene.id ..
+				"&name=".. domoticz.utils.urlEncode(scene.name) ..
+				"&type=updatescene"
+			return domoticz.openURL(url)
 		end
 	end
 

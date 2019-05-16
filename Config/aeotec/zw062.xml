@@ -1,22 +1,52 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:003E:0103</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw062.png</MetaDataItem>
+    <MetaDataItem id="003E" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/1445/</MetaDataItem>
+    <MetaDataItem name="Name">Garage Door Controller Gen5</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Z-Wave button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Z-Wave button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Z-Wave button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">Aeon Labs Garage Door Controller is a smart and wireless Garage Door Control system, you can control the garage door to open, close, or stop moving via wireless signal on your gateway client or phone application.
+The Garage Door Controller allows you to configure different alarm sounds to indicate the door’s action. Each action alarm sound can be customized. To change or update new alarm sounds for the Garage Door Controller, connect the Garage Door Controller to your PC host with a USB cable and download your sound files to the flash memory (128 MB) of the Garage Door Controller.
+It can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. All non-battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network. 
+It is also a security Z-Wave device and supports the Over The Air (OTA) feature for the product’s firmware upgrade. </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1497/Aeon Labs Garage Door Controller Gen5 manual.pdf</MetaDataItem>
+    <MetaDataItem id="003E" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="003E" name="Identifier" type="0103">ZW062-A</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1445/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1496/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1497/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="003E" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/1496/</MetaDataItem>
+    <MetaDataItem id="003E" name="Identifier" type="0203">ZW062-B</MetaDataItem>
+    <MetaDataItem id="003E" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="003E" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1497/</MetaDataItem>
+    <MetaDataItem id="003E" name="Identifier" type="0003">ZW062-C</MetaDataItem>
+    <MetaDataItem id="003E" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- 
 Aeotec Garage ZW062 Door Controller
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- the Device Doesn't support Get for Alarm Class -->
-	<CommandClass id="113" getsupported="false"/>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" genre="config" instance="1" index="32" label="Startup ringtone" min="0" max="100" value="1" size="1">
-			<Help>
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="32" instance="1" label="Startup ringtone" max="100" min="0" size="1" type="byte" value="1">
+      <Help>
 			Configure the default startup ringtone.
 			Value = 0, disable the Startup ringtone.
 			Value = Others, Enable and select a startup ringtone for the Garage Door Controller
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="34" label="Sensor Calibration" min="0" max="1" value="0" size="1" write_only="true">
-			<Help>
+    </Value>
+    <Value genre="config" index="34" instance="1" label="Sensor Calibration" max="1" min="0" size="1" type="list" value="0" write_only="true">
+      <Help>
 			Calibration Steps:
 			1. Let the garage door move to full close position.
 			2. Send this parameter (0x22) with value=1 to Garage Door Controller.
@@ -25,19 +55,19 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
 			After the step 4 is completed, all calibration steps are complete.
 			Note: This process should be implemented when the Garage Door Controller just only has one Sensor is installed on the garage door.
 			</Help>
-			<Item label="Normal" value="0"/>
+      <Item label="Normal" value="0"/>
       <Item label="Do calibration" value="1"/>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="35" label="Timeout of calibration steps" min="0" max="65000" value="30">
-            <Help>Set the timeout of all calibration steps for the Sensor</Help>
-        </Value>
-		<Value type="byte" genre="config" instance="1" index="36" label="Get the numbers of alarm music" size="1" value="5" read_only="true">
-            <Help>
+    </Value>
+    <Value genre="config" index="35" instance="1" label="Timeout of calibration steps" max="65000" min="0" type="short" value="30">
+      <Help>Set the timeout of all calibration steps for the Sensor</Help>
+    </Value>
+    <Value genre="config" index="36" instance="1" label="Get the numbers of alarm music" read_only="true" size="1" type="byte" value="5">
+      <Help>
 				Get the numbers of alarm music. (not support Set CC)
 			</Help>
-        </Value>
-        <Value type="int" genre="config" instance="1" index="37" label="Configure the alarm mode for when the garage door is opening" size="4" value="167905281">
-            <Help>
+    </Value>
+    <Value genre="config" index="37" instance="1" label="Configure the alarm mode for when the garage door is opening" size="4" type="int" value="167905281">
+      <Help>
                 1, Value1: configure the frequency of blinking for the Alarm LEd, there are 10 levels that 1 to10 level, the minimum frequency is level 1 and the max frequency is level 10.
 				2, Value2: configure the alarm sound (there are 4 types sound saved in EEPROM and user also can update it).
 				3, Value3: configure the volume of alarm sound (there are 10 levels, the min volume is 1 level and the max volume is 10 levels).
@@ -48,9 +78,9 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
                 + 256 x volume
                 + 1 x alarm_mode
             </Help>
-        </Value>
-		<Value type="int" genre="config" instance="1" index="38" label="Configure the alarm mode when the garage door is closing" size="4" value="134416385">
-            <Help>
+    </Value>
+    <Value genre="config" index="38" instance="1" label="Configure the alarm mode when the garage door is closing" size="4" type="int" value="134416385">
+      <Help>
                 1, Value1: configure the frequency of blinking for the Alarm LED, there are 10 levels that 1 to10 level, the minimum frequency is level 1 and the max frequency is level 10.
 				2, Value2: configure the alarm sound (there are 4 types sound saved in EEPROM and user also can update it).
 				3, Value3: configure the volume of alarm sound (there are 10 levels, the min volume is 1 level and the max volume is 10 levels).
@@ -61,9 +91,9 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
                 + 256 x volume
                 + 1 x alarm_mode
             </Help>
-        </Value>
-		<Value type="int" genre="config" instance="1" index="39" label="Configuration alarm mode when the garage door is in unknown state" size="4" value="100927488">
-            <Help>
+    </Value>
+    <Value genre="config" index="39" instance="1" label="Configuration alarm mode when the garage door is in unknown state" size="4" type="int" value="100927488">
+      <Help>
                 1, Value1: configure the frequency of blinking for the Alarm LED, there are 10 levels that 1 to10 level, the minimum frequency is level 1 and the max frequency is level 10.
 				2, Value2: configure the alarm sound (there are 4 types sound saved in EEPROM and user also can update it).
 				3, Value3: configure the volume of alarm sound (there are 10 levels, the min volume is 1 level and the max volume is 10 levels).
@@ -74,9 +104,9 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
                 + 256 x volume
                 + 1 x alarm_mode
             </Help>
-        </Value>
-		<Value type="int" genre="config" instance="1" index="40" label="Configure the alarm mode when the garage door is in closed position" size="4" value="33883392">
-            <Help>
+    </Value>
+    <Value genre="config" index="40" instance="1" label="Configure the alarm mode when the garage door is in closed position" size="4" type="int" value="33883392">
+      <Help>
                 1, Value1: configure the frequency of blinking for the Alarm LED, there are 10 levels that 1 to10 level, the minimum frequency is level 1 and the max frequency is level 10.
 				2, Value2: configure the alarm sound (there are 4 types sound saved in EEPROM and user also can update it).
 				3, Value3: configure the volume of alarm sound (there are 10 levels, the min volume is 1 level and the max volume is 10 levels).
@@ -87,84 +117,88 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
 				+ 256 x volume
 				+ 1 x alarm_mode
             </Help>
-        </Value>
-		<Value type="list" genre="config" index="41" label="Configuration report for the tamper switch State" size="4" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="41" label="Configuration report for the tamper switch State" size="4" type="list" value="0">
+      <Help>
 			Note:
 			1. The Garage Door Controller will send this configuration report to gateway controller or associated nodes automatically if the Sensor is removed.
 			2. You can send the value=0x55555555 of this parameter to controller to relieve the alarm state.
 			</Help>
-			<Item label="Sensor is not removed" value="0"/>
-			<Item label="Sensor is removed" value="15"/>
-            <Item label="Relieve the alarm state" value="1431655765"/>
-		</Value>
-		<Value type="list" genre="config" index="42" label="Configuration report for the battery state of Sensor" size="1" min="0" max="15" value="0">
-			<Help>It will report the battery power state to associated nodes automatically when the battery power is in low battery.</Help>
-			<Item label="Battery power is much more" value="0"/>
-			<Item label="Battery power of Sensor is in low battery" value="15"/>
-		</Value>
-		<Value type="byte" genre="config" index="43" label="Start playing or Stop playing the ringtone" min="0" max="100" value="0" write_only="true">
-			<Help>
+      <Item label="Sensor is not removed" value="0"/>
+      <Item label="Sensor is removed" value="15"/>
+      <Item label="Relieve the alarm state" value="1431655765"/>
+    </Value>
+    <Value genre="config" index="42" label="Configuration report for the battery state of Sensor" max="15" min="0" size="1" type="list" value="0">
+      <Help>It will report the battery power state to associated nodes automatically when the battery power is in low battery.</Help>
+      <Item label="Battery power is much more" value="0"/>
+      <Item label="Battery power of Sensor is in low battery" value="15"/>
+    </Value>
+    <Value genre="config" index="43" label="Start playing or Stop playing the ringtone" max="100" min="0" type="byte" value="0" write_only="true">
+      <Help>
 			Value=0xff, stop playing ringtone.
 			Value=1 to 100, start playing the ringtone that you selected.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="44" label="Test the volume of the current ringtone" size="1" min="1" max="10" value="1" read_only="true">
-            <Help>
+    </Value>
+    <Value genre="config" index="44" instance="1" label="Test the volume of the current ringtone" max="10" min="1" read_only="true" size="1" type="byte" value="1">
+      <Help>
 				Value=1 to value=10, which map to the volume level 1 to level 10
 			</Help>
-        </Value>
-		<Value type="short" genre="config" instance="1" index="45" label="Get the environment temperature" size="2" min="0" max="500" value="0" read_only="true">
-            <Help>
+    </Value>
+    <Value genre="config" index="45" instance="1" label="Get the environment temperature" max="500" min="0" read_only="true" size="2" type="short" value="0">
+      <Help>
 				The temperature value contains one decimal point.
 				E.g. If the report value=252(0x00FC), the temperature is 25.2.
 				Rang is 0 to 500 (0 to 50.0).
 			</Help>
-        </Value>
-		<Value type="list" genre="config" index="47" label="Define the function of Button- or Button+" size="1" min="0" max="1" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="47" label="Define the function of Button- or Button+" max="1" min="0" size="1" type="list" value="0">
+      <Help>
 			Value=0, short pressing the Button +/- will be used to adjust the volume of sound. Long pressing the Button +/- will be used to switch the sound to the next.
 			Value=1, short pressing the Button +/- will be used to switch the sound to the next. Long pressing the Button +/- will be used to adjust the volume of sound.
 			</Help>
-			<Item label="Volume" value="0"/>
-			<Item label="Sound" value="1"/>
-		</Value>
-		<Value type="list" genre="config" index="80" label="Report type when the state of garage door is changed" size="1" min="0" max="2" value="2">
-			<Help>It will send the Hail CC/configuration report CC when the state of garage door is changed</Help>
-			<Item label="Reserved" value="0"/>
-			<Item label="Hail" value="1"/>
-			<Item label="Barrier operator" value="2"/>
-		</Value>
-		<Value type="list" index="241" genre="config" label="Pair the Sensor with Garage Door Controller" size="4" value="0">
-			<Help>
+      <Item label="Volume" value="0"/>
+      <Item label="Sound" value="1"/>
+    </Value>
+    <Value genre="config" index="80" label="Report type when the state of garage door is changed" max="2" min="0" size="1" type="list" value="2">
+      <Help>It will send the Hail CC/configuration report CC when the state of garage door is changed</Help>
+      <Item label="Reserved" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Barrier operator" value="2"/>
+    </Value>
+    <Value genre="config" index="241" label="Pair the Sensor with Garage Door Controller" size="4" type="list" value="0">
+      <Help>
 			Value=0x55555501, which will trigger to start the pairing of Sensor (installed on the top of the garage door), at this time, the Network LED on the Garage Door Controller will blink slowly and then short press Temper Switch back of the Sensor.
 			If pairing is successful, the Network LED will stop blinking and the Garage Door Controller will send the configuration report with value=0x01FF to primary controller/gateway. Otherwise, repeat the operation.
 			Note:
 			1. If you do not press the Temper Switch when starting the pairing mode, the pairing status will keep for 8 second and then exit the pairing status automatically.
 			2. The Sensor has been paired with the Garage Door Controller after factory.</Help>
-			<Item label="Normal" value="0"/>
-            <Item label="Start the pairing of Sensor" value="1431655681"/>
-            <Item label="Pairing is successful" value="511"/>
-		</Value>
-		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
-			<Help>Lock/ unlock all configuration parameters</Help>
-			<Item label="Unlock" value="0"/>
-			<Item label="Lock" value="1"/>
-		</Value>
-		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
-			<Help>Reset to factory defaults</Help>
-            <Item label="Reset to factory default setting" value="0"/>
-			<Item label="Normal" value="1"/>
-            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
-		</Value>
-	</CommandClass>
-	<!-- Basic set as report-->
-	<CommandClass id="32" setasreport="true"/>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="5" label="Lifeline" />
-			<Group index="2" max_associations="5" label="Retransmit Switch CC" />
-		</Associations>
-	</CommandClass>
+      <Item label="Normal" value="0"/>
+      <Item label="Start the pairing of Sensor" value="1431655681"/>
+      <Item label="Pairing is successful" value="511"/>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Retransmit Switch CC" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -481,7 +481,7 @@ define(['app'], function (app) {
 														}
 														xhtm += '<button type="button" class="btn btn-small ';
 														if ((index * 10) == item.LevelInt) {
-															xhtm += 'btn-info"';
+															xhtm += 'btn-selected"';
 														}
 														else {
 															xhtm += 'btn-default"';
@@ -937,7 +937,7 @@ define(['app'], function (app) {
 														}
 														xhtm += '<button type="button" class="btn btn-small ';
 														if ((index * 10) == item.LevelInt) {
-															xhtm += 'btn-info"';
+															xhtm += 'btn-selected"';
 														}
 														else {
 															xhtm += 'btn-default"';
@@ -1462,7 +1462,12 @@ define(['app'], function (app) {
 										var status = "";
 										if (typeof item.Counter != 'undefined') {
 											if ($scope.config.DashboardType == 0) {
-												status += '' + $.t("Usage") + ': ' + item.CounterToday;
+												if (item.SubType == "Managed Counter") {
+													status += '' + item.Counter;
+												}
+												else {
+													status += '' + $.t("Usage") + ': ' + item.CounterToday;
+												}
 											}
 											else {
 												if (typeof item.CounterDeliv == 'undefined') {
@@ -1581,6 +1586,10 @@ define(['app'], function (app) {
 												) {
 													status = item.Counter;
 												}
+											}
+											else if (item.SubType == "Managed Counter") {
+												status = "";
+												bigtext = item.Counter;
 											}
 											else {
 												status = '' + $.t("Usage") + ': ' + item.CounterToday;
@@ -2347,7 +2356,7 @@ define(['app'], function (app) {
 										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:4px; padding-bottom:4px;">';
 										if (item.SelectorStyle === 0) {
 											xhtm += '<div style="margin: -30px -4px -5px 24px; text-align: right;">';
-											xhtm += '<div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
+											xhtm += '<div class="btn-group" style="display: block; margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 											var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
@@ -2355,7 +2364,7 @@ define(['app'], function (app) {
 												}
 												xhtm += '<button type="button" class="btn btn-small ';
 												if ((index * 10) == item.LevelInt) {
-													xhtm += 'btn-info"';
+													xhtm += 'btn-selected"';
 												}
 												else {
 													xhtm += 'btn-default"';
@@ -2735,7 +2744,7 @@ define(['app'], function (app) {
 									else if (item.SwitchType == "Selector") {
 										if (item.SelectorStyle === 0) {
 											xhtm += '<td class="input">';
-											xhtm += '<div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
+											xhtm += '<div class="btn-group" style="display: block; margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 											var levelNames = b64DecodeUnicode(item.LevelNames).split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
@@ -2743,7 +2752,7 @@ define(['app'], function (app) {
 												}
 												xhtm += '<button type="button" class="btn btn-small ';
 												if ((index * 10) == item.LevelInt) {
-													xhtm += 'btn-info"';
+													xhtm += 'btn-selected"';
 												}
 												else {
 													xhtm += 'btn-default"';
@@ -3529,13 +3538,23 @@ define(['app'], function (app) {
 									var status = "";
 									if (typeof item.Counter != 'undefined') {
 										if ($scope.config.DashboardType == 0) {
-											status = '' + $.t("Usage") + ': ' + item.CounterToday;
+											if (item.SubType == "Managed Counter") {
+												status = '' + item.Counter;
+											}
+											else {
+												status = '' + $.t("Usage") + ': ' + item.CounterToday;
+											}
 										}
 										else {
 											if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
 												status = 'U: T: ' + item.CounterToday;
 											} else {
-												status = 'T: ' + item.CounterToday;
+												if (item.SubType == "Managed Counter") {
+													status = '' + item.Counter;
+												}
+												else {
+													status = 'T: ' + item.CounterToday;
+												}
 											}
 										}
 									}
@@ -3680,6 +3699,9 @@ define(['app'], function (app) {
 									) {
 										bigtexthtml += item.CounterToday;
 									}
+									else if (item.SubType == "Managed Counter") {
+										bigtexthtml += item.Counter;
+									}
 									else if (
 										(item.Type == "Air Quality") ||
 										(item.Type == "Lux") ||
@@ -3714,7 +3736,7 @@ define(['app'], function (app) {
 									var imagehtml = '<img src="images/';
 
 									if (typeof item.Counter != 'undefined') {
-										if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter")) {
+										if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Managed Counter")) {
 											if (item.SwitchTypeVal == 1) {
                                                 imagehtml = '<a href="#/Devices/' + item.idx + '/Log"><img src="images/Gas48.png" class="lcursor" height="40" width="40"></a></td>\n';
 											}
@@ -3745,7 +3767,7 @@ define(['app'], function (app) {
 										) {
 											statushtml = item.Counter;
 										}
-										else if (item.SubType != "Gas") { // this is weird..
+										else if ((item.SubType != "Gas") && (item.SubType != "Managed Counter")) { // this is weird..
 											statushtml = '' + $.t("Usage") + ': ' + item.CounterToday;
 										}
 										else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) { // added this to fill the status value. If it's the same as the bigtext, then it won't be shown again.

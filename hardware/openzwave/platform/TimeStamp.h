@@ -35,6 +35,7 @@ namespace OpenZWave
 	class TimeStampImpl;
 
 	/** \brief Implements a platform-independent TimeStamp.
+	 * \ingroup Platform
 	 */
 	class OPENZWAVE_EXPORT TimeStamp
 	{

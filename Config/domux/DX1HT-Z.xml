@@ -3,7 +3,7 @@
 Temperature Humidity Sensor DX1HT-Z Rebranded Heiman
 http://products.z-wavealliance.org/products/2321
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
     <!-- Association Groups -->
     <CommandClass id="133">
         <Associations num_groups="3">

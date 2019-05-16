@@ -1,4 +1,4 @@
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!-- NodOn MSP-3-1-XX Micro Smart Plug Z-Wave+ -->
     <!-- Configuration Parameters -->
     <CommandClass id="112">

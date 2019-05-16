@@ -211,18 +211,20 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 
 		if (res != CURLE_OK)
 		{
-			// Push response/error code to end of vHeaderData vector
-			std::stringstream ss;
 			if (res == CURLE_HTTP_RETURNED_ERROR)
 			{
+				//HTTP status code is already inside the header
 				long responseCode;
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				ss << responseCode;
 				LogError(responseCode);
 			}
 			else
-				ss << res;
-			vHeaderData.push_back(ss.str());
+			{
+				//Need to generate a header
+				std::stringstream ss;
+				ss << "HTTP/1.1 " << res << " " << curl_easy_strerror(res);
+				vHeaderData.push_back(ss.str());
+			}
 		}
 
 		curl_easy_cleanup(curl);
@@ -280,18 +282,20 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 
 		if (res != CURLE_OK)
 		{
-			// Push response/error code to end of vHeaderData vector
-			std::stringstream ss;
 			if (res == CURLE_HTTP_RETURNED_ERROR)
 			{
+				//HTTP status code is already inside the header
 				long responseCode;
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				ss << responseCode;
 				LogError(responseCode);
 			}
 			else
-				ss << res;
-			vHeaderData.push_back(ss.str());
+			{
+				//Need to generate a header
+				std::stringstream ss;
+				ss << "HTTP/1.1 " << res << " " << curl_easy_strerror(res);
+				vHeaderData.push_back(ss.str());
+			}
 		}
 
 		curl_easy_cleanup(curl);
@@ -346,18 +350,20 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 
 		if (res != CURLE_OK)
 		{
-			// Push response/error code to end of vHeaderData vector
-			std::stringstream ss;
 			if (res == CURLE_HTTP_RETURNED_ERROR)
 			{
+				//HTTP status code is already inside the header
 				long responseCode;
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				ss << responseCode;
 				LogError(responseCode);
 			}
 			else
-				ss << res;
-			vHeaderData.push_back(ss.str());
+			{
+				//Need to generate a header
+				std::stringstream ss;
+				ss << "HTTP/1.1 " << res << " " << curl_easy_strerror(res);
+				vHeaderData.push_back(ss.str());
+			}
 		}
 
 		curl_easy_cleanup(curl);
@@ -412,18 +418,20 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 
 		if (res != CURLE_OK)
 		{
-			// Push response/error code to end of vHeaderData vector
-			std::stringstream ss;
 			if (res == CURLE_HTTP_RETURNED_ERROR)
 			{
+				//HTTP status code is already inside the header
 				long responseCode;
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
-				ss << responseCode;
 				LogError(responseCode);
 			}
 			else
-				ss << res;
-			vHeaderData.push_back(ss.str());
+			{
+				//Need to generate a header
+				std::stringstream ss;
+				ss << "HTTP/1.1 " << res << " " << curl_easy_strerror(res);
+				vHeaderData.push_back(ss.str());
+			}
 		}
 
 		curl_easy_cleanup(curl);

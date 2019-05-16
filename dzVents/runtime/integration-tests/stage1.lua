@@ -72,19 +72,69 @@ local testSwitch = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 		["deviceType"] = "Light/Switch";
-		["description"] = 'desc vdSwitch'
+		["description"] = 'desc vdSwitch';
 	})
 	dev.switchOn().afterSec(1)
 	tstMsg('Test switch device', res)
 	return res
 end
 
+local testQuietOnSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = 49,
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.quietOn().afterSec(3)
+	tstMsg('Test quietOn switch device', res)
+	return res
+end
+
+local testQuietOffSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = 50,
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "Off",
+		["deviceSubType"] = "Switch";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev.switchOff()
+	dev.quietOff()
+	tstMsg('Test quietOff switch device', res)
+	return res
+end
+
+
 local testDimmer = function(name)
 	local dev = dz.devices(name)
 
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 39,
+		["id"] = 40,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -577,8 +627,9 @@ local testRGBW = function(name)
 		["changed"] = false;
 		["timedOut"] = false;
 	})
+	dev.setRGB(15, 30, 60)
 	dev.dimTo(15)
-	tstMsg('Test rgbw device', res)
+	tstMsg('Test RGBW device', res)
 	return res
 end
 
@@ -626,8 +677,7 @@ local testSelectorSwitch = function(name)
 		["timedOut"] = false;
 	})
 
-	dz.logDevice(dev)
-
+	res = res and ( dz.logDevice(dev) == nil )
 	res = res and expectEql('Off',  dev.levelNames[1])
 	res = res and expectEql('Level1', dev.levelNames[2])
 	res = res and expectEql('Level2', dev.levelNames[3])
@@ -642,7 +692,7 @@ local testSoilMoisture = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 24,
+		["id"] = 25,
 		["name"] = name,
 		["moisture"] = 3,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -666,7 +716,7 @@ local testSolarRadiation = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 25,
+		["id"] = 26,
 		["name"] = name,
 		["radiation"] = 1,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -690,7 +740,7 @@ local testSoundLevel = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 26,
+		["id"] = 27,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["level"] = 65,
@@ -714,7 +764,7 @@ local testTemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 27,
+		["id"] = 28,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["name"] = name,
 		["temperature"] = 0,
@@ -738,7 +788,7 @@ local testAPITemperature = function(name)
 	local dev = dz.devices(name)
 	local res = true
 
-	dz.openURL(dz.settings['Domoticz url'] .. '/json.htm?type=command%26param=udevice%26idx=' .. tonumber(42) .. '%26nvalue=0%26svalue=' .. tostring(42))
+	dz.openURL(dz.settings['Domoticz url'] .. '/json.htm?type=command%26param=udevice%26idx=' .. tonumber(dev.id) .. '%26nvalue=0%26svalue=' .. tostring(42))
 
 	tstMsg('Test API temperature device', res)
 	return res
@@ -748,7 +798,7 @@ local testTempHum = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 28,
+		["id"] = 29,
 		["name"] = name,
 		["temperature"] = 0,
 		["humidity"] = 50,
@@ -774,7 +824,7 @@ local testTempHumBaro = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 29,
+		["id"] = 30,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["temperature"] = 0,
@@ -800,7 +850,7 @@ local testTempBaro = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 40,
+		["id"] = 41,
 		["name"] = name,
 		["temperature"] = 0,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -826,7 +876,7 @@ local testText = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 30,
+		["id"] = 31,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["text"] = 'Hello World',
@@ -851,7 +901,7 @@ local testThermostatSetpoint = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 31,
+		["id"] = 32,
 		["name"] = name,
 		["setPoint"] = 20.5,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -866,10 +916,8 @@ local testThermostatSetpoint = function(name)
 		["timedOut"] = false;
 	})
 
-	
-	
-    dev.updateSetPoint(11) 
-    dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
+	dev.updateSetPoint(11)
+	dev.updateSetPoint(22).afterSec(2)  --  20190112 Add afterSec
 	dev.updateSetPoint(33).afterSec(200)  --  20190112 Add afterSec
 	tstMsg('Test thermostat device', res)
 	return res
@@ -879,7 +927,7 @@ local testUsageElectric = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 32,
+		["id"] = 33,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["WhActual"] = 0,
@@ -903,7 +951,7 @@ local testUV = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 33,
+		["id"] = 34,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["uv"] = 0,
@@ -928,7 +976,7 @@ local testVisibility = function(name)
 	local res = true
 	res = res and expectEql(103, math.floor(dev.visibility * 10))
 	res = res and checkAttributes(dev, {
-		["id"] = 34,
+		["id"] = 35,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Visibility";
@@ -951,7 +999,7 @@ local testVoltage = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 35,
+		["id"] = 36,
 		["name"] = name,
 		["voltage"] = 0,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -975,7 +1023,7 @@ local testWaterflow = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 36,
+		["id"] = 37,
 		["name"] = name,
 		["baseType"] = dz.BASETYPE_DEVICE,
 		["flow"] = 0,
@@ -1178,22 +1226,59 @@ local testSilentGroup = function(name)
 end
 
 local testSnapshot = function()
-    local res = true
-    dz.snapshot(1,"stage1 snapshot").afterSec(4)
-    tstMsg('Test camera snaphot',res)
-    return res
+	local res = true
+	res = res and dz.snapshot(1,"stage1 snapshot").afterSec(4)
+	tstMsg('Test camera snaphot with id',res)
+	res = res and dz.snapshot("camera1","stage1 snapshot").afterSec(4)
+	tstMsg('Test camera snaphot with name',res)
+	return res
 end
 
 local testManagedCounter = function(name)
-    local dev = dz.devices(name)
+	local dev = dz.devices(name)
 	local res = true
-    dev.updateCounter(1234).afterSec(2)
-    tstMsg('Test managed counter',res)
-    return res
-end    
+	res = dev.updateCounter(1234).afterSec(2)
+	tstMsg('Test managed counter',res)
+	return res
+end
+
+local testSetIconSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = id,
+		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
+	})
+	dev.setIcon(10)
+	dev.dimTo(20).afterSec(1)
+	tstMsg('Test setIcon device', res)
+	return res
+end
+
+local testSetValueSensor = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["id"] = id,
+		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["deviceSubType"] = "Custom Sensor";
+		["deviceType"] = "General";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+	})
+	dev.setValues(nil, 12, 34, 45)
+	tstMsg('Test setValues device', res)
+	return res
+end
 
 local storeLastUpdates = function()
-
 	dz.globalData.stage1Time = dz.time.raw
 end
 
@@ -1211,7 +1296,7 @@ local testLastUpdates = function()
 			local delta = now - device.lastUpdate.secondsSinceMidnight
 			--print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
 			-- test if lastUpdate for the device is close to domoticz time
-			local ok = (devTime <= now and delta < 5)
+			local ok = (devTime <= now and delta < 6)
 			acc = acc and ok
 			if (expectEql(true, ok, device.name .. ' lastUpdate is not correctly set') == false) then
 				print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
@@ -1228,39 +1313,96 @@ end
 local testSecurity = function()
 	local res = true
 	res = res and expectEql(dz.security, dz.SECURITY_DISARMED)
-	dz.devices('secPanel').armAway()
-	
+	tstMsg('Test Security panel', res)
+	res = res and dz.devices('secPanel').armAway()
+	tstMsg('Test set security panel to armAway', res)
+	return res
+end
+
+local testLocation = function()
+	local res = true
+	res = res and expectEql(tonumber(dz.settings.location.latitude), 52.27887)
+	res = res and expectEql(tonumber(dz.settings.location.longitude), 5.665849)
+	res = res and expectEql(dz.settings.location.name, "Domoticz")
+
+	tstMsg('Test location in settings', res)
+	return res
+end
+
+local testVersion = function()
+	local res = true
+	res = res and type(dz.settings.domoticzVersion) == "string"
+	tstMsg('Test domoticz Version in settings (' .. dz.settings.domoticzVersion ..')' , res)
+
+	local utils = require('Utils')
+	res = res and expectEql(dz.settings.dzVentsVersion,utils.DZVERSION)
+	tstMsg('Test dzVents version in settings (' .. dz.settings.dzVentsVersion ..')' , res)
 	return res
 end
 
 local testRepeatSwitch = function(name)
+	local res = true
 	local dev = dz.devices(name)
 	dz.globalData.repeatSwitch.reset()
 	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
 	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
-	tstMsg('Test repeat switch device', res)
-	return true
+	tstMsg('Start test repeat switch device', res)
+	return res
 end
 
 local testCancelledRepeatSwitch = function(name)
+	local res = true
 	local dev = dz.devices(name)
 	dev.switchOn().afterSec(8).forSec(1).repeatAfterSec(1, 5)
-	tstMsg('Test cancelled repeat switch device', res)
-	return true
+	tstMsg('Start test cancelled repeat switch device', res)
+	return res
 end
 
 local testCancelledScene = function(name)
+	local res = true
 	local sc = dz.scenes(name)
-	sc.switchOn().afterSec(4).forSec(1).repeatAfterSec(1, 5)
-	tstMsg('Test cancelled repeat scene', res)
-	return true
+	sc.switchOn().afterSec(5).forSec(1).repeatAfterSec(1, 5)
+	tstMsg('Start test cancelled repeat scene', res)
+	return res
 end
 
 local testHTTPSwitch = function(name)
+	local res = true
 	local dev = dz.devices(name)
 	dev.switchOn()
-	tstMsg('Test http trigger switch device', res)
-	return true
+	tstMsg('Start test http trigger switch device', res)
+	return res
+end
+
+local testDescriptionSwitchDevice = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	dev.switchOn()
+	tstMsg('Start test description trigger switch device', res)
+	return res
+end
+
+local testDescriptionSwitchGroup = function(name)
+	local res = true
+	local group = dz.groups(name)
+	group.switchOn()
+	tstMsg('Start test description group', res)
+	return res
+end
+
+local testDescriptionSwitchScene = function(name)
+	local res = true
+	local scene = dz.scenes(name)
+	scene.switchOn()
+	tstMsg('Start test description scene', res)
+	return res
+end
+
+local testIFTTT = function(event)
+	local res = true
+	res = res and dz.triggerIFTTT(event)
+	res = res and dz.triggerIFTTT(event).afterSec(3)
+	return res
 end
 
 return {
@@ -1289,16 +1431,21 @@ return {
 		res = res and testElectricInstanceCounter('vdElectricInstanceCounter')
 		res = res and testGas('vdGas')
 		res = res and testHumidity('vdHumidity')
+		res = res and testIFTTT('myEvent')
 		res = res and testLeafWetness('vdLeafWetness')
 		res = res and testLux('vdLux')
 		res = res and testP1SmartMeter('vdP1SmartMeterElectric')
 		res = res and testPercentage('vdPercentage')
 		res = res and testPressureBar('vdPressureBar')
+		res = res and testQuietOnSwitch('vdQuietOnSwitch')
+		res = res and testQuietOffSwitch('vdQuietOffSwitch')
 		res = res and testRain('vdRain')
 		res = res and testRGB('vdRGBSwitch')
 		res = res and testRGBW('vdRGBWSwitch')
 		res = res and testScaleWeight('vdScaleWeight')
 		res = res and testSelectorSwitch('vdSelectorSwitch')
+		res = res and testSetIconSwitch('vdSetIconSwitch')
+		res = res and testSetValueSensor('vdSetValueSensor')
 		res = res and testSoilMoisture('vdSoilMoisture')
 		res = res and testSolarRadiation('vdSolarRadiation')
 		res = res and testSoundLevel('vdSoundLevel')
@@ -1313,8 +1460,8 @@ return {
 		res = res and testVisibility("vdVisibility")
 		res = res and testVoltage("vdVoltage")
 		res = res and testWaterflow("vdWaterflow")
-		res = res and testWind('vdWind', 37, "WTGR800")
-		res = res and testWind('vdWindTempChill', 38, "TFA")
+		res = res and testWind('vdWind', 38, "WTGR800")
+		res = res and testWind('vdWindTempChill', 39, "TFA")
 		res = res and testScene('scScene')
 		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
@@ -1332,10 +1479,16 @@ return {
 		res = res and testRepeatSwitch('vdRepeatSwitch');
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
 		res = res and testCancelledScene('scCancelledScene');
+		res = res and testLocation();
+		res = res and testVersion();
 		res = res and testHTTPSwitch('vdHTTPSwitch');
+		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
+		res = res and testDescriptionSwitchDevice('vdDescriptionSwitch');
+		res = res and testDescriptionSwitchScene('scDescriptionScene');
+		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
-
+		
 		storeLastUpdates()
 
 		log('Finishing stage 1')
@@ -1343,8 +1496,7 @@ return {
 			log('Results stage 1: FAILED!!!!', dz.LOG_ERROR)
 		else
 			log('Results stage 1: SUCCEEDED')
+			dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
 		end
-
-		dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
 	end
 }

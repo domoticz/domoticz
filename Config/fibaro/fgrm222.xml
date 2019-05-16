@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="5">
   <!-- Configuration -->
   <CommandClass id="112">
     <!-- Protection -->
@@ -22,7 +22,7 @@
        <Help>Parameters value shoud be set to 1 if the module operates in Venetian Blind mode.
 	       Default setting: 0</Help>
        <Item label="Blind position reports sent to the main controller using Z-Wave Command Class" value="0" />
-       <Item label="Blind position reports sent to the main controller using Fibar Command Class" value="1" />      
+       <Item label="Blind position reports sent to the main controller using Fibaro Command Class" value="1" />      
      </Value>	
     
     <Value type="list" genre="config" instance="1" index="10" label="Roller Shutter operating modes" value="0" size="1">
@@ -168,5 +168,10 @@
       <Group index="2" max_associations="16" label="Switch hold"  />
       <Group index="3" max_associations="1" label="Lifeline" auto="true"/>
     </Associations>
+  </CommandClass>
+  <!-- Manufacturer Proprietary, sent when configuring "Fibaro Command Class" -->
+  <CommandClass id="145">
+    <Value genre="user" type="byte" instance="1" index="0" label="Venetian Blind slat position" value="0" min="0" max="100" units="%" />
+    <Value genre="user" type="byte" instance="1" index="1" label="Venetian blind tilt position" value="0" min="0" max="100" units="%" />
   </CommandClass>
 </Product>

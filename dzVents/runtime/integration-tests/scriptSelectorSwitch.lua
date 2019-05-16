@@ -1,5 +1,3 @@
-local socket = require("socket");
-
 return {
 	active = true,
 	on = {
@@ -17,7 +15,6 @@ return {
 		local switch = dz.devices('vdSelectorSwitch')
 
 		if (item.name == 'vdScriptStart') then
-			--switch.switchSelector(10).silent()
 			switch.switchSelector(30).forSec(2)
 			dz.devices('vdScriptEnd').switchOn().afterSec(4)
 		end

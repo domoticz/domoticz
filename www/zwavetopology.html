@@ -17,14 +17,14 @@
         <script src="js/jquery-ui.min.js"></script>
 
         <!-- Highcharts is not needed here but domoticz.js depends on it -->
-		<script charset="utf-8" src="js/highcharts.js"></script>
+		<script charset="utf-8" src="js/highcharts/highcharts.js"></script>
 		<script charset="utf-8" src="js/domoticz.js"></script>
-		
+
 		<script src="js/d3.min.js"></script>
-		<script charset="utf-8" src="js/jquery.dataTables.min.js"></script>
-	
+		<script charset="utf-8" src="js/data-tables/jquery.dataTables.min.js"></script>
+
 		<script>
-		
+
 		function getParameter(paramName) {
 			var searchString = window.location.search.substring(1),i, val, params = searchString.split('&');
 			for (i=0;i<params.length;i++) {
@@ -51,7 +51,7 @@
 		function getGroupName(group){
 			return group ? group.groupName : '';
 		}
-		
+
 		function removeNodeFromGroup(event) {
 			var node = event.data.node;
 			var group = event.data.group;
@@ -67,7 +67,7 @@
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + hwid + "&node=" + node.nodeID + "&group=" + group.id + "&removenode=" + removeNodeId,
-						 async: false, 
+						 async: false,
 						 dataType: 'json',
 						 success: function(data) {
 							bootbox.alert($.t('Groups updated!'));
@@ -93,10 +93,10 @@
 					var addnode = $("#add_node").val();
 					$.ajax({
 						url: "json.htm?type=command&param=zwaveaddgroupnode&idx=" + hwid + "&node=" + node.nodeID + "&group=" + group.id + "&addnode=" + addnode,
-						async: false, 
+						async: false,
 						dataType: 'json',
-						success: redrawGroupTable() 
-					}); 
+						success: redrawGroupTable()
+					});
 				  }
 				},
 				 nothanks: {
@@ -108,19 +108,19 @@
 			  }
 			});
 		}
-		
+
 		function redrawGroupTable()  {
 			bootbox.alert($.t('Groups updated. It can take a while before changes are visible.'));
 			$("#grouptable").empty();
 			drawGroupTable();
 		}
-		
-		function drawGroupTable() 
+
+		function drawGroupTable()
 		{
 			var hwid = getParameter("hwid");
 			$.ajax({
 				url: "json.htm?type=command&param=zwavegroupinfo&idx=" + hwid,
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (typeof data != 'undefined') {
@@ -171,7 +171,7 @@
 													var removeNodeId = this * 1;
 													var removeNode = nodes[Math.round(removeNodeId)];
 													button.click({node: node, group: group, removeNode: removeNode, removeNodeId: this}, removeNodeFromGroup);
-													button.attr('title', getNodeName(node) + ' on ' + getGroupName(group));
+													button.attr('title', getNodeName(removeNode) + ' on ' + getGroupName(group));
 													button.appendTo(td);
 												}
 											});
@@ -179,7 +179,7 @@
 											button.click({node: node, group: group}, addNodeToGroup);
 											button.appendTo(td);
 											td.appendTo(noderow);
-											groupsDone++;						
+											groupsDone++;
 										});
 									}
 									if (groupsDone<maxgroups) {
@@ -234,18 +234,18 @@
 
 			$.ajax({
 				url: "json.htm?type=command&param=zwavenetworkinfo&idx=" + hwid,
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (typeof data != 'undefined') {
 						if (data.status=="OK") {
 							if (typeof data.result != 'undefined') {
-						
+
 								jsonnodes = data.result.mesh;
 								var pos = 0;
 								$.each(jsonnodes, function(i, item) {
 									nodeslist.push(item.nodeID);
-									posdict[item.nodeID] = pos;						
+									posdict[item.nodeID] = pos;
 									pos++;
 								});
 								var rowlength = pos;
@@ -260,14 +260,14 @@
 									});
 									filleddict[posdict[item.nodeID]]=1;
 									for (var i=0;i<rowlength;i++)
-									{ 
+									{
 										if (filleddict[i]==1) {
 											row.push(1);
 										}
 										else {
 											row.push(0);
 										}
-									}	
+									}
 									matrix.push(row);
 								});
 							}
@@ -315,7 +315,7 @@
 				  })
 				  .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
 				  .text(function(d) { return nodeslist[d.index]; });
-				  
+
 			function groupTicks(d) {
 			  var k = (d.endAngle - d.startAngle) / 1; //append some width for unconnected ones
 			  return d3.range(0, d.value, 1).map(function(v, i) {
@@ -374,11 +374,11 @@
 			g.on("mouseover", fade(0.1))
 			 .on("mouseout", fade(1));
 		}
-		
+
 		function drawInfo() {
 			$.ajax({
  				 url: "json.htm?type=command&param=getlanguage",
-				 async: false, 
+				 async: false,
 				 dataType: 'json',
 				 success: function(data) {
 					if (typeof data.language != 'undefined') {
@@ -395,8 +395,8 @@
 			drawGroupTable();
 		}
 		</script>
-		
-		
+
+
 		<style>
 			body {
 				background: none;
@@ -425,7 +425,7 @@
 				float: right;
 				overflow: auto;
 			}
-			
+
 			</style>
     </head>
     <body onload="drawInfo()">
@@ -433,6 +433,6 @@
 			<div class="left" ><div align="center" id="networkchart"></div></div>
 			<div class="right"><table class="display" id="grouptable"></div>
 		</div>
-	
+
 	</body>
     </html>
