@@ -1,35 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- EVERSPRING AN158 ON/OFF MODULE -->
-<!-- Information from http://www.pepper1.net/zwavedb/device/54 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- EVERSPRING AN158 ON/OFF MODULE --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0002:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/an158.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/871/</MetaDataItem>
+    <MetaDataItem name="Name">ON/OFF Plug with power metering</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0004">CEPT (Europe) / Russia</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/AN158.aspx</MetaDataItem>
+    <MetaDataItem name="Description">This wireless plug-in ON/OFF Module is a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Z-Wave enabled devices displaying the Z-Wave logo can also be used with it regardless of the manufacturer, and ours can also be used in other manufacturer’s Z-Wave enabled networks. Remote On/Off control of the connected load is possible with other manufacturer’s Wireless Controller. Each module is designed to act as a repeater.  Repeaters will re-transmit the RF signal to ensure that the signal is received by its intended destination by routing the signal around obstacles and radio dead spots. The plug-in ON/OFF Module is compatible with Everspring’s Motion Detectors SP814 and Door/Window Detectors SM103.</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0004">AN158-A</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/213/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/639/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/871/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem name="ProductSupport">http://www.everspring.com.tw/contact-us/index.asp</MetaDataItem>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="short" index="1" genre="config" label="True Period" units="100ms" min="0" max="120" value="10">
+    <Value genre="config" index="1" label="True Period" max="120" min="0" type="short" units="100ms" value="10">
       <Help>
 	This is the time the switching status needs to remain
 unchanged after a change to cause the device to send out a status
 message. 0 is Disabled.
       </Help>
     </Value>
-    <Value type="byte" index="2" genre="config" label="Send Out Basic Command" units="" min="0" max="1" value="0">
+    <Value genre="config" index="2" label="Send Out Basic Command" max="1" min="0" type="byte" units="" value="0">
       <Help>
 	Enable or Disable Send Basic Command to Group 2 when the local
 button press changes the switching state.
       </Help>
     </Value>
-    <Value type="short" index="3" genre="config" label="Meter Report Period" units="10s" min="0" max="3240" value="3">
+    <Value genre="config" index="3" label="Meter Report Period" max="3240" min="0" type="short" units="10s" value="3">
       <Help>
 	The device will report its meter value within the interval
 set. Set to 0 will disable the autoreporting function.
       </Help>
     </Value>
   </CommandClass>
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="1" label="Reports" />
-      <Group index="2" max_associations="4" label="Basic" />
+      <Group index="1" label="Reports" max_associations="1"/>
+      <Group index="2" label="Basic" max_associations="4"/>
     </Associations>
   </CommandClass>
 </Product>

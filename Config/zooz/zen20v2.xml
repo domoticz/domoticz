@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+<!-- https://products.z-wavealliance.org/products/3158 -->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="list" index="1" label="On/Off Status Recovery After Power Failure" units="" size="1" min="0" max="2" value="0">
+      <Help>Status after Power Failure</Help>
+      <Item value="0" label="State before power outage"/>
+      <Item value="1" label="ON after power restored"/>
+      <Item value="2" label="OFF after power restored"/>
+    </Value>
+    <Value genre="config" type="int" index="2" label="Power Wattage Report Value Threshold" units="watts" size="4" min="0" max="65535" value="65535">
+      <Help>0 = power meter disabled; 1-65535 = value in watts for report threshold</Help>
+    </Value>
+    <Value genre="config" type="int" index="3" label="Power Wattage Report Frequency" units="seconds" size="4" min="0" max="2678400" value="2678400">
+      <Help>0 = disabled; 30-2678400 = time in seconds to send power wattage report</Help>
+    </Value>
+    <Value genre="config" type="int" index="4" label="Energy (kWh) Report Frequency" units="seconds" size="4" min="0" max="2678400" value="2678400">
+      <Help>0 = disabled; 30-2678400 = time in seconds to send energy report</Help>
+    </Value>
+    <Value genre="config" type="short" index="5" label="Overload Protection" units="watts" size="2" min="0" max="1800" value="1800">
+      <Help>0 = disabled; 1-1800 = value in watts for overload protection</Help>
+    </Value>
+    <Value genre="config" type="list" index="6" label="Enable/Disable Auto Turn-Off Timer for CH1" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH1</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="7" label="Set Auto Turn-Off Timer for CH1" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-off timer for CH1, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="8" label="Enable/Disable Auto Turn-On Timer for CH1" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH1</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="9" label="Set Auto Turn-On Timer for CH1" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-on timer for CH1, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="10" label="Enable/Disable Auto Turn-Off Timer for CH2" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH2</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="11" label="Set Auto Turn-Off Timer for CH2" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-off timer for CH2, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="12" label="Enable/Disable Auto Turn-On Timer for CH2" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH2</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="13" label="Set Auto Turn-On Timer for CH2" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-on timer for CH2, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="14" label="Enable/Disable Auto Turn-Off Timer for CH3" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH3</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="15" label="Set Auto Turn-Off Timer for CH3" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-off timer for CH3, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="16" label="Enable/Disable Auto Turn-On Timer for CH3" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH3</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="17" label="Set Auto Turn-On Timer for CH3" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-on timer for CH3, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="18" label="Enable/Disable Auto Turn-Off Timer for CH4" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH4</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="19" label="Set Auto Turn-Off Timer for CH4" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-off timer for CH4, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="20" label="Enable/Disable Auto Turn-On Timer for CH4" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH4</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="21" label="Set Auto Turn-On Timer for CH4" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-on timer for CH4, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="22" label="Enable/Disable Auto Turn-Off Timer for CH5" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH5</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="23" label="Set Auto Turn-Off Timer for CH5" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-off timer for CH5, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="24" label="Enable/Disable Auto Turn-On Timer for CH5" units="" size="1" min="0" max="1" value="0">
+      <Help>Enable or Disable auto turn-off timer for CH5</Help>
+      <Item value="0" label="Timer Disabled"/>
+      <Item value="1" label="Timer Enabled"/>
+    </Value>
+    <Value genre="config" type="int" index="25" label="Set Auto Turn-On Timer for CH5" units="minutes" size="4" min="1" max="65535" value="65535">
+      <Help>Value in minutes for auto-on timer for CH5, if enabled</Help>
+    </Value>
+    <Value genre="config" type="list" index="26" label="Enable/Disable Manual Control" units="" size="1" min="0" max="1" value="1">
+      <Help>Enable or Disable Manual Controll for out Outlets</Help>
+      <Item value="0" label="Manual Control Disabled"/>
+      <Item value="1" label="Manual Control Enabled"/>
+    </Value>
+    <Value genre="config" type="list" index="27" label="LED Indicator Mode" units="" size="1" min="0" max="2" value="1">
+      <Help>Normal = LED indicator is on when power is on, off when power is off.  Inverse = LED indicator is off when power is on, and on when power is off.  Always Off = LED indicator is always off, regardless of power status.</Help>
+      <Item value="0" label="Inverse"/>
+      <Item value="1" label="Normal"/>
+      <Item value="2" label="Always Off"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5" />
+    </Associations>
+  </CommandClass>
+
+</Product>

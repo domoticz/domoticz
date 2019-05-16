@@ -1,37 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- PH-PAB01.eu Micromodule Energy Meter  -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Remove COMMAND_CLASS_BASIC -->
-    <CommandClass id="32" action="remove"/>
-    <!-- Map endpoints to instances -->
-    <CommandClass id="96" mapping="endpoints"/>
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="short" instance="1" index="1" genre="config" label="Watt Meter Report Period" units="5 sec" min="1" max="32767" value="720">
-            <Help></Help>
-        </Value>
-        <Value type="short" instance="1" index="2" genre="config" label="kWh meter report period" units="5 sec" min="1" max="32767" value="720">
-            <Help></Help>
-        </Value>
-        <Value type="list" instance="1" index="3" genre="config" label="Selected End Point" size="1" min="1" max="3" value="1">
-            <Help></Help>
-            <Item label="CT1 and CT2" value="1"/>
-            <Item label="CT1" value="2"/>
-            <Item label="CT2" value="3"/>
-        </Value>
-        <Value type="short" instance="1" index="4" genre="config" label="Threshold of Current for Load Caution" units="0.01 Amp" min="10" max="750" value="750">
-            <Help></Help>
-        </Value>
-        <Value type="short" instance="1" index="5" genre="config" label="Threshold of KWH for Load Caution" units="KWh" min="1" max="10000" value="10000">
-            <Help></Help>
-        </Value>
-    </CommandClass>
-    <CommandClass id="133">
-        <Associations num_groups="3">
-            <Group index="1" max_associations="1" label="Report CT1 and CT2"/>
-            <Group index="2" max_associations="5" label="Report CT1" auto="true"/>
-            <Group index="3" max_associations="5" label="Report CT2" auto="true"/>
-        </Associations>
-    </CommandClass>
-    <CommandClass id="142" ForceInstances="true"/>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Remove COMMAND_CLASS_BASIC -->
+  <CommandClass action="remove" id="32"/>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Watt Meter Report Period" max="32767" min="1" type="short" units="5 sec" value="720">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="kWh meter report period" max="32767" min="1" type="short" units="5 sec" value="720">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Selected End Point" max="3" min="1" size="1" type="list" value="1">
+      <Help></Help>
+      <Item label="CT1 and CT2" value="1"/>
+      <Item label="CT1" value="2"/>
+      <Item label="CT2" value="3"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Threshold of Current for Load Caution" max="750" min="10" type="short" units="0.01 Amp" value="750">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Threshold of KWH for Load Caution" max="10000" min="1" type="short" units="KWh" value="10000">
+      <Help></Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Report CT1 and CT2" max_associations="1"/>
+      <Group auto="true" index="2" label="Report CT1" max_associations="5"/>
+      <Group auto="true" index="3" label="Report CT2" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
 </Product>

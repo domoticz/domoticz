@@ -1,6 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-  <!-- COMMAND_CLASS_NODE_NAMING.  This class is in the list reported by the PM12, but it does not respond to requests -->
-  <CommandClass id="119" action="remove" /> 
-</Product>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0010:3532:454D</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/rcs/em52-zw.png</MetaDataItem>
+    <MetaDataItem id="3532" name="ZWProductPage" type="454D">https://products.z-wavealliance.org/products/588/</MetaDataItem>
+    <MetaDataItem name="Description">Overview
 
+The RCS Energy Meter Series networked power meters are sub-metering devices designed to provide timely and accurate consumption data. These meters can capture kWh/kW energy and demand data as well as virtually all relevant energy parameters for diagnostics and monitoring single-phase circuit installations. Input for 2 CT s can be used to monitor whole house usage (L1 + L2) or 2 single-phase sub-loads.
+
+Technical Specifications
+
+- Residential Single-phase Configuration – Model EM52
+- 2 Single-phase CT inputs for Whole House consumption
+- Automatically adjusts for CT orientation
+- Greatly reduces setup time and installation errors
+- All-in-One design with flexible antenna for maximum RF range and ease of installation
+- Accuracy: +/- 1% of reading
+- Frequency: 50/60Hz
+- Current Transformer Input: (0-0.333v) (0 – 3.3V)
+- Selectable Current Transformer range (5A-150A)
+- Built-in burden resistor
+- Output Power : Isolated 12VDC 200mA
+- RF Interface: Z-Wave
+- LED indicators
+- Agency approval: FCC, ETL</MetaDataItem>
+    <MetaDataItem id="3532" name="FrequencyName" type="454D">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">EM52 Z-Wave Energy Meter</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.rcstechnology.com/pages/products/z-wave-w-h-meter.html</MetaDataItem>
+    <MetaDataItem id="3532" name="Identifier" type="454D">EM52</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/588/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- COMMAND_CLASS_NODE_NAMING.  This class is in the list reported by the PM12, but it does not respond to requests -->
+  <CommandClass action="remove" id="119"/>
+</Product>

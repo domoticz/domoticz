@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 <!--
 Kaipule IM20 Door/Window Sensor
 https://products.z-wavealliance.org/products/2027
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration -->
 	<CommandClass id="112">
 		<Value type="byte" genre="config" instance="1" index="1" label="Basic Set Level" size="1" min="1" max="255" value="255">

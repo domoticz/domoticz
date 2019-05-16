@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- EVERSPRING AN145 SCREW-IN ON/OFF MODULE -->
-<!-- Information from http://www.pepper1.net/zwavedb/device/57 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 	<!-- Configuration Parameters not supported -->
 	<!-- Association Groups -->
 	<CommandClass id="133">

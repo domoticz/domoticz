@@ -1,4 +1,6 @@
-define(['app'], function (app) {
+define(['app', 'luxon'], function (app, luxon) {
+    var DateTime = luxon.DateTime;
+
     app.component('deviceLevelChart', {
         bindings: {
             log: '<'
@@ -7,7 +9,7 @@ define(['app'], function (app) {
         controller: DeviceLevelChartController
     });
 
-    function DeviceLevelChartController($element) {
+    function DeviceLevelChartController($element, dzSettings) {
         this.$onChanges = function (changes) {
             if (changes.log && changes.log.currentValue) {
                 renderChart(changes.log.currentValue)
@@ -53,7 +55,10 @@ define(['app'], function (app) {
                 }
 
                 if (level !== -1) {
-                    chartData.push([Date.parse(item.Date), level]);
+                    chartData.push([
+                        DateTime.fromFormat(item.Date, dzSettings.serverDateFormat).valueOf(),
+                        level
+                    ]);
                 }
             });
 

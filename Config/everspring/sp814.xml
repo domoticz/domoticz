@@ -1,58 +1,80 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0002:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/sp814.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/977/</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0001">U.S. / Canada / Mexico / CEPT (Europe) / Australia / New Zealand / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">PIR Sensor</MetaDataItem>
+    <MetaDataItem name="Description">The Motion Detector is designed with two detecting sensors, Passive Infra-Red (PIR) sensor and light sensor, to detect movement within a protected area, operating at 868.42 , 908.42, and 921.42 MHz. 
+
+The detector can be used as a security device or home automation device.  When the detector is cooperated with security appliances, the detector is acting as a security device by detecting changes in infra-red radiation levels. If a person moves within or across the devices field of vision, a trigger radio signal will be transmitted to cause full alarm condition in order to frighten intruders away. Alternatively, when the detector is worked with Z-Wave Controller , the detector can be set to perform the role of home automation device by detecting both changes in infra-red radiation levels and percentage of lux levels.  Once night falls, the percentage of ambient illumination is lower than preset value. If a person moves within or across the devices field of vision, a trigger radio signal will be transmitted so as to turn connected lightings for better illumination.
+
+Two mounting methods are provided for varying detection range.  The detector can be mounted on a wall for farther detecting distance but narrower coverage; while for ceiling mounting, shorter detecting distance can be made but desired coverage can be expected at user’s disposal.
+</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0001">SP814-2</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/216/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/617/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/977/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/SP814.aspx</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.everspring.com/SP814.aspx</MetaDataItem>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="byte" index="1" genre="config" label="Basic Set Level" units="" min="0" max="99" value="99">
+    <Value genre="config" index="1" label="Basic Set Level" max="99" min="0" type="byte" units="" value="99">
       <Help>
 	When Basic Set Command is sent where contains a value, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
       </Help>
     </Value>
-	<Value type="list" index="2" genre="config" label="Sensor Detecting Function" units="" min="0" max="1" size="1" value="1">
+    <Value genre="config" index="2" label="Sensor Detecting Function" max="1" min="0" size="1" type="list" units="" value="1">
       <Help>The Detecting function can be Disabled of Enabled.</Help>
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-    <Value type="list" index="3" genre="config" label="Sensitivity Level" size="1" units="" min="1" max="10" value="6">
+    <Value genre="config" index="3" label="Sensitivity Level" max="10" min="1" size="1" type="list" units="" value="6">
       <Help>1 Means lowest sensitivity and 10 means highest.</Help>
-	  <Item label="1" value="1"/>
+      <Item label="1" value="1"/>
       <Item label="2" value="2"/>
-	  <Item label="3" value="3"/>
+      <Item label="3" value="3"/>
       <Item label="4" value="4"/>
-	  <Item label="5" value="5"/>
+      <Item label="5" value="5"/>
       <Item label="6" value="6"/>
-	  <Item label="7" value="7"/>
+      <Item label="7" value="7"/>
       <Item label="8" value="8"/>
-	  <Item label="9" value="9"/>
+      <Item label="9" value="9"/>
       <Item label="10" value="10"/>
     </Value>
-    <Value type="short" index="4" genre="config" label="Re-trigger Interval Setting" units="Seconds" min="5" max="3600" value="5">
+    <Value genre="config" index="4" label="Re-trigger Interval Setting" max="3600" min="5" type="short" units="Seconds" value="5">
       <Help>
 	  Adjust the interval of being re-triggered afer the detector has	been triggered in seconds.
 	  IMPORTANT: Parameter size is 1 5-127 or 2 if value > 127. Any value below 127 will be rejected!
       </Help>
     </Value>
-    <Value type="byte" index="5" genre="config" label="Lux Level" units="%" min="1" max="100" value="10">
+    <Value genre="config" index="5" label="Lux Level" max="100" min="1" type="byte" units="%" value="10">
       <Help>
 	Sets minimum Lux Level of ambient illumination necessary for Motion Detector to trigger.
       </Help>
     </Value>
-    <Value type="short" index="6" genre="config" label="On-Off Duration" units="Seconds" min="5" max="3600" value="5">
+    <Value genre="config" index="6" label="On-Off Duration" max="3600" min="5" type="short" units="Seconds" value="5">
       <Help>
 	  The duration determines how long before the module sends an Off after being triggered.
 	  IMPORTANT: Parameter size is 1 5-127 or 2 if value > 127. Any value below 127 will be rejected!	  
       </Help>
     </Value>
   </CommandClass>
-
   <!-- Basic set as report -->
-  <CommandClass id="32" setasreport="true"/>
-
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
   <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="1" label="Lifeline" />
-      <Group index="2" max_associations="3" label="Control" />
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Control" max_associations="3"/>
     </Associations>
   </CommandClass>
-
 </Product>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 <!-- 
 Aeotec DSC13104 Micro Smart Energy Illuminator
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584519
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
   <CommandClass id="112">    
 	<Value type="short" index="2" genre="config" label="Make SEI blink" size="2" min="0" max="65535" value="0">

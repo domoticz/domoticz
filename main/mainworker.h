@@ -48,8 +48,8 @@ public:
 	void SetSecureWebserverSettings(const http::server::ssl_server_settings & ssl_settings);
 	std::string GetSecureWebserverPort();
 #endif
-	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
-	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel);
 
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay);
 	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const _tColor color, const bool ooc, const int ExtraDelay);
@@ -57,7 +57,7 @@ public:
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const uint64_t idx, std::string switchcmd);
-	void CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
+	void CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, const uint8_t dSubType, const int nValue, const char* sValue);
 	bool DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
@@ -85,7 +85,7 @@ public:
 		const std::string &Name,
 		const bool Enabled,
 		const _eHardwareTypes Type,
-		const std::string &Address, const unsigned short Port, const std::string &SerialPort,
+		const std::string &Address, const uint16_t Port, const std::string &SerialPort,
 		const std::string &Username, const std::string &Password,
 		const std::string &Extra,
 		const int Mode1,
@@ -104,7 +104,7 @@ public:
 
 	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, int nValue, std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
 
-	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
+	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const uint8_t *pRXCommand)> sOnDeviceReceived;
 	boost::signals2::signal<void(const uint64_t SceneIdx, const std::string &SceneName)> sOnSwitchScene;
 
 	CScheduler m_scheduler;
@@ -133,13 +133,13 @@ public:
 	std::vector<int> m_SunRiseSetMins;
 	std::string m_DayLength;
 	std::vector<std::string> m_webthemes;
-	std::map<unsigned short, _tWindCalculator> m_wind_calculator;
+	std::map<uint16_t, _tWindCalculator> m_wind_calculator;
 	std::map<uint64_t, _tTrendCalculator> m_trend_calculator;
 
 	time_t m_LastHeartbeat = 0;
 private:
 	void HandleAutomaticBackups();
-	uint64_t PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
+	uint64_t PerformRealActionFromDomoticzClient(const uint8_t *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	void HandleLogNotifications();
 	std::map<std::string, std::pair<time_t, bool> > m_componentheartbeats;
 	std::mutex m_heartbeatmutex;
@@ -166,7 +166,7 @@ private:
 	std::string m_szDomoticzUpdateChecksumURL;
 	bool m_bDoDownloadDomoticzUpdate;
 	bool m_bStartHardware;
-	unsigned char m_hardwareStartCounter;
+	uint8_t m_hardwareStartCounter;
 
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
 	http::server::server_settings m_webserver_settings;
@@ -181,7 +181,7 @@ private:
 	void Do_Work();
 	void Heartbeat();
 	void ParseRFXLogFile();
-	bool WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
+	bool WriteToHardware(const int HwdID, const char *pdata, const uint8_t length);
 
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
@@ -191,8 +191,8 @@ private:
 	void WriteMessageEnd();
 
 	//message decoders
-	void decode_BateryLevel(bool bIsInPercentage, unsigned char level);
-	unsigned char get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, unsigned char level);
+	void decode_BateryLevel(bool bIsInPercentage, uint8_t level);
+	uint8_t get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, uint8_t level);
 
 	// RxMessage queue resources
 	volatile unsigned long m_rxMessageIdx;
@@ -204,15 +204,15 @@ private:
 		int BatteryLevel;
 		unsigned long rxMessageIdx;
 		int hardwareId;
-		std::vector<unsigned char> vrxCommand;
+		std::vector<uint8_t> vrxCommand;
 		boost::uint16_t crc;
 		queue_element_trigger* trigger;
 	};
 	concurrent_queue<_tRxQueueItem> m_rxMessageQueue;
 	void UnlockRxMessageQueue();
-	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
-	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait);
-	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel); //battery level: 0-100, 255=no battery, -1 = don't set
+	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait);
+	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel); //battery level: 0-100, 255=no battery, -1 = don't set
 
 	struct _tRxMessageProcessingResult {
 		std::string DeviceName;
@@ -272,7 +272,7 @@ private:
 	void decode_Rego6XXValue(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Usage(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Lux(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-	void decode_General(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult, const unsigned char SignalLevel = 12, const unsigned char BatteryLevel = 255);
+	void decode_General(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult, const uint8_t SignalLevel = 12, const uint8_t BatteryLevel = 255);
 	void decode_GeneralSwitch(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_HomeConfort(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
@@ -288,6 +288,8 @@ private:
 	void decode_CartelectronicEncoder(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_ASyncPort(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_ASyncData(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Weather(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Solar(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 };
 
 extern MainWorker m_mainworker;

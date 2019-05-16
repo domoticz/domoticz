@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-<!--
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!--
 	Qubino: ZMNHADx Flush 1 Relay
 
 	ZMNHAD1 868,4 MHz
@@ -11,132 +10,125 @@
 -->
 
 	<!-- Configuration  -->
-	<CommandClass id="112">
-		<Value type="list" genre="config" instance="1" index="1" label="Input 1 switch type" size="1" min="0" max="1" value="1">
-			<Help/>
-			<Item label="Mono-stable switch type (push button)" value="0" />
-			<Item label="Bi-stable switch type" value="1" />
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="2" label="Input 2 contact type" size="1" min="0" max="1" value="0">
-			<Help/>
-			<Item label="NO (normaly open) input type" value="0"/>
-			<Item label="NC (normaly close) input type" value="1"/>
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="3" label="Input 3 contact type" size="1" min="0" max="1" value="0">
-			<Help/>
-			<Item label="NO (normaly open) input type" value="0"/>
-			<Item label="NC (normaly close) input type" value="1"/>
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
-			<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
-			<Item label="ALL ON active, ALL OFF active" value="255" />
-			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
-			<Item label="ALL ON is not active ALL OFF active" value="1" />
-			<Item label="ALL ON active ALL OFF is not active" value="2" />
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="11" label="Automatic turning off relay after set time" min="0" max="32535" value="0">
-			<Help>0 => Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
-		</Value>
-
-        <Value type="short" genre="config" instance="1" index="12" label="Automatic turning on relay after set time" min="0" max="32535" value="0">
-            <Help>0 - Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" min="0" max="1" size="1" value="0">
-	        <Help/>
-	        <Item label="seconds" value="0" />
-	        <Item label="milliseconds" value="1" />
-        </Value>
-
-		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
-			<Help/>
-			<Item label="Flush 1 relay module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
-			<Item label="Flush 1 relay module does not save the state after a power failure, it returns to off position." value="1" />
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" value="10">
-			<Help>Set value from 0 - 100 (0%- 100%). 0 = Reporting Disabled. 1 - 100 = 1% - 100% and reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 10%</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32535" value="300">
-			<Help>Set value means time interval (0 - 32535) in seconds, when power report is send. 0 = Reporting Disabled. 1 - 32535 = 1 second - 32535 seconds and reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
-		</Value>
-
-        <Value type="list" genre="config" instance="1" index="63" label="Output switch selection" size="1" min="0" max="1" value="0">
-            <Help/>
-            <Item label="When system is turned off the output is 0V (NC)" value="0" />
-            <Item label="When system is turned off the output is 230V or 24V (NO)" value="1" />
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I2 or select notification type and event" size="1" min="0" max="9" value="0">
-            <Help/>
-            <Item label="Endpoint, I2 disabled" value="0" />
-			<Item label="Home Security; Motion Detection, unknown location" value="1" />
-			<Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location" value="2" />
-			<Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location" value="3" />
-			<Item label="Water Alarm; Water Leak detected, unknown location" value="4" />
-			<Item label="Heat Alarm; Overheat detected, unknown location" value="5" />
-			<Item label="Smoke Alarm; Smoke detected, unknown location" value="6" />
-			<Item label="Sensor binary" value="9" />
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="101" label="Enable / Disable Endpoints I3 or select notification type and event" size="1" min="0" max="9" value="0">
-	        <Help/>
-	        <Item label="Endpoint, I3 disabled" value="0" />
-	        <Item label="Home Security; Motion Detection, unknown location" value="1" />
-	        <Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location" value="2" />
-	        <Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location" value="3" />
-	        <Item label="Water Alarm; Water Leak detected, unknown location" value="4" />
-	        <Item label="Heat Alarm; Overheat detected, unknown location" value="5" />
-	        <Item label="Smoke Alarm; Smoke detected, unknown location" value="6" />
-	        <Item label="Sensor binary" value="9" />
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="0" max="32535" value="32535">
-        	<Help>Set value is added or subtracted to actual measured value by sensor. Available configuration parameters : default value 32536. 32536  offset is 0.0C. From 1 to 100 = value from 0.1C to 10.0C is added to actual measured temperature. From 1001 to 1100 = value from -0.1 C to -10.0 C is subtracted to actual measured temperature.</Help>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" min="0" max="127" value="5">
-        	<Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter. Available configuration parameters : 0 = reporting disabled. 1 to 127 = 0,1C to 12,7C, step is 0,1C. Default value is 5 = 0,5C</Help>
-        </Value>
-
-	</CommandClass>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="9">
-			<Group index="1" max_associations="1"  label="Lifeline"/>
-			<Group index="2" max_associations="16" label="basic on/off (Output Q)" auto="true"/>
-			<Group index="3" max_associations="16" label="Input I2 basic report" />
-			<Group index="4" max_associations="16" label="Input I2 notification report" />
-			<Group index="5" max_associations="16" label="Input I2 binary sensor report" />
-			<Group index="6" max_associations="16" label="Input I3 basic report" />
-			<Group index="7" max_associations="16" label="Input I3 notification report" />
-			<Group index="8" max_associations="16" label="Input I3 binary sensor report" />
-			<Group index="9" max_associations="16" label="Multilevel sensor report" auto="true"/>
-		</Associations>
-	</CommandClass>
-
-	<!-- Map endpoints to instances -->
-	<CommandClass id="96" mapping="endpoints" />
-
-    <!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the ZMNHADx -->
-	<CommandClass id="113" action="add" getsupported="false" />
-
-    <CommandClass id="48" create_vars="false">
-        <Instance index="2" />
-        <Value type="bool" genre="user" instance="1" index="0" label="Int2" read_only="true" write_only="false" value="false" />
-        <Value type="bool" genre="user" instance="2" index="0" label="Int3" read_only="true" write_only="false" value="false" />
-        <SensorMap index="0" type="8" />
-	</CommandClass>
-
-   <CommandClass id="37" create_vars="false">
-       <Instance index="1" />
-       <Value type="bool" genre="user" instance="1" index="0" label="Switch" read_only="false" />
-   </CommandClass>
-
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Input 1 switch type" max="1" min="0" size="1" type="list" value="1">
+      <Help/>
+      <Item label="Mono-stable switch type (push button)" value="0"/>
+      <Item label="Bi-stable switch type" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Input 2 contact type" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="NO (normaly open) input type" value="0"/>
+      <Item label="NC (normaly close) input type" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Input 3 contact type" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="NO (normaly open) input type" value="0"/>
+      <Item label="NC (normaly close) input type" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Activate / deactivate functions ALL ON/ALL OFF" max="255" min="0" size="2" type="list" value="255">
+      <Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+      <Item label="ALL ON active, ALL OFF active" value="255"/>
+      <Item label="ALL ON is not active ALL OFF is not active" value="0"/>
+      <Item label="ALL ON is not active ALL OFF active" value="1"/>
+      <Item label="ALL ON active ALL OFF is not active" value="2"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Automatic turning off relay after set time" max="32535" min="0" type="short" value="0">
+      <Help>0 => Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Automatic turning on relay after set time" max="32535" min="0" type="short" value="0">
+      <Help>0 - Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Automatic turning on/off seconds or milliseconds selection" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="seconds" value="0"/>
+      <Item label="milliseconds" value="1"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Saving the state of the relay after a power failure" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="Flush 1 relay module saves its state before power failure (it returns to the last position saved before a power failure)" value="0"/>
+      <Item label="Flush 1 relay module does not save the state after a power failure, it returns to off position." value="1"/>
+    </Value>
+    <Value genre="config" index="40" instance="1" label="Power reporting in Watts on power change" max="100" min="0" size="1" type="byte" value="10">
+      <Help>Set value from 0 - 100 (0%- 100%). 0 = Reporting Disabled. 1 - 100 = 1% - 100% and reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 10%</Help>
+    </Value>
+    <Value genre="config" index="42" instance="1" label="Power reporting in Watts by time interval" max="32535" min="0" type="short" value="300">
+      <Help>Set value means time interval (0 - 32535) in seconds, when power report is send. 0 = Reporting Disabled. 1 - 32535 = 1 second - 32535 seconds and reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
+    </Value>
+    <Value genre="config" index="63" instance="1" label="Output switch selection" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="When system is turned off the output is 0V (NC)" value="0"/>
+      <Item label="When system is turned off the output is 230V or 24V (NO)" value="1"/>
+    </Value>
+    <Value genre="config" index="100" instance="1" label="Enable / Disable Endpoints I2 or select notification type and event" max="9" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="Endpoint, I2 disabled" value="0"/>
+      <Item label="Home Security; Motion Detection, unknown location" value="1"/>
+      <Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location" value="2"/>
+      <Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location" value="3"/>
+      <Item label="Water Alarm; Water Leak detected, unknown location" value="4"/>
+      <Item label="Heat Alarm; Overheat detected, unknown location" value="5"/>
+      <Item label="Smoke Alarm; Smoke detected, unknown location" value="6"/>
+      <Item label="Sensor binary" value="9"/>
+    </Value>
+    <Value genre="config" index="101" instance="1" label="Enable / Disable Endpoints I3 or select notification type and event" max="9" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="Endpoint, I3 disabled" value="0"/>
+      <Item label="Home Security; Motion Detection, unknown location" value="1"/>
+      <Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location" value="2"/>
+      <Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location" value="3"/>
+      <Item label="Water Alarm; Water Leak detected, unknown location" value="4"/>
+      <Item label="Heat Alarm; Overheat detected, unknown location" value="5"/>
+      <Item label="Smoke Alarm; Smoke detected, unknown location" value="6"/>
+      <Item label="Sensor binary" value="9"/>
+    </Value>
+    <Value genre="config" index="110" instance="1" label="Temperature sensor offset settings" max="32535" min="0" type="short" value="32535">
+      <Help>Set value is added or subtracted to actual measured value by sensor. Available configuration parameters : default value 32536. 32536  offset is 0.0C. From 1 to 100 = value from 0.1C to 10.0C is added to actual measured temperature. From 1001 to 1100 = value from -0.1 C to -10.0 C is subtracted to actual measured temperature.</Help>
+    </Value>
+    <Value genre="config" index="120" instance="1" label="Digital temperature sensor reporting" max="127" min="0" type="byte" value="5">
+      <Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter. Available configuration parameters : 0 = reporting disabled. 1 to 127 = 0,1C to 12,7C, step is 0,1C. Default value is 5 = 0,5C</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="9">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group auto="true" index="2" label="basic on/off (Output Q)" max_associations="16"/>
+      <Group index="3" label="Input I2 basic report" max_associations="16"/>
+      <Group index="4" label="Input I2 notification report" max_associations="16"/>
+      <Group index="5" label="Input I2 binary sensor report" max_associations="16"/>
+      <Group index="6" label="Input I3 basic report" max_associations="16"/>
+      <Group index="7" label="Input I3 notification report" max_associations="16"/>
+      <Group index="8" label="Input I3 binary sensor report" max_associations="16"/>
+      <Group auto="true" index="9" label="Multilevel sensor report" max_associations="16"/>
+    </Associations>
+  </CommandClass>
+  <!-- Map endpoints to instances -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the ZMNHADx -->
+  <CommandClass action="add" id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="48">
+    <Instance index="2"/>
+    <Value genre="user" index="0" instance="1" label="Int2" read_only="true" type="bool" value="false" write_only="false"/>
+    <Value genre="user" index="0" instance="2" label="Int3" read_only="true" type="bool" value="false" write_only="false"/>
+    <SensorMap index="0" type="8"/>
+    <Compatibility>
+      <CreateVars>false</CreateVars>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="37">
+    <Instance index="1"/>
+    <Value genre="user" index="0" instance="1" label="Switch" read_only="false" type="bool"/>
+    <Compatibility>
+      <CreateVars>false</CreateVars>
+    </Compatibility>
+  </CommandClass>
 </Product>

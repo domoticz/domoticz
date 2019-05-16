@@ -1,0 +1,23 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0703:2007</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zl7201us.png</MetaDataItem>
+    <MetaDataItem id="0703" name="ZWProductPage" type="2007">https://products.z-wavealliance.org/products/876/</MetaDataItem>
+    <MetaDataItem id="0703" name="Identifier" type="2007">ZL7201US</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.visionsecurity.com.tw/ha_products_page2_154_196.html</MetaDataItem>
+    <MetaDataItem id="0703" name="FrequencyName" type="2007">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">ZL7201 Z-Wave Plug-in ON/OFF
+
+Features:
+*Basic functions are similar to ZL7101
+*Suitable for most of Appliance
+*Max Load output: 600W, 60Hz
+*Input: 120VAC
+*Motor load: 1/2 HP
+*Resistive load: 15A</MetaDataItem>
+    <MetaDataItem name="Name">Appliance Module ZL7201US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/876/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

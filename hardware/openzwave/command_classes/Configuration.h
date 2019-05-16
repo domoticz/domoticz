@@ -36,6 +36,7 @@ namespace OpenZWave
 	class Value;
 
 	/** \brief Implements COMMAND_CLASS_CONFIGURATION (0x70), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class Configuration: public CommandClass
 	{
@@ -48,8 +49,8 @@ namespace OpenZWave
 		static uint8 const StaticGetCommandClassId(){ return 0x70; }
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_CONFIGURATION"; }
 
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _parameter, uint8 const _index, Driver::MsgQueue const _queue );
-		void Set( uint8 const _parameter, int32 const _value, uint8 const _size );
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _parameter, uint8 const _index, Driver::MsgQueue const _queue );
+		void Set( uint16 const _parameter, int32 const _value, uint8 const _size );
 
 		// From CommandClass
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }

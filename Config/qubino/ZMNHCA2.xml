@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 
 <!-- Qubino: ZMNHCA2 Flush shutter Flush shutter with SW version S3 and above (SW version is part of P/N). Example: P/N: ZMNHCAx H1S3P1 for SW version 3 -->
 

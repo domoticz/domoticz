@@ -35,6 +35,7 @@ namespace OpenZWave
 	class ValueBool;
 
 	/** \brief Implements COMMAND_CLASS_LOCK (0x76), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class Lock: public CommandClass
 	{
@@ -47,7 +48,7 @@ namespace OpenZWave
 
 		// From CommandClass
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
 		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );

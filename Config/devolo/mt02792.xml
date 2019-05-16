@@ -2,7 +2,7 @@
 <!-- Devolo Metering Plug MT 2646
 http://products.z-wavealliance.org/products/1129
  -->
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="short" index="1" genre="config" label="Watt Meter Report Period" min="1" max="32767" value="720">

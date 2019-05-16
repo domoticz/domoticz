@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?> 
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
 <!-- 
 Aeotec DSC14104 Micro Motor Controller
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584516
  -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="int" index="1" genre="config" label="Motor start delay time" units="ms" size="4" value="0">

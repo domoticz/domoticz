@@ -1,5 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001D:0334:0602</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/leviton/vri10.png</MetaDataItem>
+    <MetaDataItem id="0334" name="ZWProductPage" type="0602">https://products.z-wavealliance.org/products/810/</MetaDataItem>
+    <MetaDataItem name="Name">Magnetic Low Voltage Dimmer</MetaDataItem>
+    <MetaDataItem id="0334" name="FrequencyName" type="0602">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Vizia RF + 1000VA Magnetic Low Voltage, 1000W Incandescent and Mark 10 Scene Capable Dimmer for single pole, 3-way or more applications, with LED locator and brightness display.</MetaDataItem>
+    <MetaDataItem id="0334" name="Identifier" type="0602">VRMX1</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/810/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- COMMAND_CLASS_VERSION CommandClassGet not supported -->
-  <CommandClass id="134" classgetsupported="false" />
+  <CommandClass id="134">
+    <Compatibility>
+      <ClassGetVersionSupported>false</ClassGetVersionSupported>
+    </Compatibility>
+  </CommandClass>
 </Product>

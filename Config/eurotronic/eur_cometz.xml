@@ -1,22 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-
-        <CommandClass id="64" >
-                <Instance index="1" />
-                <Value type="list" genre="user" instance="1" index="0" label="Mode" min="0" max="11" value="0" size="1">
-                        <Item label="Off" value="0" />
-                        <Item label="Heat" value="1" />
-                        <Item label="Heat Econ" value="11" />
-                </Value>
-                <SupportedModes>
-                        <Mode index="0" label="Off" />
-                        <Mode index="1" label="Heat" />
-                        <Mode index="11" label="Heat Econ" />
-                </SupportedModes>
-        </CommandClass>
-        <CommandClass id="67" base="0">
-                <Instance index="1" />
-                <Value type="decimal" genre="user" instance="1" index="1" label="Comfort setpoint" units="C" value="0"/>
-                <Value type="decimal" genre="user" instance="1" index="11" label="Energy saving setpoint" units="C" value="0"/>
-        </CommandClass>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <CommandClass id="64">
+    <Instance index="1"/>
+    <Value genre="user" index="0" instance="1" label="Mode" max="11" min="0" size="1" type="list" value="0">
+      <Item label="Off" value="0"/>
+      <Item label="Heat" value="1"/>
+      <Item label="Heat Econ" value="11"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="0" label="Off"/>
+      <Mode index="1" label="Heat"/>
+      <Mode index="11" label="Heat Econ"/>
+    </SupportedModes>
+  </CommandClass>
+  <CommandClass id="67">
+    <Instance index="1"/>
+    <Value genre="user" index="1" instance="1" label="Comfort setpoint" type="decimal" units="C" value="0"/>
+    <Value genre="user" index="11" instance="1" label="Energy saving setpoint" type="decimal" units="C" value="0"/>
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
 </Product>

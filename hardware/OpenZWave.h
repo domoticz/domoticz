@@ -98,6 +98,7 @@ public:
 
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);
+	bool RequestNodeInfo(const unsigned int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
 	bool HasNodeFailed(const int nodeID);
 	bool ReceiveConfigurationFromOtherController();
@@ -156,9 +157,6 @@ private:
 	bool OpenSerialConnector();
 	void CloseSerialConnector();
 
-	void WriteControllerConfig();
-	time_t m_LastControllerConfigWrite;
-
 	OpenZWave::Manager *m_pManager;
 
 	std::list<NodeInfo> m_nodes;
@@ -170,7 +168,6 @@ private:
 	bool m_initFailed;
 	bool m_bInUserCodeEnrollmentMode;
 	bool m_bNightlyNetworkHeal;
-	bool m_bNeedSave;
 	bool m_bAeotecBlinkingMode;
 	int	m_LastAlarmTypeReceived;
 };

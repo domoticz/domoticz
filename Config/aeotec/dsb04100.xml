@@ -1,46 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<!-- Aeon Labs Door/Window Sensor --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0004:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsb04100.png</MetaDataItem>
+    <MetaDataItem id="0004" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/114/</MetaDataItem>
+    <MetaDataItem name="Description">The Aeon Labs Door/Window Sensor is a battery-powered Z-Wave magnetic door/window sensor with an extremely small form factor. The D/W sensor will send radio signals up to 6 associated Z-Wave devices within its own Z-Wave network when the main unit separates from the smaller unit.
+
+Bidirectional mounting plate and push button allows for easy end-user installation. The Aeon Labs Door/Window Sensor also has tamper prevention capabilities and low-battery alerts.</MetaDataItem>
+    <MetaDataItem id="0004" name="FrequencyName" type="0002">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.aeon-labs.com/site/support/</MetaDataItem>
+    <MetaDataItem id="0004" name="Identifier" type="0002">DSB04100-ZWUS</MetaDataItem>
+    <MetaDataItem name="Name">Aeon Labs Door/Window Sensor</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.aeon-labs.com/site/products/view/1/</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/114/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
 Aeotec Door/Window Sensor 
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584514
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" genre="config" instance="1" index="1" label="Toggle the sensor binary report value when the Magnet switch is opened/closed." min="0" max="1" value="0" size="1">
-			<Help>Default setting: Open: FF, Close: 00</Help>
-			<Item label="Open: FF, Close: 00" value="0"/>
-			<Item label="Open: 00, Close: FF" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="2" label="Enable wake up 10 minutes when the power is switched on." min="0" max="1" value="0" size="1">
-			<Help>Default setting: Disable</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="3" label="Toggle the basic set value when Magnet switch is opened/closed." min="0" max="1" value="0" size="1">
-			<Help>Default setting: Open: FF, Close: 00</Help>
-			<Item label="Open: FF, Close: 00" value="0"/>
-			<Item label="Open: 00, Close: FF" value="1"/>
-		</Value>
-		<Value type="int" genre="config" instance="1" index="121" label="Determines which report will be sent when Magnet switch is opened/ closed." min="0" max="65535" value="255" size="4">
-			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0->Battery report, 4->Sensor Binary, 8->Basic Set, Default setting: 0x00000100 (Basic Set)
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Toggle the sensor binary report value when the Magnet switch is opened/closed." max="1" min="0" size="1" type="list" value="0">
+      <Help>Default setting: Open: FF, Close: 00</Help>
+      <Item label="Open: FF, Close: 00" value="0"/>
+      <Item label="Open: 00, Close: FF" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Enable wake up 10 minutes when the power is switched on." max="1" min="0" size="1" type="list" value="0">
+      <Help>Default setting: Disable</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Toggle the basic set value when Magnet switch is opened/closed." max="1" min="0" size="1" type="list" value="0">
+      <Help>Default setting: Open: FF, Close: 00</Help>
+      <Item label="Open: FF, Close: 00" value="0"/>
+      <Item label="Open: 00, Close: FF" value="1"/>
+    </Value>
+    <Value genre="config" index="121" instance="1" label="Determines which report will be sent when Magnet switch is opened/ closed." max="65535" min="0" size="4" type="int" value="255">
+      <Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0->Battery report, 4->Sensor Binary, 8->Basic Set, Default setting: 0x00000100 (Basic Set)
 			Ideal Setting for OZW is 17 (Sensor Binary and Battery Report)</Help>
-		</Value>
-		<Value type="short" index="254" genre="config" label="Device Tag" units="" min="0" max="255" value="0">
-			<Help>Device Tag</Help>
-		</Value>
-		<Value type="button" index="255" genre="config" label="Reset configuration settings to factory defaults" write_only="true" value="0" >
-			<Help>Reset to factory defaults.</Help>
-		</Value>
-	</CommandClass>
-
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">		
-		<Associations num_groups="1">
-			<Group index="1" max_associations="6" label="Lifeline" />
-		</Associations>
-	</CommandClass>
-
+    </Value>
+    <Value genre="config" index="254" label="Device Tag" max="255" min="0" type="short" units="" value="0">
+      <Help>Device Tag</Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset configuration settings to factory defaults" type="button" value="0" write_only="true">
+      <Help>Reset to factory defaults.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="6"/>
+    </Associations>
+  </CommandClass>
 </Product>

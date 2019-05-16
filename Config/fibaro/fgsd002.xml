@@ -1,74 +1,104 @@
-<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1002:0C02</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgsd002.png</MetaDataItem>
+    <MetaDataItem id="1002" name="ZWProductPage" type="0C02">https://products.z-wavealliance.org/products/1273/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Fibaro Smoke Sensor inclusion:
+1) Install the battery. Visual indicator will signal the Z-Wave network inclusion status
+(green - device included, red - device not included)
+2) Make sure the device is located within direct range of the Z-Wave controller.
+3) Set the main controller into the learning mode
+(see main controllers operating manual).
+4) Quickly, triple click the B-button, located on Fibaro Smoke Sensors enclosure.
+5) Fibaro Smoke Sensor will be detected and included in the Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only in the event that the system primary controller is missing or otherwise inoperable.
+Fibaro Smoke Sensor reset procedure:
+1) Make sure the device has the battery installed.
+2) Press and hold the B-button for 3 seconds. Visual indicator will glow white.
+3) You will hear a short signal.
+4) Release the B-button.
+5) Wait until the visual indicator glows yellow, signaling entering the 4th menu level.
+6) Press the B-button briefly to confirm menu level choice.  At the same time you will hear a short beep, the same sound as during the power connection.
+Successful reset will be confirmed with the visual indicator changing colour to red and
+fading. At the same time, short beep will sound, same as at the power connection.</MetaDataItem>
+    <MetaDataItem id="1002" name="Identifier" type="0C02">FGSD-002</MetaDataItem>
+    <MetaDataItem name="Description">The FIBARO Smoke Sensor is a universal, ultra-light, perfectly designed, optical Z-Wave smoke detector. Fire alarm is signaled by sound, visual indicator blinking and alarm reports sent to the other devices within Z-wave network. The optical sensor detects smoke at an early stage of fire, often before flames appear and temperature starts to rise significantly. Moreover, the device has a built-in temperature sensor, which is adjustable to allow detection of fire by exceeding given temperature threshold. The FIBARO Smoke Sensor is a battery powered device designed to be placed on the wall or ceiling. Visual indicator signals fire, operating mode and it is used to check if the device is within the Z-wave network using a built-in Z-Wave range tester. The Smoke Sensor is designed to operate in confined spaces, under normal conditions (lacking of smoke, dust or condensed water vapor).
 
-<Product xmlns='http://code.google.com/p/open-zwave/'>
 
-	<!-- Configuration -->
-	<CommandClass id="112">
-
-		<Value type="list" genre="config" instance="1" index="1" label="Fibaro Smoke Sensor sensitivity" min="1" max="3" value="2" size="1">
-			<Help>There are 3 levels of sensitivity to smoke presence. Level 1 means the highest sensitivity. Rising the parameter value lowers the sensitivity to smoke presence.</Help>
-			<Item label="HIGH Sensitivity" value="1" />
-			<Item label="MEDIUM Sensitivity" value="2" />
-			<Item label="LOW Sensitivity" value="3" />
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="2" label="Z-Wave notifications status" min="0" max="3" value="0"  size="1">
-			<Help>This parameter allows to activate excess temperature and/or enclosure opening notifications sent to the main controller.</Help>
-			<Item label="all notifications disabled" value="0" />
-			<Item label="enclosure opening notification enabled" value="1" />
-			<Item label="exceeding temperature threshold notification enabled" value="2" />
-			<Item label="all notifications enabled" value="3" />
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="3" label="Visual indicator notifications status" min="0" max="7" value="0"  size="1">
-			<Help>This parameter allows to activate visual indications but does not apply to major alarms, such as FIRE, TROUBLE and LOW BATTERY ALARM.</Help>
-			<Item label="all notifications disabled" value="0" />
-			<Item label="enclosure opening notification enabled" value="1" />
-			<Item label="exceeding temperature threshold notification enabled" value="2" />
-			<Item label="enclosure opening and exceeding temperature threshold notifications enabled" value="3" />
-			<Item label="lack of Z-Wave range notification" value="4" />
-			<Item label="enclosure opening and lack of Z-Wave range notifications enabled" value="5" />
-			<Item label="exceeding temperature threshold and lack of Z-Wave range notifications enabled" value="6" />
-			<Item label="all notifications enabled" value="7" />
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="4" label="Sound notifications status" min="0" max="7" value="0"  size="1">
-			<Help>This parameter allows to activate sound signals but does not apply to major alarms, such as FIRE, TROUBLE and LOW BATTERY ALARM.</Help>
-			<Item label="all notifications disabled" value="0" />
-			<Item label="enclosure opening notification enabled" value="1" />
-			<Item label="exceeding temperature threshold notification enabled" value="2" />
-			<Item label="enclosure opening and exceeding temperature threshold notifications enabled" value="3" />
-			<Item label="lack of Z-Wave range notification" value="4" />
-			<Item label="enclosure opening and lack of Z-Wave range notifications enabled" value="5" />
-			<Item label="exceeding temperature threshold and lack of Z-Wave range notifications enabled" value="6" />
-			<Item label="all notifications enabled" value="7" />
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="10" label="Configuration of control frames in BASIC command class" min="0" max="2" value="0" size="1">
-			<Help>This parameter defines which frames will be sent in the 2-nd Association Group (FIRE ALARM).</Help>
-			<Item label="BASIC ON - BASIC OFF enabled" value="0" />
-			<Item label="BASIC ON enabled" value="1" />
-			<Item label="BASIC OFF enabled" value="2" />
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="11" label="BASIC ON frame value" min="0" max="255" value="255">
-			<Help>BASIC ON frame is sent in case of smoke presence detection and FIRE ALARM triggering. Available settings: (1 - 99) or 255. Default setting: 255</Help>
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="12" label="BASIC OFF frame value" min="0" max="255" value="0">
-			<Help>BASIC OFF frame is sent in case of FIRE ALARM cancellation. Available settings: (1 - 99) or 255. Default setting: 255</Help>
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="13" label="Alarm broadcast" min="0" max="4" value="0" size="1">
-			<Help>A value other than 0 means that alarms are being sent in broadcast mode, i.e. to all devices within a Fibaro Smoke Sensor's range.</Help>
-			<Item label="Broadcasts INACTIVE" value="0" />
-			<Item label="Smoke ACTIVE, tamper INACTIVE" value="1" />
-			<Item label="Smoke INACTIVE, tamper ACTIVE" value="2" />
-			<Item label="Smoke ACTIVE, tamper ACTIVE" value="3" />
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="14" label="Associations in Z-Wave network security mode" min="0" max="15" value="0" size="1">
-			<Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. Parameter is active only in Z-Wave network security mode. It doesn't apply to 1st Lifeline group.
+Product video: 
+https://www.youtube.com/watch?v=50QGfkdUtns</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1273/FGSD-002-EN-A-v1.01 LQ-1.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The Smoke Sensor will wake up at defined time interval and
+will ALWAYS try to communicate with the main controller.  There is a possibility to wake the device up manually by triple-click the B-button.</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Smoke Sensor</MetaDataItem>
+    <MetaDataItem id="1002" name="FrequencyName" type="0C02">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Make sure there is a battery installed
+2) Set the main controller into the learning mode (see main controllers operating
+manual)
+3) Quickly, triple click the B-button, located on Fibaro Smoke Sensors enclosure.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1273/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Fibaro Smoke Sensor sensitivity" max="3" min="1" size="1" type="list" value="2">
+      <Help>There are 3 levels of sensitivity to smoke presence. Level 1 means the highest sensitivity. Rising the parameter value lowers the sensitivity to smoke presence.</Help>
+      <Item label="HIGH Sensitivity" value="1"/>
+      <Item label="MEDIUM Sensitivity" value="2"/>
+      <Item label="LOW Sensitivity" value="3"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Z-Wave notifications status" max="3" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to activate excess temperature and/or enclosure opening notifications sent to the main controller.</Help>
+      <Item label="all notifications disabled" value="0"/>
+      <Item label="enclosure opening notification enabled" value="1"/>
+      <Item label="exceeding temperature threshold notification enabled" value="2"/>
+      <Item label="all notifications enabled" value="3"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Visual indicator notifications status" max="7" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to activate visual indications but does not apply to major alarms, such as FIRE, TROUBLE and LOW BATTERY ALARM.</Help>
+      <Item label="all notifications disabled" value="0"/>
+      <Item label="enclosure opening notification enabled" value="1"/>
+      <Item label="exceeding temperature threshold notification enabled" value="2"/>
+      <Item label="enclosure opening and exceeding temperature threshold notifications enabled" value="3"/>
+      <Item label="lack of Z-Wave range notification" value="4"/>
+      <Item label="enclosure opening and lack of Z-Wave range notifications enabled" value="5"/>
+      <Item label="exceeding temperature threshold and lack of Z-Wave range notifications enabled" value="6"/>
+      <Item label="all notifications enabled" value="7"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Sound notifications status" max="7" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to activate sound signals but does not apply to major alarms, such as FIRE, TROUBLE and LOW BATTERY ALARM.</Help>
+      <Item label="all notifications disabled" value="0"/>
+      <Item label="enclosure opening notification enabled" value="1"/>
+      <Item label="exceeding temperature threshold notification enabled" value="2"/>
+      <Item label="enclosure opening and exceeding temperature threshold notifications enabled" value="3"/>
+      <Item label="lack of Z-Wave range notification" value="4"/>
+      <Item label="enclosure opening and lack of Z-Wave range notifications enabled" value="5"/>
+      <Item label="exceeding temperature threshold and lack of Z-Wave range notifications enabled" value="6"/>
+      <Item label="all notifications enabled" value="7"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Configuration of control frames in BASIC command class" max="2" min="0" size="1" type="list" value="0">
+      <Help>This parameter defines which frames will be sent in the 2-nd Association Group (FIRE ALARM).</Help>
+      <Item label="BASIC ON - BASIC OFF enabled" value="0"/>
+      <Item label="BASIC ON enabled" value="1"/>
+      <Item label="BASIC OFF enabled" value="2"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="BASIC ON frame value" max="255" min="0" type="byte" value="255">
+      <Help>BASIC ON frame is sent in case of smoke presence detection and FIRE ALARM triggering. Available settings: (1 - 99) or 255. Default setting: 255</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="BASIC OFF frame value" max="255" min="0" type="byte" value="0">
+      <Help>BASIC OFF frame is sent in case of FIRE ALARM cancellation. Available settings: (1 - 99) or 255. Default setting: 255</Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Alarm broadcast" max="4" min="0" size="1" type="list" value="0">
+      <Help>A value other than 0 means that alarms are being sent in broadcast mode, i.e. to all devices within a Fibaro Smoke Sensor's range.</Help>
+      <Item label="Broadcasts INACTIVE" value="0"/>
+      <Item label="Smoke ACTIVE, tamper INACTIVE" value="1"/>
+      <Item label="Smoke INACTIVE, tamper ACTIVE" value="2"/>
+      <Item label="Smoke ACTIVE, tamper ACTIVE" value="3"/>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Associations in Z-Wave network security mode" max="15" min="0" size="1" type="byte" value="0">
+      <Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. Parameter is active only in Z-Wave network security mode. It doesn't apply to 1st Lifeline group.
 				Available settings: 0 - 15
 				0 - all groups sent as non-secure
 				1 - 2nd group sent as secure
@@ -77,41 +107,37 @@
 				8 - 5th group sent as secure
 				Parameter values may be combined, e.g. 1+2=3 means that 2nd and 3rd group are sent as secure.
 				Default setting: 15 (all groups sent as secure)</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="20" label="Temperature report interval"  value="1" min="0" max="8640" >
-			<Help>Time interval between consecutive temperature reports. Report is sent when new temperature value is different from the one previously reported - according to the set hysteresis (parameter 21). Available settings: 0,1-8640 (multiply by 10 seconds) [10s-24h]. Default setting: 1 (10s)</Help>
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="21" label="Temperature report hysteresis"  value="10" min="1" max="100" size="1">
-			<Help>The temperature report will only be sent if there is a difference in temperature value from the previous value reported, defined in this parameter (hysteresis). Available settings: 1 to 100 (in 0,1C steps). Default setting: 10 (1C)</Help>
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="30" label="Temperature threshold"  value="55" min="1" max="100" size="1">
-			<Help>Temperature value measured by the built-in temperature sensor above which the excess temperature notification is sent. Available settings: 1 to 100. Default setting: 55 (55C)</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="31" label="Excess temperature signaling interval"  value="1" min="1" max="8640" size="2">
-			<Help>Time interval of signaling (visual indication/sound) excess temperature level. Available settings: 1 to 8640 (multiply by 10 seconds) [10s-24h]. Default setting: 1 (10s)</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="32" label="Lack of Z-Wave range indication interval"  value="180" min="1" max="8640" size="2">
-			<Help>Time interval of signaling (visual indication/sound) lack of Z-Wave range. Available settings: 1 to 8640 (multiply by 10 seconds) [10s-24h]. Default setting: 180 (30min)</Help>
-		</Value>
-	</CommandClass>
-
-	 <!-- Basic set as report -->
-	 <CommandClass id="32" setasreport="true"/>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="5">
-			<Group index="1" max_associations="1" label="Lifeline" />
-			<Group index="2" max_associations="5" label="Fire Alarm" />
-			<Group index="3" max_associations="5" label="Tamper" />
-			<Group index="4" max_associations="5" label="Fire Alarm Report" auto="true"/>
-			<Group index="5" max_associations="5" label="Tamper Report" auto="true"/>
-		</Associations>
-	</CommandClass>
-
+    </Value>
+    <Value genre="config" index="20" instance="1" label="Temperature report interval" max="8640" min="0" type="short" value="1">
+      <Help>Time interval between consecutive temperature reports. Report is sent when new temperature value is different from the one previously reported - according to the set hysteresis (parameter 21). Available settings: 0,1-8640 (multiply by 10 seconds) [10s-24h]. Default setting: 1 (10s)</Help>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Temperature report hysteresis" max="100" min="1" size="1" type="byte" value="10">
+      <Help>The temperature report will only be sent if there is a difference in temperature value from the previous value reported, defined in this parameter (hysteresis). Available settings: 1 to 100 (in 0,1C steps). Default setting: 10 (1C)</Help>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Temperature threshold" max="100" min="1" size="1" type="byte" value="55">
+      <Help>Temperature value measured by the built-in temperature sensor above which the excess temperature notification is sent. Available settings: 1 to 100. Default setting: 55 (55C)</Help>
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Excess temperature signaling interval" max="8640" min="1" size="2" type="short" value="1">
+      <Help>Time interval of signaling (visual indication/sound) excess temperature level. Available settings: 1 to 8640 (multiply by 10 seconds) [10s-24h]. Default setting: 1 (10s)</Help>
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Lack of Z-Wave range indication interval" max="8640" min="1" size="2" type="short" value="180">
+      <Help>Time interval of signaling (visual indication/sound) lack of Z-Wave range. Available settings: 1 to 8640 (multiply by 10 seconds) [10s-24h]. Default setting: 180 (30min)</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Fire Alarm" max_associations="5"/>
+      <Group index="3" label="Tamper" max_associations="5"/>
+      <Group auto="true" index="4" label="Fire Alarm Report" max_associations="5"/>
+      <Group auto="true" index="5" label="Tamper Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -2,7 +2,7 @@
 <!--
 ZWA003 NanoMote Quad
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="byte" index="32" genre="config" label="Low battery level" units="%" min="10" max="50" value="20">
@@ -18,10 +18,10 @@ ZWA003 NanoMote Quad
 			</Help>
 		</Value>
 		<Value type="list" genre="config" instance="1" index="43" label="Battery low buzzer alarm" min="0" max="1" value="1" size="1">
-            		<Help>Enable/disable the buzzer alarm when battery is running low</Help>
-            		<Item label="Disable" value="0"/>
-            		<Item label="Enable" value="1"/>
-		</Value>    
+			<Help>Enable/disable the buzzer alarm when battery is running low</Help>
+			<Item label="Disable" value="0"/>
+			<Item label="Enable" value="1"/>
+		</Value>
 	</CommandClass>
 	<!-- Association Groups -->
 	<CommandClass id="133">

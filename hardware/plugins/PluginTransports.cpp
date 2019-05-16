@@ -192,6 +192,10 @@ namespace Plugins {
 			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
 			Py_XDECREF(pConnection->Port);
 			pConnection->Port = PyUnicode_FromString(sPort.c_str());
+
+			Py_XDECREF(pConnection->Parent);
+			pConnection->Parent = m_pConnection;
+			Py_INCREF(m_pConnection);
 			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
 			Py_INCREF(pConnection->Transport);
 			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;

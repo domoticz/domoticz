@@ -1,0 +1,37 @@
+<!--
+Ecolink Z-Wave Sensor Z-Wave
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014A:0003:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ecolink/tiltsensor.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/816/</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0001">TILTZWAVE1</MetaDataItem>
+    <MetaDataItem name="Name">Ecolink Tilt Sensor</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">This sensor determines the state (open or closed) of a door (typically a garage door) using a roller ball switch. The open/closed status is communicated to a Z-Wave Gateway/Controller</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/816/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="991" instance="1" label="Fault restore" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable/Disable Basic Sets of 0x00 on a fault restore to nodes in Group 2</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

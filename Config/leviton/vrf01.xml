@@ -1,5 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001D:0334:1001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/leviton/vrf01.png</MetaDataItem>
+    <MetaDataItem id="0334" name="ZWProductPage" type="1001">https://products.z-wavealliance.org/products/807/</MetaDataItem>
+    <MetaDataItem id="0334" name="FrequencyName" type="1001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">› Preset On Level option sets the fan speed when the device is turned on, regardless of the previous setting
+› Off-Low-Medium-High speed settings
+› Microprocessor-controlled "kick start" allows fan to go directly from OFF to any speed setting
+› LED Locator and fan speed display
+› Requires the Vizia RF + Handheld Remote - VRCPG for programming and control of the Vizia RF + System (sold separately)
+</MetaDataItem>
+    <MetaDataItem name="Name">Scene Capable Quiet Fan Speed Control</MetaDataItem>
+    <MetaDataItem id="0334" name="Identifier" type="1001">VRF01</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/807/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- COMMAND_CLASS_VERSION CommandClassGet not supported -->
-  <CommandClass id="134" classgetsupported="false" />
+  <CommandClass id="134">
+    <Compatibility>
+      <ClassGetVersionSupported>false</ClassGetVersionSupported>
+    </Compatibility>
+  </CommandClass>
 </Product>

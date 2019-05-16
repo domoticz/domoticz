@@ -1,0 +1,15 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0150:0191:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/smartthings/pgc401m.png</MetaDataItem>
+    <MetaDataItem id="0191" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/878/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.smartthings.com/</MetaDataItem>
+    <MetaDataItem name="Name">SmartThings Hub</MetaDataItem>
+    <MetaDataItem name="Description">Hub to connect SmartThings and Z-Wave devices to the SmartThings cloud.</MetaDataItem>
+    <MetaDataItem id="0191" name="FrequencyName" type="0001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0191" name="Identifier" type="0001">PGC401M</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/878/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

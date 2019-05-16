@@ -423,9 +423,6 @@
     <Filter Include="Devices\YeeLight">
       <UniqueIdentifier>{40997df4-ca83-46d7-ae42-d23049f98a0b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Python Plugins">
-      <UniqueIdentifier>{71bf66bf-20b6-4786-b8ff-f394e16d2d84}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Xiaomi Gateway">
       <UniqueIdentifier>{5f68f493-7523-43aa-95db-f23ecc307771}</UniqueIdentifier>
     </Filter>
@@ -497,6 +494,15 @@
     </Filter>
     <Filter Include="Logger">
       <UniqueIdentifier>{00a6f809-e840-406e-bb5e-4796d71ed4a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventSystem\dzVents">
+      <UniqueIdentifier>{763ab753-e642-4d98-8736-0c49a11d637b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventSystem\Lua">
+      <UniqueIdentifier>{330b5cf1-0528-4eaf-96b7-406823b99afe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventSystem\Python">
+      <UniqueIdentifier>{5963621f-6d1b-49cd-9e55-f76a0f0d287d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1343,6 +1349,9 @@
     <None Include="..\www\app\TimerplanController.js">
       <Filter>www\app</Filter>
     </None>
+    <None Include="..\webserver\proxydef.def">
+      <Filter>Webserver</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1807,9 +1816,6 @@
     <ClInclude Include="..\webserver\proxyclient.h">
       <Filter>Webserver</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\proxycommon.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
     </ClInclude>
@@ -1948,24 +1954,6 @@
     <ClInclude Include="..\hardware\MySensorsMQTT.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginManager.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\Plugins.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\XiaomiGateway.h">
       <Filter>Devices\Xiaomi Gateway</Filter>
     </ClInclude>
@@ -1999,20 +1987,11 @@
     <ClInclude Include="..\hardware\RelayNet.h">
       <Filter>Devices\RelayNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PythonObjects.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\SysfsGPIO.h">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Rtl433.h">
       <Filter>Devices\RTL_433</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\EventsPythonDevice.h">
-      <Filter>EventSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\EventsPythonModule.h">
-      <Filter>EventSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\OnkyoAVTCP.h">
       <Filter>Devices\OnkyoAVTCP</Filter>
@@ -2061,15 +2040,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Honeywell.h">
       <Filter>Devices\Honeywell</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\dzVents.h">
-      <Filter>EventSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\LuaCommon.h">
-      <Filter>EventSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\LuaHandler.h">
-      <Filter>EventSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EvohomeScript.h">
       <Filter>Devices\EvoHome</Filter>
@@ -2149,8 +2119,47 @@
     <ClInclude Include="..\main\TrendCalculator.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\proxycereal.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\HardwareCereal.h">
       <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\dzVents.h">
+      <Filter>EventSystem\dzVents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaCommon.h">
+      <Filter>EventSystem\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaHandler.h">
+      <Filter>EventSystem\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonDevice.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonModule.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginManager.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\Plugins.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
+      <Filter>EventSystem\Python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PythonObjects.h">
+      <Filter>EventSystem\Python</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2562,9 +2571,6 @@
     <ClCompile Include="..\webserver\proxyclient.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\proxycommon.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\SatelIntegra.cpp">
       <Filter>Devices\SatelIntegra</Filter>
     </ClCompile>
@@ -2748,21 +2754,6 @@
     <ClCompile Include="..\hardware\MySensorsMQTT.cpp">
       <Filter>Devices\MySensors</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\XiaomiGateway.cpp">
       <Filter>Devices\Xiaomi Gateway</Filter>
     </ClCompile>
@@ -2796,20 +2787,11 @@
     <ClCompile Include="..\hardware\RelayNet.cpp">
       <Filter>Devices\RelayNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\SysfsGPIO.cpp">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Rtl433.cpp">
       <Filter>Devices\RTL_433</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\EventsPythonDevice.cpp">
-      <Filter>EventSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\EventsPythonModule.cpp">
-      <Filter>EventSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
@@ -2861,15 +2843,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Tado.cpp">
       <Filter>Devices\Tado</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\dzVents.cpp">
-      <Filter>EventSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\LuaCommon.cpp">
-      <Filter>EventSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\LuaHandler.cpp">
-      <Filter>EventSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeScript.cpp">
       <Filter>Devices\EvoHome</Filter>
@@ -2930,6 +2903,42 @@
     </ClCompile>
     <ClCompile Include="..\main\TrendCalculator.cpp">
       <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\proxycereal.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>EventSystem\dzVents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaCommon.cpp">
+      <Filter>EventSystem\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaHandler.cpp">
+      <Filter>EventSystem\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonDevice.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonModule.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
+      <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
+      <Filter>EventSystem\Python</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -15,6 +15,12 @@
 #include "stdafx.h"
 #include "tcpproxy_server.h"
 
+#if BOOST_VERSION >= 107000
+#define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
+#else
+#define GET_IO_SERVICE(s) ((s).get_io_service())
+#endif
+
 namespace tcp_proxy
 {
 	bridge::bridge(boost::asio::io_service& ios)
@@ -38,7 +44,7 @@ namespace tcp_proxy
 		boost::asio::ip::tcp::endpoint end;
 
 
-		boost::asio::io_service &ios=downstream_socket_.get_io_service();
+		boost::asio::io_service &ios= GET_IO_SERVICE(downstream_socket_);
 		boost::asio::ip::tcp::resolver resolver(ios);
 		boost::asio::ip::tcp::resolver::query query(upstream_host, upstream_port, boost::asio::ip::resolver_query_base::numeric_service);
 		boost::asio::ip::tcp::resolver::iterator i = resolver.resolve(query);

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ZWA006 Smart Boost Timer Switch
+https://products.z-wavealliance.org/products/3067
+-->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Power out action" min="0" max="3" value="3" size="1">
+			<Help>
+				Action in case of power out. This parameter is used to configure the device state after power on.
+			</Help>
+			<Item label="Keep the last state when re-power on" value="0"/>
+			<Item label="Power on" value="1"/>
+			<Item label="Power off" value="2"/>
+			<Item label="Return to standard schedule" value="3"/>
+		</Value>
+		<Value type="list" index="2" genre="config" label="LED status" units="" min="0" max="2" value="1" size="1">
+            <Help>
+                Configure LED (except boost) to be off irrespective of switch status.
+            </Help>
+			<Item label="Disable all LED except for boost" value="0"/>
+			<Item label="Enable all LED indication" value="1"/>
+			<Item label="Momentary mode" value="2"/>
+        </Value>
+		<Value type="int" index="3" genre="config" label="Auto off timer" units="second" value="0" >
+            <Help>
+                Timer acts as auto off after specified minutes, setting is set in seconds.
+				0 - no auto off with timer.
+				1 ~ 86400 auto off after this specified time, unit second.
+            </Help>
+        </Value>
+		<Value type="list" genre="config" instance="1" index="4" label="Current overload protection" min="0" max="1" value="1" size="1">
+			<Help>
+				Current and overload protection
+			</Help>
+			<Item label="Disable" value="0"/>
+			<Item label="Enable" value="1"/>
+		</Value>
+		<Value type="short" index="5" genre="config" label="Boost time" units="minute" value="30" >
+            <Help>
+                Configure boost time interval, unit minute.
+				When user press the boost button one time, the boost time will increase 30 (the value can be changed) minutes.
+            </Help>
+        </Value>
+		<Value type="short" index="7" genre="config" label="LED threshold setting" units="watt" min="0" max="3000" value="100" >
+            <Help>
+                This parameter is used to configure the power led threshold, unit W.
+				When the load &lt;= 100W, the power led will indicate yellow.
+				When the load > 100W, the power led will indicate orange.
+				When no load, the power led will indicate white.
+            </Help>
+        </Value>
+		<Value type="short" index="20" genre="config" label="kWh threshold setting" units="kWh" min="0" max="10000" value="100" >
+            <Help>
+                Threshold settings for energy kWh. When the energy above the threshold, it will send a meter report command to gateway.
+				0 - disable report.
+				1 ~ 10000 - enable report.
+            </Help>
+        </Value>
+		<Value type="short" index="21" genre="config" label="Watt threshold setting" units="watt" min="0" max="2500" value="100" >
+            <Help>
+                Threshold settings for Watt automatic report, unit W. When Watt above the threshold, it will send a meter report command to gateway.
+				0 - disable report.
+				1 ~ 2500 - enable report.
+            </Help>
+        </Value>
+		<Value type="short" index="22" genre="config" label="Current threshold setting" units="0.1A" min="0" max="150" value="0" >
+            <Help>
+                Threshold settings for Current automatic report, unit 0.1A. When current above the threshold, it will send a meter report command to gateway.
+				0 - disable report.
+				1 ~ 150 - enable report.
+            </Help>
+        </Value>
+		<Value type="int" index="23" genre="config" label="Watt report interval" units="second" min="0" max="65535" value="600" >
+            <Help>
+                Watt automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+        </Value>
+		<Value type="int" index="24" genre="config" label="kWh report interval" units="second" min="0" max="65535" value="600" >
+            <Help>
+                kWh automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+        </Value>
+		<Value type="int" index="25" genre="config" label="Voltage report interval" units="second" min="0" max="65535" value="600" >
+            <Help>
+                Voltage automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+        </Value>
+		<Value type="int" index="26" genre="config" label="Current report interval" units="second" min="0" max="65535" value="600" >
+            <Help>
+                Current automatic report interval, unit second.
+				0 - disable.
+				65535 - enable.
+            </Help>
+        </Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="5" label="Lifeline" />
+			<Group index="2" max_associations="5" label="BasicSet"/>
+		</Associations>
+	</CommandClass>
+</Product>

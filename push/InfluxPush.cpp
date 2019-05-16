@@ -59,6 +59,7 @@ void CInfluxPush::UpdateSettings()
 	m_InfluxPort = 8086;
 	m_sql.GetPreferencesVar("InfluxIP", m_InfluxIP);
 	m_sql.GetPreferencesVar("InfluxPort", m_InfluxPort);
+	m_sql.GetPreferencesVar("InfluxPath", m_InfluxPath);
 	m_sql.GetPreferencesVar("InfluxDatabase", m_InfluxDatabase);
 	m_sql.GetPreferencesVar("InfluxUsername", m_InfluxUsername);
 	m_sql.GetPreferencesVar("InfluxPassword", m_InfluxPassword);
@@ -79,7 +80,10 @@ void CInfluxPush::UpdateSettings()
 	std::stringstream sURL;
 	if (m_InfluxIP.find("://") == std::string::npos)
 		sURL << "http://";
-	sURL << m_InfluxIP << ":" << m_InfluxPort << "/write?";
+	sURL << m_InfluxIP << ":" << m_InfluxPort;
+	if (!m_InfluxPath.empty())
+		sURL << "/" << m_InfluxPath;
+	sURL << "/write?";
 	if ((!m_InfluxUsername.empty()) && (!m_InfluxPassword.empty()))
 		sURL << "u=" << m_InfluxUsername << "&p=" << base64_decode(m_InfluxPassword) << "&";
 	sURL << "db=" << m_InfluxDatabase << "&precision=s";
@@ -225,6 +229,7 @@ namespace http {
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string remote = request::findValue(&req, "remote");
 			std::string port = request::findValue(&req, "port");
+			std::string path = request::findValue(&req, "path");
 			std::string database = request::findValue(&req, "database");
 			std::string username = request::findValue(&req, "username");
 			std::string password = request::findValue(&req, "password");
@@ -242,6 +247,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("InfluxActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("InfluxIP", remote.c_str());
 			m_sql.UpdatePreferencesVar("InfluxPort", atoi(port.c_str()));
+			m_sql.UpdatePreferencesVar("InfluxPath", path.c_str());
 			m_sql.UpdatePreferencesVar("InfluxDatabase", database.c_str());
 			m_sql.UpdatePreferencesVar("InfluxUsername", username.c_str());
 			m_sql.UpdatePreferencesVar("InfluxPassword", base64_encode(password));
@@ -273,6 +279,10 @@ namespace http {
 			if (m_sql.GetPreferencesVar("InfluxPort", nValue))
 			{
 				root["InfluxPort"] = nValue;
+			}
+			if (m_sql.GetPreferencesVar("InfluxPath", sValue))
+			{
+				root["InfluxPath"] = sValue;
 			}
 			if (m_sql.GetPreferencesVar("InfluxDatabase", sValue))
 			{

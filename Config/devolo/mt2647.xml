@@ -1,16 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!-- Devolo Motion Sensor MT02647
 http://products.z-wavealliance.org/products/1131
- -->
-<Product xmlns="http://code.google.com/p/open-zwave/"> 
+ --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0175:000D:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/devolo/mt2647.png</MetaDataItem>
+    <MetaDataItem id="000D" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1131/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+To add into a Z-Wave network: 
+1. Have Z-Wave  Controller entered inclusion mode.
+2. Pressing tamper key three times within 1.5 seconds to enter the inclusion mode.
+3. After add successful, the device will wake to receive the setting command from Z-Wave Controller about 20 seconds.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+To remove the device from a Z-Wave network: 
+1. Have Z-Wave  Controller entered exclusion mode.
+2. Pressing tamper key three times within 1.5 seconds to enter the exclusion mode.
+Node ID has been excluded.</MetaDataItem>
+    <MetaDataItem name="Name">Motion Sensor</MetaDataItem>
+    <MetaDataItem id="000D" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="000D" name="Identifier" type="0002">MT02647</MetaDataItem>
+    <MetaDataItem name="Description">The Motion Sensor MT02647 has PIR, temperature and illumination, 3 sensors function in one,based on Z-Wave technology.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+To reset the device: 
+Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
+1. Pressing tamper key four times within 1.5 seconds and do not release the tamper key in the 4th  pressed, and the LED will light ON.
+2. After 3 seconds the LED will turn OFF, after that within 2 seconds, release the tamper key. If successful, the LED will light ON one second. Otherwise, the LED will flash once.
+3. IDs are excluded and all settings will reset to factory default.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
+Press any key once, the device will awake 10 seconds.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1131/Devolo home Control Motion.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1131/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="byte" index="2" genre="config" label="Basic Set Level" min="0" max="255" value="255">
+    <Value genre="config" index="2" label="Basic Set Level" max="255" min="0" type="byte" value="255">
       <Help></Help>
     </Value>
-
-    <Value type="byte" index="3" genre="config" label="PIR Sensitivity" min="0" max="99" value="80">
-       <Help>
+    <Value genre="config" index="3" label="PIR Sensitivity" max="99" min="0" type="byte" value="80">
+      <Help>
           PIR sensitivity settings. 
           0 means disable the PIR motion. 
           1 means the lowest sensitivity, 
@@ -18,8 +46,7 @@ http://products.z-wavealliance.org/products/1131
           High sensitivity means can detected long distance, but if there is more noise signal in the environment, it will re-trigger too frequency.
        </Help>
     </Value>
-	
-    <Value type="byte" index="4" genre="config" label="Light threshold" min="0" max="100" value="99">
+    <Value genre="config" index="4" label="Light threshold" max="100" min="0" type="byte" value="99">
       <Help>
           Setting the illumination threshold to turn on the light. When the event triggered and the environment illumination lower than 
           the threshold, the device will turn on the light.
@@ -30,9 +57,8 @@ http://products.z-wavealliance.org/products/1131
           * Notice * in none test mode, only the value in 1 to 99 will enable the illumination detected function and update the illumination value.
        </Help>
     </Value>
-	
-    <Value type="byte" index="5" genre="config" label="Operation Mode" min="0" max="127" value="4">
-       <Help>
+    <Value genre="config" index="5" label="Operation Mode" max="127" min="0" type="byte" value="4">
+      <Help>
           Bit 0: Reserve. 
           Bit 1: 1 means enable test mode, 0 means disable normal mode. Notice: This bit only effect by the DIP Switch setting to program mode. 
           Bit 2: Set to 1.
@@ -44,9 +70,8 @@ http://products.z-wavealliance.org/products/1131
           ozw Recommended: 12
        </Help>
     </Value>
-
-    <Value type="byte" index="6" genre="config" label="Multi-Sensor Function Switch" min="0" max="255" value="5">
-       <Help>
+    <Value genre="config" index="6" label="Multi-Sensor Function Switch" max="255" min="0" type="byte" value="5">
+      <Help>
            Bit 0: Reserve, set to 1.
            Bit 1: Disable PIR integrate Illumination to turn ON the lighting nodes in the association group 2. (1:Disable, 0:Enable).
            Bit 2: Reserve, set to 1.
@@ -57,9 +82,8 @@ http://products.z-wavealliance.org/products/1131
            Bit 7: Reserve.
 	  </Help>
     </Value>
-
-    <Value type="byte" index="7" genre="config" label="Customer Function" min="0" max="255" value="4">
-       <Help>
+    <Value genre="config" index="7" label="Customer Function" max="255" min="0" type="byte" value="4">
+      <Help>
           Bit 0: Reserve. 
           Bit 1: Enable sending motion OFF report (0:Disable, 1:Enable). 
 				 Note: Depends on the Bit4, 0: Report Notification CC, Type: 0x07, Event: 0xFE 1: Sensor Binary Report, Type: 0x0C, Value: 0x00.  
@@ -72,53 +96,45 @@ http://products.z-wavealliance.org/products/1131
           ozw Recommended: 22
        </Help>
     </Value>
-
-    <Value type="byte" index="8" genre="config" label="PIR re-detect interval time" units="8 sec" min="1" max="127" value="3">
-       <Help>
+    <Value genre="config" index="8" label="PIR re-detect interval time" max="127" min="1" type="byte" units="8 sec" value="3">
+      <Help>
           In the normal mode, after the PIR motion detected, setting the re-detect time. 8 seconds per tick, default tick is 3 (24 seconds). 
           Setting the suitable value to prevent received the trigger signal too frequency. Also can save the battery energy. 
           Notice: If this value bigger than the configuration setting NO. 9. There is a period after the light turned off and the PIR not start detecting.
        </Help>
     </Value>
-	
-    <Value type="byte" index="9" genre="config" label="Turn Off Light Time" units="8 sec" min="0" max="127" value="4">
-       <Help>
+    <Value genre="config" index="9" label="Turn Off Light Time" max="127" min="0" type="byte" units="8 sec" value="4">
+      <Help>
           After turn on the lighting, setting the delay time to turn off the lighting when the PIR motion is not detected. 
           8 seconds per tick, default tick is 4 (32 seconds). 0 means never send turn off light command.
        </Help>
     </Value>
- 
-    <Value type="byte" index="10" genre="config" label="Auto Report Battery Time" units="30 min" min="0" max="127" value="12">
+    <Value genre="config" index="10" label="Auto Report Battery Time" max="127" min="0" type="byte" units="30 min" value="12">
       <Help>
           The interval time for auto report the battery level. 0 means turn off auto report battery. The default value is 12. The tick time can setting by the configuration No.20.
       </Help>
     </Value>
-
-    <Value type="byte" index="12" genre="config" label="Auto Report Illumination Time" units="30 min" min="0" max="127" value="12">
+    <Value genre="config" index="12" label="Auto Report Illumination Time" max="127" min="0" type="byte" units="30 min" value="12">
       <Help>
           The interval time for auto report the illumination. 0 means turn off auto report illumination. The default value is 12. The tick time can setting by the configuration No.20.
       </Help>
     </Value>
- 
-    <Value type="byte" index="13" genre="config" label="Auto Report Temperature time" units="30 min" min="0" max="127" value="12">
+    <Value genre="config" index="13" label="Auto Report Temperature time" max="127" min="0" type="byte" units="30 min" value="12">
       <Help>
           The interval time for auto report the temperature. 0 means turn off auto report temperature. The default value is 12. The tick time can setting by the configuration No.20.
       </Help>
     </Value>
- 
-    <Value type="byte" index="20" genre="config" label="Auto Report Tick Interval" min="0" max="255" value="30">
+    <Value genre="config" index="20" label="Auto Report Tick Interval" max="255" min="0" type="byte" value="30">
       <Help>
           The interval time for auto report each tick. Setting this configuration will effect configuration No.10, No.11, No.12 and No.13. Caution: Setting to 0 means turn off all auto report function.
       </Help>
     </Value>
- 
-    <Value type="byte" index="21" genre="config" label="Temperature Differential Report" min="0" max="255" value="1">
+    <Value genre="config" index="21" label="Temperature Differential Report" max="255" min="0" type="byte" value="1">
       <Help>
           The temperature differential to report. 0 means turn off this function. The unit is Fahrenheit. Enable this function the device will detect every minutes. And when the temperature is over 140 degree Fahrenheit, it will continue report. Enable this functionality will cause some issue please see the detail in the "Temperature Report" section.
       </Help>
     </Value>
- 
-    <Value type="byte" index="22" genre="config" label="Illumination Differential Report" min="0" max="99" value="0">
+    <Value genre="config" index="22" label="Illumination Differential Report" max="99" min="0" type="byte" value="0">
       <Help>
           The illumination differential to report.0 means turn off this function. The unit is percentage. Enable this function the device will detect every minutes. Enable this functionality will cause some issue please see the detail in the "Illumination Report" section.
       </Help>
@@ -127,8 +143,8 @@ http://products.z-wavealliance.org/products/1131
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="8" label="Lifeline" />
-      <Group index="2" max_associations="8" label="Basic Set" />
+      <Group index="1" label="Lifeline" max_associations="8"/>
+      <Group index="2" label="Basic Set" max_associations="8"/>
     </Associations>
   </CommandClass>
 </Product>

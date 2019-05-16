@@ -1,34 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Ecolink Motion Detector
 http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1500/Ecolink%20PIR%20Zwave%20Plus%20Manual%20R1.04%20021116kgs.docx
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Basic set as report-->
-	<CommandClass id="32" setasreport="true"/>
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="1" label="Basic Set Report when sensor is restored" min="0" max="1" value="0" size="1">
-            <Help>
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014A:0001:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ecolink/motion.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1500/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1500/Ecolink PIR Zwave Plus Manual R1.04 021116kgs.docx</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Once the controller is in inclusion mode, simply remove the battery isolation tab, OR insert the battery, OR press the small button on the back of the Motion Detector.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0004">PIRZWAVE2.5-ECO</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To restore this sensor to factory default settings, follow the instructions for product exclusion which will reset the sensor upon completion of the process.  Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">•	For indoor use only
+•	Operating frequency: 908.42 MHz
+•	Operating range: Up to 100 feet (30.5 meters) line-of-sight
+•	Operating temperature: 0˚C to 49˚C, 32˚F to 120˚F (ambient temperature)
+•	Detection radius: 39 feet (see detection region diagram)
+•	Detection angle: 45 degrees in either direction from the sensor’s center
+•	Battery type: 3V Lithium CR123A
+•	Battery life: approximately 3 years 
+•	Passive Infrared (PIR) based technology 
+</MetaDataItem>
+    <MetaDataItem name="Name">Ecolink Motion Detector</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">If the sensor is asleep, simply remove the cover to wake up the sensor for configuration.</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Once the controller is in exclusion mode, simply remove the battery isolation tab, OR insert the battery, OR press the small button on the back of the Motion Detector.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1500/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Basic set as report-->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Basic Set Report when sensor is restored" max="1" min="0" size="1" type="list" value="0">
+      <Help>
 			Configures the sensor to send or not send Basic Set commands of 0x00 to nodes in Association group 2 turning the devices off when the sensor is in a restored state (i.e. motion not detected).  
 			By default the sensor does NOT send Basic Set commands of 0x00.
 			</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="255"/>
-        </Value>
-		<Value type="list" genre="config" instance="1" index="2" label="Basic Set Report" min="0" max="1" value="0" size="1">
-            <Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="255"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Basic Set Report" max="1" min="0" size="1" type="list" value="0">
+      <Help>
 			Configures the sensor to either to send or not to send Sensor Binary Report commands to Association Group 1 when the sensor is faulted and restored.  
 			</Help>
-            <Item label="Enable Binary Reports" value="0"/>
-            <Item label="Disable Binary Reports" value="255"/>
-        </Value>   		
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Basic Report"/>
-        </Associations>
-    </CommandClass>
+      <Item label="Enable Binary Reports" value="0"/>
+      <Item label="Disable Binary Reports" value="255"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

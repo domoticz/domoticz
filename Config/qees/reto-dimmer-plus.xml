@@ -1,12 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- QEES RETO Dimmer Plus 2013 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>	
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="232" label="Lifeline"/>
-		</Associations>
-	</CommandClass>
+<!-- QEES RETO Dimmer Plus 2013 --><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0095:0001:3101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qees/reto-dimmer-plus.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="3101">https://products.z-wavealliance.org/products/612/</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="3101">311-BQ(WB)-A1</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.qees.eu/support/support-center</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="3101">U.S. / Canada / Mexico / CEPT (Europe) / CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">QEES P311B dimmer with power meter</MetaDataItem>
+    <MetaDataItem name="Description">QEES RETO Shell Dimmer Plus is a highly aesthetic Z-Wave-controlled (EU frequency) 400W universal dimmer for any kind of dimmable load: Energy saving, halogen, LED and incandescent light bulbs.
+ 
+QEES RETO Shell Dimmer Plus is a wirelessly controlled universal dimmer for retrofit installation. It can be operated locally by pushing the top cover; this action will dim the local load. The device also monitors the power consumption of the load.
+
+QEES RETO Shell Dimmer Plus’s software can be upgraded “over the air”, allowing the device to receive additional features and bug fixes through firmware updates and software apps. This is a unique feature of all QEES products and it facilitates a future-proof, contemporary and flexible infrastructure solution for the building.
+
+QEES RETO Shell Dimmer Plus is compatible with all Z-Wave certified devices from other manufacturers. It also acts as a repeater inside your Z-Wave network increasing the range for your remote control.
+
+Like all QEES products, QEES RETO Shell Dimmer Plus has a self-calibrating built-in power meter and can switch off devices that otherwise would consume power when not needed.</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.qees.eu/products/z-wave/plus-retofit-series/turtle-shells/turtle-shell-dimmer-eu/product/76/98/Plus-Retofit-Series/Plus-RETO-Shell/qees-reto-shell-dimmer-plus-eu</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/594/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/595/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/611/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/612/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the device, but it does not respond to requests -->
+  <CommandClass action="remove" id="38"/>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="232"/>
+    </Associations>
+  </CommandClass>
 </Product>

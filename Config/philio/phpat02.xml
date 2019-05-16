@@ -1,107 +1,135 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Philio Technology Corporation PH-PAT02 Multisensor 3in1 sold as Zipato brend -->
-	<CommandClass id="112">
-		<Value type="byte" genre="config"  index="1" label="Basic Set OFF Level" size="1" min="0" max="255" value="0">
-			<Help>
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:001F:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/philio/phpat02.png</MetaDataItem>
+    <MetaDataItem id="001F" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1450/</MetaDataItem>
+    <MetaDataItem id="001F" name="Identifier" type="0002">PAT02-1A</MetaDataItem>
+    <MetaDataItem id="001F" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">The flood multisensor PAT02 has flood, temperature and humidity, 3 sensors function in one, based on Z-Wave™ technology.  Using Z-Wave™ plus technology, it supports security and Over-The-Air updating.</MetaDataItem>
+    <MetaDataItem name="Name">Flood Multisensor</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">When the device power on, the device will wake about 20 seconds. In this duration, the controller can communicate with the device. Normally the device is always sleeping to save the battery energy.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1450/PAT02_Manual.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Have Z-Wave™ Controller entered exclusion mode.
+2. Pressing tamper key three times within 1.5 seconds to enter the exclusion mode.
+Node ID has been excluded.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
+1. Pressing tamper key four times within 1.5 seconds and do not release the tamper key in the 4th pressed, and the LED will light ON.
+2. After 3 seconds the LED will turn OFF, after that within 2 seconds, release the tamper key. If successful, the LED will light ON one second. Otherwise, the LED will flash once.
+3. IDs are excluded and all settings will reset to factory default.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Have Z-Wave™ Controller entered inclusion mode.
+2. Pressing the tamper key three times within 1.5 seconds to enter the inclusion mode.
+3. After add successful, the device will wake to receive the setting command from Z-Wave™ Controller about 20 seconds.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1186/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1299/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1450/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Philio Technology Corporation PH-PAT02 Multisensor 3in1 sold as Zipato brend -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Basic Set OFF Level" max="255" min="0" size="1" type="byte" value="0">
+      <Help>
                 Setting the BASIC command value.
                 When the flood trigger off(0x00), send the BASIC CC to the group 2
             </Help>
-		</Value>
-        <Value type="byte" genre="config"  index="2" label="Basic Set ON Level" size="1" min="0" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="2" label="Basic Set ON Level" max="255" min="0" size="1" type="byte" value="255">
+      <Help>
                 Setting the BASIC command value.
                 When the flood trigger on(0xFF), send the BASIC CC to the group 2
             </Help>
-		</Value>
-        <Value type="byte" genre="config" instance="1" index="5" label="Operation Mode" min="0" max="255" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Operation Mode" max="255" min="0" type="byte" value="0">
+      <Help>
                 Bit0: Disable the Flood function.
                 Bit3: Setting the temperature scale. 0: Fahrenheit, 1:Celsius
                 Bit5: Disable the temperature report after event triggered. (1:Disable,0:Enable)
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="6" label="Multi-Sensor Function Switch" units="" min="0" max="255" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Multi-Sensor Function Switch" max="255" min="0" type="byte" units="" value="0">
+      <Help>
                 Bit6: Disable the humidity report after event triggered. (1:Disable, 0:Enable)
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="7" label="Costumer Function" units="" min="0" max="255" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Costumer Function" max="255" min="0" type="byte" units="" value="0">
+      <Help>
                 Bit3: Disable send out BASIC OFF after the flood event cleared. (1:Disable, 0:Enable)
                 Bit4: Notification Type. (0: Using Notification Report, 1: Using Sensor Binary Report)
                 Bit5: Disable Multi CC in auto report. (1:Disable, 0:Enable)
                 Bit6: Disable to report battery state when the device triggered. (1:Disable, 0:Enable)
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="10" label="Auto Report Battery Time" units="" min="0" max="127" value="12">
-            <Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Auto Report Battery Time" max="127" min="0" type="byte" units="" value="12">
+      <Help>
                 The interval time for auto report the battery level.
                 0 means turn off auto report.
                 The default value is 12.
                 The tick time can be set by the configuration No.20.
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="13" label="Auto Report Temperature Time" units="" min="0" max="127" value="12">
-            <Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Auto Report Temperature Time" max="127" min="0" type="byte" units="" value="12">
+      <Help>
                 The interval time for auto report the temperature.
                 0 means turn off auto report.
                 The default value is 12.
                 The tick time can be set by the configuration No.20.
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="14" label="Auto Report Humidity Time" units="" min="0" max="127" value="12">
-            <Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Auto Report Humidity Time" max="127" min="0" type="byte" units="" value="12">
+      <Help>
                 The interval time for auto report the humidity.
                 0 means turn off auto report.
                 The default value is 12.
                 The tick time can be set by the configuration No.20.
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="15" label="Auto Report Flood Time" units="" min="0" max="127" value="12">
-            <Help>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Auto Report Flood Time" max="127" min="0" type="byte" units="" value="12">
+      <Help>
                 The interval time for auto report the flood state.
                 0 means turn off auto report.
                 The default value is 12.
                 The tick time can be set by the configuration No.20.
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="20" label="Auto Report Tick Interval" units="minute" min="0" max="255" value="30">
-            <Help>
+    </Value>
+    <Value genre="config" index="20" instance="1" label="Auto Report Tick Interval" max="255" min="0" type="byte" units="minute" value="30">
+      <Help>
                 The interval time for auto report each tick.
                 Setting this configuration will effect configuration No.10, No.13, No.14 and No.15.
                 Units of one minute.
                 Caution1: Setting to 0 means turn off all auto report function.
                 Caution2: The value is unsigned byte
             </Help>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="21" label="Temperature Differential Report" units="fahrenheit" min="0" max="127" value="1">
-            <Help>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Temperature Differential Report" max="127" min="0" type="byte" units="fahrenheit" value="1">
+      <Help>
                 The temperature differential to report.
                 0 means turn off this function. The unit is Fahrenheit.
                 Enable this function the device will detect every 10 seconds.
                 And when the temperature is over 140 degree Fahrenheit, it will continue report.
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="22" label="Humidity Differential Report" units="%" min="0" max="60" value="5">
-            <Help>
+    </Value>
+    <Value genre="config" index="22" instance="1" label="Humidity Differential Report" max="60" min="0" type="byte" units="%" value="5">
+      <Help>
                 The humidity differential to report.
                 0 means turn off this function.
                 The unit is percentage. Enable this function the device will detect every 10 seconds.
             </Help>
-        </Value>
-
-    </CommandClass>
-
-	<!-- COMMAND_CLASS_BASIC -->
-	<CommandClass id="32" setasreport="true"/>
-
-	<!-- COMMAND_CLASS_ASSOCIATION -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="8" label="Lifeline"/>
-            <Group index="2" max_associations="8" label="Light control" />
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="8"/>
+      <Group index="2" label="Light control" max_associations="8"/>
+    </Associations>
+  </CommandClass>
 </Product>

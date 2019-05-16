@@ -1,0 +1,15 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0122:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/miyakawaelectric/me-d101.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/633/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">Japan</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">ME-D101</MetaDataItem>
+    <MetaDataItem name="Description">Electric power measuring instrument for the home</MetaDataItem>
+    <MetaDataItem name="Name">MSK CT type electric power measuring instrument</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/633/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

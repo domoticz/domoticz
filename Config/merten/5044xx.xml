@@ -1,0 +1,24 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/007A:0001:4002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/merten/5044xx.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="4002">https://products.z-wavealliance.org/products/321/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="4002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="4002">5044xx</MetaDataItem>
+    <MetaDataItem name="Name">5044xx - Radio sensor cover for in-wall switch</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.merten.com/Radio-transmitter-and-radio-receiver.148.0.html?&amp;L=3%3Fq%3Dplus%20lin</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.merten.com/Info-Centre.59.0.html</MetaDataItem>
+    <MetaDataItem name="Description">Binary Switch + Sensor Plate.CONNECT radio push-button, 1-gang
+
+To control the radio receiver
+ 
+Extremely flat design
+The ideal solution for retrofitting
+Can be secured with screws or adhesive
+Can be snapped into existing switch ranges</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/321/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

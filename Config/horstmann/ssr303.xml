@@ -1,15 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- Horstmann SSR303 thermostat receiver -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Associate V2: 
     Product supports one group (Lifeline) and have a maximum of 4 node. No current active group. 
   -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="4" label="Lifeline"/>
+      <Group index="1" label="Lifeline" max_associations="4"/>
     </Associations>
   </CommandClass>
-
   <!-- Thermostat mode (v1): 
     Only 'Idle Mode' and 'Heat Mode' are supported within this command class, which can either set or read.
     The SSR 303 has a failsafe mode where by the relay is turned off if another Thermostat Mode SET command has not been received within 60 minutes.
@@ -18,7 +16,7 @@
     <SupportedModes>
       <Mode index="0" label="Idle Mode"/>
       <Mode index="1" label="Heat Mode"/>
-    </SupportedModes>    
+    </SupportedModes>
   </CommandClass>
   <!-- Switch Binary (v1):
     Supports SET and GET to control the relay.
@@ -37,6 +35,9 @@
     Power Level (V1):
     Power Level Command Class defines RF transmit power controlling commands useful when installing or testing a network.
   -->
-  
-  <CommandClass id="96" version="4" mapping="endpoints" />
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
 </Product>

@@ -5,9 +5,6 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#include <iostream>
-#include <boost/lexical_cast.hpp>
-
 #define MAX_POLL_INTERVAL 3600*1000
 
 enum _edaeUsbState

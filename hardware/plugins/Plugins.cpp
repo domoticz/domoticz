@@ -147,7 +147,7 @@ namespace Plugins {
 			}
 			if (pCode && pCode->co_name)
 			{
-				if (sFuncName.length()) sFuncName += "\\";
+				if (!sFuncName.empty()) sFuncName += "\\";
 				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				sFuncName = pFuncBytes->ob_sval;
 			}
@@ -192,7 +192,7 @@ namespace Plugins {
 			}
 			if (pCode && pCode->co_name)
 			{
-				if (sFuncName.length()) sFuncName += "\\";
+				if (!sFuncName.empty()) sFuncName += "\\";
 				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				sFuncName = pFuncBytes->ob_sval;
 			}
@@ -433,7 +433,7 @@ namespace Plugins {
 			else
 			{
 				std::string		sNotifierName = szNotifier;
-				if ((!sNotifierName.length()) || (sNotifierName.find_first_of(' ') != -1))
+				if ((sNotifierName.empty()) || (sNotifierName.find_first_of(' ') != std::string::npos))
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to parse parameters, valid Notifier Name expected, received '%s'.", pModState->pPlugin->m_Name.c_str(), szNotifier);
 				}
@@ -490,6 +490,65 @@ namespace Plugins {
 		return Py_None;
 	}
 
+	static PyObject*	PyDomoticz_Configuration(PyObject *self, PyObject *args, PyObject* kwds)
+	{
+		PyObject*		pConfig = Py_None;
+		std::string		sConfig;
+		std::vector<std::vector<std::string> > result;
+
+		Py_INCREF(Py_None);
+
+		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			CPluginProtocolJSON* pProtocol = (CPluginProtocolJSON*)CPluginProtocol::Create("JSON");
+			PyObject* pNewConfig = NULL;
+			static char* kwlist[] = { "Config", NULL };
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist , &pNewConfig))
+			{
+				// Python object supplied if it is not a dictionary
+				if (!PyDict_Check(pNewConfig))
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
+					return pConfig;
+				}
+				else
+				{
+					//  Convert to JSON and store
+					sConfig = pProtocol->PythontoJSON(pNewConfig);
+
+					// Update database
+					m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				}
+			}
+			PyErr_Clear();
+
+			// Read the configuration 
+			result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			if (result.empty())
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
+				return pConfig;
+			}
+
+			// Build a Python structure to return 
+			sConfig = result[0][0];
+			if (sConfig.empty()) sConfig = "{}";
+			pConfig = pProtocol->JSONtoPython(sConfig);
+			Py_DECREF(Py_None);
+		}
+
+		return pConfig;
+	}
+
 	static PyMethodDef DomoticzMethods[] = {
 		{ "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
 		{ "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
@@ -499,6 +558,7 @@ namespace Plugins {
 		{ "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
 		{ "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
 		{ "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
+		{ "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
 		{ NULL, NULL, 0, NULL }
 	};
 
@@ -627,7 +687,7 @@ namespace Plugins {
 					}
 					Py_XDECREF(pString);
 				}
-				if (sError.length())
+				if (!sError.empty())
 				{
 					_log.Log(LOG_ERROR, "(%s) Module Import failed: '%s'", m_Name.c_str(), sError.c_str());
 					sError = "";
@@ -658,7 +718,7 @@ namespace Plugins {
 					Py_XDECREF(pString);
 				}
 
-				if (sError.length())
+				if (!sError.empty())
 				{
 					if ((lineno > 0) && (lineno < 1000))
 					{
@@ -683,7 +743,7 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "(%s) Error Line details not available.", m_Name.c_str());
 				}
 
-				if (sError.length())
+				if (!sError.empty())
 				{
 					_log.Log(LOG_ERROR, "(%s) Import detail: %s", m_Name.c_str(), sError.c_str());
 				}
@@ -762,7 +822,7 @@ namespace Plugins {
 					FuncName = pFuncBytes->ob_sval;
 					Py_XDECREF(pFuncBytes);
 				}
-				if (FileName.length())
+				if (!FileName.empty())
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
 				else
 					_log.Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
@@ -1059,6 +1119,31 @@ namespace Plugins {
 
 			try
 			{
+				//
+				//	Load the 'faulthandler' module to get a python stackdump during a segfault
+				//
+				void*	pFaultModule = PyImport_ImportModule("faulthandler");
+				if (!pFaultModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				}
+				else
+				{
+					PyObject*	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
+					if (pFunc && PyCallable_Check(pFunc))
+					{
+						PyObject_CallObject(pFunc, NULL);
+					}
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "(%s) exception loading 'faulthandler' module, continuing.", m_PluginKey.c_str());
+				PyErr_Clear();
+			}
+
+			try
+			{
 				m_PyModule = PyImport_ImportModule("plugin");
 				if (!m_PyModule)
 				{
@@ -1123,7 +1208,7 @@ namespace Plugins {
 						if (pAttributeValue)
 						{
 							m_Author = pAttributeValue;
-							if (sExtraDetail.length()) sExtraDetail += ", ";
+							if (!sExtraDetail.empty()) sExtraDetail += ", ";
 							sExtraDetail += "author '";
 							sExtraDetail += pAttributeValue;
 							sExtraDetail += "'";
@@ -1205,10 +1290,6 @@ Error:
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzVersion", szAppVersion);
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzHash", szAppHash);
 					ADD_STRING_TO_DICT(pParamsDict, "DomoticzBuildTime", szAppDate);
-
-					// Remember these for use with some protocols
-					m_Username = sd[4];
-					m_Password = sd[5];
 				}
 			}
 
@@ -1305,7 +1386,7 @@ Error:
 			pConnection->pProtocol = NULL;
 		}
 		std::string	sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
-		pConnection->pProtocol = CPluginProtocol::Create(sProtocol, m_Username, m_Password);
+		pConnection->pProtocol = CPluginProtocol::Create(sProtocol);
 		if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", m_Name.c_str(), sProtocol.c_str());
 	}
 
@@ -1336,7 +1417,7 @@ Error:
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			if (!sPort.length())
+			if (sPort.empty())
 			{
 				_log.Log(LOG_ERROR, "(%s) No port number specified for %s connection to: '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
 				return;
@@ -1476,7 +1557,7 @@ Error:
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 				if (m_bDebug & PDM_CONNECTION)
 				{
-					if (sPort.length())
+					if (!sPort.empty())
 						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str(), sConnection.c_str());
 					else
 						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sConnection.c_str());
@@ -1527,7 +1608,7 @@ Error:
 				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if ((sTransport == "Serial") || (!sPort.length()))
+				if ((sTransport == "Serial") || (sPort.empty()))
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1638,7 +1719,7 @@ Error:
 				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if ((sTransport == "Serial") || (!sPort.length()))
+				if ((sTransport == "Serial") || (sPort.empty()))
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1679,7 +1760,7 @@ Error:
 		try
 		{
 			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
-			if (m_PyModule && sHandler.length())
+			if (m_PyModule && !sHandler.empty())
 			{
 				PyObject*	pFunc = PyObject_GetAttrString((PyObject*)m_PyModule, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
@@ -1764,7 +1845,7 @@ Error:
 
 				PyObject*	pKey = PyUnicode_FromString(sd[0].c_str());
 				PyObject*	pValue = NULL;
-				if (sd[2].length())
+				if (!sd[2].empty())
 				{
 					pValue = PyUnicode_FromString(sd[2].c_str());
 				}

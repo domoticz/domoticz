@@ -18,6 +18,12 @@
 
 #include <iostream>
 
+#if BOOST_VERSION >= 107000
+#define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
+#else
+#define GET_IO_SERVICE(s) ((s).get_io_service())
+#endif
+
 class pinger
 	: private domoticz::noncopyable
 {
@@ -76,7 +82,7 @@ private:
 				num_tries_++;
 				if (num_tries_ > 4)
 				{
-					resolver_.get_io_service().stop();
+					GET_IO_SERVICE(resolver_).stop();
 				}
 				else
 				{
@@ -118,7 +124,7 @@ private:
 			if (num_replies_++ == 0)
 				timer_.cancel();
 			m_PingState = true;
-			resolver_.get_io_service().stop();
+			GET_IO_SERVICE(resolver_).stop();
 		}
 		else
 		{

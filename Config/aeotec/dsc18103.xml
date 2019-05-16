@@ -1,53 +1,69 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0012:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/dsc18103.png</MetaDataItem>
+    <MetaDataItem id="0012" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/775/</MetaDataItem>
+    <MetaDataItem id="0012" name="FrequencyName" type="0003">U.S. / Canada / Mexico / CEPT (Europe) / Australia / New Zealand</MetaDataItem>
+    <MetaDataItem name="Name">Micro Smart Energy Switch G2</MetaDataItem>
+    <MetaDataItem name="Description">It has long been thought that a house becomes a home when we make it reflect who we are, when we personalise it, when we fill it with objects we treasure. And all of that remains true, but it no longer needs to be just the objects we put in our home that personalises it. Like the music that gently fills the background of your favourite restaurant, Aeotec’s Micro Switches create the perfect ambiance for your home, and then some. They also give you the perfect control and the perfect, intelligent automation. 
+
+Across three different Micro controllers, each one letting you perfect everything from your home’s lights to its appliances and to its motorised doors and curtains, you’ll find that the same magic has been built right into the tiny body of each switch.</MetaDataItem>
+    <MetaDataItem id="0012" name="Identifier" type="0003">DSC18103-ZWAU</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://aeotec.com/z-wave-in-wall-switches</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/708/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/767/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/775/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
 Aeotec DSC18103 Micro Smart Switch (2nd Edition)
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584524
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" index="1" genre="config" label="Report type" units="" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="1" label="Report type" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>
 	Defines the contents of Multilevel Sensor Report after Multilevel Sensor Get received.
       </Help>
-      <Item label="Power" value="0" />
-      <Item label="Voltage" value="1" />
+      <Item label="Power" value="0"/>
+      <Item label="Voltage" value="1"/>
     </Value>
-    <Value type="short" index="2" genre="config" label="Blinking behavior" units="" min="0" max="65535" write_only="true" value="0">
+    <Value genre="config" index="2" label="Blinking behavior" max="65535" min="0" type="short" units="" value="0" write_only="true">
       <Help>
 	This is actually a double byte value. The LSB defines the total time the device needs to blink in seconds. The MSB defines the on/off interval of the blink in tenths of seconds.
       </Help>
     </Value>
-    <Value type="list" index="80" genre="config" label="Notification status" units="" size="1" value="0">
+    <Value genre="config" index="80" label="Notification status" size="1" type="list" units="" value="0">
       <Help>
 	Enables automatic notifications to associated devices whenever there is a state change.
       </Help>
-      <Item label="None" value="0" />
-      <Item label="Hail" value="1" />
-      <Item label="Basic" value="2" />
+      <Item label="None" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
     </Value>
-    <Value type="bool" index="90" genre="config" label="Enable Wattage Reports" units="" value="0">
+    <Value genre="config" index="90" label="Enable Wattage Reports" type="bool" units="" value="0">
       <Help>
 	Enable/disable Wattage threshold and percent.
       </Help>
     </Value>
-    <Value type="short" index="91" genre="config" label="Wattage threshold" units="watts" min="0" max="32000" value="50">
+    <Value genre="config" index="91" label="Wattage threshold" max="32000" min="0" type="short" units="watts" value="50">
       <Help>
 	The minimum change in wattage for a report to be sent.
       </Help>
     </Value>
-    <Value type="byte" index="92" genre="config" label="Wattage threshold percent" units="%" min="0" max="99" value="10">
+    <Value genre="config" index="92" label="Wattage threshold percent" max="99" min="0" type="byte" units="%" value="10">
       <Help>
 	Minimum change in percent of wattage to send a report.
       </Help>
     </Value>
-    <Value type="button" index="100" genre="config" label="Default Group Reports" units="" write_only="true" value="0" affects="101,102,103">
+    <Value affects="101,102,103" genre="config" index="100" label="Default Group Reports" type="button" units="" value="0" write_only="true">
       <Help>
 	Set report types for groups 1, 2 and 3 to default. Reverts to 0
 	after set.
       </Help>
     </Value>
-    <Value type="int" index="101" genre="config" label="Report type G1" units="" value="8">
+    <Value genre="config" index="101" label="Report type G1" type="int" units="" value="8">
       <Help>
 	Defines the type of report sent for reporting group 1. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
@@ -69,7 +85,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584524
 	Multilevel Sensor Report Command(wattage) automatically.
       </Help>
     </Value>
-    <Value type="int" index="102" genre="config" label="Report type G2" units="" value="0">
+    <Value genre="config" index="102" label="Report type G2" type="int" units="" value="0">
       <Help>
 	Defines the type of report sent for reporting group 2. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
@@ -91,7 +107,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584524
 	Multilevel Sensor Report Command(wattage) automatically.
       </Help>
     </Value>
-    <Value type="int" index="103" genre="config" label="Report type G3" units="" value="0">
+    <Value genre="config" index="103" label="Report type G3" type="int" units="" value="0">
       <Help>
 	Defines the type of report sent for reporting group 3. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
@@ -113,43 +129,41 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584524
 	Multilevel Sensor Report Command(wattage) automatically.
       </Help>
     </Value>
-    <Value type="button" index="110" genre="config" label="Default Group Time" units="" write_only="true" value="0" affects="111,112,113">
+    <Value affects="111,112,113" genre="config" index="110" label="Default Group Time" type="button" units="" value="0" write_only="true">
       <Help>
 	Set time interval for sending reports for groups 1, 2 and 3 to default.
       </Help>
     </Value>
-    <Value type="int" index="111" genre="config" label="Send interval G1" units="seconds" min="0" max="65535" value="600">
+    <Value genre="config" index="111" label="Send interval G1" max="65535" min="0" type="int" units="seconds" value="600">
       <Help>
 	Defines the time interval when the defined report for group 1 is sent.
       </Help>
     </Value>
-    <Value type="int" index="112" genre="config" label="Send interval G2" units="seconds" min="0" max="65535" value="600">
+    <Value genre="config" index="112" label="Send interval G2" max="65535" min="0" type="int" units="seconds" value="600">
       <Help>
 	Defines the time interval when the defined report for group 2 is sent.
       </Help>
     </Value>
-    <Value type="int" index="113" genre="config" label="Send interval G3" units="seconds" min="0" max="65535" value="600">
+    <Value genre="config" index="113" label="Send interval G3" max="65535" min="0" type="int" units="seconds" value="600">
       <Help>
 	Defines the time interval when the defined report for group 3 is sent.
       </Help>
     </Value>
-    <Value type="short" index="254" genre="config" label="Device tag" units="" min="0" max="65535" value="0">
+    <Value genre="config" index="254" label="Device tag" max="65535" min="0" type="short" units="" value="0">
       <Help>
 	Device tag.
       </Help>
     </Value>
-    <Value type="button" index="255" genre="config" label="Reset device" units="" write_only="true" value="0">
+    <Value genre="config" index="255" label="Reset device" type="button" units="" value="0" write_only="true">
       <Help>
 	Reset to the default configuration.
       </Help>
     </Value>
   </CommandClass>
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>
-
