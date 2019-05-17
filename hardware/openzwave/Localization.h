@@ -105,27 +105,27 @@ private:
 
     static void ReadXML();
     static void ReadCCXMLLabel(uint8 ccID, const TiXmlElement *labelElement);
-    static void ReadXMLValue(uint8 ccID, const TiXmlElement *valueElement);
-    static void ReadXMLVIDItemLabel(uint8 ccID, uint16 indexId, uint32 pos, const TiXmlElement *labelElement);
+    static void ReadXMLValue(uint8 node, uint8 ccID, const TiXmlElement *valueElement);
+    static void ReadXMLVIDItemLabel(uint8 node, uint8 ccID, uint16 indexId, uint32 pos, const TiXmlElement *labelElement);
     static void ReadGlobalXMLLabel(const TiXmlElement *labelElement);
-    static uint64 GetValueKey (uint8 _commandClass, uint16 _index, uint32 _pos = -1);
+    static uint64 GetValueKey (uint8 _node, uint8 _commandClass, uint16 _index, uint32 _pos, bool unique = false);
 public:
     static Localization* Get();
     void SetupCommandClass(CommandClass *cc);
     string GetSelectedLang() { return Localization::m_selectedLang;};
-    bool SetValueHelp(uint8 ccID, uint16 indexID, uint32 pos, string help, string lang="");
-    string const GetValueHelp(uint8 ccID, uint16 indexId, uint32 pos);
-    bool SetValueLabel(uint8 ccID, uint16 indexID, uint32 pos, string label, string lang="");
-    string const GetValueLabel(uint8 ccID, uint16 indexId, int32 pos) const;
-    string const GetValueItemLabel(uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex) const;
-    bool SetValueItemLabel(uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex, string label, string lang="");
-    string const GetValueItemHelp(uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex) const;
-    bool SetValueItemHelp(uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex, string label, string lang="");
+    bool SetValueHelp(uint8 node, uint8 ccID, uint16 indexID, uint32 pos, string help, string lang="");
+    string const GetValueHelp(uint8 node, uint8 ccID, uint16 indexId, uint32 pos);
+    bool SetValueLabel(uint8 node, uint8 ccID, uint16 indexID, uint32 pos, string label, string lang="");
+    string const GetValueLabel(uint8 node, uint8 ccID, uint16 indexId, int32 pos) const;
+    string const GetValueItemLabel(uint8 node, uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex) const;
+    bool SetValueItemLabel(uint8 node, uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex, string label, string lang="");
+    string const GetValueItemHelp(uint8 node, uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex) const;
+    bool SetValueItemHelp(uint8 node, uint8 ccID, uint16 indexId, int32 pos, int32 itemIndex, string label, string lang="");
     string const GetGlobalLabel(string text);
     bool SetGlobalLabel(string index, string text, string lang);
-    static void ReadXMLVIDLabel(uint8 ccID, uint16 indexId, uint32 pos, const TiXmlElement *labelElement);
-    static void ReadXMLVIDHelp(uint8 ccID, uint16 indexId, uint32 pos, const TiXmlElement *helpElement);
-    bool WriteXMLVIDHelp(uint8 ccID, uint16 indexId, uint32 pos, TiXmlElement *valueElement);
+    static void ReadXMLVIDLabel(uint8 node, uint8 ccID, uint16 indexId, uint32 pos, const TiXmlElement *labelElement);
+    static void ReadXMLVIDHelp(uint8 node, uint8 ccID, uint16 indexId, uint32 pos, const TiXmlElement *helpElement);
+    bool WriteXMLVIDHelp(uint8 node, uint8 ccID, uint16 indexId, uint32 pos, TiXmlElement *valueElement);
     //-----------------------------------------------------------------------------
     // Instance Functions
     //-----------------------------------------------------------------------------

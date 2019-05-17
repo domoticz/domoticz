@@ -166,21 +166,11 @@ static inline int version_cmp(struct ozwversion a, struct ozwversion b)
 #else
 #  define __MYFUNCTION__ __FILE__
 #endif
-// Exceptions : define OPENZWAVE_ENABLE_EXCEPTIONS in compiler flags to enable exceptions instead of exit function
-#ifdef OPENZWAVE_ENABLE_EXCEPTIONS
 
 #  define OZW_FATAL_ERROR(exitCode, msg)   	Log::Write( LogLevel_Error,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
 											throw OZWException(__MYFUNCTION__, __LINE__, exitCode, msg)
 #  define OZW_ERROR(exitCode, msg) 			Log::Write( LogLevel_Warning,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
 											throw OZWException(__MYFUNCTION__, __LINE__, exitCode, msg)
-
-#else
-
-#  define OZW_FATAL_ERROR(exitCode, msg)   	Log::Write( LogLevel_Error,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
-											std::cerr << "Error: "<< std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1) << ":" << __LINE__ << " - " << msg << std::endl; exit(exitCode)
-#  define OZW_ERROR(exitCode, msg)			Log::Write( LogLevel_Warning,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg);
-
-#endif
 
 // Declare the OpenZWave namespace
 namespace std {}

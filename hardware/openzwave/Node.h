@@ -40,6 +40,7 @@
 #include "Group.h"
 
 class TiXmlElement;
+class TiXmlNode;
 
 namespace OpenZWave
 {
@@ -454,6 +455,8 @@ namespace OpenZWave
 			map<uint8,CommandClass*>		m_advertisedCommandClassMap; /**< Map of Command Class Id's and Pointers to the Class for Advertised CommandClasses */
 			bool							m_secured; /**< Is this Node added Securely */
 			map<uint8, string>				m_globalInstanceLabel; /** < The Global Labels for Instances for CC that dont define their own labels */
+
+			TiXmlNode *m_nodeCache;
 			//-----------------------------------------------------------------------------
 			// Configuration Revision Related Classes
 			//-----------------------------------------------------------------------------
