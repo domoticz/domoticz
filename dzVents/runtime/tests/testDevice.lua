@@ -1106,6 +1106,18 @@ describe('device', function()
 				switch.open()
 				assert.is_same({ { ["s1"] = "On" } }, commandArray)
 			end)
+            
+			it('should open Blinds', function()
+				switch.switchType = "Blinds"
+				switch.open()
+				assert.is_same({ { ["s1"] = "Off" } }, commandArray)
+			end)
+
+			it('should close"Venetian Blinds EU', function()
+				switch.switchType = "Venetian Blinds EU"
+				switch.close()
+				assert.is_same({ { ["s1"] = "On" } }, commandArray)
+			end)
 
 			it('should close', function()
 				switch.close()
