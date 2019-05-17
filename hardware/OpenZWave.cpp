@@ -23,13 +23,7 @@
 //OpenZWave includes
 #include "openzwave/Options.h"
 #include "openzwave/Manager.h"
-#include "openzwave/Driver.h"
-#include "openzwave/Node.h"
-#include "openzwave/Group.h"
 #include "openzwave/Notification.h"
-#include "openzwave/value_classes/ValueStore.h"
-#include "openzwave/value_classes/Value.h"
-#include "openzwave/value_classes/ValueBool.h"
 #include "openzwave/platform/Log.h"
 
 #include "ZWaveCommands.h"
