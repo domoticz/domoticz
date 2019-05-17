@@ -269,12 +269,15 @@ namespace OpenZWave
 		//void ReleaseNodes();
 
 		ControllerInterface			m_controllerInterfaceType;				// Specifies the controller's hardware interface
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		string					m_controllerPath;							// name or path used to open the controller hardware.
+OPENZWAVE_EXPORT_WARNINGS_ON
 		Controller*				m_controller;								// Handles communications with the controller hardware.
 		uint32					m_homeId;									// Home ID of the Z-Wave controller.  Not valid until the DriverReady notification has been received.
-
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		string					m_libraryVersion;							// Version of the Z-Wave Library used by the controller.
 		string					m_libraryTypeName;							// Name describing the library type.
+OPENZWAVE_EXPORT_WARNINGS_ON
 		uint8					m_libraryType;								// Type of library used by the controller.
 
 		uint8					m_serialAPIVersion[2];

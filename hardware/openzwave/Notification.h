@@ -256,7 +256,9 @@ namespace OpenZWave
 		uint8				m_event;
 		uint8				m_command;
 		UserAlertNotification m_useralerttype;
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		string				m_comport;
+OPENZWAVE_EXPORT_WARNINGS_ON
 	};
 
 } //namespace OpenZWave

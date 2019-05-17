@@ -477,27 +477,6 @@ uint8_t COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID& vID)
 	return instance;
 }
 
-void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void* _context)
-{
-	COpenZWave* pClass = static_cast<COpenZWave*>(_context);
-	try
-	{
-		pClass->OnZWaveDeviceStatusUpdate(cs, err);
-	}
-	catch (OpenZWave::OZWException& ex)
-	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
-	}
-	catch (std::exception& e)
-	{
-		_log.Log(LOG_ERROR, "OpenZWave: Exception: %s!", e.what());
-	}
-	catch (...)
-	{
-		_log.Log(LOG_ERROR, "OpenZWave: Unknown Exception catched! %s:%d", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-	}
-}
-
 //-----------------------------------------------------------------------------
 // <OnNotification>
 // Callback that is triggered when a value, group or node changes
@@ -943,42 +922,6 @@ void COpenZWave::EnableDisableDebug()
 
 bool COpenZWave::OpenSerialConnector()
 {
-	if (m_bAeotecBlinkingMode)
-	{
-		m_bAeotecBlinkingMode = false;
-
-		serial::Serial _serial;
-		_serial.setPort(m_szSerialPort);
-		_serial.setBaudrate(115200);
-		_serial.setBytesize(serial::eightbits);
-		_serial.setParity(serial::parity_none);
-		_serial.setStopbits(serial::stopbits_one);
-		_serial.setFlowcontrol(serial::flowcontrol_none);
-		serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
-		_serial.setTimeout(stimeout);
-		try
-		{
-			_serial.open();
-
-			uint8_t _AeotecBlink_On[10] = { 0x01, 0x08, 0x00, 0xF2, 0x51, 0x01, 0x01, 0x05, 0x01, 0x50 };
-			uint8_t _AeotecBlink_Off[10] = { 0x01, 0x08, 0x00, 0xF2, 0x51, 0x01, 0x00, 0x05, 0x01, 0x51 };
-
-			int blinkenabled = 1;
-			m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
-
-			if (blinkenabled == 1)
-				_serial.write(_AeotecBlink_On, 10);
-			else
-				_serial.write(_AeotecBlink_Off, 10);
-
-			_serial.close();
-		}
-		catch (...)
-		{
-			_log.Log(LOG_ERROR, "OpenZWave: Problem with setting Aeotec's Controller blinking mode!");
-		}
-	}
-
 	m_allNodesQueried = false;
 	m_updateTime = mytime(NULL);
 	CloseSerialConnector();
@@ -1071,9 +1014,17 @@ bool COpenZWave::OpenSerialConnector()
 			sprintf(szComm, "COM%d", iPort);
 		else
 			sprintf(szComm, "\\\\.\\COM%d", iPort);
-		m_pManager->AddDriver(szComm);
+		if (!m_pManager->AddDriver(szComm))
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Unable to start with on port: %s", szComm);
+			return false;
+		}
 #else
-		m_pManager->AddDriver(m_szSerialPort.c_str());
+		if (!m_pManager->AddDriver(m_szSerialPort.c_str()))
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Unable to start with on port: %s", m_szSerialPort.c_str());
+			return false;
+		}
 #endif
 		int nightly_heal = 0;
 		m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
@@ -1635,8 +1586,11 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	if (commandclass == COMMAND_CLASS_CONFIGURATION)
 	{
 		std::string vUnits = m_pManager->GetValueUnits(vID);
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
+#else
 		_log.Debug(DEBUG_HARDWARE, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
-		//_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
+#endif
 		return;
 	}
 
@@ -2008,7 +1962,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "OpenZWave: Unhandled Meter type: %s", vLabel.c_str());
+			_log.Log(LOG_ERROR, "OpenZWave: Unhandled Meter type: %s, class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", vLabel.c_str(), commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 			return;
 		}
 	}
@@ -5176,6 +5130,37 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 							if (old_blinkenabled != blinkenabled)
 							{
 								m_sql.UpdatePreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
+
+								CloseSerialConnector();
+
+								serial::Serial _serial;
+								_serial.setPort(m_szSerialPort);
+								_serial.setBaudrate(115200);
+								_serial.setBytesize(serial::eightbits);
+								_serial.setParity(serial::parity_none);
+								_serial.setStopbits(serial::stopbits_one);
+								_serial.setFlowcontrol(serial::flowcontrol_none);
+								serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
+								_serial.setTimeout(stimeout);
+								try
+								{
+									_serial.open();
+
+									uint8_t _AeotecBlink_On[10] = { 0x01, 0x08, 0x00, 0xF2, 0x51, 0x01, 0x01, 0x05, 0x01, 0x50 };
+									uint8_t _AeotecBlink_Off[10] = { 0x01, 0x08, 0x00, 0xF2, 0x51, 0x01, 0x00, 0x05, 0x01, 0x51 };
+
+									if (blinkenabled == 1)
+										_serial.write(_AeotecBlink_On, 10);
+									else
+										_serial.write(_AeotecBlink_Off, 10);
+
+									_serial.close();
+								}
+								catch (...)
+								{
+									_log.Log(LOG_ERROR, "OpenZWave: Problem with setting Aeotec's Controller blinking mode!");
+								}
+
 								bRestartOpenZWave = true;
 								m_bAeotecBlinkingMode = true;
 							}
