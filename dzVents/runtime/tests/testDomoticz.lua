@@ -502,7 +502,7 @@ describe('Domoticz', function()
 			collection.forEach(function(scene)
 				table.insert(res, scene.name)
 			end)
-			assert.is_same({ "Scene1", "Scene2" }, res)
+			assert.is_same({ "Scene2", "Scene1" }, res)
 
 
 			local filtered = collection.filter(function(scene)
@@ -625,7 +625,7 @@ describe('Domoticz', function()
 			collection.forEach(function(variable)
 				table.insert(res, variable.name)
 			end)
-			assert.is_same({ "a", "b", "var with spaces", "x", "y", "z"}, values(res))
+			assert.is_same({ "a", "b", "c", "var with spaces", "x", "y", "z"}, values(res))
 
 
 			local filtered = collection.filter(function(variable)
@@ -649,7 +649,7 @@ describe('Domoticz', function()
 				return acc
 			end, 0)
 
-			assert.is_same(21, reduced)
+			assert.is_same(28, reduced)
 
 			local reduced2 = filtered.reduce(function(acc, device)
 				acc = acc + device.id
@@ -749,7 +749,7 @@ describe('Domoticz', function()
 			collection.forEach(function(var)
 				table.insert(res, var.name)
 			end)
-			assert.is_same({ "a", "b", "var with spaces", "x", "z",  }, values(res))
+			assert.is_same({ "a", "b", "c", "var with spaces", "x", "z",  }, values(res))
 
 
 			local filtered = collection.filter(function(var)
@@ -773,7 +773,7 @@ describe('Domoticz', function()
 				return acc
 			end, 0)
 
-			assert.is_same(19, reduced)
+			assert.is_same(26, reduced)
 
 			local reduced2 = filtered.reduce(function(acc, var)
 				acc = acc + var.id

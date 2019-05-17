@@ -381,8 +381,17 @@ local testData = {
 			["lastUpdate"] = "2017-04-18 20:16:23";
 			data = { ["value"] = 'some value' }
 		},
-		--- scenes and groups
 		[17] = {
+			["id"] = 7,
+			["name"] = "c",
+			["changed"] = true,
+			["variableType"] = 'date',
+			["baseType"] = "uservariable";
+			["lastUpdate"] = "2017-04-18 20:16:23";
+			data = { ["value"] = '3-12-2017' }
+		},
+		--- scenes and groups
+		[18] = {
 			["id"] = 1;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 1',
@@ -397,7 +406,7 @@ local testData = {
 			};
 			["lastUpdate"] = "2017-04-18 15:31:19";
 		},
-		[18] = {
+		[19] = {
 			["id"] = 3;
 			["baseType"] = "group";
 			["description"] = 'Descr group 1',
@@ -412,7 +421,7 @@ local testData = {
 			};
 			["lastUpdate"] = "2017-04-18 15:31:26";
 		},
-		[19] = {
+		[20] = {
 			["id"] = 2;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 2',
@@ -423,7 +432,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-19 20:31:50";
 		},
-		[20] = {
+		[21] = {
 			["id"] = 4;
 			["baseType"] = "group";
 			["description"] = 'Descr group 2',
