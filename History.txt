@@ -5,8 +5,8 @@ Version 4.xxxxx (xxx 2019)
 - Fixed: GUI, Switch Log, date parsing in device log (#3206)
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
-- Updated: dzVents (version 2.4.20, See dzVents/documentation/history.md)
 - Updated: OpenZWave version 1.6
+- Updated: dzVents (version 2.4.21, See dzVents/documentation/history.md)
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

@@ -28,7 +28,7 @@ local function Variable(domoticz, data)
 	end
 
 	if (data.variableType == 'date') then
-		local d, mon, y = string.match(data.data.value, "(%d+)%/(%d+)%/(%d+)")
+		local d, mon, y = string.match(data.data.value, "(%d+)[%p](%d+)[%p](%d+)")
 		local date = y .. '-' .. mon .. '-' .. d .. ' 00:00:00'
 		self['date'] = Time(date)
 	end

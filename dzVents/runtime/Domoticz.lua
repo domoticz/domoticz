@@ -209,7 +209,10 @@ local function Domoticz(settings)
 			stringSplit = function(text, sep)
 				return utils.stringSplit(text, sep)
 			end,
-			
+
+			inTable = function(t, searchItem)
+				return utils.inTable(t, searchItem)
+			end,
 		}
 	}
 
