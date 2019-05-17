@@ -1960,6 +1960,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				return;
 			}
 		}
+		else if (vLabel.find("Unknown") != std::string::npos)
+		{
+			//It's unknown, so don't handle it
+		}
 		else
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled Meter type: %s, class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", vLabel.c_str(), commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
@@ -3436,9 +3440,24 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				else
 					intValue = 255;
 			}
+			else if (vType == OpenZWave::ValueID::ValueType_String)
+			{
+				if (commandclass == COMMAND_CLASS_COLOR_CONTROL)
+				{
+					//New color value received, not handled yet
+				}
+
+			}
+			else if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				if (commandclass == COMMAND_CLASS_COLOR_CONTROL)
+				{
+					//Color Index changed, not used
+				}
+			}
 			else
 			{
-				_log.Log(LOG_ERROR, "OpenZWave: Value_Changed: Unhandled value type ZDTYPE_SWITCH_NORMAL (%d). Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vType, NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
+				_log.Log(LOG_ERROR, "OpenZWave: Value_Changed: Unhandled value type ZDTYPE_SWITCH_NORMAL (%d). Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d (%s:%d)", vType, NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex(), std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 				return;
 			}
 			if (pDevice->intvalue == intValue)

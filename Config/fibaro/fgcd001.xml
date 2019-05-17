@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <!--
 	FIBARO CO Sensor FGCD-001
 	http://products.z-wavealliance.org/products/2336
@@ -66,7 +66,7 @@
     <Value genre="config" index="12" instance="1" label="Value of BASIC OFF command sent to 2nd association group" max="255" min="0" type="short" value="0">
       <Help>This parameter defines the value of BASIC OFF command sent to devices in 2nd association group after the CO Alarm cancellation.</Help>
     </Value>
-    <Value genre="config" index="13" instance="1" label=" Commands sent to 4th association group (CO Level)" max="3" min="1" size="1" type="list" value="3">
+    <Value genre="config" index="13" instance="1" label="Commands sent to 4th association group (CO Level)" max="3" min="1" size="1" type="list" value="3">
       <Help>
 				This parameter defines commands sent to devices associated in 4th association group (CO Level). 
 				Values of specified commands may be set in parameters 16 and 19.
@@ -140,7 +140,7 @@
     <Value genre="config" index="23" instance="1" label="CO meter activation" max="1" min="0" size="1" type="byte" value="1">
       <Help>This parameter activates reporting the value of CO concentration level to the main Z-Wave controller.</Help>
     </Value>
-    <Value genre="config" index="25" instance="1" label=" CO level reporting hysteresis" max="6" min="2" size="1" type="list" units="ppm" value="2">
+    <Value genre="config" index="25" instance="1" label="CO level reporting hysteresis" max="6" min="2" size="1" type="list" units="ppm" value="2">
       <Help>
 				This parameter defines a minimum change in CO concentration level which results in sending a new value to the main Z-Wave controller.
 			</Help>

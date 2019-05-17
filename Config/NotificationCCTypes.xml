@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<NotificationTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="6">
+<NotificationTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="7">
     <!--  Please keep this file in Sync with the Localization.xml file for the Notification CC -->
 	<AlarmType id="1" name="Smoke Alarm">
 		<AlarmEvent id="0" name="Clear">

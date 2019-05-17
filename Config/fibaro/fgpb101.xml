@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Fibaro : Button FGPB101 -->
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
 	<!-- Configuration -->
 	<CommandClass id="112">
 		<Value type="byte" genre="config" instance="1" index="1" label="Scenes sent to the controller" min="0" max="127" value="127">
@@ -87,14 +87,14 @@
 		<Value type="short" genre="config" instance="1" index="25" label="Key Pressed 3 times - value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="255">
 			<Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a triple click.</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="29" label=" Key Held Down - command sent to 3rd association group" value="3" size="1">
+		<Value type="list" genre="config" instance="1" index="29" label="Key Held Down - command sent to 3rd association group" value="3" size="1">
 			<Help>This parameter defines commands sent to devices associated in 3rd association group after holding the button down.</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Brightening" value="1"/>
 			<Item label="Dimming" value="2"/>
 			<Item label="Brightening/Dimming - alternately" value="3"/>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="30" label=" Alarm frame triggers" min="0" max="127" value="127">
+		<Value type="byte" genre="config" instance="1" index="30" label="Alarm frame triggers" min="0" max="127" value="127">
 			<Help>
 				Parameter determines which actions result in sending alarm frames to 4th association group.
 				1 - Key Pressed 1 time.

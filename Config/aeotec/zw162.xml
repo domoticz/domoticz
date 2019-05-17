@@ -2,16 +2,67 @@
 <!--
 ZW162 Doorbell 6
 -->
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
   <!--
   Aeotec Doorbell 6
   https://aeotec.freshdesk.com/helpdesk/attachments/6073850754
   -->
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="int" index="1" genre="config" label="Light Effect and Tone Play Mode for Browse" value="16777216">
-      <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
+    <Value type="bitset" index="1" genre="config" label="Light Effect and Tone Play Mode for Browse" value="16777216" size="4" bitmask="4287037440">
+      <Help>Light Effect and PlayTone configuration for Browse Endping
       </Help>
+      <BitSet id="32">
+        <Label>Last Valid Configuration (Light Effect)</Label>
+        <Help>Use the Last Valid Configuration Value for the Light Effect</Help>
+      </BitSet>
+    <BitSet id="31">
+<Label>Light Effect #7</Label>
+<Help>Use Light Effect #7, Defined in Parameter 22</Help>
+    </BitSet>
+<BitSet id="30">
+<Label>Light Effect #6</Label>
+<Help>Use Light Effect #6, Defined in Parameter 21</Help>
+</BitSet>
+<BitSet id="29">
+<Label>Light Effect #5</Label>
+<Help>Use Light Effect #5, Defined in Parameter 20</Help>
+</BitSet>
+<BitSet id="28">
+<Label>Light Effect #4</Label>
+<Help>Use Light Effect #4, Defined in Parameter 19</Help>
+</BitSet>
+<BitSet id="27">
+<Label>Light Effect #3</Label>
+<Help>Use Light Effect #3, Defined in Parameter 18</Help>
+</BitSet>
+<BitSet id="26">
+<Label>Light Effect #2</Label>
+<Help>Use Light Effect #2, Defined in Parameter 17</Help>
+</BitSet>
+<BitSet id="25">
+<Label>Light Effect #1</Label>
+<Help>Use Light Effect #1, Defined in Parameter 16</Help>
+</BitSet>
+<BitSet id="24">
+<Label>Last Valid Configuration (Tone Mode)</Label>
+<Help>Use the Last Valid Configuration Value for the Tone</Help>
+</BitSet>
+<BitSet id="19">
+<Label>List Random Playback</Label>
+<Help>If you’re not sure which tone to use, you can configure the value of Tone Play Mode to be 3. Then send Basic Set 0xFF to Endpoint 1 or Root Device to trigger auto-selecting tone function. Chime will play built-in tones randomly and the Default Tone Identifier will be changed each time a new tone is played. When send Basic Set 0x00 to Endpoint 1 or Root Device to stop playing tone, the Default Tone Identifier will store, which means the tone has been selected.
+Please note that the Tone Play Mode needs to be configured to be 0 or 1 after the tone is selected, otherwise the automatic selection tone function will be retriggered when the Endpoint 1 or Root Device is triggered to play tone and light again.</Help>
+</BitSet>
+<BitSet id="18">
+<Label>List Loop Playback</Label>
+<Help>If you’re not sure which tone to use, you can configure the value of Tone Play Mode to be 2. Then send Basic Set 0xFF to Endpoint 1 or Root Device to trigger auto-selecting tone function. Chime will play built-in tones in order and the Default Tone Identifier will be changed each time a new tone is played. When send Basic Set 0x00 to Endpoint 1 or Root Device to stop playing tone, the Default Tone Identifier will store, which means the tone has been selected.
+Please note that the Tone Play Mode needs to be configured to be 0 or 1 after the tone is selected, otherwise the automatic selection tone function will be retriggered when the Endpoint 1 or Root Device is triggered to play tone and light again.</Help>
+</BitSet>
+<BitSet id="17">
+<Label>Single Loop Playback</Label>
+<Help>Use a single loop playback for the Tone</Help>
+</BitSet>
+
     </Value>
     <Value type="int" index="2" genre="config" label="Light Effect and Tone Effect for Tampering" value="16777217">
       <Help>Please Refer to Engineering Specification - Aeotec Doorbell 6
