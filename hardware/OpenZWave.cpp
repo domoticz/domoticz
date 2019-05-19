@@ -418,6 +418,13 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	return strState;
 }
 
+std::string COpenZWave::GetNodeGenericType(const bool bIsPlus, const uint32 homeID, const uint8 nodeID)
+{
+	if (bIsPlus)
+		return m_pManager->GetNodeDeviceTypeString(homeID, nodeID);
+	return m_pManager->GetNodeType(homeID, nodeID);
+}
+
 uint8_t COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID& vID)
 {
 	uint8_t instance;
@@ -557,7 +564,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
 		nodeInfo.Product_id = m_pManager->GetNodeProductId(_homeID, _nodeID);
 		nodeInfo.Product_name = m_pManager->GetNodeProductName(_homeID, _nodeID);
-
 		nodeInfo.tClockDay = -1;
 		nodeInfo.tClockHour = -1;
 		nodeInfo.tClockMinute = -1;
@@ -617,6 +623,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 
 			if (nodeInfo->Manufacturer_name.empty())
 			{
+				nodeInfo->IsPlus = m_pManager->IsNodeZWavePlus(_homeID, _nodeID);
 				nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
 				nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
 				nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
@@ -841,6 +848,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			std::string product_name = m_pManager->GetNodeProductName(_homeID, _nodeID);
 			if (nodeInfo->Product_name != product_name)
 			{
+				nodeInfo->IsPlus = m_pManager->IsNodeZWavePlus(_homeID, _nodeID);
 				nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
 				nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
 				nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
@@ -4375,7 +4383,9 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
 		m_HwdID, homeID, nodeID);
-	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
+	std::string sProductDescription;
+	if (!pNode->Manufacturer_name.empty() || !pNode->Product_name.empty())
+		sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
 	if (result.empty())
 	{
@@ -5418,7 +5428,7 @@ namespace http {
 					std::vector<std::string> sd = *itt;
 
 					unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[1]));
-					int nodeID = atoi(sd[2].c_str());
+					uint8 nodeID = (uint8)atoi(sd[2].c_str());
 					//if (nodeID>1) //Don't include the controller
 					{
 						COpenZWave::NodeInfo* pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
@@ -5439,6 +5449,7 @@ namespace http {
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
 						root["result"][ii]["IsPlus"] = pNode->IsPlus;
+						root["result"][ii]["Generic_type"] = pOZWHardware->GetNodeGenericType(pNode->IsPlus, homeID, nodeID);
 
 						char szDate[80];
 						struct tm loctime;
@@ -6008,7 +6019,7 @@ namespace http {
 					COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->RequestNodeInfo(homeID, nodeID);
 					root["status"] = "OK";
-					root["title"] = "RequestZWaveNodeConfig";
+					root["title"] = "RequestZWaveNodeInfo";
 				}
 			}
 		}

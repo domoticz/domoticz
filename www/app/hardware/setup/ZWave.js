@@ -467,8 +467,10 @@ define(['app'], function (app) {
                             }
                             var statusImg = '<img src="images/' + status + '.png" />';
                             var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
-
                             var Description = item.Description;
+                            if (Description.length < 2) {
+								Description = '<span class="zwave_no_info">'+item.Generic_type+'</span>';
+                            }
                             if (item.IsPlus == true) {
                                 Description += "+";
                             }
@@ -551,9 +553,9 @@ define(['app'], function (app) {
                             var bHaveConfiguration = false;
                             $.each(data["Config"], function (i, item) {
                                 bHaveConfiguration = true;
+								szConfig += '<span class="zwave_label">' + item.index + ". " + item.label + ":</span>";
                                 if (item.type == "list") {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b><br>";
-                                    szConfig += '<select style="width:100%" class="combobox ui-corner-all" id="' + item.index + '">';
+                                    szConfig += '&nbsp;<select style="width:auto" class="combobox ui-corner-all" id="' + item.index + '">';
                                     var iListItem = 0;
                                     var totListItems = parseInt(item.list_items);
                                     for (iListItem = 0; iListItem < totListItems; iListItem++) {
@@ -571,8 +573,7 @@ define(['app'], function (app) {
                                     }
                                 }
                                 else if (item.type == "bool") {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b><br>";
-                                    szConfig += '<select style="width:100%" class="combobox ui-corner-all" id="' + item.index + '">';
+                                    szConfig += '<br><select style="width:100%" class="combobox ui-corner-all" id="' + item.index + '">';
 
                                     var szComboOption = '<option value="False"';
                                     if (item.value == "False") {
@@ -594,8 +595,7 @@ define(['app'], function (app) {
                                     }
                                 }
                                 else if (item.type == "string") {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b><br>";
-                                    szConfig += '<input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>';
+                                    szConfig += '<br><input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>';
 
                                     if (item.units != "") {
                                         szConfig += ' (' + item.units + ')';
@@ -603,8 +603,7 @@ define(['app'], function (app) {
                                     szConfig += " (" + $.t("actual") + ": " + item.value + ")";
                                 }
                                 else {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b> ";
-                                    szConfig += '<input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
+                                    szConfig += '&nbsp;<input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
                                     if (item.units != "") {
                                         szConfig += ' (' + item.units + ')';
                                     }
@@ -612,10 +611,12 @@ define(['app'], function (app) {
                                 }
                                 szConfig += "<br /><br />";
                                 if (item.help != "") {
-                                    szConfig += item.help + "<br>";
+                                    szConfig += '<span class="zwave_help">' + item.help + '</span><br>';
                                 }
-                                szConfig += "Last Update: " + item.LastUpdate;
-                                szConfig += "<br /><br />";
+                                if (item.LastUpdate.length>1) {
+									szConfig += '<span class="zwave_last_update">Last Update: ' + item.LastUpdate + '</span><br />';
+								}
+								szConfig += "<br />";
                             });
                             if (bHaveConfiguration == true) {
                                 szConfig += '<a class="btnstyle3" id="nodeapplyconfiguration" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
