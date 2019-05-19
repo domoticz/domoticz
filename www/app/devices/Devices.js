@@ -67,7 +67,7 @@ define(['app'], function (app) {
                         className: 'row_selected',
                         selector: '.js-select-row'
                     },
-                    order: [[2, 'asc']],
+                    order: [[13, 'desc']],
                     columns: [
                         {
                             title: renderSelectorTitle(),
