@@ -1800,8 +1800,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			else if (vType == OpenZWave::ValueID::ValueType_List)
 			{
 				//1.6
-				std::vector<std::string> tModes;
-				m_pManager->GetValueListItems(vID, &tModes);
+				//std::vector<std::string> tModes;
+				//m_pManager->GetValueListItems(vID, &tModes);
 
 				int32 listValue = 0;
 				if (m_pManager->GetValueListSelection(vID, &listValue))
@@ -2574,8 +2574,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			}
 			if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
 				return;
-			if (lValue != 1)
-				return; //only accept CentralSceneMask_KeyPressed1time
+			//if (lValue != 1)
+				//return; //only accept CentralSceneMask_KeyPressed1time
 
 			instance = vIndex;
 			_device.instanceID = instance;
@@ -2846,8 +2846,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		}
 		if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
 			return;
-		if (lValue != 1)
-			return; //only accept CentralSceneMask_KeyPressed1time
+		//if (lValue != 1)
+			//return; //only accept CentralSceneMask_KeyPressed1time
 
 		instance = vOrgIndex;
 	}
@@ -3726,6 +3726,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
 			pDevice->intvalue = 255;
+		}
+		else if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			int32 listValue = 0;
+			if (m_pManager->GetValueListSelection(vID, &listValue))
+			{
+				if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
+					return;
+				pDevice->intvalue = 255;
+			}
 		}
 		break;
 	}

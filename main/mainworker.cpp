@@ -383,8 +383,19 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 	if (pOrgHardware == pHardware)
 	{
-		pOrgHardware->Stop();
-		delete pOrgHardware;
+		try
+		{
+			pOrgHardware->Stop();
+			delete pOrgHardware;
+		}
+		catch (std::exception& e)
+		{
+			_log.Log(LOG_ERROR, "Mainworker: Exception: %s (%s:%d)", e.what(), std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "Mainworker: Exception catched! %s:%d", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+		}
 	}
 }
 
