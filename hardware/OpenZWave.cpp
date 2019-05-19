@@ -2539,6 +2539,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 				return;
 		}
+		if (vType == OpenZWave::ValueID::ValueType_Schedule)
+		{
+			//we make our own schedule
+		}
 		else
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
