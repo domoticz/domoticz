@@ -7462,11 +7462,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		if (OnAction.empty())
 			return true;
 
-		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
+		if ((OnAction.find("http://") == 0) || (OnAction.find("https://") == 0))
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
 		}
-		else if (OnAction.find("script://") != std::string::npos)
+		else if (OnAction.find("script://") == 0)
 		{
 			//Execute possible script
 			if (OnAction.find("../") != std::string::npos)
@@ -7502,11 +7502,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	if (OffAction.empty())
 		return true;
 
-	if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
+	if ((OffAction.find("http://") == 0) || (OffAction.find("https://") == 0))
 	{
 		AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
 	}
-	else if (OffAction.find("script://") != std::string::npos)
+	else if (OffAction.find("script://") == 0)
 	{
 		//Execute possible script
 		if (OffAction.find("../") != std::string::npos)
