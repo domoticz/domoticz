@@ -1,5 +1,7 @@
 define(['app'], function (app) {
-	app.controller('LightsController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
+	app.controller('LightsController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions) {
+		var $element = $('#main-view #lightcontent').last();
+
 		$scope.HasInitializedAddManualDialog = false;
 
 		MakeFavorite = function (id, isfavorite) {
@@ -849,9 +851,10 @@ define(['app'], function (app) {
 
 			var i = 0;
 			var j = 0;
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=light&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=light&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -1401,28 +1404,33 @@ define(['app'], function (app) {
 				htmlcontent = '<h2>' + $.t('No Lights/Switches found or added in the system...') + '</h2>';
 			}
 			$('#modal').hide();
-			$('#lightcontent').html(tophtm + htmlcontent);
-			$('#lightcontent').i18n();
+			$element.html(tophtm + htmlcontent);
+			$element.i18n();
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
-					$("#lightcontent #comboroom").append(option);
+					$element.find("#comboroom").append(option);
 				});
-				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-					$("#lightcontent #comboroom").val(window.myglobals.LastPlanSelected);
+				if (typeof roomPlanId != 'undefined') {
+					$element.find("#comboroom").val(roomPlanId);
 				}
-				$("#lightcontent #comboroom").change(function () {
-					var idx = $("#lightcontent #comboroom option:selected").val();
+				$element.find("#comboroom").change(function () {
+					var idx = $element.find("#comboroom option:selected").val();
 					window.myglobals.LastPlanSelected = idx;
-					ShowLights();
+
+					$route.updateParams({
+						room: idx > 0 ? idx : undefined
+					});
+					$location.replace();
+					$scope.$apply();
 				});
 			}
 
 			if ($scope.config.AllowWidgetOrdering == true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
-						$("#lightcontent .span4").draggable({
+						$element.find(".span4").draggable({
 							drag: function () {
 								if (typeof $scope.mytimer != 'undefined') {
 									$interval.cancel($scope.mytimer);
@@ -1433,10 +1441,10 @@ define(['app'], function (app) {
 							},
 							revert: true
 						});
-						$("#lightcontent .span4").droppable({
+						$element.find(".span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								var roomid = $("#lightcontent #comboroom option:selected").val();
+								var roomid = $element.find("#comboroom option:selected").val();
 								if (typeof roomid == 'undefined') {
 									roomid = 0;
 								}
@@ -1456,7 +1464,7 @@ define(['app'], function (app) {
 			$rootScope.RefreshTimeAndSun();
 
 			//Create Dimmer Sliders
-			$('#lightcontent .dimslider').slider({
+			$element.find('.dimslider').slider({
 				//Config
 				range: "min",
 				min: 0,
@@ -1527,7 +1535,7 @@ define(['app'], function (app) {
 			$scope.ResizeDimSliders();
 
 			//Create Selector selectmenu
-			$('#lightcontent .selectorlevels select').selectmenu({
+			$element.find('.selectorlevels select').selectmenu({
 				//Config
 				width: '75%',
 				value: 0,
@@ -1545,7 +1553,7 @@ define(['app'], function (app) {
 					select$.selectmenu("menuWidget").addClass('selectorlevels-menu');
 					select$.val(level);
 
-					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
+					$element.find('#' + idx + " #bigtext").html(unescape(levelname));
 				},
 				change: function (event, ui) { //When the user selects an option
 					var select$ = $(this),
@@ -1568,13 +1576,13 @@ define(['app'], function (app) {
 		}
 
 		$scope.ResizeDimSliders = function () {
-			var nobj = $("#lightcontent #name");
+			var nobj = $element.find("#name");
 			if (typeof nobj == 'undefined') {
 				return;
 			}
 			var width = nobj.width() - 50;
-			$("#lightcontent .dimslider").width(width);
-			$("#lightcontent .dimsmall").width(width - 48);
+			$element.find(".dimslider").width(width);
+			$element.find(".dimsmall").width(width - 48);
 		}
 
 		$.strPad = function (i, l, s) {
@@ -2368,6 +2376,7 @@ define(['app'], function (app) {
 
 			ShowLights();
 		};
+
 		$scope.$on('$destroy', function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -2383,5 +2392,5 @@ define(['app'], function (app) {
 				popup.hide();
 			}
 		});
-	}]);
+	});
 });

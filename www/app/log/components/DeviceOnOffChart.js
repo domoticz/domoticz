@@ -52,7 +52,10 @@ define(['app', 'luxon'], function (app, luxon) {
             var chartData = [];
 
             getFilteredData(data).forEach(function (point, index, points) {
-                if (point.Status === 'On' || (point.Status.includes('Set Level') && point.Level > 0)) {
+                if (point.Status === 'On'
+                    || (point.Status.includes('Set Level') && point.Level > 0)
+                    || (point.Status.includes('Set Color'))
+                ) {
                     chartData.push({
                         x: DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf(),
                         x2: points[index + 1] ? DateTime.fromFormat(points[index + 1].Date,  dzSettings.serverDateFormat).valueOf() : Date.now(),

@@ -401,9 +401,9 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 		zonesCount = 128;
 	}
 
-	unsigned char cmd[1];
+	unsigned char cmd[2];
 	cmd[0] = 0x00; // read zones violation
-	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
+	if (SendCommand(cmd, 1 + m_data32, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool violate;
 		unsigned int byteNumber;
@@ -542,9 +542,9 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 #endif
 	unsigned char buffer[33];
 
-	unsigned char cmd[1];
+	unsigned char cmd[2];
 	cmd[0] = 0x17; // read outputs state
-	if (SendCommand(cmd, 1, buffer, 17 + m_data32 * 16) > 0)
+	if (SendCommand(cmd, 1 + m_data32, buffer, 17 + m_data32 * 16) > 0)
 	{
 		bool findBlindOutput = false;
 		bool outputState;
