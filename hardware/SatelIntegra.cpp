@@ -310,8 +310,7 @@ bool SatelIntegra::ReadNewData()
 {
 	unsigned char cmd[2];
 	cmd[0] = 0x7F; // list of new data
-	cmd[1] = 0x00;
-	if (SendCommand(cmd, 2, m_newData, 7) > 0)
+	if (SendCommand(cmd, 1, m_newData, 6) > 0)
 	{
 		return true;
 	}
@@ -1159,7 +1158,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 		totalRet += ret;
 		if ((ret <= 0) || (totalRet >= MAX_LENGTH_OF_ANSWER))
 		{
-			_log.Log(LOG_ERROR, "Satel Integra: bad data length received (-1)");
+			_log.Log(LOG_ERROR, "Satel Integra: bad data length received (totalRet %d)", totalRet);
 			DestroySocket();
 			return -1;
 		}
@@ -1182,10 +1181,10 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	{
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[totalRet - 1] == 0x0D && buffer[totalRet - 2] == 0xFE) // check prefix and sufix
 		{
-			if ((buffer[2] != 0xEF)
-				&& ((totalRet - 6) != expectedLength))
+			if ((buffer[2] != 0xEF) && ((totalRet - 6) != expectedLength))
 			{
-				_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
+				_log.Log(LOG_ERROR, "Satel Integra: bad data length received (expectedLength %d, totalRet %d, cmd %X, cmdLength %d)", expectedLength, totalRet - 6, cmd[0], cmdLength);
+				DestroySocket();
 				return -1;
 			}
 
