@@ -201,8 +201,8 @@ define(['app'], function (app) {
 			$('#temptophtm').i18n();
 			$('#tempwidgets').show();
 			$('#tempwidgets').i18n();
-			$('#tempcontent').html("");
-			$('#tempcontent').i18n();
+			$element.html("");
+			$element.i18n();
 
 			$rootScope.RefreshTimeAndSun();
 
@@ -533,6 +533,8 @@ define(['app'], function (app) {
 				}
 			}
 		});
+
+		var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
 		if (typeof roomPlanId != 'undefined') {
 			ctrl.roomSelected = roomPlanId;
