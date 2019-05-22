@@ -534,8 +534,8 @@ define(['app'], function (app) {
 			}
 		});
 
-		if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-			ctrl.roomSelected = window.myglobals.LastPlanSelected;
+		if (typeof roomPlanId != 'undefined') {
+			ctrl.roomSelected = roomPlanId;
 		}
 		ctrl.changeRoom = function () {
 			var idx = ctrl.roomSelected;
