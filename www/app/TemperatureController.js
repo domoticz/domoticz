@@ -1,5 +1,6 @@
 define(['app'], function (app) {
-	app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $window, permissions) {
+	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions) {
+		var $element = $('#main-view #tempcontent').last();
 
 		var ctrl = this;
 
@@ -178,8 +179,10 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+
 			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -537,11 +540,16 @@ define(['app'], function (app) {
 		ctrl.changeRoom = function () {
 			var idx = ctrl.roomSelected;
 			window.myglobals.LastPlanSelected = idx;
-			ShowTemps();
+
+			$route.updateParams({
+					room: idx > 0 ? idx : undefined
+				});
+				$location.replace();
+				$scope.$apply();
 		};
 
-	}])
-		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
+	})
+		.directive('dztemperaturewidget', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
@@ -726,5 +734,5 @@ define(['app'], function (app) {
 
 				}
 			};
-		}]);
+		});
 });
