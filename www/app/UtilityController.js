@@ -1,6 +1,7 @@
 define(['app'], function (app) {
-	app.controller('UtilityController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
-
+	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions) {
+		var $element = $('#main-view #utilitycontent').last();
+		
 		$scope.HasInitializedEditCustomSensorDialog = false;
 
 		$.strPad = function (i, l, s) {
@@ -513,8 +514,10 @@ define(['app'], function (app) {
 			}
 
 			var i = 0;
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+
 			$.ajax({
-				url: "json.htm?type=devices&filter=utility&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=utility&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -963,27 +966,33 @@ define(['app'], function (app) {
 				htmlcontent = '<h2>' + $.t('No Utility sensors found or added in the system...') + '</h2>';
 			}
 			$('#modal').hide();
-			$('#utilitycontent').html(tophtm + htmlcontent);
-			$('#utilitycontent').i18n();
+			$element.html(tophtm + htmlcontent);
+			$element.i18n();
+
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
-					$("#utilitycontent #comboroom").append(option);
+					$element.find("#comboroom").append(option);
 				});
-				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-					$("#utilitycontent #comboroom").val(window.myglobals.LastPlanSelected);
+				if (typeof roomPlanId != 'undefined') {
+					$element.find("#comboroom").val(roomPlanId);
 				}
-				$("#utilitycontent #comboroom").change(function () {
-					var idx = $("#utilitycontent #comboroom option:selected").val();
+				$element.find("#comboroom").change(function () {
+					var idx = $element.find("#comboroom option:selected").val();
 					window.myglobals.LastPlanSelected = idx;
-					ShowUtilities();
+					
+					$route.updateParams({
+						room: idx > 0 ? idx : undefined
+					});
+					$location.replace();
+					$scope.$apply();
 				});
 			}
 			if ($scope.config.AllowWidgetOrdering == true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
-						$("#utilitycontent .span4").draggable({
+						$element.find(".span4").draggable({
 							drag: function () {
 								if (typeof $scope.mytimer != 'undefined') {
 									$interval.cancel($scope.mytimer);
@@ -994,10 +1003,10 @@ define(['app'], function (app) {
 							},
 							revert: true
 						});
-						$("#utilitycontent .span4").droppable({
+						$element.find(".span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								var roomid = $("#utilitycontent #comboroom option:selected").val();
+								var roomid = $element.find("#comboroom option:selected").val();
 								if (typeof roomid == 'undefined') {
 									roomid = 0;
 								}
@@ -1579,5 +1588,5 @@ define(['app'], function (app) {
 				popup.hide();
 			}
 		});
-	}]);
+	});
 });

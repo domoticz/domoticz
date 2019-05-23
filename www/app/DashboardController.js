@@ -1,5 +1,6 @@
 define(['app'], function (app) {
-	app.controller('DashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $window, permissions) {
+	app.controller('DashboardController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions) {
+		var $element = $('#main-view #dashcontent').last();
 
 		$scope.LastUpdateTime = parseInt(0);
 
@@ -130,7 +131,7 @@ define(['app'], function (app) {
 								(item.Type.indexOf('Scene') == 0) ||
 								(item.Type.indexOf('Group') == 0)
 							) {
-								id = "#dashcontent #scene_" + item.idx;
+								id = $element.find("#scene_" + item.idx);
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -219,7 +220,7 @@ define(['app'], function (app) {
 									((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
 								)
 								&& (item.Favorite != 0)) {
-								id = "#dashcontent #light_" + item.idx;
+								id = $element.find("#light_" + item.idx);
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -975,7 +976,7 @@ define(['app'], function (app) {
 								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
 								(item.Favorite != 0)
 							) {
-								id = "#dashcontent #temp_" + item.idx;
+								id = $element.find("#temp_" + item.idx);
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									var vname = item.Name;
@@ -1102,7 +1103,7 @@ define(['app'], function (app) {
 								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
 								(item.Favorite != 0)
 							) {
-								id = "#dashcontent #weather_" + item.idx;
+								id = $element.find("#weather_" + item.idx);
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1263,7 +1264,7 @@ define(['app'], function (app) {
 						//security devices
 						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
-								id = "#dashcontent #security_" + item.idx;
+								id = $element.find("#security_" + item.idx);
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1374,7 +1375,7 @@ define(['app'], function (app) {
 						//evohome devices
 						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
-								id = "#dashcontent #evohome_" + item.idx;
+								id = $element.find("#evohome_" + item.idx);
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1455,7 +1456,7 @@ define(['app'], function (app) {
 								) &&
 								(item.Favorite != 0)
 							) {
-								id = "#dashcontent #utility_" + item.idx;
+								id = $element.find("#utility_" + item.idx);
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1771,14 +1772,16 @@ define(['app'], function (app) {
 			});
 
 			var bFavorites = 1;
-			if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-				if (window.myglobals.LastPlanSelected > 0) {
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			
+			if (typeof roomPlanId != 'undefined') {
+				if (roomPlanId > 0) {
 					bFavorites = 0;
 				}
 			}
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -3977,22 +3980,27 @@ define(['app'], function (app) {
 			}
 
 
-			$('#dashcontent').html(suntext + htmlcontent + EvohomeAddJS());
-			$('#dashcontent').i18n();
+			$element.html(suntext + htmlcontent + EvohomeAddJS());
+			$element.i18n();
 
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
-					$("#dashcontent #comboroom").append(option);
+					$element.find("#comboroom").append(option);
 				});
-				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-					$("#dashcontent #comboroom").val(window.myglobals.LastPlanSelected);
+				if (typeof roomPlanId != 'undefined') {
+					$element.find("#comboroom").val(roomPlanId);
 				}
-				$("#dashcontent #comboroom").change(function () {
-					var idx = $("#dashcontent #comboroom option:selected").val();
+				$element.find("#comboroom").change(function () {
+					var idx = $element.find("#comboroom option:selected").val();
 					window.myglobals.LastPlanSelected = idx;
-					ShowFavorites();
+
+					$route.updateParams({
+						room: idx > 0 ? idx : undefined
+					});
+					$location.replace();
+					$scope.$apply();
 				});
 			}
 
@@ -4045,7 +4053,7 @@ define(['app'], function (app) {
 					var isProtected = $(this).slider("option", "isprotected");
 					var fPercentage = parseInt((100.0 / maxValue) * ui.value);
 					var idx = $(this).data('idx');
-					id = "#dashcontent #light_" + idx;
+					id = $element.find("#light_" + idx);
 					var obj = $(id);
 					if (typeof obj != 'undefined') {
 						var img = "";
@@ -4188,7 +4196,7 @@ define(['app'], function (app) {
 			if ($scope.config.AllowWidgetOrdering == true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
-						$("#dashcontent .movable").draggable({
+						$element.find(".movable").draggable({
 							drag: function () {
 								if (typeof $scope.mytimer != 'undefined') {
 									$interval.cancel($scope.mytimer);
@@ -4199,7 +4207,7 @@ define(['app'], function (app) {
 							},
 							revert: true
 						});
-						$("#dashcontent .movable").droppable({
+						$element.find(".movable").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
 								var parts1 = myid.split('_');
@@ -4234,28 +4242,28 @@ define(['app'], function (app) {
 		}
 
 		$scope.ResizeDimSliders = function () {
-			var nobj = $("#dashcontent #name");
+			var nobj = $element.find("#name");
 			if (typeof nobj == 'undefined') {
 				return;
 			}
-			var width = $("#dashcontent #name").width() - 40;
-			$("#dashcontent .span4 .dimslidernorm").width(width);
+			var width = $element.find("#name").width() - 40;
+			$element.find(".span4 .dimslidernorm").width(width);
 			//width=$(".span3").width()-70;
-			$("#dashcontent .span3 .dimslidernorm").width(width);
+			$element.find(".span3 .dimslidernorm").width(width);
 			width = $(".mobileitem").width() - 63;
-			$("#dashcontent .mobileitem .dimslidernorm").width(width);
+			$element.find(".mobileitem .dimslidernorm").width(width);
 
-			width = $("#dashcontent #name").width() - 40;
+			width = $element.find("#name").width() - 40;
 			//width=$(".span4").width()-118;
-			$("#dashcontent .span4 .dimslidersmall").width(width);
+			$element.find(".span4 .dimslidersmall").width(width);
 			//width=$(".span3").width()-112;
-			$("#dashcontent .span3 .dimslidersmall").width(width);
+			$element.find(".span3 .dimslidersmall").width(width);
 			width = $(".mobileitem").width() - 63;
-			$("#dashcontent .mobileitem .dimslidersmall").width(width);
+			$element.find(".mobileitem .dimslidersmall").width(width);
 
-			width = $("#dashcontent #name").width() - 85;
-			$("#dashcontent .span4 .dimslidersmalldouble").width(width);
-			$("#dashcontent .span3 .dimslidersmalldouble").width(width);
+			width = $element.find("#name").width() - 85;
+			$element.find(".span4 .dimslidersmalldouble").width(width);
+			$element.find(".span3 .dimslidersmalldouble").width(width);
 		}
 
 		init();
@@ -4288,5 +4296,5 @@ define(['app'], function (app) {
 			}
 		});
 
-	}]);
+	});
 });
