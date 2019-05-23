@@ -564,23 +564,26 @@ Not sure why this was used
             })
                 .then(domoticzApi.errorHandler)
                 .then(function (response) {
-                    $ctrl.devices = response.result
-                        .map(function (item) {
-                            var isScene = ['Group', 'Scene'].includes(item.Type);
+					if (response.result !== undefined) {
+						$ctrl.devices = response.result
+							.map(function (item) {
+								var isScene = ['Group', 'Scene'].includes(item.Type);
 
-                            if (isScene) {
-                                item.HardwareName = 'Domoticz';
-                                item.ID = '-';
-                                item.Unit = '-';
-                                item.SubType = '-';
-                                item.SignalLevel = '-';
-                                item.BatteryLevel = 255;
-                            }
+								if (isScene) {
+									item.HardwareName = 'Domoticz';
+									item.ID = '-';
+									item.Unit = '-';
+									item.SubType = '-';
+									item.SignalLevel = '-';
+									item.BatteryLevel = 255;
+								}
 
-                            return new Device(item)
-                        });
-
-                    $ctrl.applyFilter();
+								return new Device(item)
+							});
+					} else {
+						$ctrl.devices = [];
+					}
+					$ctrl.applyFilter();
                 });
         }
 
