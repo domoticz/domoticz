@@ -335,18 +335,17 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		//10;NewKaku;00c142;1;ON;     => protocol;address;button number;action (ON/OFF/ALLON/ALLOFF/15 -11-15 for dim level)
 
 		sstr << "10;";
-		sstr << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd << ";";
-/*
+
 		if (pSwitch->subtype != sSwitchTypeBlyss) {
 			sstr << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd << ";";
 		}
 		else {
 			//Special case for Blyss
 			char szUnit[10];
-			sprintf(szUnit, "%c%c", (pSwitch->id & 0xFF00) >> 8, pSwitch->id & 0xFF);
+			sprintf(szUnit, "%c%c", pSwitch->id & 0xFF00 >> 8, pSwitch->id & 0xFF);
 			sstr << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << ((pSwitch->id & 0xFFFF0000) >> 16) << ";" << szUnit << ";" << switchcmnd << ";";
 		}
-*/
+
 		//#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 //#endif
