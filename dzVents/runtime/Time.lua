@@ -431,7 +431,7 @@ local function Time(sDate, isUTC, _testMS)
 		elseif (string.find(rule, 'every even week') and ((self.week % 2) == 0)) then
 			return true
 		elseif string.find(rule, 'every even week') or string.find(rule, 'every odd week') then
-        	return false
+			return false
 		end
 
 		local weeks = string.match(rule, 'in week% ([0-9%-%,% ]*)')
@@ -441,7 +441,6 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		-- from here on, if there is a match we return true otherwise false
-
 		-- remove spaces and add a comma
 		weeks = string.gsub(weeks, ' ', '') .. ',' --remove spaces and add a , so each number is terminated with a , so we can do simple search for the number
 
@@ -500,11 +499,13 @@ local function Time(sDate, isUTC, _testMS)
 
 		-- wildcards
 		for set, day, month in string.gmatch(dates, '(([0-9%*]*)/([0-9%*]*))') do
+ 
 			if (day == '*' and month ~= '*') then
 				if (self.month == tonumber(month)) then
 					return true
 				end
 			end
+			
 			if (day ~= '*' and month == '*') then
 				if (self.day == tonumber(day)) then
 					return true
@@ -512,36 +513,33 @@ local function Time(sDate, isUTC, _testMS)
 			end
 		end
 
+		
 		local getParts = function(set)
 			local day, month = string.match(set, '([0-9]+)/([0-9]+)')
 			return tonumber(day), tonumber(month)
 		end
 
 		--now get the ranges
-		for fromSet, toSet in string.gmatch(dates, '([0-9%/]*)-([0-9%/]*)') do
+		for fromSet, toSet in string.gmatch(dates, '([0-9%/*]*)-([0-9%/*]*)') do
+			local ttoSet = string.gsub(toSet,'%*','31') -- catch wildcarded not current months
+			local ffromSet = string.gsub(fromSet,'%*','01') -- catch wildcarded not current months
+
 			local fromDay, toDay, fromMonth, toMonth
 
-			if (isEmpty(fromSet) and not isEmpty(toSet)) then
-				toDay, toMonth = getParts(toSet)
+			if (isEmpty(ffromSet) and not isEmpty(ttoSet)) then
+				toDay, toMonth = getParts(ttoSet)
 				if ((self.month < toMonth) or (self.month == toMonth and self.day <= toDay)) then
 					return true
 				end
-			elseif (not isEmpty(fromSet) and isEmpty(toSet)) then
-				fromDay, fromMonth = getParts(fromSet)
+			elseif (not isEmpty(ffromSet) and isEmpty(ttoSet)) then
+				fromDay, fromMonth = getParts(ffromSet)
 				if ((self.month > fromMonth) or (self.month == fromMonth and self.day >= fromDay)) then
 					return true
 				end
 			else
 
-				toDay, toMonth = getParts(toSet)
-				fromDay, fromMonth = getParts(fromSet)
-				--local _ = require('lodash');
-				--_.print('sm', self.month, 'sd', self.day, 'fm', fromMonth, 'tm', toMonth, 'fd', fromDay, 'td', toDay)
-				--_.print('( self.month > fromMonth and self.month < toMonth )', (self.month > fromMonth and self.month < toMonth))
-				--_.print('( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or', (fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay))
-				--_.print('( self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay ) or', (self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay) )
-				--_.print('( self.month == toMonth and toMonth < fromMonth and  self.day <= toDay )', (self.month == toMonth and toMonth < fromMonth and self.day <= toDay))
-				--_.print('( self.month == toMonth and toMonth > fromMonth and self.day <= toDay )', (self.month == toMonth and toMonth > fromMonth and self.day <= toDay))
+				toDay, toMonth = getParts(ttoSet)
+				fromDay, fromMonth = getParts(ffromSet)
 				if (
 					( self.month > fromMonth and self.month < toMonth ) or
 					( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or
