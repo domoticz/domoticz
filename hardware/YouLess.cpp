@@ -112,11 +112,11 @@ bool CYouLess::GetP1Details()
 
 	if (m_Password.size() == 0)
 	{
-		sprintf(szURL, "http://%s:%d/e", m_szIPAddress.c_str(), m_usIPPort);
+		snprintf(szURL, sizeof(szURL), "http://%s:%d/e", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else
 	{
-		sprintf(szURL, "http://%s:%d/e&w=%s", m_szIPAddress.c_str(), m_usIPPort, m_Password.c_str());
+		snprintf(szURL, sizeof(szURL), "http://%s:%d/e&w=%s", m_szIPAddress.c_str(), m_usIPPort, m_Password.c_str());
 	}
 
 	if (!HTTPClient::GET(szURL, sResult))
@@ -197,11 +197,11 @@ void CYouLess::GetMeterDetails()
 
 	if(m_Password.size() == 0)
 	{
-		sprintf(szURL,"http://%s:%d/a",m_szIPAddress.c_str(), m_usIPPort);
+		snprintf(szURL, sizeof(szURL), "http://%s:%d/a", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else
 	{
-		sprintf(szURL,"http://%s:%d/a&w=%s",m_szIPAddress.c_str(), m_usIPPort, m_Password.c_str());
+		snprintf(szURL, sizeof(szURL), "http://%s:%d/a&w=%s", m_szIPAddress.c_str(), m_usIPPort, m_Password.c_str());
 	}
 
 	if (!HTTPClient::GET(szURL,sResult))
