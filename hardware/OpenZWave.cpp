@@ -150,7 +150,7 @@ unsigned char GetIndexFromAlarmType(const std::string& sLabel)
 	int ii = 0;
 	while (!AlarmTypeToIndexMapping[ii].sLabel.empty())
 	{
-		if (AlarmTypeToIndexMapping[ii].sLabel == sLabel)
+		if (sLabel.find(AlarmTypeToIndexMapping[ii].sLabel) != std::string::npos)
 			return AlarmTypeToIndexMapping[ii].iIndex;
 		ii++;
 	}
@@ -493,7 +493,7 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 	{
 		_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
 	}
-	catch (std::exception &e)
+	catch (std::exception& e)
 	{
 		_log.Log(LOG_ERROR, "OpenZWave: Exception: %s!", e.what());
 	}
@@ -715,48 +715,48 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		switch (subType)
 		{
 		case OpenZWave::Notification::Code_MsgComplete:
-			{
-				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
-				nodeInfo->eState = NSTATE_AWAKE;
-				nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-				if (bWasDead)
-					ForceUpdateForNodeDevices(m_controllerID, _nodeID);
-			}
-			break;
+		{
+			bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
+			nodeInfo->eState = NSTATE_AWAKE;
+			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+			if (bWasDead)
+				ForceUpdateForNodeDevices(m_controllerID, _nodeID);
+		}
+		break;
 		case OpenZWave::Notification::Code_Awake:
-			{
-				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
-				nodeInfo->eState = NSTATE_AWAKE;
-				nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-				if (bWasDead)
-					ForceUpdateForNodeDevices(m_controllerID, _nodeID);
-			}
-			break;
+		{
+			bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
+			nodeInfo->eState = NSTATE_AWAKE;
+			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+			if (bWasDead)
+				ForceUpdateForNodeDevices(m_controllerID, _nodeID);
+		}
+		break;
 		case OpenZWave::Notification::Code_Sleep:
-			{
-				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
-				nodeInfo->eState = NSTATE_SLEEP;
-				if (bWasDead)
-					ForceUpdateForNodeDevices(m_controllerID, _nodeID);
-			}
-			break;
+		{
+			bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
+			nodeInfo->eState = NSTATE_SLEEP;
+			if (bWasDead)
+				ForceUpdateForNodeDevices(m_controllerID, _nodeID);
+		}
+		break;
 		case OpenZWave::Notification::Code_Dead:
-			{
-				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
-				nodeInfo->eState = NSTATE_DEAD;
-				if (!bWasDead)
-					ForceUpdateForNodeDevices(m_controllerID, _nodeID);
-			}
-			_log.Log(LOG_STATUS, "OpenZWave: Received Node Dead notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
-			break;
+		{
+			bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
+			nodeInfo->eState = NSTATE_DEAD;
+			if (!bWasDead)
+				ForceUpdateForNodeDevices(m_controllerID, _nodeID);
+		}
+		_log.Log(LOG_STATUS, "OpenZWave: Received Node Dead notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+		break;
 		case OpenZWave::Notification::Code_Alive:
-			{
-				bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
-				nodeInfo->eState = NSTATE_AWAKE;
-				if (bWasDead)
-					ForceUpdateForNodeDevices(m_controllerID, _nodeID);
-			}
-			break;
+		{
+			bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
+			nodeInfo->eState = NSTATE_AWAKE;
+			if (bWasDead)
+				ForceUpdateForNodeDevices(m_controllerID, _nodeID);
+		}
+		break;
 		case OpenZWave::Notification::Code_Timeout:
 			//{
 			//	nodeInfo->eState = NSTATE_DEAD;
@@ -1571,7 +1571,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		(commandclass == COMMAND_CLASS_POWERLEVEL)
 		)
 		return;
-		
+
 	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
@@ -1673,7 +1673,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 
 	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 	if (
-		(commandclass == COMMAND_CLASS_SWITCH_BINARY)||
+		(commandclass == COMMAND_CLASS_SWITCH_BINARY) ||
 		(commandclass == COMMAND_CLASS_SENSOR_BINARY)
 		)
 	{
@@ -1823,7 +1823,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		else
 		{
 			if (
-				(vLabel.find("SourceNodeId") == std::string::npos)&&
+				(vLabel.find("SourceNodeId") == std::string::npos) &&
 				(vLabel.find("Previous Event Cleared") == std::string::npos)
 				)
 			{
@@ -2765,7 +2765,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 {
-	if (m_pManager == NULL) 
+	if (m_pManager == NULL)
 		return;
 	if (m_controllerID == 0)
 		return;
@@ -3280,10 +3280,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 					(vLabel.find("Heat") != std::string::npos) ||
 					(vLabel.find("Flood") != std::string::npos) ||
 					(vLabel.find("Water") != std::string::npos) ||
-					(vLabel.find("Access Control") != std::string::npos) ||
 					(vLabel.find("Burglar") != std::string::npos) ||
 					(vLabel.find("Home Security") != std::string::npos) ||
-					(vLabel.find("Power Management") != std::string::npos) ||
 					(vLabel.find("Emergency") != std::string::npos) ||
 					(vLabel.find("Appliance") != std::string::npos) ||
 					(vLabel.find("HomeHealth") != std::string::npos) ||
@@ -4885,11 +4883,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			return;
 		}
 
-		for (auto const &ittInstance : pNode->Instances)
+		for (auto const& ittInstance : pNode->Instances)
 		{
-			for (auto const &ittCmds : ittInstance.second)
+			for (auto const& ittCmds : ittInstance.second)
 			{
-				for (auto const &ittValue : ittCmds.second.Values)
+				for (auto const& ittValue : ittCmds.second.Values)
 				{
 					unsigned char commandclass = ittValue.GetCommandClassId();
 					if ((commandclass == COMMAND_CLASS_CONFIGURATION) || (commandclass == COMMAND_CLASS_PROTECTION))
