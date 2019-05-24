@@ -220,7 +220,7 @@ define(['app'], function (app) {
 									((typeof item.SubType != 'undefined') && (item.SubType.indexOf('Westinghouse') == 0))
 								)
 								&& (item.Favorite != 0)) {
-								id = $element.find("#light_" + item.idx);
+								id = "#light_" + item.idx;
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -976,7 +976,7 @@ define(['app'], function (app) {
 								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
 								(item.Favorite != 0)
 							) {
-								id = $element.find("#temp_" + item.idx);
+								id = "#temp_" + item.idx;
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									var vname = item.Name;
@@ -1103,7 +1103,7 @@ define(['app'], function (app) {
 								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
 								(item.Favorite != 0)
 							) {
-								id = $element.find("#weather_" + item.idx);
+								id = "#weather_" + item.idx;
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1264,7 +1264,7 @@ define(['app'], function (app) {
 						//security devices
 						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
-								id = $element.find("#security_" + item.idx);
+								id = "#security_" + item.idx;
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1375,7 +1375,7 @@ define(['app'], function (app) {
 						//evohome devices
 						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
-								id = $element.find("#evohome_" + item.idx);
+								id = "#evohome_" + item.idx;
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -1456,7 +1456,7 @@ define(['app'], function (app) {
 								) &&
 								(item.Favorite != 0)
 							) {
-								id = $element.find("#utility_" + item.idx);
+								id = "#utility_" + item.idx;
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -4053,7 +4053,7 @@ define(['app'], function (app) {
 					var isProtected = $(this).slider("option", "isprotected");
 					var fPercentage = parseInt((100.0 / maxValue) * ui.value);
 					var idx = $(this).data('idx');
-					id = $element.find("#light_" + idx);
+					id = "#light_" + idx;
 					var obj = $(id);
 					if (typeof obj != 'undefined') {
 						var img = "";
