@@ -19,8 +19,17 @@ define(['app', 'events/factories'], function (app) {
             vm.importEvent = importEvent;
             vm.exportEvent = exportEvent;
             vm.markEventAsUpdated = markEventAsUpdated;
+            vm.isTriggerAvailable = isTriggerAvailable;
 
             function init() {
+                vm.eventTypes = [
+                    { value: 'All', label: 'All' },
+                    { value: 'Device', label: 'Device' },
+                    { value: 'Security', label: 'Security' },
+                    { value: 'Time', label: 'Time' },
+                    { value: 'UserVariable', label: 'User variable' }
+                ];
+
                 $q
                     .resolve(vm.event.interpreter
                         ? Object.assign({}, vm.event)
@@ -47,6 +56,10 @@ define(['app', 'events/factories'], function (app) {
                             }
                         });
                     });
+            }
+
+            function isTriggerAvailable() {
+                return vm.eventData && ['Blockly', 'Lua', 'Python'].includes(vm.eventData.interpreter);
             }
 
             function markEventAsUpdated() {

@@ -1,0 +1,14 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8120:8201</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/remotec/bw8120eu.png</MetaDataItem>
+    <MetaDataItem id="8120" name="ZWProductPage" type="8201">https://products.z-wavealliance.org/products/801/</MetaDataItem>
+    <MetaDataItem id="8120" name="FrequencyName" type="8201">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Dual Mode Switch-Dimmer</MetaDataItem>
+    <MetaDataItem id="8120" name="Identifier" type="8201">BW8120EU</MetaDataItem>
+    <MetaDataItem name="Description">Dual Mode Switch-Dimmer</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/801/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

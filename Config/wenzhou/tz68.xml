@@ -1,20 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- http://products.z-wavealliance.org/products/1885 -->
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0118:0002:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/wenzhou/tz68.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1423/</MetaDataItem>
+    <MetaDataItem name="Name">Smart Plug in Switch</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Have Z-Wave controller with exclusion mode
 
+2. Press the socket on/off button three times within 1.5 seconds to be excluded from the controller</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Have Z-Wave controller with inclusion mode
+
+2. Press the socket on/off button three times within 1.5 seconds to be included to the controller</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0003">TZ68G</MetaDataItem>
+    <MetaDataItem name="Description">1. This plug-in ON/OFF switch in a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. 
+2. Each socket is designed to act as a repeater. Repeaters will re-transmit the RF signal to ensure the signal to ensure that the signal is received by its intended destination.
+3. You can use the button in the socket to include/exclude, manually on/off or act as a indicator. You can use it to turn on/off appliance remotely via smart home or computer.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Press the socket on/off button three times within 1.5 seconds
+2.  then within 1 second to press and hold on for 5 seconds until the socket button LED is off, reset to factory default successfully
+3. Use this procedure only in the event that the network primary controller is missing or otherwise inoperable 
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1423/TZ68G User Manual.pdf</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1423/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- http://products.z-wavealliance.org/products/1885 -->
     <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="1" label="LED behavior" value="0" size="1">
-            <Help>Defines the behavior of the blue LED.</Help>
-            <Item label="Night light" value="0"/>
-            <Item label="On indicator" value="1"/>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="LED behavior" size="1" type="list" value="0">
+      <Help>Defines the behavior of the blue LED.</Help>
+      <Item label="Night light" value="0"/>
+      <Item label="On indicator" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

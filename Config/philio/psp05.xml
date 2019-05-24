@@ -4,7 +4,7 @@ Philio: PSP05 PIR/Motion for version B, C and D
 http://products.z-wavealliance.org/products/2002
 http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/2002/PSP05_manual.pdf
 -->
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
  
   <!-- Configuration Parameters -->
   <CommandClass id="112">

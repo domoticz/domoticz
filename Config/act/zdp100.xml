@@ -1,0 +1,21 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0001:3030:4450</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/act/zdp100.png</MetaDataItem>
+    <MetaDataItem id="3030" name="ZWProductPage" type="4450">https://products.z-wavealliance.org/products/154/</MetaDataItem>
+    <MetaDataItem id="3030" name="FrequencyName" type="4450">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.act-solutions.com/HomePro-Product-Matrix.html#Euro</MetaDataItem>
+    <MetaDataItem name="Description">Provides wireless dimming of lights 300 watt max Incandescent Only
+- Includes a 3 prong pass through outlet.
+- Lamp outlet is 2 prong.
+- Supports load sensing. If the attached lamp is turned on manually, the module will detect the load change and turn itself on. This allows lamps to operated manually or through automation.
+- Programmable ramp rates. Supports different ramp rates when controlled locally, or remotely. ON/OFF control of lights connected to the Plug-In Lamp Module. 
+- Plugs directly into wall outlet and provides a switched 120 VAC source.</MetaDataItem>
+    <MetaDataItem name="Name">ZDP100 - Scene Capable Dimmer Module</MetaDataItem>
+    <MetaDataItem id="3030" name="Identifier" type="4450">ZDP100</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/154/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

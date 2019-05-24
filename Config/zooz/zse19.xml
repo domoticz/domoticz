@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+<!-- https://products.z-wavealliance.org/products/3116 -->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="short" index="1" label="Siren Alarm Duration" units="seconds" size="2" min="10" max="600" value="600">
+      <Help>Siren Alarm Duration, in seconds.  Defaults to 600 (10 minutes).</Help>
+    </Value>
+    <Value genre="config" type="short" index="2" label="Temp/Humidity Reporting Interval" units="minutes" size="2" min="1" max="1440" value="1440">
+      <Help>Reporting interval for temperature and humidity sensor, in miuntes.  Defaults to 1440 (24 hours).</Help>
+    </Value>
+    <Value genre="config" type="byte" index="3" label="Custom Sound Selection for Audio Speaker" units="" size="1" min="0" max="99" value="0">
+      <Help>Selector for custom audio files that have been manually uploaded to the alarm unit.  0 sets to no sound (default), while 1-99 selects the sound file number in the library to be used.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5" />
+    </Associations>
+  </CommandClass>
+
+</Product>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 <!-- GE/Jasco Smart LED Light Bulb ZE26I -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" index="1" genre="config" label="Dim level when light is turned ON" units="" min="0" max="1" size="1" value="0">

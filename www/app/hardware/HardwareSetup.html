@@ -1,0 +1,14 @@
+<div class="container">
+    <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+    <h2 class="page-header">{{:: 'Device' | translate}}: {{ $ctrl.hardware.Name }}</h2>
+</div>
+
+<div class="container" id="hardwarecontent"></div>
+
+<z-wave-hardware ng-if="$ctrl.hardware.Type === 21" hardware="$ctrl.hardware" />
+<wol-hardware ng-if="$ctrl.hardware.Type === 29" hardware="$ctrl.hardware" />
+<my-sensors-hardware ng-if="[41, 42, 92].includes($ctrl.hardware.Type)" hardware="$ctrl.hardware" />
+<pinger-hardware ng-if="$ctrl.hardware.Type === 51" hardware="$ctrl.hardware" />
+<kodi-hardware ng-if="$ctrl.hardware.Type === 55" hardware="$ctrl.hardware" />
+<panasonic-tv-hardware ng-if="$ctrl.hardware.Type === 69" hardware="$ctrl.hardware" />
+<ble-box-hardware ng-if="$ctrl.hardware.Type === 82" hardware="$ctrl.hardware" />

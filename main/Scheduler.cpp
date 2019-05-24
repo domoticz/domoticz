@@ -929,8 +929,8 @@ void CScheduler::CheckSchedules()
 
 void CScheduler::DeleteExpiredTimers()
 {
-	char szDate[20];
-	char szTime[20];
+	char szDate[40];
+	char szTime[40];
 	time_t now = mytime(NULL);
 	struct tm tmnow;
 	localtime_r(&now, &tmnow);

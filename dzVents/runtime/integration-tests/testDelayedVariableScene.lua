@@ -17,7 +17,6 @@ describe('Test if selector switch afterSec() works', function ()
 		local ok = TestTools.reset()
 		assert.is_true(ok)
 		ok, dummyIdx = TestTools.createDummyHardware('dummy')
-
 		TestTools.createVariable('var', 2, 'somevalue')
 
 		ok, vdScriptStartIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptStart', 6)
@@ -55,7 +54,6 @@ describe('Test if selector switch afterSec() works', function ()
 		it('Should have succeeded', function()
 
 			socket.sleep(5) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
-
 			local ok = false
 			local vdOKDevice
 

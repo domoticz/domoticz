@@ -1,0 +1,17 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/003B:504C:634B</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/schlage/fe599.png</MetaDataItem>
+    <MetaDataItem id="504C" name="ZWProductPage" type="634B">https://products.z-wavealliance.org/products/311/</MetaDataItem>
+    <MetaDataItem id="504C" name="FrequencyName" type="634B">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">cKPD FE599 z-wave Lock. Z-Wave enabled lock. We make it simple to get started with remote home security with the Schlage Home Security Kit. Everything you need to make sure your home and family are safe and secure when you’re not there is available in one box . Getting notified any time your loved ones come home or leave the house. Assigning codes to let in chosen guests. Turning on a light at night in an empty house – making it look full of life. Nexia security features come together in a system you can manage and monitor any time, whether from your office computer or on the go from your tablet or smart phone.</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://link.schlage.com/Products/Pages/DeadboltStarterKit.aspx</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://link.schlage.com/Products/Pages/DeadboltStarterKit.aspx</MetaDataItem>
+    <MetaDataItem id="504C" name="Identifier" type="634B">cKPD FE599</MetaDataItem>
+    <MetaDataItem name="Name">cKPD FE599 Z-Wave Lock</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/311/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

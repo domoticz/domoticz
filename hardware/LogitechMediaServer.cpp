@@ -408,7 +408,8 @@ void CLogitechMediaServer::GetPlayerInfo()
 						(model == "fab4") ||				//Squeezebox Touch
 						(model == "iPengiPod") ||			//iPeng iPhone App
 						(model == "iPengiPad") ||			//iPeng iPad App
-						(model == "squeezelite")			//Max2Play SqueezePlug
+						(model == "squeezelite") ||			//Max2Play SqueezePlug
+						(model == "daphile")				//Audiophile Music Server & Player OS
 						)
 					{
 						UpsertPlayer(name, ip, macaddress);

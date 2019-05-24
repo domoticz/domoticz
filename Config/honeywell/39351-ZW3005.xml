@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Honeywell(Jasco) 39351 / ZW3005 In-Wall Smart Dimmerh -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/2724 -->
 	<CommandClass id="112">
 		<Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" value="0" size="1">

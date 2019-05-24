@@ -33,6 +33,15 @@ enum _eWeightUnit
     WEIGHTUNIT_LB,
 };
 
+enum _eUsrVariableType
+{
+	USERVARTYPE_INTEGER = 0,
+	USERVARTYPE_FLOAT, //1
+	USERVARTYPE_STRING, //2
+	USERVARTYPE_DATE, //3 Date in format DD/MM/YYYY
+	USERVARTYPE_TIME, //4 Time in 24 hr format HH:MM
+};
+
 enum _eTaskItemType
 {
 	TITEM_SWITCHCMD=0,
@@ -377,12 +386,11 @@ public:
 	void safe_exec_no_return(const char *fmt, ...);
 	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
-	std::string AddUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
-	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);
-	std::string DeleteUserVariable(const std::string &idx);
-	std::string CheckUserVariable(const int vartype, const std::string &varvalue);
-	std::string CheckUserVariableName(const std::string &varname);
-	std::vector<std::vector<std::string> > GetUserVariables();
+
+	bool AddUserVariable(const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
+	bool UpdateUserVariable(const std::string &idx, const std::string &varname, const _eUsrVariableType eVartype, const std::string &varvalue, const bool eventtrigger, std::string &errorMessage);
+	void DeleteUserVariable(const std::string &idx);
+	bool CheckUserVariable(const _eUsrVariableType eVartype, const std::string &varvalue, std::string &errorMessage);
 
 	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
 
@@ -421,6 +429,7 @@ public:
 	bool		m_bAllowWidgetOrdering;
 	int			m_ActiveTimerPlan;
 	bool		m_bEnableEventSystem;
+	bool		m_bEnableEventSystemFullURLLog;
 	int			m_ShortLogInterval;
 	bool		m_bLogEventScriptTrigger;
 	bool		m_bDisableDzVentsSystem;

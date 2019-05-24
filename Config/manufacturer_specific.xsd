@@ -1,8 +1,8 @@
 <?xml version='1.0'?>
 <xs:schema
   xmlns:xs='http://www.w3.org/2001/XMLSchema'
-  targetNamespace='http://code.google.com/p/open-zwave/'
-  xmlns:ManufacturerSpecificData='http://code.google.com/p/open-zwave/'
+  targetNamespace='https://github.com/OpenZWave/open-zwave'
+  xmlns:ManufacturerSpecificData='https://github.com/OpenZWave/open-zwave'
   elementFormDefault='qualified'>
 
  <xs:element name='ManufacturerSpecificData'>
@@ -10,6 +10,7 @@
    <xs:sequence>
     <xs:element ref='ManufacturerSpecificData:Manufacturer' minOccurs='0' maxOccurs='unbounded'/>
    </xs:sequence>
+   <xs:attribute name='Revision' type='xs:integer' use='required'/>
   </xs:complexType>
  </xs:element>
 

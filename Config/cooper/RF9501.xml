@@ -1,48 +1,60 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" index="1" genre="config" label="Delayed OFF time" units="seconds" min="0" max="255" value="0">
-		  <Help>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001A:0000:534C</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/cooper/RF9501.png</MetaDataItem>
+    <MetaDataItem id="0000" name="ZWProductPage" type="534C">https://products.z-wavealliance.org/products/740/</MetaDataItem>
+    <MetaDataItem id="0000" name="Identifier" type="534C">RF9501</MetaDataItem>
+    <MetaDataItem id="0000" name="FrequencyName" type="534C">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">ASPIRE RF 15A Wireless Switch</MetaDataItem>
+    <MetaDataItem name="Description">The ASPIRE RF 15A switch (RF9501) replaces regular switches or dimmers (where a neutral is present) to provide local and remote ON/OFF control for Incandescent, Magnetic Low-Voltage, Electronic Low-Voltage and Fluorescent lighting loads. Each switch can be manually controlled and remotely controlled by commands sent from an ASPIRE RF controller or other Z-Wave compatible controllers or programs. An ASPIRE RF switch utilizes existing 120V/AC, 60Hz standard house wiring and fits in a standard wallbox. No new wiring is needed.</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.cooperindustries.com/content/public/en/wiring_devices/products/lighting_controls/aspire_rf_wireless/switches/aspire_rf_15a_wireless_switch_rf9501.html</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/740/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Delayed OFF time" max="255" min="0" type="byte" units="seconds" value="0">
+      <Help>
 			The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
-		</Value>
-		<Value type="byte" index="2" genre="config" label="Panic ON time" units="seconds" min="1" max="255" value="0">
-		  <Help>
+    </Value>
+    <Value genre="config" index="2" label="Panic ON time" max="255" min="1" type="byte" units="seconds" value="0">
+      <Help>
 		  The amount of time in seconds the switch will turn on for when panic mode is trigered.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
-		</Value>
-		<Value type="byte" index="3" genre="config" label="Panic OFF time" units="seconds" min="1" max="255" value="0">
-		  <Help>
+    </Value>
+    <Value genre="config" index="3" label="Panic OFF time" max="255" min="1" type="byte" units="seconds" value="0">
+      <Help>
 		  The amount of time in seconds the switch will turn off for when panic mode is triggered.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
-		</Value>
-		<Value type="byte" index="4" genre="config" label="Basic set value" units="" min="1" max="255" value="0">
-		  <Help>
+    </Value>
+    <Value genre="config" index="4" label="Basic set value" max="255" min="1" type="byte" units="" value="0">
+      <Help>
 		  Setting this to anything other than 0 will cause the value to be transmitted to devices in the association group when the switch is triggered. A setting other than 0 will likely result in undesired operation
 		  </Help>
-		</Value>
-		<Value type="list" index="5" genre="config" label="Power Up State" units="" min="1" max="3" size="1" value="3">
-		  <Help>
+    </Value>
+    <Value genre="config" index="5" label="Power Up State" max="3" min="1" size="1" type="list" units="" value="3">
+      <Help>
 		    Power up state of the device
 		  </Help>
-		  <Item label="OFF" value="1"/>
-		  <Item label="ON" value="2"/>
-		  <Item label="Last state" value="3"/>
-		</Value>
-		<Value type="list" index="6" genre="config" label="Panic mode enable" units="" min="1" max="2" size="1" value="1">
-		  <Help>
+      <Item label="OFF" value="1"/>
+      <Item label="ON" value="2"/>
+      <Item label="Last state" value="3"/>
+    </Value>
+    <Value genre="config" index="6" label="Panic mode enable" max="2" min="1" size="1" type="list" units="" value="1">
+      <Help>
 		    Enables this switch to participate in panic mode
 		  </Help>
-		  <Item label="OFF" value="1"/>
-		  <Item label="ON" value="2"/>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="2">
-        	<Group index="1" max_associations="5" label="Group #1" />
-			<Group index="255" max_associations="1" label="Group #255" />
-		</Associations>
-	</CommandClass>
+      <Item label="OFF" value="1"/>
+      <Item label="ON" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Group #1" max_associations="5"/>
+      <Group index="255" label="Group #255" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -35,6 +35,7 @@ namespace OpenZWave
 	class ValueBool;
 
 	/** \brief Implements COMMAND_CLASS_DOOR_LOCK_LOGGING (0x4C), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class DoorLockLogging: public CommandClass
 	{
@@ -46,10 +47,8 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_DOOR_LOCK_LOGGING"; }
 
 		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
 		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
@@ -59,7 +58,6 @@ namespace OpenZWave
 
 	private:
 		DoorLockLogging( uint32 const _homeId, uint8 const _nodeId );
-		uint8 m_MaxRecords;
 		uint8 m_CurRecord;
 	};
 

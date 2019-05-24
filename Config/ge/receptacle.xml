@@ -1,13 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" size="1" value="0">
-			<Help>Sets when the LED on the outlet is lit.</Help>
-			<Item label="LED on when outlet off" value="0" />
-			<Item label="LED on when outlet on" value="1" />
-			<Item label="LED always off" value="2" />
-		</Value>
-	</CommandClass>
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3530:5252</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/receptacle.png</MetaDataItem>
+    <MetaDataItem id="3530" name="ZWProductPage" type="5252">https://products.z-wavealliance.org/products/724/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.jascoproducts.com/support/</MetaDataItem>
+    <MetaDataItem name="Description">Duplex Receptacle</MetaDataItem>
+    <MetaDataItem id="3530" name="FrequencyName" type="5252">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.ezzwave.com</MetaDataItem>
+    <MetaDataItem name="Name">Jasco Z-Wave Duplex Receptacle/Outlet</MetaDataItem>
+    <MetaDataItem id="3530" name="Identifier" type="5252">45636/ZW1001</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/657/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/724/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1195/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1212/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="3031" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/1212/</MetaDataItem>
+    <MetaDataItem id="3031" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3031" name="Identifier" type="4952">45705</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the outlet is lit.</Help>
+      <Item label="LED on when outlet off" value="0"/>
+      <Item label="LED on when outlet on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+  </CommandClass>
 </Product>
-

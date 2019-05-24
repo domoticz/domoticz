@@ -1,6 +1,7 @@
 local log
 local dz
 local _ = require('lodash')
+local resTable = {}
 
 local err = function(msg)
 	log(msg, dz.LOG_ERROR)
@@ -9,6 +10,17 @@ end
 local tstMsg = function(msg, res)
 	print('Stage: 2, ' .. msg .. ': ' .. tostring(res and 'OK' or 'FAILED'))
 end
+
+local handleResult = function(msg,res)
+	tstMsg(msg,res)
+	if res then
+		resTable[msg] = res
+	else
+		resTable[msg] = msg .. " Failed"
+	end
+end
+
+local descriptionString = "Ieder nadeel heb zn voordeel"
 
 local expectEql = function(attr, test, marker)
 	if (attr ~= test) then
@@ -23,10 +35,10 @@ local expectEql = function(attr, test, marker)
 	return true
 end
 
-local checkAttributes = function(dev, attributes)
+local checkAttributes = function(item, attributes)
 	local res = true
 	for attr, value in pairs(attributes) do
-		res = res and expectEql(dev[attr], value, attr)
+		res = res and expectEql(item[attr], value, attr)
 	end
 	return res
 end
@@ -38,7 +50,7 @@ local testAirQuality = function(name)
 		["quality"] = 'Bad',
 		["co2"] = 1600,
 	})
-	tstMsg('Test air quality device', res)
+	handleResult('Test air quality device', res)
 	return res
 end
 
@@ -48,7 +60,7 @@ local testSwitch = function(name)
 	res = res and checkAttributes(dev, {
 		["state"] = "On",
 	})
-	tstMsg('Test switch device', res)
+	handleResult ('Test switch device', res)
 	return res
 end
 
@@ -56,12 +68,12 @@ local testDimmer = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 39,
+		["id"] = 40,
 		["state"] = "On",
 		["lastLevel"] = 75, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["level"] = 75;
 	})
-	tstMsg('Test dimmer', res)
+	handleResult ('Test dimmer', res)
 	return res
 end
 
@@ -72,7 +84,7 @@ local testAlert = function(name)
 		["state"] = "Hey I am red",
 		["color"] = 4,
 	})
-	tstMsg('Test alert sensor device', res)
+	handleResult('Test alert sensor device', res)
 	return res
 end
 
@@ -84,7 +96,7 @@ local testBarometer = function(name)
 		["forecast"] = 4;
 		["barometer"] = 1234
 	})
-	tstMsg('Test barometer device', res)
+	handleResult('Test barometer device', res)
 	return res
 end
 
@@ -95,7 +107,7 @@ local testCounter = function(name)
 		["counterToday"] = 0;
 		["counter"] = 1.234;
 	})
-	tstMsg('Test counter device', res)
+	handleResult('Test counter device', res)
 	return res
 end
 
@@ -106,7 +118,7 @@ local testCounterIncremental = function(name)
 		["counter"] = 1.234;
 		["counterToday"] = 0;
 	})
-	tstMsg('Test counter incremental device', res)
+	handleResult('Test counter incremental device', res)
 	return res
 end
 
@@ -116,7 +128,7 @@ local testCustomSensor = function(name)
 	res = res and checkAttributes(dev, {
 		["state"] = "1234";
 	})
-	tstMsg('Test custom sensor device', res)
+	handleResult('Test custom sensor device', res)
 	return res
 end
 
@@ -127,7 +139,7 @@ local testDistance = function(name)
 		["state"] = '42.44',
 		["distance"] = 42.44,
 	})
-	tstMsg('Test distance device', res)
+	handleResult('Test distance device', res)
 	return res
 end
 
@@ -140,7 +152,7 @@ local testElectricInstanceCounter = function(name)
 		-- only works after at least 5 minutes ['counterToday'] = 0.020,
 		['usage'] = 10.0,
 	})
-	tstMsg('Test electric instance counter device', res)
+	handleResult('Test electric instance counter device', res)
 	return res
 end
 
@@ -152,7 +164,7 @@ local testGas = function(name)
 	--		['counterToday'] = 66,
 	--		['counter'] = 66,
 	--	})
-	tstMsg('Test gas device', res)
+	handleResult('Test gas device', res)
 	return res
 end
 
@@ -164,7 +176,7 @@ local testHumidity = function(name)
 		["humidityStatusValue"] = 3;
 		["humidity"] = 88;
 	})
-	tstMsg('Test humidity device', res)
+	handleResult('Test humidity device', res)
 	return res
 end
 
@@ -174,7 +186,7 @@ local testLeafWetness = function(name)
 	res = res and checkAttributes(dev, {
 		['wetness'] = 55,
 	})
-	tstMsg('Test leaf wetness device', res)
+	handleResult('Test leaf wetness device', res)
 	return res
 end
 
@@ -184,9 +196,22 @@ local testLux = function(name)
 	res = res and checkAttributes(dev, {
 		['lux'] = 355,
 	})
-	tstMsg('Test lux device', res)
+	handleResult('Test lux device', res)
 	return res
 end
+
+
+local testManagedCounter = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["counter"] = 1.234;
+		["counterToday"] = 0;
+	})
+	handleResult('Test managed counter', res)
+	return res
+end
+
 
 local testP1SmartMeter = function(name)
 	local dev = dz.devices(name)
@@ -202,7 +227,7 @@ local testP1SmartMeter = function(name)
 		['counterDeliveredToday'] = 0,
 		['counterToday'] = 0,
 	})
-	tstMsg('Test p1 smart meter device', res)
+	handleResult('Test p1 smart meter device', res)
 	return res
 end
 
@@ -212,7 +237,7 @@ local testPercentage = function(name)
 	res = res and checkAttributes(dev, {
 		['percentage'] = 99.99,
 	})
-	tstMsg('Test percentage device', res)
+	handleResult('Test percentage device', res)
 	return res
 end
 
@@ -222,16 +247,16 @@ local testPressureBar = function(name)
 	res = res and checkAttributes(dev, {
 		["pressure"] = 88,
 	})
-	tstMsg('Test pressure device', res)
+	handleResult('Test pressure device', res)
 	return res
 end
 
 local testRain = function(name)
 	local dev = dz.devices(name)
 	local res = true
-	expectEql(3000, tonumber(dev.rawData[1]))
-	expectEql(6660, tonumber(dev.rawData[2]))
-	tstMsg('Test rain device', res)
+	res = res and expectEql(3000, tonumber(dev.rawData[1]))
+	res = res and expectEql(6660, tonumber(dev.rawData[2]))
+	handleResult('Test rain device', res)
 	return res
 end
 
@@ -241,8 +266,9 @@ local testRGB = function(name)
 	res = res and checkAttributes(dev, {
 		["state"] = "On",
 		["level"] = 15,
+
 	})
-	tstMsg('Test rgb device', res)
+	handleResult('Test rgb device ', res)
 	return res
 end
 
@@ -252,8 +278,9 @@ local testRGBW = function(name)
 	res = res and checkAttributes(dev, {
 		["state"] = "On",
 		["level"] = 15,
+		["color"] = '{"b":255,"cw":0,"g":85,"m":3,"r":0,"t":0,"ww":0}'
 	})
-	tstMsg('Test rgbw device', res)
+	handleResult('Test rgbw device', res)
 	return res
 end
 
@@ -263,7 +290,7 @@ local testScaleWeight = function(name)
 	res = res and checkAttributes(dev, {
 		['weight'] = 33.5,
 	})
-	tstMsg('Test scale weight device', res)
+	handleResult('Test scale weight device', res)
 	return res
 end
 
@@ -276,7 +303,7 @@ local testSelectorSwitch = function(name)
 		['level'] = 30
 	})
 
-	tstMsg('Test selector switch device', res)
+	handleResult('Test selector switch device', res)
 	return res
 end
 
@@ -286,7 +313,7 @@ local testSoilMoisture = function(name)
 	res = res and checkAttributes(dev, {
 		["moisture"] = 34,
 	})
-	tstMsg('Test soil moisture device', res)
+	handleResult('Test soil moisture device', res)
 	return res
 end
 
@@ -296,7 +323,7 @@ local testSolarRadiation = function(name)
 	res = res and checkAttributes(dev, {
 		["radiation"] = 34,
 	})
-	tstMsg('Test solar radiation device', res)
+	handleResult('Test solar radiation device', res)
 	return res
 end
 
@@ -306,7 +333,7 @@ local testSoundLevel = function(name)
 	res = res and checkAttributes(dev, {
 		["level"] = 120,
 	})
-	tstMsg('Test sound level device', res)
+	handleResult('Test sound level device', res)
 	return res
 end
 
@@ -316,7 +343,7 @@ local testTemperature = function(name)
 	res = res and checkAttributes(dev, {
 		["temperature"] = 120,
 	})
-	tstMsg('Test temperature device', res)
+	handleResult('Test temperature device', res)
 	return res
 end
 
@@ -326,7 +353,7 @@ local testAPITemperature = function(name)
 	res = res and checkAttributes(dev, {
 		["temperature"] = 42,
 	})
-	tstMsg('Test API temperature device', res)
+	handleResult('Test API temperature device', res)
 	return res
 end
 
@@ -340,7 +367,7 @@ local testTempHum = function(name)
 		["humidityStatus"] = "Wet";
 		["humidityStatusValue"] = 3;
 	})
-	tstMsg('Test temperature+humidity device', res)
+	handleResult('Test temperature+humidity device', res)
 	return res
 end
 
@@ -356,7 +383,7 @@ local testTempHumBaro = function(name)
 		["humidityStatus"] = "Wet";
 		["humidityStatusValue"] = 3;
 	})
-	tstMsg('Test temperature+humidity+barometer device', res)
+	handleResult('Test temperature+humidity+barometer device', res)
 	return res
 end
 
@@ -369,10 +396,42 @@ local testTempBaro = function(name)
 		["forecastString"] = "Cloudy";
 		["forecast"] = 2;
 	})
-	tstMsg('Test temperature+barometer device', res)
+	handleResult('Test temperature+barometer device', res)
 	return res
 end
 
+local testGetColorRGBW = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	local ct = dev.getColor()
+	res = res and checkAttributes(ct, {
+		["r"] = 0,
+		["red"] = 0,
+		["hue"] = 220,
+		["saturation"] = 100,
+		["value"] = 100,
+		["isWhite"] = false,
+		["b"] = 255,
+		["blue"] = 255,
+		["g"] = 85,
+		["green"] = 85,
+		["warm white"] = 0,
+		["cold white"] = 0,
+		["temperature"] = 0,
+		["mode"] = 3,
+		["brightness"] = 100,
+	})
+	handleResult('Test getColor RGBW(' .. dev.color .. ')', res)
+	return res
+end
+
+local testGetColorRGB = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and (dev.getColor() == nil)
+	handleResult('Test getColor RGB (' .. dev.color .. ')', res)
+	return res
+end
 
 local testText = function(name)
 	local dev = dz.devices(name)
@@ -391,7 +450,7 @@ local testText = function(name)
 
 	res = expectEql(true, res, 'Text device should have been delayed with 3 seconds.')
 
-	tstMsg('Test text device', res)
+	handleResult('Test text device', res)
 	return res
 end
 
@@ -401,7 +460,7 @@ local testThermostatSetpoint = function(name)
 	res = res and checkAttributes(dev, {
 		["setPoint"] = 22.00,
 	})
-	tstMsg('Test thermostat device', res)
+	handleResult('Test thermostat device', res)
 	return res
 end
 
@@ -411,7 +470,7 @@ local testUsageElectric = function(name)
 	res = res and checkAttributes(dev, {
 		["WhActual"] = 1922,
 	})
-	tstMsg('Test usage electric device', res)
+	handleResult('Test usage electric device', res)
 	return res
 end
 
@@ -421,7 +480,7 @@ local testUV = function(name)
 	res = res and checkAttributes(dev, {
 		["uv"] = 12.33,
 	})
-	tstMsg('Test uv device', res)
+	handleResult('Test uv device', res)
 	return res
 end
 
@@ -429,7 +488,7 @@ local testVisibility = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and expectEql(1, dev.visibility)
-	tstMsg('Test visibility device', res)
+	handleResult('Test visibility device', res)
 	return res
 end
 
@@ -439,7 +498,7 @@ local testVoltage = function(name)
 	res = res and checkAttributes(dev, {
 		["voltage"] = 220,
 	})
-	tstMsg('Test voltage device', res)
+	handleResult('Test voltage device', res)
 	return res
 end
 
@@ -449,7 +508,7 @@ local testWaterflow = function(name)
 	res = res and checkAttributes(dev, {
 		["flow"] = 15,
 	})
-	tstMsg('Test waterflow device', res)
+	handleResult('Test waterflow device', res)
 	return res
 end
 
@@ -464,7 +523,7 @@ local testWind = function(name)
 		['directionString'] = "SW",
 		['chill'] = 88,
 	})
-	tstMsg('Test wind device', res)
+	handleResult('Test wind device', res)
 	return res
 end
 
@@ -477,7 +536,7 @@ local testGroup = function(name)
 		['state'] = 'On',
 		['baseType'] = 'group'
 	})
-	tstMsg('Test group', res)
+	handleResult('Test group', res)
 	return res
 end
 
@@ -487,7 +546,7 @@ local testVariableInt = function(name)
 	res = res and checkAttributes(var, {
 		['value'] = 43
 	})
-	tstMsg('Test variable: int', res)
+	handleResult('Test variable: int', res)
 	return res
 end
 
@@ -497,7 +556,7 @@ local testVariableFloat = function(name)
 	res = res and checkAttributes(var, {
 		['value'] = 43
 	})
-	tstMsg('Test variable: float', res)
+	handleResult('Test variable: float', res)
 	return res
 end
 
@@ -507,7 +566,7 @@ local testVariableString = function(name)
 	res = res and checkAttributes(var, {
 		['value'] = 'Zork is a dork'
 	})
-	tstMsg('Test variable: string', res)
+	handleResult('Test variable: string', res)
 	return res
 end
 
@@ -517,7 +576,7 @@ local testVariableDate = function(name)
 	res = res and expectEql(var.date.month, 11)
 	res = res and expectEql(var.date.day, 20)
 	res = res and expectEql(var.date.year, 2016)
-	tstMsg('Test variable: date', res)
+	handleResult('Test variable: date', res)
 	return res
 end
 
@@ -527,7 +586,7 @@ local testVariableTime = function(name)
 
 	res = res and expectEql(var.time.hour, 9)
 	res = res and expectEql(var.time.min, 54)
-	tstMsg('Test variable: time', res)
+	handleResult('Test variable: time', res)
 	return res
 end
 
@@ -538,7 +597,7 @@ local testAmpere1 = function(name)
 	res = res and checkAttributes(dev, {
 		['current'] = 123,
 	})
-	tstMsg('Test ampere 1 device', res)
+	handleResult('Test ampere 1 device', res)
 	return res
 end
 
@@ -551,7 +610,7 @@ local testAmpere3 = function(name)
 		['current3'] = 789,
 	})
 
-	tstMsg('Test ampere 3 device', res)
+	handleResult('Test ampere 3 device', res)
 	return res
 end
 
@@ -583,7 +642,7 @@ local testRepeatSwitch = function(name)
 	res = res and testRepeatSwitchDelta('On', 5, secondOn.data.state, secondOn.data.delta)
 	res = res and testRepeatSwitchDelta('Off', 2, secondOff.data.state, secondOff.data.delta)
 
-	tstMsg('Test repeat switch', res)
+	handleResult('Test repeat switch', res)
 	return res
 end
 
@@ -591,7 +650,7 @@ local testCancelledRepeatSwitch = function(name)
 	local res = true
 	local count = dz.globalData.cancelledRepeatSwitch
 	res = res and expectEql(1, count)
-	tstMsg('Cancelled repeat switch', res)
+	handleResult('Cancelled repeat switch', res)
 	return res
 end
 
@@ -633,7 +692,7 @@ local testLastUpdates = function(stage2Trigger)
 		end, results)
 	end
 
-	tstMsg('Test lastUpdates', results)
+	handleResult('Test lastUpdates', results)
 	return results
 end
 
@@ -641,24 +700,124 @@ local testVarCancelled = function(name)
 	local res = true
 	local var = dz.variables('varCancelled')
 	res = res and expectEql(0, var.value)
-	tstMsg('Cancelled variable', res)
+	handleResult('Test cancelled variable', res)
+	return res
+end
+
+local testSetValuesSensor = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and expectEql(12, tonumber(dev.rawData[1]))
+	res = res and expectEql(34, tonumber(dev.rawData[2]))
+	res = res and expectEql(45, tonumber(dev.rawData[3]))
+	handleResult('Test setValues sensor', res)
+	return res
+end
+
+local testSetIconSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and expectEql(10, tonumber(dev.description))
+	handleResult('Test setIcon switch', res)
+	return res
+end
+
+local testDeviceDump = function(name)
+	local utils = require('Utils')
+	local dev = dz.devices(name)
+	local res = true
+	res = res and ( utils.dumpTable(dev, '> ') == nil) 
+	handleResult('Test device dump', res)
+	return res
+end
+
+local testCameraDump = function()
+	local utils = require('Utils')
+	local cam = dz.cameras(1)
+	local res = true
+	res = res and (utils.dumpTable(cam, '> ') == nil)
+	handleResult('Test camera dump', res)
+	return res
+end
+
+local testSettingsDump = function()
+	local utils = require('Utils')
+	local settings = dz.settings
+	local res = true
+	res = res and (utils.dumpTable(settings, '> ') == nil)
+	handleResult('Test settings dump', res)
+	return res
+end
+
+local testIFTTT = function(event)
+	res = true
+	print('triggerIFTTT should fail now because IFTTT is disabled before stage 2'  )
+	dz.triggerIFTTT(event) 
+	dz.triggerIFTTT(event).afterSec(3) 
+	handleResult('Test IFTTT call', res)
 	return res
 end
 
 local testCancelledScene = function(name)
 	local res = true
 	local count = dz.globalData.cancelledScene
-	res = res and expectEql(1, count)
-	tstMsg('Cancelled repeat scene', res)
+	res = res and expectEql(2, count)
+	handleResult('Test cancelled repeat scene', res)
 	return res
 end
 
 local testHTTPSwitch = function(name)
 	local res = true
 	local trigger = dz.globalData.httpTrigger
-	res = res and expectEql('trigger2', trigger)
-	tstMsg('Test http trigger switch device', res)
+	res = res and expectEql('OKOKOK', trigger)
+	handleResult('Test http trigger switch device', res)
 	return res
+end
+
+local testDescription = function(name, description, type)
+	local res = true
+	local dev = dz.devices(name)
+	res = res and checkAttributes(dev, {
+		["description"] = description,
+	})
+	handleResult('Test description ' .. type ..' device for string: ' .. description, res)
+	return res
+end
+
+local testQuietOn = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	res = res and checkAttributes(dev, {
+		["state"] = "On",
+	})
+	handleResult('Test QuietOn switch device', res)
+	return res
+end
+
+local testQuietOff = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	res = res and checkAttributes(dev, {
+		["state"] = "Off",
+	})
+	handleResult('Test QuietOff switch device', res)
+	return res
+end
+
+
+local testVersion = function(name)
+	local res = true
+	local utils = require('Utils')
+	res = res and expectEql(utils.DZVERSION , dz.settings.dzVentsVersion)
+	handleResult('Test version strings to equal (' .. utils.DZVERSION .. ') and (' ..  dz.settings.dzVentsVersion .. ')',res)
+	return res
+end
+
+local writeResultsTofile = function(file, resTable)
+	local utils = require('Utils')
+	local results = assert(io.open(file, "wb"))
+	results:write(utils.toJSON(resTable))
+	results:close()
 end
 
 return {
@@ -684,17 +843,23 @@ return {
 		res = res and testDistance('vdDistance')
 		res = res and testElectricInstanceCounter('vdElectricInstanceCounter')
 		res = res and testGas('vdGas')
+		res = res and testGetColorRGBW('vdRGBWSwitch')
+		res = res and testGetColorRGB('vdRGBSwitch')
 		res = res and testHumidity('vdHumidity')
 		res = res and testLeafWetness('vdLeafWetness')
 		res = res and testLux('vdLux')
 		res = res and testP1SmartMeter('vdP1SmartMeterElectric')
 		res = res and testPercentage('vdPercentage')
 		res = res and testPressureBar('vdPressureBar')
+		res = res and testQuietOff('vdQuietOffSwitch')
+		res = res and testQuietOn('vdQuietOnSwitch')
 		res = res and testRain('vdRain')
 		res = res and testRGB('vdRGBSwitch')
 		res = res and testRGBW('vdRGBWSwitch')
 		res = res and testScaleWeight('vdScaleWeight')
 		res = res and testSelectorSwitch('vdSelectorSwitch')
+		res = res and testSetIconSwitch('vdSetIconSwitch')
+		res = res and testSetValuesSensor('vdSetValueSensor')
 		res = res and testSoilMoisture('vdSoilMoisture')
 		res = res and testSolarRadiation('vdSolarRadiation')
 		res = res and testSoundLevel('vdSoundLevel')
@@ -721,14 +886,21 @@ return {
 		res = res and testAmpere3('vdAmpere3')
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testAPITemperature('vdAPITemperature')
-
+		res = res and testManagedCounter('vdManagedCounter')
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch')
 		res = res and testLastUpdates(stage2Trigger)
 		res = res and testRepeatSwitch('vdRepeatSwitch')
-
 		res = res and testVarCancelled('varCancelled')
 		res = res and testCancelledScene('scCancelledScene')
 		res = res and testHTTPSwitch('vdHTTPSwitch');
+		res = res and testDescription('vdDescriptionSwitch', descriptionString, "device")
+		res = res and testDescription('sceneDescriptionSwitch1', descriptionString, "scene")
+		res = res and testDescription('groupDescriptionSwitch1', descriptionString, "group")
+		res = res and testDeviceDump(vdSwitchDimmer)
+		res = res and testCameraDump()
+		res = res and testSettingsDump()
+		res = res and testIFTTT('myEvent')
+		res = res and testVersion('version')
 
 		-- test a require
 		local m = require('some_module')
@@ -736,7 +908,6 @@ return {
 		if (output ~= 'Rocks!') then
 			err('Module some_module did not load and run properly')
 		end
-
 		res = res and (output == 'Rocks!')
 
 		if (not res) then
@@ -747,6 +918,7 @@ return {
 			dz.devices('endResult').updateText('ENDRESULT SUCCEEDED')
 		end
 
+		writeResultsTofile("/tmp/Stage2results.json", resTable)
 		log('Finishing stage 2')
 	end
 }

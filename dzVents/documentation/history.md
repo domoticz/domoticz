@@ -1,3 +1,56 @@
+[2.4.21]
+- fixed wrong direction for open() and close() for some types of blinds
+- Add inTable function to domoticz.utils
+- Add sValue attribute to devices
+
+[2.4.20]
+- Add quietOn() and quietOff() method to switchType devices 
+
+[2.4.19]
+- Add stringSplit function to domoticz.utils.
+- Add statusText and protocol to HTTPResponse
+
+[2.4.18]
+- Add triggerIFTTT()
+
+[2.4.17]
+- Add function dumpTable() to domoticz.utils
+- Add setValues() method to devices 
+- Add setIcon() method for devices
+
+[2.4.16]
+- Add option dump() to domoticz.settings
+- Add domoticz.hsbToRGB method for converting hue to rgb
+- Add setHue, setColor, setHex, getColor for RGBW(W) devices
+- Add setDescription for devices, groups and scenes
+- Add volumeUp / volumeDown for Logitech Media Server (LMS)
+- Changed domoticz.utils.fromJSON (add optional fallback param) 
+
+[2.4.15] 
+- Add option to use camera name in snapshot command
+- Add domoticz.settings.domoticzVersion
+- Add domoticz.settings.dzVentsVersion
+
+[2.4.14]
+- Added domoticz.settings.location.longitude and domoticz.settings.location.latitude 
+- Added check for- and message when call to openURL cannot open local (127.0.0.1)
+- **BREAKING CHANGE** :Changed domoticz.settings.location to domoticz.settings.location.name (domoticz settings location Name) 
+- prevent call to updateCounter with table
+
+[2.4.13]
+- Added domoticz.settings.location (domoticz settings location Name) 
+- Added domoticz.urlDecode method to convert an urlEncoded string to human readable format
+
+[2.4.12]
+- Added Managed counter (to counter)
+
+[2.4.11]
+- Added snapshot command to send Email with camera snapshot ( afterXXX() and withinXXX() options available)
+
+[2.4.10]
+- Added option to use afterXXX() and withinXXX() functions to updateSetPoint()
+- Changed parm from integer to string in call to device.update in function updateMode of device adapter zwave_thermostat_mode_device
+
 [2.4.9]
 - Added evohome hotwater device (state, mode, untilDate and setHotWater function)
 - Added mode and untilDate for evohome zone devices 

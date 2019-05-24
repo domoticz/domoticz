@@ -1,0 +1,28 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0115:0001:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zwave.me/zme_raz5.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1260/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">n/a</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1260/RaZberryEndUserManual.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Web Interface; Network Tab, "Exclude Device"</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0001">ZMEURAZ5</MetaDataItem>
+    <MetaDataItem name="Name">Razberry500</MetaDataItem>
+    <MetaDataItem name="Description">The RaZberry solution turns every Raspberry PI micro computer into an Z-Wave based Smart Home Gateway. The backend can support Z-Wave but other third party communication technologies. An embedded web server with an Z-Wave expert UI allows easy  configuration and use. The embedded Apple HomeKit server bridges Z-Wave devices  into the Apple smart home world. The real power of the solution is an very  user friendly API and Javascript based logic engine to enable users to write  their own customized solution und user experience.
+
+The RaZberry consists of various parts:
+
+(a) Z-Wave transceiver pluggable to the GPIO interface of the Raspberry PI,
+(b) A Z-Wave stack integrated into an open source Javascript based smart home
+automation engine
+(c) Various user interfaces including an AJAX based Web UI, Apple HomeKit server 
+and several IOS and Android Apps.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Web Interface; Network Tab, "Reset Controller"</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Web Interface; Network Tab, "Include Device"</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0001">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1150/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1260/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

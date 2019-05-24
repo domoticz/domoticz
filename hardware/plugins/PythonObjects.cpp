@@ -701,9 +701,7 @@ namespace Plugins {
 
 				if (!m_sql.m_bAcceptNewHardware)
 				{
-#ifdef _DEBUG
-					_log.Log(LOG_STATUS, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->m_Name.c_str());
-#endif
+					_log.Log(LOG_ERROR, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->m_Name.c_str());
 				}
 				else
 				{
@@ -1048,6 +1046,21 @@ namespace Plugins {
 		return Py_None;
 	}
 
+	PyObject * CDevice_touch(CDevice * self)
+	{
+		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
+		{
+			std::string sID = std::to_string(self->ID);
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (ID == %s )", TimeToString(NULL, TF_DateTime).c_str(), sID.c_str());
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Device touch failed, Device object is not associated with a plugin.");
+		}
+
+		return CDevice_refresh(self);
+	}
+
 	PyObject* CDevice_str(CDevice* self)
 	{
 		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%U', nValue: %d, sValue: '%U'", self->ID, self->Name, self->nValue, self->sValue);
@@ -1066,6 +1079,7 @@ namespace Plugins {
 		Py_XDECREF(self->LastSeen);
 		Py_XDECREF(self->Transport);
 		Py_XDECREF(self->Protocol);
+		Py_XDECREF(self->Parent);
 
 		if (self->pTransport)
 		{
@@ -1131,6 +1145,10 @@ namespace Plugins {
 					Py_DECREF(self);
 					return NULL;
 				}
+
+				self->Parent = Py_None;
+				Py_INCREF(Py_None);
+
 				self->pPlugin = NULL;
 				self->pTransport = NULL;
 				self->pProtocol = NULL;
@@ -1394,6 +1412,12 @@ namespace Plugins {
 
 	PyObject * CConnection_str(CConnection * self)
 	{
+		std::string		sParent = "None";
+		if (self->Parent != Py_None)
+		{
+			sParent = PyUnicode_AsUTF8(((CConnection*)self->Parent)->Name);
+		}
+
 		if (self->pTransport)
 		{
 			time_t	tLastSeen = self->pTransport->LastSeen();
@@ -1401,16 +1425,16 @@ namespace Plugins {
 			localtime_r(&tLastSeen, &ltime);
 			char date[32];
 			strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
-			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s",
+			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s, Parent: '%s'",
 				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
 				(self->pTransport ? self->pTransport->TotalBytes() : -1),
-				(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date);
+				(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date, sParent.c_str());
 			return pRetVal;
 		}
 		else
 		{
-			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False",
-				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud);
+			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False, Parent: '%s'",
+				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud, sParent.c_str());
 			return pRetVal;
 		}
 	}

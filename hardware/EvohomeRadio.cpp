@@ -46,8 +46,8 @@ enum evoCommands
 	cmdExternalSensor = 0x0002,
 	cmdDeviceInfo = 0x0418,
 	cmdBatteryInfo = 0x1060,
+	cmdSync = 0x1F09,
 	//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
-	//0x1F09 //Unknown fixed message FF070D
 	//0x0005
 	//0x0006
 	//0x0404
@@ -102,6 +102,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string &UserContID)
 	RegisterDecoder(cmdExternalSensor, boost::bind(&CEvohomeRadio::DecodeExternalSensor, this, _1));
 	RegisterDecoder(cmdDeviceInfo, boost::bind(&CEvohomeRadio::DecodeDeviceInfo, this, _1));
 	RegisterDecoder(cmdBatteryInfo, boost::bind(&CEvohomeRadio::DecodeBatteryInfo, this, _1));
+	RegisterDecoder(cmdSync, boost::bind(&CEvohomeRadio::DecodeSync, this, _1));
 }
 
 
@@ -1421,7 +1422,11 @@ bool CEvohomeRadio::DecodeHeatDemand(CEvohomeMsg &msg)
 	}
 
 	if (nDevNo == 0xfc)//252...afaik this is also some sort of broadcast channel so maybe there is more to this device number than representing the boiler
+	{
 		szDevType = "Boiler"; //Boiler demand
+		if (msg.command == 0x0008) //discard this type of boiler demand message sent from the controller as they are always zero and the 0x3150 messages contain actual demand
+			return true;
+	}	
 	else if (nDevNo == 0xfa)//250
 	{
 		szDevType = "DHW"; //DHW zone valve
@@ -1430,14 +1435,15 @@ bool CEvohomeRadio::DecodeHeatDemand(CEvohomeMsg &msg)
 	else if (nDevNo == 0xf9)//249
 		szDevType = "Heating"; //Central Heating zone valve
 
-	Log(true, LOG_STATUS, "evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command);
-
 	if (msg.command == 0x0008)
 	{
 		if (nDevNo < 12)
 			nDevNo++; //Need to add 1 to give correct zone numbers
 		RXRelay(static_cast<uint8_t>(nDevNo), static_cast<uint8_t>(nDemand), msg.GetID(0));
 	}
+
+	Log(true, LOG_STATUS, "evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command); 
+	
 	return true;
 }
 
@@ -1608,6 +1614,28 @@ bool CEvohomeRadio::DecodeBatteryInfo(CEvohomeMsg &msg)
 	return true;
 }
 
+bool CEvohomeRadio::DecodeSync(CEvohomeMsg &msg) //0x1F09
+{
+	char tag[] = "SYNC"; //these messages communicate the time until the next scheduled controller message sequence which allows devices to sleep
+
+	if (msg.payloadsize != 1 && msg.payloadsize != 3)
+	{
+		Log(false, LOG_ERROR, "evohome: %s: unexpected payload size: %d", tag, msg.payloadsize);
+		return false;
+	}
+	else
+	{
+		if (msg.payloadsize == 1)
+		{
+			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x", tag, msg.payload[0]);
+		}
+		else
+		{
+			Log(true, LOG_STATUS, "evohome: %s: Type 0x%02x (%d)", tag, msg.payload[0], msg.payload[1] << 8 | msg.payload[2]);
+		}
+		return true;
+	}
+}
 
 void CEvohomeRadio::AddSendQueue(const CEvohomeMsg &msg)
 {

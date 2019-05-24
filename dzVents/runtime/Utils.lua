@@ -7,6 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
+	DZVERSION = '2.4.21',
 }
 
 function self.fileExists(name)
@@ -17,6 +18,25 @@ function self.fileExists(name)
 	else
 		return false
 	end
+end
+
+function self.stringSplit(text, sep)
+	local sep = sep or '%s'
+	local t = {}
+	for str in string.gmatch(text, "([^"..sep.."]+)") do
+		table.insert(t, str)
+	end
+	return t
+end
+
+function self.inTable(searchTable, element)
+	local res = res
+	for k, v in pairs(searchTable) do
+		if type(v) == 'table' then res = self.inTable(v, element) end
+		res = res or (( tostring(k) == tostring(element) and 'key' ) or ( tostring(v) == tostring(element) and 'value' ))
+		if res then return res end
+	end
+	return false
 end
 
 function self.osExecute(cmd)
@@ -46,10 +66,23 @@ function self.urlEncode(str, strSub)
 	return str
 end
 
-function self.fromJSON(json)
+function self.urlDecode(str, strSub)
+
+	local hex2Char = function(x)
+		return string.char(tonumber(x, 16))
+	end
+
+	return str:gsub("%%(%x%x)", hex2Char)
+end
+
+function self.fromJSON(json, fallback)
 
 	local parse = function(j)
 		return jsonParser:decode(j)
+	end
+
+	if json == nil then
+		return fallback
 	end
 
 	if (jsonParser == nil) then
@@ -63,7 +96,7 @@ function self.fromJSON(json)
 	end
 
 	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
-	return nil
+	return fallback
 
 end
 
@@ -88,7 +121,6 @@ function self.toJSON(luaTable)
 
 end
 
-
 function self.log(msg, level)
 
 	if (level == nil) then level = self.LOG_INFO end
@@ -103,7 +135,7 @@ function self.log(msg, level)
 
 
 	if (level == self.LOG_ERROR) then
-		marker = marker .. 'Error (2.4.9): '
+		marker = marker .. 'Error (' .. self.DZVERSION .. '): '
 	elseif (level == self.LOG_DEBUG) then
 		marker = marker .. 'Debug: '
 	elseif (level == self.LOG_INFO or level == self.LOG_MODULE_EXEC_INFO) then
@@ -154,6 +186,55 @@ function self.rgbToHSB(r, g, b)
 
 	local isWhite = (hsb.s < 20)
 	return hsb.h, hsb.s, hsb.b, isWhite
+end
+
+function self.dumpTable(t, level)
+	local level = level or "> "
+	for attr, value in pairs(t or {}) do
+		if (type(value) ~= 'function') then
+			if (type(value) == 'table') then
+				self.print(level .. attr .. ':')
+				self.dumpTable(value, level .. '	')
+			else
+				self.print(level .. attr .. ': ' .. tostring(value))
+			end
+		else
+			self.print(level .. attr .. '()')
+		end
+	end
+end
+
+function self.hsbToRGB(h, s, v)
+	local r, b, g, C, V, S, X, m, r1, b1, g1
+
+	local function inRange(value, low, high)
+		return (value >= low and value <= high)
+	end
+
+	local function getRGB(C,X,h)
+		if h >= 300 and h < 360 then return C, 0, X end
+		if h >= 240  then return X, 0, C end
+		if h >= 180  then return 0, X, C end
+		if h >= 120  then return 0, C, X end
+		if h >=  60  then return X, C, 0 end
+		return C, X, 0
+	end
+
+	if s > 1 then S = s / 100 else S = s end
+	if v > 1 then V = v / 100 else V = v end
+	if not(inRange(h,0,360)) then h = h % 360 end
+
+	C = V * S
+	X = C * (1 - (h / 60 % 2) - 1)
+
+	m = V - C
+
+	r1, g1, b1 = getRGB(C, X, h)
+	r = (r1+m) * 255
+	g = (g1+m) * 255
+	b = (b1+m) * 255
+	return r, g, b
+
 end
 
 return self

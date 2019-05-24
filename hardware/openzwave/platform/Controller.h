@@ -38,11 +38,22 @@ namespace OpenZWave
 {
 	class Driver;
 
+	/** \defgroup Platform Platform Abstraction Support
+	 *
+	 * These files abstract differences in platforms that OZW supports
+	 *
+	 */
+
+	/** \brief Represents a USB Controller
+	 * \ingroup Platform
+	 *
+	 * Controller is derived from Stream rather than containing one, so that
+	 * we can use its Wait abilities without having to duplicate them here.
+	 * The stream is used for input.  Buffering of output is handled by the OS.
+	 */
+
 	class Controller: public Stream
 	{
-		// Controller is derived from Stream rather than containing one, so that
-		// we can use its Wait abilities without having to duplicate them here.
-		// The stream is used for input.  Buffering of output is handled by the OS. 
 
 	public:
 		/**

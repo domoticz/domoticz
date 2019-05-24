@@ -1,0 +1,72 @@
+<!--
+Simon S100 Socket iO
+https://products.z-wavealliance.org/products/1869
+-->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the device, but it does not respond to requests -->
+  <CommandClass id="38">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="9" instance="1" label="Association LED" max="1" min="255" size="1" type="list" value="1">
+      <Help>
+				Used during Association process by Simon Shortcut Switch IO to turn ON the main LED of all devices already associated to this shortcut.
+			</Help>
+      <Item label="Turns the main LED OFF" value="0"/>
+      <Item label="Turns the main LED ON" value="255"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Delay ON" max="254" min="0" type="byte" value="0">
+      <Help>
+				This parameter allows to choose delay from activation request until load activation.
+				Value 0 - Instantly (default).
+				Values from 1 to 127 - 1 second to 127 seconds in 1 second resolution.
+				Values from 128 to 254 - 1 minute to 127 minutes in 1 minute resolution.
+			</Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Activation Time" max="254" min="0" type="byte" value="0">
+      <Help>
+				This parameter allows to chose the time that load performs activated after complete an activation process.
+				Value 0 - Instantly (default).
+				Values from 1 to 127 - 1 second to 127 seconds in 1 second resolution.
+				Values from 128 to 254 - 1 minute to 127 minutes in 1 minute resolution.
+			</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Behavior of LED in Repose" max="255" min="0" size="1" type="list" value="0">
+      <Help>This parameter allows to choose operating for Main LED as identification at 20%..</Help>
+      <Item label="LED OFF" value="0"/>
+      <Item label="LED ON at 20% of maximum level" value="255"/>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Lock Input" max="255" min="0" size="1" type="list" value="0">
+      <Help>This parameter locks the pushbutton and wired input actions.</Help>
+      <Item label="Unlock the direct control of load" value="0"/>
+      <Item label="Lock the direct control of load" value="255"/>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Reset Default" max="39015" min="39015" size="2" type="list" value="0" write_only="true">
+      <Help>Parameters, Groups, and Z-Wave status are restored to default (Only writable).</Help>
+      <Item label="Device performs a factory default Reset" value="39015"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Activation Time" max="254" min="0" type="byte" value="0">
+      <Help>
+				This parameter allows to chose the time that load performs activated after complete an activation process.
+				Value 0 - Instantly (default).
+				Values from 1 to 127 - 1 second to 127 seconds in 1 second resolution.
+				Values from 128 to 254 - 1 minute to 127 minutes in 1 minute resolution.
+			</Help>
+    </Value>
+  </CommandClass>
+  <!-- -->
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="3"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Enerwave ZW15S -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="byte" index="1" genre="config" label="Toggle LED mode" min="0" max="1" value="0" size="1">

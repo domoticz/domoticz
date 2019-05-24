@@ -1,45 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- GE(Jasco) 14294 Z-Wave Plus Dimmer Switch -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/2105 -->
-	<CommandClass id="112">
-		<Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" value="0" size="1">
-			<Help>Sets when the LED on the switch is lit.</Help>
-			<Item label="LED on when light off" value="0" />
-			<Item label="LED on when light on" value="1" />
-			<Item label="LED always off" value="2" />
-		</Value>
-		<Value type="list" index="4" genre="config" label="Invert Switch" min="0" max="1" size="1" value="0">
-			<Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
-			<Item label="No" value="0" />
-			<Item label="Yes" value="1" />
-		</Value>
-		<!-- Both the number of steps (or levels) that the dimmer will change and the timing of the steps can be modified to suit personal preferences. The timing of the steps can be adjusted in 10 millisecond intervals. As an example, the default setting for parameter 8 is 3. This means that the lighting level will change every 30 milliseconds when the Dim Command is received. A value of 255 would mean that the level would change every 2.55 seconds. Combined, the two parameters allow dim rate adjustments from 10 milliseconds to 4.2 minutes to go from maximum-to-minimum or minimum-to-maximum brightness levels. -->
-		<Value type="byte" index="7" genre="config" label="Z-Wave Command Dim Step" units="" min="1" max="99" value="1">
-			<Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
-		</Value>
-		<Value type="short" index="8" genre="config" label="Z-Wave Command Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
-			<Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
-		</Value>
-		<Value type="byte" index="9" genre="config" label="Local Control Dim Step" units="" min="1" max="99" value="1">
-			<Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
-		</Value>
-		<Value type="short" index="10" genre="config" label="Local Control Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
-			<Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
-		</Value>
-		<Value type="byte" index="11" genre="config" label="ALL ON/ALL OFF Dim Step" units="" min="1" max="99" value="1">
-			<Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
-		</Value>
-		<Value type="short" index="12" genre="config" label="ALL ON/ALL OFF Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
-			<Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="3">
-			<Group index="1" max_associations="5" label="Lifeline" />
-			<Group index="2" max_associations="5" label="Basic - Load" />
-			<Group index="3" max_associations="5" label="Basic - Double Tap" />
-		</Associations>
-	</CommandClass>
+<!-- GE(Jasco) 14294 Z-Wave Plus Dimmer Switch --><!-- Configuration Parameters - per
+             http://products.z-wavealliance.org/products/1442 --><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3038:4944</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14294-dimmer.png</MetaDataItem>
+    <MetaDataItem id="3038" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1442/</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Dimmer</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1442/14294-1 EnSpFr QSG.pdf</MetaDataItem>
+    <MetaDataItem id="3038" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Quickly press ON (Top) button three (3) times then immediately press the OFF (Bottom) button three (3) times. The LED will flash ON/OFF 5 times when completed successfully.
+Note: This should only be used in the event your networks primary controller is missing or otherwise inoperable. </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-wave certified controller to include a device to the Z-wave network.
+2. Once the controller is ready to include your device, press and release the top or bottom of the wireless smart switch(rocker) to include it in the network.</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE Z-Wave Wireless Lighting Control In-Wall Smart Dimmer. The dimmer enables wireless control of on/off and dim functions of hard-wired dimmable LED/CFL and incandescent lighting. The dimmer replaces your current light switch, uses your existing wiring, and provides Z-Wave wireless and in-wall control of overhead lighting. Use the dimmer feature to customize the lighting output and create the perfect ambiance for any room. Providing ultimate flexibility, the In-Wall Smart Dimmer allows you to operate the switch by itself or easily integrate the switch three-way or four-way wiring configurations by adding the GE Add-On Switch. Single Pole wiring configuration controls the light from one location. Three-way wiring configuration controls the light from two separate locations. Four-way wiring configuration controls the light from three separate locations. The GE Add-On Switch is required for three-way or four-way installations. The dimmer includes an LED indicator light to easily locate the switch in a dark room. Take control of your home lighting with GE Z-Wave Wireless Lighting Controls!</MetaDataItem>
+    <MetaDataItem id="3038" name="Identifier" type="4944">14294 (ZW3005)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-wave certified controller to exclude a device from the Z-wave network.
+2. Once the controller is ready to Exclude your device, press and release the top or bottom of the wireless smart switch(rocker) to exclude it from the network. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1442/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert Switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <!-- Both the number of steps (or levels) that the dimmer will change and the timing of the steps can be modified to suit personal preferences. The timing of the steps can be adjusted in 10 millisecond intervals. As an example, the default setting for parameter 8 is 3. This means that the lighting level will change every 30 milliseconds when the Dim Command is received. A value of 255 would mean that the level would change every 2.55 seconds. Combined, the two parameters allow dim rate adjustments from 10 milliseconds to 4.2 minutes to go from maximum-to-minimum or minimum-to-maximum brightness levels. -->
+    <Value genre="config" index="7" label="Z-Wave Command Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="8" label="Z-Wave Command Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="9" label="Local Control Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="10" label="Local Control Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="11" label="ALL ON/ALL OFF Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

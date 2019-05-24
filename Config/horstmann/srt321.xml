@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- https://products.z-wavealliance.org/products/1563 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- The thermostat does not properly report its operating modes -->
   <CommandClass id="64">
     <SupportedModes>
@@ -8,23 +7,25 @@
       <Mode index="1" label="Heat"/>
     </SupportedModes>
   </CommandClass>
-
   <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
-  <CommandClass id="67" base="0"/>
-
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" index="1" genre="config" label="Temperature sensor" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="1" label="Temperature sensor" max="1" min="0" size="1" type="list" value="0">
       <Help>Enables Temperature Sensor</Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="255"/>
     </Value>
-    <Value type="list" index="2" genre="config" label="Temperature Scale" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="2" label="Temperature Scale" max="1" min="0" size="1" type="list" value="0">
       <Help></Help>
       <Item label="Celsius" value="0"/>
       <Item label="Fahrenheit" value="255"/>
     </Value>
-    <Value type="byte" index="3" genre="config" label="Delta Temperature" value="10">
+    <Value genre="config" index="3" label="Delta Temperature" type="byte" value="10">
       <Help>
         Delta Temperature in 0.1 degree steps.
       </Help>
@@ -33,13 +34,12 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="6">
-      <Group index="1" max_associations="1" label="Lifeline"/>
-      <Group index="2" max_associations="4" label="Thermostat Mode Set"/>
-      <Group index="3" max_associations="4" label="Binary Switch Set"/>
-      <Group index="4" max_associations="4" label="Unsolicited Battery Level Reports"/>
-      <Group index="5" max_associations="4" label="Thermostat Set Point Reports"/>
-      <Group index="6" max_associations="4" label="Unsolicited Sensor Multilevel Reports" />
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Thermostat Mode Set" max_associations="4"/>
+      <Group index="3" label="Binary Switch Set" max_associations="4"/>
+      <Group index="4" label="Unsolicited Battery Level Reports" max_associations="4"/>
+      <Group index="5" label="Thermostat Set Point Reports" max_associations="4"/>
+      <Group index="6" label="Unsolicited Sensor Multilevel Reports" max_associations="4"/>
     </Associations>
   </CommandClass>
-
 </Product>

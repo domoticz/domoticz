@@ -1,4 +1,4 @@
-<Product xmlns="http://code.google.com/p/open-zwave/">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!-- Telldus TZWP-102 On/Off -->
     <!-- Configuration Parameters -->
     <CommandClass id="112">

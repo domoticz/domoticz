@@ -1,4 +1,4 @@
-	local GLOBAL_DATA_MODULE = 'global_data'
+local GLOBAL_DATA_MODULE = 'global_data'
 local GLOBAL = false
 local LOCAL = true
 
@@ -31,11 +31,17 @@ local function EventHelpers(domoticz, mainMethod)
 	local settings = {
 		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
 		['Domoticz url'] = _url,
-		['url'] = url,
-		['webRoot'] = tostring(webRoot),
-		['serverPort'] = globalvariables['domoticz_listening_port'] or '8080'
+		url = url,
+		webRoot = tostring(webRoot),
+		serverPort = globalvariables['domoticz_listening_port'] or '8080',
+		dzVentsVersion = globalvariables.dzVents_version,
+		domoticzVersion = globalvariables.domoticz_version,
+		location = {
+			name = utils.urlDecode(globalvariables['domoticz_title'] or "Domoticz"),
+			latitude = globalvariables.latitude or 0,
+			longitude = globalvariables.longitude or 0,
+		}
 	}
-
 
 	if (webRoot ~= '' and webRoot ~= nil) then
 		settings['Domoticz url'] = settings['Domoticz url'] .. '/' .. tostring(webRoot)
@@ -438,14 +444,13 @@ local function EventHelpers(domoticz, mainMethod)
 		table.insert(bindings[event], module)
 	end
 
-	function self.getEventBindings(mode, testTime)
-		local bindings = {}
+	local function loadEventScripts()
+		local scripts = {}
 		local errModules = {}
 		local internalScripts
-		local hasInternals = false
-		local ok, diskScripts, externalNames, moduleName, i, event, j, device, err
+		local ok, diskScripts, externalNames, moduleName, i, event, j, err
 		local modules = {}
-
+		local scripts = {}
 
 		ok, diskScripts, externalNames = pcall(self.scandir, _G.scriptsFolderPath, 'external')
 
@@ -488,9 +493,7 @@ local function EventHelpers(domoticz, mainMethod)
 			table.insert(modules, 1, globalModule)
 		end
 
-		if (mode == nil) then mode = 'device' end
-
-		for i, moduleInfo in pairs(modules) do
+		for i, moduleInfo in ipairs(modules) do
 
 			local module, skip
 
@@ -550,100 +553,8 @@ local function EventHelpers(domoticz, mainMethod)
 								module.type = moduleInfo.type
 								module.dataFileName = '__data_' .. moduleName
 								module.dataFilePath = _G.dataFolderPath .. '/__data_' .. moduleName .. '.lua'
-								for j, event in pairs(module.on) do
-									if (mode == 'timer') then
-										if (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
-											-- { ['timer'] = { 'every minute ', 'every hour' } }
-											local triggered, def = self.processTimeRules(event)
-											if (triggered) then
-												-- this one can be executed
-												module.trigger = def
-												table.insert(bindings, module)
-											end
-										end
-									elseif (mode == 'device') then
-										if (event ~= 'timer'
-											and j ~= 'timer'
-											and j ~= 'variable'
-											and j ~= 'variables'
-											and j ~= 'security'
-											and j ~= 'scenes'
-											and j ~= 'groups'
-										) then
 
-											if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
-
-												-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
-
-												for devIdx, devName in pairs(event) do
-
-													-- detect if devName is of the form ['devB'] = { 'every hour' }
-													if (type(devName) == 'table') then
-														local triggered, def = self.processTimeRules(devName, testTime)
-														if (triggered) then
-															addBindingEvent(bindings, devIdx, module)
-														end
-													else
-														-- a single device name (or id)
-														addBindingEvent(bindings, devName, module)
-													end
-												end
-											end
-										end
-									elseif (mode == 'scenegroups') then
-										if (event ~= 'timer'
-											and j ~= 'timer'
-											and j ~= 'variable'
-											and j ~= 'variables'
-											and j ~= 'security'
-											and j ~= 'devices'
-										) then
-
-											if (type(j) == 'string' and (j == 'scenes' or j == 'groups') and type(event) == 'table') then
-
-												-- { ['scenes'] = { 'scA', ['scB'] = { ..timedefs }, .. }
-
-												for devIdx, scgrpName in pairs(event) do
-
-													-- detect if scgrpName is of the form ['devB'] = { 'every hour' }
-													if (type(scgrpName) == 'table') then
-														local triggered, def = self.processTimeRules(scgrpName, testTime)
-														if (triggered) then
-															addBindingEvent(bindings, devIdx, module)
-														end
-													else
-														-- a single scene or group name (or id)
-														addBindingEvent(bindings, scgrpName, module)
-													end
-												end
-											end
-										end
-									elseif (mode == 'variable') then
-										if (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
-											-- { ['variables'] = { 'varA', 'varB' }
-											for varIdx, varName in pairs(event) do
-												addBindingEvent(bindings, varName, module)
-											end
-										end
-									elseif (mode == 'security') then
-										if (type(j) == 'string' and j == 'security' and type(event) == 'table') then
-
-											local triggered, def = self.checkSecurity(event, self.domoticz.security)
-											if (triggered) then
-												table.insert(bindings, module)
-												module.trigger = def
-											end
-
-										end
-									elseif (mode == 'httpResponse') then
-										if (type(j) == 'string' and j == 'httpResponses' and type(event) == 'table') then
-											-- { ['httpResponses'] = { 'callbackA', 'callbackB' }
-											for i, callbackName in pairs(event) do
-												addBindingEvent(bindings, callbackName, module)
-											end
-										end
-									end
-								end
+								table.insert(scripts, module)
 							else
 								utils.log(logScript .. moduleName .. '.lua has no "on" and/or "execute" section, not a dzVents module. Skipping', utils.LOG_DEBUG)
 								--table.insert(errModules, moduleName)
@@ -660,7 +571,123 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 		end
 
-		return bindings, errModules
+		return scripts, errModules
+	end
+
+	function self.getEventBindings(mode, testTime)
+		local bindings = {}
+		local ok, i, event, j, device, err
+		local modules = {}
+
+		if not self.scripts then
+		   self.scripts, self.errModules = loadEventScripts()
+		end
+
+		if (mode == nil) then mode = 'device' end
+
+		for i, module in pairs(self.scripts) do
+
+			local logScript = (module.type == 'external' and 'Script ' or 'Internal script ')
+
+			for j, event in pairs(module.on) do
+				if (mode == 'timer') then
+					if (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
+
+						-- { ['timer'] = { 'every minute ', 'every hour' } }
+
+						local triggered, def = self.processTimeRules(event)
+						if (triggered) then
+							-- this one can be executed
+							module.trigger = def
+						table.insert(bindings, module)
+						end
+					end
+				elseif (mode == 'device') then
+					if (event ~= 'timer'
+						and j ~= 'timer'
+						and j ~= 'variable'
+						and j ~= 'variables'
+						and j ~= 'security'
+						and j ~= 'scenes'
+						and j ~= 'groups'
+					) then
+
+					if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
+
+							-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
+
+							for devIdx, devName in pairs(event) do
+
+								-- detect if devName is of the form ['devB'] = { 'every hour' }
+									if (type(devName) == 'table') then
+									local triggered, def = self.processTimeRules(devName, testTime)
+									if (triggered) then
+										addBindingEvent(bindings, devIdx, module)
+									end
+								else
+									-- a single device name (or id)
+									addBindingEvent(bindings, devName, module)
+								end
+							end
+						end
+					end
+				elseif (mode == 'scenegroups') then
+					if (event ~= 'timer'
+						and j ~= 'timer'
+						and j ~= 'variable'
+						and j ~= 'variables'
+						and j ~= 'security'
+						and j ~= 'devices'
+					) then
+
+						if (type(j) == 'string' and (j == 'scenes' or j == 'groups') and type(event) == 'table') then
+
+							-- { ['scenes'] = { 'scA', ['scB'] = { ..timedefs }, .. }
+
+							for devIdx, scgrpName in pairs(event) do
+
+								-- detect if scgrpName is of the form ['devB'] = { 'every hour' }
+								if (type(scgrpName) == 'table') then
+									local triggered, def = self.processTimeRules(scgrpName, testTime)
+									if (triggered) then
+										addBindingEvent(bindings, devIdx, module)
+									end
+								else
+									-- a single scene or group name (or id)
+									addBindingEvent(bindings, scgrpName, module)
+								end
+							end
+						end
+					end
+				elseif (mode == 'variable') then
+					if (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
+						-- { ['variables'] = { 'varA', 'varB' }
+						for varIdx, varName in pairs(event) do
+							addBindingEvent(bindings, varName, module)
+						end
+					end
+				elseif (mode == 'security') then
+					if (type(j) == 'string' and j == 'security' and type(event) == 'table') then
+
+						local triggered, def = self.checkSecurity(event, self.domoticz.security)
+						if (triggered) then
+							table.insert(bindings, module)
+							module.trigger = def
+						end
+
+					end
+				elseif (mode == 'httpResponse') then
+					if (type(j) == 'string' and j == 'httpResponses' and type(event) == 'table') then
+						-- { ['httpResponses'] = { 'callbackA', 'callbackB' }
+						for i, callbackName in pairs(event) do
+							addBindingEvent(bindings, callbackName, module)
+						end
+					end
+				end
+			end
+		end
+
+		return bindings, self.errModules
 	end
 
 	function self.getTimerHandlers()

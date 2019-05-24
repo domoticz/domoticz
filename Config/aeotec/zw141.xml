@@ -4,7 +4,7 @@ Aeotec ZW141 Nano Shutter, base on Engineering Spec 1/4/2018
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
     <!-- Configuration Parameters -->
     <CommandClass id="112">
 		<Value type="byte" index="35" genre="config" label="Set the moving time" min="1" max="127" units="seconds" value="30">

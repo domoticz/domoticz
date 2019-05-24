@@ -1,33 +1,43 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- Vision Security ZM 1602+ DC/AC Power Siren -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" index="1" genre="config" label="Siren Strobe Mode" min="0" max="2" value="0" size="1">
-			<Help>Defines the reaction of the siren: turn either Siren sound, Strobe light, or both when triggered</Help>
-			<Item label="All Enable" value="0" />
-			<Item label="Siren Only" value="1" />
-            <Item label="Strobe Only" value="2" />
-		</Value>
-
-        <Value type="list" index="2" genre="config" label="Alarm Auto Stop Time" min="0" max="3" value="0" size="1">
-			<Help>Defines the duration of siren time when triggered</Help>
-			<Item label="30s" value="0" />
-			<Item label="60s" value="1" />
-            <Item label="120s" value="2" />
-            <Item label="Will Not Automatically Stop" value="3" />
-		</Value>
-    </CommandClass>
-    <!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-    <!--  Binary report value when the Magnet switch is opened/closed -->
-	<CommandClass id="37" setasreport="true"/>
-    <!--  Battery set as report -->
-	<CommandClass id="128" setasreport="true"/>
-    <!-- COMMAND_CLASS_ASSOCIATION -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Lifeline"/>
-		</Associations>
-	</CommandClass>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Siren Strobe Mode" max="2" min="0" size="1" type="list" value="0">
+      <Help>Defines the reaction of the siren: turn either Siren sound, Strobe light, or both when triggered</Help>
+      <Item label="All Enable" value="0"/>
+      <Item label="Siren Only" value="1"/>
+      <Item label="Strobe Only" value="2"/>
+    </Value>
+    <Value genre="config" index="2" label="Alarm Auto Stop Time" max="3" min="0" size="1" type="list" value="0">
+      <Help>Defines the duration of siren time when triggered</Help>
+      <Item label="30s" value="0"/>
+      <Item label="60s" value="1"/>
+      <Item label="120s" value="2"/>
+      <Item label="Will Not Automatically Stop" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Binary report value when the Magnet switch is opened/closed -->
+  <CommandClass id="37">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!--  Battery set as report -->
+  <CommandClass id="128">
+    <Compatibility>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

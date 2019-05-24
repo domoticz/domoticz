@@ -3,7 +3,7 @@
 GoControl in-wall lighting dimmer switch WD500Z5-1 
 https://products.z-wavealliance.org/products/1883
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="list" index="3" genre="config" label="Night Light" size="1" value="0">

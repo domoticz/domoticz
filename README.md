@@ -24,14 +24,10 @@ Your first place for support is the [Domoticz Forum](http://www.domoticz.com/for
 The Github issue tracker is NOT for end-user support.
 
 ## Donations
-Donations are more than welcome and will be used to buy new hardware, devices, sensors and hosting.
-If you like the product or encourage the development, please use one of the following links below:
+Donations are more than welcome and will be used to buy new hardware, devices, sensors, hosting and coffee.
+If you like the product or encourage the development, please use thelink:
 
-- <img src="https://www.domoticz.com/images/pp.svg" width="24" height="24" alt="PP"/> <a href="https://www.paypal.com/donate?token=IEDsnDBnVYvVJIueAqAtgXWdJ0T5NLes6DyxYLsqmwPIlWNaHuJJAowIU1EAtokuq9tqwW&country.x=US&locale.x=US">Donate via PayPal</a><br/>
-- <img src="https://www.domoticz.com/images/btc.svg" width="24" height="24" alt="BTC"/> [Bitcoin](https://commerce.coinbase.com/checkout/8b08c50d-86b9-45f1-b851-0472e908534c): <code>165XAShSbHvskNtypUHGuQuexBi365VhtH</code></br>
-- <img src="https://www.domoticz.com/images/bch.svg" width="24" height="24" alt="BCH"/> [Bitcoin Cash](https://commerce.coinbase.com/checkout/8b08c50d-86b9-45f1-b851-0472e908534c): <code>qp79znyefrfj77zpmuyp58l94zvqfakmjvge5xk7gx</code></br>
-- <img src="https://www.domoticz.com/images/eth.svg" width="24" height="24" alt="ETH"/> [Ethereum](https://commerce.coinbase.com/checkout/8b08c50d-86b9-45f1-b851-0472e908534c): <code>0x09a70cc7db9529113d84a932b2398c57442c1c5e</code>
-- <img src="https://www.domoticz.com/images/ltc.svg" width="24" height="24" alt="LTC"/> [Litecoin](https://commerce.coinbase.com/checkout/8b08c50d-86b9-45f1-b851-0472e908534c): <code>LTfPH4sqLcbf86nzC3uTCN6VwQ1EqBTxvS</code>
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=6S2CXM772QY84&currency_code=EUR&source=url)
 
 # More information
 * Website: http://www.domoticz.com
@@ -42,5 +38,7 @@ If you like the product or encourage the development, please use one of the foll
 
 Status | Operating system
 ------------ | -------------
-![image](https://travis-ci.org/domoticz/domoticz.svg?branch=master "Linux Build Status") | Linux x86_64
-![image](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true "Windows Build Status") | Windows
+[![Status Linux](https://travis-ci.org/domoticz/domoticz.svg?branch=master)](https://travis-ci.org/domoticz/domoticz) | Linux x86_64
+<!---
+[![Status Windows](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows
+-->

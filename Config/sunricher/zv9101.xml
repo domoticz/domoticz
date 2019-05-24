@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+    <!--
+    Nexa/Tronika ZV-9101
+    https://www.nexa.se/wp-content/uploads/2019/02/ZV-9101_manual.pdf
+    -->
+
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="2" label="Saving state before power failure" size="1" value="1">
+        <Help>
+              Saving state before power failure. Default Not saved.
+        </Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State NOT saved at power failure, all outputs are set to ON upon power restore" value="1"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="3" label="Send the basic report" size="1" value="1">
+        <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
+              When value set as 1, re-power on the dimmer, it will send Basic report automatically.
+            Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="4" label="Fade time" min="0" max="255" value="1">
+        <Help>Fade time (units between 1-127 represent 1-127 seconds.
+            Units Between 128-244 represent minutes, 128 = 1 minute, 129 = 2 minutes.
+              This value has the same function as Duration of Multilevel).
+            Default 1.
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="5" label="Setting minimum brightness value" min="0" max="50" value="0">
+        <Help>Setting minimum brightness value.
+              Valid value: 0 - 50, the bigger the value is, the higher the loads minimum brightness is.
+              Note: when configure this value, the value of Multilevel will be configured as 1 automatically so that users can preview the corresponding effect of minimum brightness value
+        </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="6" label="Choose MOSFET driving type" size="1" value="1">
+        <Help>
+          Choose MOSFET driving type". Default trailing edge.
+        </Help>
+      <Item label="Trailing edge" value="0"/>
+      <Item label="Leading edge" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="7" label="Enable/disable external switch to be added to and removed from a network" size="1" value="1">
+        <Help>Enable/disable external switch to be added to and removed from a network.
+              When enables this function, triple press the external switch within 1.5 seconds to be added to or removed from a net-work.
+            Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="8" label="On/Off"/>
+      <Group index="3" max_associations="8" label="Dimmer"/>
+    </Associations>
+  </CommandClass>
+</Product>

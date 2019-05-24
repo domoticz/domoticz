@@ -37,6 +37,7 @@ namespace OpenZWave
 	class WaitImpl;
 
 	/** \brief Platform-independent definition of Wait objects.
+	 * \ingroup Platform
 	 */
 	class Wait: public Ref
 	{

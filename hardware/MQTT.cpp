@@ -129,7 +129,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	std::vector<std::vector<std::string> > result;
 	
 	uint64_t idx = 0;
-	std::string Var1,Var2;
 
 	bool ret = jReader.parse(qMessage, root);
 	if ((!ret) || (!root.isObject()))
@@ -172,8 +171,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				_log.Log(LOG_ERROR, "MQTT: unknown idx received! (idx %" PRIu64 ")", idx);
 				return;
 			}
-			Var1 = result[0][0];
-			Var2 = result[0][1];
 		}
 		
 		//Perform Actions
@@ -391,7 +388,17 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		else if (szCommand == "setuservariable")
 		{
 			std::string varvalue = root["value"].asString();
-			m_sql.UpdateUserVariable(root["idx"].asString(), Var1, Var2, varvalue, true);
+
+			idx = (uint64_t)root["idx"].asInt64();
+			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
+			std::string sVarName = result[0][0];
+			_eUsrVariableType varType = (_eUsrVariableType)atoi(result[0][1].c_str());
+
+			std::string errorMessage;
+			if (!m_sql.UpdateUserVariable(root["idx"].asString(), sVarName, varType, varvalue, true, errorMessage))
+			{
+				_log.Log(LOG_ERROR, "MQTT: Error setting uservariable (%s)", errorMessage.c_str());
+			}
 		}
 		else if (szCommand == "addlogmessage")
 		{

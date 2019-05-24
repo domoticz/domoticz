@@ -1,16 +1,18 @@
 <?xml version='1.0'?>
 <xs:schema
   xmlns:xs='http://www.w3.org/2001/XMLSchema'
-  targetNamespace='http://code.google.com/p/open-zwave/'
-  xmlns:Product='http://code.google.com/p/open-zwave/'
+  targetNamespace='https://github.com/OpenZWave/open-zwave'
+  xmlns:Product='https://github.com/OpenZWave/open-zwave'
   elementFormDefault='qualified'>
 
  <xs:element name='Product'>
   <xs:complexType>
-   <xs:sequence>
+   <xs:choice maxOccurs="unbounded">
     <xs:element ref='Product:Protocol' minOccurs='0' maxOccurs='1'/>
+    <xs:element ref='Product:MetaData' minOccurs='0' maxOccurs='1'/>
     <xs:element ref='Product:CommandClass' minOccurs='0' maxOccurs='unbounded'/>
-   </xs:sequence>
+   </xs:choice>
+   <xs:attribute name='Revision' type='xs:integer' use='required'/>
   </xs:complexType>
  </xs:element>
 
@@ -54,97 +56,52 @@
 
  <xs:element name='CommandClass'>
   <xs:complexType>
-   <xs:sequence>
+   <xs:choice maxOccurs="unbounded">
     <xs:element ref='Product:Instance' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:Associations' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:Value' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:TriggerRefreshValue' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:SupportedModes' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:SensorMap' minOccurs='0' maxOccurs='unbounded'/>
-   </xs:sequence>
+    <xs:element ref='Product:Compatibility' minOccurs='0' maxOccurs='1'/>
+   </xs:choice>
    <xs:attribute name='id' type='xs:string' use='required'/>
    <xs:attribute name='action' type='xs:string' use='optional'/>
-   <xs:attribute name='base' type='xs:string' use='optional'/>
-   <xs:attribute name='override_precision' type='xs:string' use='optional'/>
-   <xs:attribute name='scenecount' type='xs:string' use='optional'/>
-   <xs:attribute name='create_vars' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='name' type='xs:string' use='optional'/>
-   <xs:attribute name='setasreport' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='ignoremapping' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='getsupported' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='classgetsupported' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='coloridxbug' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='forceUniqueEndpoints' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='ForceInstances' use='optional'>
-    <xs:simpleType>
-     <xs:restriction base='xs:string'>
-      <xs:enumeration value='true'/>
-      <xs:enumeration value='false'/>
-     </xs:restriction>
-    </xs:simpleType>
-   </xs:attribute>
-   <xs:attribute name='version' type='xs:string' use='optional'/>
-   <xs:attribute name='request_flags' type='xs:string' use='optional'/>
-   <xs:attribute name='endpoints' type='xs:string' use='optional'/>
-   <xs:attribute name='mapping' type='xs:string' use='optional'/>
-   <xs:attribute name='ignoreUnsolicitedMultiChnCapReport' type='xs:string' use='optional'/>
-   <xs:attribute name='codes' type='xs:string' use='optional'/>
-   <xs:attribute name='colorchannels' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Compatibility'>
+  <xs:complexType>
+	  <xs:choice maxOccurs="unbounded">
+		   <xs:element name="GetSupported" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="CreateVars" type="xs:boolean" minOccurs='0'/>
+ 		   <xs:element name="RefreshOnWakeup" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="IgnoreMapping" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="SetAsReport" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="ColorIndexBug" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="ForceInstances" type="xs:boolean" minOccurs='0'/>
+ 		   <xs:element name="IgnoreMCCapReports" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="MapRootToEndpoint" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="ForceUniqueEndpoints" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="AltTypeInterpretation" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="ExposeRawUserCodes" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="ClassGetVersionSupported" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="ForceUniqueEndpoints" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="ForceUniqueEndpoints" type="xs:boolean" minOccurs='0'/>
+		   <xs:element name="Base" type="xs:integer" minOccurs='0'/>
+		   <xs:element name="OverridePrecision" type="xs:integer" minOccurs='0'/>
+		   <xs:element name="ForceVersion" type="xs:integer" minOccurs='0'/>
+		   <xs:element name="Mapping" type="xs:integer" minOccurs='0'/>
+		   <xs:element name="EndpointHint" type="xs:integer" minOccurs='0'/>
+		   <xs:element name="DelayNoMoreInfo" type="xs:integer" minOccurs='0'/>
+	  </xs:choice>
   </xs:complexType>
  </xs:element>
 
  <xs:element name='Instance'>
   <xs:complexType>
    <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='optional'/>
   </xs:complexType>
  </xs:element>
 
@@ -234,10 +191,12 @@
     
  <xs:element name='Value'>
   <xs:complexType>
-   <xs:sequence>
-    <xs:element ref='Product:Help' minOccurs='0' maxOccurs='1'/>
+   <xs:choice maxOccurs="unbounded" >
+    <xs:element ref='Product:Help' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Product:Label' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:Item' minOccurs='0' maxOccurs='unbounded'/>
-   </xs:sequence>
+    <xs:element ref="Product:BitSet" minOccurs='0' maxOccurs='unbounded'/>
+   </xs:choice>
    <xs:attribute name='type' use='required'>
      <xs:simpleType>
        <xs:restriction base='xs:string'>
@@ -251,6 +210,7 @@
 	 <xs:enumeration value='string'/>
 	 <xs:enumeration value='button'/>
 	 <xs:enumeration value='raw'/>
+	 <xs:enumeration value='bitset'/>
        </xs:restriction>
      </xs:simpleType>
    </xs:attribute>
@@ -271,7 +231,9 @@
    <xs:attribute name='units' type='xs:string' use='optional'/>
    <xs:attribute name='min' type='xs:string' use='optional'/>
    <xs:attribute name='max' type='xs:string' use='optional'/>
+   <xs:attribute name='vindex' type='xs:string' use='optional'/>
    <xs:attribute name='value' type='xs:string' use='optional'/>
+   <xs:attribute name='bitmask' type='xs:string' use='optional'/>
    <xs:attribute name='length' type='xs:string' use='optional'/>
    <xs:attribute name='read_only' use='optional'>
     <xs:simpleType>
@@ -304,21 +266,40 @@
 
  <xs:element name='Help'>
   <xs:complexType mixed='true'>
+    <xs:attribute name="lang" type="xs:string" use='optional'/>
   </xs:complexType>
  </xs:element>
+
+ <xs:element name='Label'>
+  <xs:complexType mixed='true'>
+    <xs:attribute name="lang" type="xs:string" use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='BitSet'>
+  <xs:complexType mixed='true'>
+   <xs:choice maxOccurs="unbounded">
+      <xs:element ref='Product:Label' minOccurs='0' maxOccurs='unbounded'/>
+      <xs:element ref='Product:Help' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:choice>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+ 
 
  <xs:element name='Item'>
   <xs:complexType>
    <xs:attribute name='label' type='xs:string' use='required'/>
    <xs:attribute name='value' type='xs:string' use='required'/>
+   <xs:attribute name='lang' type='xs:string' use='optional'/>
   </xs:complexType>
  </xs:element>
 
  <xs:element name='SupportedModes'>
   <xs:complexType>
-   <xs:sequence>
+   <xs:choice maxOccurs="unbounded">
     <xs:element ref='Product:Mode' maxOccurs='unbounded'/>
-   </xs:sequence>
+   </xs:choice>
   </xs:complexType>
  </xs:element>
 
@@ -342,4 +323,58 @@
    <xs:attribute name='id' type='xs:string' use='required'/>
   </xs:complexType>
  </xs:element>
+
+ <xs:element name='MetaData'>
+  <xs:complexType>
+   <xs:choice maxOccurs="unbounded">
+    <xs:element ref='Product:MetaDataItem' maxOccurs='unbounded'/>
+    <xs:element ref='Product:ChangeLog' minOccurs='0' maxOccurs='1' />
+   </xs:choice>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='MetaDataItem'>
+  <xs:complexType mixed='true'> 
+   <xs:attribute name='name' use='required'>
+	<xs:simpleType>
+		<xs:restriction base='xs:string'>
+			<xs:enumeration value='FrequencyName'/>
+			<xs:enumeration value='Name'/>
+			<xs:enumeration value="Description"/>
+			<xs:enumeration value="Identifier"/>
+			<xs:enumeration value="ZWProductPage"/>
+			<xs:enumeration value="ProductPic"/>
+			<xs:enumeration value="OzwInfoPage"/>
+			<xs:enumeration value="ProductSupport"/>
+			<xs:enumeration value="ProductPage"/>
+			<xs:enumeration value="ResetDescription"/>
+			<xs:enumeration value="ProductManual"/>
+			<xs:enumeration value="InclusionDescription"/>
+			<xs:enumeration value="ExclusionDescription"/>
+			<xs:enumeration value="WakeupDescription"/>
+		</xs:restriction>
+	</xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='type' type='xs:string' use='optional'/>
+   <xs:attribute name='id' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='ChangeLog'>
+  <xs:complexType>
+   <xs:choice maxOccurs="unbounded">
+    <xs:element ref='Product:Entry' maxOccurs='unbounded'/>
+   </xs:choice>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Entry'>
+  <xs:complexType mixed='true'> 
+   <xs:attribute name='author' type='xs:string' use='required'/>
+   <xs:attribute name='date' type='xs:string' use='required'/>
+   <xs:attribute name='revision' type='xs:integer' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+
 </xs:schema>

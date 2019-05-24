@@ -189,6 +189,19 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			pBuffer += LPP_BAROMETRIC_PRESSURE_SIZE;
 			Len -= LPP_BAROMETRIC_PRESSURE_SIZE;
 		}
+		else if (lpp_type == LPP_UNIXTIME) {
+			if (Len < LPP_UNIXTIME_SIZE)
+				return false;
+
+			root[iIndex]["channel"] = channel;
+			root[iIndex]["type"] = "unixtime";
+
+			uint32_t value = (pBuffer[2] << 24) | (pBuffer[3] << 16) | (pBuffer[4] << 8) | pBuffer[5];
+			root[iIndex++]["value"] = value;
+
+			pBuffer += LPP_UNIXTIME_SIZE;
+			Len -= LPP_UNIXTIME_SIZE;
+		}
 		else if (lpp_type == LPP_GYROMETER) {
 			if (Len < LPP_GYROMETER_SIZE)
 				return false;

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+    <!--
+    In-wall Dimmer SR-ZV9101SAC-HP-EU
+    Manual: http://www.sunricher.com/media/resources/manual/SR-ZV9101SAC-HP-EU%20Instruction%20V1.pdf
+    -->
+
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="2" label="Saving state before power failure" size="1" value="1">
+        <Help>
+              Saving state before power failure.
+            Default Not saved.
+        </Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State NOT saved at power failure, all outputs are set to ON upon power restore" value="1"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="3" label="Send the basic report" size="1" value="1">
+        <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
+              When value set as 1, re-power on the dimmer, it will send Basic report automatically. 
+		Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="4" label="Fade time" min="0" max="255" value="1">
+        <Help>Fade time (units between 1-127 represent 1-127 seconds.
+		Units Betwen 128-244 represent minutes, 128 = 1 minute, 129 = 2 minutes.
+              This value has the same function as Duration of Multilevel). 
+		Default 1.
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="5" label="Setting minimum brightness value" min="0" max="50" value="0">
+        <Help>Setting minimum brightness value.
+              Valid value: 0 - 50, the bigger the value is, the higher the loads minimum brightness is.
+              Note: when configure this value, the value of Multilevel will be configured as 1 automatically so that users can preview the corresponding effect of minimum brightness value
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="6" label="Setting maximum brightness value" min="0" max="100" value="100">
+        <Help>Setting maximum brightness value.
+              Valid value: 0 - 100, the bigger the value is, the higher the load maximum brightness is.
+        </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="7" label="Choose MOSFET driving type" size="1" value="1">
+        <Help>
+          Choose MOSFET driving type". 
+		Default trailing edge.
+        </Help>
+      <Item label="Trailing edge" value="0"/>
+      <Item label="Leading edge" value="1"/>
+   </Value>
+   <Value type="list" genre="config" instance="1" index="8" label="External switch type" size="1" value="1">
+        <Help>
+	   Choose external switch type. 
+		Default normal on/off switch. 
+        </Help>
+      <Item label="Push button switch" value="0"/>
+      <Item label="normal on/off switch" value="1"/>
+      <Item label="3-way switch" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="9" label="External switch to be added to and removed from a network" size="1" value="1">
+        <Help>Enable/disable external switch to be added to and removed from a network.
+              When enables this function, triple press the external switch within 1.5 seconds to be added to or removed from a net-work.
+            Default Enabled.
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="10" label="Detect load after re-power on" size="1" value="0">
+        <Help>
+           Enable/disable to detect load after re-power on (detect load type, minimum brightness, maximum brightness)
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable to detect every time after re-power on" value="1"/>
+      <Item label="Enable to detect only after first re-power on" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="11" label="Wiring type" size="1" read_only="true" value="0">
+        <Help>
+           Wiring type
+        </Help>
+      <Item label="Unknown" value="0"/>
+      <Item label="2 Wire With No Neutral" value="1"/>
+      <Item label="3 Wire With Neutral" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="12" label="Load type" size="1" read_only="true" value="0">
+        <Help>
+           Load type
+        </Help>
+      <Item label="Unknown" value="0"/>
+      <Item label="Resistive" value="1"/>
+      <Item label="Inductive" value="2"/>
+      <Item label="Capacitive" value="3"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="13" label="Over current protection" size="1" value="1">
+        <Help>
+           Enable/disable over current protection (over 1.5A for 20 seconds continuously)
+        </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="14" label="Power automatic report absolute threshold" size="2" units="W" value="10">
+        <Help>
+           Power automatic report absolute threshold, unit is W. 
+	   When power changes above the absolute threshold, immediately report current power value
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="15" label="Power automatic report percentage threshold" size="1" units="%"  value="20">
+        <Help>
+           Power automatic report percentage threshold, unit is %.
+           When power changes above the percentage threshold, immediately report current power value
+        </Help>
+   </Value>
+   <Value type="int" genre="config" instance="1" index="21" label="Power metering automatich report time cycle" size="4" units="second" value="600">
+        <Help>
+           Power metering automatic report time cycle, unit is second.
+	   Valid time cycle value: 5-2678400, when set as 0 report function is disabled
+        </Help>
+   </Value>
+   <Value type="int" genre="config" instance="1" index="22" label="Energy metering automatich report time cycle" size="4" value="1800">
+        <Help>
+           Energy metering automatic report time cycle, unit is second.
+           Valid time cycle value: 5-2678400, when set as 0 report function is disabled
+        </Help>
+   </Value>
+   <Value type="int" genre="config" instance="1" index="23" label="Energy metering automatich report time cycle" size="4" value="0">
+        <Help>
+           Voltage metering automatic report time cycle, unit is second.
+           Valid time cycle value: 5-2678400, when set as 0 report function is disabled
+        </Help>
+   </Value>
+   <Value type="int" genre="config" instance="1" index="24" label="Current metering automatich report time cycle" size="4" value="0">
+        <Help>
+           Current metering automatic report time cycle, unit is second.
+           Valid time cycle value: 5-2678400, when set as 0 report function is disabled
+        </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="8" label="On/Off"/>
+      <Group index="3" max_associations="8" label="Dimmer"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,120 +1,102 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-
-<!-- Qubino: ZMNHBDx Flush 2 Relay -->
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Qubino: ZMNHBDx Flush 2 Relay -->
 <!-- http://www.vesternet.com/downloads/dl/file/id/636/z_wave_qubino_flush_relay_x_2_plus_manual.pdf -->
 
 	<!-- Configuration  -->
-	<CommandClass id="112">
-		<Value type="list" genre="config" instance="1" index="1" label="Input 1 switch type" size="1" min="0" max="1" value="1">
-			<Help/>
-			<Item label="Mono-stable switch type (push button)" value="0" />
-			<Item label="Bi-stable switch type" value="1" />
-		  </Value>
-	
-		<Value type="list" genre="config" instance="1" index="2" label="Input 2 switch type" size="1" min="0" max="1" value="1">
-			<Help/>
-			<Item label="Mono-stable switch type (push button)" value="0" />
-			<Item label="Bi-stable switch type" value="1" />
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
-			<Help>Flush 2 relays module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
-			<Item label="ALL ON active, ALL OFF active" value="255" />
-			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
-			<Item label="ALL ON is not active ALL OFF active" value="1" />
-			<Item label="ALL ON active ALL OFF is not active" value="2" />
-		</Value> 
-
-		<Value type="short" genre="config" instance="1" index="11" label="Turn off Q1 after set time" min="0" max="32535" value="0">
-			<Help>When Q1 relay is ON it goes automatically OFF after set time. The timer is reset to zero every time the module receives an ON command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="12" label="Turn on Q1 after set time" min="0" max="32535" value="0">
-			<Help>When Q1 relay is OFF it goes automatically ON after set time. The timer is reset to zero every time the module receives an OFF command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="13" label="Turning off Q2 after set time" min="0" max="32535" value="0">
-			<Help>When Q2 relay is ON it goes automatically OFF after set time. The timer is reset to zero every time the module receives an ON command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="14" label="Turning on Q2 after set time" min="0" max="32535" value="0">
-			<Help>When Q2 relay is OFF it goes automatically ON after set time. The timer is reset to zero every time the module receives an OFF command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
-		</Value>
-
-		<Value type="list" size="1" genre="config" instance="1" index="15" label="Turning on/off s or ms selection" min="0" max="1" value="0">
-			<Help>Select the time units for auto on/off configuration. Applies tot he whole device</Help>
-			<Item label="1 Second" value="0" />
-			<Item label="10 Milliseconds" value="1" />
-		</Value>
-	
-		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the 2 relays after a power failure" size="1" min="0" max="1" value="0">
-			<Help/>
-	 		<Item label="Flush 2 relays module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
-			<Item label="Flush 2 relays module does not save the state after a power failure, it returns to off position." value="1" />
-		</Value>
-	
-	 	<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change for Q1" size="1" min="0" max="100" value="1">
-			<Help>Set value from 0 - 100 (0%- 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
-		</Value>
-
-		<Value type="byte" genre="config" instance="1" index="41" label="Power reporting in Watts on power change for Q2" size="1" min="0" max="100" value="1">
-		<Help>Set value from 0 - 100 (0%- 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval for Q1" min="0" max="65535" value="300">
-			<Help>Set value means time interval (0 1 65535) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 65535 = 1 second - 65535 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
-		</Value>
-
-		<Value type="short" genre="config" instance="1" index="43" label="Power reporting in Watts by time interval for Q2" min="0" max="65535" value="300">
-			<Help>Set value means time interval (0 1 65535) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 65535 = 1 second - 65535 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="63" label="Output Q1 switch selection" min="0" size="1"  max="1" value="0">
-			<Help>Type of device that is connected to the output (NC or NO)</Help>
-			<Item label="When the switch is turned off the output is 0V (NC)" value="0" />
-			<Item label="When the switch is turned off the output is 230V or 24V (NO)" value="1" />
-		</Value>
-
-		<Value type="list" genre="config" instance="1" index="64" label="Output Q2 switch selection" min="0" size="1"  max="1" value="0">
-			<Help>Type of device that is connected to the output (NC or NO)</Help>
-			<Item label="When the switch is turned off the output is 0V (NC)" value="0" />
-			<Item label="When the switch is turned off the output is 230V or 24V (NO)" value="1" />
-		</Value>
-		
-		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="0" max="32535" value="32535">
-        		<Help>Set value is added or subtracted to actual measured value by sensor. Available configuration parameters : default value 32536. 32536  offset is 0.0C. From 1 to 100 = value from 0.1C to 10.0C is added to actual measured temperature. From 1001 to 1100 = value from -0.1 C to -10.0 C is subtracted to actual measured temperature.</Help>
-        	</Value>
-
-        	<Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" min="0" max="127" value="5">
-        		<Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter. Available configuration parameters : 0 = reporting disabled. 1 to 127 = 0,1C to 12,7C, step is 0,1C. Default value is 5 = 0,5C</Help>
-        	</Value>
-
-	</CommandClass>
-
-	<CommandClass id="37">
-		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="2" />
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="3" />
-		</TriggerRefreshValue>
-	</CommandClass>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="8">
-			<Group index="1" max_associations="1" label="Lifeline"/>
-			<Group index="2" max_associations="16" label="Basic on/off triggered at the change of output Q1 and reflecting its state" />
-			<Group index="3" max_associations="16" label="Switch binary report triggered at the changes of output Q1 and reflecting its state"/>
-			<Group index="4" max_associations="16" label="Power meter report triggered at the changes of output Q1 and reflecting its state" />
-			<Group index="5" max_associations="16" label="Basic on/off triggered at the change of output Q2 and reflecting its state" />
-			<Group index="6" max_associations="16" label="Switch binary report triggered at the changes of output Q2 and reflecting its state" />
-			<Group index="7" max_associations="16" label="Power meter report triggered at the changes of output Q2 and reflecting its state" />
-			<Group index="8" max_associations="16" label="Multilevel sensor report" />
-		</Associations>
-	</CommandClass>
-
-	<!-- Remove COMMAND_CLASS_BASIC -->
-	<CommandClass id="32" action="remove"/>
-	<!-- Force multichannel -->
-	<CommandClass id="142" ForceInstances="true"/>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Input 1 switch type" max="1" min="0" size="1" type="list" value="1">
+      <Help/>
+      <Item label="Mono-stable switch type (push button)" value="0"/>
+      <Item label="Bi-stable switch type" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Input 2 switch type" max="1" min="0" size="1" type="list" value="1">
+      <Help/>
+      <Item label="Mono-stable switch type (push button)" value="0"/>
+      <Item label="Bi-stable switch type" value="1"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Activate / deactivate functions ALL ON/ALL OFF" max="255" min="0" size="2" type="list" value="255">
+      <Help>Flush 2 relays module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+      <Item label="ALL ON active, ALL OFF active" value="255"/>
+      <Item label="ALL ON is not active ALL OFF is not active" value="0"/>
+      <Item label="ALL ON is not active ALL OFF active" value="1"/>
+      <Item label="ALL ON active ALL OFF is not active" value="2"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Turn off Q1 after set time" max="32535" min="0" type="short" value="0">
+      <Help>When Q1 relay is ON it goes automatically OFF after set time. The timer is reset to zero every time the module receives an ON command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Turn on Q1 after set time" max="32535" min="0" type="short" value="0">
+      <Help>When Q1 relay is OFF it goes automatically ON after set time. The timer is reset to zero every time the module receives an OFF command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Turning off Q2 after set time" max="32535" min="0" type="short" value="0">
+      <Help>When Q2 relay is ON it goes automatically OFF after set time. The timer is reset to zero every time the module receives an ON command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Turning on Q2 after set time" max="32535" min="0" type="short" value="0">
+      <Help>When Q2 relay is OFF it goes automatically ON after set time. The timer is reset to zero every time the module receives an OFF command from any source. Value is in 1s or 10ms depending on parameter 15</Help>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Turning on/off s or ms selection" max="1" min="0" size="1" type="list" value="0">
+      <Help>Select the time units for auto on/off configuration. Applies tot he whole device</Help>
+      <Item label="1 Second" value="0"/>
+      <Item label="10 Milliseconds" value="1"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Saving the state of the 2 relays after a power failure" max="1" min="0" size="1" type="list" value="0">
+      <Help/>
+      <Item label="Flush 2 relays module saves its state before power failure (it returns to the last position saved before a power failure)" value="0"/>
+      <Item label="Flush 2 relays module does not save the state after a power failure, it returns to off position." value="1"/>
+    </Value>
+    <Value genre="config" index="40" instance="1" label="Power reporting in Watts on power change for Q1" max="100" min="0" size="1" type="byte" value="1">
+      <Help>Set value from 0 - 100 (0%- 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
+    </Value>
+    <Value genre="config" index="41" instance="1" label="Power reporting in Watts on power change for Q2" max="100" min="0" size="1" type="byte" value="1">
+      <Help>Set value from 0 - 100 (0%- 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
+    </Value>
+    <Value genre="config" index="42" instance="1" label="Power reporting in Watts by time interval for Q1" max="65535" min="0" type="short" value="300">
+      <Help>Set value means time interval (0 1 65535) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 65535 = 1 second - 65535 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
+    </Value>
+    <Value genre="config" index="43" instance="1" label="Power reporting in Watts by time interval for Q2" max="65535" min="0" type="short" value="300">
+      <Help>Set value means time interval (0 1 65535) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 65535 = 1 second - 65535 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
+    </Value>
+    <Value genre="config" index="63" instance="1" label="Output Q1 switch selection" max="1" min="0" size="1" type="list" value="0">
+      <Help>Type of device that is connected to the output (NC or NO)</Help>
+      <Item label="When the switch is turned off the output is 0V (NC)" value="0"/>
+      <Item label="When the switch is turned off the output is 230V or 24V (NO)" value="1"/>
+    </Value>
+    <Value genre="config" index="64" instance="1" label="Output Q2 switch selection" max="1" min="0" size="1" type="list" value="0">
+      <Help>Type of device that is connected to the output (NC or NO)</Help>
+      <Item label="When the switch is turned off the output is 0V (NC)" value="0"/>
+      <Item label="When the switch is turned off the output is 230V or 24V (NO)" value="1"/>
+    </Value>
+    <Value genre="config" index="110" instance="1" label="Temperature sensor offset settings" max="32535" min="0" type="short" value="32535">
+      <Help>Set value is added or subtracted to actual measured value by sensor. Available configuration parameters : default value 32536. 32536  offset is 0.0C. From 1 to 100 = value from 0.1C to 10.0C is added to actual measured temperature. From 1001 to 1100 = value from -0.1 C to -10.0 C is subtracted to actual measured temperature.</Help>
+    </Value>
+    <Value genre="config" index="120" instance="1" label="Digital temperature sensor reporting" max="127" min="0" type="byte" value="5">
+      <Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter. Available configuration parameters : 0 = reporting disabled. 1 to 127 = 0,1C to 12,7C, step is 0,1C. Default value is 5 = 0,5C</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="37">
+    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+      <RefreshClassValue CommandClass="37" Index="0" Instance="2" RequestFlags="0"/>
+      <RefreshClassValue CommandClass="37" Index="0" Instance="3" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="8">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Basic on/off triggered at the change of output Q1 and reflecting its state" max_associations="16"/>
+      <Group index="3" label="Switch binary report triggered at the changes of output Q1 and reflecting its state" max_associations="16"/>
+      <Group index="4" label="Power meter report triggered at the changes of output Q1 and reflecting its state" max_associations="16"/>
+      <Group index="5" label="Basic on/off triggered at the change of output Q2 and reflecting its state" max_associations="16"/>
+      <Group index="6" label="Switch binary report triggered at the changes of output Q2 and reflecting its state" max_associations="16"/>
+      <Group index="7" label="Power meter report triggered at the changes of output Q2 and reflecting its state" max_associations="16"/>
+      <Group index="8" label="Multilevel sensor report" max_associations="16"/>
+    </Associations>
+  </CommandClass>
+  <!-- Remove COMMAND_CLASS_BASIC -->
+  <CommandClass action="remove" id="32"/>
+  <!-- Force multichannel -->
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
 </Product>

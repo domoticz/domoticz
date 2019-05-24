@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+    <!--
+    Popp 700397 Wall Plug Switch Outdoor Schuko (IP44)
+    https://products.z-wavealliance.org/products/2842/
+    -->
+
+    <!-- Configuration  -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="LED indication mode" size="1" value="1">
+            <Help>Defines when the LED shall shine and how</Help>
+            <Item label="LED off, only blinks on traffic" value="0" />
+            <Item label="Defined by Parameter 21 and 22" value="1" />
+        </Value>
+
+        <Value type="short" genre="config" instance="1" index="2" label="Automatically switch Off" size="2" units="seconds" min="0" max="65535" value="0">
+            <Help>
+                If not zero, automatically switch device off after an user defined time.
+                0 -> Disabled (default)
+                1-65535 -> Enabled time in seconds.
+            </Help>
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="3" label="Behaviour for a RF Off-Command" size="1" value="0">
+            <Help>
+                Defines how to interpret RF Off-Command.
+                Ignore - to switch on the light by motion detectors and switch it off after some amount of time;
+                in case of multiple motion detectors each would try to switch the light off that would break logic;
+                Switch on - to switch on the light on both On and Off paddle press on the remote and switch it off after some amount of time.
+                Button off click will still work (if button operations are not disabled).
+            </Help>
+            <Item label="Switch off" value="0" />
+            <Item label="Ignore" value="1" />
+            <Item label="Switch on" value="2" />
+            <Item label="Switch on if load is off else switch off" value="3" />
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="4" label="Button Mode" size="1" value="0">
+            <Help>This parameter defines if the local button shall control (switch) the load or it is only used to send out scene control commands to the central controller.</Help>
+            <Item label="Controls Load + Controls Scenes" value="0" />
+            <Item label="Scene Control Only" value="1" />
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="5" label="Restore switch state after power cycle" size="1" value="1">
+            <Help>Defines if the switch should restore switch state to the last prior to device power off (power cycle).</Help>
+            <Item label="No, turn off" value="0" />
+            <Item label="Yes" value="1" />
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="21" label="LED Color on OFF state" size="1" value="0">
+            <Help>Defines the behavior of the LED when the load is switched off </Help>
+            <Item label="Off" value="0" />
+            <Item label="Red" value="1" />
+            <Item label="Green" value="2" />
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="22" label="LED Color on ON state" size="1" value="2">
+            <Help>Defines the behavior of the LED when the load is switched on </Help>
+            <Item label="Off" value="0" />
+            <Item label="Red" value="1" />
+            <Item label="Green" value="2" />
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="23" label="Voltage Report Threshold" size="1" units="Volt" min="0" max="250" value="100">
+            <Help>
+                Report the voltage when the voltage has changed by more then X  * 1 V. 
+                When disabled the device will report every 10 minutes regardless of current voltage.
+                0 -> Disabled
+                100 -> Default
+                0 - 250 -> Volt
+            </Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="24" label="Current Reporting Threshold" size="1" units="* 0,01 A" min="0" max="255" value="10">
+            <Help>
+                Report the current when the current has changed by more then X *0,01 A.
+                When disabled the device will report every 10 minutes regardless of current change.
+                0 -> Disabled
+                10 -> default
+                0 - 255 -> * 0,01 A
+            </Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="25" label="Power Reporting Threshold" size="1" units="Watts" min="0" max="255" value="50">
+            <Help>
+                Report the power when the power  has changed by more then X Watt. 
+                When disabled the device will report every 10 minutes regardless of power consumption change.
+                0 -> Disabled
+                50 -> Default
+                1 - 255 -> Watts
+            </Help>
+        </Value>
+
+        <Value type="short" genre="config" instance="1" index="26" label="Soft Circuit Breaker Threshold" size="2" units="Watts" min="0" max="3600" value="3600">
+            <Help>
+                When the power draw exceeds the value set in this parameter for a time set in parameter 28 the soft circuit breaker will disconnect the load.
+                0 -> Disabled
+                3600 -> Default
+                1 - 3600 -> Watts
+            </Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="27" label="Soft Circuit Breaker Recovery Time" size="1" units="Seconds" min="0" max="255" value="0">
+            <Help>Once the soft circuit breaker tipps and the load is disconnected the load will be automatically reconnected after X seconds.
+                When disabled the load must be repowered manually or with wireless command.
+                0 -> Disabled (default)
+                1 - 255 -> Seconds
+            </Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="28" label="Soft Circuit Breaker Recovery Time" size="1" units="* 0,1 sec" min="0" max="255" value="10">
+            <Help>This delay time defines how fast the soft circuit breaker wil react when the threshold power is exceeded. 
+                The power is cut off only if the power draw remains over the threshold level for the defines time.
+                0 -> Disabled
+                10 -> Default
+                1 - 255 -> * 0,1 sec
+            </Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Controlled by buttons" />
+        </Associations>
+    </CommandClass>
+
+</Product>

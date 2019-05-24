@@ -82,6 +82,7 @@ public:
 	void EnableDisableNodePolling(const int nodeID);
 	void SetNodeName(const unsigned int homeID, const int nodeID, const std::string &Name);
 	std::string GetNodeStateString(const unsigned int homeID, const int nodeID);
+	std::string GetNodeGenericType(const bool bIsPlus, const uint32 homeID, const uint8 nodeID);
 	void GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index);
 	bool ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string &svaluelist);
 	NodeInfo* GetNodeInfo(const unsigned int homeID, const int nodeID);
@@ -98,6 +99,7 @@ public:
 
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);
+	bool RequestNodeInfo(const unsigned int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
 	bool HasNodeFailed(const int nodeID);
 	bool ReceiveConfigurationFromOtherController();
@@ -156,9 +158,6 @@ private:
 	bool OpenSerialConnector();
 	void CloseSerialConnector();
 
-	void WriteControllerConfig();
-	time_t m_LastControllerConfigWrite;
-
 	OpenZWave::Manager *m_pManager;
 
 	std::list<NodeInfo> m_nodes;
@@ -170,7 +169,6 @@ private:
 	bool m_initFailed;
 	bool m_bInUserCodeEnrollmentMode;
 	bool m_bNightlyNetworkHeal;
-	bool m_bNeedSave;
 	bool m_bAeotecBlinkingMode;
 	int	m_LastAlarmTypeReceived;
 };

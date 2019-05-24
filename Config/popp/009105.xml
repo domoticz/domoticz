@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Popp 009105 Wall Plug Switch Schuko (IP44) -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 
+<!-- Popp: POPE009105 Wall Plug switch Schuko (IP44) - Gen 5 -->
 	<!-- Configuration  -->
 	<CommandClass id="112">
 		<Value type="list" genre="config" instance="1" index="1" label="LED indication mode" size="1" value="1">
