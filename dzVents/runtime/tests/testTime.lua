@@ -1086,7 +1086,7 @@ describe('Time', function()
 
 				end)
 
-                describe('twilight stuff', function()
+				describe('twilight stuff', function()
 
 					it('between civiltwilightend and civiltwilightstart', function()
 						_G.timeofday = {
@@ -1471,7 +1471,7 @@ describe('Time', function()
 
 		describe('combis', function()
 
-        	it('should return false when not on every second sunday between 1:00 and 1:30', function()
+			it('should return false when not on every second sunday between 1:00 and 1:30', function()
 				local t = Time('2018-12-30 01:04:00') -- on Sunday, odd week at 01:04 
 				assert.is_false(t.matchesRule('between 1:00 and 1:30 on sun every odd week'))
 				assert.is_false(t.matchesRule('between 2:00 and 2:30 on sun every odd week'))
@@ -1583,7 +1583,35 @@ describe('Time', function()
 				assert.is_false(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
 
 			end)
+			
+			for fromMonth=1,12 do
+				for toMonth=math.min(fromMonth+1,12),12 do
+					it('at 08:00-23:00 on 01/' .. fromMonth .. '-30/' .. toMonth, function()
+						local t = Time()
+						if t.dDate > Time(t.year .. '-' .. fromMonth ..'-01 00:00:01').dDate and
+						   t.dDate < Time(t.year .. '-' .. toMonth ..'-30 23:59:59').dDate then
+							assert.is_true(t.matchesRule('at 00:30-23:30 on 01/' .. fromMonth .. '-30/' .. toMonth)) 
+						else
+							assert.is_false(t.matchesRule('at 00:30-23:30 on 01/' .. fromMonth .. '-30/' .. toMonth)) 
+						end						
+					end)
+				end
+			end
 
+			for fromMonth=1,12 do
+				for toMonth=math.min(fromMonth+1,12),12 do
+					it('at 08:00-23:00 on */' .. fromMonth .. '-*/' .. toMonth, function()
+						local t = Time()
+						if  t.dDate > Time(t.year .. '-' .. fromMonth ..'-01 00:00:01').dDate and
+							t.dDate < Time(t.year .. '-' .. toMonth ..'-30 23:59:59').dDate then
+							assert.is_true(t.matchesRule('at 00:30-23:30 on */' .. fromMonth .. '-*/' .. toMonth)) 
+						else
+							assert.is_false(t.matchesRule('at 00:30-23:30 on */' .. fromMonth .. '-*/' .. toMonth)) 
+						end						
+					end)
+				end
+			end
+			
 			it('every 3 minutes on -15/4,15/10-', function()
 				local t = Time('2017-04-18 11:24:00')
 				assert.is_false(t.matchesRule('every 3 minutes on -15/4,15/10-'))

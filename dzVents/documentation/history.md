@@ -1,3 +1,8 @@
+[2.4.22]
+- selector.switchSelector method accepts levelNames
+- increased selector.switchSelector resilience
+- fix wildcard timerule 
+
 [2.4.21]
 - fixed wrong direction for open() and close() for some types of blinds
 - Add inTable function to domoticz.utils
