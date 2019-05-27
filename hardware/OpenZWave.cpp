@@ -643,6 +643,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			_log.Log(LOG_ERROR, "OpenZWave: Type_ValueAdded, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_SceneEvent:
+		//Deprecated
 		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
@@ -2616,7 +2617,16 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if (commandclass = COMMAND_CLASS_SCENE_ACTIVATION)
 	{
-		//This is the old way, and its handled by OpenZWave::Notification::Type_SceneEvent/UpdateNodeScene
+		if (vLabel.find("Scene") != 0)
+			return; //not interested in you
+		if (vType != OpenZWave::ValueID::ValueType_Int)
+			return; //not interested in you
+		if (m_pManager->GetValueAsInt(vID, &intValue) == false)
+			return;
+		_device.instanceID = instance;
+		_device.devType = ZDTYPE_CENTRAL_SCENE;
+		_device.intvalue = intValue;
+		InsertDevice(_device);
 	}
 	else
 	{
@@ -2710,6 +2720,9 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 
 void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
 {
+	//deprecated
+	return;
+/*
 	if (m_pManager == NULL)
 		return;
 	if (m_controllerID == 0)
@@ -2765,6 +2778,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
 		pDevice->sequence_number = 1;
 	if (pDevice->bValidValue)
 		SendDevice2Domoticz(pDevice);
+*/
 }
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
@@ -3709,18 +3723,33 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		}
 		break;
 	case ZDTYPE_CENTRAL_SCENE:
-		if (vType == OpenZWave::ValueID::ValueType_Byte)
+		if (commandclass == COMMAND_CLASS_SCENE_ACTIVATION)
 		{
-			pDevice->intvalue = 255;
+			if (vLabel.find("Scene") != 0)
+				return; //not interested in you
+			if (vType != OpenZWave::ValueID::ValueType_Int)
+				return; //not interested in you
+			if (m_pManager->GetValueAsInt(vID, &intValue) == false)
+				return;
+			if (intValue == 0)
+				return; //invalid SceneID (should we ignore it)
+			pDevice->intvalue = intValue;
 		}
-		else if (vType == OpenZWave::ValueID::ValueType_List)
+		else
 		{
-			int32 listValue = 0;
-			if (m_pManager->GetValueListSelection(vID, &listValue))
+			if (vType == OpenZWave::ValueID::ValueType_Byte)
 			{
-				if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
-					return;
-				pDevice->intvalue = lValue;
+				pDevice->intvalue = 255;
+			}
+			else if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				int32 listValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &listValue))
+				{
+					if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
+						return;
+					pDevice->intvalue = lValue;
+				}
 			}
 		}
 		break;
