@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+	<CommandClass id="112">
+		<Value type="list" index="3" genre="config" label="Beeper" units="" min="1" max="255" value="255" size="1">
+			<Help>
+				Enable or disable the keypad beeper.
+			</Help>
+			<Item label="Enable" value="255" />
+			<Item label="Disable" value="0" />
+		</Value>
+		<Value type="list" index="4" genre="config" label="Vacation Mode" units="" min="1" max="255" value="0" size="1">
+			<Help>
+				Enable or disable vacation mode.
+				Disables all user codes, preventing all codes from unlocking the deadbolt.
+				Enable for extra security while you are away for an extended period of time.
+			</Help>
+			<Item label="Enable" value="255" />
+			<Item label="Disable" value="0" />
+		</Value>
+		<Value type="list" index="5" genre="config" label="Lock and Leave Mode" units="" min="1" max="255" value="255" size="1">
+			<Help>
+				Enable or disable Lock and Leave Mode. 
+				When enabled: Press the Schlage button on the keypad to lock the deadbolt (Default setting).
+				When disabled: Press the Schlage button on the keypad and then enter a user code to lock the deadbolt.
+			</Help>
+			<Item label="Enable" value="255" />
+			<Item label="Disable" value="0" />
+		</Value>
+		<Value type="int" index="12" genre="config" label="Electronic transition count" read_only="true" size="4">
+			<Help>
+				Indicates the number of transitions from locked to unlocked or unlocked to locked state via electronic activation.
+			</Help>
+		</Value>
+		<Value type="int" index="13" genre="config" label="Mechanical transition count" read_only="true" size="4">
+			<Help>
+				Indicates the number of transitions from locked to unlocked or unlocked to locked state via mechanical activation.
+			</Help>
+		</Value>
+		<Value type="int" index="14" genre="config" label="Electronic failed count" read_only="true" size="4">
+			<Help>
+				Indicates the number of failed electronic activation attempts for this lock.
+			</Help>
+		</Value>
+		<Value type="list" index="15" genre="config" label="Auto Lock" units="" min="0" max="255" value="0" size="1">
+			<Help>
+				When enabled, the lock will automatically relock 30 seconds after unlocking. (Disabled by default.)
+			</Help>
+			<Item label="Enable" value="255" />
+			<Item label="Disable" value="0" />
+		</Value>
+		<Value type="byte" index="16" genre="config" label="User code legnth " units="" min="4" max="8" value="4" size="1">
+			<Help>
+				Choose user code length between 4 and 8 digits.
+				IMPORTANT: All user codes must be the same length.
+			</Help>
+		</Value>
+		<Value type="int" index="17" genre="config" label="Electrical High Preload Transition Count" read_only="true" size="4">
+			<Help>
+				Indicates the number of transitions from locked to unlocked or unlocked to locked state via electronic activation that indicated a high preload on the deadbolt.
+				This is a subset of Electronic transition count.
+				High preload occurs when the bolt is obstructed and the motor needs to use more power to throw the bolt.
+				Adjust door and strike plate to ensure the bolt can move freely. This will save battery power. 
+			</Help>
+		</Value>
+		<Value type="byte" index="18" genre="config" label="Bootloader Version" read_only="true" size="1">
+			<Help>The version of the bootloader in the lock.</Help>
+		</Value>
+	</CommandClass>
+	
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="2" label="LifeLine" />
+		</Associations>
+	</CommandClass>
+
+	<CommandClass id="113">
+		<!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
+			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1" />
+		</TriggerRefreshValue>
+	</CommandClass>
+</Product>

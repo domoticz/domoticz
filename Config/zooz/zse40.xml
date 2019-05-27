@@ -1,4 +1,37 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:2101:2021</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zse40.png</MetaDataItem>
+    <MetaDataItem id="2101" name="ZWProductPage" type="2021">https://products.z-wavealliance.org/products/1804/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove theZSE40 from the Z-Wave network (exclusion), place the Z-Wave primary controller into “exclusion” mode and follow its instruction to delete the ZSE40 to the controller.  Press the Program Switch of ZSE40 once to be excluded. </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1804/ZSE40-USER-MANUAL-5-13-16.pdf</MetaDataItem>
+    <MetaDataItem id="2101" name="Identifier" type="2021">ZSE40</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the ZSE40 to the Z-Wave network (inclusion), place the Z-Wave primary controller into inclusion mode.  Press the Program Switch of ZSE40 for sending the NIF. After sending NIF, Z-Wave will send the auto inclusion, otherwise, ZSE40 will go to sleep after 20 seconds. </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Use “Wake Up” command to set up the awaking time (from 10 minutes to 1 week) and send the wake up notification to controller</MetaDataItem>
+    <MetaDataItem name="Name">4-in-1 Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Enjoy 4 smart sensors in 1 compact device. Monitor motion, temperature, humidity, and light level.
+This is a secure device using 128-bit signal encryption. It requires a security enabled gateway controller for full functionality.
+The Zooz 4-in-1 sensor is packed with advanced features:
+- 7 levels of motion sensitivity to choose from
+- 3 modes for motion / temp led indicator notifications
+- Built-in tamper protection
+- Low battery alerts
+- Z-Wave Plus with improved 500 series chip for faster and safer wireless communication
+
+Z-Wave Frequency: 908.42 MHz (US)
+Power: 2 AAA batteries
+Wireless Range: Up to 100 feet line of sight
+Operating Temperature: 5° - 104°F
+Installation: Indoor Use Only
+1 Year Warranty</MetaDataItem>
+    <MetaDataItem id="2101" name="FrequencyName" type="2021">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Remove cover to trigged tamper switch, LED flash once &amp; send out Alarm Report.  Press Program Switch 10 times within 10 seconds, ZSE40 will send the “Device Reset Locally Notification” command and reset to the factory default. (Remark: This is to be used only in the case of primary controller being inoperable or otherwise unavailable.)
+   
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1804/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Zooz ZSE40 4-in-1 sensor -->
 
     <!-- Configuration Parameters -->

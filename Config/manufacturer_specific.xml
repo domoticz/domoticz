@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="22" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="27" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -760,7 +760,7 @@
     <Product config="ge/45604.xml" id="3030" name="45603 Plugin Appliance Module" type="5250"/>
     <Product id="3130" name="45604 Outdoor Module" type="5250"/>
     <Product id="3031" name="12720 Outdoor Smart Switch" type="4f50"/>
-    <Product id="3032" name="14284 Outdoor Smart Switch" type="4f50"/>
+    <Product config="ge/14284.xml" id="3032" name="14284 Outdoor Smart Switch" type="4f50"/>
     <Product config="ge/receptacle.xml" id="3530" name="45605 Duplex Receptacle" type="5252"/>
     <Product config="ge/28167-plugin-dimmer.xml" id="3038" name="28167/ZW3104 Plug-In Smart Dimmer (Single Plug)" type="5044"/>
     <Product config="ge/receptacle.xml" id="3133" name="14288 Duplex Receptacle" type="4952"/>
@@ -789,7 +789,7 @@
     <Product config="gr/gr105.xml" id="0511" name="GR105 Auto Valve" type="0202"/>
     <Product config="gr/gr105n.xml" id="0512" name="GR105n Auto Valve" type="0003"/>
     <Product config="gr/grb3.xml" id="0005" name="GRB3 Multichannel Switch" type="0500"/>
-    <Product id="0003" name="ZSE02 Motion Sensor" type="0500"/>
+    <Product config="gr/gr-302n.xml" id="0003" name="ZSE02 Motion Sensor" type="0500"/>
   </Manufacturer>
   <Manufacturer id="0099" name="GreenWave Reality Inc">
     <Product config="greenwave/gs1110-1-gr-1.xml" id="0002" name="One Gateway" type="0001"/>
@@ -1001,6 +1001,7 @@
   <Manufacturer id="0090" name="Kwikset (Spectrum Brands)">
     <Product config="kwikset/smartcode.xml" id="0001" name="Touchpad Electronic Deadbolt" type="0001"/>
     <Product config="kwikset/smartcode.xml" id="0642" name="SmartCode 916" type="0003"/>
+    <Product config="kwikset/smartcode.xml" id="0440" name="SmartCode 914" type="0003"/>
     <Product config="kwikset/smartcode.xml" id="0440" name="SmartCode 10" type="0006"/>
   </Manufacturer>
   <Manufacturer id="0051" name="Lagotek Corp"></Manufacturer>
@@ -1205,8 +1206,8 @@
   <Manufacturer id="0281" name="PC Partner"></Manufacturer>
   <Manufacturer id="013D" name="Pella"></Manufacturer>
   <Manufacturer id="0245" name="permundo GmbH">
-    <Product id="0002" name="PSC132ZW Smart Mini Plug" type="0003"/>
-    <Product id="0001" name="PSC234ZW Smart Plug" type="0003"/>
+    <Product config="permundo/psc132zw.xml" id="0002" name="PSC132ZW Smart Mini Plug" type="0003"/>
+    <Product config="permundo/psc234zw.xml" id="0001" name="PSC234ZW Smart Plug" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0366" name="PHILIA TECHNOLOGY Co. Ltd"></Manufacturer>
   <Manufacturer id="013c" name="Philio Technology Corp">
@@ -1341,7 +1342,7 @@
   <Manufacturer id="0255" name="Remote Technologies Incorporated"></Manufacturer>
   <Manufacturer id="5254" name="Remotec">
     <Product config="remotec/zurc.xml" id="531f" name="Z-URC" type="0000"/>
-    <Product id="8380" name="ZRC-100" type="0001"/>
+    <Product config="remotec/zrc-100eu.xml" id="8380" name="ZRC-100" type="0001"/>
     <Product config="remotec/zxt-310.xml" id="8371" name="ZXT-310US" type="0100"/>
     <Product config="remotec/zxt-310.xml" id="8371" name="ZXT-310EU" type="0101"/>
     <Product config="remotec/zxt-310.xml" id="8371" name="ZXT-310AU" type="0102"/>
@@ -1402,6 +1403,7 @@
     <Product config="schlage/BE469.xml" id="5044" name="BE469 Touchscreen Deadbolt" type="6341"/>
     <Product config="schlage/BE468.xml" id="5044" name="BE468 Touchscreen Deadbolt" type="6349"/>
     <Product config="schlage/BE469ZP.xml" id="0469" name="BE469ZP Connect Smart Deadbolt" type="0001"/>
+    <Product config="schlage/BE468ZP.xml" id="0468" name="BE468ZP Connect Smart Deadbolt" type="0001"/>
   </Manufacturer>
   <Manufacturer id="0097" name="Schlage Link (Wintop)">
     <Product config="schlagelink/itemp.xml" id="4501" name="iTemp Dual Sensor" type="1182"/>
@@ -1493,9 +1495,9 @@
   <Manufacturer id="035A" name="SOREL GmbH"></Manufacturer>
   <Manufacturer id="026e" name="Springs Window Fashions (Graber)">
     <Product config="graber/brz1.xml" id="5a31" name="BRZ1 Remote Control" type="4252"/>
-    <Product id="5a31" name="RSZ1 Roller Shade" type="5253"/>
+    <Product config="graber/rsz1.xml" id="5a31" name="RSZ1 Roller Shade" type="5253"/>
     <Product config="graber/vcz1.xml" id="5a31" name="VCZ1 Virtual Cord Remote Control" type="5643"/>
-    <Product id="5a31" name="CSZ1 Cellular Shade" type="4353"/>
+    <Product config="graber/csz1.xml" id="5a31" name="CSZ1 Cellular Shade" type="4353"/>
   </Manufacturer>
   <Manufacturer id="026F" name="Sprue Safety Products"></Manufacturer>
   <Manufacturer id="0124" name="Square Connect"></Manufacturer>
@@ -1682,7 +1684,7 @@
     <Product id="0f03" name="ZS6301 CO Detector" type="200f"/>
     <Product config="vision/zr1202us.xml" id="1203" name="ZR1202 Repeater" type="2012"/>
     <Product config="vision/brg1-433.xml" id="1401" name="ZL7101 Plug-in Dimmer Module" type="2014"/>
-    <Product id="1717" name="ZL7432 In-Wall Switch, Dual Relay" type="2017"/>
+    <Product config="vision/zl7432us.xml" id="1717" name="ZL7432 In-Wall Switch, Dual Relay" type="2017"/>
     <Product config="vision/zl7261.xml" id="1aa4" name="ZL7261 Plug-in Power Monitor" type="201a"/>
     <Product config="vision/zf5201.xml" id="1c01" name="ZF5201 Flood sensor" type="201c"/>
     <Product config="vision/zd2201.xml" id="1f10" name="ZD2201 Multisensor 4in1" type="201f"/>
@@ -1814,6 +1816,7 @@
     <Product config="zooz/zen21.xml" id="1e1c" name="ZEN21 Switch V2.0" type="b111"/>
     <Product config="zooz/zse19.xml" id="0003" name="ZSE19 S2 Multisiren" type="000c"/>
     <Product config="zooz/zen20v2.xml" id="a004" name="ZEN20 V2.0 Power Strip" type="a000"/>
+    <Product config="zooz/zse29.xml" id="0005" name="ZSE29 Outdoor Motion Sensor" type="0001"/>
   </Manufacturer>
   <Manufacturer id="015d" name="Zooz (Willis Electric)">
     <Product config="zooz/zen20.xml" id="f51c" name="ZEN20 Power Strip" type="0651"/>

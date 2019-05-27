@@ -1,12 +1,12 @@
-<!-- Aeotec LED Bulb --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Aeotec LED Bulb --><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0062:0103</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw098.png</MetaDataItem>
-    <MetaDataItem id="0062" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/1368/</MetaDataItem>
+    <MetaDataItem id="0062" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/1829/</MetaDataItem>
     <MetaDataItem name="Description">Aeotec LED Bulb is a low-cost Z-Wave LED module which allows control (on/off/dim) with the use of Z-Wave. 
 It’s a bulb has a Smart RGB LED, which can be used to add colour to your home. The bulb has 5 main colour channels available for you to adjust: Red, Green, Blue, Warm White and Cold White. You can configure its colour according to your favour.
-The LED Bulb is also a security Z-wave device and supports the Over The Air (OTA) feature for the product’s firmware upgrade.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1380/Aeon Labs LED Bulb manual 2.pdf</MetaDataItem>
+The LED Bulb is also a security Z-Wave device and supports the Over The Air (OTA) feature for the product’s firmware upgrade.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1851/LED Bulb manual.pdf</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, press the external switch of LED Bulb to turn off and then press the external switch again to turn on it, repeat the operation 3 times.</MetaDataItem>
     <MetaDataItem id="0062" name="Identifier" type="0103">ZW098-A52</MetaDataItem>
     <MetaDataItem id="0062" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
@@ -21,11 +21,15 @@ Use this procedure only in the event that your primary network controller is mis
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1368/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1379/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1380/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1594/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1829/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1844/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1851/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="0062" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/1379/</MetaDataItem>
+    <MetaDataItem id="0062" name="ZWProductPage" type="0203">https://products.z-wavealliance.org/products/1844/</MetaDataItem>
     <MetaDataItem id="0062" name="FrequencyName" type="0203">Australia / New Zealand</MetaDataItem>
     <MetaDataItem id="0062" name="Identifier" type="0203">ZW098-B55</MetaDataItem>
-    <MetaDataItem id="0062" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1380/</MetaDataItem>
+    <MetaDataItem id="0062" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1851/</MetaDataItem>
     <MetaDataItem id="0062" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
     <MetaDataItem id="0062" name="Identifier" type="0003">ZW098-C55</MetaDataItem>
   </MetaData>

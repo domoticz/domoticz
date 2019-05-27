@@ -1,4 +1,4 @@
-<!-- Vision ZP3102 PIR Motion Sensor --><Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Vision ZP3102 PIR Motion Sensor --><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0201:2002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/vision/zp3102.png</MetaDataItem>
@@ -16,6 +16,7 @@
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/804/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/847/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1070/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1702/xml</Entry>
     </ChangeLog>
     <MetaDataItem id="0201" name="Identifier" type="2002">ZP 3102</MetaDataItem>
     <MetaDataItem id="0202" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/728/</MetaDataItem>
@@ -27,15 +28,15 @@
     <MetaDataItem id="0204" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/847/</MetaDataItem>
     <MetaDataItem id="0204" name="FrequencyName" type="2002">Japan</MetaDataItem>
     <MetaDataItem id="0204" name="Identifier" type="2002">ZP3102JP</MetaDataItem>
-    <MetaDataItem id="0205" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/1070/</MetaDataItem>
-    <MetaDataItem id="0205" name="Identifier" type="2002">ZP3102EU-5</MetaDataItem>
+    <MetaDataItem id="0205" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/1702/</MetaDataItem>
+    <MetaDataItem id="0205" name="Identifier" type="2002">ZP3102US-5</MetaDataItem>
     <MetaDataItem name="WakeupDescription">Remove the rear cover to wake up the device, or set the wake up interval time from 10 minutes to 1 week.  The battery will be drained quickly if you fail to replace the cover after using that method to wake up the device.
 </MetaDataItem>
     <MetaDataItem name="ResetDescription">Removing the rear cover to wake up the device.  Press Program Switch 10 times within 10 seconds, ZP3102 will go back to factory default. (This is to be used only in the case of the primary controller being inoperable or otherwise unavailable.)</MetaDataItem>
-    <MetaDataItem id="0205" name="FrequencyName" type="2002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0205" name="FrequencyName" type="2002">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Put the Z-Wave Interface Controller into 'inclusion' mode, and follow its instructions to add the ZP3102 to your Z-Wave network. For a successful inclusion, it is suggested to have the sensor and your Z-Wave controller about one meter apart.  Press the Program Switch of the ZP3102 (refer to the manual for the location of the program switch) ready the ZP3102 for inclusion into the Z-Wave network.  If inclusion does not take place or is unsuccessful within 20 seconds, the ZP3102 will go to sleep; if this happens, simply repeat pressing the program switch to try again.</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Put the Z-Wave Interface Controller into “exclusion” mode, and following its instruction to delete the ZP3102 to your Z-Wave network.  Press the Program Switch of ZP3102 once to be excluded. The LED on the ZP3102 should start to flash.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1070/20140725 - (Z-WAVE CERTIFICATION) ZP 3102-5 PIR_20140722_500 Series.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1702/ZP 3102-5 PIR_R3_500 Series_20150724.pdf</MetaDataItem>
   </MetaData>
   <!-- COMMAND_CLASS_CONFIGURATION -->
         <!--    IMPORTANT: Controllers may only allow to configure signed values.

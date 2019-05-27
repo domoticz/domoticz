@@ -1,12 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8371:0100</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/remotec/zxt-310.png</MetaDataItem>
+    <MetaDataItem id="8371" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/1540/</MetaDataItem>
+    <MetaDataItem name="Description">Z-Wave to IR extender for Audio/Video devices with built-in and cloud-based IR library. </MetaDataItem>
+    <MetaDataItem name="Name">Remotec ZXT-310US</MetaDataItem>
+    <MetaDataItem id="8371" name="FrequencyName" type="0100">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="8371" name="Identifier" type="0100">BW8371US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1540/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <CommandClass id="112">
-    <Value type="short" index="27" genre="config" label="IR code number from table" units="">
+    <Value genre="config" index="27" label="IR code number from table" type="short" units="">
       <Help>
         IR code number for built-in code library. Refer "Code list" for details.
       </Help>
     </Value>
-    <Value type="byte" index="38" genre="config" label="End-point selection control" units="" min="1" max="6">
+    <Value genre="config" index="38" label="End-point selection control" max="6" min="1" type="byte" units="">
       <Help>
         * 1 (0x01) = EP1 
         * 1 (0x02) = EP2 
@@ -16,13 +27,13 @@
         * 1 (0x06) = EP6 
       </Help>
     </Value>
-    <Value type="byte" index="29" genre="config" label="IR Port Mapping" units="" min="1" max="6">
+    <Value genre="config" index="29" label="IR Port Mapping" max="6" min="1" type="byte" units="">
       <Help>
         IR output port routing. 
         Please make sure that the "End point selection control" has completed (if necessary) before process the following setup.
       </Help>
     </Value>
-    <Value type="byte" index="28" genre="config" label="IR Output Power" units="" min="0" max="255">
+    <Value genre="config" index="28" label="IR Output Power" max="255" min="0" type="byte" units="">
       <Help>
         Please  make  sure  that  the  "End  point  selection  control"  has completed (if necessary) before process the following setup. 
         
@@ -32,7 +43,7 @@
         (default is in high power mode). 
       </Help>
     </Value>
-    <Value type="short" index="25" genre="config" label="IR Code Learning" units="">
+    <Value genre="config" index="25" label="IR Code Learning" type="short" units="">
       <Help>
         Please make sure that the "End point selection control" has completed (if necessary) before process the following setup.
 
@@ -45,7 +56,7 @@
         (Z-Wave Cmd#, e.g. if POWER key is going to be learnt, input the value: 39 (0x27))
       </Help>
     </Value>
-    <Value type="byte" index="26" genre="config" label="Learning status register" units="" read_only="true">
+    <Value genre="config" index="26" label="Learning status register" read_only="true" type="byte" units="">
       <Help>
         * 0 (0x00): IR channel idle (default)
         * 1 (0x01): OK
@@ -54,7 +65,7 @@
         * 4 (0x04): Learning Fail
       </Help>
     </Value>
-    <Value type="byte" index="31" genre="config" label="IR transmission mode" units="" min="0" max="255">
+    <Value genre="config" index="31" label="IR transmission mode" max="255" min="0" type="byte" units="">
       <Help>
         Please make sure that the "End point selection control" has completed (if necessary) before process the following setup. 
 
