@@ -2614,6 +2614,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			}
 		}
 	}
+	else if (commandclass = COMMAND_CLASS_SCENE_ACTIVATION)
+	{
+		//This is the old way, and its handled by OpenZWave::Notification::Type_SceneEvent/UpdateNodeScene
+	}
 	else
 	{
 		//Unhandled
@@ -2730,9 +2734,9 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
 		_device.instanceID = instanceID;
 		_device.indexID = indexID;
 
-		std::string vLabel = m_pManager->GetValueLabel(vID);
-		if (!vLabel.empty())
-			_device.label = vLabel;
+		std::stringstream sstr;
+		sstr << "Scene " << SceneID;
+		_device.label = sstr.str();
 
 		_device.basicType = 1;
 		_device.genericType = 1;
