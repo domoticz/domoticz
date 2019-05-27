@@ -369,8 +369,13 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		int level = pDevice->intvalue;
 
 		// Simple on/off device, make sure we only have 0 or 255
-		if ((pDevice->devType == ZDTYPE_SWITCH_NORMAL)|| (pDevice->devType == ZDTYPE_CENTRAL_SCENE))
+		if (pDevice->devType == ZDTYPE_SWITCH_NORMAL)
 			level = (level == 0) ? 0 : 255;
+		else if (pDevice->devType == ZDTYPE_CENTRAL_SCENE)
+		{
+			level = 255;
+			gswitch.unitcode = pDevice->intvalue;
+		}
 
 		// Now check the values
 		if (level == 0)

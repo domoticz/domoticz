@@ -2584,7 +2584,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			instance = vIndex;
 			_device.instanceID = instance;
 			_device.devType = ZDTYPE_CENTRAL_SCENE;
-			_device.intvalue = 0;
+			_device.intvalue = lValue;
 			InsertDevice(_device);
 		}
 	}
@@ -2834,26 +2834,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	{
 		_log.Log(LOG_ERROR, "OpenZWave: UpdateValue, Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 		return;
-	}
-
-	if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
-	{
-		if (vLabel.find("Scene ") != 0)
-		{
-			return;
-		}
-		int32 lValue = 0;
-		if (vType == OpenZWave::ValueID::ValueType_List)
-		{
-			if (m_pManager->GetValueListSelection(vID, &lValue) == false)
-				return;
-		}
-		if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
-			return;
-		//if (lValue != 1)
-			//return; //only accept CentralSceneMask_KeyPressed1time
-
-		instance = vOrgIndex;
 	}
 
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
@@ -3736,7 +3716,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			{
 				if ((lValue == 0) || (lValue == 2)) // CentralSceneMask_KeyReleased
 					return;
-				pDevice->intvalue = 255;
+				pDevice->intvalue = lValue;
 			}
 		}
 		break;
