@@ -969,9 +969,6 @@ Device.create = function (item) {
         case "venetian blinds":
             dev = new Blinds(item);
             break;
-        case "water":
-            dev = new WaterSensor(item);
-            break;
         case "wind":
             dev = new Wind(item);
             break;
@@ -1683,18 +1680,6 @@ function Visibility(item) {
     }
 }
 Visibility.inheritsFrom(WeatherSensor);
-
-function WaterSensor(item) {
-    if (arguments.length != 0) {
-        this.parent.constructor(item);
-        this.image = (this.status === 'Closed') ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
-        this.data = '';
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.status = this.status === 'Closed' ? 'No leakage' : 'Leakage';
-        this.showStatus = false;
-    }
-}
-WaterSensor.inheritsFrom(BinarySensor);
 
 function Wind(item) {
     if (arguments.length != 0) {
