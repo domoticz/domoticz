@@ -1233,7 +1233,10 @@ function Switch(item) {
         }
         this.data = '';
         this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        if (item.SwitchType !== "Contact") {
+        if (
+			(item.SwitchType !== "Contact")&&
+			(item.SwitchType !== "Door Contact")
+			) {
 			this.showStatus = (Device.showSwitchValues == true);
 			this.imagetext = "Activate switch";
 			this.controlable = true;
