@@ -250,7 +250,7 @@ void OTGWBase::GetGatewayDetails()
 	strcpy(szCmd, "PS=1\r\n");
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 
-	/* Wait for 0.75 seconds for the command to complete and switch back to PS=0 to fix use of OtMonitor */
+	/* Wait for 0.75 seconds for the PS=1 command to complete and switch back to PS=0 to fix simultaneous use of OtMonitor besides Domoticz */
 	usleep(750000);
 	strcpy(szCmd, "PS=0\r\n");
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
@@ -493,7 +493,7 @@ void OTGWBase::ParseLine()
 				)
 			{
 				//Dont report OT/PS/SC feedback
-				//_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str());
+				//_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str()); /* Things get really noisy with PS=0 for now let's quiet it down a little */
 			}
 		}
 	}
