@@ -190,7 +190,7 @@ void CYouLess::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s ", m_szIPAddress.c_str());
+		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
