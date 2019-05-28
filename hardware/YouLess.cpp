@@ -115,7 +115,7 @@ bool CYouLess::GetP1Details()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "YouLess: Error getting meter details!");
+		_log.Log(LOG_ERROR, "YouLess: Error getting meter details from %s !", m_szIPAddress.c_str() );
 		return false;
 	}
 	Json::Value root;
@@ -188,7 +188,7 @@ void CYouLess::GetMeterDetails()
 	std::string sResult;
 	std::stringstream szURL;
 
-	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/e";
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/a";
 	if (!m_Password.empty())
 		szURL << "&w=" << m_Password;
 
