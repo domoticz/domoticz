@@ -7,7 +7,7 @@ Version 4.xxxxx (xxx 2019)
 - Fixed: GUI, Switch Log, date parsing in device log (#3206)
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
-- Fixed: Buffer Overflow Vulnerability in YouLess class (#3261)
+- Fixed: YouLess, possible buffer overflow (#3261)
 - Fixed: notification, Telegram error when odd number of underscores in text
 - Updated: OpenZWave version 1.6
 - Updated: dzVents (version 2.4.22, See dzVents/documentation/history.md)
