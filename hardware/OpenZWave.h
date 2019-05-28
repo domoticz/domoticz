@@ -46,10 +46,10 @@ public:
 
 		std::string						szType;
 		int								iVersion;
-		std::string						Manufacturer_id;
+		uint16_t						Manufacturer_id;
 		std::string						Manufacturer_name;
-		std::string						Product_type;
-		std::string						Product_id;
+		uint16_t						Product_type;
+		uint16_t						Product_id;
 		std::string						Product_name;
 		int								Application_version;
 

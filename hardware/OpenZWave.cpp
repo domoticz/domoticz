@@ -164,6 +164,16 @@ extern std::string szUserDataFolder;
 
 #define round(a) ( int ) ( a + .5 )
 
+//Should be obsolete when OZW 2.0 comes out
+uint16_t GetUInt16FromString(const std::string& inStr)
+{
+	uint16_t xID;
+	std::stringstream ss;
+	ss << std::hex << inStr;
+	ss >> xID;
+	return xID;
+}
+
 #ifdef _DEBUG
 #define DEBUG_ZWAVE_INT
 #endif
@@ -559,10 +569,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.Application_version = 0;
 		nodeInfo.szType = m_pManager->GetNodeType(_homeID, _nodeID);
 		nodeInfo.iVersion = m_pManager->GetNodeVersion(_homeID, _nodeID);
-		nodeInfo.Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
 		nodeInfo.Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
-		nodeInfo.Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
-		nodeInfo.Product_id = m_pManager->GetNodeProductId(_homeID, _nodeID);
+		nodeInfo.Manufacturer_id = GetUInt16FromString(m_pManager->GetNodeManufacturerId(_homeID, _nodeID));
+		nodeInfo.Product_type = GetUInt16FromString(m_pManager->GetNodeProductType(_homeID, _nodeID));
+		nodeInfo.Product_id = GetUInt16FromString(m_pManager->GetNodeProductId(_homeID, _nodeID));
 		nodeInfo.Product_name = m_pManager->GetNodeProductName(_homeID, _nodeID);
 		nodeInfo.tClockDay = -1;
 		nodeInfo.tClockHour = -1;
@@ -624,10 +634,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			if (nodeInfo->Manufacturer_name.empty())
 			{
 				nodeInfo->IsPlus = m_pManager->IsNodeZWavePlus(_homeID, _nodeID);
-				nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
 				nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
-				nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
-				nodeInfo->Product_id = m_pManager->GetNodeProductId(_homeID, _nodeID);
+				nodeInfo->Manufacturer_id = GetUInt16FromString(m_pManager->GetNodeManufacturerId(_homeID, _nodeID));
+				nodeInfo->Product_type = GetUInt16FromString(m_pManager->GetNodeProductType(_homeID, _nodeID));
+				nodeInfo->Product_id = GetUInt16FromString(m_pManager->GetNodeProductId(_homeID, _nodeID));
 			}
 
 			nodeInfo->Instances[instance][commandClass].Values.push_back(vID);
@@ -850,10 +860,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			if (nodeInfo->Product_name != product_name)
 			{
 				nodeInfo->IsPlus = m_pManager->IsNodeZWavePlus(_homeID, _nodeID);
-				nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
 				nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
-				nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
-				nodeInfo->Product_id = m_pManager->GetNodeProductId(_homeID, _nodeID);
+				nodeInfo->Manufacturer_id = GetUInt16FromString(m_pManager->GetNodeManufacturerId(_homeID, _nodeID));
+				nodeInfo->Product_type = GetUInt16FromString(m_pManager->GetNodeProductType(_homeID, _nodeID));
+				nodeInfo->Product_id = GetUInt16FromString(m_pManager->GetNodeProductId(_homeID, _nodeID));
 				nodeInfo->Product_name = product_name;
 				AddNode(_homeID, _nodeID, nodeInfo);
 				m_bHaveLastIncludedNodeInfo = !product_name.empty();
@@ -1430,18 +1440,14 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 			_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 			return false;
 		}
-		// TODO: remove this print once Ziapto Bulb 2 workaround has been verified
-		// Gizmocuz: This has been in for quite some while, is it verified ?
-		//_log.Debug(DEBUG_NORM, "OpenZWave::SwitchColor Manufacturer_id: '%s', Product_type: '%s', Product_id: '%s', Application_version: %u",
-		  //       pNode->Manufacturer_id.c_str(), pNode->Product_type.c_str(), pNode->Product_id.c_str(), pNode->Application_version);
 
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 		if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, "Color", vID) == true)
 		{
 			std::string OutColorStr = ColorStr;
-			if (pNode->Manufacturer_id == "0131")
+			if (pNode->Manufacturer_id == 0x0131)
 			{
-				if ((pNode->Product_type == "0002") && (pNode->Product_id == "0002"))
+				if ((pNode->Product_type == 0x0002) && (pNode->Product_id == 0x0002))
 				{
 					if (pNode->Application_version < 106)
 					{
@@ -1452,7 +1458,7 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 						}
 					}
 				}
-				if ((pNode->Product_type == "0002") && (pNode->Product_id == "0003"))
+				if ((pNode->Product_type == 0x0002) && (pNode->Product_id == 0x0003))
 				{
 					if (pNode->Application_version < 106)
 					{
@@ -1649,19 +1655,9 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	_device.hasWakeup = m_pManager->IsNodeAwake(HomeID, NodeID);
 	_device.isListening = m_pManager->IsNodeListeningDevice(HomeID, NodeID);
 
-	int xID;
-	std::stringstream ss;
-	ss << std::hex << pNodeInfo->Manufacturer_id;
-	ss >> xID;
-	_device.Manufacturer_id = xID;
-	std::stringstream ss2;
-	ss2 << std::hex << pNodeInfo->Product_id;
-	ss2 >> xID;
-	_device.Product_id = xID;
-	std::stringstream ss3;
-	ss3 << std::hex << pNodeInfo->Product_type;
-	ss3 >> xID;
-	_device.Product_type = xID;
+	_device.Manufacturer_id = pNodeInfo->Manufacturer_id;
+	_device.Product_id = pNodeInfo->Product_id;
+	_device.Product_type = pNodeInfo->Product_type;
 
 	if (!vLabel.empty())
 		_device.label = vLabel;
@@ -1718,7 +1714,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 					{
 						if (IsNodeRGBW(HomeID, NodeID))
 						{
-							_device.label = "Fibaro RGBW";
+							_device.label = "RGBW";
 							_device.devType = ZDTYPE_SWITCH_RGBW;
 							_device.instanceID = 100;
 							InsertDevice(_device);
@@ -3157,19 +3153,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		{
 			if (!pNode->Manufacturer_name.empty())
 			{
-				int xID;
-				std::stringstream ss;
-				ss << std::hex << pNode->Manufacturer_id;
-				ss >> xID;
-				pDevice->Manufacturer_id = xID;
-				std::stringstream ss2;
-				ss2 << std::hex << pNode->Product_id;
-				ss2 >> xID;
-				pDevice->Product_id = xID;
-				std::stringstream ss3;
-				ss3 << std::hex << pNode->Product_type;
-				ss3 >> xID;
-				pDevice->Product_type = xID;
+				pDevice->Manufacturer_id = pNode->Manufacturer_id;
+				pDevice->Product_id = pNode->Product_id;
+				pDevice->Product_type = pNode->Product_type;
 			}
 		}
 	}
@@ -4848,21 +4834,9 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			ivalue++;
 
 			//Aeotec Blinking state
-			uint32_t Manufacturer_id;
-			uint32_t Product_type;
-			uint32_t Product_id;
-
-			std::stringstream ss;
-			ss << std::hex << m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
-			ss >> Manufacturer_id;
-
-			std::stringstream ss2;
-			ss2 << std::hex << m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
-			ss2 >> Product_id;
-
-			std::stringstream ss3;
-			ss3 << std::hex << m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
-			ss3 >> Product_type;
+			uint16_t Manufacturer_id = GetUInt16FromString(m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId));
+			uint16_t Product_type = GetUInt16FromString(m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId));
+			uint16_t Product_id = GetUInt16FromString(m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId));
 
 			if (Manufacturer_id == 0x0086)
 			{
@@ -5147,21 +5121,9 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				}
 				else if (rvIndex == 8)
 				{
-					uint32_t Manufacturer_id;
-					uint32_t Product_type;
-					uint32_t Product_id;
-
-					std::stringstream ss;
-					ss << std::hex << m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
-					ss >> Manufacturer_id;
-
-					std::stringstream ss2;
-					ss2 << std::hex << m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
-					ss2 >> Product_id;
-
-					std::stringstream ss3;
-					ss3 << std::hex << m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
-					ss3 >> Product_type;
+					uint16_t Manufacturer_id = GetUInt16FromString(m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId));
+					uint16_t Product_type = GetUInt16FromString(m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId));
+					uint16_t Product_id = GetUInt16FromString(m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId));
 
 					if (Manufacturer_id == 0x0086)
 					{
@@ -5466,10 +5428,11 @@ namespace http {
 						root["result"][ii]["Description"] = sd[4];
 						root["result"][ii]["PollEnabled"] = (atoi(sd[5].c_str()) == 1) ? "true" : "false";
 						root["result"][ii]["Version"] = pNode->iVersion;
-						root["result"][ii]["Manufacturer_id"] = pNode->Manufacturer_id;
 						root["result"][ii]["Manufacturer_name"] = pNode->Manufacturer_name;
-						root["result"][ii]["Product_type"] = pNode->Product_type;
-						root["result"][ii]["Product_id"] = pNode->Product_id;
+
+						root["result"][ii]["Manufacturer_id"] = int_to_hex(pNode->Manufacturer_id);
+						root["result"][ii]["Product_type"] = int_to_hex(pNode->Product_type);
+						root["result"][ii]["Product_id"] = int_to_hex(pNode->Product_id);
 						root["result"][ii]["Product_name"] = pNode->Product_name;
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
