@@ -249,6 +249,11 @@ void OTGWBase::GetGatewayDetails()
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	strcpy(szCmd, "PS=1\r\n");
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+
+	/* Wait for 0.75 seconds for the command to complete and switch back to PS=0 to fix use of OtMonitor */
+	usleep(750000);
+	strcpy(szCmd, "PS=0\r\n");
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 }
 
 void OTGWBase::SendTime()
@@ -488,7 +493,7 @@ void OTGWBase::ParseLine()
 				)
 			{
 				//Dont report OT/PS/SC feedback
-				_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str());
+				//_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str());
 			}
 		}
 	}
