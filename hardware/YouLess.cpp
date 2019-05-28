@@ -111,7 +111,7 @@ bool CYouLess::GetP1Details()
 
 	szURL << "http://" << m_szIPAddress.c_str() << ":" << m_usIPPort << "/e" << "&w=" <<  m_Password.c_str();
 
-	if (!HTTPClient::GET(szURL.str().c_str(), sResult))
+	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR, "YouLess: Error getting meter details from %s !", m_szIPAddress.c_str() );
 		return false;
@@ -188,7 +188,7 @@ void CYouLess::GetMeterDetails()
 
 	szURL << "http://" << m_szIPAddress.c_str() << ":" << m_usIPPort << "/a" << "&w=" <<  m_Password.c_str();
 
-	if (!HTTPClient::GET(szURL.str().c_str(), sResult))
+	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s ", m_szIPAddress.c_str());
 		return;
