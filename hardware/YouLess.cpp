@@ -109,7 +109,9 @@ bool CYouLess::GetP1Details()
 	std::string sResult;
 	std::stringstream szURL;
 
-	szURL << "http://" << m_szIPAddress.c_str() << ":" << m_usIPPort << "/e" << "&w=" <<  m_Password.c_str();
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/e";
+	if (!m_Password.empty())
+		szURL << "&w=" << m_Password;
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
@@ -186,7 +188,7 @@ void CYouLess::GetMeterDetails()
 	std::string sResult;
 	std::stringstream szURL;
 
-	szURL << "http://" << m_szIPAddress.c_str() << ":" << m_usIPPort << "/a";
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/a";
 	if (!m_Password.empty())
 		szURL << "&w=" << m_Password;
 
