@@ -1226,17 +1226,23 @@ WeatherSensor.inheritsFrom(VariableSensor);
 function Switch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.imagetext = "Activate switch";
-        this.controlable = true;
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
         if (item.CustomImage != 0) {
             this.image = (this.status == "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         } else {
             this.image = (this.status == "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.showStatus = (Device.showSwitchValues == true);
         this.data = '';
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        if (item.SwitchType !== "Contact") {
+			this.showStatus = (Device.showSwitchValues == true);
+			this.imagetext = "Activate switch";
+			this.controlable = true;
+			this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
+        } else {
+			//Read-Only type, should not be able to switch
+			this.onClick = this.LogLink;
+			this.showStatus = false;
+        }
     }
 }
 Switch.inheritsFrom(Sensor);
