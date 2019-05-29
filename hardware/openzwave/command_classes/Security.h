@@ -72,18 +72,18 @@ namespace OpenZWave
 		bool Init(uint32 const _instance = 1);
 		bool ExchangeNetworkKeys();
 		// From CommandClass
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+		bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+		virtual uint8 const GetCommandClassId() const override{ return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
 		void SendMsg( Msg* _msg );
 
 	protected:
-		void CreateVars( uint8 const _instance );
+		void CreateVars( uint8 const _instance ) override;
 
 	private:
 		Security( uint32 const _homeId, uint8 const _nodeId );
-		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue);
-		bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue);
 		bool HandleSupportedReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
 
 		bool m_schemeagreed;

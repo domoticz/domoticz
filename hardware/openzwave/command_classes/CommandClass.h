@@ -79,7 +79,7 @@ public:
 	string const GetCommandClassLabel();
 	void SetCommandClassLabel(string label);
 	virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) = 0;
-	virtual bool HandleIncomingMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) { return false; }
+	virtual bool HandleIncomingMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
 	virtual bool SetValue( Value const& _value ){ return false; }
 	virtual void SetValueBasic( uint8 const _instance, uint8 const _level ){}		// Class specific handling of BASIC value mapping
 	virtual void SetVersion( uint8 const _version ); // Made out-of-line to allow checks against downgrade

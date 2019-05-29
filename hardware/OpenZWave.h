@@ -41,7 +41,7 @@ public:
 	typedef struct
 	{
 		unsigned int					homeId;
-		unsigned char					nodeId;
+		uint8_t							nodeId;
 		bool							polled;
 
 		std::string						szType;
@@ -127,7 +127,7 @@ public:
 
 	bool m_awakeNodesQueried;
 	bool m_allNodesQueried;
-	unsigned char m_controllerNodeId;
+	uint8_t m_controllerNodeId;
 	COpenZWaveControlPanel m_ozwcp;
 private:
 	void NodeQueried(const unsigned int homeID, const int nodeID);
@@ -136,7 +136,7 @@ private:
 	void EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime);
 	void DisableNodePoll(const unsigned int homeID, const int nodeID);
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
-	bool GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue);
+	bool GetValueByCommandClassIndex(const int nodeID, const int instanceID, const int commandClass, const uint16_t vIndex, OpenZWave::ValueID &nValue);
 	bool GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue);
 	void AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeInfo);
 	void UpdateValue(const OpenZWave::ValueID &vID);
