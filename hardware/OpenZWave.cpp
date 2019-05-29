@@ -2574,7 +2574,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			}
 		}
 	}
-	else if (commandclass = COMMAND_CLASS_SCENE_ACTIVATION)
+	else if (commandclass == COMMAND_CLASS_SCENE_ACTIVATION)
 	{
 		if (vOrgIndex != ValueID_Index_SceneActivation::SceneID)
 			return;
