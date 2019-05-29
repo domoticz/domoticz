@@ -352,47 +352,41 @@ bool CRtl433::ParseLine(const std::vector<std::string> &headers, const char *lin
 	{
 		int iForecast = 0;
 		SendTempHumBaroSensor(sensoridx, batterylevel, tempC, humidity, pressure, iForecast, model);
-		return true;
 	}
-	if (haveTemp && haveHumidity)
+	else if (haveTemp && haveHumidity)
 	{
 		SendTempHumSensor(sensoridx, batterylevel, tempC, humidity, model);
-		return true;
+	}
+	else 
+	{
+		if (haveTemp)
+		{
+			SendTempSensor(sensoridx, batterylevel, tempC, model);
+		}
+		if (haveHumidity)
+		{
+			SendHumiditySensor(sensoridx, batterylevel, humidity, model);
+		}
 	}
 	if (haveWind_Strength || haveWind_Gust || haveWind_Dir)
 	{
 		SendWind(sensoridx, batterylevel, wind_dir, wind_strength, wind_gust, tempC, 0, haveTemp, false, model);
-		return true;
-	}
-	if (haveTemp)
-	{
-		SendTempSensor(sensoridx, batterylevel, tempC, model);
-		return true;
-	}
-	if (haveHumidity)
-	{
-		SendHumiditySensor(sensoridx, batterylevel, humidity, model);
-		return true;
 	}
 	if (haveRain)
 	{
 		SendRainSensor(sensoridx, batterylevel, rain, model);
-		return true;
 	}
 	if (haveDepth_CM)
 	{
 		SendDistanceSensor(sensoridx, unit, batterylevel, depth_cm, model);
-		return true;
 	}
 	if (haveDepth)
 	{
 		SendDistanceSensor(sensoridx, unit, batterylevel, depth, model);
-		return true;
 	}
 	if (haveMoisture)
 	{
 		SendMoistureSensor(sensoridx, batterylevel, moisture, model);
-		return true;
 	}
 
 	return false; //not handled (Yet!)
