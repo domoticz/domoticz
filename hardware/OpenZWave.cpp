@@ -90,7 +90,7 @@ uint8_t GetIndexFromAlarm(const std::string& sLabel)
 	int ii = 0;
 	while (AlarmToIndexMapping[ii].iIndex != 0)
 	{
-		if (AlarmToIndexMapping[ii].sLabel == sLabel)
+		if (AlarmToIndexMapping[ii].sLabel.find(sLabel) != std::string::npos)
 			return AlarmToIndexMapping[ii].iIndex;
 		ii++;
 	}
@@ -149,7 +149,7 @@ uint8_t GetIndexFromAlarmType(const std::string& sLabel)
 	int ii = 0;
 	while (!AlarmTypeToIndexMapping[ii].sLabel.empty())
 	{
-		if (sLabel.find(AlarmTypeToIndexMapping[ii].sLabel) != std::string::npos)
+		if (AlarmTypeToIndexMapping[ii].sLabel.find(sLabel) != std::string::npos)
 			return AlarmTypeToIndexMapping[ii].iIndex;
 		ii++;
 	}
