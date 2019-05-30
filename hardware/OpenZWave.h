@@ -141,7 +141,6 @@ private:
 	void AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeInfo);
 	void UpdateValue(const OpenZWave::ValueID &vID);
 	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
-	void UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID);
 	bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);

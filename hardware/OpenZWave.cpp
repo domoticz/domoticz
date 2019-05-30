@@ -653,17 +653,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_SceneEvent:
 		//Deprecated
-		if (NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
-		{
-			nodeInfo->eState = NSTATE_AWAKE;
-
-			// Add the new value to our list
-			UpdateNodeScene(vID, static_cast<int>(_notification->GetSceneId()));
-			nodeInfo->LastSeen = m_updateTime;
-			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-		}
-		else
-			_log.Log(LOG_ERROR, "OpenZWave: Type_SceneEvent, NodeID not found internally!. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueRemoved:
 		if ((_nodeID == 0) || (_nodeID == 255))
@@ -2676,69 +2665,6 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 		pDevice->sequence_number = 1;
 	if (pDevice->bValidValue)
 		SendDevice2Domoticz(pDevice);
-}
-
-void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID& vID, int SceneID)
-{
-	//deprecated
-	return;
-/*
-	if (m_pManager == NULL)
-		return;
-	if (m_controllerID == 0)
-		return;
-
-	//if (m_nodesQueried==false)
-	//return; //only allow updates when node Query is done
-
-	//unsigned int HomeID = vID.GetHomeId();
-	uint8_t NodeID = vID.GetNodeId();
-
-	int devID = (SceneID << 8) + NodeID;
-	int instanceID = 0;
-	int indexID = 0;
-	int commandclass = COMMAND_CLASS_SCENE_ACTIVATION;
-	_tZWaveDevice* pDevice = FindDevice(devID, instanceID, indexID, commandclass, ZDTYPE_SWITCH_NORMAL);
-	if (pDevice == NULL)
-	{
-		//Add new switch device
-		_tZWaveDevice _device;
-		_device.nodeID = devID;
-		_device.instanceID = instanceID;
-		_device.indexID = indexID;
-
-		std::stringstream sstr;
-		sstr << "Scene " << SceneID;
-		_device.label = sstr.str();
-
-		_device.basicType = 1;
-		_device.genericType = 1;
-		_device.specificType = 1;
-		_device.isListening = false;
-		_device.sensor250 = false;
-		_device.sensor1000 = false;
-		_device.isFLiRS = !_device.isListening && (_device.sensor250 || _device.sensor1000);
-		_device.hasWakeup = false;
-		_device.hasBattery = false;
-		_device.scaleID = -1;
-
-		_device.commandClassID = commandclass;
-		_device.devType = ZDTYPE_SWITCH_NORMAL;
-		_device.intvalue = 255;
-		InsertDevice(_device);
-		pDevice = FindDevice(devID, instanceID, indexID, commandclass, ZDTYPE_SWITCH_NORMAL);
-		if (pDevice == NULL)
-			return;
-	}
-	time_t atime = mytime(NULL);
-	pDevice->intvalue = 255;
-	pDevice->lastreceived = atime;
-	pDevice->sequence_number += 1;
-	if (pDevice->sequence_number == 0)
-		pDevice->sequence_number = 1;
-	if (pDevice->bValidValue)
-		SendDevice2Domoticz(pDevice);
-*/
 }
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
