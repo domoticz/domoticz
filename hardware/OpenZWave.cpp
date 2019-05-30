@@ -598,6 +598,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	{
 		if ((_nodeID == 0) || (_nodeID == 255))
 			return;
+		//A node has been removed from OpenZWave's list.  This may be due to a device being removed from the Z-Wave network, or because the application is closing
 		_log.Log(LOG_STATUS, "OpenZWave: Node Removed. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		// Remove the node from our list
 		for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
@@ -605,7 +606,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			if ((it->homeId == _homeID) && (it->nodeId == _nodeID))
 			{
 				m_nodes.erase(it);
-				DeleteNode(_homeID, _nodeID);
+				//DeleteNode(_homeID, _nodeID);
 				break;
 			}
 		}
@@ -4340,8 +4341,7 @@ void COpenZWave::DisableNodePoll(const unsigned int homeID, const int nodeID)
 
 void COpenZWave::DeleteNode(const unsigned int homeID, const int nodeID)
 {
-	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
-		m_HwdID, homeID, nodeID);
+	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",	m_HwdID, homeID, nodeID);
 }
 
 void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const NodeInfo* pNode)
