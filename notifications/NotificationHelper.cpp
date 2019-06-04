@@ -19,7 +19,7 @@
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
-#include "NotificationGCM.h"
+#include "NotificationFCM.h"
 
 #include "NotificationBrowser.h"
 #define __STDC_FORMAT_MACROS
@@ -51,7 +51,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationHTTP());
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
-	AddNotifier(new CNotificationGCM());
+	AddNotifier(new CNotificationFCM());
 	AddNotifier(new CNotificationBrowser());
 }
 
@@ -126,7 +126,13 @@ bool CNotificationHelper::SendMessageEx(
 	std::vector<std::string>::const_iterator itt;
 	for (itt = sResult.begin(); itt != sResult.end(); ++itt)
 	{
-		ActiveSystems[*itt] = 1;
+		//GCM is deprecated. For now we change this here, if set for example in existing LUA scripts, to the new endpoint FCM
+		std::string currentSubsystem = *itt;
+		if (currentSubsystem == "gcm") {
+			currentSubsystem = "fcm";
+		}
+
+		ActiveSystems[currentSubsystem] = 1;
 	}
 
 	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter)

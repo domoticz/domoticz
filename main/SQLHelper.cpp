@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 134
+#define DB_VERSION 135
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2224,7 +2224,7 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 116)
 		{
-			//Patch for GCM/FCM
+			//Patch for FCM
 			safe_query("UPDATE MobileDevices SET Active=1");
 			if (!DoesColumnExistsInTable("DeviceType", "MobileDevices"))
 			{
@@ -2604,6 +2604,10 @@ bool CSQLHelper::OpenDatabase()
 			query(sqlCreateHardware);
 			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
 			query("DROP TABLE tmp_Hardware;");
+		}
+		if (dbversion < 135)
+		{
+			query("UPDATE [Preferences] SET Key='FCMEnabled' WHERE Key='GCMEnabled';");
 		}
 	}
 	else if (bNewInstall)

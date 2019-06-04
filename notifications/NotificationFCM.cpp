@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "NotificationGCM.h"
+#include "NotificationFCM.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -8,16 +8,16 @@
 #define GAPI_POST_URL "https://fcm.googleapis.com/fcm/send"
 #define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
 
-CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_NONE)
+CNotificationFCM::CNotificationFCM() : CNotificationBase(std::string("fcm"), OPTIONS_NONE)
 {
-	SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
+	SetupConfig(std::string("FCMEnabled"), &m_IsEnabled);
 }
 
-CNotificationGCM::~CNotificationGCM()
+CNotificationFCM::~CNotificationFCM()
 {
 }
 
-bool CNotificationGCM::SendMessageImplementation(
+bool CNotificationFCM::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string &Name,
 	const std::string &Subject,
@@ -27,7 +27,7 @@ bool CNotificationGCM::SendMessageImplementation(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	//send message to GCM
+	//send message to FCM
 	//ExtraData should be empty, is only filled currently when hitting the test button from the mobile devices setup page in the web gui
 
 	//Get All Devices
@@ -101,7 +101,7 @@ bool CNotificationGCM::SendMessageImplementation(
 
 		if (!HTTPClient::POST(GAPI_POST_URL, szPostdata, ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "GCM: Could not send message, HTTP Error");
+			_log.Log(LOG_ERROR, "FCM: Could not send message, HTTP Error");
 			return false;
 		}
 
@@ -111,7 +111,7 @@ bool CNotificationGCM::SendMessageImplementation(
 		bool ret = jReader.parse(sResult, root);
 		if (!ret)
 		{
-			_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
+			_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
 			return false;
 		}
 	}
@@ -145,7 +145,7 @@ bool CNotificationGCM::SendMessageImplementation(
 
 		if (!HTTPClient::POST(GAPI_POST_URL, szPostdata, ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "GCM: Could not send message, HTTP Error");
+			_log.Log(LOG_ERROR, "FCM: Could not send message, HTTP Error");
 			return false;
 		}
 
@@ -155,14 +155,14 @@ bool CNotificationGCM::SendMessageImplementation(
 		bool ret = jReader.parse(sResult, root);
 		if (!ret)
 		{
-			_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
+			_log.Log(LOG_ERROR, "FCM: Can not connect to FCM API URL");
 			return false;
 		}
 	}
 	return true;
 }
 
-bool CNotificationGCM::IsConfigured()
+bool CNotificationFCM::IsConfigured()
 {
 	return true;
 }

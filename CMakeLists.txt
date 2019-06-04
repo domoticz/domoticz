@@ -493,7 +493,7 @@ hardware/plugins/PythonObjects.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationBrowser.cpp
 notifications/NotificationEmail.cpp
-notifications/NotificationGCM.cpp
+notifications/NotificationFCM.cpp
 notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp

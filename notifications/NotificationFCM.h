@@ -1,10 +1,10 @@
 #pragma once
 #include "NotificationBase.h"
 
-class CNotificationGCM : public CNotificationBase {
+class CNotificationFCM : public CNotificationBase {
 public:
-	CNotificationGCM();
-	~CNotificationGCM();
+	CNotificationFCM();
+	~CNotificationFCM();
 	virtual bool IsConfigured();
 protected:
 	virtual bool SendMessageImplementation(
