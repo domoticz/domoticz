@@ -2600,10 +2600,7 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 134)
 		{
-			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
-			query(sqlCreateHardware);
-			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
-			query("DROP TABLE tmp_Hardware;");
+			query("ALTER TABLE Hardware ADD COLUMN [Configuration] TEXT DEFAULT ('')");
 		}
 	}
 	else if (bNewInstall)
