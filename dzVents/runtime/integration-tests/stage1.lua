@@ -83,7 +83,6 @@ local testQuietOnSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 49,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -107,7 +106,6 @@ local testQuietOffSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 50,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -291,6 +289,7 @@ end
 local testCounterIncremental = function(name)
 	local dev = dz.devices(name)
 	local res = true
+	local res2 = true
 	res = res and checkAttributes(dev, {
 		["id"] = 8,
 		["name"] = name,
@@ -310,8 +309,12 @@ local testCounterIncremental = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateCounter(1234)
-	tstMsg('Test counter incremental device', res)
-	return res
+	tstMsg('Test method updateCounter for counter incremental device', res)
+
+	dev.incrementCounter(10)
+	tstMsg('Test method incrementCounter for counter incremental device', res2)
+
+	return res and res2
 end
 
 local testCustomSensor = function(name)
@@ -1374,6 +1377,14 @@ local testHTTPSwitch = function(name)
 	return res
 end
 
+local testDocumentationSwitch = function(name)
+	local res = true
+	local dev = dz.devices(name)
+	dev.switchOn()
+	tstMsg('Start test documentation switch device', res)
+	return res
+end
+
 local testDescriptionSwitchDevice = function(name)
 	local res = true
 	local dev = dz.devices(name)
@@ -1482,6 +1493,7 @@ return {
 		res = res and testLocation();
 		res = res and testVersion();
 		res = res and testHTTPSwitch('vdHTTPSwitch');
+		res = res and testDocumentationSwitch('vdDocumentationSwitch');
 		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testDescriptionSwitchDevice('vdDescriptionSwitch');
 		res = res and testDescriptionSwitchScene('scDescriptionScene');

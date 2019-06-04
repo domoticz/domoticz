@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.22',
+	DZVERSION = '2.4.23',
 }
 
 function self.fileExists(name)
@@ -30,6 +30,7 @@ function self.stringSplit(text, sep)
 end
 
 function self.inTable(searchTable, element)
+	if type(searchTable) ~= 'table' then return false end
 	local res = res
 	for k, v in pairs(searchTable) do
 		if type(v) == 'table' then res = self.inTable(v, element) end
