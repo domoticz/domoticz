@@ -31,6 +31,7 @@
 #include <list>
 #include "command_classes/CommandClass.h"
 #include "Driver.h"
+#include "TimerThread.h"
 
 namespace OpenZWave
 {
@@ -39,8 +40,9 @@ namespace OpenZWave
 	class Mutex;
 
 	/** \brief Implements COMMAND_CLASS_WAKE_UP (0x84), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
-	class WakeUp: public CommandClass
+	class WakeUp: public CommandClass, private Timer
 	{
 	public:
 		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new WakeUp( _homeId, _nodeId ); }
@@ -51,24 +53,30 @@ namespace OpenZWave
 
 		void Init();	// Starts the process of requesting node state from a sleeping device.
 		void QueueMsg( Driver::MsgQueueItem const& _item );
+
+		/** \brief Send all pending messages followed by a no more information message. */
 		void SendPending();
+
+		/** \brief Send a no more information message. */
+		void SendNoMoreInfo(uint32 id);
+
 		bool IsAwake()const{ return m_awake; }
 		void SetAwake( bool _state );
 		void SetPollRequired(){ m_pollRequired = true; }
 
 		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual bool SetValue( Value const& _value );
-		virtual void SetVersion( uint8 const _version );
+		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+		virtual bool SetValue( Value const& _value ) override;
+		virtual void SetVersion( uint8 const _version ) override;
 
-		virtual uint8 GetMaxVersion(){ return 2; }
+		virtual uint8 GetMaxVersion() override { return 2; }
 
 	protected:
-		virtual void CreateVars( uint8 const _instance );
+		virtual void CreateVars( uint8 const _instance ) override;
 
 	private:
 		WakeUp( uint32 const _homeId, uint8 const _nodeId );

@@ -34,6 +34,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_ASSOCIATION (0x85), a Z-Wave device command class.
+	 *\ingroup CommandClass
 	 */
 	class Association: public CommandClass
 	{
@@ -47,13 +48,13 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_ASSOCIATION"; }
 
 		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }		
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+		virtual void ReadXML( TiXmlElement const* _ccElement ) override;
+		virtual void WriteXML( TiXmlElement* _ccElement ) override;
+		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 )  override;
 
 		void RequestAllGroups( uint32 const _requestFlags );
 		void Set( uint8 const _group, uint8 const _nodeId );

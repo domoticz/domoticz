@@ -2,7 +2,7 @@
 
 <!-- Fibaro: FGKF-601 Keyfob -->
 
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
 	<!-- Configuration -->
 	<CommandClass id="112">	
 		<Value type="short" genre="config" instance="1" index="1" label="Lock Mode - unlocking sequence" min="0" max="28086" value="0">

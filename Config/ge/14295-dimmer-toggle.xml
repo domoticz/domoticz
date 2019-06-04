@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- GE(Jasco) 14295 Z-Wave Plus Toggle Dimmer Switch -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
 	<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/2048 -->
 	<CommandClass id="112">
 		<Value type="list" index="4" genre="config" label="Invert Switch" min="0" max="1" size="1" value="0">

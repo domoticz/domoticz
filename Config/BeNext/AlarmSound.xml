@@ -1,7 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.net/device-database/008a:0101:0005</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/BeNext/AlarmSound.png</MetaDataItem>
+    <MetaDataItem id="0100" name="ZWProductPage" type="0005">https://products.z-wavealliance.org/products/51</MetaDataItem>
+    <MetaDataItem name="Description">The Alarm Sound is a plug and play product developed by BeNext. Depending on present situations and scenes it sets off an alarm sound warning you and your family or scaring off unwanted activities. Use the Alarm Sound for security purposes and notifications indoors.
+Use the Alarm Sound in combination with the Door Sensor or MoLite Sensor to alert you when someone undesirably enters your home or work-space. The Alarm Sound possesses six different sound- and lighting-configurations to scare off any possible intruder. You can also customize personal preferred ‘scenes’ and ‘rules’ in our free of charge online manager in order to give the Alarm Sound dual functionality. You can even choose to create a new kind of alarm clock, which in combination with the Door Sensor or MoLite Sensor gives a wake up alarm if you haven’t left your bedroom after 09:00 am.
+</MetaDataItem>
+    <MetaDataItem name="ProductPage">www.benext.eu/en/products/alarm-sound/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">Info@Benext.eu</MetaDataItem>
+    <MetaDataItem name="Name">Alarm Sound</MetaDataItem>
+    <MetaDataItem id="0100" name="FrequencyName" type="0005">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0100" name="Identifier" type="0005">BeNeXt / Alarm Sound</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jano42 - decoretjm@gmail.com" date="15 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/51/XML</Entry>
+    </ChangeLog>
+  </MetaData>	
   <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
-  <CommandClass id="113" getsupported="false" />
+  <CommandClass id="113">
+    <Compatibility>	
+       <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
 
 	<!-- Configuration -->
 	<CommandClass id="112">
@@ -23,40 +42,445 @@
 		<Value type="byte" genre="config" instance="1" index="6" label="Temperature calibration offset (byte 2)" value="0">
 			<Help>A (signed) offset to calibrate the onboard temperature sensor</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="7" label="Select index sound/light mode" value="1">
+		<Value genre="config" instance="1" index="7" max="6" min="0" size="1" type="list" label="Select index sound/light mode" value="1">
 			<Help>The index of the sound mode when a switch binary/basic set frame is received</Help>
+			<Item label="Disabled." value="0"/>
+			<Item label="Sound/Light index 1" value="1"/>
+			<Item label="Sound/Light index 2" value="2"/>
+			<Item label="Sound/Light index 3" value="3"/>
+			<Item label="Sound/Light index 4" value="4"/>
+			<Item label="Sound/Light index 5" value="5"/>
+			<Item label="Sound/Light index 6" value="6"/>			
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="8" label="Power offline sound/light mode" value="6">
+		<Value genre="config" instance="1" index="8" max="6" min="0" size="1" type="list" label="Power offline sound/light mode" value="6">
 			<Help>The index of the sound mode when the AlarmSound will start when it is unplugged</Help>
+			<Item label="Disabled." value="0"/>
+			<Item label="Sound/Light index 1" value="1"/>
+			<Item label="Sound/Light index 2" value="2"/>
+			<Item label="Sound/Light index 3" value="3"/>
+			<Item label="Sound/Light index 4" value="4"/>
+			<Item label="Sound/Light index 5" value="5"/>
+			<Item label="Sound/Light index 6" value="6"/>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="9" label="Error sound/light mode" value="5">
+
+		<Value genre="config" instance="1" index="9" max="6" min="0" size="1" type="list" label="Error sound/light mode" value="5">
 			<Help>The index of the sound mode when the AlarmSound will play when it is unable to reach the device in association group 2</Help>
+			<Item label="Disabled." value="0"/>
+			<Item label="Sound/Light index 1" value="1"/>
+			<Item label="Sound/Light index 2" value="2"/>
+			<Item label="Sound/Light index 3" value="3"/>
+			<Item label="Sound/Light index 4" value="4"/>
+			<Item label="Sound/Light index 5" value="5"/>
+			<Item label="Sound/Light index 6" value="6"/>			
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="10" label="Sound/Light index 1" value="-1">
-			<Help>Params 10 until 27 are the values to configure the sound and light thtat are played when index 1 is selected</Help>
+		
+		<Value type="byte" genre="config" instance="1" index="10" label="Sound [index 1] : Volume" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="11" label="Sound [index 1] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="12" label="Sound [index 1] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="13" label="Sound [index 1] : Max/min Frequency" value="161">
+			<Help>Default value : 161</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="14" label="Sound [index 1] : Freq. direction/time" value="1">
+			<Help>Default value : 1</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="15" label="Sound [index 1] : Sound time" value="200">
+			<Help>Default value : 200</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="16" label="Sound [index 1] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="17" label="Sound [index 1] : Repeats / Pause time " value="26">
+			<Help>Default value : 26</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="28" label="Sound/Light index 2" value="-1">
-			<Help>Params 28 until 45 are the values to configure the sound and light thtat are played when index 2 is selected</Help>
+		<!-- INDEX 1 : LIGHT CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="18" label="Light [index 1] : Intensity" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="19" label="Light [index 1] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="20" label="Light [index 1] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="21" label="Light [index 1] : Time / LED " value="20">
+			<Help>Default value : 20</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="22" label="Light [index 1] : Light time" value="255">
+			<Help>Default value : 255</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="23" label="Light [index 1] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="24" label="Light [index 1] : Repeats / Pause time " value="16">
+			<Help>Default value : 16</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="46" label="Sound/Light index 3" value="-1">
-			<Help>Params 46 until 63 are the values to configure the sound and light thtat are played when index 3 is selected</Help>
+		<!-- INDEX 1 : SEQUENCE CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="25" label="Sequence [index 1] : Sequence repeats" value="255">
+			<Help>Default value : 255</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="64" label="Sound/Light index 4" value="-1">
-			<Help>Params 64 until 81 are the values to configure the sound and light thtat are played when index 4 is selected</Help>
+		<Value type="byte" genre="config" instance="1" index="26" label="Sequence [index 1] : Steps" value="66">
+			<Help>Default value : 66
+				Bit 7: reserved
+				Bit 6: step1: sound on
+				Bit 5: step1: leds on
+				Bit 4: step1: pause on
+				Bit 3: reserved
+				Bit 2: step2: sound on
+				Bit 1: step2: leds on
+				Bit 0: step2: pause on
+			</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="82" label="Sound/Light index 5" value="-1">
-			<Help>Params 82 until 99 are the values to configure the sound and light thtat are played when index 5 is selected</Help>
+		<Value type="byte" genre="config" instance="1" index="27" label="Sequence [index 1] : Pause time" value="0">
+			<Help>Default value : 0</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="100" label="Sound/Light index 6" value="-1">
-			<Help>Params 100 until 117 are the values to configure the sound and light thtat are played when index 6 is selected</Help>
+
+		<Value type="byte" genre="config" instance="1" index="28" label="Sound [index 2] : Volume" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="29" label="Sound [index 2] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="30" label="Sound [index 2] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="31" label="Sound [index 2] : Max/min Frequency" value="161">
+			<Help>Default value : 161</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="32" label="Sound [index 2] : Freq. direction/time" value="1">
+			<Help>Default value : 1</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="33" label="Sound [index 2] : Sound time" value="200">
+			<Help>Default value : 200</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="34" label="Sound [index 2] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="35" label="Sound [index 2] : Repeats / Pause time " value="26">
+			<Help>Default value : 26</Help>
 		</Value>
+		<!-- INDEX 2 : LIGHT CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="36" label="Light [index 2] : Intensity" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="37" label="Light [index 2] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="38" label="Light [index 2] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="39" label="Light [index 2] : Time / LED " value="20">
+			<Help>Default value : 20</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="40" label="Light [index 2] : Light time" value="255">
+			<Help>Default value : 255</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="41" label="Light [index 2] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="42" label="Light [index 2] : Repeats / Pause time " value="16">
+			<Help>Default value : 16</Help>
+		</Value>
+		<!-- INDEX 2 : SEQUENCE CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="43" label="Sequence [index 2] : Sequence repeats" value="255">
+			<Help>Default value : 255</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="44" label="Sequence [index 2] : Steps" value="66">
+			<Help>Default value : 66
+				Bit 7: reserved
+				Bit 6: step1: sound on
+				Bit 5: step1: leds on
+				Bit 4: step1: pause on
+				Bit 3: reserved
+				Bit 2: step2: sound on
+				Bit 1: step2: leds on
+				Bit 0: step2: pause on
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="45" label="Sequence [index 2] : Pause time" value="0">
+			<Help>Default value : 0</Help>
+		</Value>
+		
+
+		<Value type="byte" genre="config" instance="1" index="46" label="Sound [index 3] : Volume" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="47" label="Sound [index 3] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="48" label="Sound [index 3] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="49" label="Sound [index 3] : Max/min Frequency" value="161">
+			<Help>Default value : 161</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="50" label="Sound [index 3] : Freq. direction/time" value="1">
+			<Help>Default value : 1</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="51" label="Sound [index 3] : Sound time" value="200">
+			<Help>Default value : 200</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="52" label="Sound [index 3] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="53" label="Sound [index 3] : Repeats / Pause time " value="26">
+			<Help>Default value : 26</Help>
+		</Value>
+		<!-- INDEX 3 : LIGHT CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="54" label="Light [index 3] : Intensity" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="55" label="Light [index 3] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="56" label="Light [index 3] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="57" label="Light [index 3] : Time / LED " value="20">
+			<Help>Default value : 20</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="58" label="Light [index 3] : Light time" value="255">
+			<Help>Default value : 255</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="59" label="Light [index 3] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="60" label="Light [index 3] : Repeats / Pause time " value="16">
+			<Help>Default value : 16</Help>
+		</Value>
+		<!-- INDEX 3 : SEQUENCE CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="61" label="Sequence [index 3] : Sequence repeats" value="255">
+			<Help>Default value : 255</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="62" label="Sequence [index 3] : Steps" value="66">
+			<Help>Default value : 66
+				Bit 7: reserved
+				Bit 6: step1: sound on
+				Bit 5: step1: leds on
+				Bit 4: step1: pause on
+				Bit 3: reserved
+				Bit 2: step2: sound on
+				Bit 1: step2: leds on
+				Bit 0: step2: pause on
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="63" label="Sequence [index 3] : Pause time" value="0">
+			<Help>Default value : 0</Help>
+		</Value>		
+		
+	
+		<Value type="byte" genre="config" instance="1" index="64" label="Sound [index 4] : Volume" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="65" label="Sound [index 4] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="66" label="Sound [index 4] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="67" label="Sound [index 4] : Max/min Frequency" value="161">
+			<Help>Default value : 161</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="68" label="Sound [index 4] : Freq. direction/time" value="1">
+			<Help>Default value : 1</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="69" label="Sound [index 4] : Sound time" value="200">
+			<Help>Default value : 200</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="70" label="Sound [index 4] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="71" label="Sound [index 4] : Repeats / Pause time " value="26">
+			<Help>Default value : 26</Help>
+		</Value>
+		<!-- INDEX 4 : LIGHT CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="72" label="Light [index 4] : Intensity" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="73" label="Light [index 4] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="74" label="Light [index 4] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="75" label="Light [index 4] : Time / LED " value="20">
+			<Help>Default value : 20</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="76" label="Light [index 4] : Light time" value="255">
+			<Help>Default value : 255</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="77" label="Light [index 4] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="78" label="Light [index 4] : Repeats / Pause time " value="16">
+			<Help>Default value : 16</Help>
+		</Value>
+		<!-- INDEX 4 : SEQUENCE CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="79" label="Sequence [index 4] : Sequence repeats" value="255">
+			<Help>Default value : 255</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="80" label="Sequence [index 4] : Steps" value="66">
+			<Help>Default value : 66
+				Bit 7: reserved
+				Bit 6: step1: sound on
+				Bit 5: step1: leds on
+				Bit 4: step1: pause on
+				Bit 3: reserved
+				Bit 2: step2: sound on
+				Bit 1: step2: leds on
+				Bit 0: step2: pause on
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="81" label="Sequence [index 4] : Pause time" value="0">
+			<Help>Default value : 0</Help>
+		</Value>		
+		
+
+		<Value type="byte" genre="config" instance="1" index="82" label="Sound [index 5] : Volume" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="83" label="Sound [index 5] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="84" label="Sound [index 5] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="85" label="Sound [index 5] : Max/min Frequency" value="161">
+			<Help>Default value : 161</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="86" label="Sound [index 5] : Freq. direction/time" value="1">
+			<Help>Default value : 1</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="87" label="Sound [index 5] : Sound time" value="200">
+			<Help>Default value : 200</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="88" label="Sound [index 5] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="89" label="Sound [index 5] : Repeats / Pause time " value="26">
+			<Help>Default value : 26</Help>
+		</Value>
+		<!-- INDEX 5 : LIGHT CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="90" label="Light [index 5] : Intensity" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="91" label="Light [index 5] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="92" label="Light [index 5] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="93" label="Light [index 5] : Time / LED " value="20">
+			<Help>Default value : 20</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="94" label="Light [index 5] : Light time" value="255">
+			<Help>Default value : 255</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="95" label="Light [index 5] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="96" label="Light [index 5] : Repeats / Pause time " value="16">
+			<Help>Default value : 16</Help>
+		</Value>
+		<!-- INDEX 5 : SEQUENCE CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="97" label="Sequence [index 5] : Sequence repeats" value="255">
+			<Help>Default value : 255</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="98" label="Sequence [index 5] : Steps" value="66">
+			<Help>Default value : 66
+				Bit 7: reserved
+				Bit 6: step1: sound on
+				Bit 5: step1: leds on
+				Bit 4: step1: pause on
+				Bit 3: reserved
+				Bit 2: step2: sound on
+				Bit 1: step2: leds on
+				Bit 0: step2: pause on
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="99" label="Sequence [index 5] : Pause time" value="0">
+			<Help>Default value : 0</Help>
+		</Value>		
+		
+
+		<Value type="byte" genre="config" instance="1" index="100" label="Sound [index 6] : Volume" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="101" label="Sound [index 6] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="102" label="Sound [index 6] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="103" label="Sound [index 6] : Max/min Frequency" value="161">
+			<Help>Default value : 161</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="104" label="Sound [index 6] : Freq. direction/time" value="1">
+			<Help>Default value : 1</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="105" label="Sound [index 6] : Sound time" value="200">
+			<Help>Default value : 200</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="106" label="Sound [index 6] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="107" label="Sound [index 6] : Repeats / Pause time " value="26">
+			<Help>Default value : 26</Help>
+		</Value>
+		<!-- INDEX 6 : LIGHT CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="108" label="Light [index 6] : Intensity" value="99">
+			<Help>Default value : 99</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="109" label="Light [index 6] : Duration msb" value="03">
+			<Help>Default value : 03</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="110" label="Light [index 6] : duration lsb" value="232">
+			<Help>Default value : 232</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="111" label="Light [index 6] : Time / LED " value="20">
+			<Help>Default value : 20</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="112" label="Light [index 6] : Light time" value="255">
+			<Help>Default value : 255</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="113" label="Light [index 6] : Interval time" value="00">
+			<Help>Default value : 00</Help>
+		</Value>                                                               
+		<Value type="byte" genre="config" instance="1" index="114" label="Light [index 6] : Repeats / Pause time " value="16">
+			<Help>Default value : 16</Help>
+		</Value>
+		<!-- INDEX 6 : SEQUENCE CONFIG -->
+		<Value type="byte" genre="config" instance="1" index="115" label="Sequence [index 6] : Sequence repeats" value="255">
+			<Help>Default value : 255</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="116" label="Sequence [index 6] : Steps" value="66">
+			<Help>Default value : 66
+				Bit 7: reserved
+				Bit 6: step1: sound on
+				Bit 5: step1: leds on
+				Bit 4: step1: pause on
+				Bit 3: reserved
+				Bit 2: step2: sound on
+				Bit 1: step2: leds on
+				Bit 0: step2: pause on
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="117" label="Sequence [index 6] : Pause time" value="0">
+			<Help>Default value : 0</Help>
+		</Value>		
 	</CommandClass>
 
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="2">
-			<Group index="1" max_associations="1" label="Group 1" auto="false"/>
-			<Group index="2" max_associations="1" label="Group 2"/>
+			<Group auto="false" index="1" label="Group 1" max_associations="1"/>
+			<Group index="2" label="Group 2" max_associations="1"/>
 		</Associations>
 	</CommandClass>
+
 </Product>

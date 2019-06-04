@@ -1,26 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- 
 GE Plug-in Smart Switch, Dual Outlet with Simultaneous Control 14282 (ZW4106) 
 http://products.z-wavealliance.org/products/1437
- -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<CommandClass id="112">
-		<Value type="list" index="3" genre="config" label="LED Light" size="1" value="0">
-			<Help>
+ --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3033:5052</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14282-plugin-switch.png</MetaDataItem>
+    <MetaDataItem id="3033" name="ZWProductPage" type="5052">https://products.z-wavealliance.org/products/1437/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-wave certified controller to include the device to the Z-wave network.
+2. Once the controller is ready to include your smart switch, single press and release the manual/program button on the smart dimmer to include it in the network.
+3. Once your controller has confirmed that the smart switch has been included, refresh the Z-wave network to optimize performance. </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-wave certified controller to exclude a device from the Z-wave network.
+2. Once the controller is ready to Exclude your device, press and release the manual/program button on the smart switch to exclude it from the network. </MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE Z-Wave Smart Lighting Control Plug-in Smart Switch. The lighting control enables wireless control of on/off functions for standard table and floor lamps, and is compatible with incandescent, LED, Xenon, Halogen, fluorescent and compact fluorescent bulbs. Easily controlled by your mobile device or computer using any Z-Wave certified gateway, the space-saving horizontal module plugs into a standard wall receptacle without blocking the second outlet or obstructing placement of furniture. It provides two Z-Wave enabled outlets controlled together for 2 lamps or appliances that you would like to. Perfect for 2 lamps or devices on other side of a couch or bed! Take control of your home lighting with GE Z-Wave Smart Lighting Controls!</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. If plugged in, unplug the Switch from the receptacle.
+2. Press and hold the top button for at least 3 seconds while you plug the switch into a receptacle.
+Note: This should only be used in the event your network’s primary controller is missing or otherwise inoperable. </MetaDataItem>
+    <MetaDataItem id="3033" name="Identifier" type="5052">14282 (ZW4106)</MetaDataItem>
+    <MetaDataItem name="Name">Plug-in Smart Switch, Dual Outlet with Simultaneous Control</MetaDataItem>
+    <MetaDataItem id="3033" name="FrequencyName" type="5052">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1437/14282-1 EnFrSp QSG.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1437/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" size="1" type="list" value="0">
+      <Help>
 				When shipped from the factory, the LED is set to turn ON when the connected light is turned OFF. 
 				This is the default setting and can be changed if your primary controller supports the node configuration function. 
 				To make the LED turn ON when the light is turned ON, change parameter 3s value to 1. 
 				To turn the LED OFF at all times, change parameter 3s value to 2.
 			</Help>
-			<Item label="LED Light on when Z-Wave turned OFF" value="0" />
-			<Item label="LED Light on when Z-Wave turned ON" value="1" />
-			<Item label="LED Light Always Off" value="2" />
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Lifeline" />
-		</Associations>
-	</CommandClass>
+      <Item label="LED Light on when Z-Wave turned OFF" value="0"/>
+      <Item label="LED Light on when Z-Wave turned ON" value="1"/>
+      <Item label="LED Light Always Off" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>

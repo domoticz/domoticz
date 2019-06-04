@@ -1,18 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Door Sensor HS1DS-Z
 http://products.z-wavealliance.org/products/1797
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="5">
-            <Group index="1" max_associations="5" label="LifeLine"/>
-            <Group index="2" max_associations="5" label="Binary Sensor"/>
-            <Group index="3" max_associations="5" label="Binary Sensor tamper"/>
-            <Group index="4" max_associations="5" label="Notification"/>
-            <Group index="5" max_associations="5" label="Notification tamper"/>
-        </Associations>
-    </CommandClass>
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0260:0168:0168</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/heiman/HS1DS-Z.png</MetaDataItem>
+    <MetaDataItem id="0168" name="ZWProductPage" type="0168">https://products.z-wavealliance.org/products/1797/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">-  Click [Add] icon in Z-Wave PC Controller Program
+-  Press a Func_Button 3 time in HS1DS-Z (Door Sensor), Green LED is Blinking 3 times within 1 second.
+-  If Inclusion Process is successful, Green led will turn off.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">-  Wake up Notification is transmitted every 24 hours by default.
+-  Wake up Notification is transmitted after Notification Report is Transmitted</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription"> Click [Remove] icon in Z-Wave PC Controller Program
+-  Press a Func_Button 3 times quickly in HS1DS-Z
+-  If Exclusion Process is successful, Green led is Blinking 6 times, then turn off in HS1DS-Z</MetaDataItem>
+    <MetaDataItem name="Name">Smart Door Sensor</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Long press Func_Button while installing batteries in HS1DS-Z 
+-  Device Reset Locally notification is Transmitted
+-  Please use the reset procedure only when the primary controller is missing or inoperable</MetaDataItem>
+    <MetaDataItem name="Description">Smart Door Sensor can detect the open-close state of doors and windows, when people leave home.  Once the smart door sensor detects the door is opened, it will send the information of door opened to users mobile phone immediately. User can know if their houses are intruded, no matter where they are.  With 2 AA batteries, the battery life is more than 1 year.  It is also very easy to install, user should only paste the smart door sensor on the door and door frame.    </MetaDataItem>
+    <MetaDataItem id="0168" name="FrequencyName" type="0168">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1797/HSIDS-Z.pdf</MetaDataItem>
+    <MetaDataItem id="0168" name="Identifier" type="0168">HS1DS-Z</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1797/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Binary Sensor" max_associations="5"/>
+      <Group index="3" label="Binary Sensor tamper" max_associations="5"/>
+      <Group index="4" label="Notification" max_associations="5"/>
+      <Group index="5" label="Notification tamper" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

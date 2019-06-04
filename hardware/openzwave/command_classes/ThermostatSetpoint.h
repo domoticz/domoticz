@@ -37,6 +37,7 @@ namespace OpenZWave
 	class ValueDecimal;
 
 	/** \brief Implements COMMAND_CLASS_THERMOSTAT_SETPOINT (0x43), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class ThermostatSetpoint: public CommandClass
 	{
@@ -48,21 +49,19 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_THERMOSTAT_SETPOINT"; }
 
 		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _setPointIndex, uint8 const _dummy, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual bool SetValue( Value const& _value );
+		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _setPointIndex, uint8 const _dummy, Driver::MsgQueue const _queue ) override;
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+		virtual bool SetValue( Value const& _value ) override;
+		virtual uint8 GetMaxVersion() override { return 3; }
 
-	public:
-		virtual void CreateVars( uint8 const _instance, uint8 const _index );
+	protected:
+		virtual void CreateVars( uint8 const _instance, uint8 const _index ) override;
 
 	private:
 		ThermostatSetpoint( uint32 const _homeId, uint8 const _nodeId );
-		uint8 m_setPointBase;
 	};
 
 } // namespace OpenZWave

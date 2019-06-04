@@ -14,7 +14,7 @@ History :
 - 2017-10-01 : Creation by X.PONCET
 
 - 2018-01-22 : Update :
-# for feature add to MultiblocV8: manual creation up to 127 virtual switch, ability to learn eatch switch to any blocks output
+# for feature add to MultiblocV8 Class: manual creation up to 127 virtual switch, ability to learn eatch switch to any blocks output
 
 */
 #include "stdafx.h"

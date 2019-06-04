@@ -67,7 +67,7 @@ define(['app'], function (app) {
                         className: 'row_selected',
                         selector: '.js-select-row'
                     },
-                    order: [[2, 'asc']],
+                    order: [[13, 'desc']],
                     columns: [
                         {
                             title: renderSelectorTitle(),
@@ -78,7 +78,12 @@ define(['app'], function (app) {
                         { title: renderDeviceStateTitle(), width: '16px', data: 'idx', orderable: false, render: iconRenderer },
                         { title: $.t('Idx'), width: '30px', data: 'idx' },
                         { title: $.t('Hardware'), width: '100px', data: 'HardwareName' },
-                        { title: $.t('ID'), width: '70px', data: 'ID' },
+                        {
+							title: $.t('ID'),
+							width: '70px',
+							data: 'ID',
+							render: idRenderer
+						},
                         { title: $.t('Unit'), width: '40px', data: 'Unit' },
                         { title: $.t('Name'), width: '200px', data: 'Name' },
                         { title: $.t('Type'), width: '110px', data: 'Type' },
@@ -187,9 +192,9 @@ define(['app'], function (app) {
 
                 table.on('change', '.js-select-devices', function () {
                     if (this.checked) {
-                        table.api().rows().select();
+                        table.api().rows({ page: 'current' }).select();
                     } else {
-                        table.api().rows().deselect();
+                        table.api().rows({ page: 'current' }).deselect();
                     }
 
                     table.find('.js-select-row').attr('checked', this.checked);
@@ -240,6 +245,28 @@ define(['app'], function (app) {
 
             function selectorRenderer() {
                 return '<input type="checkbox" class="noscheck js-select-row" />';
+            }
+
+            function idRenderer(value, type, device) {
+				var isScene = ['Group', 'Scene'].includes(device.Type);
+				if (isScene) {
+					return "-";
+				}
+				var ID = device.ID;
+				if (typeof(device.HardwareTypeVal) != 'undefined' && device.HardwareTypeVal == 21) {	
+					if (device.ID.substr(-4, 2) == '00') {	
+						ID = device.ID.substr(1,device.ID.length-2) + '<span class="ui-state-default">' + device.ID.substr(-2, 2) + '</span>';	
+					} else {	
+						ID = device.ID.substr(1,device.ID.length-4) + '<span class="ui-state-default">' + device.ID.substr(-4, 2) + '</span>' + device.ID.substr(-2, 2);	
+					}	
+				}	
+/*
+Not sure why this was used
+				if (device.Type == "Lighting 1") {	
+					ID = String.fromCharCode(device.ID);	
+				}
+*/				
+				return ID;
             }
 
             function iconRenderer(value, type, device) {
@@ -537,23 +564,26 @@ define(['app'], function (app) {
             })
                 .then(domoticzApi.errorHandler)
                 .then(function (response) {
-                    $ctrl.devices = response.result
-                        .map(function (item) {
-                            var isScene = ['Group', 'Scene'].includes(item.Type);
+					if (response.result !== undefined) {
+						$ctrl.devices = response.result
+							.map(function (item) {
+								var isScene = ['Group', 'Scene'].includes(item.Type);
 
-                            if (isScene) {
-                                item.HardwareName = 'Domoticz';
-                                item.ID = '-';
-                                item.Unit = '-';
-                                item.SubType = '-';
-                                item.SignalLevel = '-';
-                                item.BatteryLevel = 255;
-                            }
+								if (isScene) {
+									item.HardwareName = 'Domoticz';
+									item.ID = '-';
+									item.Unit = '-';
+									item.SubType = '-';
+									item.SignalLevel = '-';
+									item.BatteryLevel = 255;
+								}
 
-                            return new Device(item)
-                        });
-
-                    $ctrl.applyFilter();
+								return new Device(item)
+							});
+					} else {
+						$ctrl.devices = [];
+					}
+					$ctrl.applyFilter();
                 });
         }
 

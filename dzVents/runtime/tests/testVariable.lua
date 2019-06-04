@@ -15,6 +15,7 @@ local yVar = 12
 local zVar = 13
 local aVar = 14
 local bVar = 15
+local cVar = 17
 local spacedVar = 16
 
 describe('variables', function()
@@ -128,8 +129,16 @@ describe('variables', function()
 		assert.is_same('string', type(var.value))
 	end)
 
-	it('should have a date type', function()
+	it('should have a date type (/)', function()
 		local var = Variable(domoticz, testData.domoticzData[aVar])
+		assert.is_same('date', var.type)
+		assert.is_same(2017, var.date.year)
+		assert.is_same(3, var.date.day)
+		assert.is_same(12, var.date.month)
+	end)
+
+	it('should have a date type (-)', function()
+		local var = Variable(domoticz, testData.domoticzData[cVar])
 		assert.is_same('date', var.type)
 		assert.is_same(2017, var.date.year)
 		assert.is_same(3, var.date.day)

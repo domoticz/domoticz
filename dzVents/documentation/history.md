@@ -1,3 +1,20 @@
+[2.4.22]
+- selector.switchSelector method accepts levelNames
+- increased selector.switchSelector resilience
+- fix wildcard timerule 
+
+[2.4.21]
+- fixed wrong direction for open() and close() for some types of blinds
+- Add inTable function to domoticz.utils
+- Add sValue attribute to devices
+
+[2.4.20]
+- Add quietOn() and quietOff() method to switchType devices 
+
+[2.4.19]
+- Add stringSplit function to domoticz.utils.
+- Add statusText and protocol to HTTPResponse
+
 [2.4.18]
 - Add triggerIFTTT()
 

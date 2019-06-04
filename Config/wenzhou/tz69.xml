@@ -1,41 +1,65 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!--
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0118:0002:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/wenzhou/tz69.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1950/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. To reset, press the socket on/off button three times within 1.5 seconds
+2. then the fourth time, press and hold for seconds until the socket LED is off
+3. the socket reset successfully
+
+Use the "Reset" procedure only in the event that the network primary controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem name="Name">Smart energy plug in switch </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1950/TZ69PLUS User Manual.pdf</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0004">TZ69BR</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0004">CEPT (Europe) / China / CEPT (Europe) / Brazil</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Enter your Z-Wave controller into inclusion mode
+2. Press the socket on/off button three times within 1.5 seconds to be included.</MetaDataItem>
+    <MetaDataItem name="Description">This smart energy plug is able to detect current wattage (5-3000W) and overload wattage (3010-3300W) of connected lights or appliances. When detecting overload state, the switch will be disabled and its on/off button will be lockout of which LED will flash quickly. However, unplug and re-connect the switch and it will reset its overload condition to normal status.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Enter your Z-Wave controller into exclusion mode
+2. Press the socket on/off button three times within 1.5 seconds to be excluded.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1640/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1665/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1666/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1850/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1886/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1950/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
     Wenzhou TKB Control System TZ69 Smart energy plug in switch
     http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1665/TZ69%20english%20manual.pdf
     -->
 
     <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="1" label="LED-Behaviour" value="0" size="1">
-            <Help>Defines the behavior of the LED.</Help>
-            <Item label="Indicator Off" value="0"/>
-            <Item label="Indicator On" value="1"/>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="2" label="Memory function" value="0" size="1">
-            <Help></Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="3" label="Watt meter report period" min="1" max="32767" units="5 sec" value="720">
-            <Help>If the setting is configured for 1 hour (value=720), the TZ69E will report its instant power consumption every 1 hour.</Help>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="4" label="kWh meter report period" min="1" max="32767" units="10 min" value="6">
-            <Help>If the setting is configured for 1 hour (value=6), the TZ69E will report its accumulated power consumption (kWh) every 1 hour.</Help>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="5" label="Threshold of Kwh for Load Caution" min="1" max="10000" units="Kwh" value="10000">
-            <Help></Help>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="6" label="Threshold of Watt for Load Caution" min="10" max="3000" units="Watt" value="3000">
-            <Help></Help>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="5" label="Lifeline" />
-        </Associations>
-    </CommandClass>
-
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="LED-Behaviour" size="1" type="list" value="0">
+      <Help>Defines the behavior of the LED.</Help>
+      <Item label="Indicator Off" value="0"/>
+      <Item label="Indicator On" value="1"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Memory function" size="1" type="list" value="0">
+      <Help></Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Watt meter report period" max="32767" min="1" type="short" units="5 sec" value="720">
+      <Help>If the setting is configured for 1 hour (value=720), the TZ69E will report its instant power consumption every 1 hour.</Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="kWh meter report period" max="32767" min="1" type="short" units="10 min" value="6">
+      <Help>If the setting is configured for 1 hour (value=6), the TZ69E will report its accumulated power consumption (kWh) every 1 hour.</Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Threshold of Kwh for Load Caution" max="10000" min="1" type="short" units="Kwh" value="10000">
+      <Help></Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Threshold of Watt for Load Caution" max="3000" min="10" type="short" units="Watt" value="3000">
+      <Help></Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

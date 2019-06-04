@@ -1,27 +1,60 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="byte" index="4" genre="config" label="Orientation" units="" min="0" max="1" value="0">
-		  <Help>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0184:3034:4447</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/dragontech/wd-100.png</MetaDataItem>
+    <MetaDataItem id="3034" name="ZWProductPage" type="4447">https://products.z-wavealliance.org/products/1676/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Turn the connected appliance ON/OFF by tapping the switch. Tapping and releasing the upper part of the rocker turns the appliance ON. Tapping and releasing the lower part of the rocker turns the appliance OFF.
+2. Delete(Exclude) the module to/from your Z-Wave network with your primary controller. Please refer to the instructions manual of your gateway or remote controller for details and procedures on how these actions can be done. 
+3. Normally, the sequence is as follows: when the exclusion process is prompted by your primary controller, single click and release the rocker switch.  The controller should show that the action was successful. If the controller shows it was a fail, repeat the procedure.</MetaDataItem>
+    <MetaDataItem id="3034" name="Identifier" type="4447">WD-100</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Dimmer ON/OFF Switch</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Turn the connected lights ON/OFF by tapping the switch. Tapping and releasing the upper part of the rocker turns the appliance ON. Tapping and releasing the lower part of the rocker turns the appliance OFF.
+2. Add(Include) the module to/from your Z-Wave network with your primary controller. Please refer to the instructions manual of your gateway or remote controller for details and procedures on how these actions can be done. 
+3. Normally, the sequence is as follows: when the inclusion process is prompted by your primary controller, single click and release the rocker switch to ON or OFF position.  The controller should show that the action was successful.  If the controller shows it was a fail, repeat the procedure.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1676/WD-100 20160125.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only in the event that the network primary controller is lost or otherwise inoperable.
+
+All Configuration Parameters can all be restored to their factory default settings by using your primary controller to delete/reset the device.  
+To manually reset, tap the ON button twice quickly and then tap the OFF button twice quickly.  Repeat the procedure to restore the settings to the factory default.
+
+</MetaDataItem>
+    <MetaDataItem name="Description">- Works with incandescent and dimmable florescent (CFL) or LED lighting
+- ON/OFF status and location LED indicator
+- Fits into standard single or multiple gang junction box
+- Keypad can be replaced manually to match color with other wall switches 
+- Over-The-Air firmware upgrade available with compatible gateway, Z-Wave static controller, or PC and software
+- Internal resettable fuse to protect from surge current
+- Manual reset capability
+- Support Central Scene
+</MetaDataItem>
+    <MetaDataItem id="3034" name="FrequencyName" type="4447">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1127/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1676/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="4" label="Orientation" max="1" min="0" type="byte" units="" value="0">
+      <Help>
 		     The orientation of the ON/OFF on the rocker switch can be inverted by changing the configuration item from 0 to 1
 		  </Help>
-		</Value>
-		<Value type="byte" index="9" genre="config" label="Levels" units="" min="1" max="99" value="1">
-		  <Help>
+    </Value>
+    <Value genre="config" index="9" label="Levels" max="99" min="1" type="byte" units="" value="1">
+      <Help>
 		    indicates the number of levels the lighting will change when the timer runs out
 		  </Help>
-		</Value>
-		<Value type="byte" index="10" genre="config" label="duration" units="10 ms" min="1" max="255" value="3">
-		  <Help>
+    </Value>
+    <Value genre="config" index="10" label="duration" max="255" min="1" type="byte" units="10 ms" value="3">
+      <Help>
 		    indicates the time duration of each level.  The resolution is 10 milliseconds  for example, a default value of 3 means the timer runs out every 30 milliseconds.
 		  </Help>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-        		<Group index="1" max_associations="5" label="Group #1 for lifeline communications. Max associations=5.  Lifeline association only supports the manual reset event." />
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Group #1 for lifeline communications. Max associations=5.  Lifeline association only supports the manual reset event." max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

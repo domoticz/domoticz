@@ -1,5 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0098:0106:6401</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/2gig/ct100.png</MetaDataItem>
+    <MetaDataItem id="0106" name="ZWProductPage" type="6401">https://products.z-wavealliance.org/products/795/</MetaDataItem>
+    <MetaDataItem id="0106" name="FrequencyName" type="6401">Australia / New Zealand / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">CT100 Plus</MetaDataItem>
+    <MetaDataItem name="Description">The CT100 Plus is a sleek, modern thermostat design for home automation systems.  It’s clean user interface compliments app-enabled systems.  It features adjustable real-time alerts to enable cloud triggers, a robust data stream of HVAC information for cloud monitoring, and configurable comfort response settings to customize home control scenes.  The CT100 Plus is compatible with all popular HVAC systems and is battery-operated without the need for a C-wire. </MetaDataItem>
+    <MetaDataItem id="0106" name="Identifier" type="6401">CT100-US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/782/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/795/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1798/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0001" name="ZWProductPage" type="6402">https://products.z-wavealliance.org/products/1798/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Switch the thermostat to Off Mode.  Press and hold the lower left corner of touch screen for five (5) seconds. The thermostat then resets itself, displays its current firmware version, and restarts in Off Mode.  Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="6402">CT100</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Same process as inclusion.   Similarly, when you are trying to exclude from a network, the LINK icon disappears when the node has successfully excluded the network.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1798/CT100_Plus_UserGuide_20160504.pdf</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="6402">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">When included into a Z-Wave network on battery power, this device is a FLiRS device.  The Thermostat will wake up for communication when it receives a valid Z-Wave beam.  </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">From the CT100’s Menu screen, touch MATE under the radio icon. The Network Include screen displays a large r1.  Touch MATE again. This initiates the network inclusion process. The MATE icon and the status indicator LEDs will blink.  When the CT100 has successfully included into a Z-Wave network, the
+MATE icon is replaced by the LINK icon under the radio tower.</MetaDataItem>
+  </MetaData>
   <!--
 	Radio Thermostat Company of America CT100 Plus Thermostat manual available at:
 	https://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1798/CT100_Plus_UserGuide_20160504.pdf
@@ -7,9 +29,13 @@
 	https://products.z-wavealliance.org/products/1798
 	-->
   <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
-  <CommandClass id="67" base="0" />
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
   <CommandClass id="112">
-    <Value type="list" index="1" genre="config" label="Temperature Reporting Threshold" units="F" min="0" max="4" value="2" size="1">
+    <Value genre="config" index="1" label="Temperature Reporting Threshold" max="4" min="0" size="1" type="list" units="F" value="2">
       <Help>
         The Temperature Reporting Threshold Configuration Set Command sets the reporting threshold for changes in the ambient temperature as detected by the thermostat.
       </Help>
@@ -19,7 +45,7 @@
       <Item label="1.5F" value="3"/>
       <Item label="2.0F" value="4"/>
     </Value>
-    <Value type="list" index="2" genre="config" label="HVAC Settings" read_only="true" units="" min="0" max="2147483647" value="17891585" size="4">
+    <Value genre="config" index="2" label="HVAC Settings" max="2147483647" min="0" read_only="true" size="4" type="list" units="" value="17891585">
       <Help>
         Bits 0 - 7 -> HVAC Setup: Normal (0x01) or Heat Pump (0x02)
         Bits 8 - 11 -> Number of Auxiliary Stages (Heat Pump) / Number of Heat Stages (Normal)
@@ -27,40 +53,75 @@
         Bits 16 - 23 -> Number of Heat Pump Stages
         Bits 24 - 31 -> Number of Cool Stages
       </Help>
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="17891585"/>    <!-- 0x01,0x1,0x1,0x01,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="34668801"/> <!-- 0x02,0x1,0x1,0x01,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="18940161"/>    <!-- 0x01,0x2,0x1,0x01,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="35717377"/> <!-- 0x02,0x2,0x1,0x01,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="17957121"/>   <!-- 0x01,0x1,0x2,0x01,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="34734337"/><!-- 0x02,0x1,0x2,0x01,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="19005697"/>   <!-- 0x01,0x2,0x2,0x01,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="35782913"/><!-- 0x02,0x2,0x2,0x01,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="17891841"/>    <!-- 0x01,0x1,0x1,0x02,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="34669057"/> <!-- 0x02,0x1,0x1,0x02,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="18940417"/>    <!-- 0x01,0x2,0x1,0x02,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="35717633"/> <!-- 0x02,0x2,0x1,0x02,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="17957377"/>   <!-- 0x01,0x1,0x2,0x02,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="34734593"/><!-- 0x02,0x1,0x2,0x02,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="19005953"/>   <!-- 0x01,0x2,0x2,0x02,0x01 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="35783169"/><!-- 0x02,0x2,0x2,0x02,0x01 -->
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="17891586"/>    <!-- 0x01,0x1,0x1,0x01,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="34668802"/> <!-- 0x02,0x1,0x1,0x01,0x02 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="18940162"/>    <!-- 0x01,0x2,0x1,0x01,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="35717378"/> <!-- 0x02,0x2,0x1,0x01,0x02 -->
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="17957122"/>   <!-- 0x01,0x1,0x2,0x01,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="34734338"/><!-- 0x02,0x1,0x2,0x01,0x02 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="19005698"/>   <!-- 0x01,0x2,0x2,0x01,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="35782914"/><!-- 0x02,0x2,0x2,0x01,0x02 -->
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="17891842"/>    <!-- 0x01,0x1,0x1,0x02,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="34669058"/> <!-- 0x02,0x1,0x1,0x02,0x02 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="18940418"/>    <!-- 0x01,0x2,0x1,0x02,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="35717634"/> <!-- 0x02,0x2,0x1,0x02,0x02 -->
-      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="17957378"/>   <!-- 0x01,0x1,0x2,0x02,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="34734594"/><!-- 0x02,0x1,0x2,0x02,0x02 -->
-      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="19005954"/>   <!-- 0x01,0x2,0x2,0x02,0x02 -->
-      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="35783170"/><!-- 0x02,0x2,0x2,0x02,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="17891585"/>
+      <!-- 0x01,0x1,0x1,0x01,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="34668801"/>
+      <!-- 0x02,0x1,0x1,0x01,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="18940161"/>
+      <!-- 0x01,0x2,0x1,0x01,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 1" value="35717377"/>
+      <!-- 0x02,0x2,0x1,0x01,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="17957121"/>
+      <!-- 0x01,0x1,0x2,0x01,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="34734337"/>
+      <!-- 0x02,0x1,0x2,0x01,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="19005697"/>
+      <!-- 0x01,0x2,0x2,0x01,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 1" value="35782913"/>
+      <!-- 0x02,0x2,0x2,0x01,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="17891841"/>
+      <!-- 0x01,0x1,0x1,0x02,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="34669057"/>
+      <!-- 0x02,0x1,0x1,0x02,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="18940417"/>
+      <!-- 0x01,0x2,0x1,0x02,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 1" value="35717633"/>
+      <!-- 0x02,0x2,0x1,0x02,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="17957377"/>
+      <!-- 0x01,0x1,0x2,0x02,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="34734593"/>
+      <!-- 0x02,0x1,0x2,0x02,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="19005953"/>
+      <!-- 0x01,0x2,0x2,0x02,0x01 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 1" value="35783169"/>
+      <!-- 0x02,0x2,0x2,0x02,0x01 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="17891586"/>
+      <!-- 0x01,0x1,0x1,0x01,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="34668802"/>
+      <!-- 0x02,0x1,0x1,0x01,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="18940162"/>
+      <!-- 0x01,0x2,0x1,0x01,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 1, Cool Stages: 2" value="35717378"/>
+      <!-- 0x02,0x2,0x1,0x01,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="17957122"/>
+      <!-- 0x01,0x1,0x2,0x01,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="34734338"/>
+      <!-- 0x02,0x1,0x2,0x01,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="19005698"/>
+      <!-- 0x01,0x2,0x2,0x01,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 1, Cool Stages: 2" value="35782914"/>
+      <!-- 0x02,0x2,0x2,0x01,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="17891842"/>
+      <!-- 0x01,0x1,0x1,0x02,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="34669058"/>
+      <!-- 0x02,0x1,0x1,0x02,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="18940418"/>
+      <!-- 0x01,0x2,0x1,0x02,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Gas, Heat Pump Stages: 2, Cool Stages: 2" value="35717634"/>
+      <!-- 0x02,0x2,0x1,0x02,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="17957378"/>
+      <!-- 0x01,0x1,0x2,0x02,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 1, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="34734594"/>
+      <!-- 0x02,0x1,0x2,0x02,0x02 -->
+      <Item label="HVAC: Normal, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="19005954"/>
+      <!-- 0x01,0x2,0x2,0x02,0x02 -->
+      <Item label="HVAC: Heat Pump, Aux Stages: 2, Aux Setup: Elec, Heat Pump Stages: 2, Cool Stages: 2" value="35783170"/>
+    
+    
+    
+    <!-- 0x02,0x2,0x2,0x02,0x02 -->
     </Value>
-    <Value type="list" index="3" genre="config" label="Utility Lock" write_only="true" units="" min="0" max="255" value="0" size="1">
+    <Value genre="config" index="3" label="Utility Lock" max="255" min="0" size="1" type="list" units="" value="0" write_only="true">
       <Help>
         The Utility Lock Configuration Set command enables or disables the utility lock.
         If the utility lock is enabled, the setpoint cannot be modified directly via the thermostat screen.
@@ -68,7 +129,7 @@
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" index="4" genre="config" label="C-Wire/Battery Status" read_only="true" units="" min="1" max="2" value="1" size="1">
+    <Value genre="config" index="4" label="C-Wire/Battery Status" max="2" min="1" read_only="true" size="1" type="list" units="" value="1">
       <Help>
         1 -> C-Wire
         2 -> Battery
@@ -76,7 +137,7 @@
       <Item label="C-Wire" value="1"/>
       <Item label="Battery" value="2"/>
     </Value>
-    <Value type="list" index="5" genre="config" label="Humidity Reporting Threshold" units="% RH" min="0" max="3" value="2" size="1">
+    <Value genre="config" index="5" label="Humidity Reporting Threshold" max="3" min="0" size="1" type="list" units="% RH" value="2">
       <Help>
         The Humidity Reporting Threshold Configuration Set Command sets the reporting threshold for changes in the relative humidity as detected by the thermostat.
       </Help>
@@ -85,7 +146,7 @@
       <Item label="5" value="2"/>
       <Item label="10" value="3"/>
     </Value>
-    <Value type="list" index="6" genre="config" label="Auxiliary/Emergency heat" units="" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="6" label="Auxiliary/Emergency heat" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>
         The Auxiliary/Emergency configuration command enables or disables auxiliary / emergency heating in the thermostat.
         Auxiliary / emergency heating is only available if the thermostat is configured in heat pump mode and with at least one stage of auxiliary heating.
@@ -96,7 +157,7 @@
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-    <Value type="list" index="7" genre="config" label="Thermostat Swing Temperature" units="F" min="1" max="8" value="2" size="1">
+    <Value genre="config" index="7" label="Thermostat Swing Temperature" max="8" min="1" size="1" type="list" units="F" value="2">
       <Help>
         Thermostat Swing Temperature configuration command sets the maximum allowed difference between ambient temperature and the set temperature.
       </Help>
@@ -109,7 +170,7 @@
       <Item label="3.5F" value="7"/>
       <Item label="4.0F" value="8"/>
     </Value>
-    <Value type="list" index="8" genre="config" label="Thermostat Differential Temperature" units="F" min="2" max="32767" value="4" size="2">
+    <Value genre="config" index="8" label="Thermostat Differential Temperature" max="32767" min="2" size="2" type="list" units="F" value="4">
       <Help>
         (Set Only) The Thermostat Differential Temperature configuration command sets the differential temperature for multi-stage HVAC systems.
         The differential temperature delta defines when the thermostat will turn on additional stages.
@@ -127,7 +188,7 @@
       <Item label="5.0F Cool" value="266"/>
       <Item label="6.0F Cool" value="268"/>
     </Value>
-    <Value type="list" index="9" genre="config" label="Thermostat Recovery Mode" units="" min="1" max="2" value="2" size="1">
+    <Value genre="config" index="9" label="Thermostat Recovery Mode" max="2" min="1" size="1" type="list" units="" value="2">
       <Help>
         The Thermostat Recovery Mode configuration command sets the HVAC recovery mode type.
         The recovery mode determines when additional HVAC stages are turned off as the ambient temperature returns to the target temperature.
@@ -137,7 +198,7 @@
       <Item label="Fast" value="1"/>
       <Item label="Economy" value="2"/>
     </Value>
-    <Value type="raw" index="10" genre="config" label="Temperature Reporting Filter" units="F" min="0" max="32767" size="4" value="0x09 0x00 0x09 0x00">
+    <Value genre="config" index="10" label="Temperature Reporting Filter" max="32767" min="0" size="4" type="raw" units="F" value="0x09 0x00 0x09 0x00">
       <Help>
         The Temperature Reporting Filter configuration command sets upper and lower bounds of the ambient temperature reporting.
         The thermostat won't report ambient temperature changes if the ambient temperature falls between these bounds.
@@ -154,21 +215,21 @@
         This will remove any bounds.
       </Help>
     </Value>
-    <Value type="list" index="11" genre="config" label="Simple UI Mode" units="" min="0" max="1" value="1" size="1">
+    <Value genre="config" index="11" label="Simple UI Mode" max="1" min="0" size="1" type="list" units="" value="1">
       <Help>
         Simple UI Mode Enable/Disable
       </Help>
       <Item label="Enable" value="0"/>
       <Item label="Disable" value="1"/>
     </Value>
-    <Value type="list" index="12" genre="config" label="Multicast" units="" min="0" max="1" value="0" size="1">
+    <Value genre="config" index="12" label="Multicast" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>
         Multicasting Enable/Disable
       </Help>
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-    <Value type="list" index="14" genre="config" label="Save Energy Mode Type" units="" min="1" max="255" value="1" size="1" read_only="true">
+    <Value genre="config" index="14" label="Save Energy Mode Type" max="255" min="1" read_only="true" size="1" type="list" units="" value="1">
       <Help>
         1 -> Adjust by target delta
         2 -> Least consuming point in the running program
@@ -183,7 +244,7 @@
   </CommandClass>
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="2" label="Lifeline"/>
+      <Group index="1" label="Lifeline" max_associations="2"/>
     </Associations>
   </CommandClass>
 </Product>

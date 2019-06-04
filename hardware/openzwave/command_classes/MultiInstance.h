@@ -34,6 +34,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_MULTI_INSTANCE (0x60), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class MultiInstance: public CommandClass
 	{
@@ -54,13 +55,6 @@ namespace OpenZWave
 			MultiChannelCmd_Encap				= 0x0d
 		};
 
-		enum MultiInstanceMapping
-		{
-			MultiInstanceMapAll,
-			MultiInstanceMapEndPoints,
-			MultiInstanceMapOther
-		};
-
 		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new MultiInstance( _homeId, _nodeId ); }
 		virtual ~MultiInstance(){}
 
@@ -70,14 +64,12 @@ namespace OpenZWave
 		bool RequestInstances();
 
 		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual uint8 GetMaxVersion(){ return 2; }
-
-		MultiInstanceMapping GetEndPointMap(){ return m_endPointMap; }
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+		virtual bool HandleIncomingMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+		virtual uint8 GetMaxVersion() override { return 2; }
+		void SetInstanceLabel(uint8 const _instance, char *label) override;
 
 	private:
 		MultiInstance( uint32 const _homeId, uint8 const _nodeId );
@@ -92,18 +84,12 @@ namespace OpenZWave
 		bool		m_numEndPointsCanChange;
 		bool		m_endPointsAreSameClass;
 		uint8		m_numEndPoints;
-
+		
 		// Finding endpoints
 		uint8		m_endPointFindIndex;
 		uint8		m_numEndPointsFound;
 		set<uint8>	m_endPointCommandClasses;
 
-		// configuration
-		uint8		m_numEndPointsHint;		// for nodes that do not report correct number of end points
-		MultiInstanceMapping m_endPointMap;		// Determine how to map end points to value id instances
-		bool		m_endPointFindSupported;	// for nodes that (someday may) support endpointfind
-		bool 		m_ignoreUnsolicitedMultiChannelCapabilityReport;
-		bool		m_uniqueendpoints;
 	};
 
 } // namespace OpenZWave

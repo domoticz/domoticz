@@ -1,25 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/1879 -->
-	<CommandClass id="112">
-		<Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" value="0" size="1">
-			<Help>Sets when the LED on the switch is lit.</Help>
-			<Item label="LED on when light off" value="0" />
-			<Item label="LED on when light on" value="1" />
-			<Item label="LED always off" value="2" />
-		</Value>
-		<Value type="list" index="4" genre="config" label="Invert Switch" min="0" max="1" size="1" value="0">
-			<Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
-			<Item label="No" value="0" />
-			<Item label="Yes" value="1" />
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="3">
-			<Group index="1" max_associations="5" label="Lifeline" />
-			<Group index="2" max_associations="5" label="Basic - Local Load" />
-			<Group index="3" max_associations="5" label="Basic - Double Tap" />
-		</Associations>
-	</CommandClass>
+<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/1879 --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3036:4952</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14291-switch.png</MetaDataItem>
+    <MetaDataItem id="3036" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/1879/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network. 
+2. Once the controller is ready to exclude your device, press and release the top button of the wireless smart switch (rocker) to exclude it from the network.</MetaDataItem>
+    <MetaDataItem id="3036" name="Identifier" type="4952">14291/ZW4005</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE Z-Wave In-Wall Smart Switch. The on/off switch replaces your current light switch, uses your existing wiring, and provides Z-Wave wireless and in-wall control of overhead lighting. The switch enables wireless control of on/off functions of direct wire incandescent, LED, xenon, halogen and fluorescent lighting. Providing ultimate flexibility, the GE Z-Wave Smart Lighting Control On/Off Switch allows you to operate the switch by itself or easily integrate the switch with two-way, three-way or four-way wiring configurations by adding the GE Add-On switch. Single pole wiring configuration turns the light or appliance on/off from one location. Three-way wiring configuration turns the light on/off from two separate locations. Four-way wiring configuration turns the light on/off from three separate locations. The GE Add-On Switch is required for Three-way or Four-way installations. The lighting control includes a blue LED indicator light to easily locate the switch in a dark room. Take control of your home lighting with GE Z-Wave Smart Lighting Controls!</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Quickly press ON (Top) button 3 times then immediately press the OFF (Bottom) button 3 times. The LED will flash ON/OFF 5 times when completed successfully. 
+2. Please use this reset procedure only when the primary controller is missing or inoperable. </MetaDataItem>
+    <MetaDataItem id="3036" name="FrequencyName" type="4952">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Switch </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1879/Binder1.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include a device to the Z-Wave network.
+2. Once the controller is ready to include your device, press and release the top or bottom of the wireless smart switch(rocker) to include it in the network.
+3. Once your controller has confirmed that the device has been included, refresh the Z-Wave network to optimize performance.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1438/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1879/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="3" label="LED Light" max="2" min="0" size="1" type="list" value="0">
+      <Help>Sets when the LED on the switch is lit.</Help>
+      <Item label="LED on when light off" value="0"/>
+      <Item label="LED on when light on" value="1"/>
+      <Item label="LED always off" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="Invert Switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Local Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

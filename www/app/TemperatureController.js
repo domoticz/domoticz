@@ -1,5 +1,6 @@
 define(['app'], function (app) {
-	app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $window, permissions) {
+	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions) {
+		var $element = $('#main-view #tempcontent').last();
 
 		var ctrl = this;
 
@@ -104,23 +105,6 @@ define(['app'], function (app) {
 			$("#dialog-editstate").i18n();
 			$("#dialog-editstate").dialog("open");
 		}
-		EvoSetPointColor = function (item, sHeatMode, bkcolor) {
-			if (typeof item.SetPoint != 'undefined') {
-				if (sHeatMode == "HeatingOff" || item.SetPoint == 325.1)//seems to be used whenever the heating is off
-					bkcolor = "#9b9b9b";
-				else if (item.SetPoint >= 25)
-					bkcolor = "#ff0302";
-				else if (item.SetPoint >= 22)
-					bkcolor = "#ff6a2a";
-				else if (item.SetPoint >= 19)
-					bkcolor = "#fe9b2d";
-				else if (item.SetPoint >= 16)
-					bkcolor = "#79bc5c";
-				else //min on temp 5 or greater
-					bkcolor = "#6ca5fd";
-			}
-			return bkcolor;
-		}
 		//FIXME move this to a shared js ...see lightscontroller.js
 		EvoDisplayTextMode = function (strstatus) {
 			if (strstatus == "Auto")//FIXME better way to convert?
@@ -195,8 +179,10 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+
 			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + roomPlanId,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -215,8 +201,8 @@ define(['app'], function (app) {
 			$('#temptophtm').i18n();
 			$('#tempwidgets').show();
 			$('#tempwidgets').i18n();
-			$('#tempcontent').html("");
-			$('#tempcontent').i18n();
+			$element.html("");
+			$element.i18n();
 
 			$rootScope.RefreshTimeAndSun();
 
@@ -548,17 +534,24 @@ define(['app'], function (app) {
 			}
 		});
 
-		if (typeof window.myglobals.LastPlanSelected != 'undefined') {
-			ctrl.roomSelected = window.myglobals.LastPlanSelected;
+		var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+
+		if (typeof roomPlanId != 'undefined') {
+			ctrl.roomSelected = roomPlanId;
 		}
 		ctrl.changeRoom = function () {
 			var idx = ctrl.roomSelected;
 			window.myglobals.LastPlanSelected = idx;
-			ShowTemps();
+
+			$route.updateParams({
+					room: idx > 0 ? idx : undefined
+				});
+				$location.replace();
+				$scope.$apply();
 		};
 
-	}])
-		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
+	})
+		.directive('dztemperaturewidget', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
@@ -587,6 +580,20 @@ define(['app'], function (app) {
 
 					ctrl.nbackstyle = function () {
 						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+						if(ctrl.displaySetPoint()){
+							if (ctrl.sHeatMode() == "HeatingOff" || !ctrl.isSetPointOn())//seems to be used whenever the heating is off
+                                        			backgroundClass="statusEvoSetPointOff";
+                                			else if (item.SetPoint >= 25)
+                                        			backgroundClass="statusEvoSetPoint25";
+                                			else if (item.SetPoint >= 22)
+                                        			backgroundClass="statusEvoSetPoint22";
+                                			else if (item.SetPoint >= 19)
+                                        			backgroundClass="statusEvoSetPoint19";
+                                			else if (item.SetPoint >= 16)
+                                        			backgroundClass="statusEvoSetPoint16";
+                                			else //min on temp 5 or greater
+                                        			backgroundClass="statusEvoSetPointMin";	
+						}
 						return backgroundClass;
 					};
 
@@ -729,5 +736,5 @@ define(['app'], function (app) {
 
 				}
 			};
-		}]);
+		});
 });

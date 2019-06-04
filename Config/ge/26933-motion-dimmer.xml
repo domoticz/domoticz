@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- GE(Jasco) 26933 Z-Wave Plus Smart Motion Dimmer -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
 	<!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2108 -->
 	<CommandClass id="112">
 		<Value type="list" index="1" genre="config" label="Timeout Duration" min="0" max="255" value="5" size="1">

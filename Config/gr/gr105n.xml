@@ -1,11 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Remove COMMAND_CLASS_SWITCH_MULTILEVEL -->
-	<CommandClass id="38" action="remove" />
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Lifeline" />
-		</Associations>
-	</CommandClass>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0152:0512:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/gr/gr105n.png</MetaDataItem>
+    <MetaDataItem id="0512" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1537/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-wave certified controller to exclude a device to the Z-wave network.
+2.Once the controller is ready to exclude your device, press the red button 3 times to exclude it from the Z-wave network.</MetaDataItem>
+    <MetaDataItem name="Description">Automatic Water shut off controller, fits over standard 1/2”, 3/4” and 1” ball valves, no plumbing required, 12V DC power, Blue LED status indicator, 500 Series Z-Wave. Includes mounting kit and and AC Adapter and quick start guide, Z-Wave and FCC certified. Prevents water damage when combined with standard smart home automation solutions.</MetaDataItem>
+    <MetaDataItem name="Name">Auto Valve</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the button 10 seconds and release the button. The device will send the reset notification to the list node in the group1 and erases the device memory , when the light flash it is resetting success.
+Note: This should only be used in the event your networks primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1537/GR-105 Auto Valve UM.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-wave certified controller to include a device to the Z-wave network.
+2.Once the controller is ready to include your device, press the red button 3 times to include it in the Z-wave network.</MetaDataItem>
+    <MetaDataItem id="0512" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0512" name="Identifier" type="0003">GR-105</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1537/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Remove COMMAND_CLASS_SWITCH_MULTILEVEL -->
+  <CommandClass action="remove" id="38"/>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

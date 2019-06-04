@@ -1,32 +1,73 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!--
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0208:000B:0201</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/hank/scenecontroller4.png</MetaDataItem>
+    <MetaDataItem id="000B" name="ZWProductPage" type="0201">https://products.z-wavealliance.org/products/1967/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the Scene Controller from the Z-Wave network:
+(1) Insert the LIR2450 battery.
+(2) Set the Z-Wave network main controller into remove mode
+(see Z-Wave controller operating manual).
+(3) Triple click the a button, if the exclusion is successful, LED
+will blink in orange for less than 5 seconds and then keep on
+for 3 seconds.
+
+
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Included as non-secure device:
+1.   Insert the LIR2450 battery.
+2.   Set the Z-Wave network main controller into learning mode( see Z-Waave network controller operating manul).
+3.   Triple click a button.
+4.   If the inclusion is successful, the LED will blink in blue less than for 5 seconds and then keep on for 15 seconds.
+
+Included as a secure device:
+1.   Insert the LIR2450 battery.
+2.   Set the Z-Wave network main controller into learning mode( see Z-Wave network controller operating manual).
+3.   Pressing and holding a button for 3 seconds.
+4.   If the inclusion is successful, the LED will blink in green less than for 5 seconds and then keep on for 15 seconds.
+
+</MetaDataItem>
+    <MetaDataItem id="000B" name="FrequencyName" type="0201">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Scene Controller</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Pressing and holding a button for 3 seconds. Led will turn to green,
+which means Scene Controller has been woken up.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1968/HKZW-SCN04 Manual.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Pressing and holding a button for 20 seconds. Release the button after 20 seconds, LED will keep in yellow for 3 seconds. Scene Controller will be reset to factory defaults if you short press the button within this 3 seconds.
+Using this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="000B" name="Identifier" type="0201">HKZW-SCN04</MetaDataItem>
+    <MetaDataItem name="Description">The Scene Controller is a wireless, portable and rechargeable scene switch. It can control a Z-Wave device, such as smart plug, smart dimmer with a Z-Wave gateway. You can also activate a scene like sleep scene, movie scene and entertainment scene with it. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1967/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1968/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="000B" name="ZWProductPage" type="0200">https://products.z-wavealliance.org/products/1968/</MetaDataItem>
+    <MetaDataItem id="000B" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="000B" name="Identifier" type="0200">HKZW-SCN04</MetaDataItem>
+  </MetaData>
+  <!--
       Hank HKZW-SCN04 Scene Controller
       http://products.z-wavealliance.org/products/1968
       http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1968/HKZW-SCN04%20Manual.pdf
     -->
     <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="254" label="Configuration Command" size="1" min="0" max="1" value="0">
-            <Help>Lock/unlock all configuration parameters</Help>
-            <Item label="Unlock" value="0"/>
-            <Item label="Lock" value="1"/>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="9">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Basic Set button 1"/>
-            <Group index="3" max_associations="5" label="Multilevel Set button 1"/>
-            <Group index="4" max_associations="5" label="Basic Set button 2"/>
-            <Group index="5" max_associations="5" label="Multilevel Set button 2"/>
-            <Group index="6" max_associations="5" label="Basic Set button 3"/>
-            <Group index="7" max_associations="5" label="Multilevel Set button 3"/>
-            <Group index="8" max_associations="5" label="Basic Set button 4"/>
-            <Group index="9" max_associations="5" label="Multilevel Set button 4"/>
-        </Associations>
-    </CommandClass>
-
+  <CommandClass id="112">
+    <Value genre="config" index="254" instance="1" label="Configuration Command" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="9">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Set button 1" max_associations="5"/>
+      <Group index="3" label="Multilevel Set button 1" max_associations="5"/>
+      <Group index="4" label="Basic Set button 2" max_associations="5"/>
+      <Group index="5" label="Multilevel Set button 2" max_associations="5"/>
+      <Group index="6" label="Basic Set button 3" max_associations="5"/>
+      <Group index="7" label="Multilevel Set button 3" max_associations="5"/>
+      <Group index="8" label="Basic Set button 4" max_associations="5"/>
+      <Group index="9" label="Multilevel Set button 4" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -38,6 +38,7 @@ namespace OpenZWave
 	class ValueList;
 
 	/** \brief Implements COMMAND_CLASS_THERMOSTAT_FAN_MODE (0x44), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class ThermostatFanMode: public CommandClass
 	{
@@ -49,17 +50,17 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_THERMOSTAT_FAN_MODE"; }
 
 		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement );
-		virtual void WriteXML( TiXmlElement* _ccElement );
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _getTypeEnum, uint8 const _dummy, Driver::MsgQueue const _queue );
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual bool SetValue( Value const& _value );
+		virtual void ReadXML( TiXmlElement const* _ccElement ) override;
+		virtual void WriteXML( TiXmlElement* _ccElement ) override;
+		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _getTypeEnum, uint8 const _dummy, Driver::MsgQueue const _queue ) override;
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+		virtual bool SetValue( Value const& _value ) override;
 
 	protected:
-		virtual void CreateVars( uint8 const _instance );
+		virtual void CreateVars( uint8 const _instance ) override;
 
 	private:
 		ThermostatFanMode( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){ SetStaticRequest( StaticRequest_Values ); }

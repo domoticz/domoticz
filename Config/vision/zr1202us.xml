@@ -1,0 +1,14 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:1203:2012</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zr1202us.png</MetaDataItem>
+    <MetaDataItem id="1203" name="ZWProductPage" type="2012">https://products.z-wavealliance.org/products/990/</MetaDataItem>
+    <MetaDataItem id="1203" name="FrequencyName" type="2012">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Name">Vision Security Repeater ZR1202US</MetaDataItem>
+    <MetaDataItem name="Description">Repeater</MetaDataItem>
+    <MetaDataItem id="1203" name="Identifier" type="2012">ZR1202US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/990/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

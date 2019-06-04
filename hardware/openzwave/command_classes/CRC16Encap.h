@@ -33,6 +33,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_CRC_16_ENCAP (0x56), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class CRC16Encap: public CommandClass
 	{
@@ -44,9 +45,9 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_CRC_16_ENCAP"; }
 
 		// From CommandClass
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
 
 	private:
 		CRC16Encap( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}

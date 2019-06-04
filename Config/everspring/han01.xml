@@ -1,0 +1,20 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0060:0001:0011</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/everspring/han01.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0011">https://products.z-wavealliance.org/products/695/</MetaDataItem>
+    <MetaDataItem name="Description">This in-wall switch module is a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Mini size design let the module can easily hide itself into the wall box and that will be good for the house decoration. 
+There are many kind of application by using the module to switch AC power On and Off , one main application is the light control. The new smart relay calibration technology can reduce the inrush current caused by the load and let the module work perfectly with many kind of light like incandescent, fluorescent and LED light.  
+
+This in-wall switch module is able to detect overload wattage of connected non-dimmable lights or appliances. When detecting overload state, the Module will be disabled and its On/Off button will be lockout of which LED will flash quickly.  However, disconnect and re-connect the wiring of the Module will reset its overload condition to normal status.
+</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.everspring.com/HAN01.aspx</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0011">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0011">HAN01</MetaDataItem>
+    <MetaDataItem name="Name">Small Z-Wave In-Wall Switch Module</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/695/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

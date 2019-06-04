@@ -1,79 +1,100 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Aeotec ZW095 Home Energy Meter Gen5
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584689
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="2" genre="config" label="Power, energy detection mode" units="" min="0" max="3" value="0" size="1">
-			<Help>For parameters of 101 ~ 103, power, energy detection mode configuration</Help>
-			<Item label="Report absolute value" value="0"/>
-			<Item label="Report algebraic sum energy" value="1"/>
-			<Item label="Report consuming electricity" value="2"/>
-			<Item label="Report generating electricity" value="3"/>
-		</Value>
-		<Value type="list" index="3" genre="config" label="Selective reporting" units="" min="0" max="1" value="1" size="1">
-			<Help>
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:005F:0102</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw095.png</MetaDataItem>
+    <MetaDataItem id="005F" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/1289/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 10 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem id="005F" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="Description">Aeon Labs Home Energy Meter Gen5 is a Z-Wave device that can monitor the total amount of electricity of your home. 
+It can report the wattage energy usage and KWH usage to a Z-Wave Controller (especially a gateway). In near real-time you’ll have a full understanding of how much electricity you use and when you use it.
+Products that are Z-Wave certified can be used and communicate with other Z-Wave certified devices. Also a tool that can be programmed, scheduled, controlled and communicated with from anywhere in the world.</MetaDataItem>
+    <MetaDataItem id="005F" name="Identifier" type="0102">ZW095-A</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1596/Home Energy Meter Gen5 manual.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Home Energy Meter Gen5</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1289/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1596/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="005F" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1596/</MetaDataItem>
+    <MetaDataItem id="005F" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="005F" name="Identifier" type="0002">ZW095-C</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="Power, energy detection mode" max="3" min="0" size="1" type="list" units="" value="0">
+      <Help>For parameters of 101 ~ 103, power, energy detection mode configuration</Help>
+      <Item label="Report absolute value" value="0"/>
+      <Item label="Report algebraic sum energy" value="1"/>
+      <Item label="Report consuming electricity" value="2"/>
+      <Item label="Report generating electricity" value="3"/>
+    </Value>
+    <Value genre="config" index="3" label="Selective reporting" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
 				Enable selective reporting only when power change reaches a certain threshold or percentage set in 4-11 below. This is used to reduce network traffic.
 			</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
-		<Value type="short" index="4" genre="config" label="Wattage Threshold Whole HEM" min="0" max="60000" units="watts" value="50">
-			<Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Wattage Threshold Whole HEM" max="60000" min="0" type="short" units="watts" value="50">
+      <Help>
 				Threshold change in wattage to induce a automatic report (whole HEM).
 			</Help>
-		</Value>
-		<Value type="short" index="5" genre="config" label="Wattage Threshold C1" min="0" max="60000" units="watts" value="50">
-			<Help>
+    </Value>
+    <Value genre="config" index="5" label="Wattage Threshold C1" max="60000" min="0" type="short" units="watts" value="50">
+      <Help>
 				Threshold change in wattage to induce a automatic report (Clamp 1).
 			</Help>
-		</Value>
-		<Value type="short" index="6" genre="config" label="Wattage Threshold C2" min="0" max="60000" units="watts" value="50">
-			<Help>
+    </Value>
+    <Value genre="config" index="6" label="Wattage Threshold C2" max="60000" min="0" type="short" units="watts" value="50">
+      <Help>
 				Threshold change in wattage to induce a automatic report (Clamp 2).
 			</Help>
-		</Value>
-		<Value type="short" index="7" genre="config" label="Wattage Threshold C3" min="0" max="60000" units="watts" value="50">
-			<Help>
+    </Value>
+    <Value genre="config" index="7" label="Wattage Threshold C3" max="60000" min="0" type="short" units="watts" value="50">
+      <Help>
 				Threshold change in wattage to induce a automatic report (Clamp 3).
 			</Help>
-		</Value>
-		<Value type="byte" index="8" genre="config" label="Wattage Percentage Change Whole HEM" min="0" max="100" units="%" value="10">
-			<Help>
+    </Value>
+    <Value genre="config" index="8" label="Wattage Percentage Change Whole HEM" max="100" min="0" type="byte" units="%" value="10">
+      <Help>
 				Percentage change in wattage to induce a automatic report (whole HEM).
 			</Help>
-		</Value>
-		<Value type="byte" index="9" genre="config" label="Wattage Percentage Change C1" min="0" max="100" units="%" value="10">
-			<Help>
+    </Value>
+    <Value genre="config" index="9" label="Wattage Percentage Change C1" max="100" min="0" type="byte" units="%" value="10">
+      <Help>
 				Percentage change in wattage to induce a automatic report (Clamp 1).
 			</Help>
-		</Value>
-		<Value type="byte" index="10" genre="config" label="Wattage Percentage Change C2" min="0" max="100" units="%" value="10">
-			<Help>
+    </Value>
+    <Value genre="config" index="10" label="Wattage Percentage Change C2" max="100" min="0" type="byte" units="%" value="10">
+      <Help>
 				Percentage change in wattage to induce a automatic report (Clamp 2).
 			</Help>
-		</Value>
-		<Value type="byte" index="11" genre="config" label="Wattage Percentage Change C3" min="0" max="100" units="%" value="10">
-			<Help>
+    </Value>
+    <Value genre="config" index="11" label="Wattage Percentage Change C3" max="100" min="0" type="byte" units="%" value="10">
+      <Help>
 				Percentage change in wattage to induce a automatic report (Clamp 3).
 			</Help>
-		</Value>
-		<Value type="list" index="13" genre="config" label="Reporting CRC-16 Encapsulation Command" units="" min="0" max="1" value="1" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="13" label="Reporting CRC-16 Encapsulation Command" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
 				Enable /disable reporting CRC-16 Encapsulation Command.
 			</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
-		<Value type="button" index="100" genre="config" label="Reset #101-103" write_only="true" affects="101,102,103">
-			<Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value affects="101,102,103" genre="config" index="100" label="Reset #101-103" type="button" write_only="true">
+      <Help>
 				Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.
 			</Help>
-		</Value>
-		<Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="2">
-			<Help>
+    </Value>
+    <Value genre="config" index="101" label="Group 1 Reports" type="int" units="" value="2">
+      <Help>
 				Which reports need to send in group1. Format is as follows:
 				Byte 1 (msb):
 				Bit 7: Reserved
@@ -112,9 +133,9 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584689
 				Bit 1: Auto Send Meter Report (for Watt) at the group time interval (Whole HEM)
 				Bit 0: Auto Send Meter Report (for kWh) at the group time interval (Whole HEM)
 			</Help>
-		</Value>
-		<Value type="int" index="102" genre="config" label="Group 2 Reports" units="" value="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="102" label="Group 2 Reports" type="int" units="" value="1">
+      <Help>
 				Which reports need to send in group2. Format is as follows:
 				Byte 1 (msb):
 				Bit 7: Reserved
@@ -153,9 +174,9 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584689
 				Bit 1: Auto Send Meter Report (for Watt) at the group time interval (Whole HEM)
 				Bit 0: Auto Send Meter Report (for kWh) at the group time interval (Whole HEM)
 			</Help>
-		</Value>
-		<Value type="int" index="103" genre="config" label="Group 3 Reports" units="" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="103" label="Group 3 Reports" type="int" units="" value="0">
+      <Help>
 				Which reports need to send in group3. Format is as follows:
 				Byte 1 (msb):
 				Bit 7: Reserved
@@ -194,41 +215,39 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584689
 				Bit 1: Auto Send Meter Report (for Watt) at the group time interval (Whole HEM)
 				Bit 0: Auto Send Meter Report (for kWh) at the group time interval (Whole HEM)
 			</Help>
-		</Value>
-		<Value type="button" index="110" genre="config" label="Reset #111-113" units="" value="0" write_only="true" affects="111,112,113">
-			<Help>Reset to default parameters number 111-113</Help>
-		</Value>
-		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" value="5">
-			<Help>The interval of sending report group 1.</Help>
-		</Value>
-		<Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" value="120">
-			<Help>The interval of sending report group 2</Help>
-		</Value>
-		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" value="120">
-			<Help>The interval of sending report group 3</Help>
-		</Value>
-		<Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" size="1" value="0">
-			<Item label="Aeon Labs Standard Product" value="0"/>
-			<Item label="Other" value="1"/>
-		</Value>
-		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
-			<Help>Lock/ unlock all configuration parameters</Help>
-			<Item label="Unlock" value="0"/>
-			<Item label="Lock" value="1"/>
-		</Value>
-		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
-			<Help>Reset to factory defaults</Help>
-			<Item label="Reset to factory default setting" value="0"/>
-			<Item label="Normal" value="1"/>
-			<Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
-		</Value>
-	</CommandClass>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Lifeline"/>
-		</Associations>
-	</CommandClass>
+    </Value>
+    <Value affects="111,112,113" genre="config" index="110" label="Reset #111-113" type="button" units="" value="0" write_only="true">
+      <Help>Reset to default parameters number 111-113</Help>
+    </Value>
+    <Value genre="config" index="111" label="Group 1 Interval" type="int" units="seconds" value="5">
+      <Help>The interval of sending report group 1.</Help>
+    </Value>
+    <Value genre="config" index="112" label="Group 2 Interval" type="int" units="seconds" value="120">
+      <Help>The interval of sending report group 2</Help>
+    </Value>
+    <Value genre="config" index="113" label="Group 3 Interval" type="int" units="seconds" value="120">
+      <Help>The interval of sending report group 3</Help>
+    </Value>
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Item label="Aeon Labs Standard Product" value="0"/>
+      <Item label="Other" value="1"/>
+    </Value>
+    <Value genre="config" index="252" label="Lock/Unlock Configuration" max="1" min="0" size="1" type="list" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

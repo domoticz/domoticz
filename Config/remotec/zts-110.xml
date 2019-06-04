@@ -1,36 +1,52 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8031:0200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/remotec/zts-110.png</MetaDataItem>
+    <MetaDataItem id="8031" name="ZWProductPage" type="0200">https://products.z-wavealliance.org/products/679/</MetaDataItem>
+    <MetaDataItem id="8031" name="Identifier" type="0200">BW8031US </MetaDataItem>
+    <MetaDataItem name="Name">ZTS-110US Thermostat</MetaDataItem>
+    <MetaDataItem id="8031" name="FrequencyName" type="0200">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.remotec.com.hk/photos/software/Z-wave/ZTS-100_User_Manual_V10_20120615.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The ZTS-100 Z-Thermostat is a comfort control master that allows to control your room temperature with programmable time schedule WAKE, AWAY, HOME and SLEEP event which can maximize energy conservation and comfort while minimizing the effort required to maintain the appropriate temperature in your home whether you are at home or away. 
 
-	<!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
-	<CommandClass id="67" base="0" />
-
- 	<!-- Configuration Parameters --> 
-	<CommandClass id="112">
-		<Value type="byte" index="1" genre="config" label="Swing" min="0" max="4" value="2" size="1">
-			<Help>
+Also, it can be utilized to control / check your room temperature by the smart phone or PC while you are at office, home anywhere or around the world which can go through the Z-Wave gateway control. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/679/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Swing" max="4" min="0" size="1" type="byte" value="2">
+      <Help>
 				Swing is the difference allowed from current temp to setpoint before the thermostat turns on.
 				EG: A swing of 2 and setpoint of 70 means the heat turns on at 68 and off at 72.
 			</Help>
-		</Value>
-		<Value type="byte" index="2" genre="config" label="Differential" min="0" max="4" value="2" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="2" label="Differential" max="4" min="0" size="1" type="byte" value="2">
+      <Help>
 				Differential is the difference needed from the swing before the 2nd stage kicks in.
 				EG: A swing of 2, differntial of 2, and setpoint of 70 means the heat turns on at 68 and off at 72. The second-stage heat would turn on at 67 and off at 68.
 			</Help>
-		</Value>
-		<Value type="short" index="3" genre="config" label="Set filter counter" min="500" max="4000" value="500">
-			<Help>How many hours before the filter change reminder is displayed.</Help>
-		</Value>
-		<Value type="short" index="4" genre="config" label="Report filter counter" read_only="true" value="0">
-			<Help>How many hours the system has run since the filter counter was last reset. Read only.</Help>
-		</Value>
-                <Value type="list" index="5" genre="config" label="Celsius/Fahrenheit" min="0" max="1" value="1" size="1">
-                        <Help>Celsius or Fahrenheit.</Help>
-                        <Item label="Celsius" value="0" />
-                        <Item label="Fahrenheit" value="1" />
-                </Value>
-		<Value type="byte" index="14" genre="config" label="Dead band" min="3" max="6" value="4" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" label="Set filter counter" max="4000" min="500" type="short" value="500">
+      <Help>How many hours before the filter change reminder is displayed.</Help>
+    </Value>
+    <Value genre="config" index="4" label="Report filter counter" read_only="true" type="short" value="0">
+      <Help>How many hours the system has run since the filter counter was last reset. Read only.</Help>
+    </Value>
+    <Value genre="config" index="5" label="Celsius/Fahrenheit" max="1" min="0" size="1" type="list" value="1">
+      <Help>Celsius or Fahrenheit.</Help>
+      <Item label="Celsius" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="14" label="Dead band" max="6" min="3" size="1" type="byte" value="4">
+      <Help>
 				On thermostats that automatically control both heating and cooling systems,
 				a dead band is a temperature range in which neither system turns on. The dead
 				band prevents the thermostat from activating heat and cooling in rapid
@@ -42,9 +58,9 @@
 				5(0x05)= 5 F / 2.5 C
 				6(0x06)= 6 F / 3.0 C
 			</Help>
-		</Value>
-		<Value type="short" index="6" genre="config" label="Upper limit of heat set point" value="950">
-			<Help>
+    </Value>
+    <Value genre="config" index="6" label="Upper limit of heat set point" type="short" value="950">
+      <Help>
 				Unit in C:
 				Range from 5 to [(37 ) - (dead band)]
 				Range from 50 (0x0032) to 355 (0x0163)
@@ -56,9 +72,9 @@
 				Example 82 ; input = 820 (0x0334)
 				Default = (99 ) - (dead band)
 			</Help>
-		</Value>
-		<Value type="short" index="7" genre="config" label="Lower limit of cool set point" value="440">
-			<Help>
+    </Value>
+    <Value genre="config" index="7" label="Lower limit of cool set point" type="short" value="440">
+      <Help>
 				Unit in C:
 				Range from [(5 C) + (dead band)] to 37 C
 				Range from 65 (0x0041) to 370 (0x0172)
@@ -70,31 +86,28 @@
 				Example 68 F; input = 680 (0x02A8)
 				Default = (41 F) + (dead band)
 			</Help>
-		</Value>
-
-		<Value type="list" index="8" genre="config" label="Easy Mode" min="0" max="1" value="1" size="1">
-			<Help>Easy mode hides advanced features on the thermostat interface.</Help>
-                        <Item label="Off" value="0" />
-                        <Item label="On" value="1" />
-		</Value>
-
-		<Value type="list" index="9" genre="config" label="Time Format" min="0" max="1" value="1" size="1">
-			<Help>Use the 24 hour or 12 hour (am/pm) time format.</Help>
-                        <Item label="24 hour" value="0" />
-                        <Item label="12 hour (am/pm)" value="1" />
-		</Value>
-
-		<Value type="byte" index="10" genre="config" label="Repeat basic set counter" value="0" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="8" label="Easy Mode" max="1" min="0" size="1" type="list" value="1">
+      <Help>Easy mode hides advanced features on the thermostat interface.</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+    </Value>
+    <Value genre="config" index="9" label="Time Format" max="1" min="0" size="1" type="list" value="1">
+      <Help>Use the 24 hour or 12 hour (am/pm) time format.</Help>
+      <Item label="24 hour" value="0"/>
+      <Item label="12 hour (am/pm)" value="1"/>
+    </Value>
+    <Value genre="config" index="10" label="Repeat basic set counter" size="1" type="byte" value="0">
+      <Help>
 				Repeat basic set counter (Association Group A and B only)
 				Value(X): 0 (0x00), 3 (0x03) to 255 (0xFF)
 				0 (0X00) = Disable, default
 				3 (0x03) to 255 (0xFF) minutes
 				(Thermostat sends "Basic Set" command to its association node repeatedly in every X minutes)
 			</Help>
-		</Value>
-		<Value type="byte" index="11" genre="config" label="Auto report trigger threshold" value="4" min="0" max="8" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="11" label="Auto report trigger threshold" max="8" min="0" size="1" type="byte" value="4">
+      <Help>
 				Trigger AUTO report if room temperature is different from last
 				report.	(It will report room temperature only)
 				*User can use this function to enhance batteries service life
@@ -110,9 +123,9 @@
 				7 (0x07) = 7 F (3.5 C)
 				8 (0x08) = 8 F (4.0 C)
 			</Help>
-		</Value>
-		<Value type="byte" index="12" genre="config" label="Auto report time interval" value="2" min="0" max="16" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="12" label="Auto report time interval" max="16" min="0" size="1" type="byte" value="2">
+      <Help>
 				AUTO report by time interval. (It will report room temperature only)
 				*User can use this function to enhance batteries service life.
 				0 (0x00) = disable AUTO report function. (by time interval)
@@ -134,9 +147,9 @@
 				15 (0x0F) = 7.5 hrs
 				16 (0x10) = 8.0 hrs
 			</Help>
-		</Value>
-		<Value type="byte" index="13" genre="config" label="sensor temperature calibration" value="0" min="-10" max="10" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="13" label="sensor temperature calibration" max="10" min="-10" size="1" type="byte" value="0">
+      <Help>
 				This parameter is used to change the display temperature
 				to match with your previous thermostat, or to match another
 				thermostat already in your home
@@ -163,16 +176,14 @@
 				-9 (0xF7) = -9 F (-4.5 C)
 				-10 (0xF6) = -10 F (-5.0 C)
 			</Help>
-		</Value>
-	</CommandClass>
-
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="3">
-			<Group index="1" max_associations="5" label="Heating Mode group. All associated nodes will recieve basic set command ON and OFF when heat is triggered/deactivated." auto="false"/>
-			<Group index="2" max_associations="5" label="Cooling Mode group. All associated nodes will recieve basic set command ON and OFF when cooling is triggered/deactivated." />
-			<Group index="3" max_associations="1" label="Auto-report Group. Your controller/gateway should be associated in this group. All status changes will be reported to this node" auto="true"/>
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group auto="false" index="1" label="Heating Mode group. All associated nodes will recieve basic set command ON and OFF when heat is triggered/deactivated." max_associations="5"/>
+      <Group index="2" label="Cooling Mode group. All associated nodes will recieve basic set command ON and OFF when cooling is triggered/deactivated." max_associations="5"/>
+      <Group auto="true" index="3" label="Auto-report Group. Your controller/gateway should be associated in this group. All status changes will be reported to this node" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

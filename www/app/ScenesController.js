@@ -106,27 +106,37 @@ define(['app'], function (app) {
 			var offaction = $("#scenecontent #offaction").val();
 
 			if (onaction != "") {
-				if ((onaction.indexOf("http://") != 0) && (onaction.indexOf("https://") != 0) && (onaction.indexOf("script://") != 0)) {
-					bootbox.alert($.t("Invalid ON Action!"));
-					return;
-				}
-				else {
+				if (
+					(onaction.indexOf("http://") == 0) || 
+					(onaction.indexOf("https://") == 0) ||
+					(onaction.indexOf("script://") == 0)
+					)
+				{
 					if (checkLength($("#scenecontent #onaction"), 10, 500) == false) {
 						bootbox.alert($.t("Invalid ON Action!"));
 						return;
 					}
 				}
-			}
-			if (offaction != "") {
-				if ((offaction.indexOf("http://") != 0) && (offaction.indexOf("https://") != 0) && (offaction.indexOf("script://") != 0)) {
-					bootbox.alert($.t("Invalid Off Action!"));
+				else {
+					bootbox.alert($.t("Invalid ON Action!"));
 					return;
 				}
-				else {
+			}
+			if (offaction != "") {
+				if (
+					(offaction.indexOf("http://") == 0) ||
+					(offaction.indexOf("https://") == 0) ||
+					(offaction.indexOf("script://") == 0)
+					)
+				{
 					if (checkLength($("#scenecontent #offaction"), 10, 500) == false) {
 						bootbox.alert($.t("Invalid Off Action!"));
 						return;
 					}
+				}
+				else {
+					bootbox.alert($.t("Invalid Off Action!"));
+					return;
 				}
 			}
 

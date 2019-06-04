@@ -1,81 +1,117 @@
-<Product xmlns="http://code.google.com/p/open-zwave/">
-    <!-- NodOn CRC 3 6 04 Soft Remote Z-Wave+ -->
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0165:0002:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/nodon/crc360xSofremote.png</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1924/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Simultaneously push on buttons 3 and 4, during 1 second. The LED will blink red and green to validate the factory reset.
+
+A factory reset will completely delete the memory of the Soft Remote and restore all parameters to default value.
+In "Standalone" Mode, make sure to remove all the devices added or associated in the Soft Remote's network before performing a factory reset. 
+In "Gateway" Mode, use the factory reset procedure only when the primary controller (i.e the Gateway) is missing or defective. Reset the Soft Remote does not mean that it has been removed from the primary controller memory. Remove the Soft Remote (through the primary controller) before performing a factory reset. </MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0002">CRC-3-6-0X</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1924/NodOn-CRC-3-6-xx-UserGuide-160816-EN-interactive.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription"> When the product in "Gateway" mode, any action on button will send a wake up notification to the gateway. </MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0002">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1- Push 3 times (quickly) on the button 4. The LED blinks in blue.
+
+2- Place the device you want to remove in "Learning" Mode, within 10 seconds. To do so, please refer to your device's user guide.
+
+3- The LED blinks in green to confirm the exclusion.
+ </MetaDataItem>
+    <MetaDataItem name="Name">NodOn® Soft Remote</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1- Push 3 times (quickly) on the button 1. The LED blinks in blue.
+
+2- Place the device you want to add in "Learning" Mode, within 10 seconds. To do so, please refer to your device's user guide.
+
+3- The LED blinks in green to confirm the inclusion.</MetaDataItem>
+    <MetaDataItem name="Description">The NodOn® Soft Remote controls any compatible receivers Z-Wave® or Z-Wave Plus®, such as the Smart Plug NodOn®. It can address, directly, up to 4 groups of 8 devices and sent up to 16 different scenes to a Home Automation Gateway. This controller can operate on its own (“Standalone” Mode) or as gateway’s assistant (“Gateway” Mode). The product integrates a LED, which give an intuitive feedback for each operation you perform. 
+
+Based on an innovative technology, the NodOn® Soft Remote is only powered with a CR2032 battery, offering 2 years’ autonomy. 
+
+The NodOn® Soft Remote is based on brand new 500 series Z-Wave® module from Sigma Designs®, and supports all the new features of Z-Wave Plus® standard: 
+Longer range (up to 40 meters indoor), lower power consumption, higher data rate transmission, and many more new features. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1418/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1924/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- NodOn CRC 3 6 04 Soft Remote Z-Wave+ -->
     <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" index="1" genre="config" label="Profile Buttons 1 and 3" min="0" max="2" size="1" value="0">
-        <Help>This parameter configures the behavior of the buttons 1 and 3 when the product is in "Gateway Centric Mode"</Help>
-            <Item label="Scene Mode" value="0"/>
-            <Item label="Mono Mode" value="1"/>
-            <Item label="Duo Mode" value="2"/>
-        </Value>	
-        <Value type="list" index="2" genre="config" label="Profile Buttons 2 and 4" min="0" max="2" size="1" value="0">
-        <Help>This parameter configures the behavior of the buttons 2 and 4 when the product is in "Gateway Centric Mode"</Help>
-            <Item label="Scene Mode" value="0"/>
-            <Item label="Mono Mode" value="1"/>
-            <Item label="Duo Mode" value="2"/>
-        </Value>
-        <Value type="list" index="3" genre="config" label="Scene Type" min="0" max="1" size="1" value="0">
-        <Help>This parameter configures the type of command sent when the product is in "Gateway Centric Mode", with buttons profile configuration set in "Scene Behavior".</Help>
-            <Item label="Central Scene" value="0"/>
-            <Item label="Scene Activation" value="1"/>
-        </Value>
-        <Value type="list" index="4" genre="config" label="Action Button 1 Mono" min="0" max="2" size="1" value="0">
-        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Profile Buttons 1 and 3" max="2" min="0" size="1" type="list" value="0">
+      <Help>This parameter configures the behavior of the buttons 1 and 3 when the product is in "Gateway Centric Mode"</Help>
+      <Item label="Scene Mode" value="0"/>
+      <Item label="Mono Mode" value="1"/>
+      <Item label="Duo Mode" value="2"/>
+    </Value>
+    <Value genre="config" index="2" label="Profile Buttons 2 and 4" max="2" min="0" size="1" type="list" value="0">
+      <Help>This parameter configures the behavior of the buttons 2 and 4 when the product is in "Gateway Centric Mode"</Help>
+      <Item label="Scene Mode" value="0"/>
+      <Item label="Mono Mode" value="1"/>
+      <Item label="Duo Mode" value="2"/>
+    </Value>
+    <Value genre="config" index="3" label="Scene Type" max="1" min="0" size="1" type="list" value="0">
+      <Help>This parameter configures the type of command sent when the product is in "Gateway Centric Mode", with buttons profile configuration set in "Scene Behavior".</Help>
+      <Item label="Central Scene" value="0"/>
+      <Item label="Scene Activation" value="1"/>
+    </Value>
+    <Value genre="config" index="4" label="Action Button 1 Mono" max="2" min="0" size="1" type="list" value="0">
+      <Help>When button are set in Mono Button mode they can have 3 different behaviors :
         1: They can directly control other nodes with Basic and multi-level command class
         2: Send Switch All On command
         3: Send Switch All Off command
          </Help>
-            <Item label="Control Group 2" value="0"/>
-            <Item label="All Switch ON" value="1"/>
-            <Item label="All Switch OFF" value="2"/>
-        </Value>
-        <Value type="list" index="5" genre="config" label="Action Button 2 Mono" min="0" max="2" size="1" value="0">
-        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+      <Item label="Control Group 2" value="0"/>
+      <Item label="All Switch ON" value="1"/>
+      <Item label="All Switch OFF" value="2"/>
+    </Value>
+    <Value genre="config" index="5" label="Action Button 2 Mono" max="2" min="0" size="1" type="list" value="0">
+      <Help>When button are set in Mono Button mode they can have 3 different behaviors :
         1: They can directly control other nodes with Basic and multi-level command class
         2: Send Switch All On command
         3: Send Switch All Off command
          </Help>
-            <Item label="Control Group 3" value="0"/>
-            <Item label="All Switch ON" value="1"/>
-            <Item label="All Switch OFF" value="2"/>
-        </Value>
-        <Value type="list" index="6" genre="config" label="Action Button 3 Mono" min="0" max="2" size="1" value="0">
-        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+      <Item label="Control Group 3" value="0"/>
+      <Item label="All Switch ON" value="1"/>
+      <Item label="All Switch OFF" value="2"/>
+    </Value>
+    <Value genre="config" index="6" label="Action Button 3 Mono" max="2" min="0" size="1" type="list" value="0">
+      <Help>When button are set in Mono Button mode they can have 3 different behaviors :
         1: They can directly control other nodes with Basic and multi-level command class
         2: Send Switch All On command
         3: Send Switch All Off command
          </Help>
-            <Item label="Control Group 4" value="0"/>
-            <Item label="All Switch ON" value="1"/>
-            <Item label="All Switch OFF" value="2"/>
-        </Value>
-        <Value type="list" index="7" genre="config" label="Action Button 4 Mono" min="0" max="2" size="1" value="0">
-        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+      <Item label="Control Group 4" value="0"/>
+      <Item label="All Switch ON" value="1"/>
+      <Item label="All Switch OFF" value="2"/>
+    </Value>
+    <Value genre="config" index="7" label="Action Button 4 Mono" max="2" min="0" size="1" type="list" value="0">
+      <Help>When button are set in Mono Button mode they can have 3 different behaviors :
         1: They can directly control other nodes with Basic and multi-level command class
         2: Send Switch All On command
         3: Send Switch All Off command
          </Help>
-            <Item label="Control Group 5" value="0"/>
-            <Item label="All Switch ON" value="1"/>
-            <Item label="All Switch OFF" value="2"/>
-        </Value>
-        <Value type="list" index="8" genre="config" label="Led Management" min="0" max="3" size="1" value="0">
-            <Item label="Led OFF" value="0"/>
-            <Item label="Led Blink on button action" value="1"/>
-            <Item label="Led Blink on transmission result" value="2"/>
-            <Item label="Led Blink on button action and transmission result" value="3"/>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="7">
-            <Group index="1" max_associations="1" label="Lifeline"/>
-            <Group index="2" max_associations="8" label="Button 1 - Mono - Controlled nodes" />
-            <Group index="3" max_associations="8" label="Button 2 - Mono - Controlled nodes" />
-            <Group index="4" max_associations="8" label="Button 3 - Mono - Controlled nodes" />
-            <Group index="5" max_associations="8" label="Button 4 - Mono - Controlled nodes" />
-            <Group index="6" max_associations="8" label="Button 1 and 3 - Duo - Controlled nodes" />
-            <Group index="7" max_associations="8" label="Button 2 and 4 - Duo - Controlled nodes" />
-        </Associations>
-    </CommandClass>
+      <Item label="Control Group 5" value="0"/>
+      <Item label="All Switch ON" value="1"/>
+      <Item label="All Switch OFF" value="2"/>
+    </Value>
+    <Value genre="config" index="8" label="Led Management" max="3" min="0" size="1" type="list" value="0">
+      <Item label="Led OFF" value="0"/>
+      <Item label="Led Blink on button action" value="1"/>
+      <Item label="Led Blink on transmission result" value="2"/>
+      <Item label="Led Blink on button action and transmission result" value="3"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="7">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Button 1 - Mono - Controlled nodes" max_associations="8"/>
+      <Group index="3" label="Button 2 - Mono - Controlled nodes" max_associations="8"/>
+      <Group index="4" label="Button 3 - Mono - Controlled nodes" max_associations="8"/>
+      <Group index="5" label="Button 4 - Mono - Controlled nodes" max_associations="8"/>
+      <Group index="6" label="Button 1 and 3 - Duo - Controlled nodes" max_associations="8"/>
+      <Group index="7" label="Button 2 and 4 - Duo - Controlled nodes" max_associations="8"/>
+    </Associations>
+  </CommandClass>
 </Product>

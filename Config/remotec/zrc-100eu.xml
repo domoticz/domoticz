@@ -1,0 +1,14 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/5254:8380:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/remotec/zrc-100eu.png</MetaDataItem>
+    <MetaDataItem id="8380" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/1639/</MetaDataItem>
+    <MetaDataItem name="Description">Remotec bw8380eu</MetaDataItem>
+    <MetaDataItem id="8380" name="FrequencyName" type="0001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">ZRC-100EU / BW8380EU</MetaDataItem>
+    <MetaDataItem id="8380" name="Identifier" type="0001">ZRC-100EU</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1639/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

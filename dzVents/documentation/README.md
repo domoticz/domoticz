@@ -543,11 +543,13 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
     - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
-    - **dumpTable(table,levelIndicator)**: *Function*: <sup>2.4.17</sup> print table structure and contents to log
+    - **dumpTable(table,[levelIndicator])**: *Function*: <sup>2.4.19</sup> print table structure and contents to log
     - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
     - **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
+    - **inTable(table, searchString)**: *Function*: <sup>2.4.21</sup> Returns `"key"` if table has searchString as a key, `"value"` if table has searchString as value and `false` otherwise.
     - **osExecute(cmd)**: *Function*:  Execute an os command.
-    - **round(number, decimalPlaces)**: *Function*. Helper function to round numbers.
+    - **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
+    - **stringSplit(string, [separator ])**:<sup>2.4.19</sup> *Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separate words.
     - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
     - **toJSON(luaTable)**: *Function*. <sup>2.4.0</sup> Converts a Lua table to a json string.
     - **urlDecode(s)**: <sup>2.4.13</sup> *Function*. Simple deCoder to convert a string with escaped chars (%20, %3A and the likes) to human readable format
@@ -672,7 +674,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. <sup>2.4.17</sup> Generic alternative method to update device nValue, sValue. Uses domoticz JSON API to force subsequent events like pushing to influxdb. nValue required but when set to nil it will use current nValue. sValue parms are optional and can be many.
  - **state**: *String*. For switches, holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
  - **signalLevel**: *Number* If applicable for that device then it will be from 0-100.
- - **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **switchType**: *String*. See Domoticz devices table in Domoticz GUI(Switches tab). E.g. 'On/Off', 'Door Contact', 'Motion Sensor' or 'Blinds' 
  - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
  - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
  - **unit**: *Number*. Device unit. See device list in Domoticz' settings for the unit.
@@ -885,10 +887,12 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **levelNames**: *Table*. Table holding the level names for selector switch devices.
  - **maxDimLevel**: *Number*.
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **quietOn()**: *Function*. <sup>2.4.20</sup> Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **quietOff()**: *Function*. <sup>2.4.20</sup> set deviceStatus to off without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **stop()**: *Function*. Set device to Stop if it supports it (e.g. blinds). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Switch device off it is supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Switch device on if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **switchSelector(level)**: *Function*. Switches a selector switch to a specific level (numeric value, see the edit page in Domoticz for such a switch to get a list of the values). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **switchSelector(<[level]|[levelname]>)**: *Function*. Switches a selector switch to a specific level ( levelname or level(numeric) required ) levelname must be exact, for level the closest fit will be picked. See the edit page in Domoticz for such a switch to get a list of the values). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **toggleSwitch()**: *Function*. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
 
 #### Temperature sensor
@@ -1665,7 +1669,9 @@ The response object <sup>2.4.0</sup> (second parameter in your execute function)
  - **isJSON**: *Boolean*. Short for `response.headers['Content-Type'] == 'application/json'`. When true, the data is automatically converted to a Lua table.
  - **json**. *Table*. When the response data is `application/json` then the response data is automatically converted to a Lua table for quick and easy access.
  - **ok**: *Boolean*. `True` when the request was successful. It checks for statusCode to be in range of 200-299.
- - **statusCode**: *Number*. HTTP status codes. See [HTTP response status codes](https://developer.mozilla.org/nl/docs/Web/HTTP/Status).
+ - **statusCode**: *Number*. HTTP status codes. See [HTTP response status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes).
+ - **statusText**: *String*. <sup>2.4.19</sup> HTTP status message. See [HTTP response status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes).
+ - **protocol**: *String*. <sup>2.4.19</sup> HTTP protocol. See [HTTP response status codes](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol).
  - **trigger**, **callback**: *String*. The callback string that triggered this response instance. This is useful if you have a script that is triggered by multiple different callback strings.
 
 ### More about request and response headers
@@ -1988,6 +1994,23 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+##[2.4.22]
+- selector.switchSelector method accepts levelNames
+- increased selector.switchSelector resilience
+- fix wildcard timerule 
+
+##[2.4.21]
+- fixed wrong direction for open() and close() for some types of blinds
+- Add inTable function to domoticz.utils
+- Add sValue attribute to devices
+
+##[2.4.20]
+- Add quietOn() and quietOff() method to switchType devices 
+
+##[2.4.19]
+- Add stringSplit function to domoticz.utils.
+- Add statusText and protocol to HTTPResponse
+
 ##[2.4.18]
 - Add triggerIFTTT() to domoticz
 

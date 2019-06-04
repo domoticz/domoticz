@@ -1,16 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Motion Sensor HS1MS-Z
 http://products.z-wavealliance.org/products/1801
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="3">
-            <Group index="1" max_associations="5" label="Notification" auto="false"/>
-            <Group index="2" max_associations="5" label="LifeLine" auto="true"/>
-            <Group index="3" max_associations="5" label="Binary Sensor"/>
-        </Associations>
-    </CommandClass>
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0260:1000:8001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/heiman/HS1MS-Z.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="8001">https://products.z-wavealliance.org/products/1801/</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="8001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1801/HSIMS-Z.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">-  Click [Remove] icon in Z-Wave PC Controller Program
+-  Press a Func_Button 3 times quickly in HS1MS-Z
+-  If Exclusion Process is successful, Green LED is Blinking 6 times, then turn off in HS1MS-Z   </MetaDataItem>
+    <MetaDataItem name="Name">Smart Motion Sensor</MetaDataItem>
+    <MetaDataItem name="Description">The smart motion sensor is designed to detect motion indoors.  When the smart motion sensor detects people or animals moving, it will report the information to the users mobile phone immediately.  it is very easy to install, users should only paste the smart motion sensor on the wall, download the application and then connect the smart motion sensor to a smartphone via WiFi.  Users will know the situation of their houses remotely. The battery life is more than 1 year and the battery is also replaceable. </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">-  Wake up Notification is transmitted every 24 hours by default.
+-  Wake up Notification is transmitted after Notification Report is Transmitted</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="8001">HS1MS-Z</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">-  Click [Add] icon in Z-Wave PC Controller Program
+-  Press a Func_Button 3 time in HS1MS-Z (Motion Sensor), Green LED is Blinking 3 times within 1 second.
+-  If Inclusion Process is successful, Green LED will turn off.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Long press Func_Button while installing batteries in HS1MS-Z 
+-  Device Reset Locally notification is Transmitted
+-  Please use the reset procedure only when the primary controller is missing or inoperable</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1801/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group auto="false" index="1" label="Notification" max_associations="5"/>
+      <Group auto="true" index="2" label="LifeLine" max_associations="5"/>
+      <Group index="3" label="Binary Sensor" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

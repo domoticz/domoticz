@@ -1,0 +1,26 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0020:1391:8007</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/jasco/45601.png</MetaDataItem>
+    <MetaDataItem id="1391" name="ZWProductPage" type="8007">https://products.z-wavealliance.org/products/289/</MetaDataItem>
+    <MetaDataItem id="1391" name="FrequencyName" type="8007">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://www.jascoproducts.com/support</MetaDataItem>
+    <MetaDataItem name="Description">Jasco LCD Z-Wave Remote. The GE Advanced Remote turns on/off and adjusts the brightness level of Z-Wave enabled lights, as well as operates the on/off functions of Z-Wave enabled small appliances. Users create and manage custom lighting schemes by controlling up to 18 individual lights, 18 groups, and 18 scenes. The LCD menu screen allows for quick navigation of remote features and easy-to-read command feedback, while the timer function allows for up to nine timed events to be automatically activated in the home. The remote also works with Z-Wave enabled thermostats. To find out more how GE Z-Wave can help you save energy, take control and feel safe.
+Features:
+Control your entire home from one remote
+Turn on/off and adjust the brightness of Z-Wave enabled lights
+Operates the on/off functions of Z-Wave enabled small appliances
+Manage up to 18 individual lights, 18 groups, and 18 scenes
+Create custom lighting groups and scenes
+On-screen LCD menu provides easy navigation of features and command feedback
+Program up to nine timed events with advanced timer
+Label function allows you to name lights, groups, and scenes</MetaDataItem>
+    <MetaDataItem name="Name">Lighting Control Advanced Remote, Thermostat Control, 18 Lights/Groups/Scenes</MetaDataItem>
+    <MetaDataItem id="1391" name="Identifier" type="8007">45601</MetaDataItem>
+    <MetaDataItem name="ProductPage">www.ezzwave.com</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/289/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

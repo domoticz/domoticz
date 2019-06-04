@@ -58,6 +58,18 @@ define(['app'], function (app) {
         }
 
         OnZWaveAbortInclude = function () {
+            $.ajax({
+                url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+					$('#IncludeZWaveDialog').modal('hide');
+                },
+                error: function () {
+					$('#IncludeZWaveDialog').modal('hide');
+                }
+            });
+        
             $http({
                 url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
                 async: true,
@@ -136,14 +148,16 @@ define(['app'], function (app) {
         }
 
         OnZWaveAbortExclude = function () {
-            $http({
+            $.ajax({
                 url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
-                async: true,
-                dataType: 'json'
-            }).then(function successCallback(response) {
-                $('#ExcludeZWaveDialog').modal('hide');
-            }, function errorCallback(response) {
-                $('#ExcludeZWaveDialog').modal('hide');
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+					$('#ExcludeZWaveDialog').modal('hide');
+                },
+                error: function () {
+					$('#ExcludeZWaveDialog').modal('hide');
+                }
             });
         }
 
@@ -219,6 +233,22 @@ define(['app'], function (app) {
                     ShowNotify($.t('Problem updating Node!'), 2500, true);
                 }
             });
+        }
+
+		//Request Node Information Frame
+        RefreshNode = function (idx) {
+            if ($('#updelclr #noderefresh').attr("class") == "btnstyle3-dis") {
+                return;
+            }
+			$.ajax({
+				url: "json.htm?type=command&param=requestzwavenodeinfo" +
+				"&idx=" + idx,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					bootbox.alert($.t('Node Information Frame requested. This could take some time! (You might need to wake-up the node!)'));
+				}
+			});
         }
 
         RequestZWaveConfiguration = function (idx) {
@@ -400,6 +430,8 @@ define(['app'], function (app) {
 
             $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+            $('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
+            
             $("#hardwarecontent #configuration").html("");
             $("#hardwarecontent #nodeparamstable #nodename").val("");
 
@@ -435,8 +467,10 @@ define(['app'], function (app) {
                             }
                             var statusImg = '<img src="images/' + status + '.png" />';
                             var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
-
                             var Description = item.Description;
+                            if (Description.length < 2) {
+								Description = '<span class="zwave_no_info">'+item.Generic_type+'</span>';
+                            }
                             if (item.IsPlus == true) {
                                 Description += "+";
                             }
@@ -467,10 +501,11 @@ define(['app'], function (app) {
             /* Add a click handler to the rows - this could be used as a callback */
             $("#nodestable tbody").off();
             $("#nodestable tbody").on('click', 'tr', function () {
-                $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
                 if ($(this).hasClass('row_selected')) {
                     $(this).removeClass('row_selected');
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+					$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+					$('#updelclr #noderefresh').attr("class", "btnstyle3-dis");
                     $("#hardwarecontent #configuration").html("");
                     $("#hardwarecontent #nodeparamstable #nodename").val("");
                     $('#hardwarecontent #usercodegrp').hide();
@@ -481,12 +516,15 @@ define(['app'], function (app) {
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3");
+                    $('#updelclr #noderefresh').attr("class", "btnstyle3");
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
                         var data = oTable.fnGetData(anSelected[0]);
                         var idx = data["DT_RowId"];
                         var iNode = parseInt(data["NodeID"]);
                         $("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
+       					$('#updelclr #noderefresh').attr("href", "javascript:RefreshNode(" + idx + ")");
+                        
                         $("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
                         if (iNode != iOwnNodeId) {
                             $('#updelclr #nodedelete').attr("class", "btnstyle3");
@@ -515,9 +553,9 @@ define(['app'], function (app) {
                             var bHaveConfiguration = false;
                             $.each(data["Config"], function (i, item) {
                                 bHaveConfiguration = true;
+								szConfig += '<span class="zwave_label">' + item.index + ". " + item.label + ":</span>";
                                 if (item.type == "list") {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b><br>";
-                                    szConfig += '<select style="width:100%" class="combobox ui-corner-all" id="' + item.index + '">';
+                                    szConfig += '&nbsp;<select style="width:auto" class="combobox ui-corner-all" id="' + item.index + '">';
                                     var iListItem = 0;
                                     var totListItems = parseInt(item.list_items);
                                     for (iListItem = 0; iListItem < totListItems; iListItem++) {
@@ -535,8 +573,7 @@ define(['app'], function (app) {
                                     }
                                 }
                                 else if (item.type == "bool") {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b><br>";
-                                    szConfig += '<select style="width:100%" class="combobox ui-corner-all" id="' + item.index + '">';
+                                    szConfig += '<br><select style="width:100%" class="combobox ui-corner-all" id="' + item.index + '">';
 
                                     var szComboOption = '<option value="False"';
                                     if (item.value == "False") {
@@ -558,8 +595,7 @@ define(['app'], function (app) {
                                     }
                                 }
                                 else if (item.type == "string") {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b><br>";
-                                    szConfig += '<input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>';
+                                    szConfig += '<br><input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>';
 
                                     if (item.units != "") {
                                         szConfig += ' (' + item.units + ')';
@@ -567,8 +603,7 @@ define(['app'], function (app) {
                                     szConfig += " (" + $.t("actual") + ": " + item.value + ")";
                                 }
                                 else {
-                                    szConfig += "<b>" + item.index + ". " + item.label + ":</b> ";
-                                    szConfig += '<input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
+                                    szConfig += '&nbsp;<input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
                                     if (item.units != "") {
                                         szConfig += ' (' + item.units + ')';
                                     }
@@ -576,10 +611,12 @@ define(['app'], function (app) {
                                 }
                                 szConfig += "<br /><br />";
                                 if (item.help != "") {
-                                    szConfig += item.help + "<br>";
+                                    szConfig += '<span class="zwave_help">' + item.help + '</span><br>';
                                 }
-                                szConfig += "Last Update: " + item.LastUpdate;
-                                szConfig += "<br /><br />";
+                                if (item.LastUpdate.length>1) {
+									szConfig += '<span class="zwave_last_update">Last Update: ' + item.LastUpdate + '</span><br />';
+								}
+								szConfig += "<br />";
                             });
                             if (bHaveConfiguration == true) {
                                 szConfig += '<a class="btnstyle3" id="nodeapplyconfiguration" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';

@@ -1,10 +1,43 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Fibaro : Button FGPB101 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration -->
-	<CommandClass id="112">
-		<Value type="byte" genre="config" instance="1" index="1" label="Scenes sent to the controller" min="0" max="127" value="127">
-			<Help>
+<!-- Fibaro : Button FGPB101 --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0F01</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgpb101.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0F01">https://products.z-wavealliance.org/products/1944/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset procedure allows to restore the device back to its factory settings, which means all information about the Z-Wave controller and user configuration will be deleted. In order to reset the device:
+1)	Click the Button exactly five times.
+2)	Press and hold the Button for at least 5 seconds.
+Please use this procedure only when the network primary controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Button </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1)	Place the Button within the direct range of your Z-Wave controller.
+2)	Set the main controller in remove mode (see the controller’s manual).
+3)	Click the Button at least six times.
+4)	Wait for the removing process to end.
+5)	Successful removing will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1)	Place the Button within the direct range of your Z-Wave controller.
+2)	Set the main controller in (security/non-security) add mode (see the controller’s manual).
+3)	Click the Button at least six times.
+4)	Wait for the adding process to end.
+5)	Successful adding will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Button is a compact, battery-powered, Z-Wave Plus compatible device. It allows you to control devices through the Z-Wave network and run various scenes defined in FIBARO System. 
+Different actions may be triggered with one to five clicks or by holding the button down. In Panic Button mode, each press of the button results in triggering the Fibaro Alarm. 
+With its small design and wireless communication, the FIBARO Button can be conveniently mounted on any surface and in any position or location at home, e.g. beside the bed or under the desk.
+</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0F01">FGPB-101</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The Button needs to be woken up to receive information about the new configuration from the controller, like parameters and associations. 
+1)	Click the Button 4 times to wake it up
+</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0F01">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1944/FGPB-101-EN-T-v1.0.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1944/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Scenes sent to the controller" max="127" min="0" type="byte" value="127">
+      <Help>
 				This parameter determines which actions result in sending scene IDs and attributes assigned to them.
 				1 - Key Pressed 1 time.
 				2 - Key Pressed 2 times.
@@ -16,9 +49,9 @@
 				Note: Values of parameter 1 may be combined, e.g. 1+2=3 means that scenes will be sent after pressing the button once or twice.
 				Default: 127 All.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="3" label="Associations in Z-Wave network security mode" min="0" max="7" value="7">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Associations in Z-Wave network security mode" max="7" min="0" type="byte" value="7">
+      <Help>
 				This parameter defines how commands are sent in specified association groups: as secure or non-secure.
 				Parameter is active only in Z-Wave network security mode. It does not apply to 1st Lifeline group.
 				1 - 2nd group sent as secure.
@@ -26,76 +59,76 @@
 				4 - 4th group sent as secure.
 				Default: 3 All.
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="10" label="Key Pressed 1 time - command sent to 2nd association group" value="3" size="1">
-			<Help>This parameter defines commands sent to devices associated in 2nd association group after a single click</Help>
-			<Item label="No action" value="0"/>
-			<Item label="Switch ON" value="1"/>
-			<Item label="Switch OFF" value="2"/>
-			<Item label="Switch ON/OFF - alternately" value="3"/>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="11" label="Key Pressed 1 times - value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="255">
-			<Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a single click.</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="12" label="Key Pressed 2 time - command sent to 2nd association group" value="1" size="1">
-			<Help>This parameter defines commands sent to devices associated in 2nd association group after a double click</Help>
-			<Item label="No action" value="0"/>
-			<Item label="Switch ON" value="1"/>
-			<Item label="Switch OFF" value="2"/>
-			<Item label="Switch ON/OFF - alternately" value="3"/>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="13" label="Key Pressed 2 times - value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="99">
-			<Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a double click.</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="14" label="Key Pressed 3 time - command sent to 2nd association group" value="0" size="1">
-			<Help>This parameter defines commands sent to devices associated in 2nd association group after a triple click</Help>
-			<Item label="No action" value="0"/>
-			<Item label="Switch ON" value="1"/>
-			<Item label="Switch OFF" value="2"/>
-			<Item label="Switch ON/OFF - alternately" value="3"/>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="15" label="Key Pressed 3 times - value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="255">
-			<Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a triple click.</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="20" label="Key Pressed 1 time - command sent to 3rd association group" value="3" size="1">
-			<Help>This parameter defines commands sent to devices associated in 2nd association group after a single click</Help>
-			<Item label="No action" value="0"/>
-			<Item label="Switch ON" value="1"/>
-			<Item label="Switch OFF" value="2"/>
-			<Item label="Switch ON/OFF - alternately" value="3"/>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="21" label="Key Pressed 1 times - value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="255">
-			<Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a single click.</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="22" label="Key Pressed 2 time - command sent to 3rd association group" value="1" size="1">
-			<Help>This parameter defines commands sent to devices associated in 3rd association group after a double click</Help>
-			<Item label="No action" value="0"/>
-			<Item label="Switch ON" value="1"/>
-			<Item label="Switch OFF" value="2"/>
-			<Item label="Switch ON/OFF - alternately" value="3"/>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="23" label="Key Pressed 2 times - value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="99">
-			<Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a double click.</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="24" label="Key Pressed 3 time - command sent to 3rd association group" value="0" size="1">
-			<Help>This parameter defines commands sent to devices associated in 3rd association group after a triple click</Help>
-			<Item label="No action" value="0"/>
-			<Item label="Switch ON" value="1"/>
-			<Item label="Switch OFF" value="2"/>
-			<Item label="Switch ON/OFF - alternately" value="3"/>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="25" label="Key Pressed 3 times - value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="255">
-			<Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a triple click.</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="29" label=" Key Held Down - command sent to 3rd association group" value="3" size="1">
-			<Help>This parameter defines commands sent to devices associated in 3rd association group after holding the button down.</Help>
-			<Item label="No action" value="0"/>
-			<Item label="Brightening" value="1"/>
-			<Item label="Dimming" value="2"/>
-			<Item label="Brightening/Dimming - alternately" value="3"/>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="30" label=" Alarm frame triggers" min="0" max="127" value="127">
-			<Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Key Pressed 1 time - command sent to 2nd association group" size="1" type="list" value="3">
+      <Help>This parameter defines commands sent to devices associated in 2nd association group after a single click</Help>
+      <Item label="No action" value="0"/>
+      <Item label="Switch ON" value="1"/>
+      <Item label="Switch OFF" value="2"/>
+      <Item label="Switch ON/OFF - alternately" value="3"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Key Pressed 1 times - value of SWITCH ON command sent to 2nd association group" max="255" min="1" type="short" value="255">
+      <Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a single click.</Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Key Pressed 2 time - command sent to 2nd association group" size="1" type="list" value="1">
+      <Help>This parameter defines commands sent to devices associated in 2nd association group after a double click</Help>
+      <Item label="No action" value="0"/>
+      <Item label="Switch ON" value="1"/>
+      <Item label="Switch OFF" value="2"/>
+      <Item label="Switch ON/OFF - alternately" value="3"/>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Key Pressed 2 times - value of SWITCH ON command sent to 2nd association group" max="255" min="1" type="short" value="99">
+      <Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a double click.</Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Key Pressed 3 time - command sent to 2nd association group" size="1" type="list" value="0">
+      <Help>This parameter defines commands sent to devices associated in 2nd association group after a triple click</Help>
+      <Item label="No action" value="0"/>
+      <Item label="Switch ON" value="1"/>
+      <Item label="Switch OFF" value="2"/>
+      <Item label="Switch ON/OFF - alternately" value="3"/>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Key Pressed 3 times - value of SWITCH ON command sent to 2nd association group" max="255" min="1" type="short" value="255">
+      <Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a triple click.</Help>
+    </Value>
+    <Value genre="config" index="20" instance="1" label="Key Pressed 1 time - command sent to 3rd association group" size="1" type="list" value="3">
+      <Help>This parameter defines commands sent to devices associated in 2nd association group after a single click</Help>
+      <Item label="No action" value="0"/>
+      <Item label="Switch ON" value="1"/>
+      <Item label="Switch OFF" value="2"/>
+      <Item label="Switch ON/OFF - alternately" value="3"/>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Key Pressed 1 times - value of SWITCH ON command sent to 3rd association group" max="255" min="1" type="short" value="255">
+      <Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a single click.</Help>
+    </Value>
+    <Value genre="config" index="22" instance="1" label="Key Pressed 2 time - command sent to 3rd association group" size="1" type="list" value="1">
+      <Help>This parameter defines commands sent to devices associated in 3rd association group after a double click</Help>
+      <Item label="No action" value="0"/>
+      <Item label="Switch ON" value="1"/>
+      <Item label="Switch OFF" value="2"/>
+      <Item label="Switch ON/OFF - alternately" value="3"/>
+    </Value>
+    <Value genre="config" index="23" instance="1" label="Key Pressed 2 times - value of SWITCH ON command sent to 3rd association group" max="255" min="1" type="short" value="99">
+      <Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a double click.</Help>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Key Pressed 3 time - command sent to 3rd association group" size="1" type="list" value="0">
+      <Help>This parameter defines commands sent to devices associated in 3rd association group after a triple click</Help>
+      <Item label="No action" value="0"/>
+      <Item label="Switch ON" value="1"/>
+      <Item label="Switch OFF" value="2"/>
+      <Item label="Switch ON/OFF - alternately" value="3"/>
+    </Value>
+    <Value genre="config" index="25" instance="1" label="Key Pressed 3 times - value of SWITCH ON command sent to 3rd association group" max="255" min="1" type="short" value="255">
+      <Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a triple click.</Help>
+    </Value>
+    <Value genre="config" index="29" instance="1" label="Key Held Down - command sent to 3rd association group" size="1" type="list" value="3">
+      <Help>This parameter defines commands sent to devices associated in 3rd association group after holding the button down.</Help>
+      <Item label="No action" value="0"/>
+      <Item label="Brightening" value="1"/>
+      <Item label="Dimming" value="2"/>
+      <Item label="Brightening/Dimming - alternately" value="3"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Alarm frame triggers" max="127" min="0" type="byte" value="127">
+      <Help>
 				Parameter determines which actions result in sending alarm frames to 4th association group.
 				1 - Key Pressed 1 time.
 				2 - Key Pressed 2 times.
@@ -106,15 +139,15 @@
 				64 - Key Released.
 				Default: 127 All.
 			</Help>
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="4">
-			<Group index="1" max_associations="1" label="Lifeline"/>
-			<Group index="2" max_associations="5" label="On/Off"/>
-			<Group index="3" max_associations="5" label="Dimmer"/>
-			<Group index="4" max_associations="5" label="Alarm"/>
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="On/Off" max_associations="5"/>
+      <Group index="3" label="Dimmer" max_associations="5"/>
+      <Group index="4" label="Alarm" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

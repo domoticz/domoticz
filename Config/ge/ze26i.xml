@@ -1,21 +1,61 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- GE/Jasco Smart LED Light Bulb ZE26I -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3031:4C42</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/ze26i.png</MetaDataItem>
+    <MetaDataItem id="3031" name="ZWProductPage" type="4C42">https://products.z-wavealliance.org/products/1942/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1942/35931 EnFrSp QSG v1.3-REV.1.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Smart LED light bulb with Z-Wave radio.
+- Control lights remotely and save energy
+- Compatible with smart home systems supporting Z-Wave
+- 60 Watt equivalent light (750 lumens)
+- Consumes only 9 watts of power
+- 2700K soft light with frosted glass 
+- Instant ON and fully dimmable
+- Functions as a Z-Wave signal repeater
+- Very simple to include in your network
+- Z-Wave Plus certified 
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Turn off power to the light bulb socket
+2. Follow the network controller instruction to place your network controller into exclusion mode to remove the dt light bulb from the network.
+3. After being prompted by the network controller, turn On power to the light bulb.  If successful, the LED light bulb will flash twice to indicate successful exclusion.
+
+</MetaDataItem>
+    <MetaDataItem id="3031" name="FrequencyName" type="4C42">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Turn Off power to the light bulb socket
+2. Screw in the light bulb
+3. Place your network controller into inclusion mode by following the controller manufacturer's instructions
+4. Turn On power to the light bulb.  If successful, the LED light bulb will flash twice to indicate successful inclusion.
+5. If the controller/gateway shows it was a fail, repeat the procedure.
+
+Note: If Inclusion still fails after the 2nd attempt, you need to first RESET the dt Smart Bulb before repeating the above steps. 
+</MetaDataItem>
+    <MetaDataItem id="3031" name="Identifier" type="4C42">35931</MetaDataItem>
+    <MetaDataItem name="Name">Smart LED Light Bulb</MetaDataItem>
+    <MetaDataItem name="ResetDescription">You may manually reset the light bulb as follows:
+1.  Flick the wall switch “OFF-ON” 4 times within 4 seconds. 
+2. The dt Smart Bulb will flash twice after Reset is successful.  
+
+Use this procedure only in the event that the network primary controller is lost or otherwise inoperable.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1942/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- GE/Jasco Smart LED Light Bulb ZE26I -->
   <!-- Configuration -->
   <CommandClass id="112">
-    <Value type="list" index="1" genre="config" label="Dim level when light is turned ON" units="" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="1" label="Dim level when light is turned ON" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>You may select the dim level whenever the light is turned back ON to be either full brightness (100% dim level) or be the same as the last dim setting when the light is ON by flicking the wall switch</Help>
       <Item label="Full brightness" value="0"/>
       <Item label="Last brightness setting" value="1"/>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="9" label="Dimming/Brightening Step Level" min="1" max="99" value="1" size="1">
+    <Value genre="config" index="9" instance="1" label="Dimming/Brightening Step Level" max="99" min="1" size="1" type="byte" value="1">
       <Help>
 	  You may change the dimming step level when you adjust the brightness by your controller/gateway.
 	  When the value is low, dimming/brightening is gradual.
 	  When the value is high, dimming/brightening is rapid.
 	  </Help>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="10" label="Dimming/Brightening Step Timing" min="1" max="10" value="3" size="1">
+    <Value genre="config" index="10" instance="1" label="Dimming/Brightening Step Timing" max="10" min="1" size="1" type="byte" value="3">
       <Help>
 	  You may change the dimming speed quicker or slower.
 	  When the value is low, the step timing is quick.
@@ -26,7 +66,7 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline"/>
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>

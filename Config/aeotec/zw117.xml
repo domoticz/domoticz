@@ -1,42 +1,71 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Aeotec ZW117 Range Extender 6, base on Engineering Spec 5/31/2016
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- COMMAND_CLASS_BASIC -->
-    <CommandClass id="32" getsupported="false"/>
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="82" label="LED when the Range Extender relays Z-Wave message" min="0" max="1" value="0" size="1">
-            <Help>Set the default status of the LED when the Range Extender relays Z-Wave message.</Help>
-            <Item label="On for 2 seconds" value="0"/>
-            <Item label="Off" value="1"/>
-        </Value>
-        <Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" size="1" value="0">
-            <Help>Partner ID</Help>
-            <Item label="Aeon Labs Standard (Default)" value="0"/>
-            <Item label="Others" value="1"/>
-        </Value>
-        <Value type="list" index="252" genre="config" label="Configuration Locked" units="" min="0" max="1" size="1" value="0">
-            <Help>Enable/disable Configuration Locked</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="short" index="254" genre="config" label="Device tag" units="" min="0" max="65535" value="0">
-            <Help>Device tag.</Help>
-        </Value>
-        <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
-            <Help>Reset to factory defaults</Help>
-            <Item label="Reset to factory default setting" value="0"/>
-            <Item label="Normal" value="1"/>
-            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Retransmit"/>
-        </Associations>
-    </CommandClass>
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0075:0104</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw117.png</MetaDataItem>
+    <MetaDataItem id="0075" name="ZWProductPage" type="0104">https://products.z-wavealliance.org/products/1966/</MetaDataItem>
+    <MetaDataItem id="0075" name="FrequencyName" type="0104">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, press  the Z-Wave Button on Range Extender 6.</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec Range Extender is a Z-Wave mesh network repeater which can extend the range of communication between Z-Wave products and assist other devices to reach each other in your Z-Wave network. 
+The Range Extender can also communicate securely via AES 128 wireless Z-Wave commands and supports Over-The-Air (OTA) firmware upgrades.
+</MetaDataItem>
+    <MetaDataItem name="Name">Range Extender 6</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Z-Wave Button for 20 seconds and then release it.
+Use this procedure only in the event that your primary network controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1998/Range Extender 6 manual.pdf</MetaDataItem>
+    <MetaDataItem id="0075" name="Identifier" type="0104">ZW117-A01</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, press the Z-Wave Button on Range Extender 6.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1966/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1994/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1998/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0075" name="ZWProductPage" type="0204">https://products.z-wavealliance.org/products/1994/</MetaDataItem>
+    <MetaDataItem id="0075" name="Identifier" type="0204">ZW117-B21</MetaDataItem>
+    <MetaDataItem id="0075" name="FrequencyName" type="0204">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0075" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1998/</MetaDataItem>
+    <MetaDataItem id="0075" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0075" name="Identifier" type="0004">ZW117-C15</MetaDataItem>
+  </MetaData>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="82" instance="1" label="LED when the Range Extender relays Z-Wave message" max="1" min="0" size="1" type="list" value="0">
+      <Help>Set the default status of the LED when the Range Extender relays Z-Wave message.</Help>
+      <Item label="On for 2 seconds" value="0"/>
+      <Item label="Off" value="1"/>
+    </Value>
+    <Value genre="config" index="200" label="Partner ID" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Partner ID</Help>
+      <Item label="Aeon Labs Standard (Default)" value="0"/>
+      <Item label="Others" value="1"/>
+    </Value>
+    <Value genre="config" index="252" label="Configuration Locked" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable/disable Configuration Locked</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="254" label="Device tag" max="65535" min="0" type="short" units="" value="0">
+      <Help>Device tag.</Help>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Retransmit" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

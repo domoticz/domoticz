@@ -1,63 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Zooz ZSE40 4-in-1 sensor -->
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:2101:2021</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zse40.png</MetaDataItem>
+    <MetaDataItem id="2101" name="ZWProductPage" type="2021">https://products.z-wavealliance.org/products/1804/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove theZSE40 from the Z-Wave network (exclusion), place the Z-Wave primary controller into “exclusion” mode and follow its instruction to delete the ZSE40 to the controller.  Press the Program Switch of ZSE40 once to be excluded. </MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1804/ZSE40-USER-MANUAL-5-13-16.pdf</MetaDataItem>
+    <MetaDataItem id="2101" name="Identifier" type="2021">ZSE40</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the ZSE40 to the Z-Wave network (inclusion), place the Z-Wave primary controller into inclusion mode.  Press the Program Switch of ZSE40 for sending the NIF. After sending NIF, Z-Wave will send the auto inclusion, otherwise, ZSE40 will go to sleep after 20 seconds. </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Use “Wake Up” command to set up the awaking time (from 10 minutes to 1 week) and send the wake up notification to controller</MetaDataItem>
+    <MetaDataItem name="Name">4-in-1 Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Enjoy 4 smart sensors in 1 compact device. Monitor motion, temperature, humidity, and light level.
+This is a secure device using 128-bit signal encryption. It requires a security enabled gateway controller for full functionality.
+The Zooz 4-in-1 sensor is packed with advanced features:
+- 7 levels of motion sensitivity to choose from
+- 3 modes for motion / temp led indicator notifications
+- Built-in tamper protection
+- Low battery alerts
+- Z-Wave Plus with improved 500 series chip for faster and safer wireless communication
+
+Z-Wave Frequency: 908.42 MHz (US)
+Power: 2 AAA batteries
+Wireless Range: Up to 100 feet line of sight
+Operating Temperature: 5° - 104°F
+Installation: Indoor Use Only
+1 Year Warranty</MetaDataItem>
+    <MetaDataItem id="2101" name="FrequencyName" type="2021">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Remove cover to trigged tamper switch, LED flash once &amp; send out Alarm Report.  Press Program Switch 10 times within 10 seconds, ZSE40 will send the “Device Reset Locally Notification” command and reset to the factory default. (Remark: This is to be used only in the case of primary controller being inoperable or otherwise unavailable.)
+   
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1804/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Zooz ZSE40 4-in-1 sensor -->
 
     <!-- Configuration Parameters -->
-    <CommandClass id="112" name="COMMAND_CLASS_CONFIGURATION">
-        <Value type="list" index="1" genre="config" label="Temperature Scale" units="" min="0" max="1" value="1" size="1">
-            <Help>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Temperature Scale" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
                 Temperature scale (Celsius or Fahrenheit (default)).
             </Help>
-            <Item label="Celsius" value="0" />
-            <Item label="Fahrenheit" value="1" />
-        </Value>
-        <Value type="byte" index="2" genre="config" label="Temperature Change Notif" units="0.1 degree" min="1" max="50" value="10">
-            <Help>
+      <Item label="Celsius" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="2" label="Temperature Change Notif" max="50" min="1" type="byte" units="0.1 degree" value="10">
+      <Help>
                 Minimum temperature change that will trigger a report to the controller, in 0.1 degrees. 10 = 1.0 degrees (default).
             </Help>
-        </Value>
-        <Value type="byte" index="3" genre="config" label="Humidity Change Notif" units="%" min="1" max="50" value="10">
-            <Help>
+    </Value>
+    <Value genre="config" index="3" label="Humidity Change Notif" max="50" min="1" type="byte" units="%" value="10">
+      <Help>
                 Minimum humidity change (%) that will trigger a report to the controller. 10 = 10% (default).
             </Help>
-        </Value>
-        <Value type="byte" index="4" genre="config" label="Light Change Notif" units="%" min="5" max="50" value="10">
-            <Help>
+    </Value>
+    <Value genre="config" index="4" label="Light Change Notif" max="50" min="5" type="byte" units="%" value="10">
+      <Help>
                 Minimum light sensor change (%) that will trigger a report to the controller. 10 = 10% (default).
             </Help>
-        </Value>
-        <Value type="byte" index="5" genre="config" label="Motion Sensor Trigger Interval" units="second" min="15" max="60" value="15">
-            <Help>
+    </Value>
+    <Value genre="config" index="5" label="Motion Sensor Trigger Interval" max="60" min="15" type="byte" units="second" value="15">
+      <Help>
                 After initial motion, sensor will wait this long before reporting again. 15 = 15 seconds (default); 60 = 60 seconds.
             </Help>
-        </Value>
-        <Value type="list" index="6" genre="config" label="Motion Sensor Sensitivity" units="" min="1" max="7" value="4" size="1">
-            <Help>
+    </Value>
+    <Value genre="config" index="6" label="Motion Sensor Sensitivity" max="7" min="1" size="1" type="list" units="" value="4">
+      <Help>
                 Motion sensor sensitivity.
             </Help>
-            <Item label="Very High" value="1" />
-            <Item label="High" value="2" />
-            <Item label="Somewhat High" value="3" />
-            <Item label="Normal" value="4" />
-            <Item label="Somewhat Low" value="5" />
-            <Item label="Low" value="6" />
-            <Item label="Very Low" value="7" />
-        </Value>
-        <Value type="list" index="7" genre="config" label="LED indicator mode" units="" min="1" max="4" value="4" size="1">
-            <Help>
+      <Item label="Very High" value="1"/>
+      <Item label="High" value="2"/>
+      <Item label="Somewhat High" value="3"/>
+      <Item label="Normal" value="4"/>
+      <Item label="Somewhat Low" value="5"/>
+      <Item label="Low" value="6"/>
+      <Item label="Very Low" value="7"/>
+    </Value>
+    <Value genre="config" index="7" label="LED indicator mode" max="4" min="1" size="1" type="list" units="" value="4">
+      <Help>
                 Color LED behavior. 1 = LED off; 2 = pulsing light for temperature, flashing light for motion (high battery drain); 3 = flashing light for temperature and motion (default); 4 = flashing light for motion.
             </Help>
-            <Item label="Off" value="1" />
-            <Item label="Pulse Temp/Flash Motion" value="2" />
-            <Item label="Flash Temp &amp; Motion" value="3" />
-            <Item label="Flash Motion" value="4" />
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133" name="COMMAND_CLASS_ASSOCIATION">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
+      <Item label="Off" value="1"/>
+      <Item label="Pulse Temp/Flash Motion" value="2"/>
+      <Item label="Flash Temp &amp; Motion" value="3"/>
+      <Item label="Flash Motion" value="4"/>
+    </Value>
+    <Compatibility/>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+    <Compatibility/>
+  </CommandClass>
 </Product>

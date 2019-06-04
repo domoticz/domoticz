@@ -153,10 +153,7 @@ local function Domoticz(settings)
 			_ = _,
 
 			toCelsius = function(f, relative)
-				if (relative) then
-					return f*(1/1.8)
-				end
-				return ((f-32) / 1.8)
+				return utils.toCelsius(f, relative)
 			end,
 
 			urlEncode = function(s, strSub)
@@ -167,15 +164,8 @@ local function Domoticz(settings)
 				return utils.urlDecode(s)
 			end,
 
-			round = function(x, n)
-				n = math.pow(10, n or 0)
-				x = x * n
-				if x >= 0 then
-					x = math.floor(x + 0.5)
-				else
-					x = math.ceil(x - 0.5)
-				end
-				return x / n
+			round = function(x,n)
+				return utils.round(x,n)
 			end,
 
 			osExecute = function(cmd)
@@ -205,7 +195,14 @@ local function Domoticz(settings)
 			dumpTable = function(t, level)
 				return utils.dumpTable(t, level)
 			end,
-			
+
+			stringSplit = function(text, sep)
+				return utils.stringSplit(text, sep)
+			end,
+
+			inTable = function(t, searchItem)
+				return utils.inTable(t, searchItem)
+			end,
 		}
 	}
 
@@ -381,7 +378,7 @@ local function Domoticz(settings)
 	function self.round(x, n)
 		utils.log('domoticz.round deprecated. Please use domoticz.utils.round.', utils.LOG_INFO)
 		return self.utils.round(x, n)
-	end
+	 end
 
 	function self.dump()
 		self.utils.dumpTable(settings, '> ')

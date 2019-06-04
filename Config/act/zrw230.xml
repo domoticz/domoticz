@@ -1,0 +1,25 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0001:3330:5257</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/act/zrw230.png</MetaDataItem>
+    <MetaDataItem id="3330" name="ZWProductPage" type="5257">https://products.z-wavealliance.org/products/475/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.act-solutions.com/HomePro-Product-Matrix.html#Euro</MetaDataItem>
+    <MetaDataItem id="3330" name="FrequencyName" type="5257">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">ZRW230 - European Wall Mounted 1-Gang</MetaDataItem>
+    <MetaDataItem name="Description">The ZRW230 is a 6A, 230 VAC, 50 Hz, RF wall switch with 3-way capability.
+
+This wall switch can be controlled manually, with the ZTH200 RF Remote Control, or the ACT multilevel auxiliary switch (AS200).  These will turn loads ON and OFF up to and including 6A.
+The ON/OFF status will also be indicated by the state of its LED.  The ZRW230 is a single paddle design which controls the connected load and serves as a transmitter using multiple button taps.
+
+Replaces the current wall switch, and can add 3-way capability.
+
+Each ZRW230 Wall Mounted Switch functions as an automatic repeater to other HomePro Modules to ensure full home coverage of the RF signal.
+
+Has automatic Static Update Controller (SUC) capability.</MetaDataItem>
+    <MetaDataItem id="3330" name="Identifier" type="5257">ZRW230</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/475/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

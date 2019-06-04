@@ -56,6 +56,7 @@ namespace OpenZWave
 		void SetInstance( CommandClass* _cc, uint8 const _instance );	// Used to enable wrapping with MultiInstance/MultiChannel during finalize.
 
 		void Append( uint8 const _data );
+		void AppendArray( const uint8* const _data, const uint8 _length );
 		void Finalize();
 		void UpdateCallbackId();
 
@@ -142,9 +143,7 @@ namespace OpenZWave
 				return m_buffer[6];
 			}
 			return 0;
-
 		}
-
 		bool isEncrypted() {
 			return m_encrypted;
 		}

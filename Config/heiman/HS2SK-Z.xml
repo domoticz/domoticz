@@ -1,13 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Smart Plug HS2SK-Z
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="1" label="LifeLine"/>
-        </Associations>
-    </CommandClass>
+--><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0260:1000:8006</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/heiman/HS2SK-Z.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="8006">https://products.z-wavealliance.org/products/1941/</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="8006">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Smart Metering Plug</MetaDataItem>
+    <MetaDataItem name="ResetDescription">-Long press SW_Button at least 10 seconds in HS2SK-Z. 
+- Device Reset Locally notification is Transmitted.
+-Please use this procedure only when the network primary controller is 
+missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">The smart metering plug controls devices remotely and records the power consumption of electronic devices. It is very convenient to use, for example, people can use the APP to switch on their coffee maker and air conditioner before they come back home by using the smart metering plug, they can also switch off lights, TV set and other electronic devices in house by just clicking one button in the APP when they want to go sleep. The smart metering plug makes people's life more comfortable.       </MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="8006">HS2SK-Z</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1941/HS2SK-Z documentation.doc</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">-  Click [Remove] icon in Z-Wave PC Controller Program
+-  Press the SW_Button 3 times within 1.5s 
+-  If Exclusion Process is successful, Green LED is Blinking 6 times, then turn off.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">-  Click [Add] icon in Z-Wave PC Controller Program.
+-  Press the SW_Button 3 times within 1.5s, Green LED is Blinking 3 times within 1 second.
+-  If Inclusion Process is successful, Green LED will turn off.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1941/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="LifeLine" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

@@ -65,11 +65,44 @@ namespace OpenZWave
 	void split (std::vector<std::string>& lst, const std::string& input, const std::string& separators, bool remove_empty = true);
 
 	/**
-	 * Trim Whitespace from the start and end of a string.
+	 * remove all Whitespace from of a string.
 	 * \param s the string to trim
 	 * \return the trimmed string
 	 */
-	std::string &trim ( std::string &s );
+	std::string &removewhitespace ( std::string &s );
+
+	/**
+	 * @brief Left Trim
+	 *
+	 * Trims whitespace from the left end of the provided std::string
+	 *
+	 * @param[out] s The std::string to trim
+	 *
+	 * @return The modified std::string&
+	 */
+	std::string& ltrim(std::string& s);
+
+	/**
+	 * @brief Right Trim
+	 *
+	 * Trims whitespace from the right end of the provided std::string
+	 *
+	 * @param[out] s The std::string to trim
+	 *
+	 * @return The modified std::string&
+	 */
+	std::string& rtrim(std::string& s);
+
+	/**
+	 * @brief Trim
+	 *
+	 * Trims whitespace from both ends of the provided std::string
+	 *
+	 * @param[out] s The std::string to trim
+	 *
+	 * @return The modified std::string&
+	 */
+	std::string& trim(std::string& s);
 
 
 	void PrintHex(std::string prefix, uint8_t const *data, uint32 const length);
@@ -107,9 +140,19 @@ namespace OpenZWave
 			Mutex* _ref;
 	};
 
+	string ozwdirname(string);
 
+	string intToString( int x );
 
+	const char* rssi_to_string(uint8 _data);
 } // namespace OpenZWave
+
+/* keep this outside of the namespace */
+#if (defined _WINDOWS || defined WIN32 || defined _MSC_VER) && (!defined MINGW && !defined __MINGW32__ && !defined __MINGW64__)
+#include <ctime>
+	struct tm *localtime_r(time_t *_clock, struct tm *_result);
+#endif
+
 
 #endif
 

@@ -33,6 +33,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_APPLICATION_STATUS (0x22), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class ApplicationStatus: public CommandClass
 	{
@@ -44,9 +45,9 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_APPLICATION_STATUS"; }
 
 		// From CommandClass
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }		
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+		virtual uint8 const GetCommandClassId()const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName()const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
 
 	private:
 		ApplicationStatus( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}

@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.18',
+	DZVERSION = '2.4.22',
 }
 
 function self.fileExists(name)
@@ -18,6 +18,43 @@ function self.fileExists(name)
 	else
 		return false
 	end
+end
+
+function self.stringSplit(text, sep)
+	local sep = sep or '%s'
+	local t = {}
+	for str in string.gmatch(text, "([^"..sep.."]+)") do
+		table.insert(t, str)
+	end
+	return t
+end
+
+function self.inTable(searchTable, element)
+	local res = res
+	for k, v in pairs(searchTable) do
+		if type(v) == 'table' then res = self.inTable(v, element) end
+		res = res or (( tostring(k) == tostring(element) and 'key' ) or ( tostring(v) == tostring(element) and 'value' ))
+		if res then return res end
+	end
+	return false
+end
+
+function self.round(x, n)
+	n = math.pow(10, n or 0)
+	x = x * n
+	if x >= 0 then
+		x = math.floor(x + 0.5)
+	else
+		x = math.ceil(x - 0.5)
+	end
+	return x / n
+end
+
+function self.toCelsius(f, relative)
+	if (relative) then
+		return f*(1/1.8)
+	end
+	return ((f-32) / 1.8)
 end
 
 function self.osExecute(cmd)
@@ -46,6 +83,7 @@ function self.urlEncode(str, strSub)
 	end
 	return str
 end
+
 function self.urlDecode(str, strSub)
 
 	local hex2Char = function(x)
@@ -169,11 +207,12 @@ function self.rgbToHSB(r, g, b)
 end
 
 function self.dumpTable(t, level)
+	local level = level or "> "
 	for attr, value in pairs(t or {}) do
 		if (type(value) ~= 'function') then
 			if (type(value) == 'table') then
 				self.print(level .. attr .. ':')
-				self.dumpTable(value, level .. '    ')
+				self.dumpTable(value, level .. '	')
 			else
 				self.print(level .. attr .. ': ' .. tostring(value))
 			end

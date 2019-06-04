@@ -30,13 +30,24 @@
 
 #include <string>
 #include <assert.h>
+
+#include "ValueIDIndexes.h"
 #include "Defs.h"
 
 class TiXmlElement;
 
 namespace OpenZWave
 {
+    /** \defgroup ValueID ValueID Support
+     *
+     * ValueID's in OZW expose device functionality to the application. Many different
+     * types of ValueID's are exposed, and they represent the state of a device (such as a
+     * switch on or off) or configuration parameters of a device.
+     */
+
+
 	/** \brief Provides a unique ID for a value reported by a Z-Wave device.
+	 * \ingroup ValueID
 	 * 
 	 * The ValueID is used to uniquely identify a value reported by a 
 	 * Z-Wave device.
@@ -94,20 +105,27 @@ namespace OpenZWave
 			ValueType_String,			/**< Text string */
 			ValueType_Button,			/**< A write-only value that is the equivalent of pressing a button to send a command to a device */
 			ValueType_Raw,				/**< A collection of bytes */
-			ValueType_Max = ValueType_Raw		/**< The highest-number type defined.  Not to be used as a type itself. */
+			ValueType_BitSet,			/**< A collection of Bits */
+			ValueType_Max = ValueType_BitSet		/**< The highest-number type defined.  Not to be used as a type itself. */
 		};
 
 		/** 
 		 * Get the Home ID of the driver that controls the node containing the value. 
 		 * \return the Home ID.
 	     */
-		uint32 GetHomeId()const{ return m_homeId; }
+		uint32 GetHomeId()const
+			{
+				return m_homeId;
+			}
 
 		/** 
 		 * Get the Home ID of the driver that controls the node containing the value. 
 		 * \return the node id.
 	     */
-		uint8 GetNodeId()const{ return( (uint8)( (m_id & 0xff000000) >> 24 ) ); }
+		uint8 GetNodeId()const
+			{
+				return( (uint8)( (m_id & 0xff000000) >> 24 ) );
+			}
 
 		/** 
 		 * Get the genre of the value.  The genre classifies a value to enable
@@ -115,7 +133,10 @@ namespace OpenZWave
 		 * \return the value's genre.
 		 * \see ValueGenre
 	     */
-		ValueGenre GetGenre()const{ return( (ValueGenre)( (m_id & 0x00c00000) >> 22 ) ); }
+		ValueGenre GetGenre()const
+			{
+				return( (ValueGenre)( (m_id & 0x00c00000) >> 22 ) );
+			}
 
 		/** 
 		 * Get the Z-Wave command class that created and manages this value.  Knowledge of 
@@ -123,7 +144,10 @@ namespace OpenZWave
 		 * exposed in case it is of interest.
 		 * \return the value's command class.
 	     */
-		uint8 GetCommandClassId()const{ return( (uint8)( (m_id & 0x003fc000) >> 14 ) ); }
+		uint8 GetCommandClassId()const
+			{
+				return( (uint8)( (m_id & 0x003fc000) >> 14 ) );
+			}
 
 		/** 
 		 * Get the command class instance of this value.  It is possible for there to be
@@ -133,7 +157,10 @@ namespace OpenZWave
 		 * information is exposed in case it is of interest.
 		 * \return the instance of the value's command class.
 	     */
-		uint8 GetInstance()const{ return( (uint8)( ( (m_id1 & 0xff000000) ) >> 24 ) ); }
+		uint8 GetInstance()const
+			{
+				return( (uint8)( ( (m_id & 0xff0) ) >> 4 ) );
+			}
 
 		/** 
 		 * Get the value index.  The index is used to identify one of multiple
@@ -143,7 +170,10 @@ namespace OpenZWave
 		 * to use OpenZWave, but this information is exposed in case it is of interest.
 		 * \return the value index within the command class.
 	     */
-		uint8 GetIndex()const{ return( (uint8)( (m_id & 0x00000ff0) >> 4 ) ); }
+		uint16 GetIndex()const
+			{
+				return( (uint16)( (m_id1 & 0xFFFF0000) >> 16 ) );
+			}
 
 		/** 
 		 * Get the type of the value.  The type describes the data held by the value
@@ -152,14 +182,20 @@ namespace OpenZWave
 		 * \return the value's type.
 		 * \see ValueType, Manager::GetValueAsBool, Manager::GetValueAsByte, Manager::GetValueAsFloat, Manager::GetValueAsInt, Manager::GetValueAsShort, Manager::GetValueAsString, Manager::GetValueListSelection.
 	     */
-		ValueType GetType()const{ return( (ValueType)( m_id & 0x0000000f ) ); }
+		ValueType GetType()const
+			{
+				return( (ValueType)( m_id & 0x0000000f ) );
+			}
 
 		/**
-		 * Get a 64Bit Integer that represents this ValueID. This Integer is not guaranteed to be valid 
+		 * Get a 64Bit Integer that represents this ValueID. This Integer is not guaranteed to be the same
 		 * across restarts of OpenZWave.
 		 * \return a uint64 integer
 		 */
-		uint64 GetId()const{ return (uint64) ( ( (uint64)m_id1 << 32 ) | m_id );}
+		uint64 GetId()const
+			{
+				return (uint64) ( ( (uint64)m_id1 << 32 ) | m_id );
+			}
 
 		// Comparison Operators
 		bool operator ==	( ValueID const& _other )const{ return( ( m_homeId == _other.m_homeId ) && ( m_id == _other.m_id ) && ( m_id1 == _other.m_id1 ) ); }
@@ -222,7 +258,7 @@ namespace OpenZWave
 			ValueGenre const _genre,
 			uint8 const _commandClassId,
 			uint8 const _instance,
-			uint8 const _valueIndex,
+			uint16 const _valueIndex,
 			ValueType const _type
 		):
 			m_homeId( _homeId )
@@ -230,9 +266,9 @@ namespace OpenZWave
 			m_id = (((uint32)_nodeId)<<24)
 				 | (((uint32)_genre)<<22)
 				 | (((uint32)_commandClassId)<<14)
-				 | (((uint32)_valueIndex)<<4)
+				 | (((uint32)(_instance & 0xFF))<<4)
 				 | ((uint32)_type);
-			m_id1 = (((uint32)_instance)<<24);
+			m_id1 = (((uint32)_valueIndex)<<16);
 		}
 
 		/* construct a ValueID based on the HomeID and the unit64 returned from GetID
@@ -243,7 +279,7 @@ namespace OpenZWave
 		ValueID
 		(
 		        uint32 _homeId,
-                        uint64 id
+                uint64 id
 		):
 		        m_homeId(_homeId)
 		{
@@ -252,16 +288,27 @@ namespace OpenZWave
 		}
 	private:
 		// Construct a value id for use in notifications
-		ValueID( uint32 const _homeId, uint8 const _nodeId ): m_id1( 0 ),m_homeId( _homeId ){ m_id = ((uint32)_nodeId)<<24; }
+		ValueID( uint32 const _homeId, uint8 const _nodeId ):
+			m_id1( 0 ),
+			m_homeId( _homeId )
+			{
+				m_id = ((uint32)_nodeId)<<24;
+			}
 		ValueID( uint32 const _homeId, uint8 const _nodeId, uint32 const _instance ): 
 			m_homeId( _homeId )
 			{ 
-				m_id = (((uint32)_nodeId)<<24);
-				m_id1 = (((uint32)_instance)<<24);
+				m_id = (((uint32)_nodeId)<<24) | (((uint32)_instance) << 4);
+				m_id1 = 0;
 			}
 
 		// Default constructor
-		ValueID():m_id(0),m_id1(0),m_homeId(0){}
+		ValueID():
+			m_id(0),
+			m_id1(0),
+			m_homeId(0)
+			{
+
+			}
 
 		// Not all parts of the ValueID are necessary to uniquely identify the value.  In the case of a 
 		// Node's ValueStore, we can ignore the home ID, node ID, genre and type and still be left with
@@ -271,16 +318,22 @@ namespace OpenZWave
 		// Get the key from our own m_id
 		uint32 GetValueStoreKey()const
 		{ 
-			return ( ( m_id & 0x003ffff0 ) | ( m_id1 & 0xff000000 ) );
+			/* 0xIIIICCii
+			 * I = Index
+			 * C = CC
+			 * i = Instance
+			 */
+			/*                  CC                             Index                       Instance */
+			return ( ( ( m_id & 0x003fc000 ) >> 6) | ( m_id1 & 0xffff0000 )  | ( ( m_id & 0xFF0) >> 4 ) );
 		}
 
 		// Generate a key from its component parts
-		static uint32 GetValueStoreKey( uint8 const _commandClassId, uint8 const _instance, uint8 const _valueIndex )
+		static uint32 GetValueStoreKey( uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex )
 		{ 
 
-			uint32 key = (((uint32)_instance)<<24)
-				 | (((uint32)_commandClassId)<<14)
-				 | (((uint32)_valueIndex)<<4);
+			uint32 key = (((uint32)_instance))
+				 | (((uint32)_commandClassId)<<8)
+				 | (((uint32)(_valueIndex & 0xFFFF))<<16);
 			
 			return key;
 		}
@@ -290,15 +343,14 @@ namespace OpenZWave
 		// 24-31:	8 bits. Node ID of device
 		// 22-23:	2 bits. genre of value (see ValueGenre enum).
 		// 14-21:	8 bits. ID of command class that created and manages this value.
-		// 12-13:	2 bits. Unused.
-		// 04-11:	8 bits. Index of value within all the value created by the command class
-		//                  instance (in configuration parameters, this is also the parameter ID).
+		// 12-13	Unused.
+		// 04-11:	8 bits. Instance of the Value
 		// 00-03:	4 bits. Type of value (bool, byte, string etc).
 		uint32	m_id;
 
 		// ID1 Packing:
 		// Bits
-		// 24-31	8 bits. Instance Index of the command class.
+		// 16-31	16 bits. Instance Index of the command class.
 		uint32	m_id1;
 
 		// Unique PC interface identifier

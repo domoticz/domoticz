@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 133
+#define DB_VERSION 134
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -241,7 +241,8 @@ const char *sqlCreateHardware =
 "[Mode4] CHAR DEFAULT 0, "
 "[Mode5] CHAR DEFAULT 0, "
 "[Mode6] CHAR DEFAULT 0, "
-"[DataTimeout] INTEGER DEFAULT 0);";
+"[DataTimeout] INTEGER DEFAULT 0, "
+"[Configuration] TEXT DEFAULT (''));";
 
 const char *sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
@@ -634,6 +635,7 @@ CSQLHelper::CSQLHelper(void)
 	m_bAcceptHardwareTimerActive = false;
 	m_iAcceptHardwareTimerCounter = 0;
 	m_bEnableEventSystem = true;
+	m_bEnableEventSystemFullURLLog = true;
 	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bPreviousAcceptNewHardware = false;
@@ -2596,7 +2598,7 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-		if (dbversion < 133)
+		if (dbversion < 134)
 		{
 			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
 			query(sqlCreateHardware);
@@ -2941,6 +2943,14 @@ bool CSQLHelper::OpenDatabase()
 	m_bEnableEventSystem = (nValue == 1);
 
 	nValue = 0;
+	if (!GetPreferencesVar("EventSystemLogFullURL", nValue))
+	{
+		UpdatePreferencesVar("EventSystemLogFullURL", 1);
+		nValue = 1;
+	}
+	m_bEnableEventSystemFullURLLog = (nValue == 1);
+
+	nValue = 0;
 	if (!GetPreferencesVar("DisableDzVentsSystem", nValue))
 	{
 		UpdatePreferencesVar("DisableDzVentsSystem", 0);
@@ -3267,13 +3277,11 @@ void CSQLHelper::Do_Work()
 				}
 				else if (method == HTTPClient::HTTP_METHOD_POST)
 				{
-					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData);
+					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData, true, true);
 				}
 
 				if (m_bEnableEventSystem && !callback.empty())
 				{
-					if (ret)
-						headerData.push_back("200");
 					m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
 				}
 
@@ -7454,11 +7462,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		if (OnAction.empty())
 			return true;
 
-		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
+		if ((OnAction.find("http://") == 0) || (OnAction.find("https://") == 0))
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
 		}
-		else if (OnAction.find("script://") != std::string::npos)
+		else if (OnAction.find("script://") == 0)
 		{
 			//Execute possible script
 			if (OnAction.find("../") != std::string::npos)
@@ -7494,11 +7502,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	if (OffAction.empty())
 		return true;
 
-	if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
+	if ((OffAction.find("http://") == 0) || (OffAction.find("https://") == 0))
 	{
 		AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
 	}
-	else if (OffAction.find("script://") != std::string::npos)
+	else if (OffAction.find("script://") == 0)
 	{
 		//Execute possible script
 		if (OffAction.find("../") != std::string::npos)
@@ -8506,4 +8514,3 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 	}
 	return divider;
 }
-

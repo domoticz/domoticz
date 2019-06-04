@@ -1,70 +1,83 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--http://www.pepper1.net/zwavedb/device/302-->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/008A:0200:0007</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/BeNext/TagReader500.png</MetaDataItem>
+    <MetaDataItem id="0200" name="ZWProductPage" type="0007">https://products.z-wavealliance.org/products/1979/</MetaDataItem>
+    <MetaDataItem name="Name">Tag Reader 500</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1979/Quickstart_Technical_Manual_Tag_Reader500_v_0_9.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">The Tag Reader 500 has an option to reset it self to factory settings. Please use this procedure only when the network primary controller is missing or otherwise inoperable
 
-    <!-- Configuration -->
-    <CommandClass id="112">
-
-        <Value type="list" genre="config" instance="1" index="1" label="Set to Default" size="1" value="170">
-            <Help>To configure the always awake mode.</Help>
-            <Item label="Normal" value="170"/>
-            <Item label="Set all parameters to default" value="255"/>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="2" label="Feedback Time" units="seconds" value="15">
-            <Help>To configure the time the beep is automatically turned off in seconds.
+To reset the product to factory settings please do the following steps:
+1.	Press the enter button for 2 seconds, release the enter button to start the exclusion routine (indication LED will blink 3 times every second).
+2.	During the exclusion routine press enter button 4 times within 1,5 seconds to reset the product.
+3.	If ‘back to factory settings’ was successful the indication LED will go in for 1 full second on the end of the remove routine. 
+4.	A DEVICE_RESET_LOCALLY_NOTIFICATION is sent to the nodes associated in the lifeline group. 
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include the Tag Reader 500 press and hold the enter button for two seconds (indication LED blinks shortly). Release the enter button now to start the inclusion (during the include routine the indication LED will blink twice per second. </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To exclude the Tag Reader 500 press and hold the enter button for two seconds (indication LED blinks shortly). Release the enter button now to start the exclusion (during the exclude routine the indication LED will blink three times per 1,5 second. </MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press and hold the enter button for 7 seconds, the indication LED will go on for 1 full second.</MetaDataItem>
+    <MetaDataItem name="Description">A Z-Wave security enabled entry control device. You can arm/disarm your house to home or away with the Tag Reader 500. With the use of a RFID tag or a numerical code the device can send an entry control message which can be handled by a supported gateway. In addition the Tag Reader supports the activation of scenes. </MetaDataItem>
+    <MetaDataItem id="0200" name="Identifier" type="0007">80820701</MetaDataItem>
+    <MetaDataItem id="0200" name="FrequencyName" type="0007">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1979/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Set to Default" size="1" type="list" value="170">
+      <Help>To configure the always awake mode.</Help>
+      <Item label="Normal" value="170"/>
+      <Item label="Set all parameters to default" value="255"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Feedback Time" type="byte" units="seconds" value="15">
+      <Help>To configure the time the beep is automatically turned off in seconds.
                 0x00: Disable, 0x01 - 0xFE: Value in seconds
             </Help>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="3" label="Feedback Timeout" units="seconds" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Feedback Timeout" type="byte" units="seconds" value="0">
+      <Help>
                 To configure the timeout to wait for a WAKEUP_NO_MORE_INFORMATION before the error beep
                 is automatically sound. The error beeps are fixed 8 beeps shortly after each other.
                 0x00: Disabled, 0x01 - 0xFF: Value in seconds
             </Help>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="4" label="Feedback beeps per second" value="2">
-            <Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Feedback beeps per second" type="byte" value="2">
+      <Help>
                 To configure the number of beeps per second. Every beep is fixed about 10ms.
                 0x00 - 0xFF: Number of beeps per second
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="5" label="Always awake mode" size="1" value="1">
-            <Help>To configure the always awake mode.</Help>
-            <Item label="Normal operating" value="1"/>
-            <Item label="Always awake" value="3"/>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="7" label="Operation mode" size="1" value="0">
-            <Help>The mode that the Tag Reader 500 communicates with the associated gateway.</Help>
-            <Item label="Gateway mode" value="0"/>
-            <Item label="Local mode" value="1"/>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="8" label="Gateway confirmation" size="1" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Always awake mode" size="1" type="list" value="1">
+      <Help>To configure the always awake mode.</Help>
+      <Item label="Normal operating" value="1"/>
+      <Item label="Always awake" value="3"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Operation mode" size="1" type="list" value="0">
+      <Help>The mode that the Tag Reader 500 communicates with the associated gateway.</Help>
+      <Item label="Gateway mode" value="0"/>
+      <Item label="Local mode" value="1"/>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Gateway confirmation" size="1" type="list" value="0">
+      <Help>
                 In gateway mode it is possible to let the gateway decide if the Tag Reader 500 can arm to home or away.
                 If gateway indication is disabled the Tag Reader 500 automatically assumes that it can arm and will wait
                 for a user input of RFID TAG or numeric code.
             </Help>
-            <Item label="Disabled" value="0"/>
-            <Item label="Enabled" value="1"/>
-        </Value>
-
-
-    </CommandClass>
-
-    <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
-    <CommandClass id="113" getsupported="false"/>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
-
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,80 +1,107 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Aeotec ZW056 Doorbell Gen5
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584693
--->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="byte" index="2" genre="config" label="doorbell ringtone repetitions" units="" min="1" max="255" value="2">
-            <Help>
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0038:0104</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw056.png</MetaDataItem>
+    <MetaDataItem id="0038" name="ZWProductPage" type="0104">https://products.z-wavealliance.org/products/1307/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="Name">Doorbell Gen5</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="Description">Aeon Labs Doorbell supports playing MP3 music files with a press of this doorbell. It has a 128MB flash memory that can store up to 800 ringtones. The volume can be adjusted manually via short press on the Volume Button, also you can switch the doorbell sound to the next via long press on the Volume Button. You may change/update your doorbell ringtone at any point in time you want by connecting your Doorbell to your PC to update the sound track on your Doorbell’s flash memory.
+There is a small Wireless Button, which can trigger the doorbell on the other side of the wall to play the selected doorbell music when pressed.
+It also act as a repeater that forward Z-Wave command messages to destination nodes if the originating controller is out of range from the destination node.
+By taking advantage of the Z-Wave mesh network, commands can be routed to their destination via intermediary “listening” Z-Wave products. Products that are Z-Wave certified can be used and communicate with other Z-Wave certified devices.
+Also a tool that can be programmed, scheduled, controlled and communicated with from anywhere in the world.</MetaDataItem>
+    <MetaDataItem id="0038" name="Identifier" type="0104">ZW056-A</MetaDataItem>
+    <MetaDataItem id="0038" name="FrequencyName" type="0104">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1583/Aeon Labs Doorbell Gen5 manual.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1307/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1581/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1583/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0038" name="ZWProductPage" type="0204">https://products.z-wavealliance.org/products/1581/</MetaDataItem>
+    <MetaDataItem id="0038" name="Identifier" type="0204">ZW056-B</MetaDataItem>
+    <MetaDataItem id="0038" name="FrequencyName" type="0204">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0038" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1583/</MetaDataItem>
+    <MetaDataItem id="0038" name="Identifier" type="0004">ZW056-C</MetaDataItem>
+    <MetaDataItem id="0038" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="doorbell ringtone repetitions" max="255" min="1" type="byte" units="" value="2">
+      <Help>
                 Set the repetitions for playing doorbell ringtone.
                 Value=1 to 255, the range of repetition is 1 to 100.
                 Note: If the time of playing doorbell ringtone is more than 20s,
                 the volume of ringtone will reduce to silence no matter how
                 many repetitions of doorbell ringtone are set.
             </Help>
-        </Value>
-        <Value type="byte" index="5" genre="config" label="Default Doorbell Ringtone" units="" min="1" max="100" value="1">
-            <Help>
+    </Value>
+    <Value genre="config" index="5" label="Default Doorbell Ringtone" max="100" min="1" type="byte" units="" value="1">
+      <Help>
                 Set the default doorbell ringtone.
                 Value=1-100, Specify the ringtone as default.
             </Help>
-        </Value>
-        <Value type="byte" index="6" genre="user" label="Play Ringtone" units="" min="0" max="255" value="0">
-            <Help>
+    </Value>
+    <Value genre="user" index="6" label="Play Ringtone" max="255" min="0" type="byte" units="" value="0" write_only="true">
+      <Help>
                 Select a ringtone to play.
                 Value=0, stop playing.
                 Value=1-100, play the specified ringtone.
                 Value=255, play the default ringtone.
                 Value=other, ignore.
             </Help>
-        </Value>
-        <Value type="list" index="7" genre="user" label="Control" units="" value="2" size="1">
-            <Help>Playback Control</Help>
-            <Item label="Play" value="1"/>
-            <Item label="Stop" value="2"/>
-            <Item label="Pause" value="3"/>
-            <Item label="Next" value="4"/>
-            <Item label="Previous" value="5"/>
-        </Value>
-        <Value type="byte" index="8" genre="config" label="Volume" units="" min="0" max="10" value="10">
-            <Help>Set the volume of ringtone</Help>
-        </Value>
-        <Value type="list" index="10" genre="config" label="Swap Buttons" units="" min="0" max="1" size="1" value="0">
-            <Help>
+    </Value>
+    <Value genre="user" index="7" label="Control" size="1" type="list" units="" value="2">
+      <Help>Playback Control</Help>
+      <Item label="Play" value="1"/>
+      <Item label="Stop" value="2"/>
+      <Item label="Pause" value="3"/>
+      <Item label="Next" value="4"/>
+      <Item label="Previous" value="5"/>
+    </Value>
+    <Value genre="config" index="8" label="Volume" max="10" min="0" type="byte" units="" value="10">
+      <Help>Set the volume of ringtone</Help>
+    </Value>
+    <Value genre="config" index="10" label="Swap Buttons" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
                 Define functions of "Button -" and "Button+".
                 Button - is previous, Button+ is next.
             </Help>
-            <Item label="Standard" value="0"/>
-            <Item label="Reversed" value="1"/>
-        </Value>
-        <Value type="list" index="11" genre="config" label="Button Short/Long Press Function" units="" min="0" max="1" size="1" value="0">
-            <Help>
+      <Item label="Standard" value="0"/>
+      <Item label="Reversed" value="1"/>
+    </Value>
+    <Value genre="config" index="11" label="Button Short/Long Press Function" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>
                 Define functions of "Button -" and "Button+" when short
                 pressing and long pressing it.
             </Help>
-            <Item label="Short Press - Volume, Long Press - RingTone" value="0"/>
-            <Item label="Short Press - RingTone, Long Press - Volume" value="1"/>
-        </Value>
-        <Value type="list" index="42" genre="config" label="Wireless Button Status" units="" size="1" value="0" read_only="true">
-            <Help>Get Wireless Button Battery Status</Help>
-            <Item label="Normal Battery Level" value="0"/>
-            <Item label="Low Battery Level" value="255"/>
-        </Value>
-        <Value type="list" index="80" genre="config" label="Notification status" units="" min="0" max="2" size="1" value="2">
-            <Help>Defines the automated status notification of an associated device when status changes</Help>
-            <Item label="Nothing" value="0"/>
-            <Item label="Hail" value="1"/>
-            <Item label="Basic" value="2"/>
-        </Value>
-        <Value type="list" index="81" genre="config" label="Low Battery Notification status" units="" min="0" max="1" size="1" value="1">
-            <Help>Defines the automated status notification of an associated device when the wireless button battery level changes</Help>
-            <Item label="Nothing" value="0"/>
-            <Item label="Configuration Paramater 42" value="1"/>
-        </Value>
-        <Value type="list" index="241" genre="config" label="Pair Wireless Button" units="" size="4" value="0">
-            <Help>
+      <Item label="Short Press - Volume, Long Press - RingTone" value="0"/>
+      <Item label="Short Press - RingTone, Long Press - Volume" value="1"/>
+    </Value>
+    <Value genre="config" index="42" label="Wireless Button Status" read_only="true" size="1" type="list" units="" value="0">
+      <Help>Get Wireless Button Battery Status</Help>
+      <Item label="Normal Battery Level" value="0"/>
+      <Item label="Low Battery Level" value="255"/>
+    </Value>
+    <Value genre="config" index="80" label="Notification status" max="2" min="0" size="1" type="list" units="" value="2">
+      <Help>Defines the automated status notification of an associated device when status changes</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Hail" value="1"/>
+      <Item label="Basic" value="2"/>
+    </Value>
+    <Value genre="config" index="81" label="Low Battery Notification status" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>Defines the automated status notification of an associated device when the wireless button battery level changes</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Configuration Paramater 42" value="1"/>
+    </Value>
+    <Value genre="config" index="241" label="Pair Wireless Button" size="4" type="list" units="" value="0">
+      <Help>
                 Pair the Wireless Button with Doorbell.
                 Value=0x55555555, Start the Wireless Button pairing mode and
                 the blue Led will blink slowly, short press the Wireless Button
@@ -89,27 +116,26 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584693
                 If configuration report value =0xFFFFFFFF, which means the
                 pairing is successful.
             </Help>
-            <Item label="Start Pairing/Paired" value="0xFFFFFFFF"/>
-            <Item label="Not Pairing/Unpaired" value="0"/>
-        </Value>
-        <Value type="list" index="252" genre="config" label="Configuration Locked" units="" min="0" max="1" size="1" value="0">
-            <Help>Enable/disable Configuration Locked</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
-            <Help>Reset to factory defaults</Help>
-            <Item label="Reset to factory default setting" value="0"/>
-            <Item label="Normal" value="1"/>
-            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Transmit"/>
-        </Associations>
-    </CommandClass>
+      <Item label="Start Pairing/Paired" value="0xFFFFFFFF"/>
+      <Item label="Not Pairing/Unpaired" value="0"/>
+    </Value>
+    <Value genre="config" index="252" label="Configuration Locked" max="1" min="0" size="1" type="list" units="" value="0">
+      <Help>Enable/disable Configuration Locked</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+      <Help>Reset to factory defaults</Help>
+      <Item label="Reset to factory default setting" value="0"/>
+      <Item label="Normal" value="1"/>
+      <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Transmit" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

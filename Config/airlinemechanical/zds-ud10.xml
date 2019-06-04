@@ -1,0 +1,15 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0111:0200:8200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/airlinemechanical/zds-ud10.png</MetaDataItem>
+    <MetaDataItem id="0200" name="ZWProductPage" type="8200">https://products.z-wavealliance.org/products/106/</MetaDataItem>
+    <MetaDataItem name="Name">AMC Dimming Switch Module</MetaDataItem>
+    <MetaDataItem id="0200" name="Identifier" type="8200">NDS/ZDS-UD10</MetaDataItem>
+    <MetaDataItem name="Description">Z-Wave US Plug-in Switch/Dimmer</MetaDataItem>
+    <MetaDataItem id="0200" name="FrequencyName" type="8200">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/106/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112"/>
+</Product>

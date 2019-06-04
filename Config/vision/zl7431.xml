@@ -1,18 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-    <!-- Vision ZL7431 In-Wall Switch, Single Relay -->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0C02:200C</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/vision/zl7431.png</MetaDataItem>
+    <MetaDataItem id="0C02" name="ZWProductPage" type="200C">https://products.z-wavealliance.org/products/1792/</MetaDataItem>
+    <MetaDataItem id="0C02" name="FrequencyName" type="200C">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Vision ZL7431US In-wall 1 relay switch</MetaDataItem>
+    <MetaDataItem id="0C02" name="Identifier" type="200C">ZL7431US</MetaDataItem>
+    <MetaDataItem name="Name">ZL7431US</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1792/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Vision ZL7431 In-Wall Switch, Single Relay -->
     <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" index="1" label="Behavior" size="1" min="1" max="2" value="2">
-            <Help></Help>
-            <Item label="2 Wall Switches" value="1"/>
-            <Item label="Light Indicator" value="1"/>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Behavior" max="2" min="1" size="1" type="list" value="2">
+      <Help></Help>
+      <Item label="2 Wall Switches" value="1"/>
+      <Item label="Light Indicator" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

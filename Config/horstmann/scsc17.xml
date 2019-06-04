@@ -1,42 +1,59 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- SCSC17 (Secure / Horstmann) -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- SCSC17 (Secure / Horstmann) --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0059:0001:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/horstmann/scsc17.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1740/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://www.horstmann.co.uk/central-heating.php</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0004">C17-ZW</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">C-Stat</MetaDataItem>
+    <MetaDataItem name="Description">C-Stat</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/864/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1740/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- The thermostat does not properly report its operating modes -->
-  <CommandClass id="64" getsupported="false">
+  <CommandClass id="64">
     <SupportedModes>
       <Mode index="0" label="Off"/>
       <Mode index="1" label="Heat"/>
     </SupportedModes>
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
   </CommandClass>
   <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
-  <CommandClass id="67" base="0" override_precision="0"/>
-
+  <CommandClass id="67">
+    <Compatibility>
+      <OverridePrecision>0</OverridePrecision>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" instance="1" index="1" genre="config" label="Temperature Scale" size="1" value="0">
+    <Value genre="config" index="1" instance="1" label="Temperature Scale" size="1" type="list" value="0">
       <Help>Controls the temperature sensor scale</Help>
       <Item label="Celsius" value="1"/>
       <Item label="Fahrenheit" value="128"/>
     </Value>
-    <Value type="byte" instance="1" index="2" genre="config" label="Lower temperature limit" min="5" max="30" value="5">
+    <Value genre="config" index="2" instance="1" label="Lower temperature limit" max="30" min="5" type="byte" value="5">
       <Help>Defines the minimum temperature. Steps are 1C</Help>
     </Value>
-    <Value type="byte" instance="1" index="3" genre="config" label="Upper temperature limit" min="5" max="30" value="30">
+    <Value genre="config" index="3" instance="1" label="Upper temperature limit" max="30" min="5" type="byte" value="30">
       <Help>Defines the maximum temperature. Steps are 1C</Help>
     </Value>
-    <Value type="byte" instance="1" index="4" genre="config" label="Delta T: Temperature change" min="1" max="50" value="5">
+    <Value genre="config" index="4" instance="1" label="Delta T: Temperature change" max="50" min="1" type="byte" value="5">
       <Help>Change between temperatures to trigger a temperature report (step 0.1)
         1 to 50, 1 or 0.1 (Default 5 = 0,5C) -> (1C = 10)
       </Help>
     </Value>
   </CommandClass>
-
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="1" label="Reports"/>
-      <Group index="2" max_associations="4" label="Control"/>
+      <Group index="1" label="Reports" max_associations="1"/>
+      <Group index="2" label="Control" max_associations="4"/>
     </Associations>
   </CommandClass>
-
 </Product>

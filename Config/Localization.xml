@@ -1,0 +1,2262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="5">
+	<CommandClass id="113">
+		<!-- Please Keep updates in the Notification CC in sync with NotificationCCTypes.xml as well -->
+		<Label>COMMAND_CLASS_NOTIFICATION</Label>
+		<Value index="1">
+			<Help>A Smoke Alarm Alert</Help>
+			<Label>Smoke Alarm</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Smoke Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Smoke Detected at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="3">Smoke Test</ItemLabel>
+			<ItemLabel itemIndex="4">Replacement Required (Unspecified)</ItemLabel>
+			<ItemLabel itemIndex="5">Replacement Required (End Of Life)</ItemLabel>
+			<ItemLabel itemIndex="6">Silenced</ItemLabel>
+			<ItemLabel itemIndex="7">Maintenance Required: Periodic Inspection</ItemLabel>
+			<ItemLabel itemIndex="8">Maintenance Required: Dust In Device</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="2">
+			<Help>Carbon Monoxied Alerts</Help>
+			<Label>Carbon Monoxied</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Carbon Monoxied Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Carbon Monoxied Detected at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="3">Test</ItemLabel>
+			<ItemLabel itemIndex="4">Replacement Required (Unspecified)</ItemLabel>
+			<ItemLabel itemIndex="5">Replacement Required (End Of Life)</ItemLabel>
+			<ItemLabel itemIndex="6">Silenced</ItemLabel>
+			<ItemLabel itemIndex="7">Maintenance Required: Periodic Inspection</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="3">
+			<Help>Carbon Dixoide Alerts</Help>
+			<Label>Carbon Dixoide</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Carbon Dixoide Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Carbon Dixoide Detected at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="3">Test</ItemLabel>
+			<ItemLabel itemIndex="4">Replacement Required (Unspecified)</ItemLabel>
+			<ItemLabel itemIndex="5">Replacement Required (End Of Life)</ItemLabel>
+			<ItemLabel itemIndex="6">Silenced</ItemLabel>
+			<ItemLabel itemIndex="7">Maintenance Required: Periodic Inspection</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="4">
+			<Help>Heat Alerts</Help>
+			<Label>Heat</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">OverHeat at Location</ItemLabel>
+			<ItemLabel itemIndex="2">OverHeat at Unknown at Location</ItemLabel>
+			<ItemLabel itemIndex="3">Rapid Temperature Rise at Location</ItemLabel>
+			<ItemLabel itemIndex="4">Rapid Temperature Rise at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="5">UnderHeat at Location</ItemLabel>
+			<ItemLabel itemIndex="6">UnderHeat at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="7">Test</ItemLabel>
+			<ItemLabel itemIndex="8">Replacement Required (End_Of_Life)</ItemLabel>
+			<ItemLabel itemIndex="9">Silenced</ItemLabel>
+			<ItemLabel itemIndex="10">Maintenance Required: Dust In Device</ItemLabel>
+			<ItemLabel itemIndex="11">Maintenance_Required: Periodic Inspection</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="5">
+			<Help>Water Alerts</Help>
+			<Label>Water</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Water Leak at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Water Leak at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="3">Water Level Droped at Location</ItemLabel>
+			<ItemLabel itemIndex="4">Water Level Droped at Unnknown Location</ItemLabel>
+			<ItemLabel itemIndex="5">Replace Filter</ItemLabel>
+			<ItemLabel itemIndex="6">Water Flow</ItemLabel>
+			<ItemLabel itemIndex="7">Water Pressure</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="6">
+			<Help>Access Control Alerts</Help>
+			<Label>Access Control</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Manual Lock Operation</ItemLabel>
+			<ItemLabel itemIndex="2">Manual Unlock Operation</ItemLabel>
+			<ItemLabel itemIndex="3">Wireless Lock Operation</ItemLabel>
+			<ItemLabel itemIndex="4">Wireless Unlock Operation</ItemLabel>
+			<ItemLabel itemIndex="5">Keypad Lock Operation</ItemLabel>
+			<ItemLabel itemIndex="6">Keypad Unlock Operation</ItemLabel>
+			<ItemLabel itemIndex="7">Manual Lock Not Fully Locked</ItemLabel>
+			<ItemLabel itemIndex="8">Wireless Not Fully Locked</ItemLabel>
+			<ItemLabel itemIndex="9">Auto Lock</ItemLabel>
+			<ItemLabel itemIndex="10">Auto Lock Not Fully Locked</ItemLabel>
+			<ItemLabel itemIndex="11">Lock Jamed</ItemLabel>
+			<ItemLabel itemIndex="12">All User Codes Deleted</ItemLabel>
+			<ItemLabel itemIndex="13">Single User Code Deleted</ItemLabel>
+			<ItemLabel itemIndex="14">New User Code Added</ItemLabel>
+			<ItemLabel itemIndex="15">Duplicate User Code Not Added</ItemLabel>
+			<ItemLabel itemIndex="16">Keypad Disabled</ItemLabel>
+			<ItemLabel itemIndex="17">Keypad Busy</ItemLabel>
+			<ItemLabel itemIndex="18">New Program Code Entered</ItemLabel>
+			<ItemLabel itemIndex="19">User Codes Attempt Exceeds Limit</ItemLabel>
+			<ItemLabel itemIndex="20">Wireless Unlock Invalid UserCode Entered</ItemLabel>
+			<ItemLabel itemIndex="21">Wireless Lock Invalid UserCode Entered</ItemLabel>
+			<ItemLabel itemIndex="22">Door/Window Open</ItemLabel>
+			<ItemLabel itemIndex="23">Door/Window Closed</ItemLabel>
+			<ItemLabel itemIndex="64">Barrier Initializing</ItemLabel>
+			<ItemLabel itemIndex="65">Barrier Force Exceeded</ItemLabel>
+			<ItemLabel itemIndex="66">Barrier Motor Time Exceeded</ItemLabel>
+			<ItemLabel itemIndex="67">Barrier Physical Limits Exceeded</ItemLabel>
+			<ItemLabel itemIndex="68">Barrier Failed Operation</ItemLabel>
+			<ItemLabel itemIndex="69">Barrier Unattended Operation Disabled</ItemLabel>
+			<ItemLabel itemIndex="70">Barrier Malfunction</ItemLabel>
+			<ItemLabel itemIndex="71">Barrier Vacaction Mode</ItemLabel>
+			<ItemLabel itemIndex="72">Barrier Saftey Beam Obstruction</ItemLabel>
+			<ItemLabel itemIndex="73">Barrier Sensor Not Detected</ItemLabel>
+			<ItemLabel itemIndex="74">Barrier Battery Low</ItemLabel>
+			<ItemLabel itemIndex="75">Barrier Short in Wall Station Wires</ItemLabel>
+			<ItemLabel itemIndex="76">Barrier Associated with Non ZWave Device</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="7">
+			<Help>Home Security Alerts</Help>
+			<Label>Home Security</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Intrusion at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Intrusion at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="3">Tampering -  Cover Removed</ItemLabel>
+			<ItemLabel itemIndex="4">Tamperting - Invalid Code</ItemLabel>
+			<ItemLabel itemIndex="5">Glass Breakage at Location</ItemLabel>
+			<ItemLabel itemIndex="6">Glass Breakage at UnknownLocation</ItemLabel>
+			<ItemLabel itemIndex="7">Motion Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="8">Motion Detected at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="9">Tampering - Product Moved</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="8">
+			<Help>Power Management Alerts</Help>
+			<Label>Power Management</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Power Applied</ItemLabel>
+			<ItemLabel itemIndex="2">AC Power Lost</ItemLabel>
+			<ItemLabel itemIndex="3">AC Power Restored</ItemLabel>
+			<ItemLabel itemIndex="4">Surge Detected</ItemLabel>
+			<ItemLabel itemIndex="5">Brownout Detected</ItemLabel>
+			<ItemLabel itemIndex="6">Over Current Detected</ItemLabel>
+			<ItemLabel itemIndex="7">Over Voltage Voltage</ItemLabel>
+			<ItemLabel itemIndex="8">Over Load Detected</ItemLabel>
+			<ItemLabel itemIndex="9">Load Error</ItemLabel>
+			<ItemLabel itemIndex="10">Replace Battery Soon</ItemLabel>
+			<ItemLabel itemIndex="11">Replace Battery Now</ItemLabel>
+			<ItemLabel itemIndex="12">Battery Charging</ItemLabel>
+			<ItemLabel itemIndex="13">Battery Charged</ItemLabel>
+			<ItemLabel itemIndex="14">Battery Low</ItemLabel>
+			<ItemLabel itemIndex="15">Battery Critical</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="9">
+			<Help>System Alerts</Help>
+			<Label>System</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Hardware Failure</ItemLabel>
+			<ItemLabel itemIndex="2">Software Failure</ItemLabel>
+			<ItemLabel itemIndex="3">Hardware Failure Code</ItemLabel>
+			<ItemLabel itemIndex="4">Software Failure Code</ItemLabel>
+			<ItemLabel itemIndex="5">Heartbeat</ItemLabel>
+			<ItemLabel itemIndex="6">Tampering Detected</ItemLabel>
+			<ItemLabel itemIndex="7">Emergency Shutoff</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="10">
+			<Help>Emergency Alerts</Help>
+			<Label>Emergency</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Contact Police Department</ItemLabel>
+			<ItemLabel itemIndex="2">Contact Fire Department</ItemLabel>
+			<ItemLabel itemIndex="3">Contact Medical Service</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="11">
+			<Help>Clock Alerts</Help>
+			<Label>Clock</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Wake Up Alert</ItemLabel>
+			<ItemLabel itemIndex="2">Timer Ending</ItemLabel>
+			<ItemLabel itemIndex="3">Time Remaining</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="12">
+			<Help>Appliance Alerts</Help>
+			<Label>Appliance</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Program Started</ItemLabel>
+			<ItemLabel itemIndex="2">Program In Progress</ItemLabel>
+			<ItemLabel itemIndex="3">Program Completed</ItemLabel>
+			<ItemLabel itemIndex="4">Replace Main Filter</ItemLabel>
+			<ItemLabel itemIndex="5">Failure To Set Temperature</ItemLabel>
+			<ItemLabel itemIndex="6">Supplying Water</ItemLabel>
+			<ItemLabel itemIndex="7">Water Supply Failure</ItemLabel>
+			<ItemLabel itemIndex="8">Boiling</ItemLabel>
+			<ItemLabel itemIndex="9">Boiling Failure</ItemLabel>
+			<ItemLabel itemIndex="10">Washing</ItemLabel>
+			<ItemLabel itemIndex="11">Washing Failure</ItemLabel>
+			<ItemLabel itemIndex="12">Rinsing</ItemLabel>
+			<ItemLabel itemIndex="13">Rinsing Failure</ItemLabel>
+			<ItemLabel itemIndex="14">Draining</ItemLabel>
+			<ItemLabel itemIndex="15">Draining Failure</ItemLabel>
+			<ItemLabel itemIndex="16">Spinning</ItemLabel>
+			<ItemLabel itemIndex="17">Spinning Failure</ItemLabel>
+			<ItemLabel itemIndex="18">Drying</ItemLabel>
+			<ItemLabel itemIndex="19">Drying Failure</ItemLabel>
+			<ItemLabel itemIndex="20">Fan Failure</ItemLabel>
+			<ItemLabel itemIndex="21">Compressor Failure</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="13">
+			<Help>Home Health Alerts</Help>
+			<Label>Home Health</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Leaving Bed</ItemLabel>
+			<ItemLabel itemIndex="2">Sitting On Bed</ItemLabel>
+			<ItemLabel itemIndex="3">Lying On Bed</ItemLabel>
+			<ItemLabel itemIndex="4">Posture Changed</ItemLabel>
+			<ItemLabel itemIndex="5">Sitting On Edge Of Bed</ItemLabel>
+			<ItemLabel itemIndex="6">Volatile Organic Level</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="14">
+			<Help>Siren Alerts</Help>
+			<Label>Siren</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Active</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="15">
+			<Help>Water Valve Alerts</Help>
+			<Label>Water Valve</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Valve Operation</ItemLabel>
+			<ItemLabel itemIndex="2">Master Valve Operation</ItemLabel>
+			<ItemLabel itemIndex="3">Valve Short Circuit</ItemLabel>
+			<ItemLabel itemIndex="4">Master Valve Short Circuit</ItemLabel>
+			<ItemLabel itemIndex="5">Valve Current Alarm</ItemLabel>
+			<ItemLabel itemIndex="6">Master Valve Current Alarm</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="16">
+			<Help>Weather Alerts</Help>
+			<Label>Weather</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Rain Detected</ItemLabel>
+			<ItemLabel itemIndex="2">Moisture Detected</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="17">
+			<Help>Irrigation Alerts</Help>
+			<Label>Irrigation</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Schedule Started</ItemLabel>
+			<ItemLabel itemIndex="2">Schedule Finished</ItemLabel>
+			<ItemLabel itemIndex="3">Valve Table Run Started</ItemLabel>
+			<ItemLabel itemIndex="4">Valve Table Run Finished</ItemLabel>
+			<ItemLabel itemIndex="5">Device Not Configured</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<Value index="18">
+			<Help>Gas Alerts</Help>
+			<Label>Gas</Label>
+			<ItemLabel itemIndex="0">Clear</ItemLabel>
+			<ItemLabel itemIndex="1">Combustable Gas Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Combustable Gas Detected at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="3">Toxic Gas Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="4">Toxic Gas Detected Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="5">Test</ItemLabel>
+			<ItemLabel itemIndex="6">Replacement Required (Unspecified)</ItemLabel>
+			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
+		</Value>
+		<!--  Index from 256 are Params -->
+		<Value index="256">
+			<Help>Previous Event that was sent</Help>
+			<Label>Previous Event Cleared</Label>
+		</Value>
+		<Value index="257">
+			<Help>Location that the Alert was detected at</Help>
+			<Label>Alert Location</Label>
+		</Value>
+		<Value index="258">
+			<Help>Result of the Test</Help>
+			<Label>Result</Label>
+			<ItemLabel itemIndex="1">Passed</ItemLabel>
+			<ItemLabel itemIndex="2">Failed</ItemLabel>
+		</Value>
+		<Value index="259">
+			<Help>Threshold Exceeded for Alert</Help>
+			<Label>Threshold</Label>
+			<ItemLabel itemIndex="1">No Data</ItemLabel>
+			<ItemLabel itemIndex="2">Below Low Threshold</ItemLabel>
+			<ItemLabel itemIndex="3">Above High Threshold</ItemLabel>
+			<ItemLabel itemIndex="4">Max</ItemLabel>
+		</Value>
+		<!--  UserCode Param has two ValueID's (id, and UserCode). We only
+		identify index 260 in NotificationCCTypes.xml but 
+		Index 261 is automatically created. -->
+		<Value index="260">
+			<Help>User Code ID that was used</Help>
+			<Label>User Code ID</Label>
+		</Value>
+		<Value index="261">
+			<Help>User Codethat was used</Help>
+			<Label>User Code</Label>
+		</Value>
+
+		<Value index="262">
+			<Help>Progress of Operation</Help>
+			<Label>Progress</Label>
+			<ItemLabel itemIndex="0">Process Complete</ItemLabel>
+			<ItemLabel itemIndex="255">Performing Process</ItemLabel>
+		</Value>
+		<Value index="263">
+			<Help>Enabled Mode</Help>
+			<Label>Mode</Label>
+			<ItemLabel itemIndex="0">Disabled</ItemLabel>
+			<ItemLabel itemIndex="255">Enabled</ItemLabel>
+		</Value>
+		<Value index="264">
+			<Help>The status of the obstruction</Help>
+			<Label>Obstruction</Label>
+			<ItemLabel itemIndex="0">No Obstruction</ItemLabel>
+			<ItemLabel itemIndex="255">Obstruction</ItemLabel>
+		</Value>
+		<Value index="265">
+			<Help>The ID of the Sensor that triggered the alert</Help>
+			<Label>Sensor ID</Label>
+		</Value>
+		<Value index="266">
+			<Help>The Error Code returned by the device</Help>
+			<Label>Error Code</Label>
+		</Value>
+		<Value index="267">
+			<Help>Duration remaining in seconds</Help>
+			<Label>Duration</Label>
+		</Value>
+		<Value index="268">
+			<Help>The Pollution Level Detected</Help>
+			<Label>Pollution Level</Label>
+			<ItemLabel itemIndex="1">Clean</ItemLabel>
+			<ItemLabel itemIndex="2">Slightly Polluted</ItemLabel>
+			<ItemLabel itemIndex="3">Moderately Polluted</ItemLabel>
+			<ItemLabel itemIndex="4">Highly Polluted</ItemLabel>
+		</Value>
+		<Value index="269">
+			<Help>The Status of the Device</Help>
+			<Label>Status</Label>
+			<ItemLabel itemIndex="0">Off</ItemLabel>
+			<ItemLabel itemIndex="1">On</ItemLabel>
+		</Value>
+		<Value index="270">
+			<Help>The ID of the Schedule that triggered this alert</Help>
+			<Label>Schedule ID</Label>
+		</Value>
+		<Value index="271">
+			<Help>The ID of the Valve Table that triggered this alert</Help>
+			<Label>Valve Table ID</Label>
+		</Value>
+
+		<Value index="512">
+			<Help>Alarm Type Received</Help>
+			<Help lang="fr">Type d'alarme reçu</Help>
+			<Label>Alarm Type</Label>
+			<Label lang="fr">Type d'alarme</Label>
+		</Value>
+		<Value index="513">
+			<Help>Alarm Level Received</Help>
+			<Help lang="fr">Niveau d'alarme reçu</Help>
+			<Label>Alarm Level</Label>
+			<Label lang="fr">Niveau d'alarme</Label>
+		</Value>
+		<Value index="514">
+			<Help>Automatically Clear Events sent by a device after a number of Milliseconds</Help>
+			<Label>Automatically Clear Events</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="34">
+		<Label>COMMAND_CLASS_APPLICATION_STATUS</Label>
+	</CommandClass>
+	<CommandClass id="133">
+		<Label>COMMAND_CLASS_ASSOCIATION</Label>
+	</CommandClass>
+	<CommandClass id="155">
+		<Label>COMMAND_CLASS_ASSOCIATION_COMMAND_CONFIGURATION</Label>
+		<Value index="0">
+			<Help>Maximum Command Length that can be stored on this node</Help>
+			<Label>Max Command Length</Label>
+		</Value>
+		<Value index="1">
+			<Help>True - Only Basic Set Messages are stored. False - Full Commands may be stored</Help>
+			<Label>Commands are Values</Label>
+		</Value>
+		<Value index="2">
+			<Help>A Application can configure the commands sent</Help>
+			<Label>Commands are Configurable</Label>
+		</Value>
+		<Value index="3">
+			<Help>The Amount of free commands that can be stored</Help>
+			<Label>Free Commands</Label>
+		</Value>
+		<Value index="4">
+			<Help>The Maximum Number of commands that can be stored</Help>
+			<Label>Max Commands</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="102">
+		<Label>COMMAND_CLASS_BARRIER_OPERATOR</Label>
+		<Value index="1">
+			<Help>The Current State of the Barrier</Help>
+			<Label>Barrier State</Label>
+		</Value>
+		<Value index="2">
+			<Help>Supported Operations for the Barrier</Help>
+			<Label>Supported Signals</Label>
+		</Value>
+		<Value index="3">
+			<Help>Enable Audible Notifications of Barrier State Change</Help>
+			<Label>Audible Notification</Label>
+		</Value>
+		<Value index="4">
+			<Help>Enable Visual Notifications of Barrier State Change</Help>
+			<Label>Visual Notification</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="32">
+		<Label>COMMAND_CLASS_BASIC</Label>
+		<Label lang="fr">COMMAND_CLASS_BASIC</Label>
+		<Value index="0">
+			<Help>Basic status of the node</Help>
+			<Help lang="fr">Basic status of the node in French</Help>
+			<Label>Basic</Label>
+			<Label lang="fr">Basic</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="80">
+		<Label>COMMAND_CLASS_BASIC_WINDOW_COVERING</Label>
+		<Value index="0">
+			<Help>Open the Window Covering</Help>
+			<Label>Open</Label>
+		</Value>
+		<Value index="1">
+			<Help>Close the Window Covering</Help>
+			<Label>Close</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="128">
+		<Label>COMMAND_CLASS_BATTERY</Label>
+		<Value index="0">
+			<Help>Current Battery Level</Help>
+			<Label>Battery Level</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="91">
+		<Label>COMMAND_CLASS_CENTRAL_SCENE</Label>
+	</CommandClass>
+	<CommandClass id="70">
+		<Label>COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE</Label>
+		<Value index="0">
+			<Help>Schedule</Help>
+			<Label>Invalid</Label>
+		</Value>
+		<Value index="1">
+			<Help>Schedule for Monday</Help>
+			<Label>Monday</Label>
+		</Value>
+		<Value index="2">
+			<Help>Schedule for Tuesday</Help>
+			<Label>Tuesday</Label>
+		</Value>
+		<Value index="3">
+			<Help>Schedule for Wednesday</Help>
+			<Label>Wednesday</Label>
+		</Value>
+		<Value index="4">
+			<Help>Schedule for Thursday</Help>
+			<Label>Thursday</Label>
+		</Value>
+		<Value index="5">
+			<Help>Schedule for Friday</Help>
+			<Label>Friday</Label>
+		</Value>
+		<Value index="6">
+			<Help>Schedule for Saturday</Help>
+			<Label>Saturday</Label>
+		</Value>
+		<Value index="7">
+			<Help>Schedule for Sunday</Help>
+			<Label>Sunday</Label>
+		</Value>
+		<Value index="8">
+			<Help>Override Schedule</Help>
+			<Label>Override State</Label>
+		</Value>
+		<Value index="9">
+			<Help>Override Setback</Help>
+			<Label>Override Setback</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="129">
+		<Label>COMMAND_CLASS_CLOCK</Label>
+		<Value index="0">
+			<Help>Day of Week</Help>
+			<Label>Day</Label>
+		</Value>
+		<Value index="1">
+			<Help>Hour</Help>
+			<Label>Hour</Label>
+		</Value>
+		<Value index="2">
+			<Help>Minute</Help>
+			<Label>Minute</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="51">
+		<Label>COMMAND_CLASS_COLOR</Label>
+		<Value index="0">
+			<Help>Color (in RGB format)</Help>
+			<Label>Color</Label>
+		</Value>
+		<Value index="1">
+			<Help>Preset Color</Help>
+			<Label>Color Index</Label>
+		</Value>
+		<Value index="2">
+			<Help>Color Capabilities of the device</Help>
+			<Label>Color Channels</Label>
+		</Value>
+		<Value index="3">
+			<Help>Duration to change colors</Help>
+			<Label>Duration</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="112">
+		<Label>COMMAND_CLASS_CONFIGURATION</Label>
+		<!-- We dont do any here - this should come from device configuration files -->
+	</CommandClass>
+	<CommandClass id="33">
+		<Label>COMMAND_CLASS_CONTROLLER_REPLICATION</Label>
+		<Value index="0">
+			<Help>Node to Perform the replication with</Help>
+			<Label>Node</Label>
+		</Value>
+		<Value index="1">
+			<Help>What Features should be replicated</Help>
+			<Label>Functions</Label>
+		</Value>
+		<Value index="2">
+			<Help>Start the Replication</Help>
+			<Label>Replicate</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="86">
+		<Label>COMMAND_CLASS_CRC_16_ENCAP</Label>
+	</CommandClass>
+	<CommandClass id="90">
+		<Label>COMMAND_CLASS_DEVICE_RESET_LOCALLY</Label>
+	</CommandClass>
+	<CommandClass id="98">
+		<Label>COMMAND_CLASS_DOOR_LOCK</Label>
+		<Value index="0">
+			<Help>State of the Lock</Help>
+			<Label>Locked</Label>
+		</Value>
+		<Value index="1">
+			<Help>State of the Lock (Advanced)</Help>
+			<Label>Locked (Advanced)</Label>
+		</Value>
+		<Value index="2">
+			<Help>Timeout Mode for Reverting Lock State</Help>
+			<Label>Timeout Mode</Label>
+		</Value>
+		<Value index="3">
+			<Help>How Many Minutes before reverting Lock State</Help>
+			<Label>Timeout Minutes</Label>
+		</Value>
+		<Value index="4">
+			<Help>How Many Seconds before reverting Lock State</Help>
+			<Label>Timeout Seconds</Label>
+		</Value>
+		<Value index="5">
+			<Help>State of the Exterior Handle Control</Help>
+			<Label>Outside Handle Control</Label>
+		</Value>
+		<Value index="6">
+			<Help>State of the Exterior Handle Control</Help>
+			<Label>Inside Handle Control</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="76">
+		<Label>COMMAND_CLASS_DOOR_LOCK_LOGGING</Label>
+		<Value index="0">
+			<Help>Max Number of Logging Records Stored</Help>
+			<Label>Max Number of Records</Label>
+		</Value>
+		<Value index="1">
+			<Help>Current Log Record Number</Help>
+			<Label>Current Record Number</Label>
+		</Value>
+		<Value index="2">
+			<Help>Log Entry</Help>
+			<Label>Log Record</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="144">
+		<Label>COMMAND_CLASS_ENERGY_PRODUCTION</Label>
+		<Value index="0">
+			<Help>Current Energy Production Value</Help>
+			<Label>Instant energy production</Label>
+		</Value>
+		<Value index="1">
+			<Help>Total Amount of Energy Produced</Help>
+			<Label>Total energy production</Label>
+		</Value>
+		<Value index="2">
+			<Help>Total Amount of Energy Produced Today</Help>
+			<Label>Energy production today</Label>
+		</Value>
+		<Value index="3">
+			<Help>Total Time Producing Energy</Help>
+			<Label>Total production time</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="130">
+		<Label>COMMAND_CLASS_HAIL</Label>
+	</CommandClass>
+	<CommandClass id="135">
+		<Label>COMMAND_CLASS_INDICATOR</Label>
+		<Value index="0">
+			<Help>Current Indicator State</Help>
+			<Label>Indicator</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="137">
+		<Label>COMMAND_CLASS_LANGUAGE</Label>
+		<Value index="0">
+			<Help>Current Language Setting of the Device is ISO639-2 Format</Help>
+			<Label>Language</Label>
+		</Value>
+		<Value index="0">
+			<Help>Current Country Setting of the Device in IS3166-1 Format</Help>
+			<Label>Country</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="118">
+		<Label>COMMAND_CLASS_LOCK</Label>
+		<Value index="0">
+			<Help>Current State of the Device</Help>
+			<Label>Locked</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="145">
+		<Label>COMMAND_CLASS_PROPRIETARY</Label>
+	</CommandClass>
+	<CommandClass id="114">
+		<Label>COMMAND_CLASS_MANUFACTURER_SPECIFIC</Label>
+		<Value index="0">
+			<Help>Revision of the Config file currently loaded</Help>
+			<Label>Loaded Config Revision</Label>
+		</Value>
+		<Value index="1">
+			<Help>Revision of the Config file on the File System</Help>
+			<Label>Config File Revision</Label>
+		</Value>
+		<Value index="2">
+			<Help>Latest Revision of the Config file available for download</Help>
+			<Label>Latest Available Config File Revision</Label>
+		</Value>
+		<Value index="3">
+			<Help>Manufacturer Specific Device ID/Model</Help>
+			<Label>Device ID</Label>
+		</Value>
+		<Value index="4">
+			<Help>Device Serial Number</Help>
+			<Label>Serial Number</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="50">
+		<Label>COMMAND_CLASS_METER</Label>
+		<!-- This has some complex ValueID creation rules. Come back to it later -->
+	</CommandClass>
+	<CommandClass id="53">
+		<Label>COMMAND_CLASS_METER_PULSE</Label>
+		<Value index="0">
+			<Help>Number of Pulses sent by the Meter</Help>
+			<Label>Count</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="142">
+		<Label>COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION</Label>
+	</CommandClass>
+	<CommandClass id="143">
+		<Label>COMMAND_CLASS_MULTI_CMD</Label>
+	</CommandClass>
+	<CommandClass id="96">
+		<Label>COMMAND_CLASS_MULTI_INSTANCE</Label>
+	</CommandClass>
+	<CommandClass id="77">
+		<Label>COMMAND_CLASS_NODE_NAMING</Label>
+	</CommandClass>
+	<CommandClass id="0">
+		<Label>COMMAND_CLASS_NO_OPERATION</Label>
+	</CommandClass>
+	<CommandClass id="115">
+		<Label>COMMAND_CLASS_POWERLEVEL</Label>
+		<Value index="0">
+			<Help>Output RF PowerLevel</Help>
+			<Label>Powerlevel</Label>
+			<ItemLabel itemIndex="0">Normal</ItemLabel>
+			<ItemLabel itemIndex="1">-1dB</ItemLabel>
+			<ItemLabel itemIndex="2">-2dB</ItemLabel>
+			<ItemLabel itemIndex="3">-3dB</ItemLabel>
+			<ItemLabel itemIndex="4">-4dB</ItemLabel>
+			<ItemLabel itemIndex="5">-5dB</ItemLabel>
+			<ItemLabel itemIndex="6">-6dB</ItemLabel>
+			<ItemLabel itemIndex="7">-7dB</ItemLabel>
+			<ItemLabel itemIndex="8">-8dB</ItemLabel>
+			<ItemLabel itemIndex="9">-9dB</ItemLabel>
+			<ItemLabel itemIndex="10">unknown</ItemLabel>
+		</Value>
+		<Value index="1">
+			<Help>Timeout till the PowerLevel is reset to Normal</Help>
+			<Label>Timeout</Label>
+		</Value>
+		<Value index="2">
+			<Help>Apply the Output PowerLevel and Timeout Values</Help>
+			<Label>Set Powerlevel</Label>
+		</Value>
+		<Value index="3">
+			<Help>Node to Perform a test against</Help>
+			<Label>Test Node</Label>
+		</Value>
+		<Value index="4">
+			<Help>PowerLevel to use for the Test</Help>
+			<Label>Test Powerlevel</Label>
+		</Value>
+		<Value index="5">
+			<Help>How Many Messages to send to the Note for the Test</Help>
+			<Label>Frame Count</Label>
+		</Value>
+		<Value index="6">
+			<Help>Perform a PowerLevel Test against the a Node</Help>
+			<Label>Test</Label>
+		</Value>
+		<Value index="7">
+			<Help>Get the results of the latest PowerLevel Test against a Node</Help>
+			<Label>Report</Label>
+		</Value>
+		<Value index="8">
+			<Help>The Current Status of the last PowerNode Test Executed</Help>
+			<Label>Test Status</Label>
+		</Value>
+		<Value index="9">
+			<Help>Number of Messages successfully Acked by the Target Node</Help>
+			<Label>Acked Frames</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="136">
+		<Label>COMMAND_CLASS_PROPRIETARY</Label>
+	</CommandClass>
+	<CommandClass id="117">
+		<Label>COMMAND_CLASS_PROTECTION</Label>
+		<Value index="0">
+			<Help>Protect a device against unintentional control</Help>
+			<Label>Protection</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="43">
+		<Label>COMMAND_CLASS_SCENE_ACTIVATION</Label>
+	</CommandClass>
+	<CommandClass id="152">
+		<Label>COMMAND_CLASS_SECURITY</Label>
+		<Value index="0">
+			<Help>Is Communication with Device Encrypted</Help>
+			<Label>Secured</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="156">
+		<Label>COMMAND_CLASS_SENSOR_ALARM</Label>
+		<Value index="0">
+			<Help>General Alarm</Help>
+			<Label>General</Label>
+		</Value>
+		<Value index="1">
+			<Help>Smoke Alarm</Help>
+			<Label>Smoke</Label>
+		</Value>
+		<Value index="2">
+			<Help>Carbon Monoxide Alarm</Help>
+			<Label>Carbon Monoxide</Label>
+		</Value>
+		<Value index="3">
+			<Help>Carbon Dioxide Alarm</Help>
+			<Label>Carbon Dioxide</Label>
+		</Value>
+		<Value index="4">
+			<Help>Heat Alarm</Help>
+			<Label>Heat</Label>
+		</Value>
+		<Value index="5">
+			<Help>Flood Alarm</Help>
+			<Label>Flood</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="48">
+		<Label>COMMAND_CLASS_SENSOR_BINARY</Label>
+		<Value index="0">
+			<Help>Binary Sensor State</Help>
+			<Label>Sensor</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="49">
+		<Label>COMMAND_CLASS_SENSOR_MULTILEVEL</Label>
+		<Value index="0">
+			<Help>Undefined Sensor State</Help>
+			<Label>Undefined</Label>
+		</Value>
+		<Value index="1">
+			<Help>Temperature Sensor Value</Help>
+			<Label>Temperature</Label>
+		</Value>
+		<Value index="2">
+			<Help>General Sensor Value</Help>
+			<Label>General</Label>
+		</Value>
+		<Value index="3">
+			<Help>Luminance Sensor Value</Help>
+			<Label>Luminance</Label>
+		</Value>
+		<Value index="4">
+			<Help>Power Sensor Value</Help>
+			<Label>Power</Label>
+		</Value>
+		<Value index="5">
+			<Help>Relative Humidity Sensor Value</Help>
+			<Label>Relative Humidity</Label>
+		</Value>
+		<Value index="6">
+			<Help>Velocity Sensor Value</Help>
+			<Label>Velocity</Label>
+		</Value>
+		<Value index="7">
+			<Help>Direction Sensor Value</Help>
+			<Label>Direction</Label>
+		</Value>
+		<Value index="8">
+			<Help>Atmospheric Pressure Sensor Value</Help>
+			<Label>Atmospheric Pressure</Label>
+		</Value>
+		<Value index="9">
+			<Help>Barometric Pressure Sensor Value</Help>
+			<Label>Barometric Pressure</Label>
+		</Value>
+		<Value index="10">
+			<Help>Solar Radiation Sensor Value</Help>
+			<Label>Solar Radiation</Label>
+		</Value>
+		<Value index="11">
+			<Help>Dew Point Sensor Value</Help>
+			<Label>Dew Point</Label>
+		</Value>
+		<Value index="12">
+			<Help>Rain Rate Sensor Value</Help>
+			<Label>Rain Rate</Label>
+		</Value>
+		<Value index="13">
+			<Help>Tide Level Sensor Value</Help>
+			<Label>Tide Level</Label>
+		</Value>
+		<Value index="14">
+			<Help>Weight Sensor Value</Help>
+			<Label>Weight</Label>
+		</Value>
+		<Value index="15">
+			<Help>Voltage Sensor Value</Help>
+			<Label>Voltage</Label>
+		</Value>
+		<Value index="16">
+			<Help>Current Sensor Value</Help>
+			<Label>Current</Label>
+		</Value>
+		<Value index="17">
+			<Help>CO2 Level Sensor Value</Help>
+			<Label>CO2 Level</Label>
+		</Value>
+		<Value index="18">
+			<Help>Air Flow Sensor Value</Help>
+			<Label>Air Flow</Label>
+		</Value>
+		<Value index="19">
+			<Help>Tank Capacity Sensor Value</Help>
+			<Label>Tank Capacity</Label>
+		</Value>
+		<Value index="20">
+			<Help>Distance Sensor Value</Help>
+			<Label>Distance</Label>
+		</Value>
+		<Value index="21">
+			<Help>Angle Position Sensor Value</Help>
+			<Label>Angle Position</Label>
+		</Value>
+		<Value index="22">
+			<Help>Rotation Sensor Value</Help>
+			<Label>Rotation</Label>
+		</Value>
+		<Value index="23">
+			<Help>Water Temperature Sensor Value</Help>
+			<Label>Water Temperature</Label>
+		</Value>
+		<Value index="24">
+			<Help>Soil Temperature Sensor Value</Help>
+			<Label>Soil Temperature</Label>
+		</Value>
+		<Value index="25">
+			<Help>Binary Sensor Value</Help>
+			<Label>Sensor</Label>
+		</Value>
+		<Value index="26">
+			<Help>Seismic Intensity Sensor Value</Help>
+			<Label>Seismic Intensity</Label>
+		</Value>
+		<Value index="27">
+			<Help>Seismic Magnitude Sensor Value</Help>
+			<Label>Sensor</Label>
+		</Value>
+		<Value index="28">
+			<Help>Ultraviolet Sensor Value</Help>
+			<Label>Ultraviolet</Label>
+		</Value>
+		<Value index="29">
+			<Help>Electrical Resistivity Sensor Value</Help>
+			<Label>Electrical Resistivity</Label>
+		</Value>
+		<Value index="30">
+			<Help>Electrical Conductivity Sensor Value</Help>
+			<Label>Electrical Conductivity</Label>
+		</Value>
+		<Value index="31">
+			<Help>Loudness Sensor Value</Help>
+			<Label>Loudness</Label>
+		</Value>
+		<Value index="32">
+			<Help>Moisture Sensor Value</Help>
+			<Label>Moisture</Label>
+		</Value>
+	</CommandClass>
+		<CommandClass id="121">
+		<Label>COMMAND_CLASS_SOUND_SWITCH</Label>
+		<Value index="0">
+			<Help>The Number of Available Tones on the Node</Help>
+			<Label>Number of Tones</Label>
+		</Value>
+		<Value index="1">
+			<Help>A List of Available Tones on the Device</Help>
+			<Label>Tones</Label>
+		</Value>
+		<Value index="2">
+			<Help>The Volume to play the tone at</Help>
+			<Label>Volume</Label>
+		</Value>
+		<Value index="3">
+			<Help>The default tone to play when none is specified in a Play Command</Help>
+			<Label>Default Tones</Label>
+		</Value>
+		
+	</CommandClass>
+	<CommandClass id="39">
+		<Label>COMMAND_CLASS_SWITCH_ALL</Label>
+		<Value index="0">
+			<Help>Switch All Devices On/Off</Help>
+			<Label>Switch All</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="37">
+		<Label>COMMAND_CLASS_SWITCH_BINARY</Label>
+		<Value index="0">
+			<Help>Turn On/Off Device</Help>
+			<Label>Switch</Label>
+		</Value>
+		<Value index="1">
+			<Help>The Final State of the Switch</Help>
+			<Label>Target State</Label>
+		</Value>
+		<Value index="2">
+			<Help>How Long to Transition to new State</Help>
+			<Label>Transition Duration</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="38">
+		<Label>COMMAND_CLASS_SWITCH_MULTILEVEL</Label>
+		<Value index="0">
+			<Help>The Current Level of the Device</Help>
+			<Label>Level</Label>
+		</Value>
+		<Value index="1">
+			<Help>Increase the Brightness of the Device</Help>
+			<Label>Bright</Label>
+		</Value>
+		<Value index="2">
+			<Help>Decrease the Brightness of the Device</Help>
+			<Label>Dim</Label>
+		</Value>
+		<Value index="3">
+			<Help>Ignore the Start Level of the Device when increasing/descreasing brightness</Help>
+			<Label>Ignore Start Level</Label>
+		</Value>
+		<Value index="4">
+			<Help>Start Level when Changing the Brightness of a Device</Help>
+			<Label>Start Level</Label>
+		</Value>
+		<Value index="5">
+			<Help>Duration taken when changing the Level of a Device</Help>
+			<Label>Dimming Duration</Label>
+		</Value>
+		<Value index="6">
+			<Help>How Many Percent Change when incrementing/decrementing the Level of a Device</Help>
+			<Label>Step Size</Label>
+		</Value>
+		<Value index="7">
+			<Help>Increment the Level of a Device</Help>
+			<Label>Inc</Label>
+		</Value>
+		<Value index="8">
+			<Help>Decrement the Level of a Device</Help>
+			<Label>Dec</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="40">
+		<Label>COMMAND_CLASS_SWITCH_TOGGLE_BINARY</Label>
+		<Value index="0">
+			<Help>Turn On/Off a Device</Help>
+			<Label>Toggle Switch</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="41">
+		<Label>COMMAND_CLASS_SWITCH_TOGGLE_MULTILEVEL</Label>
+		<Value index="0">
+			<Help>Set the Device to a Level</Help>
+			<Label>Level</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="68">
+		<Label>COMMAND_CLASS_THERMOSTAT_FAN_MODE</Label>
+		<Value index="0">
+			<Help>Set the Fan Mode</Help>
+			<Label>Fan Mode</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="69">
+		<Label>COMMAND_CLASS_THERMOSTAT_FAN_STATE</Label>
+		<Value index="0">
+			<Help>Set the Fan State</Help>
+			<Label>Fan State</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="64">
+		<Label>COMMAND_CLASS_THERMOSTAT_MODE</Label>
+		<Value index="0">
+			<Help>Set the Thermostat Mode</Help>
+			<Label>Mode</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="66">
+		<Label>COMMAND_CLASS_THERMOSTAT_OPERATING_STATE</Label>
+		<Value index="0">
+			<Help>Set the Thermostat Operating State</Help>
+			<Label>Operating State</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="67">
+		<Label>COMMAND_CLASS_THERMOSTAT_SETPOINT</Label>
+		<Value index="0">
+			<Help>Set the Thermostat Setpoint Unused 0</Help>
+			<Label>Unused 0</Label>
+		</Value>
+		<Value index="1">
+			<Help>Set the Thermostat Setpoint Heating 1</Help>
+			<Label>Heating 1</Label>
+		</Value>
+		<Value index="2">
+			<Help>Set the Thermostat Setpoint Cooling 1</Help>
+			<Label>Cooling 1</Label>
+		</Value>
+		<Value index="3">
+			<Help>Set the Thermostat Setpoint Unused 3</Help>
+			<Label>Unused 3</Label>
+		</Value>
+		<Value index="4">
+			<Help>Set the Thermostat Setpoint Unused 4</Help>
+			<Label>Unused 4</Label>
+		</Value>
+		<Value index="5">
+			<Help>Set the Thermostat Setpoint Unused 5</Help>
+			<Label>Unused 5</Label>
+		</Value>
+		<Value index="6">
+			<Help>Set the Thermostat Setpoint Unused 6</Help>
+			<Label>Unused 6</Label>
+		</Value>
+		<Value index="7">
+			<Help>Set the Thermostat Setpoint Furnace</Help>
+			<Label>Furnace</Label>
+		</Value>
+		<Value index="8">
+			<Help>Set the Thermostat Setpoint Dry Air</Help>
+			<Label>Dry Air</Label>
+		</Value>
+		<Value index="9">
+			<Help>Set the Thermostat Setpoint Moist Air</Help>
+			<Label>Moist Air</Label>
+		</Value>
+		<Value index="10">
+			<Help>Set the Thermostat Setpoint Auto Changeover</Help>
+			<Label>Auto Changeover</Label>
+		</Value>
+		<Value index="11">
+			<Help>Set the Thermostat Setpoint Heating Econ</Help>
+			<Label>Heating Econ</Label>
+		</Value>
+		<Value index="12">
+			<Help>Set the Thermostat Setpoint Cooling Econ</Help>
+			<Label>Cooling Econ</Label>
+		</Value>
+		<Value index="13">
+			<Help>Set the Thermostat Setpoint Away Heating</Help>
+			<Label>Away Heating</Label>
+		</Value>
+		<Value index="14">
+			<Help>Set the Thermostat Setpoint Away Cooling</Help>
+			<Label>Away Cooling</Label>
+		</Value>
+		<Value index="15">
+			<Help>Set the Thermostat Setpoint Full Power</Help>
+			<Label>Full Power</Label>
+		</Value>
+		<!-- Need to find a way to add the *_minimum and *_maximum valueID's as well -->
+	</CommandClass>
+	<CommandClass id="139">
+		<Label>COMMAND_CLASS_TIME_PARAMETERS</Label>
+		<Value index="0">
+			<Help>Current Date</Help>
+			<Label>Date</Label>
+		</Value>
+		<Value index="1">
+			<Help>Current Time</Help>
+			<Label>Time</Label>
+		</Value>
+		<Value index="2">
+			<Help>Set the Date/Time</Help>
+			<Label>Set Date/Time</Label>
+		</Value>
+		<Value index="3">
+			<Help>Refresh the Date/Time</Help>
+			<Label>Refresh Date/Time</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="99">
+		<Label>COMMAND_CLASS_USER_CODE</Label>
+		<Value index="0">
+			<Help>Enrollment Code</Help>
+			<Label>Enrollment Code</Label>
+		</Value>
+		<Value index="1">
+			<Help>UserCode 1</Help>
+			<Label>UserCode 1</Label>
+		</Value>
+		<Value index="2">
+			<Help>UserCode 2</Help>
+			<Label>UserCode 2</Label>
+		</Value>
+		<Value index="3">
+			<Help>UserCode 3</Help>
+			<Label>UserCode 3</Label>
+		</Value>
+		<Value index="4">
+			<Help>UserCode 4</Help>
+			<Label>UserCode 4</Label>
+		</Value>
+		<Value index="5">
+			<Help>UserCode 5</Help>
+			<Label>UserCode 5</Label>
+		</Value>
+		<Value index="6">
+			<Help>UserCode 6</Help>
+			<Label>UserCode 6</Label>
+		</Value>
+		<Value index="7">
+			<Help>UserCode 7</Help>
+			<Label>UserCode 7</Label>
+		</Value>
+		<Value index="8">
+			<Help>UserCode 8</Help>
+			<Label>UserCode 8</Label>
+		</Value>
+		<Value index="9">
+			<Help>UserCode 9</Help>
+			<Label>UserCode 9</Label>
+		</Value>
+		<Value index="10">
+			<Help>UserCode 10</Help>
+			<Label>UserCode 10</Label>
+		</Value>
+		<Value index="11">
+			<Help>UserCode 11</Help>
+			<Label>UserCode 11</Label>
+		</Value>
+		<Value index="12">
+			<Help>UserCode 12</Help>
+			<Label>UserCode 12</Label>
+		</Value>
+		<Value index="13">
+			<Help>UserCode 13</Help>
+			<Label>UserCode 13</Label>
+		</Value>
+		<Value index="14">
+			<Help>UserCode 14</Help>
+			<Label>UserCode 14</Label>
+		</Value>
+		<Value index="15">
+			<Help>UserCode 15</Help>
+			<Label>UserCode 15</Label>
+		</Value>
+		<Value index="16">
+			<Help>UserCode 16</Help>
+			<Label>UserCode 16</Label>
+		</Value>
+		<Value index="17">
+			<Help>UserCode 17</Help>
+			<Label>UserCode 17</Label>
+		</Value>
+		<Value index="18">
+			<Help>UserCode 18</Help>
+			<Label>UserCode 18</Label>
+		</Value>
+		<Value index="19">
+			<Help>UserCode 19</Help>
+			<Label>UserCode 19</Label>
+		</Value>
+		<Value index="20">
+			<Help>UserCode 20</Help>
+			<Label>UserCode 20</Label>
+		</Value>
+		<Value index="21">
+			<Help>UserCode 21</Help>
+			<Label>UserCode 21</Label>
+		</Value>
+		<Value index="22">
+			<Help>UserCode 22</Help>
+			<Label>UserCode 22</Label>
+		</Value>
+		<Value index="23">
+			<Help>UserCode 23</Help>
+			<Label>UserCode 23</Label>
+		</Value>
+		<Value index="24">
+			<Help>UserCode 24</Help>
+			<Label>UserCode 24</Label>
+		</Value>
+		<Value index="25">
+			<Help>UserCode 25</Help>
+			<Label>UserCode 25</Label>
+		</Value>
+		<Value index="26">
+			<Help>UserCode 26</Help>
+			<Label>UserCode 26</Label>
+		</Value>
+		<Value index="27">
+			<Help>UserCode 27</Help>
+			<Label>UserCode 27</Label>
+		</Value>
+		<Value index="28">
+			<Help>UserCode 28</Help>
+			<Label>UserCode 28</Label>
+		</Value>
+		<Value index="29">
+			<Help>UserCode 29</Help>
+			<Label>UserCode 29</Label>
+		</Value>
+		<Value index="30">
+			<Help>UserCode 30</Help>
+			<Label>UserCode 30</Label>
+		</Value>
+		<Value index="31">
+			<Help>UserCode 31</Help>
+			<Label>UserCode 31</Label>
+		</Value>
+		<Value index="32">
+			<Help>UserCode 32</Help>
+			<Label>UserCode 32</Label>
+		</Value>
+		<Value index="33">
+			<Help>UserCode 33</Help>
+			<Label>UserCode 33</Label>
+		</Value>
+		<Value index="34">
+			<Help>UserCode 34</Help>
+			<Label>UserCode 34</Label>
+		</Value>
+		<Value index="35">
+			<Help>UserCode 35</Help>
+			<Label>UserCode 35</Label>
+		</Value>
+		<Value index="36">
+			<Help>UserCode 36</Help>
+			<Label>UserCode 36</Label>
+		</Value>
+		<Value index="37">
+			<Help>UserCode 37</Help>
+			<Label>UserCode 37</Label>
+		</Value>
+		<Value index="38">
+			<Help>UserCode 38</Help>
+			<Label>UserCode 38</Label>
+		</Value>
+		<Value index="39">
+			<Help>UserCode 39</Help>
+			<Label>UserCode 39</Label>
+		</Value>
+		<Value index="40">
+			<Help>UserCode 40</Help>
+			<Label>UserCode 40</Label>
+		</Value>
+		<Value index="41">
+			<Help>UserCode 41</Help>
+			<Label>UserCode 41</Label>
+		</Value>
+		<Value index="42">
+			<Help>UserCode 42</Help>
+			<Label>UserCode 42</Label>
+		</Value>
+		<Value index="43">
+			<Help>UserCode 43</Help>
+			<Label>UserCode 43</Label>
+		</Value>
+		<Value index="44">
+			<Help>UserCode 44</Help>
+			<Label>UserCode 44</Label>
+		</Value>
+		<Value index="45">
+			<Help>UserCode 45</Help>
+			<Label>UserCode 45</Label>
+		</Value>
+		<Value index="46">
+			<Help>UserCode 46</Help>
+			<Label>UserCode 46</Label>
+		</Value>
+		<Value index="47">
+			<Help>UserCode 47</Help>
+			<Label>UserCode 47</Label>
+		</Value>
+		<Value index="48">
+			<Help>UserCode 48</Help>
+			<Label>UserCode 48</Label>
+		</Value>
+		<Value index="49">
+			<Help>UserCode 49</Help>
+			<Label>UserCode 49</Label>
+		</Value>
+		<Value index="50">
+			<Help>UserCode 50</Help>
+			<Label>UserCode 50</Label>
+		</Value>
+		<Value index="51">
+			<Help>UserCode 51</Help>
+			<Label>UserCode 51</Label>
+		</Value>
+		<Value index="52">
+			<Help>UserCode 52</Help>
+			<Label>UserCode 52</Label>
+		</Value>
+		<Value index="53">
+			<Help>UserCode 53</Help>
+			<Label>UserCode 53</Label>
+		</Value>
+		<Value index="54">
+			<Help>UserCode 54</Help>
+			<Label>UserCode 54</Label>
+		</Value>
+		<Value index="55">
+			<Help>UserCode 55</Help>
+			<Label>UserCode 55</Label>
+		</Value>
+		<Value index="56">
+			<Help>UserCode 56</Help>
+			<Label>UserCode 56</Label>
+		</Value>
+		<Value index="57">
+			<Help>UserCode 57</Help>
+			<Label>UserCode 57</Label>
+		</Value>
+		<Value index="58">
+			<Help>UserCode 58</Help>
+			<Label>UserCode 58</Label>
+		</Value>
+		<Value index="59">
+			<Help>UserCode 59</Help>
+			<Label>UserCode 59</Label>
+		</Value>
+		<Value index="60">
+			<Help>UserCode 60</Help>
+			<Label>UserCode 60</Label>
+		</Value>
+		<Value index="61">
+			<Help>UserCode 61</Help>
+			<Label>UserCode 61</Label>
+		</Value>
+		<Value index="62">
+			<Help>UserCode 62</Help>
+			<Label>UserCode 62</Label>
+		</Value>
+		<Value index="63">
+			<Help>UserCode 63</Help>
+			<Label>UserCode 63</Label>
+		</Value>
+		<Value index="64">
+			<Help>UserCode 64</Help>
+			<Label>UserCode 64</Label>
+		</Value>
+		<Value index="65">
+			<Help>UserCode 65</Help>
+			<Label>UserCode 65</Label>
+		</Value>
+		<Value index="66">
+			<Help>UserCode 66</Help>
+			<Label>UserCode 66</Label>
+		</Value>
+		<Value index="67">
+			<Help>UserCode 67</Help>
+			<Label>UserCode 67</Label>
+		</Value>
+		<Value index="68">
+			<Help>UserCode 68</Help>
+			<Label>UserCode 68</Label>
+		</Value>
+		<Value index="69">
+			<Help>UserCode 69</Help>
+			<Label>UserCode 69</Label>
+		</Value>
+		<Value index="70">
+			<Help>UserCode 70</Help>
+			<Label>UserCode 70</Label>
+		</Value>
+		<Value index="71">
+			<Help>UserCode 71</Help>
+			<Label>UserCode 71</Label>
+		</Value>
+		<Value index="72">
+			<Help>UserCode 72</Help>
+			<Label>UserCode 72</Label>
+		</Value>
+		<Value index="73">
+			<Help>UserCode 73</Help>
+			<Label>UserCode 73</Label>
+		</Value>
+		<Value index="74">
+			<Help>UserCode 74</Help>
+			<Label>UserCode 74</Label>
+		</Value>
+		<Value index="75">
+			<Help>UserCode 75</Help>
+			<Label>UserCode 75</Label>
+		</Value>
+		<Value index="76">
+			<Help>UserCode 76</Help>
+			<Label>UserCode 76</Label>
+		</Value>
+		<Value index="77">
+			<Help>UserCode 77</Help>
+			<Label>UserCode 77</Label>
+		</Value>
+		<Value index="78">
+			<Help>UserCode 78</Help>
+			<Label>UserCode 78</Label>
+		</Value>
+		<Value index="79">
+			<Help>UserCode 79</Help>
+			<Label>UserCode 79</Label>
+		</Value>
+		<Value index="80">
+			<Help>UserCode 80</Help>
+			<Label>UserCode 80</Label>
+		</Value>
+		<Value index="81">
+			<Help>UserCode 81</Help>
+			<Label>UserCode 81</Label>
+		</Value>
+		<Value index="82">
+			<Help>UserCode 82</Help>
+			<Label>UserCode 82</Label>
+		</Value>
+		<Value index="83">
+			<Help>UserCode 83</Help>
+			<Label>UserCode 83</Label>
+		</Value>
+		<Value index="84">
+			<Help>UserCode 84</Help>
+			<Label>UserCode 84</Label>
+		</Value>
+		<Value index="85">
+			<Help>UserCode 85</Help>
+			<Label>UserCode 85</Label>
+		</Value>
+		<Value index="86">
+			<Help>UserCode 86</Help>
+			<Label>UserCode 86</Label>
+		</Value>
+		<Value index="87">
+			<Help>UserCode 87</Help>
+			<Label>UserCode 87</Label>
+		</Value>
+		<Value index="88">
+			<Help>UserCode 88</Help>
+			<Label>UserCode 88</Label>
+		</Value>
+		<Value index="89">
+			<Help>UserCode 89</Help>
+			<Label>UserCode 89</Label>
+		</Value>
+		<Value index="90">
+			<Help>UserCode 90</Help>
+			<Label>UserCode 90</Label>
+		</Value>
+		<Value index="91">
+			<Help>UserCode 91</Help>
+			<Label>UserCode 91</Label>
+		</Value>
+		<Value index="92">
+			<Help>UserCode 92</Help>
+			<Label>UserCode 92</Label>
+		</Value>
+		<Value index="93">
+			<Help>UserCode 93</Help>
+			<Label>UserCode 93</Label>
+		</Value>
+		<Value index="94">
+			<Help>UserCode 94</Help>
+			<Label>UserCode 94</Label>
+		</Value>
+		<Value index="95">
+			<Help>UserCode 95</Help>
+			<Label>UserCode 95</Label>
+		</Value>
+		<Value index="96">
+			<Help>UserCode 96</Help>
+			<Label>UserCode 96</Label>
+		</Value>
+		<Value index="97">
+			<Help>UserCode 97</Help>
+			<Label>UserCode 97</Label>
+		</Value>
+		<Value index="98">
+			<Help>UserCode 98</Help>
+			<Label>UserCode 98</Label>
+		</Value>
+		<Value index="99">
+			<Help>UserCode 99</Help>
+			<Label>UserCode 99</Label>
+		</Value>
+		<Value index="100">
+			<Help>UserCode 100</Help>
+			<Label>UserCode 100</Label>
+		</Value>
+		<Value index="101">
+			<Help>UserCode 101</Help>
+			<Label>UserCode 101</Label>
+		</Value>
+		<Value index="102">
+			<Help>UserCode 102</Help>
+			<Label>UserCode 102</Label>
+		</Value>
+		<Value index="103">
+			<Help>UserCode 103</Help>
+			<Label>UserCode 103</Label>
+		</Value>
+		<Value index="104">
+			<Help>UserCode 104</Help>
+			<Label>UserCode 104</Label>
+		</Value>
+		<Value index="105">
+			<Help>UserCode 105</Help>
+			<Label>UserCode 105</Label>
+		</Value>
+		<Value index="106">
+			<Help>UserCode 106</Help>
+			<Label>UserCode 106</Label>
+		</Value>
+		<Value index="107">
+			<Help>UserCode 107</Help>
+			<Label>UserCode 107</Label>
+		</Value>
+		<Value index="108">
+			<Help>UserCode 108</Help>
+			<Label>UserCode 108</Label>
+		</Value>
+		<Value index="109">
+			<Help>UserCode 109</Help>
+			<Label>UserCode 109</Label>
+		</Value>
+		<Value index="110">
+			<Help>UserCode 110</Help>
+			<Label>UserCode 110</Label>
+		</Value>
+		<Value index="111">
+			<Help>UserCode 111</Help>
+			<Label>UserCode 111</Label>
+		</Value>
+		<Value index="112">
+			<Help>UserCode 112</Help>
+			<Label>UserCode 112</Label>
+		</Value>
+		<Value index="113">
+			<Help>UserCode 113</Help>
+			<Label>UserCode 113</Label>
+		</Value>
+		<Value index="114">
+			<Help>UserCode 114</Help>
+			<Label>UserCode 114</Label>
+		</Value>
+		<Value index="115">
+			<Help>UserCode 115</Help>
+			<Label>UserCode 115</Label>
+		</Value>
+		<Value index="116">
+			<Help>UserCode 116</Help>
+			<Label>UserCode 116</Label>
+		</Value>
+		<Value index="117">
+			<Help>UserCode 117</Help>
+			<Label>UserCode 117</Label>
+		</Value>
+		<Value index="118">
+			<Help>UserCode 118</Help>
+			<Label>UserCode 118</Label>
+		</Value>
+		<Value index="119">
+			<Help>UserCode 119</Help>
+			<Label>UserCode 119</Label>
+		</Value>
+		<Value index="120">
+			<Help>UserCode 120</Help>
+			<Label>UserCode 120</Label>
+		</Value>
+		<Value index="121">
+			<Help>UserCode 121</Help>
+			<Label>UserCode 121</Label>
+		</Value>
+		<Value index="122">
+			<Help>UserCode 122</Help>
+			<Label>UserCode 122</Label>
+		</Value>
+		<Value index="123">
+			<Help>UserCode 123</Help>
+			<Label>UserCode 123</Label>
+		</Value>
+		<Value index="124">
+			<Help>UserCode 124</Help>
+			<Label>UserCode 124</Label>
+		</Value>
+		<Value index="125">
+			<Help>UserCode 125</Help>
+			<Label>UserCode 125</Label>
+		</Value>
+		<Value index="126">
+			<Help>UserCode 126</Help>
+			<Label>UserCode 126</Label>
+		</Value>
+		<Value index="127">
+			<Help>UserCode 127</Help>
+			<Label>UserCode 127</Label>
+		</Value>
+		<Value index="128">
+			<Help>UserCode 128</Help>
+			<Label>UserCode 128</Label>
+		</Value>
+		<Value index="129">
+			<Help>UserCode 129</Help>
+			<Label>UserCode 129</Label>
+		</Value>
+		<Value index="130">
+			<Help>UserCode 130</Help>
+			<Label>UserCode 130</Label>
+		</Value>
+		<Value index="131">
+			<Help>UserCode 131</Help>
+			<Label>UserCode 131</Label>
+		</Value>
+		<Value index="132">
+			<Help>UserCode 132</Help>
+			<Label>UserCode 132</Label>
+		</Value>
+		<Value index="133">
+			<Help>UserCode 133</Help>
+			<Label>UserCode 133</Label>
+		</Value>
+		<Value index="134">
+			<Help>UserCode 134</Help>
+			<Label>UserCode 134</Label>
+		</Value>
+		<Value index="135">
+			<Help>UserCode 135</Help>
+			<Label>UserCode 135</Label>
+		</Value>
+		<Value index="136">
+			<Help>UserCode 136</Help>
+			<Label>UserCode 136</Label>
+		</Value>
+		<Value index="137">
+			<Help>UserCode 137</Help>
+			<Label>UserCode 137</Label>
+		</Value>
+		<Value index="138">
+			<Help>UserCode 138</Help>
+			<Label>UserCode 138</Label>
+		</Value>
+		<Value index="139">
+			<Help>UserCode 139</Help>
+			<Label>UserCode 139</Label>
+		</Value>
+		<Value index="140">
+			<Help>UserCode 140</Help>
+			<Label>UserCode 140</Label>
+		</Value>
+		<Value index="141">
+			<Help>UserCode 141</Help>
+			<Label>UserCode 141</Label>
+		</Value>
+		<Value index="142">
+			<Help>UserCode 142</Help>
+			<Label>UserCode 142</Label>
+		</Value>
+		<Value index="143">
+			<Help>UserCode 143</Help>
+			<Label>UserCode 143</Label>
+		</Value>
+		<Value index="144">
+			<Help>UserCode 144</Help>
+			<Label>UserCode 144</Label>
+		</Value>
+		<Value index="145">
+			<Help>UserCode 145</Help>
+			<Label>UserCode 145</Label>
+		</Value>
+		<Value index="146">
+			<Help>UserCode 146</Help>
+			<Label>UserCode 146</Label>
+		</Value>
+		<Value index="147">
+			<Help>UserCode 147</Help>
+			<Label>UserCode 147</Label>
+		</Value>
+		<Value index="148">
+			<Help>UserCode 148</Help>
+			<Label>UserCode 148</Label>
+		</Value>
+		<Value index="149">
+			<Help>UserCode 149</Help>
+			<Label>UserCode 149</Label>
+		</Value>
+		<Value index="150">
+			<Help>UserCode 150</Help>
+			<Label>UserCode 150</Label>
+		</Value>
+		<Value index="151">
+			<Help>UserCode 151</Help>
+			<Label>UserCode 151</Label>
+		</Value>
+		<Value index="152">
+			<Help>UserCode 152</Help>
+			<Label>UserCode 152</Label>
+		</Value>
+		<Value index="153">
+			<Help>UserCode 153</Help>
+			<Label>UserCode 153</Label>
+		</Value>
+		<Value index="154">
+			<Help>UserCode 154</Help>
+			<Label>UserCode 154</Label>
+		</Value>
+		<Value index="155">
+			<Help>UserCode 155</Help>
+			<Label>UserCode 155</Label>
+		</Value>
+		<Value index="156">
+			<Help>UserCode 156</Help>
+			<Label>UserCode 156</Label>
+		</Value>
+		<Value index="157">
+			<Help>UserCode 157</Help>
+			<Label>UserCode 157</Label>
+		</Value>
+		<Value index="158">
+			<Help>UserCode 158</Help>
+			<Label>UserCode 158</Label>
+		</Value>
+		<Value index="159">
+			<Help>UserCode 159</Help>
+			<Label>UserCode 159</Label>
+		</Value>
+		<Value index="160">
+			<Help>UserCode 160</Help>
+			<Label>UserCode 160</Label>
+		</Value>
+		<Value index="161">
+			<Help>UserCode 161</Help>
+			<Label>UserCode 161</Label>
+		</Value>
+		<Value index="162">
+			<Help>UserCode 162</Help>
+			<Label>UserCode 162</Label>
+		</Value>
+		<Value index="163">
+			<Help>UserCode 163</Help>
+			<Label>UserCode 163</Label>
+		</Value>
+		<Value index="164">
+			<Help>UserCode 164</Help>
+			<Label>UserCode 164</Label>
+		</Value>
+		<Value index="165">
+			<Help>UserCode 165</Help>
+			<Label>UserCode 165</Label>
+		</Value>
+		<Value index="166">
+			<Help>UserCode 166</Help>
+			<Label>UserCode 166</Label>
+		</Value>
+		<Value index="167">
+			<Help>UserCode 167</Help>
+			<Label>UserCode 167</Label>
+		</Value>
+		<Value index="168">
+			<Help>UserCode 168</Help>
+			<Label>UserCode 168</Label>
+		</Value>
+		<Value index="169">
+			<Help>UserCode 169</Help>
+			<Label>UserCode 169</Label>
+		</Value>
+		<Value index="170">
+			<Help>UserCode 170</Help>
+			<Label>UserCode 170</Label>
+		</Value>
+		<Value index="171">
+			<Help>UserCode 171</Help>
+			<Label>UserCode 171</Label>
+		</Value>
+		<Value index="172">
+			<Help>UserCode 172</Help>
+			<Label>UserCode 172</Label>
+		</Value>
+		<Value index="173">
+			<Help>UserCode 173</Help>
+			<Label>UserCode 173</Label>
+		</Value>
+		<Value index="174">
+			<Help>UserCode 174</Help>
+			<Label>UserCode 174</Label>
+		</Value>
+		<Value index="175">
+			<Help>UserCode 175</Help>
+			<Label>UserCode 175</Label>
+		</Value>
+		<Value index="176">
+			<Help>UserCode 176</Help>
+			<Label>UserCode 176</Label>
+		</Value>
+		<Value index="177">
+			<Help>UserCode 177</Help>
+			<Label>UserCode 177</Label>
+		</Value>
+		<Value index="178">
+			<Help>UserCode 178</Help>
+			<Label>UserCode 178</Label>
+		</Value>
+		<Value index="179">
+			<Help>UserCode 179</Help>
+			<Label>UserCode 179</Label>
+		</Value>
+		<Value index="180">
+			<Help>UserCode 180</Help>
+			<Label>UserCode 180</Label>
+		</Value>
+		<Value index="181">
+			<Help>UserCode 181</Help>
+			<Label>UserCode 181</Label>
+		</Value>
+		<Value index="182">
+			<Help>UserCode 182</Help>
+			<Label>UserCode 182</Label>
+		</Value>
+		<Value index="183">
+			<Help>UserCode 183</Help>
+			<Label>UserCode 183</Label>
+		</Value>
+		<Value index="184">
+			<Help>UserCode 184</Help>
+			<Label>UserCode 184</Label>
+		</Value>
+		<Value index="185">
+			<Help>UserCode 185</Help>
+			<Label>UserCode 185</Label>
+		</Value>
+		<Value index="186">
+			<Help>UserCode 186</Help>
+			<Label>UserCode 186</Label>
+		</Value>
+		<Value index="187">
+			<Help>UserCode 187</Help>
+			<Label>UserCode 187</Label>
+		</Value>
+		<Value index="188">
+			<Help>UserCode 188</Help>
+			<Label>UserCode 188</Label>
+		</Value>
+		<Value index="189">
+			<Help>UserCode 189</Help>
+			<Label>UserCode 189</Label>
+		</Value>
+		<Value index="190">
+			<Help>UserCode 190</Help>
+			<Label>UserCode 190</Label>
+		</Value>
+		<Value index="191">
+			<Help>UserCode 191</Help>
+			<Label>UserCode 191</Label>
+		</Value>
+		<Value index="192">
+			<Help>UserCode 192</Help>
+			<Label>UserCode 192</Label>
+		</Value>
+		<Value index="193">
+			<Help>UserCode 193</Help>
+			<Label>UserCode 193</Label>
+		</Value>
+		<Value index="194">
+			<Help>UserCode 194</Help>
+			<Label>UserCode 194</Label>
+		</Value>
+		<Value index="195">
+			<Help>UserCode 195</Help>
+			<Label>UserCode 195</Label>
+		</Value>
+		<Value index="196">
+			<Help>UserCode 196</Help>
+			<Label>UserCode 196</Label>
+		</Value>
+		<Value index="197">
+			<Help>UserCode 197</Help>
+			<Label>UserCode 197</Label>
+		</Value>
+		<Value index="198">
+			<Help>UserCode 198</Help>
+			<Label>UserCode 198</Label>
+		</Value>
+		<Value index="199">
+			<Help>UserCode 199</Help>
+			<Label>UserCode 199</Label>
+		</Value>
+		<Value index="200">
+			<Help>UserCode 200</Help>
+			<Label>UserCode 200</Label>
+		</Value>
+		<Value index="201">
+			<Help>UserCode 201</Help>
+			<Label>UserCode 201</Label>
+		</Value>
+		<Value index="202">
+			<Help>UserCode 202</Help>
+			<Label>UserCode 202</Label>
+		</Value>
+		<Value index="203">
+			<Help>UserCode 203</Help>
+			<Label>UserCode 203</Label>
+		</Value>
+		<Value index="204">
+			<Help>UserCode 204</Help>
+			<Label>UserCode 204</Label>
+		</Value>
+		<Value index="205">
+			<Help>UserCode 205</Help>
+			<Label>UserCode 205</Label>
+		</Value>
+		<Value index="206">
+			<Help>UserCode 206</Help>
+			<Label>UserCode 206</Label>
+		</Value>
+		<Value index="207">
+			<Help>UserCode 207</Help>
+			<Label>UserCode 207</Label>
+		</Value>
+		<Value index="208">
+			<Help>UserCode 208</Help>
+			<Label>UserCode 208</Label>
+		</Value>
+		<Value index="209">
+			<Help>UserCode 209</Help>
+			<Label>UserCode 209</Label>
+		</Value>
+		<Value index="210">
+			<Help>UserCode 210</Help>
+			<Label>UserCode 210</Label>
+		</Value>
+		<Value index="211">
+			<Help>UserCode 211</Help>
+			<Label>UserCode 211</Label>
+		</Value>
+		<Value index="212">
+			<Help>UserCode 212</Help>
+			<Label>UserCode 212</Label>
+		</Value>
+		<Value index="213">
+			<Help>UserCode 213</Help>
+			<Label>UserCode 213</Label>
+		</Value>
+		<Value index="214">
+			<Help>UserCode 214</Help>
+			<Label>UserCode 214</Label>
+		</Value>
+		<Value index="215">
+			<Help>UserCode 215</Help>
+			<Label>UserCode 215</Label>
+		</Value>
+		<Value index="216">
+			<Help>UserCode 216</Help>
+			<Label>UserCode 216</Label>
+		</Value>
+		<Value index="217">
+			<Help>UserCode 217</Help>
+			<Label>UserCode 217</Label>
+		</Value>
+		<Value index="218">
+			<Help>UserCode 218</Help>
+			<Label>UserCode 218</Label>
+		</Value>
+		<Value index="219">
+			<Help>UserCode 219</Help>
+			<Label>UserCode 219</Label>
+		</Value>
+		<Value index="220">
+			<Help>UserCode 220</Help>
+			<Label>UserCode 220</Label>
+		</Value>
+		<Value index="221">
+			<Help>UserCode 221</Help>
+			<Label>UserCode 221</Label>
+		</Value>
+		<Value index="222">
+			<Help>UserCode 222</Help>
+			<Label>UserCode 222</Label>
+		</Value>
+		<Value index="223">
+			<Help>UserCode 223</Help>
+			<Label>UserCode 223</Label>
+		</Value>
+		<Value index="224">
+			<Help>UserCode 224</Help>
+			<Label>UserCode 224</Label>
+		</Value>
+		<Value index="225">
+			<Help>UserCode 225</Help>
+			<Label>UserCode 225</Label>
+		</Value>
+		<Value index="226">
+			<Help>UserCode 226</Help>
+			<Label>UserCode 226</Label>
+		</Value>
+		<Value index="227">
+			<Help>UserCode 227</Help>
+			<Label>UserCode 227</Label>
+		</Value>
+		<Value index="228">
+			<Help>UserCode 228</Help>
+			<Label>UserCode 228</Label>
+		</Value>
+		<Value index="229">
+			<Help>UserCode 229</Help>
+			<Label>UserCode 229</Label>
+		</Value>
+		<Value index="230">
+			<Help>UserCode 230</Help>
+			<Label>UserCode 230</Label>
+		</Value>
+		<Value index="231">
+			<Help>UserCode 231</Help>
+			<Label>UserCode 231</Label>
+		</Value>
+		<Value index="232">
+			<Help>UserCode 232</Help>
+			<Label>UserCode 232</Label>
+		</Value>
+		<Value index="233">
+			<Help>UserCode 233</Help>
+			<Label>UserCode 233</Label>
+		</Value>
+		<Value index="234">
+			<Help>UserCode 234</Help>
+			<Label>UserCode 234</Label>
+		</Value>
+		<Value index="235">
+			<Help>UserCode 235</Help>
+			<Label>UserCode 235</Label>
+		</Value>
+		<Value index="236">
+			<Help>UserCode 236</Help>
+			<Label>UserCode 236</Label>
+		</Value>
+		<Value index="237">
+			<Help>UserCode 237</Help>
+			<Label>UserCode 237</Label>
+		</Value>
+		<Value index="238">
+			<Help>UserCode 238</Help>
+			<Label>UserCode 238</Label>
+		</Value>
+		<Value index="239">
+			<Help>UserCode 239</Help>
+			<Label>UserCode 239</Label>
+		</Value>
+		<Value index="240">
+			<Help>UserCode 240</Help>
+			<Label>UserCode 240</Label>
+		</Value>
+		<Value index="241">
+			<Help>UserCode 241</Help>
+			<Label>UserCode 241</Label>
+		</Value>
+		<Value index="242">
+			<Help>UserCode 242</Help>
+			<Label>UserCode 242</Label>
+		</Value>
+		<Value index="243">
+			<Help>UserCode 243</Help>
+			<Label>UserCode 243</Label>
+		</Value>
+		<Value index="244">
+			<Help>UserCode 244</Help>
+			<Label>UserCode 244</Label>
+		</Value>
+		<Value index="245">
+			<Help>UserCode 245</Help>
+			<Label>UserCode 245</Label>
+		</Value>
+		<Value index="246">
+			<Help>UserCode 246</Help>
+			<Label>UserCode 246</Label>
+		</Value>
+		<Value index="247">
+			<Help>UserCode 247</Help>
+			<Label>UserCode 247</Label>
+		</Value>
+		<Value index="248">
+			<Help>UserCode 248</Help>
+			<Label>UserCode 248</Label>
+		</Value>
+		<Value index="249">
+			<Help>UserCode 249</Help>
+			<Label>UserCode 249</Label>
+		</Value>
+		<Value index="250">
+			<Help>UserCode 250</Help>
+			<Label>UserCode 250</Label>
+		</Value>
+		<Value index="251">
+			<Help>UserCode 251</Help>
+			<Label>UserCode 251</Label>
+		</Value>
+		<Value index="252">
+			<Help>UserCode 252</Help>
+			<Label>UserCode 252</Label>
+		</Value>
+		<Value index="253">
+			<Help>UserCode 253</Help>
+			<Label>UserCode 253</Label>
+		</Value>
+		<Value index="253">
+			<Help>UserCode 253</Help>
+			<Label>UserCode 253</Label>
+		</Value>
+		<Value index="254">
+			<Help>UserCode 254</Help>
+			<Label>UserCode 254</Label>
+		</Value>
+		<Value index="255">
+			<Help>Refresh All UserCodes Stored on Device</Help>
+			<Label>Refresh All UserCodes</Label>
+		</Value>
+		<Value index="256">
+			<Help>Remove A UserCode at the Specified Index</Help>
+			<Label>Remove UserCode</Label>
+		</Value>
+		<Value index="257">
+			<Help>Number of User Codes supported by the Device</Help>
+			<Label>Code Count</Label>
+		</Value>
+		<Value index="258">
+			<Help>The Raw UserCode as specified at the Postition in Raw UserCode Index </Help>
+			<Label>Raw UserCode</Label>
+		</Value>
+		<Value index="259">
+			<Help>Get the Raw User Code for the Index Specified in this value </Help>
+			<Label>Raw UserCode Index</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="134">
+		<Label>COMMAND_CLASS_VERSION</Label>
+		<Value index="0">
+			<Help>Z-Wave Library Version</Help>
+			<Label>Library Version</Label>
+		</Value>
+		<Value index="1">
+			<Help>Z-Wave Protocol Version</Help>
+			<Label>Protocol Version</Label>
+		</Value>
+		<Value index="2">
+			<Help>Application Version</Help>
+			<Label>Application Version</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="132">
+		<Label>COMMAND_CLASS_WAKE_UP</Label>
+		<Value index="0">
+			<Help>How often the Device will Wake up to check for pending commands</Help>
+			<Label>Wake-up Interval</Label>
+		</Value>
+		<Value index="1">
+			<Help>Minimum Time in seconds the device will wake up</Help>
+			<Label>Minimum Wake-up Interval</Label>
+		</Value>
+		<Value index="2">
+			<Help>Maximum Time in seconds the device will wake up</Help>
+			<Label>Maximum Wake-up Interval</Label>
+		</Value>
+		<Value index="3">
+			<Help>The Default Wake-Up Interval the device will wake up</Help>
+			<Label>Default Wake-up Interval</Label>
+		</Value>
+		<Value index="4">
+			<Help>Step Size on Wake-up interval</Help>
+			<Label>Wake-up Interval Step</Label>
+		</Value>
+	</CommandClass>
+	<CommandClass id="94">
+		<Label>COMMAND_CLASS_ZWAVE_PLUS_INFO</Label>
+		<Value index="0">
+			<Help>ZWave+ Version Supported on the Device</Help>
+			<Label>ZWave+ Version</Label>
+		</Value>
+		<Value index="1">
+			<Help>Icon File to use for the Installer Application</Help>
+			<Label>InstallerIcon</Label>
+		</Value>
+		<Value index="2">
+			<Help>Icon File to use for the User Application</Help>
+			<Label>UserIcon</Label>
+		</Value>
+	</CommandClass>
+	<GlobalText>
+		<Label name="Instance">Instance</Label>
+		<Label name="Instance" lang="fr">Exemple</Label>
+	</GlobalText>
+</Localization>

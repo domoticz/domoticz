@@ -1,5 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:0001:0011</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/honeywell/th8320zw1000.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0011">https://products.z-wavealliance.org/products/44/</MetaDataItem>
+    <MetaDataItem name="ProductPage">http://yourhome.honeywell.com/home/Products/Thermostats/7-Day-Programmable/VisionPRO+8000.htm</MetaDataItem>
+    <MetaDataItem name="Description">Integrate comfort control into your automated home with Honeywell's most popular programmable thermostat, designed for Z-Wave systems! VisionPRO Z-Wave offers you top-of-the-line features like touchscreen interaction, a real-time clock, and a large, easy-to-read backlit display.</MetaDataItem>
+    <MetaDataItem name="Name">Vision PRO Z-Wave Thermostat</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0011">TH8320ZW1000</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0011">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductSupport">http://honeywell.com/Products-Services/Pages/consumer-home.aspx</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/44/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
-  <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" base="0" />
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+    </Compatibility>
+  </CommandClass>
 </Product>

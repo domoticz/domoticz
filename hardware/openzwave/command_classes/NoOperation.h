@@ -33,6 +33,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_NO_OPERATION (0x00), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class NoOperation: public CommandClass
 	{
@@ -46,9 +47,9 @@ namespace OpenZWave
 		void Set( bool const _route, Driver::MsgQueue const _queue = Driver::MsgQueue_NoOp );
 
 		// From CommandClass
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
 
 	private:
 		NoOperation( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}

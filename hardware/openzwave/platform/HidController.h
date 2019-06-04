@@ -33,6 +33,8 @@
 #include "platform/Controller.h"
 
 
+#ifdef USE_HID
+
 struct hid_device_;
 
 typedef struct hid_device_ hid_device;
@@ -44,6 +46,10 @@ namespace OpenZWave
 	class Thread;
 	class Event;
 
+
+	/** \brief Interface for controllers that implement a HID emulation
+	 * \ingroup Platform
+	 */
 	class HidController: public Controller
 	{
 	public:
@@ -146,6 +152,8 @@ namespace OpenZWave
 	};
 
 } // namespace OpenZWave
+
+#endif
 
 #endif //_HidController_H
 

@@ -39,9 +39,6 @@ private:
 	void InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string &defaultname);
 	void SetOutputBlinkInDomoticz(unsigned long sID, int OutputNumber, bool Blink);
 	void Traitement_Trame_EtatBloc(const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
-	void Traitement_Courant_S_TOR_Recu(const unsigned int FrameType,const unsigned char RefeBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8]);
-	void SendCurrentValue(const int NodeID, const int ChildID, const int BatteryLevel, const float Current, const std::string &defaultname);
-	void Calcul_Conso_Global();
 
 	bool m_BOOL_DebugInMultiblocV8;
 	bool m_BOOL_TaskAGo;
@@ -56,9 +53,7 @@ private:
 	int m_V8secCounter2;
 	int m_V8minCounterBase;
 	int m_V8minCounter1;
-	bool m_BOOL_RequestCurrent;
-	float lastconsumed;
-	
+
 	struct
 	{
 		long BlocID;

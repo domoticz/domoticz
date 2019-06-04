@@ -1,39 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-<!-- Configuration Parameters -->
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0230:0001:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/idlock/idlock101.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1512/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion – (Puts your device in exclusion mode)
+• Push and hold button until all LEDs on keypad activates. (with ID Lock in an unlocked state)
+• Release button and press “8” on keypad.
+Exclusion mode starts immediately. LED indicator below logo signals this by flashing blue.</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0003">01A</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Device reset – (This will reset RF interface module to factory default settings)
+Warning: Please do only proceed with the following reset procedure, if primary network controller is missing or otherwise
+inoperable.
+
+RESET Z-WAVE MODULE:
+Activate doorlock service menu, by holding inside push button for 5sec while door is in OPEN state.
+
+Outside touchpanel activates > Push "0"
+
+FACTORY RESET DOORLOCK FIRMWARE:
+1. Push innside pushbutton continously for five Seconds after inserting batteries.
+2. Receive reset sound
+3. Receive confirmation sound
+
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Activate by touching numpad with two fingers or handpalm</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Inclusion – (Puts your device in inclusion mode)
+• Push and hold button until all LEDs on keypad activates. (with ID Lock in an unlocked state)
+• Release button and press “8” on keypad.
+Inclusion mode starts immediately. LED indicator below logo signals this by flashing blue. </MetaDataItem>
+    <MetaDataItem name="Description">UART console communication module turns your ID Lock digital doorlock into a Z-Wave Plus enabled digital doorlock.
+
+It enables your ID Lock to operate in a Z-Wave network with numerous access control funtions and notifications.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1512/IDL Operational Manual EN v1.2.pdf</MetaDataItem>
+    <MetaDataItem name="Name">ID Lock Z-Wave module</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1512/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
 
 <!--COMMAND_CLASS_CONFIGURATION-->
-<CommandClass id="112">
-    <Value type="list" index="1" genre="config" label="Door Lock Mode" units="" min="0" max="3" size="1">
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Door Lock Mode" max="3" min="0" size="1" type="list" units="">
       <Help>
         	Door Lock Mode
 		Autolock Mode, Manuallock mode, Activate Away Mode, Deactivate Away Mode.
 		Default Value : 1 ( Disable Away / Auto Lock Mode )
       </Help>
-      	<Item label="Disable Away, Manual Lock" value="0" />
-      	<Item label="Disable Away, Auto Lock" value="1" />
-	<Item label="Enable Away, Manual Lock" value="2" />
-	<Item label="Enable Away, Auto Lock" value="3" />
+      <Item label="Disable Away, Manual Lock" value="0"/>
+      <Item label="Disable Away, Auto Lock" value="1"/>
+      <Item label="Enable Away, Manual Lock" value="2"/>
+      <Item label="Enable Away, Auto Lock" value="3"/>
     </Value>
-	<Value type="list" index="2" genre="config" label="RFID Registration Configuration" units="" min="0" max="3" size="1">
+    <Value genre="config" index="2" label="RFID Registration Configuration" max="3" min="0" size="1" type="list" units="">
       <Help>
 		RFID Registration Configuration
         	IDLocks can use up to 50 RFID cards. In order to use a RFID, RFID has to be registered by z-wave configuration command class. 
 		Configuration Set in case of starting to register from backend side ( Ex. App)
       </Help>
-      		<Item label="Begin RFID Registering mode on the door lock" value="0x01" />
-      		<Item label="RFID Database clear" value="0x07" />
-		<Item label="RFID Registering mode stop" value="0x08" />
-	</Value>
-</CommandClass>
-
-	<!-- Association Groups -->
+      <Item label="Begin RFID Registering mode on the door lock" value="0x01"/>
+      <Item label="RFID Database clear" value="0x07"/>
+      <Item label="RFID Registering mode stop" value="0x08"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
 <!--COMMAND_CLASS_ASSOCIATION-->
-            <CommandClass id="133">
-                <Instance index="1" />
-                <Associations num_groups="1">
-                    <Group index="1" max_associations="5" label="Lifeline">
-                     </Group>
-                </Associations>
-            </CommandClass>
+  <CommandClass id="133">
+    <Instance index="1"/>
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"></Group>
+    </Associations>
+  </CommandClass>
 </Product>

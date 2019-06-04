@@ -33,6 +33,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_HAIL (0x82), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class Hail: public CommandClass
 	{
@@ -44,9 +45,9 @@ namespace OpenZWave
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_HAIL"; }
 
 		// From CommandClass
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
+		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
 
 	private:
 		Hail( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}

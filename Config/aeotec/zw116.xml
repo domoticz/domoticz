@@ -3,14 +3,14 @@
 Aeotec ZW116 Nano Switch, base on Engineering Spec 03/19/2018 V2.0
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D 
 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="3" genre="config" label="Over current protection" units="" min="0" max="1" size="1" value="1">
-			<Help>Output load will be closed after 30 seconds if the current exceeds (US: 15.5A, AU or EU: 10.5A).</Help>
-			<Item label="Disable" value="0"/>
-			<Item label="Enable" value="1"/>
-		</Value>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="3" genre="config" label="Over current protection" units="" min="0" max="1" size="1" value="1">
+            <Help>Output load will be closed after 30 seconds if the current exceeds (US: 15.5A, AU or EU: 10.5A).</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
 		<Value type="list" index="4" genre="config" label="Over heat protection" units="" min="0" max="1" size="1" value="0">
 			<Help>Output load will be closed after 30 seconds if the temperature inside the product exceeds 100C.</Help>
 			<Item label="Disable" value="0"/>

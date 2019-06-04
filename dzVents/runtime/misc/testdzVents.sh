@@ -73,7 +73,7 @@ checkStarted()
 		# echo $result $loopCounter $maxSeconds
 		if [[ $result -eq 1 && $loopCounter -le $maxSeconds ]];then
 			printf "%s" "."
-			(($loopCounter++))
+			loopCounter=$((loopCounter+1))
 		else
 			if [[ $result -eq 1 ]];then
 				 echo
@@ -88,9 +88,11 @@ checkStarted()
 
 function cleanup
 	{
-		ps -ef | grep domoticz
-		rm domoticz.log[0-9][0-9]*
-		find . -type f -name 'domoticz.db_*' -mmin +30 -exec rm {} \;
+		ps -aux | grep [f]domoticz
+		if [[ $? -eq 1 ]]; then
+			rm domoticz.log[0-9][0-9]*
+			find . -type f -name 'domoticz.db_*' -mmin +30 -exec rm {} \;
+		fi
 	}
 
 function stopBackgroundProcesses
@@ -169,6 +171,9 @@ checkStarted "server" 10
 # Just to be sure we do not destroy something important without a backup
 cp $basedir/domoticz.db $basedir/domoticz.db_$$
 
+# Make sure we start with a clean sheet
+rm -f $basedir/domoticz.db
+
 cd $basedir
 ./domoticz > domoticz.log$$ &
 checkStarted "domoticz" 20
@@ -191,7 +196,7 @@ echo
 
 
 cd $basedir
-expectedErrorCount=3
+expectedErrorCount=5
 grep "Results stage 2: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
