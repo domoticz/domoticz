@@ -13097,7 +13097,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "TextLog";
 
-			result = m_sql.safe_query("SELECT ROWID, sValue, Date FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC",
+			result = m_sql.safe_query("SELECT ROWID, Date, sValue FROM LightingLog WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date DESC",
 				idx);
 			if (!result.empty())
 			{
@@ -13107,8 +13107,8 @@ namespace http {
 					std::vector<std::string> sd = itt;
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Date"] = sd[2];
-					root["result"][ii]["Data"] = sd[1];
+					root["result"][ii]["Date"] = sd[1];
+					root["result"][ii]["Data"] = sd[2];
 					ii++;
 				}
 			}
