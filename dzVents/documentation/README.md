@@ -636,7 +636,7 @@ The domoticz object has these constants available for use in your code e.g. `dom
  - **HUM_COMFORTABLE**, **HUM_DRY**, **HUM_NORMAL**, **HUM_WET**: constant for humidity status.
  - **INTEGER**, **FLOAT**, **STRING**, **DATE**, **TIME**: variable types.
  - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**, **LOG_FORCE**: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
- - **NSS_FIREBASE**, **NSS_HTTP**, **NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**, **NSS_TELEGRAM** <sup>2.4.8</sup>: for notification subsystem
+ - **NSS_GOOGLE_CLOUD_MESSAGING**, **NSS_FIREBASE**, **NSS_HTTP**, **NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**, **NSS_TELEGRAM** <sup>2.4.8</sup>: for notification subsystem
  - **PRIORITY_LOW**, **PRIORITY_MODERATE**, **PRIORITY_NORMAL**, **PRIORITY_HIGH**, **PRIORITY_EMERGENCY**: for notification priority.
  - **SECURITY_ARMEDAWAY**, **SECURITY_ARMEDHOME**, **SECURITY_DISARMED**: for security state.
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: for notification sounds.
@@ -2002,7 +2002,6 @@ On the other hand, you have to make sure that dzVents can access the json withou
 ##[2.4.23]
 - Add method setMode for evohome device
 - Add method incrementCounter for incremental counter
-- Removed Google Cloud Messaging as notification option because Google deprecated this service
 - Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
 
 ##[2.4.22]

@@ -135,7 +135,7 @@ local function Domoticz(settings)
 		['STRING'] = 'string',
 		['DATE'] = 'date',
 		['TIME'] = 'time',
-		['NSS_FIREBASE'] = 'fcm',
+		['NSS_FIREBASE'] = 'gcm',  -- For the moment the change to fcm is only done in the url 
 		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
 		['NSS_HTTP'] = 'http',
 		['NSS_KODI'] = 'kodi',
@@ -244,10 +244,12 @@ local function Domoticz(settings)
 			end
 		end
 
-		if _subSystem:find('gcm') then
+		--[[
+        if _subSystem:find('gcm') then
 			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Please consider switching to Firebase', utils.LOG_ERROR)
 		end
-
+        ]] --
+        
 		local data = subject
 				.. '#' .. message
 				.. '#' .. tostring(priority)

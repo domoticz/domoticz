@@ -1,7 +1,6 @@
 [2.4.23]
 - Add method setMode for evohome device
 - Add method incrementCounter for incremental counter
-- Removed Google Cloud Messaging as notification option because Google deprecated this service
 - Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
 
 [2.4.22]
