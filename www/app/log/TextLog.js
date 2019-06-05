@@ -24,7 +24,6 @@ define(['app', 'log/components/DeviceTextLogTable'], function (app) {
                     var dataTemp = data.result[i]['Data'].replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 					data.result[i]['Data'] = dataTemp;
                 }
-				console.log(data.result);
                 vm.log = data.result;
             });
         }
