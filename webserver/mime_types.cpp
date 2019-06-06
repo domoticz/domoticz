@@ -43,6 +43,14 @@ struct mapping
   { "otf", "application/x-font-otf" },
   { "ttf", "application/x-font-ttf" },
   { "woff", "application/x-font-woff" },
+  { "flv", "video/x-flv" },
+  { "mp4", "video/mp4" },
+  { "m3u8", "application/x-mpegURL" },
+  { "ts", "video/MP2T" },
+  { "3gp", "video/3gpp" },
+  { "mov", "video/quicktime" },
+  { "avi", "video/x-msvideo" },
+  { "wmv", "video/x-ms-wmv" },
   { 0, 0 } // Marks end of list.
 };
 
