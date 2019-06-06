@@ -1,24 +1,38 @@
-<Product Revision="12" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="13" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgd212.png</MetaDataItem>
     <MetaDataItem id="1000" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/1729/</MetaDataItem>
     <MetaDataItem id="1000" name="Identifier" type="0102">FGD-212</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1736/FGD-212-US-T-v1.1.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2836/FGD-212-EN-T-v1.3.pdf</MetaDataItem>
     <MetaDataItem name="ResetDescription">1) Disconnect the power supply, remove the Dimmer from the wall switch box, than connect the power supply.
 2) Locate the B-button on the housing.
 3) Click and hold the B-button to enter the menu mode.
-4) Release and click the B-button to choose "Device reset" option in the menu that is signaled with the yellow LED indicator colour.
-5) After few seconds the device will be restarted, which is signaled with the red LED indicator colour and entering the calibration mode.
-Note! Resseting the device is not the recommended way of removing the device from the Z-Wave network. Use reset procedure only if the primary controller is missing or inoperable.</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">1. Place the Dimmer 2 within the direct range of your Z-Wave controller
-2. Identify switch no. 1 (turns the light on) or the B-button (located on the device’s housing)
-3. Set the main controller in (security/non-security) add mode (see the controller’s manual)
-4. Quickly, three times press switch no. 1 or the B-button
-5. Wait for the adding process to end
-6. Successful adding will be confirmed by the Z-Wave controller’s message</MetaDataItem>
+4) Release and click the B-button to choose "Device reset" option in the menu that is signalled with the yellow LED indicator colour.
+5) After few seconds the device will be restarted, which is signalled with the red LED indicator colour and entering the calibration mode. 
+Note! Resetting the device is not the recommended way of removing the device from the Z-Wave network. Use reset procedure only if the primary controller is missing or inoperable.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Switch off the mains voltage.
+2) Open the wall switch box.
+3) Connect the Dimmer in accordance with one of the diagrams attached in the manual.
+4) Switch on the mains voltage.
+5) Wait for the calibration process to end. Light may blink. The device will be switched off once the process is completed.
+6) Set the main Z-Wave controller in add mode (see the controller’s manual).
+7) Quickly, three times press the B-button or key connected to the S1 terminal.
+8) Wait for the device to be added to system. Successful adding will be confirmed by the controller.
+9) Arrange the antenna and close the wall switch box.
+</MetaDataItem>
     <MetaDataItem id="1000" name="FrequencyName" type="0102">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="Description">The device can switch or dim connected light source remotely using Z-Wave wireless protocol or through the wall switch connected directly to it. Dimmer 2 is equipped with a smart algorithm of light source detection which makes configuration easier and ensures high compatibility of the device. It may be used as a switch with non-dimmable light sources in 3-wire connection. Active power and energy consumption allows to monitor and reduce electricity bills. Dimmer 2 is compatible with any Z-Wave or Z-Wave Plus Controller.
+    <MetaDataItem name="Description">FIBARO Dimmer 2 can switch or dim connected light source either through radio waves or through the wall switch connected directly to it. Dimmer 2 is equipped with a smart algorithm of light source detection which makes configuration easier and ensures high compatibility of the device. It may be used as a switch with non-dimmable light sources in 3-wire connection. Active power and energy consumption allows to monitor and reduce electricity bills. Dimmer 2 is compatible with any Z-Wave or Z-Wave Plus Controller.
+
+FIBARO Dimmer 2
+Product Identifier: FGD-212
+Brand Name: FIBARO
+Z-Wave Certification Number: ZC10-15090017
+Z-Wave Certification Date: 9/16/2015
+Z-Wave Protocol Implementation Conformance Statement:   View    Download
+
+Remotely controlled light dimming module is designed to work with various types of light sources in 2 or 3-wire connection so it can operate with or without neutral lead. FIBARO Dimmer can switch or dim connected light source either through radio waves or through the wall switch connected directly to it. Dimmer 2 is equipped with a smart algorithm of light source detection which makes configuration easier and ensures high compatibility of the device. It may be used as a switch with non-dimmable light sources in 3-wire connection. Active power and energy consumption allows to monitor and reduce electricity bills. Dimmer 2 is compatible with any Z-Wave or Z-Wave Plus Controller.
 
 As a dimmer it operates under the following loads:
 • 230V operated conventional incandescent and halogen light sources
@@ -32,25 +46,26 @@ Without dimming function it may work with:
 • compact fluorescent lamps
 • fluorescent tube lamps with electronic ballast
 • LED bulbs (power factor > 0.7)
-• supported light sources with minimal power of 5VA (power factor > 0.5) using FIBARO Bypass FGB-002</MetaDataItem>
+• supported light sources with minimal power of 5VA (power factor > 0.5) using FIBARO Bypass FGB-002
+
+https://www.youtube.com/watch?v=K35uFXoa5c0
+</MetaDataItem>
     <MetaDataItem name="Name">FIBARO Dimmer 2</MetaDataItem>
-    <MetaDataItem name="WakeupDescription">The Fibaro Dimmer 2 is powered with mains voltage so it is always awake.</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1. Place the Dimmer 2 within the direct range of your Z-Wave controller
-2. Identify switch no. 1 (turns the light on) or the B-button (located on the device’s housing)
-3. Set the main controller in remove mode (see the controller’s manual)
-4. Quickly, three times press switch no. 1 or the B-button
-5. Wait for the removing process to end
-6. Successful removing will be confirmed by the Z-Wave controller’s message
-7. Dimmer 2 will start the calibration process (see „Calibration” on page 15)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The FIBARO Dimmer 2 is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Set the main controller in remove mode (see the controller’s manual)
+2) Quickly, three times press the B-button or key connected to the S1 terminal.
+3) Wait for the device to be removed from the system. Successful removing will be confirmed by the controller.
+</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="8">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1348/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1504/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1525/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1729/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1736/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2836/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="2000" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/1736/</MetaDataItem>
-    <MetaDataItem id="2000" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="2000" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2836/</MetaDataItem>
+    <MetaDataItem id="2000" name="FrequencyName" type="0102">U.S. / Canada / Mexico / CEPT (Europe)</MetaDataItem>
     <MetaDataItem id="2000" name="Identifier" type="0102">FGD-212</MetaDataItem>
   </MetaData>
   <!-- 

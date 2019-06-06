@@ -1,23 +1,55 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
-    <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" index="4" genre="config" label="Invert switch" min="0" max="1" size="1" value="0">
-            <Help>Change the top of the switch to OFF and the bottom of the switch to ON if the switch was installed upside down.</Help>
-            <Item label="No" value="0"/>
-            <Item label="Yes" value="1"/>
-        </Value>
-        <Value type="list" index="3" genre="config" label="LED Status" min="0" max="2" size="1" value="0">
-            <Help>Set the LED policy: on if the load is on, off if the load is on, or off all the time </Help>
-            <Item label="LED off if load on" value="0"/>
-            <Item label="LED on if load on" value="1"/>
-	    <Item label="LED off all the time" value="2"/>
-        </Value>
-</CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/000C:3033:4447</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/homeseer/hs-ws100plus.png</MetaDataItem>
+    <MetaDataItem id="3033" name="ZWProductPage" type="4447">https://products.z-wavealliance.org/products/2894/</MetaDataItem>
+    <MetaDataItem id="3033" name="Identifier" type="4447">HS-WS100+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2894/HS-WS100-Manual-v6.pdf</MetaDataItem>
+    <MetaDataItem name="Description">HS-WS100+ In Wall On/Off Switch
+- Works with incandescent, florescent (CFL), or most LED lighting and appliances
+- ON/OFF status and location LED indicator
+- Fits into standard single or multiple gang junction box
+- Keypad can be replaced manually to match color with other wall switches 
+- Over-The-Air firmware upgrade available with compatible gateway, Z-Wave static controller, or PC and software.
+- Internal resettable fuse to protect from surge current
+- Manual reset capability
+- Support Central Scene</MetaDataItem>
+    <MetaDataItem id="3033" name="FrequencyName" type="4447">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Turn the connected appliance ON/OFF by tapping the switch. Tapping and releasing the upper part of the rocker turns the appliance ON. Tapping and releasing the lower part of the rocker turns the appliance OFF.
+2. Add(Include) the module to/from your Z-Wave network with your primary controller. Please refer to the instructions manual of your gateway or remote controller for details and procedures on how these actions can be done. 
+3. Normally, the sequence is as follows: when the inclusion process is prompted by your primary controller, single click and release the rocker switch to ON or OFF position.  The controller should show that the action was successful.  If the controller shows it was a fail, repeat the procedure.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Turn the connected appliance ON/OFF by tapping the switch. Tapping and releasing the upper part of the rocker turns the appliance ON. Tapping and releasing the lower part of the rocker turns the appliance OFF.
+2. Delete(Exclude) the module to/from your Z-Wave network with your primary controller. Please refer to the instructions manual of your gateway or remote controller for details and procedures on how these actions can be done. Normally, the sequence is as follows: when the exclusion process is prompted by your primary controller, single click and release the rocker switch.  The controller should show that the action was successful. If the controller shows it was a fail, repeat the procedure.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only in the event that the network primary controller is lost or otherwise inoperable.
+
+All Configuration Parameters can all be restored to their factory
+default settings by using your primary controller to delete/reset
+the device.   To manually reset, tap the ON button twice quickly and then tap the OFF button twice quickly.  Repeat the procedure to restore the settings to the factory default.
+</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave Wall Switch</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2554/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2894/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="4" label="Invert switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="LED Status" max="2" min="0" size="1" type="list" value="0">
+      <Help>Set the LED policy: on if the load is on, off if the load is on, or off all the time </Help>
+      <Item label="LED off if load on" value="0"/>
+      <Item label="LED on if load on" value="1"/>
+      <Item label="LED off all the time" value="2"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

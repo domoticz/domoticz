@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="5">
+<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="6">
 	<CommandClass id="113">
-		<!-- Please Keep updates in the Notification CC in sync with NotificationCCTypes.xml as well -->
+		<!-- Please keep Localization.xml in sync with NotificationCCTypes.xml -->
+    	<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
+		<!-- Bump Revision number, run "xmllint format" and "make xmltest" before submitting -->
 		<Label>COMMAND_CLASS_NOTIFICATION</Label>
 		<Value index="1">
 			<Help>A Smoke Alarm Alert</Help>
@@ -18,11 +20,11 @@
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="2">
-			<Help>Carbon Monoxied Alerts</Help>
-			<Label>Carbon Monoxied</Label>
+			<Help>Carbon Monoxide Alerts</Help>
+			<Label>Carbon Monoxide</Label>
 			<ItemLabel itemIndex="0">Clear</ItemLabel>
-			<ItemLabel itemIndex="1">Carbon Monoxied Detected at Location</ItemLabel>
-			<ItemLabel itemIndex="2">Carbon Monoxied Detected at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="1">Carbon Monoxide Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Carbon Monoxide Detected at Unknown Location</ItemLabel>
 			<ItemLabel itemIndex="3">Test</ItemLabel>
 			<ItemLabel itemIndex="4">Replacement Required (Unspecified)</ItemLabel>
 			<ItemLabel itemIndex="5">Replacement Required (End Of Life)</ItemLabel>
@@ -31,11 +33,11 @@
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="3">
-			<Help>Carbon Dixoide Alerts</Help>
-			<Label>Carbon Dixoide</Label>
+			<Help>Carbon Dioxide Alerts</Help>
+			<Label>Carbon Dioxide</Label>
 			<ItemLabel itemIndex="0">Clear</ItemLabel>
-			<ItemLabel itemIndex="1">Carbon Dixoide Detected at Location</ItemLabel>
-			<ItemLabel itemIndex="2">Carbon Dixoide Detected at Unknown Location</ItemLabel>
+			<ItemLabel itemIndex="1">Carbon Dioxide Detected at Location</ItemLabel>
+			<ItemLabel itemIndex="2">Carbon Dioxide Detected at Unknown Location</ItemLabel>
 			<ItemLabel itemIndex="3">Test</ItemLabel>
 			<ItemLabel itemIndex="4">Replacement Required (Unspecified)</ItemLabel>
 			<ItemLabel itemIndex="5">Replacement Required (End Of Life)</ItemLabel>
@@ -66,8 +68,8 @@
 			<ItemLabel itemIndex="0">Clear</ItemLabel>
 			<ItemLabel itemIndex="1">Water Leak at Location</ItemLabel>
 			<ItemLabel itemIndex="2">Water Leak at Unknown Location</ItemLabel>
-			<ItemLabel itemIndex="3">Water Level Droped at Location</ItemLabel>
-			<ItemLabel itemIndex="4">Water Level Droped at Unnknown Location</ItemLabel>
+			<ItemLabel itemIndex="3">Water Level Dropped at Location</ItemLabel>
+			<ItemLabel itemIndex="4">Water Level Dropped at Unknown Location</ItemLabel>
 			<ItemLabel itemIndex="5">Replace Filter</ItemLabel>
 			<ItemLabel itemIndex="6">Water Flow</ItemLabel>
 			<ItemLabel itemIndex="7">Water Pressure</ItemLabel>
@@ -87,7 +89,7 @@
 			<ItemLabel itemIndex="8">Wireless Not Fully Locked</ItemLabel>
 			<ItemLabel itemIndex="9">Auto Lock</ItemLabel>
 			<ItemLabel itemIndex="10">Auto Lock Not Fully Locked</ItemLabel>
-			<ItemLabel itemIndex="11">Lock Jamed</ItemLabel>
+			<ItemLabel itemIndex="11">Lock Jammed</ItemLabel>
 			<ItemLabel itemIndex="12">All User Codes Deleted</ItemLabel>
 			<ItemLabel itemIndex="13">Single User Code Deleted</ItemLabel>
 			<ItemLabel itemIndex="14">New User Code Added</ItemLabel>
@@ -107,10 +109,10 @@
 			<ItemLabel itemIndex="68">Barrier Failed Operation</ItemLabel>
 			<ItemLabel itemIndex="69">Barrier Unattended Operation Disabled</ItemLabel>
 			<ItemLabel itemIndex="70">Barrier Malfunction</ItemLabel>
-			<ItemLabel itemIndex="71">Barrier Vacaction Mode</ItemLabel>
-			<ItemLabel itemIndex="72">Barrier Saftey Beam Obstruction</ItemLabel>
+			<ItemLabel itemIndex="71">Barrier Vacation Mode</ItemLabel>
+			<ItemLabel itemIndex="72">Barrier Safety Beam Obstruction</ItemLabel>
 			<ItemLabel itemIndex="73">Barrier Sensor Not Detected</ItemLabel>
-			<ItemLabel itemIndex="74">Barrier Battery Low</ItemLabel>
+			<ItemLabel itemIndex="74">Barrier Sensor Battery Low</ItemLabel>
 			<ItemLabel itemIndex="75">Barrier Short in Wall Station Wires</ItemLabel>
 			<ItemLabel itemIndex="76">Barrier Associated with Non ZWave Device</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
@@ -122,7 +124,7 @@
 			<ItemLabel itemIndex="1">Intrusion at Location</ItemLabel>
 			<ItemLabel itemIndex="2">Intrusion at Unknown Location</ItemLabel>
 			<ItemLabel itemIndex="3">Tampering -  Cover Removed</ItemLabel>
-			<ItemLabel itemIndex="4">Tamperting - Invalid Code</ItemLabel>
+			<ItemLabel itemIndex="4">Tampering - Invalid Code</ItemLabel>
 			<ItemLabel itemIndex="5">Glass Breakage at Location</ItemLabel>
 			<ItemLabel itemIndex="6">Glass Breakage at UnknownLocation</ItemLabel>
 			<ItemLabel itemIndex="7">Motion Detected at Location</ItemLabel>
@@ -140,7 +142,7 @@
 			<ItemLabel itemIndex="4">Surge Detected</ItemLabel>
 			<ItemLabel itemIndex="5">Brownout Detected</ItemLabel>
 			<ItemLabel itemIndex="6">Over Current Detected</ItemLabel>
-			<ItemLabel itemIndex="7">Over Voltage Voltage</ItemLabel>
+			<ItemLabel itemIndex="7">Over Voltage Detected</ItemLabel>
 			<ItemLabel itemIndex="8">Over Load Detected</ItemLabel>
 			<ItemLabel itemIndex="9">Load Error</ItemLabel>
 			<ItemLabel itemIndex="10">Replace Battery Soon</ItemLabel>
@@ -218,7 +220,7 @@
 			<ItemLabel itemIndex="3">Lying On Bed</ItemLabel>
 			<ItemLabel itemIndex="4">Posture Changed</ItemLabel>
 			<ItemLabel itemIndex="5">Sitting On Edge Of Bed</ItemLabel>
-			<ItemLabel itemIndex="6">Volatile Organic Level</ItemLabel>
+			<ItemLabel itemIndex="6">Volatile Organic Compound Level</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<Value index="14">
@@ -267,8 +269,8 @@
 			<ItemLabel itemIndex="2">Combustable Gas Detected at Unknown Location</ItemLabel>
 			<ItemLabel itemIndex="3">Toxic Gas Detected at Location</ItemLabel>
 			<ItemLabel itemIndex="4">Toxic Gas Detected Unknown Location</ItemLabel>
-			<ItemLabel itemIndex="5">Test</ItemLabel>
-			<ItemLabel itemIndex="6">Replacement Required (Unspecified)</ItemLabel>
+			<ItemLabel itemIndex="5">Alarm Test</ItemLabel>
+			<ItemLabel itemIndex="6">Replacement Required</ItemLabel>
 			<ItemLabel itemIndex="254">Unknown Event</ItemLabel>
 		</Value>
 		<!--  Index from 256 are Params -->
@@ -302,7 +304,7 @@
 			<Label>User Code ID</Label>
 		</Value>
 		<Value index="261">
-			<Help>User Codethat was used</Help>
+			<Help>User Code that was used</Help>
 			<Label>User Code</Label>
 		</Value>
 
@@ -534,7 +536,7 @@
 	</CommandClass>
 	<CommandClass id="112">
 		<Label>COMMAND_CLASS_CONFIGURATION</Label>
-		<!-- We dont do any here - this should come from device configuration files -->
+		<!-- We do not do any here - this should come from device configuration files -->
 	</CommandClass>
 	<CommandClass id="33">
 		<Label>COMMAND_CLASS_CONTROLLER_REPLICATION</Label>
@@ -1002,7 +1004,7 @@
 			<Label>Dim</Label>
 		</Value>
 		<Value index="3">
-			<Help>Ignore the Start Level of the Device when increasing/descreasing brightness</Help>
+			<Help>Ignore the Start Level of the Device when increasing/decreasing brightness</Help>
 			<Label>Ignore Start Level</Label>
 		</Value>
 		<Value index="4">
@@ -2194,7 +2196,7 @@
 			<Label>Code Count</Label>
 		</Value>
 		<Value index="258">
-			<Help>The Raw UserCode as specified at the Postition in Raw UserCode Index </Help>
+			<Help>The Raw UserCode as specified at the Position in Raw UserCode Index </Help>
 			<Label>Raw UserCode</Label>
 		</Value>
 		<Value index="259">

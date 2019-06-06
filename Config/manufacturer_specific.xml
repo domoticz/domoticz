@@ -1057,7 +1057,7 @@
     <Product id="3331" name="WD1000Z-1 Wall Dimmer Switch" type="4457"/>
     <Product id="3030" name="GD00Z-4 Garage Door Opener Remote Controller" type="4744"/>
     <Product config="linear/ngd00z.xml" id="3530" name="GD00Z-4 Garage Door Opener Remote Controller" type="4744"/>
-    <Product id="3531" name="GD00Z-7 Garage Door Opener Remote Controller" type="4744"/>
+    <Product config="linear/gd00z-7.xml" id="3531" name="GD00Z-7 Garage Door Opener Remote Controller" type="4744"/>
     <Product config="linear/LB60Z-1.xml" id="3038" name="LB60Z-1 Dimmable LED Light Bulb" type="4754"/>
     <Product id="3133" name="FS20Z Isolated Contact Fixture Module" type="5246"/>
     <Product id="3030" name="PS15Z-2 Plug-in Appliance Module" type="5250"/>

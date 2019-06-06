@@ -1,10 +1,10 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3133:4953</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/zw6302.png</MetaDataItem>
     <MetaDataItem id="3133" name="ZWProductPage" type="4953">https://products.z-wavealliance.org/products/1902/</MetaDataItem>
     <MetaDataItem id="3133" name="Identifier" type="4953">34193/ZW6302</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1902/50359 manual w:parameters.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2124/34194 QSG and Parameter List.pdf</MetaDataItem>
     <MetaDataItem id="3133" name="FrequencyName" type="4953">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network. 
  2. Once the controller is ready to exclude your device, press and release the program button to exclude it from the network. </MetaDataItem>
@@ -23,7 +23,11 @@ Note: This should only be done in the event your primary controller is missing o
 3. The blue LED will activate for 3 seconds to confirm it has been included.</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1902/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2124/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="3134" name="ZWProductPage" type="4953">https://products.z-wavealliance.org/products/2124/</MetaDataItem>
+    <MetaDataItem id="3134" name="FrequencyName" type="4953">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="3134" name="Identifier" type="4953">34194/ZW6302</MetaDataItem>
   </MetaData>
   <!--
 GE/Jasco ZW6302 Portable Smart Motion Sensor

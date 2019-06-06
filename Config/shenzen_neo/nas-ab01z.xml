@@ -1,15 +1,21 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0258:0088:0003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/shenzen_neo/nas-ab01z.png</MetaDataItem>
     <MetaDataItem id="0088" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1962/</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1962/Siren User Manual Common V3_5.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2171/Siren User Manual Common V3_2.pdf</MetaDataItem>
     <MetaDataItem name="WakeupDescription">You can press the button once to wake up the device and send wakeup notification to controller. If press successfully, the LED will blink one time</MetaDataItem>
-    <MetaDataItem name="Description">In the front casing, there is button that is used to carry out include, exclude or reset factory default settings on PCB Board.
+    <MetaDataItem name="Description">Loud alarm sound (up to 105dB) with flashing LED's when triggered.Mounts anywhere- it's wireless and 100% battery powered with 1-year battery life (2 CR123A Batteries Included).
 
-When power is first supplied, the LED will flash on and off alternately at one second intervals within 5 seconds if the detector has not been added a Z‐Wave network. Please get familiar with the terms below before starting the operations.
+1.Make sounds and lighting when alarm is triggered
 
-This product can be included and operated in any Z‐Wave network with other Z‐Wave certified devices from other manufacturers and/or other applications. All non‐battery operated nodes within the network will act as repeaters regardless of vendor to increase reliability of the network.</MetaDataItem>
+2.Compatible with 300 series and 500 series.
+
+3.Range:Up to 50m outdoor :Up to 30m indoor
+ 
+4.Standby current :87uA
+
+5. Continuous work :1400 times </MetaDataItem>
     <MetaDataItem name="ExclusionDescription">1. Remove the siren cover.
 2. Make sure the siren is powered.
 3. Set Z‐Wave controller or Z‐Wave gateway into inclusion mode (Refer to the controller or
@@ -41,7 +47,11 @@ network.</MetaDataItem>
     <MetaDataItem id="0088" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1962/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2171/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="1088" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2171/</MetaDataItem>
+    <MetaDataItem id="1088" name="Identifier" type="0003">NAS-AB01Z</MetaDataItem>
+    <MetaDataItem id="1088" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
   </MetaData>
   <!-- Coolcam Siren Alarm NAS-AB01Z
     http://products.z-wavealliance.org/products/1962

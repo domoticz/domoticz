@@ -1,4 +1,4 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/016A:0064:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/oomi/ft100.png</MetaDataItem>
@@ -8,13 +8,17 @@
     <MetaDataItem id="0064" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="0064" name="Identifier" type="0102">FT100-A</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Z-Wave button that you can find in back of the product.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1534/Oomi MultiSensor manual2.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2592/Oomi MultiSensor manual3.pdf</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Z-Wave button that you can find in the back of the product.</MetaDataItem>
     <MetaDataItem name="ResetDescription">Press and hold the Z-Wave button that you can find in back of the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
-    <MetaDataItem name="Name">Oomi MultiSensor</MetaDataItem>
+    <MetaDataItem name="Name">MultiSensor </MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1534/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2592/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="0064" name="ZWProductPage" type="1D02">https://products.z-wavealliance.org/products/2592/</MetaDataItem>
+    <MetaDataItem id="0064" name="FrequencyName" type="1D02">China</MetaDataItem>
+    <MetaDataItem id="0064" name="Identifier" type="1D02">FT100-K</MetaDataItem>
   </MetaData>
   <!-- 
 Oomi FT100 MultiSensor 6

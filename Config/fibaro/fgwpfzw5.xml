@@ -1,4 +1,4 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1001:0602</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgwpfzw5.png</MetaDataItem>
@@ -29,7 +29,7 @@ described in “Adding/ removing the device”on page 6.
     <MetaDataItem name="Name">FIBARO Wall Plug E/F</MetaDataItem>
     <MetaDataItem name="WakeupDescription">Wakeup Description
 FIBARO Wall Plug is powered with mains voltage so it is always awake.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1653/FGWPx-102-EN-A-v2.0 29.01.2016-3.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2818/FGWPEF-102-EN-A-v2.1.pdf</MetaDataItem>
     <MetaDataItem name="Description">FIBARO Wall Plug is a universal, Z-Wave Plus compatible, remotely controlled outlet adapter. This device may be applied wherever you want to control electrical devices with up to 2500W load. The Wall Plug is equipped with a power and energy metering function. It uses a LED ring to visualize the current load with colour changing illumination and operating mode. This is the smallest and most attractive device of this type available in the world. The Wall Plug may be operated using the B-button located on its casing or via any Z-Wave compatible controller.
 
 Main features:
@@ -50,7 +50,11 @@ Main features:
 </MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1653/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2818/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="1003" name="ZWProductPage" type="0602">https://products.z-wavealliance.org/products/2818/</MetaDataItem>
+    <MetaDataItem id="1003" name="Identifier" type="0602">FGWPE/F-102</MetaDataItem>
+    <MetaDataItem id="1003" name="FrequencyName" type="0602">CEPT (Europe)</MetaDataItem>
   </MetaData>
   <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
 	<!-- CommandClass id="113" action="remove" /> -->

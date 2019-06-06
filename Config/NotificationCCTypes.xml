@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<NotificationTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="8">
-    <!--  Please keep this file in Sync with the Localization.xml file for the Notification CC -->
-    <!--  If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
+<NotificationTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="9">
+	<!-- Please keep Localization.xml in sync with NotificationCCTypes.xml -->
+	<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
+	<!-- Bump Revision number, run "xmllint format" and "make xmltest" before submitting -->
 	<AlarmType id="1" name="Smoke Alarm">
 		<AlarmEvent id="0" name="Clear">
 			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
@@ -27,14 +28,14 @@
 		</AlarmEvent>
 	</AlarmType>
 
-	<AlarmType id="2" name="Carbon Monoxied">
+	<AlarmType id="2" name="Carbon Monoxide">
 		<AlarmEvent id="0" name="Clear">
 			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
 		</AlarmEvent>
-		<AlarmEvent id="1" name="Carbon Monoxied Detected at Location">
+		<AlarmEvent id="1" name="Carbon Monoxide Detected at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
 		</AlarmEvent>
-		<AlarmEvent id="2" name="Carbon Monoxied Detected at Unknown Location">
+		<AlarmEvent id="2" name="Carbon Monoxide Detected at Unknown Location">
 		</AlarmEvent>
 		<AlarmEvent id="3" name="Test">
 			<AlarmEventParam id="258" type="list" name="Result">
@@ -48,20 +49,20 @@
 		</AlarmEvent>
 		<AlarmEvent id="6" name="Silenced">
 		</AlarmEvent>
-		<AlarmEvent id="7" name="Maintence Required: Periodic Inspection">
+		<AlarmEvent id="7" name="Maintenance Required: Periodic Inspection">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
 	</AlarmType>
 
-	<AlarmType id="3" name="Carbon Dixoide">
+	<AlarmType id="3" name="Carbon Dioxide">
 		<AlarmEvent id="0" name="Clear">
 			<AlarmEventParam id="256" type="byte" name="Previous Event Cleared" />
 		</AlarmEvent>
-		<AlarmEvent id="1" name="Carbon Dixoide Detected at Location">
+		<AlarmEvent id="1" name="Carbon Dioxide Detected at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
 		</AlarmEvent>
-		<AlarmEvent id="2" name="Carbon Dixoid Detected at Unknown Location">
+		<AlarmEvent id="2" name="Carbon Dioxide Detected at Unknown Location">
 		</AlarmEvent>
 		<AlarmEvent id="3" name="Test">
 			<AlarmEventParam id="258" type="list" name="Result">
@@ -75,7 +76,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="6" name="Silenced">
 		</AlarmEvent>
-		<AlarmEvent id="7" name="Maintence Required: Periodic Inspection">
+		<AlarmEvent id="7" name="Maintenance Required: Periodic Inspection">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>
@@ -123,10 +124,10 @@
 		</AlarmEvent>
 		<AlarmEvent id="2" name="Water Leak at Unknown Location">
 		</AlarmEvent>
-		<AlarmEvent id="3" name="Water Level Droped at Location">
+		<AlarmEvent id="3" name="Water Level Dropped at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
 		</AlarmEvent>
-		<AlarmEvent id="4" name="Water Level Droped at Unnknown Location">
+		<AlarmEvent id="4" name="Water Level Dropped at Unknown Location">
 		</AlarmEvent>
 		<AlarmEvent id="5" name="Replace Filter">
 		</AlarmEvent>
@@ -176,7 +177,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="10" name="Auto Lock Not Fully Locked">
 		</AlarmEvent>
-		<AlarmEvent id="11" name="Lock Jamed">
+		<AlarmEvent id="11" name="Lock Jammed">
 		</AlarmEvent>
 		<AlarmEvent id="12" name="All User Codes Deleted">
 		</AlarmEvent>
@@ -221,13 +222,13 @@
 		</AlarmEvent>
 		<AlarmEvent id="70" name="Barrier Malfunction">
 		</AlarmEvent>
-		<AlarmEvent id="71" name="Barrier Vacaction Mode">
+		<AlarmEvent id="71" name="Barrier Vacation Mode">
 			<AlarmEventParam id="263" type="list" name="Mode">
 				<Item id="0" label="Disabled" />
 				<Item id="255" label="Enabled" />
 			</AlarmEventParam>
 		</AlarmEvent>
-		<AlarmEvent id="72" name="Barrier Saftey Beam Obstruction">
+		<AlarmEvent id="72" name="Barrier Safety Beam Obstruction">
 			<AlarmEventParam id="264" type="list" name="Obstruction">
 				<Item id="0" label="No Obstruction" />
 				<Item id="255" label="Obstruction" />
@@ -258,7 +259,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="3" name="Tampering -  Cover Removed">
 		</AlarmEvent>
-		<AlarmEvent id="4" name="Tamperting - Invalid Code">
+		<AlarmEvent id="4" name="Tampering - Invalid Code">
 		</AlarmEvent>
 		<AlarmEvent id="5" name="Glass Breakage at Location">
 			<AlarmEventParam id="257" type="location" name="Alert Location" />
@@ -292,7 +293,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="6" name="Over Current Detected">
 		</AlarmEvent>
-		<AlarmEvent id="7" name="Over Voltage Voltage">
+		<AlarmEvent id="7" name="Over Voltage Detected">
 		</AlarmEvent>
 		<AlarmEvent id="8" name="Over Load Detected">
 		</AlarmEvent>
@@ -431,7 +432,7 @@
 		</AlarmEvent>
 		<AlarmEvent id="5" name="Sitting On Edge Of Bed">
 		</AlarmEvent>
-		<AlarmEvent id="6" name="Volatile Organic Level">
+		<AlarmEvent id="6" name="Volatile Organic Compound Level">
 			<AlarmEventParam id="268" type="list" name="Pollution Level">
 				<Item id="1" label="Clean" />
 				<Item id="2" label="Slightly Polluted" />
@@ -541,9 +542,9 @@
 		</AlarmEvent>
 		<AlarmEvent id="4" name="Toxic Gas Detected Unknown Location">
 		</AlarmEvent>
-		<AlarmEvent id="5" name="Test">
+		<AlarmEvent id="5" name="Alarm Test">
 		</AlarmEvent>
-		<AlarmEvent id="6" name="Replacement Required (Unspecified)">
+		<AlarmEvent id="6" name="Replacement Required">
 		</AlarmEvent>
 		<AlarmEvent id="254" name="Unknown Event">
 		</AlarmEvent>

@@ -1,7 +1,33 @@
 <!--
 Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
--->
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0082:0102</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw130.png</MetaDataItem>
+    <MetaDataItem id="0082" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2130/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
+    <MetaDataItem name="Name">WallMote Quad</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action button that you can find on the product's housing for 20 seconds and then release. This procedure should only be used when the primary controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2153/Aeon Labs WallMote Quad manual.pdf</MetaDataItem>
+    <MetaDataItem id="0082" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec WallMote Quad is an intelligent Z-Wave remote controller that mounted on a wall. It has 4 touch buttons that you can easily control the Z-Wave devices in your home network via touching, long pressing or sliding the button areas. 
+Its surface has a RGB LED to indicate the button actions also accompanied by touch beep and vibration. 
+The WallMote Quad is also a security Z-Wave device and supports Over The Air (OTA) feature for the products firmware upgrade.
+</MetaDataItem>
+    <MetaDataItem id="0082" name="Identifier" type="0102">ZW130-A</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2130/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2152/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2153/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0082" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/2152/</MetaDataItem>
+    <MetaDataItem id="0082" name="Identifier" type="0202">ZW130-B</MetaDataItem>
+    <MetaDataItem id="0082" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0082" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2153/</MetaDataItem>
+    <MetaDataItem id="0082" name="Identifier" type="0002">ZW130-C</MetaDataItem>
+    <MetaDataItem id="0082" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+  </MetaData>
   <!-- COMMAND_CLASS_BASIC -->
   <CommandClass id="32">
     <Compatibility>
@@ -87,6 +113,9 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
       <Group index="9" label="Dimmer control via Button 4" max_associations="5"/>
     </Associations>
   </CommandClass>
+
+
+
 
     <!--<CommandClass id="142" ForceInstances="true"/>-->
 </Product>

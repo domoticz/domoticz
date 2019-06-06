@@ -1,4 +1,4 @@
-<Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="11" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0101:2001</MetaDataItem>
     <MetaDataItem name="ProductPic">images/vision/zd2102.png</MetaDataItem>
@@ -17,6 +17,7 @@
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/848/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/988/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1705/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2823/xml</Entry>
     </ChangeLog>
     <MetaDataItem id="0102" name="ZWProductPage" type="2001">https://products.z-wavealliance.org/products/779/</MetaDataItem>
     <MetaDataItem id="0102" name="Identifier" type="2001">ZD2102IN</MetaDataItem>
@@ -30,12 +31,12 @@ Auto Wake Up:  The wakeup interval is user settable from 10 minutes to 1 week us
     <MetaDataItem name="ExclusionDescription">For “Exclusion” (removing from) a network: Put the Z-Wave™ network controller into “exclusion” mode, following its instructions. To delete the ZD2102-5 from your controller press the program switch of ZD2102-5 for at least 1 second to be excluded.  Note: All user and network settings will be cleared and the device reset to factory setting defaults when the device is excluded.</MetaDataItem>
     <MetaDataItem name="InclusionDescription">For “Inclusion” (adding to) a network: Put the Z-Wave™ network controller into “inclusion” mode following its instructions.  To add the ZD2102-5 to your controller press the program switch of ZD2102-5 to send the Node Information Frame (NIF). After sending NIF, the network controller will send the auto inclusion request; otherwise, ZD2102-5 will go to sleep after 15 seconds.</MetaDataItem>
     <MetaDataItem id="0105" name="FrequencyName" type="2001">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1705/ZD 2102-5_R2_20150715.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2823/ZD 2102-5_R4_20170913 (RED).pdf</MetaDataItem>
     <MetaDataItem id="0105" name="Identifier" type="2001">ZD2102EU-5</MetaDataItem>
-    <MetaDataItem name="ResetDescription">Factory Default Reset: Trigger the rear cover switch to send the Alarm Report and trigger the reed switch (close &amp; open) 5 times in 10 seconds, ZD2102-5 will send the “Device Reset Locally Notification” command and reset to the factory default condition. (Remark: This is to be used only in the case of primary controller being inoperable or otherwise unavailable.)</MetaDataItem>
-    <MetaDataItem id="0106" name="ZWProductPage" type="2001">https://products.z-wavealliance.org/products/1705/</MetaDataItem>
-    <MetaDataItem id="0106" name="Identifier" type="2001">ZD2102US-5</MetaDataItem>
-    <MetaDataItem id="0106" name="FrequencyName" type="2001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Factory Default Reset: Trigger the rear cover switch to send the Alarm Report and trigger the reed switch (close &amp; open) 5 times in 10 seconds, ZD2102-5 will send the “Device Reset Locally Notification” command and reset to the factory default condition.  Please use this procedure only when the network primary controller is missing or otherwise inoperable!</MetaDataItem>
+    <MetaDataItem id="0106" name="ZWProductPage" type="2001">https://products.z-wavealliance.org/products/2823/</MetaDataItem>
+    <MetaDataItem id="0106" name="Identifier" type="2001">ZD2102JP-5</MetaDataItem>
+    <MetaDataItem id="0106" name="FrequencyName" type="2001">U.S. / Canada / Mexico / Japan</MetaDataItem>
   </MetaData>
   <!-- Vision ZD2102 Door/Window Sensor -->
   <CommandClass id="112">

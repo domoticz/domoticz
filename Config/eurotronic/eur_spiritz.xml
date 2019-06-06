@@ -2,8 +2,48 @@
 Eurotronic Spirit Z-Wave Plus Thermostat
 Product website: https://www.eurotronic.org/produkte/spirit-z-wave-plus.html
 Tech manual: https://www.eurotronic.org/fileadmin/user_upload/eurotronic.org/Produktbilder/spirit_z_wave_plus/Spirit_Z-Wave_BAL_web_EN_view_04.pdf
--->
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0148:0001:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/eurotronic/eur_spiritz.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2543/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Start Inclusion mode of your primary Z-Wave Controller.
+Press the Boost-Button.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2650/Spirit_Z-Wave_BAL_web_EN_view_05.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Start Exclusion mode of your primary Z-Wave Controller.
+Now press and hold the boost button of the Spirit Z-Wave Plus for at least 5 seconds.</MetaDataItem>
+    <MetaDataItem name="Name">KOMFORTHAUS Spirit Z-Wave Plus</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0003">4260012711110</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0003">UAE</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+
+Remove batteries.
+Press and hold boost button.
+While still holding boost button insert batteries.
+The LCD shows RES. Release boost button.
+To perform the factory reset press boost button.
+</MetaDataItem>
+    <MetaDataItem name="Description">•	Easy control for water radiators from any Z-Wave Controller
+•	Fits most European water radiators (wide range of additional adaptors for different manufacturers available)
+•	FLiRS for quick response time 
+•	LED Backlit LCD
+•	Metal nut for reliable connection to the radiator
+•	2 buttons for easy temperature regulation
+•	Battery level indicator
+•	Child Lock
+•	Over the Air update
+•	UK-Mode for upside down installation
+•	Open Window detection
+•	Automatic frost protection
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2543/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2650/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2650/</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0003">4250848804063</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0003">UAE</MetaDataItem>
+  </MetaData>
   <!-- Multilevel switch for setting valve opening -->
   <CommandClass id="38">
     <Value genre="user" index="0" label="Valve Opening" max="100" min="0" type="byte" units="%" value="0"/>

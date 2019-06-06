@@ -1,44 +1,38 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0129:0000:0004</MetaDataItem>
     <MetaDataItem name="ProductPic">images/assa_abloy/PushButtonDeadbolt.png</MetaDataItem>
     <MetaDataItem id="0000" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/687/</MetaDataItem>
-    <MetaDataItem name="Description">Never worry about carrying around or losing your keys again. Unlock and lock your home with ease from the backlit push button keypad. Create unique pin codes for friends and family and remove codes whenever you need to. This Yale Real Living lock features Z-Wave technology and seamlessly integrates into 50+ home automation and security systems. When added to most Z-Wave automation systems, lock and unlock your door, create pin codes, view access history and receive notifications from anywhere. The lock is tamper resistant, easy to install and even easier to use! 
-</MetaDataItem>
+    <MetaDataItem name="Description">Yale Real Living® Assure Lock™ Interconnect combines electronic deadbolts with the convenience of a passage lever for panic proof egress. From the inside, both the latchbolt and the deadbolt are retracted simultaneously in a single motion for a quick and easy exit. Ships with Z-Wave Plus Smart Module.</MetaDataItem>
     <MetaDataItem id="0000" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="0000" name="Identifier" type="0004">Yale/YRD/ 210 </MetaDataItem>
     <MetaDataItem name="ProductPage">http://www.yalerealliving.com</MetaDataItem>
-    <MetaDataItem name="Name">Yale Real Living Push Button Assure Lock with Z-Wave</MetaDataItem>
+    <MetaDataItem name="Name">Yale Real Living® Assure Lock™ Interconnected Z-Wave Enabled Push Button Deadbolt</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/687/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1039/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1971/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3239/xml</Entry>
     </ChangeLog>
     <MetaDataItem id="0800" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1039/</MetaDataItem>
     <MetaDataItem id="0800" name="Identifier" type="0004">YRD110-ZW-US</MetaDataItem>
     <MetaDataItem id="0800" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem id="0600" name="ZWProductPage" type="8004">https://products.z-wavealliance.org/products/1971/</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">1. Enter the 4-8 digit master PIN code followed by the gear key.
-2. Press the 7 key followed by the gear key.
-3. Press the 1 key followed by the gear key.</MetaDataItem>
-    <MetaDataItem name="ResetDescription">Please use this procedure only when the network primary controller is missing or otherwise inoperable.
-1. Remove the inside lever with the lever removal tool.
-2. Remove battery cover using hex wrench provided with lock.
-3. Remove four (4) AA batteries.
-4. Remove the 10-32 x 3/4" pan head screw from the center of the battery housing into the barrel nut of the outside assembly.
-5. Remove inside escutcheon. Cables may stay connected.
-6. Reinstall batteries 
-7. On the back of the PC board, push and hold the Reset Button with the lever removal tool for 3 seconds.
-8. While continuing the press the reset button, temporarily remove one AA battery.
-9. Reinstall the battery
-10. Release reset button and wait 15 seconds. Speaker will announce "Welcome to Yale"
-11. Reassemble escutcheon</MetaDataItem>
-    <MetaDataItem id="0600" name="Identifier" type="8004">YRD216-ZW2</MetaDataItem>
+    <MetaDataItem id="0600" name="ZWProductPage" type="8004">https://products.z-wavealliance.org/products/3239/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Enter the 4-8 master Pin code followed by the gear key.
+Press the 7 key followed by the gear key
+Press the 1 key followed by the gear key</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Remove the battery cover and batteries.
+Remove the interior escutcheon to access the reset button.
+The reset button is located above the PCB cable connector.
+While pressing the reset button for a minimum of 3 seconds, reinstall batteries. Release reset button.
+Replace battery cover. 
+Please use this procedure only when the network primary controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem id="0600" name="Identifier" type="8004">YRC216-ZW2</MetaDataItem>
     <MetaDataItem id="0600" name="FrequencyName" type="8004">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1971/WGA6ZWManual.pdf</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1. Enter the 4-8 digit master PIN code followed by the gear key.
-2. Press the 7 key followed by the gear key.
-3. Press the 3 key followed by the gear key.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3239/YRC216_YaleRealLivingAssureDeadbolt_Z-WavePlus_SystemIntegratorsGuide.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Enter the 4-8 digit master pin code followed by the gear key
+Press the 7 key followed by the gear key
+Press the 3 key followed by the gear key</MetaDataItem>
   </MetaData>
   <!-- Yale Push Button Deadbolt (YRD210)
 http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf 

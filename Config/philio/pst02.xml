@@ -1,8 +1,8 @@
-<!-- Philio: PST02-A 4 in 1 Multi-Sensor --><Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Philio: PST02-A 4 in 1 Multi-Sensor --><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:000C:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/philio/pst02.png</MetaDataItem>
-    <MetaDataItem id="000C" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1449/</MetaDataItem>
+    <MetaDataItem id="000C" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2568/</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
 To remove the device from a Z-Wave network: 
 1. Have Z-Wave  Controller entered exclusion mode.
@@ -17,18 +17,21 @@ To add into a Z-Wave network:
 1. Have Z-Wave  Controller entered inclusion mode.
 2. Pressing tamper key three times within 1.5 seconds to enter the inclusion mode.
 3. After add successful, the device will wake to receive the setting command from Z-Wave Controller about 20 seconds.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1449/PST02_Manual.pdf</MetaDataItem>
-    <MetaDataItem id="000C" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2568/PST02_Manual.pdf</MetaDataItem>
+    <MetaDataItem id="000C" name="FrequencyName" type="0002">CEPT (Europe) / Australia / New Zealand</MetaDataItem>
     <MetaDataItem name="ResetDescription">There are two tamper keys in the device, one is in the back side, another is in the front side.  Both of them  can add,  remove, reset or association from Z-Wave network.
 To reset the device: 
 Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
 1. Pressing tamper key four times within 1.5 seconds and do not release the tamper key in the 4th  pressed, and the LED will light ON.
 2. After 3 seconds the LED will turn OFF, after that within 2 seconds, release the tamper key. If successful, the LED will light ON one second. Otherwise, the LED will flash once.
 3. IDs are excluded and all settings will reset to factory default.</MetaDataItem>
-    <MetaDataItem id="000C" name="Identifier" type="0002">PST02-1A</MetaDataItem>
+    <MetaDataItem id="000C" name="Identifier" type="0002">PST02-A</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="6">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1087/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1449/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2433/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2434/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2568/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->

@@ -1,4 +1,57 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHADx.png</MetaDataItem>
+    <MetaDataItem id="0052" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2795/</MetaDataItem>
+    <MetaDataItem id="0052" name="Identifier" type="0002">ZMNHAD1</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">REMOVAL FROM A ZWAVE NETWORK (Z-WAVE EXCLUSION)
+
+1. Connect the device to the power supply
+2. Make sure the device is within direct range of your Z-Wave gateway (hub) or use a hand-held Z-Wave remote to perform exclusion 
+3. Enable add/remove mode on your Z-Wave gateway (hub)
+4. Toggle the switch connected to the I1 terminal 3 times within 5 seconds
+OR
+If the device is powered by 24 V SELV supply, press and hold the S (Service) button between 2 and 6 seconds
+5. The device will be removed from your network but any custom configuration parameters will not be erased
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">FACTORY RESET
+
+1. Connect the device to the power supply
+2. Within the first minute (60 seconds) the device is connected to the power supply, toggle the switch connected to the I1 terminal 5 times within 5 seconds (5 times change switch state)
+OR
+If the device is powered by 24 V SELV supply, press and hold the S (Service) button for more than 6 seconds
+
+*By resetting the device, all custom parameters previously set on the device will return to their default values, and the owner ID will be deleted. Use this reset procedure only when the main gateway (hub) is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2795/Qubino_Flush 1 Relay PLUS extended manual_eng_2.2.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Flush 1 Relay</MetaDataItem>
+    <MetaDataItem id="0052" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">AUTOMATICALLY ADDING THE DEVICE TO A Z-WAVE NETWORK (AUTO INCLUSION) 
+
+1. Enable add/remove mode on your Z-Wave gateway (hub) 
+2. Connect the device to the power supply (with the temperature sensor already connected – sold separately*).
+3. Auto-inclusion will be initiated within 5 seconds of connection to the power supply and the device will automatically enrol in your network
+
+MANUALLY ADDING THE DEVICE TO A Z-WAVE NETWORK (MANUAL INCLUSION)
+
+1. Enable add/remove mode on your Z-Wave gateway (hub) 
+2. Connect the device to the power supply (with the temperature sensor already connected*) 
+3. Toggle the switch connected to the I1 terminal 3 times within 5 seconds 
+OR
+If the device is powered by 24 V SELV supply, press and hold the S (Service) button between 2 and 6 seconds
+4. A new multi-channel device will appear on your dashboard
+*If connecting the temperature sensor, switch off the power supply and make sure the device is excluded from your network BEFORE connecting the sensor.
+
+
+*Make sure the device is excluded from your network before connecting the temperature sensor. Switch off the power supply, connect the temperature sensor, and re-include the device to your network.
+</MetaDataItem>
+    <MetaDataItem name="Description">The Flush 1 Relay controls on/off function for one electrical device. It measures power consumption of the connected device, and can be paired with a digital temperature sensor (sold separately). It supports push-button/momentary switches and toggle switches (default).
+
+The connection of a digital temperature sensor means you can create complex scenes and control any device relative to a set temperature range. The Qubino Flush 1 Relay also acts as a Z-Wave repeater to improve the range and stability of the Z-Wave network.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2795/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!--
 	Qubino: ZMNHADx Flush 1 Relay
 

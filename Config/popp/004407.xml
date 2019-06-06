@@ -1,28 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!--
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0154:0003:0004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/popp/004407.png</MetaDataItem>
+    <MetaDataItem id="0003" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/2086/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2086/004407_en.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To do a factory reset press the button on the bottom of the device for at least 10 seconds. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="Name">Z-Wave CO Detector</MetaDataItem>
+    <MetaDataItem name="Description">The High-End Electro-Chemical Carbon Monoxide alarm head offers a 10 year sensor life and is powered via a 3V lithium battery that powers the Alarm head for the life of the alarm.  The CO Sensor is monitored electronically and will report the following:
+1.	Alarm on Sensing Carbon Monoxide
+2.	Battery status reporting
+3.	Sensor Fault
+4.	Alarm removal from mounting plate
+5.	End of life to make sure it is replaced on time.
+The device is a secure Z-Wave Plus device and can be used in one wireless Z-Wave network with other certified devices regardless of origin and brand.  
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">A single click on the button will wakeup the device.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Pressing the button 'Inclusion Button' for one second will include the device. If the button is pressed for at least 2 seconds the inclusion will be done without the Security Command Class. </MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">A single click on the button will exclude the device.</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0004">POPE004407</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2086/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
     Popp: Z-Wave CO Detector
     http://products.z-wavealliance.org/products/2086
      -->
     <!-- Configuration  -->
-    <CommandClass id="112">
-        <Value type="byte" genre="config" instance="1" index="1" label="Value of On-Command" size="1" min="0" max="99" units="ms" value="99">
-            <Help>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Value of On-Command" max="99" min="0" size="1" type="byte" units="ms" value="99">
+      <Help>
                 Value of On-Command
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="2" label="Value of Off-Command" size="1" min="0" max="99" units="ms" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Value of Off-Command" max="99" min="0" size="1" type="byte" units="ms" value="0">
+      <Help>
                 Value of Off-Command
             </Help>
-        </Value>
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="2">
-            <Group index="1" max_associations="10" label="Lifeline"/>
-            <Group index="2" max_associations="10" label="Switching Command when Alarm"/>
-        </Associations>
-    </CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="Lifeline" max_associations="10"/>
+      <Group index="2" label="Switching Command when Alarm" max_associations="10"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

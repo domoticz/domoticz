@@ -1,17 +1,17 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:2101:2021</MetaDataItem>
     <MetaDataItem name="ProductPic">images/vision/zp3111.png</MetaDataItem>
-    <MetaDataItem id="2101" name="ZWProductPage" type="2021">https://products.z-wavealliance.org/products/1744/</MetaDataItem>
-    <MetaDataItem id="2101" name="FrequencyName" type="2021">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">To add the ZP3111 to theZ-Wave network (inclusion), place the Z-Wave primary controller into inclusion mode.  Press the Program Switch of ZP3111 for sending the NIF. After sending NIF, Z-Wave will send the auto inclusion, otherwise, ZP3111 will go to sleep after 20 seconds. </MetaDataItem>
+    <MetaDataItem id="2101" name="ZWProductPage" type="2021">https://products.z-wavealliance.org/products/2479/</MetaDataItem>
+    <MetaDataItem id="2101" name="FrequencyName" type="2021">CEPT (Europe) / U.S. / Canada / Mexico / Japan</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the ZP3111 to the Z-Wave network (inclusion), place the Z-Wave primary controller into inclusion mode.  Press the Program Switch of ZP3111 for sending the NIF. After sending NIF, Z-Wave will send the auto inclusion, otherwise, ZP3111 will go to sleep after 20 seconds. </MetaDataItem>
     <MetaDataItem name="ExclusionDescription">To remove the ZP3111 from the Z-Wave network (exclusion), place the Z-Wave primary controller into “exclusion” mode, and following its instruction to delete the ZP3111 to the controller.  Press the Program Switch of ZP3111 once to be excluded. </MetaDataItem>
     <MetaDataItem name="WakeupDescription">Use “Wake Up” command to set up the awaking time (from 10 minutes to 1 week) and send the wake up notification to controller</MetaDataItem>
     <MetaDataItem name="ResetDescription">Remove cover to trigged tamper switch, LED flash once &amp; send out Alarm Report.  Press Program Switch 10 times within 10 seconds, ZP3111 will send the “Device Reset Locally Notification” command and reset to the factory default. (Remark: This is to be used only in the case of primary controller being inoperable or otherwise unavailable.)
    
 </MetaDataItem>
-    <MetaDataItem id="2101" name="Identifier" type="2021">ZP3111EU-5</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1744/ZP3111-5_R0_20151215 - VISION.pdf</MetaDataItem>
+    <MetaDataItem id="2101" name="Identifier" type="2021">ZP3111JP-5</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2479/ZP3111-5_R2_20170316.pdf</MetaDataItem>
     <MetaDataItem name="Name">4in1 PIR Sensor</MetaDataItem>
     <MetaDataItem name="Description">* Includes Motion, Temperature, Humidity, and Light sensor
 * 360 degree detection (suitable for ceiling fixture)
@@ -24,6 +24,7 @@
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1572/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1744/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2479/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Vision ZP3111 Multisensor 4in1 -->

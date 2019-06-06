@@ -653,6 +653,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_SceneEvent:
 		//Deprecated
+		{
+			//uint8_t SceneID = _notification->GetSceneId();
+			//_log.Log(LOG_NORM, "OpenZWave: Type_SceneEvent, SceneID: %d, HomeID: %u, NodeID: %d (0x%02x)", SceneID, _homeID, _nodeID, _nodeID);
+		}
 		break;
 	case OpenZWave::Notification::Type_ValueRemoved:
 		if ((_nodeID == 0) || (_nodeID == 255))

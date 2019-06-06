@@ -1,7 +1,34 @@
 <!--
 ZWA005 TriSensor
--->
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:0005:0002</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zwa005.png</MetaDataItem>
+    <MetaDataItem id="0005" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2898/</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2919/TriSensor user manual 20180416.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec TriSensor is a universal Z-Wave Plus compatible product, consists of temperature, lighting and motion sensors, powered by a CR123A battery. It can be included and operated in any Z-Wave network with other Z-Wave certified devices from other manufacturers and/or other applications. By the built-in motion sensor, an alam will be sent to the gateway when the motion sensor is triggered.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Press once TriSensor’s Action Button, the Purple LED will keep solid until whole network processing is complete. If the exclusion is successful, the LED will flash white -> green -
+>white -> green and then LED will pulse a blue. If failed, the yellow LED lasts for 30 seconds, then the green LED flashes once.
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press and hold the button at least 2s until Red Led is on and then release the button,device will send wakeup notification to controller if device is in a Z-Wave network.</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0002">ZWA005-C</MetaDataItem>
+    <MetaDataItem name="Name">TriSensor</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Press once TriSensor’s Action Button. If it is the first installation, the yellow LED will keep solid until whole network processing is complete. If successful, the LED will flash white -> green -> white -> green, after 2 seconds finished. If failed, the yellow LED lasts for 30 seconds, then the green LED flashes once.
+If it is the S2 encryption network, please enter the first 5 digits of DSK.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1.	Power up the device.
+2.	Press and hold the button for 15s until Red Led is blinking,then release the button. Note: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2898/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2919/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0005" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2919/</MetaDataItem>
+    <MetaDataItem id="0005" name="Identifier" type="0102">ZWA005-A</MetaDataItem>
+    <MetaDataItem id="0005" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="32">
     <Compatibility>

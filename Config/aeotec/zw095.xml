@@ -1,7 +1,7 @@
 <!--
 Aeotec ZW095 Home Energy Meter Gen5
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584689
---><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:005F:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw095.png</MetaDataItem>
@@ -15,13 +15,14 @@ Products that are Z-Wave certified can be used and communicate with other Z-Wave
     <MetaDataItem id="005F" name="Identifier" type="0102">ZW095-A</MetaDataItem>
     <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action button that you can find on the product's housing.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1596/Home Energy Meter Gen5 manual.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2046/Home Energy Meter Gen5 manual.pdf</MetaDataItem>
     <MetaDataItem name="Name">Home Energy Meter Gen5</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1289/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1596/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2046/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="005F" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1596/</MetaDataItem>
+    <MetaDataItem id="005F" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2046/</MetaDataItem>
     <MetaDataItem id="005F" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
     <MetaDataItem id="005F" name="Identifier" type="0002">ZW095-C</MetaDataItem>
   </MetaData>

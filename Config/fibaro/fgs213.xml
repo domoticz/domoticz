@@ -1,47 +1,50 @@
-<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="11" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0403</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgs213.png</MetaDataItem>
-    <MetaDataItem id="1000" name="ZWProductPage" type="0403">https://products.z-wavealliance.org/products/1734/</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0403">https://products.z-wavealliance.org/products/2730/</MetaDataItem>
     <MetaDataItem name="ResetDescription">Reset procedure allows to restore the device back to its factory settings, which means all information about the Z-Wave controller and user configuration will be deleted. In order to reset the device:
 
-1)	Switch off the mains voltage (disable the fuse).
-2)	Remove the Switch 2 from the wall switch box.
-3)	Switch on the mains voltage.
-4)	Press and hold the B-button to enter the menu.
-5)	Wait for the visual LED indicator to glow yellow.
-6)	Quickly release and click the B-button again.
-7)	After few seconds the device will be restarted, which is signalled with the red LED indicator colour.
-Use reset procedure only if the primary controller is missing or inoperable.</MetaDataItem>
-    <MetaDataItem id="1000" name="Identifier" type="0403">FGS-213</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">1)	Switch off the mains voltage (disable the fuse).
-2)	Place the Switch 2 within the direct range of your Z-Wave controller. 
-3)	Connect the device in accordance with one of the diagrams attached in the manual.
-4)	After verifying correctness of the connection switch on the mains voltage.
-5)	Identify the S1 switch or the B-button (located on the device’s housing). 
-6)	Set the main controller in (security/non-security) add mode (see the controller’s manual). 
-7)	Quickly, three times press the S1 switch or the B-button. 
-8)	Wait for the adding process to end. 
-9)	Successful adding will be confirmed by the Z-Wave controller’s message. 
+1)           Switch off the mains voltage (disable the fuse).
+2)           Remove the Switch 2 from the wall switch box.
+3)           Switch on the mains voltage.
+4)           Press and hold the B-button to enter the menu.
+5)           Wait for the visual LED indicator to glow yellow.
+6)           Quickly release and click the B-button again.
+7)           After few seconds the device will be restarted, which is signalled with the red LED indicator colour.
 
+Use reset procedure only if the primary controller is missing or inoperable.
 </MetaDataItem>
-    <MetaDataItem name="WakeupDescription">The FIBARO Single Switch 2 is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0403">FGS-213</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1)           Switch off the mains voltage (disable the fuse).
+2)           Make sure the Switch 2 is within the direct range of your Z-Wave controller. 
+3)           Connect the device in accordance with one of the diagrams included in the manual.
+4)           After verifying correctness of the connection switch on the mains voltage.
+5)           Identify the S1 switch or the B-button (located on the device’s housing). 
+6)           Set the main controller in (security/non-security) add mode (see the controller’s manual). 
+7)           Quickly, three times press the S1 switch or the B-button. 
+8)           Wait for the adding process to end. 
+9)           Successful adding will be confirmed by the Z-Wave controller’s message. 
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The FIBARO Single Switch 2 is powered with the mains voltage so it is always awake.</MetaDataItem>
     <MetaDataItem name="Description">The remotely operated FIBARO Single Switch 2 is designed to turn electrical devices on and off and to measure their power and energy consumption. The compact size of the device makes it the world's smallest of its type and allows for the product to be installed in wall switch boxes or housings. FIBARO Single Switch 2 can be controlled either via Z-Wave network or with a wall switch through a direct connection.</MetaDataItem>
     <MetaDataItem id="1000" name="FrequencyName" type="0403">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1)	Place the Switch 2 within the direct range of your Z-Wave controller.
-2)	Identify the S1 switch or the B-button (located on the device’s housing).
-3)	Set the main controller in remove mode (see the controller’s manual).
-4)	Quickly, three times press the S1 switch or the B-button.
-5)	Wait for the removing process to end.
-6)	Successful removing will be confirmed by the Z-Wave controller’s message
+    <MetaDataItem name="ExclusionDescription">1)           Make sure the Switch 2 is within the direct range of your Z-Wave controller.
+2)           Identify the S1 switch or the B-button (located on the device’s housing).
+3)           Set the main controller in remove mode (see the controller’s manual).
+4)           Quickly, three times press the S1 switch or the B-button.
+5)           Wait for the removing process to end.
+6)           Successful removing will be confirmed by the Z-Wave controller’s message
 </MetaDataItem>
     <MetaDataItem name="Name">FIBARO Single Switch 2</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1871/FGS-2x3-EN-T-v1.0.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2750/FGS-2x3-EN-T-v1.2.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="8">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1734/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1871/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2730/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2750/xml</Entry>
     </ChangeLog>
-    <MetaDataItem id="2000" name="ZWProductPage" type="0403">https://products.z-wavealliance.org/products/1871/</MetaDataItem>
+    <MetaDataItem id="2000" name="ZWProductPage" type="0403">https://products.z-wavealliance.org/products/2750/</MetaDataItem>
     <MetaDataItem id="2000" name="FrequencyName" type="0403">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="2000" name="Identifier" type="0403">FGS-213</MetaDataItem>
   </MetaData>

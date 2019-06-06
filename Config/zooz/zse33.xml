@@ -1,82 +1,134 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!-- 
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:0088:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zse33.png</MetaDataItem>
+    <MetaDataItem id="0088" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2175/</MetaDataItem>
+    <MetaDataItem name="Name">Zooz Z-Wave Plus Smart Chime</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Auto Inclusion:
+1. Put your Z-Wave controller in inclusion mode
+2. Carefully remove the cover from the device
+3. Remove the plastic pull-tab from the battery slot – the Chime will automatically enter inclusion mode for 20 seconds
+4. A new alarm siren / doorbell device will appear on your controller's device list
+
+Manual Inclusion:
+1. Bring the Smart Chime within direct range of your controller
+2. Carefully remove the cover from the device
+3. Remove the plastic pull-tab from the battery slot. The LED indicator will blink slowly
+4. Put your Z-Wave controller in inclusion mode
+5. Press and release the Z-Wave button on the Smart Chime 3 TIMES quickly. The LED indicator
+ will flash quickly
+6. A new alarm siren / doorbell device will appear on your controller's device list (if it connects as an on/off switch, you may need to change the device type manually. Contact us for instructions).
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2175/zooz-z-wave-plus-smart-chime-zse33-user-manual-online.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">When your network’s primary controller is missing or otherwise inoperable, you may need to reset the device to factory settings manually. To complete the process, make sure the Smart Chime is powered on, then PRESS AND HOLD the Z-Wave button for AT LEAST 10 SECONDS until the LED indicator flashes ONCE. Release the button. NOTE: All previously recorded activity and custom settings will be erased from the device’s memory. </MetaDataItem>
+    <MetaDataItem name="Description">Product features:
+- Audio and visual notifications triggered by other Z-Wave devices or scheduled in your routine
+- Choose from 10 different sounds for chime and siren modes
+- Advanced configuration available
+- Powerful long-lasting batteries 
+- Z-Wave Plus with improved 500 chip for faster and safer wireless communication
+- Small size and quick installation 
+
+Specifications:
+Model Number: ZSE33
+Z-Wave Signal Frequency: 908.42 MHz
+Power: 2 CR123 batteries (included)
+Power Consumption: 2W
+Operating Temperature: 32 – 104 F
+Range: Up to 100 feet line of sight
+Installation and Use: Indoor only
+Dimensions: 2.7” x 1.2” 
+Weight: 3 oz
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Make sure the Smart Chime is powered on and located within direct range of your Z-Wave gateway controller
+2. Put your Z-Wave controller in exclusion mode
+3. Press and release the Z-Wave button 3 TIMES quickly. The LED indicator will flash quickly 
+4. The Smart Chime should disappear from your controller's device list
+If the first attempt is unsuccessful, please repeat the process following all steps carefully.
+</MetaDataItem>
+    <MetaDataItem id="0088" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Press and release the Z-Wave button three times. </MetaDataItem>
+    <MetaDataItem id="0088" name="Identifier" type="0003">ZSE33</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2175/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- 
     Zooz ZSE33 Smart Chime
     http://products.z-wavealliance.org/products/2175
     -->
 
     <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" index="1" genre="config" label="Siren Volume" units="" min="1" max="3" value="3" size="1">
-            <Help>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Siren Volume" max="3" min="1" size="1" type="list" units="" value="3">
+      <Help>
                 Siren volume level; low, medium, high (default).
             </Help>
-            <Item label="Low" value="1" />
-            <Item label="Medium" value="2" />
-            <Item label="High" value="3" />
-        </Value>
-        <Value type="list" index="2" genre="config" label="Siren Alarm Duration" units="" min="0" max="255" size="1" value="1">
-            <Help>
+      <Item label="Low" value="1"/>
+      <Item label="Medium" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+    <Value genre="config" index="2" label="Siren Alarm Duration" max="255" min="0" size="1" type="list" units="" value="1">
+      <Help>
                 Duration of siren alarm.  Default is 30 seconds.
             </Help>
-            <Item label="Off" value="0" />
-            <Item label="30 seconds" value="1" />
-            <Item label="60 seconds" value="2" />
-            <Item label="5 minutes" value="3" />
-            <Item label="Until battery drains" value="255" />
-        </Value>
-        <Value type="byte" index="3" genre="config" label="Doorbell Chime Sound Duration" units="times" min="0" max="255" value="1">
-            <Help>
+      <Item label="Off" value="0"/>
+      <Item label="30 seconds" value="1"/>
+      <Item label="60 seconds" value="2"/>
+      <Item label="5 minutes" value="3"/>
+      <Item label="Until battery drains" value="255"/>
+    </Value>
+    <Value genre="config" index="3" label="Doorbell Chime Sound Duration" max="255" min="0" type="byte" units="times" value="1">
+      <Help>
                 How many times the doorbell chime should repeat once triggered by a BASIC_SET alarm command from a door sensor. 0 is chime off, 1-254 is the number of cycles, 255 is chime continues until battery drains. 2 cycles is default.
             </Help>
-        </Value>
-        <Value type="list" index="4" genre="config" label="Doorbell Chime Volume" units="" min="1" max="3" value="3" size="1">
-            <Help>
+    </Value>
+    <Value genre="config" index="4" label="Doorbell Chime Volume" max="3" min="1" size="1" type="list" units="" value="3">
+      <Help>
                 Doorbell chime volume level; low, medium, high (default).
             </Help>
-            <Item label="Low" value="1" />
-            <Item label="Medium" value="2" />
-            <Item label="High" value="3" />
-        </Value>
-        <Value type="byte" index="5" genre="config" label="Siren Alarm Tone" units="" min="1" max="10" value="10">
-            <Help>
+      <Item label="Low" value="1"/>
+      <Item label="Medium" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+    <Value genre="config" index="5" label="Siren Alarm Tone" max="10" min="1" type="byte" units="" value="10">
+      <Help>
                 Chose one of the 10 different tones for the alarm siren.  10 is default.
             </Help>
-        </Value>
-        <Value type="byte" index="6" genre="config" label="Doorbell Chime Tone" units="" min="1" max="10" value="4">
-            <Help>
+    </Value>
+    <Value genre="config" index="6" label="Doorbell Chime Tone" max="10" min="1" type="byte" units="" value="4">
+      <Help>
                 Chose one of the 10 different tones for the doorbell chime.  4 is default.
             </Help>
-        </Value>
-        <Value type="list" index="7" genre="config" label="Siren Alarm or Doorbell Chime Mode" units="" min="1" max="2" value="2" size="1">
-            <Help>
+    </Value>
+    <Value genre="config" index="7" label="Siren Alarm or Doorbell Chime Mode" max="2" min="1" size="1" type="list" units="" value="2">
+      <Help>
                 Choose between Siren Alarm (configured by Siren Alarm parameters) or Doorbell Chime (configured by Doorbell Chime paramenters).  Doorbell Chime enabled by default.
             </Help>
-            <Item label="Siren Alarm" value="1" />
-            <Item label="Doorbell Chime" value="2" />
-        </Value>
-        <Value type="list" index="8" genre="config" label="LED Notification for Siren Alarm" units="" min="0" max="1" value="1" size="1">
-            <Help>
+      <Item label="Siren Alarm" value="1"/>
+      <Item label="Doorbell Chime" value="2"/>
+    </Value>
+    <Value genre="config" index="8" label="LED Notification for Siren Alarm" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
                 Enable or disable visual LED alarm for Siren Mode.  The LED will blink when triggered.  Enabled by default.
             </Help>
-            <Item label="Disabled" value="0" />
-            <Item label="Enabled" value="1" />
-        </Value>
-        <Value type="list" index="9" genre="config" label="LED Notification for Doorbell Chime" units="" min="0" max="1" value="1" size="1">
-            <Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="9" label="LED Notification for Doorbell Chime" max="1" min="0" size="1" type="list" units="" value="1">
+      <Help>
                 Enable or disable visual LED for Doorbell Chime mode.  The LED will blink when triggered.  Enabled by default.
             </Help>
-            <Item label="Disabled" value="0" />
-            <Item label="Enabled" value="1" />
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="3">
-            <Group index="1" max_associations="5" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Switch binary report"/>
-            <Group index="3" max_associations="5" label="Notification report"/>
-        </Associations>
-    </CommandClass>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Switch binary report" max_associations="5"/>
+      <Group index="3" label="Notification report" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

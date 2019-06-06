@@ -1,55 +1,123 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!-- Zooz ZEN15 Power Switch 
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:000D:0101</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen15.png</MetaDataItem>
+    <MetaDataItem id="000D" name="ZWProductPage" type="0101">https://products.z-wavealliance.org/products/2517/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Plug the Power Switch into a grounded receptacle located within direct range of your Z-Wave gateway controller
+2. Put your Z-Wave controller into exclusion mode
+3. Press and release the Z-Wave button 3 TIMES QUICKLY
+4. The LED indicator will start flashing orange, then turn blue (on) or pink (off) once excluded
+5. The Power Switch will disappear from your controller's device list. The LED indicator will remain solid orange for a few seconds to indicate exclusion
+
+If the first attempt is unsuccessful, please repeat the process following all steps carefully.</MetaDataItem>
+    <MetaDataItem name="Name">Zooz Z-Wave Plus Power Switch</MetaDataItem>
+    <MetaDataItem name="Description">PRODUCT FEATURES:
+Local and Z-Wave wireless control of your favorite home appliances like microwaves and refrigerators.
+
+Energy monitoring in live mode or over time (your Z-Wave gateway needs to support this feature).
+
+Scene inclusion for custom automation events when included to a Z-Wave gateway controller.
+
+On/Off status recovery after power failure.
+
+LED indicator to display Z-Wave signal strength and power usage for the connected device.
+
+Added security with AES signal encryption (requires a security enabled gateway controller for full functionality).
+
+Z-Wave Plus with improved 500 chip for faster and more reliable wireless communication.
+
+Built-in range extender.
+
+SPECIFICATIONS:
+Model Number: ZEN15
+Z-Wave Signal Frequency: 908.42 MHz
+Power: 120V, 60Hz
+Maximum Load: 15A, 1800W, ½ HP
+Operating Temperature: 14° – 104° F
+Range: Up to 130 feet line of sight
+Installation and Use: Indoor only
+Dimensions: 20” (with cord) x 2.6” x 1.1”
+Weight: 10oz</MetaDataItem>
+    <MetaDataItem id="000D" name="Identifier" type="0101">ZEN15</MetaDataItem>
+    <MetaDataItem id="000D" name="FrequencyName" type="0101">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">When your network’s primary controller is missing or otherwise inoperable, you may need to reset the device to factory settings manually. In order to complete the process, plug the Power Switch into a grounded receptacle, then PRESS AND HOLD the Z-Wave button for AT LEAST 20 SECONDS. The LED indicator will flash orange and then stay solid orange for 2 seconds to indicate successful reset. The Power Switch will then turn off.
+
+NOTE: All previously recorded activity and custom settings will be erased from the device’s memory. You may only reset your Power Switch once it has been included to a Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2517/zooz-z-wave-plus-power-switch-zen15-user-manual.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Please include the Power Switch to your network BEFORE connecting it to the appliance you wish to control.
+
+Auto Z-Wave Inclusion:
+1. Put your Z-Wave controller into inclusion mode
+2. Plug the Power Switch into a grounded receptacle located within direct range from your Z-Wave gateway controller
+3. The LED indicator will start flashing blue, then turn blue (on) or pink (off) once included
+4. A new on / off device will be recognized by your Z-Wave controller
+
+Manual Z-Wave Inclusion:
+1. Plug the Power Switch into a grounded receptacle located within direct range from your Z-Wave gateway controller
+2. Put your Z-Wave controller into inclusion mode
+3. Press and release the Z-Wave button 3 TIMES QUICKLY
+4. The LED indicator will start flashing blue, then turn blue (on) or pink (off) once included
+5. A new on / off device will be recognized by your Z-Wave controller
+
+Secure Z-Wave Inclusion:
+1. Plug the Power Switch into a grounded receptacle located within direct range from your Z-Wave gateway controller
+2. Put your Z-Wave controller in secure inclusion mode
+Press and HOLD the Z-Wave button for at least 3 seconds
+3. The LED indicator will start flashing green, then turn blue (on) or pink (off) once included
+4. A new secure on / off device will be recognized by your Z-Wave controller</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2517/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Zooz ZEN15 Power Switch 
          Configuration Parameters -->
   <Protocol refreshonnodeinfoframe="true"/>
-    <CommandClass id="112">
-        <Value  type="list" index="20" genre="config" label="Overload Protection" min="0" max="1" value="1" size="1">
-            <Help>Overload protection.</Help>
-            <Item value="0" label="Disabled" />
-            <Item value="1" label="Enabled" />
-        </Value>
-        <Value type="list" index="21" genre="config" label="On/Off Status Recovery After Power Failure" min="0" max="2" value="0" size="1">
-            <Help>Choose the recovery state for your Power Switch if power outage occurs.</Help>
-            <Item value="0" label="Previous state" />
-            <Item value="1" label="ON" />
-            <Item value="2" label="OFF" />
-        </Value>
-        <Value type="list" index="24" genre="config" label="On/Off Status Change Notifications" min="0" max="2" value="1" size="1">
-            <Help>Send On/Off Status Change Notifications</Help>
-            <Item value="0" label="Disabled" />
-            <Item value="1" label="Sends notification if status is changed manually or remotely" />
-            <Item value="2" label="Sends notification ONLY if status is changed manually" />
-        </Value>
-        <Value type="list" index="27" genre="config" label="LED Indicator Control" min="0" max="1" value="0" size="1">
-	        <Help>0 - LED indicator will display power consumption whenever the device is plugged in. 1 - LED indicator will display the level of power consumption for 5 seconds only whenever the device is turned on or off</Help>
-	        <Item label="Display whenever the device is plugged in (Default)" value="0" />
-	        <Item label="Display power consumption for 5 seconds" value="1" />
-        </Value>
-        <Value type="short" index="151" genre="config" label="Power Report Value Threshold" units="watts" min="1" max="65535" value="0" size="2">
-	        <Help>Number of Watts the appliance needs to go over for the change to be reported</Help>
-        </Value>
-        <Value type="int" index="152" genre="config" label="Power Report Percentage Threshold" units="%" min="1" max="255" value="10" size="4">
-	        <Help>Percentage in power usage change the appliance needs to go over for the event to be reported (Default 10)</Help>
-        </Value>
-        <Value type="int" index="171" genre="config" label="Power Report Frequency" min="5" max="2678400" value="0" size="4">
-	        <Help>Number of seconds</Help>
-        </Value>
-        <Value type="int" index="172" genre="config" label="Energy Report Frequency" min="5" max="2678400" value="0" size="4">
-	        <Help>Number of seconds</Help>
-        </Value>
-        <Value type="int" index="173" genre="config" label="Voltage Report Frequency" min="5" max="2678400" value="0" size="4">
-	        <Help>Number of seconds</Help>
-        </Value>
-        <Value type="int" index="174" genre="config" label="Electricity Report Frequency" min="5" max="2678400" value="0" size="4">
-	        <Help>Number of seconds</Help>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-      <Associations num_groups="1">
-        <Group index="1" label="Lifeline" max_associations="5" />
-      </Associations>
-    </CommandClass>
+  <CommandClass id="112">
+    <Value genre="config" index="20" label="Overload Protection" max="1" min="0" size="1" type="list" value="1">
+      <Help>Overload protection.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="21" label="On/Off Status Recovery After Power Failure" max="2" min="0" size="1" type="list" value="0">
+      <Help>Choose the recovery state for your Power Switch if power outage occurs.</Help>
+      <Item label="Previous state" value="0"/>
+      <Item label="ON" value="1"/>
+      <Item label="OFF" value="2"/>
+    </Value>
+    <Value genre="config" index="24" label="On/Off Status Change Notifications" max="2" min="0" size="1" type="list" value="1">
+      <Help>Send On/Off Status Change Notifications</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Sends notification if status is changed manually or remotely" value="1"/>
+      <Item label="Sends notification ONLY if status is changed manually" value="2"/>
+    </Value>
+    <Value genre="config" index="27" label="LED Indicator Control" max="1" min="0" size="1" type="list" value="0">
+      <Help>0 - LED indicator will display power consumption whenever the device is plugged in. 1 - LED indicator will display the level of power consumption for 5 seconds only whenever the device is turned on or off</Help>
+      <Item label="Display whenever the device is plugged in (Default)" value="0"/>
+      <Item label="Display power consumption for 5 seconds" value="1"/>
+    </Value>
+    <Value genre="config" index="151" label="Power Report Value Threshold" max="65535" min="1" size="2" type="short" units="watts" value="0">
+      <Help>Number of Watts the appliance needs to go over for the change to be reported</Help>
+    </Value>
+    <Value genre="config" index="152" label="Power Report Percentage Threshold" max="255" min="1" size="4" type="int" units="%" value="10">
+      <Help>Percentage in power usage change the appliance needs to go over for the event to be reported (Default 10)</Help>
+    </Value>
+    <Value genre="config" index="171" label="Power Report Frequency" max="2678400" min="5" size="4" type="int" value="0">
+      <Help>Number of seconds</Help>
+    </Value>
+    <Value genre="config" index="172" label="Energy Report Frequency" max="2678400" min="5" size="4" type="int" value="0">
+      <Help>Number of seconds</Help>
+    </Value>
+    <Value genre="config" index="173" label="Voltage Report Frequency" max="2678400" min="5" size="4" type="int" value="0">
+      <Help>Number of seconds</Help>
+    </Value>
+    <Value genre="config" index="174" label="Electricity Report Frequency" max="2678400" min="5" size="4" type="int" value="0">
+      <Help>Number of seconds</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

@@ -1,12 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- To be effective, this file should be placed in the user data folder specified in the Options::Create method -->
+<!-- Please See https://github.com/OpenZWave/open-zwave/wiki/Config-Options for details about this file -->
 <Options xmlns='https://github.com/OpenZWave/open-zwave'>
+  <!-- Should Logging be enabled. -->
   <Option name="logging" value="true" />
+  
+  <!-- Should we Output Log Messages on the Console. Set to True for Foreground Processes -->
+  <!-- <Option name="ConsoleOutput" value="false" /> -->
+  
+  <!-- The Name of the Log File -->
+  <!-- <Option name="LogFileName" value="OZW_Log.txt" /> -->
+  
+  <!-- Should we create a new Log File on start, or append to a Log File if it exists -->
+  <!-- <Option name="AppendLogFile" value="false" /> -->
+  
+  <!-- Should we automatically associate the Controller Node with devices Lifeline Group (or other groups marked as Auto) -->
   <Option name="Associate" value="true" />
+
+  <!-- Should we ask a Node to update its Routing Tables to the Controller Node after 
+  adding the Controller to the Nodes Assication Groups. Generally not needed for Z-Wave+ Networks -->
+  <Option name="PerformReturnRoutes" value="false" />
+
+  <!-- Should we send a Notification After each Message is sent -->
   <Option name="NotifyTransactions" value="false" />
+
+  <!-- Maximum Number of Attempts we make to open a Serial Port -->
   <Option name="DriverMaxAttempts" value="5" />
+
+  <!-- When Shutting Down, Should we save a copy of the Cache (ozwcache -->
   <Option name="SaveConfiguration" value="true" />
+
+  <!-- If Retries are enabled, How long to wait to Retry. - 
+  Note - The Z-Wave Protocol automatically retries. 
+  This is unlikely to fix any timeout issues you may have -->
   <!-- <Option name="RetryTimeout" value="40000" /> -->
+
   <!-- If you are using any Security Devices, you MUST set a network Key -->
   <!-- <Option name="NetworkKey" value="0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10" /> -->
 
@@ -15,7 +43,33 @@
   Devices) This option will make the UserCode CC stop on the first
   "available" usercode slot rather than retrieve every one -->
   <Option name="RefreshAllUserCodes" value="false" />
+
+  <!-- WinRT only - How long to wait till we terminate Threads -->
   <Option name="ThreadTerminateTimeout" value="5000" />
+
   <!-- Language we should use for ValueID Labels and Help Text -->
   <!-- <Option name="Language" value="fr" /> -->
+  
+  <!-- Should we assume all devices are awake upon Startup - 
+  This can help getting some Sleeping Devices online faster in limited cases -->
+  <!-- <Option name="AssumeAwake" value="true" /> -->
+  
+  <!-- Determine Which CommandClasses we should Encrypt Communications with 
+  Changing this will most likely break communications with some devices -->
+  <!-- <Option name="SecurityStrategy" value="SUPPORTED" /> -->
+  
+  <!-- If a Device is Marked Secure, then only accept Encrypted Messages from it. 
+  This will stop any downgrade attacks against OZW. If you have issues, disable this -->
+  <!-- <Option name="EnforceSecureReception" value="false" /> -->
+  
+  <!-- Should OZW automatically download new Config File Versions. Default is true -->
+  <!-- <Option name="AutoUpdateConfigFile" value="false" /> -->
+  
+  <!-- When we have a new config file for a device, This determine when a device is reloaded 
+  so the new connfig file is affected on the device -->
+  <!-- <Option name="ReloadAfterUpdate" value="NEVER" /> -->
+  
+  <!-- Should OZW include any Instance Labels on ValueID Labels -->
+  <!-- <Option name="IncludeInstanceLabel" value="false" /> -->
+  
 </Options>
