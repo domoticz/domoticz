@@ -504,7 +504,7 @@ namespace http {
 
 			request_path = ExtractRequestPath(request_path);
 
-			int paramPos = request_path.find_first_of('?');
+			size_t paramPos = request_path.find_first_of('?');
 			if (paramPos != std::string::npos)
 			{
 				request_path = request_path.substr(0, paramPos);
