@@ -1411,7 +1411,7 @@ namespace http {
 				bool bHaveGZipSupport = (strstr(encoding_header, "gzip") != NULL);
 				if (bHaveGZipSupport)
 				{
-					CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
+					CA2GZIP gzip((char*)rep.content.c_str(), (int)rep.content.size());
 					if ((gzip.Length > 0) && (gzip.Length < (int)rep.content.size()))
 					{
 						rep.bIsGZIP = true; // flag for later
