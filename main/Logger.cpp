@@ -7,7 +7,6 @@
 #include "localtime_r.h"
 #include "Helper.h"
 #include "mainworker.h"
-#include "Helper.h"
 
 #ifndef WIN32
 #include <syslog.h>
