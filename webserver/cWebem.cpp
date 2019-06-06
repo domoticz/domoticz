@@ -703,20 +703,20 @@ namespace http {
 					}
 				}
 
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 				if (!boost::algorithm::starts_with(strMimeType, "image"))
 				{
-					reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-					reply::add_header(&rep, "Content-Type", strMimeType + ";charset=UTF-8");
+					if (!strMimeType.empty())
+						strMimeType += ";charset=UTF-8";
 					reply::add_header(&rep, "Cache-Control", "no-cache");
 					reply::add_header(&rep, "Pragma", "no-cache");
 					reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 				}
 				else
 				{
-					reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-					reply::add_header(&rep, "Content-Type", strMimeType);
 					reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
 				}
+				reply::add_header_content_type(&rep, strMimeType);
 				return true;
 			}
 

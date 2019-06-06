@@ -39,6 +39,7 @@ struct mapping
   { "php", "text/html" },
   { "wav", "audio/x-wav" },
   { "svg", "image/svg+xml" },
+  { "ico", "image/x-icon" },
   { "db", "application/octet-stream" },
   { "otf", "application/x-font-otf" },
   { "ttf", "application/x-font-ttf" },
@@ -69,7 +70,7 @@ std::string extension_to_type(const std::string& extension)
     }
   }
 
-  return "text/plain";
+  return "";// RFC-7231 states that unknown files types should have not send any Content-Type header;
 }
 
 } // namespace mime_types
