@@ -1931,8 +1931,8 @@ namespace http {
 				if (cookie != NULL)
 				{
 					std::string scookie = cookie;
-					int fpos = scookie.find("DMZSID=");
-					int upos = scookie.find("_", fpos);
+					size_t fpos = scookie.find("DMZSID=");
+					size_t upos = scookie.find("_", fpos);
 					if ((fpos != std::string::npos) && (upos != std::string::npos))
 					{
 						std::string sSID = scookie.substr(fpos + 7, upos - fpos - 7);
