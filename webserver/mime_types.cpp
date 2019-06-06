@@ -51,6 +51,11 @@ struct mapping
   { "mov", "video/quicktime" },
   { "avi", "video/x-msvideo" },
   { "wmv", "video/x-ms-wmv" },
+  { "h264", "video/h264" },
+  { "mp4", "video/mp4" },
+  { "wmv", "video/x-ms-wmv" },
+  { "txt", "text/plain" },
+  { "pdf", "application/pdf" },
   { 0, 0 } // Marks end of list.
 };
 
