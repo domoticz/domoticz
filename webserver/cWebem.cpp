@@ -1995,6 +1995,9 @@ namespace http {
 			modify_info mInfo;
 			if (myWebem->CheckForPageOverride(session, requestCopy, rep))
 			{
+				if (rep.status == reply::status_type::download_file)
+					return;
+
 				if (session.reply_status != reply::ok) // forbidden
 				{
 					rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));

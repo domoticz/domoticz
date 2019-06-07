@@ -22,6 +22,8 @@ namespace status_strings {
 
 const std::string switching_protocols =
 	"HTTP/1.1 101 Switching Protocols\r\n";
+const std::string download_file =
+	"HTTP/1.1 102 Download File\r\n";
 const std::string ok =
 	"HTTP/1.1 200 OK\r\n";
 const std::string created =
@@ -61,6 +63,9 @@ std::string to_string(reply::status_type status)
 	{
 	case reply::switching_protocols:
 		return switching_protocols;
+	case reply::download_file:
+		return download_file;
+
 	case reply::ok:
 		return ok;
 	case reply::created:
@@ -138,6 +143,7 @@ void reply::reset()
 namespace stock_replies {
 
 const char switching_protocols[] = "";
+const char download_file[] = "";
 const char ok[] = "";
 const char created[] =
   "<html>"
@@ -215,6 +221,9 @@ std::string to_string(reply::status_type status)
   {
   case reply::switching_protocols:
     return switching_protocols;
+  case reply::download_file:
+	  return download_file;
+
   case reply::ok:
     return ok;
   case reply::created:
@@ -339,6 +348,16 @@ bool reply::set_content_from_file(reply *rep, const std::string & file_path, con
 			reply::add_header_content_type(rep, mime_type);
 		}
 	}
+	return true;
+}
+
+bool reply::set_download_file(reply* rep, const std::string& file_path, const std::string& attachment)
+{
+	if (file_path.empty() || attachment.empty())
+		return false;
+	rep->reset();
+	rep->status = reply::status_type::download_file;
+	rep->content = file_path + "\r\n" + attachment;
 	return true;
 }
 
