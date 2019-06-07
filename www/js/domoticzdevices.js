@@ -969,9 +969,6 @@ Device.create = function (item) {
         case "venetian blinds":
             dev = new Blinds(item);
             break;
-        case "water":
-            dev = new WaterSensor(item);
-            break;
         case "wind":
             dev = new Wind(item);
             break;
@@ -1229,17 +1226,26 @@ WeatherSensor.inheritsFrom(VariableSensor);
 function Switch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.imagetext = "Activate switch";
-        this.controlable = true;
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
         if (item.CustomImage != 0) {
             this.image = (this.status == "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         } else {
             this.image = (this.status == "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.showStatus = (Device.showSwitchValues == true);
         this.data = '';
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        if (
+			(item.SwitchType !== "Contact")&&
+			(item.SwitchType !== "Door Contact")
+			) {
+			this.showStatus = (Device.showSwitchValues == true);
+			this.imagetext = "Activate switch";
+			this.controlable = true;
+			this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
+        } else {
+			//Read-Only type, should not be able to switch
+			this.onClick = this.LogLink;
+			this.showStatus = false;
+        }
     }
 }
 Switch.inheritsFrom(Sensor);
@@ -1295,16 +1301,14 @@ function Blinds(item) {
         this.data = '';
         if (item.Status == 'Closed') {
             this.image = 'images/blinds48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'On' : 'Off') + "'," + Device.switchFunction + ',' + this.protected + ');';
             this.image2 = 'images/blindsopen48.png';
-            this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'Off' : 'On') + "'," + Device.switchFunction + ',' + this.protected + ');';
         }
         else {
             this.image = 'images/blindsopen48sel.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType != "Blinds Inverted") ? 'On' : 'Off') + "'," + Device.switchFunction + ',' + this.protected + ');';
             this.image2 = 'images/blinds48.png';
-            this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType != "Blinds Inverted") ? 'Off' : 'On') + "'," + Device.switchFunction + ',' + this.protected + ');';
         }
+		this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'On' : 'Off') + "'," + Device.switchFunction + ',' + this.protected + ');';
+		this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'Off' : 'On') + "'," + Device.switchFunction + ',' + this.protected + ');';
         if (item.SwitchType == "Blinds Percentage") {
             this.haveDimmer = true;
             this.image2 = '';
@@ -1683,18 +1687,6 @@ function Visibility(item) {
     }
 }
 Visibility.inheritsFrom(WeatherSensor);
-
-function WaterSensor(item) {
-    if (arguments.length != 0) {
-        this.parent.constructor(item);
-        this.image = (this.status === 'Closed') ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
-        this.data = '';
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.status = this.status === 'Closed' ? 'No leakage' : 'Leakage';
-        this.showStatus = false;
-    }
-}
-WaterSensor.inheritsFrom(BinarySensor);
 
 function Wind(item) {
     if (arguments.length != 0) {

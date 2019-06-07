@@ -45,21 +45,21 @@ namespace OpenZWave
 		virtual ~Alarm(){}
 
 		/** \brief Get command class ID (1 byte) identifying this command class. */
-		static uint8 const StaticGetCommandClassId(){ return 0x71; }
+		static uint8 const StaticGetCommandClassId() { return 0x71; }
 		/** \brief Get a string containing the name of this command class. */
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_NOTIFICATION"; }
 
 		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
+		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
 		/** \brief Get command class ID (1 byte) identifying this command class. (Inherited from CommandClass) */
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
+		virtual uint8 const GetCommandClassId()const override { return StaticGetCommandClassId(); }
 		/** \brief Get a string containing the name of this command class. (Inherited from CommandClass) */
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
+		virtual string const GetCommandClassName()const override { return StaticGetCommandClassName(); }
 		/** \brief Handle a response to a message associated with this command class. (Inherited from CommandClass) */
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual uint8 GetMaxVersion(){ return 8; }
-		virtual bool SetValue( Value const& _value );
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+		virtual uint8 GetMaxVersion() override { return 8; }
+		virtual bool SetValue( Value const& _value ) override;
 
 
 	private:

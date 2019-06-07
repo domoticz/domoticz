@@ -1,4 +1,56 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:2000:1701</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgwpg111.png</MetaDataItem>
+    <MetaDataItem id="2000" name="ZWProductPage" type="1701">https://products.z-wavealliance.org/products/2854/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2899/FGWPG-111-EN-T-v.0.2.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
+1.	Plug the device into a socket nearby the main Z-Wave controller.
+2.	The LED frame will glow green signaling being added (removing is not necessary otherwise).
+3.	Set the main controller into remove mode.
+4.	Quickly, triple click the button located on the casing.
+5.	Wait for the removing process to end.
+6.	Successful removing will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Wall Plug is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset procedure allows to restore the device back to its factory settings, which means all information about the Z-Wave controller and user configuration will be deleted.
+1.	Make sure the device is powered.
+2.	Press and hold the button.
+3.	Wait for the LED frame to glow yellow (3rd menu position).
+4.	Release the button.
+5.	Click the button once to confirm selection.
+6.	After few seconds the device will restart with factory settings, which is signaled with the red frame color.
+
+Resetting the device is not the recommended way of removing the device from the Z-Wave network. Use the reset procedure only if the primary controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="Name">Wall Plug UK</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Wall Plug is a remotely controlled plug-in switch with the ability to measure power and energy consumption. It uses a LED frame to visualize the current load and operating mode with color changing illumination. FIBARO Wall Plug makes it possible to control electrical devices in a convenient and maintenance-free way.  
+Main features of FIBARO Wall Plug:
+- Compatible with any Z-Wave or Z-Wave+ Controller.
+- Supports Z-Wave network Security Modes: S0 with AES-128 encryption and S2 with PRNG-based encryption.
+- Extremely easy installation - simply plug the device into the mains socket.
+- Works as a Z-Wave signal repeater.
+- Active power and energy consumption metering for plugged device.
+- Current value of the load and operating mode are indicated by the multi-color LED frame.
+</MetaDataItem>
+    <MetaDataItem id="2000" name="Identifier" type="1701">FGWPB-111</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network:
+1.	Plug the device into a socket nearby the main Z-Wave controller.
+2.	The LED frame will glow red signaling not being added (reset or remove the device otherwise).
+3.	Set the main controller in (security/non-security) add mode.
+4.	Quickly, triple click the button located on the casing.
+5.	If you are adding in S2 authenticated mode, type in the device pin code (underlined part of the public key available on the device or in the manual).
+6.	Wait for the adding process to end.
+7.	Successful adding will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem id="2000" name="FrequencyName" type="1701">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2854/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2899/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="1000" name="ZWProductPage" type="1801">https://products.z-wavealliance.org/products/2899/</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="1801">FGWPG-111</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="1801">CEPT (Europe)</MetaDataItem>
+  </MetaData>
   <!--
     Fibaro FGWPG111 Wall Plug
     https://products.z-wavealliance.org/products/2899

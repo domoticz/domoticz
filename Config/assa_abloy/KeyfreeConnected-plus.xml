@@ -1,6 +1,66 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
-<!-- Yale Keyfree Connected (YKFCON)
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0129:0001:0007</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/assa_abloy/KeyfreeConnected-plus.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0007">https://products.z-wavealliance.org/products/2576/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Put the Z-Wave controller into add mode
+
+Enter the Master code on the lock, followed by #
+
+Press the 4 button, followed by #
+
+Press the 1 button followed by #
+
+Refer to the operation manual of the Z-Wave controller to complete the add/inclusion process
+
+For more information on this please visit:
+www.yale.co.uk/smart-living
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Put the Z-Wave controller into remove mode
+
+Enter the Master code on the lock, followed by #
+
+Press the 4 button, followed by #
+
+Press the 2 button followed by #
+
+Refer to the operation manual of the Z-Wave controller to complete the remove/exclusion process
+
+For more information on this please visit:
+www.yale.co.uk/smart-living
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2743/Instruction Manual V2b.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Keyfree Connected Ready smart lock
+
+Features
+
+    Battery operated
+    Low battery indicator with emergency battery connection
+    User codes and settings remain if batteries are replaced
+    3 minute lock out if code is entered incorrectly 5 times
+    Tamper alarm
+    For use on UPVC &amp; Composite Doors
+    2 year guarantee
+</MetaDataItem>
+    <MetaDataItem name="Name">Keyfree Connected</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Enter the Master code on the lock, followed by #
+
+Press the 4 button, followed by #
+
+Press the 0 button followed by #
+
+Please use this procedure only when the network controller is missing or inoperable</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0007">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0007">YD-01-CON</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2576/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2743/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0006">https://products.z-wavealliance.org/products/2743/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0006">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0006">YKFCON</MetaDataItem>
+  </MetaData>
+  <!-- Yale Keyfree Connected (YKFCON)
 http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf 
 https://products.z-wavealliance.org/products/2743/configs
 -->
@@ -8,38 +68,38 @@ https://products.z-wavealliance.org/products/2743/configs
 https://products.z-wavealliance.org/products/2576/configs
 -->
 	<!-- Configuration -->
-	<CommandClass id="112">
-		<Value type="list" size="1" genre="config" instance="1" index="1" label="Volume Level" value="3">
-			<Help>Volume of the keypad tones and any voice prompts (default = 3, high)</Help>
-			<Item label="Silent" value="1" />
-			<Item label="Low" value="2" />
-			<Item label="High" value="3" />
-		</Value>
-		<Value type="list" size="1" genre="config" instance="1" index="2" label="Auto Relock" value="0">
-			<Help>Enable or disable the Auto relock feature (default = 255, enable)</Help>
-			<Item label="Enable" value="255" />
-			<Item label="Disable" value="0" />
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="3" label="Relock Time" size="1" min="7" max="60" units="seconds" value="7">
-			<Help>After successful local unlock, automatically relock after the specified time (default = 7 seconds)</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="6" label="Remote Relock Time" size="1" min="10" max="90" units="seconds" value="10">
-			<Help>After successful remote unlock, automatically relock after the specified time (default = 10 seconds)</Help>
-		</Value>
-	</CommandClass>
-	<CommandClass id="113">
-		<!-- These Door Locks don't send a DoorLockReport when the
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Volume Level" size="1" type="list" value="3">
+      <Help>Volume of the keypad tones and any voice prompts (default = 3, high)</Help>
+      <Item label="Silent" value="1"/>
+      <Item label="Low" value="2"/>
+      <Item label="High" value="3"/>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Auto Relock" size="1" type="list" value="0">
+      <Help>Enable or disable the Auto relock feature (default = 255, enable)</Help>
+      <Item label="Enable" value="255"/>
+      <Item label="Disable" value="0"/>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="Relock Time" max="60" min="7" size="1" type="byte" units="seconds" value="7">
+      <Help>After successful local unlock, automatically relock after the specified time (default = 7 seconds)</Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Remote Relock Time" max="90" min="10" size="1" type="byte" units="seconds" value="10">
+      <Help>After successful remote unlock, automatically relock after the specified time (default = 10 seconds)</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="113">
+    <!-- These Door Locks don't send a DoorLockReport when the
 		Lock Status is Changed, but instead send a Alarm Message -
 		So we trigger a Refresh of the DoorLock Command Class when
 		we recieve a Alarm Message Instead -->
-		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
-			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1" />
-		</TriggerRefreshValue>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Lifeline"/>
-		</Associations>
-	</CommandClass>
+    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+      <RefreshClassValue CommandClass="98" Index="1" Instance="1" RequestFlags="0"/>
+    </TriggerRefreshValue>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

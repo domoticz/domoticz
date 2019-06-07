@@ -504,7 +504,7 @@ namespace http {
 
 			request_path = ExtractRequestPath(request_path);
 
-			int paramPos = request_path.find_first_of('?');
+			size_t paramPos = request_path.find_first_of('?');
 			if (paramPos != std::string::npos)
 			{
 				request_path = request_path.substr(0, paramPos);
@@ -703,20 +703,20 @@ namespace http {
 					}
 				}
 
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 				if (!boost::algorithm::starts_with(strMimeType, "image"))
 				{
-					reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-					reply::add_header(&rep, "Content-Type", strMimeType + ";charset=UTF-8");
+					if (!strMimeType.empty())
+						strMimeType += ";charset=UTF-8";
 					reply::add_header(&rep, "Cache-Control", "no-cache");
 					reply::add_header(&rep, "Pragma", "no-cache");
 					reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 				}
 				else
 				{
-					reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-					reply::add_header(&rep, "Content-Type", strMimeType);
 					reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
 				}
+				reply::add_header_content_type(&rep, strMimeType);
 				return true;
 			}
 
@@ -1411,7 +1411,7 @@ namespace http {
 				bool bHaveGZipSupport = (strstr(encoding_header, "gzip") != NULL);
 				if (bHaveGZipSupport)
 				{
-					CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
+					CA2GZIP gzip((char*)rep.content.c_str(), (int)rep.content.size());
 					if ((gzip.Length > 0) && (gzip.Length < (int)rep.content.size()))
 					{
 						rep.bIsGZIP = true; // flag for later
@@ -1931,8 +1931,8 @@ namespace http {
 				if (cookie != NULL)
 				{
 					std::string scookie = cookie;
-					int fpos = scookie.find("DMZSID=");
-					int upos = scookie.find("_", fpos);
+					size_t fpos = scookie.find("DMZSID=");
+					size_t upos = scookie.find("_", fpos);
 					if ((fpos != std::string::npos) && (upos != std::string::npos))
 					{
 						std::string sSID = scookie.substr(fpos + 7, upos - fpos - 7);

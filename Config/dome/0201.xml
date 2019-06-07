@@ -1,5 +1,60 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/021F:0201:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/dome/0201.png</MetaDataItem>
+    <MetaDataItem id="0201" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2830/</MetaDataItem>
+    <MetaDataItem name="Description">	The Dome Door/Window Sensor Pro is a battery powered security-enabled* Z-Wave Plus magnetic reed switch that can monitor the status of doors, windows, and anything else that opens and closes.  It can also report ambient temperature levels.  The Door/Window Sensor consists of two parts - the “sensor,” and the “magnet.”  The sensor has a “reed switch” inside, which is sensitive to the magnet’s presence when aligned properly and within the defined distance.  When the sensor and magnet are brought together or pulled apart, the sensor will report its open/close status to its Z-Wave controller, and the encrypted wireless communication* ensures that user data remains secure. Because many manufacturers use Z-Wave to communicate, the Door/Window Sensor can interact with different products of different categories.
+
+• Z-Wave Plus Certified
+• S0 Security-Enabled*
+• Built-In Temperature Sensor
+• Up to 250’ range
+• Ten-Year Battery Life
+• LED Signal Strength Indication
+• 1.25” Max distance between sensor &amp; magnet
+• Ultra-Narrow (1/4”) Magnet for Placement Between Door and Casing
+• Monitor doors, windows, medicine cabinets, drawers, garage doors, and many other openings</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Because the Door/Window Sensor Pro is a battery powered device, it wakes up on regular intervals to give battery and other status updates to the controller, as well as to accept configuration settings from the controller.  This helps to extend the battery life.  The Sensor Cover holds down the Button when installed, and the device can be forced to wake up to submit reports or accept new settings immediately by simply removing the Sensor Cover and then replacing it after.  If the device is already included in a system, the LED Indicator will flash Red until the cover is closed.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2830/Gen2DWAPIManualv1.2_1.pdf</MetaDataItem>
+    <MetaDataItem name="Name">Dome Door/Window Sensor Pro</MetaDataItem>
+    <MetaDataItem name="ResetDescription">If needed, the Door/Window Sensor Pro can be reset locally by following these steps.  Only do this if your Z-Wave controller is missing or otherwise unreachable.  Beware that resetting your device will disconnect it from the system:
+1. Remove the Sensor Cover and confirm that your Door/Window Sensor Pro is powered up.
+2. Wait for 5 seconds.
+3. Move the Magnet and Sensor Base in and out of the closed position 6 times.
+4. The LED Indicator will light up red for five seconds when reset successfully.
+
+The Door/Window Sensor Pro memory will be erased to factory settings. 
+</MetaDataItem>
+    <MetaDataItem id="0201" name="FrequencyName" type="0003">U.S. / Canada / Mexico / CEPT (Europe) / Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0201" name="Identifier" type="0003">DMDP1</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Follow the instructions for your Z-Wave Certified Controller to enter exclusion mode.  When prompted by the controller:
+Remove the SENSOR COVER and the LED Indicator will start blinking red.
+Press the Button quickly 3 times in a row.
+The LED Indicator will flash green three times indicating exclusion/disconnection and will then continue flashing red (indicating tamper) until the cover is replaced.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">New Installation
+1. For proper inclusion, bring the Door/Window Sensor Pro to the final location where it will be used*.
+2. Follow the instructions for your Z-Wave controller to enter inclusion mode.
+3. Remove the Battery Tab protruding from the Battery Tab Slit.
+4. The device will automatically enter inclusion mode for two minutes and the LED Indicator will alternate between green and red.
+
+Upon successful inclusion the LED Indicator will flash green three times then stop blinking.
+
+Re-Installation
+1. For proper inclusion, bring the Door/Window Sensor Proto the final location where it will be used*.
+2. Follow the instructions for your Z-Wave controller to enter inclusion mode.
+3. Remove the Sensor Cover and the LED Indicator will start blinking yellow.
+4. Press the Button quickly 3 times in a row.
+5. The device will enter inclusion mode for two minutes and the LED Indicator will alternate between green and red.
+
+After successful inclusion, the LED Indicator will flash green three times then blink red until the cover is replaced.
+
+*For non Z-Wave Plus networks, please consult the owner’s manual for your primary controller to determine the best method and location for adding the Door/Window Sensor Pro to your Z-Wave network.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2399/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2829/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2830/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!--
   Dome Door/Window Sensor Pro
   https://products.z-wavealliance.org/products/2399
@@ -7,7 +62,7 @@
   -->
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" genre="config" index="1" label="Indicator LED" units="level" min="0" max="1" size="1" value="1">
+    <Value genre="config" index="1" label="Indicator LED" max="1" min="0" size="1" type="list" units="level" value="1">
       <Help>
         This parameter enables or disables the LED Indicator flashing to indicate opening and closing events.
         The Door/Window Sensor will always flash the LED Indicator for inclusion, exclusion, tamper, and other system events.
@@ -15,7 +70,7 @@
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" genre="config" index="2" label="Open/Close Reports Sent" units="level" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="2" label="Open/Close Reports Sent" max="1" min="0" size="1" type="list" units="level" value="0">
       <Help>
         This parameter switches the Notification or Binary Sensor report sent when the door opens or closes.
         If this parameter is set to 01, the Door/Window Sensor will report closed instead of open when the Magnet and Sensor are pulled apart.
@@ -23,7 +78,7 @@
       <Item label="Reports Closed when Magnet is close" value="0"/>
       <Item label="Reports Open when Magnet is close" value="1"/>
     </Value>
-    <Value type="list" genre="config" index="3" label="Report Command Classes" units="level" min="0" max="2" size="1" value="0">
+    <Value genre="config" index="3" label="Report Command Classes" max="2" min="0" size="1" type="list" units="level" value="0">
       <Help>
         By default, the Door/Window Sensor uses the Notification command class to communicate open/close and tamper events.
         If this Parameter is set to 1, the device will instead use the Binary Sensor command class.
@@ -32,7 +87,7 @@
       <Item label="Notification" value="1"/>
       <Item label="Binary Sensor" value="2"/>
     </Value>
-    <Value type="list" genre="config" index="4" label="Temperature sensor" units="level" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="4" label="Temperature sensor" max="1" min="0" size="1" type="list" units="level" value="0">
       <Help>
         The Door/Window Sensor can also monitor and report ambient temperature conditions.
         However, temperature sensing functionality is disabled by default to save battery life, and this configuration parameter is used to enable or disable this feature.
@@ -40,7 +95,7 @@
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="byte" genre="config" index="5" label="Temperature Offset" value="0" min="0" max="255" size="1">
+    <Value genre="config" index="5" label="Temperature Offset" max="255" min="0" size="1" type="byte" value="0">
       <Help>
         This Configuration Parameter can offset the temperature value reported by +/- 125 degrees to compensate for temperature variances in a room - for example, the temperature near the ceiling in a room is significantly higher than the average temperature of the same room.
         This Parameter accepts a signed 8-bit value with an absolute value of up to 125, and its units are Dependant on Configuration Parameter 07.
@@ -49,12 +104,12 @@
         255 to 130 : -1 to -125 degrees.
       </Help>
     </Value>
-    <Value type="list" genre="config" index="6" label="Temperature Units" units="level" min="0" max="1" size="1" value="0">
+    <Value genre="config" index="6" label="Temperature Units" max="1" min="0" size="1" type="list" units="level" value="0">
       <Help>The Door/Window Sensor can report temperature values in either Celsius or Fahrenheit, and this parameter allows the user to decide which unit is used.</Help>
       <Item label="Fahrenheit" value="0"/>
       <Item label="Celsius" value="1"/>
     </Value>
-    <Value type="byte" genre="config" index="7" label="Group 2 Basic Set Value" value="255" min="0" max="255" size="1">
+    <Value genre="config" index="7" label="Group 2 Basic Set Value" max="255" min="0" size="1" type="byte" value="255">
       <Help>
         This parameter sets the value sent by the Basic Set command to Association Group 2 (for more information, see Association Group Info.).
         0 Turn Off Device.
@@ -62,7 +117,7 @@
         255 Turn On Device.
       </Help>
     </Value>
-    <Value type="byte" genre="config" index="8" label="Group 4 Basic Set Level Opening" value="255" min="0" max="255" size="1">
+    <Value genre="config" index="8" label="Group 4 Basic Set Level Opening" max="255" min="0" size="1" type="byte" value="255">
       <Help>
         This parameter sets the value sent by the Basic Set command to Association Group 4.
         The Door/Window Sensor sends a Basic Set command to Association Group 4 when the door or window opens (for more information, see Association Group Info.).
@@ -71,7 +126,7 @@
         255 Turn On Device.
       </Help>
     </Value>
-    <Value type="byte" genre="config" index="9" label="Group 4 Basic Set Level Closing" value="0" min="0" max="255" size="1">
+    <Value genre="config" index="9" label="Group 4 Basic Set Level Closing" max="255" min="0" size="1" type="byte" value="0">
       <Help>
         This parameter sets the value sent by the Basic Set command to Association Group 4.
         The Door/Window Sensor sends a Basic Set command to Association Group 4 when the door or window opens (for more information, see Association Group Info.).
@@ -84,11 +139,11 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="5">
-      <Group index="1" max_associations="5" label="Lifeline" />
-      <Group index="2" max_associations="5" label="Tamper Basic Set" />
-      <Group index="3" max_associations="5" label="Tamper Notification Report" />
-      <Group index="4" max_associations="5" label="Sensor Basic Set" />
-      <Group index="5" max_associations="5" label="Sensor Notification Report"/>
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Tamper Basic Set" max_associations="5"/>
+      <Group index="3" label="Tamper Notification Report" max_associations="5"/>
+      <Group index="4" label="Sensor Basic Set" max_associations="5"/>
+      <Group index="5" label="Sensor Notification Report" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>

@@ -1,17 +1,19 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0131:0002:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/zipato/RGBBulb.png</MetaDataItem>
-    <MetaDataItem id="0002" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1132/</MetaDataItem>
+    <MetaDataItem id="0002" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2034/</MetaDataItem>
     <MetaDataItem name="InclusionDescription">Place your Z-Wave primary controller into inclusion mode by following the controller manufacturer's instructions.
 
 Place the light bulb into inclusion mode by gently tapping the
 light bulb. The light bulb will shine green to indicate a successful
 activation of inclusion mode.</MetaDataItem>
-    <MetaDataItem id="0002" name="Identifier" type="0002">rgbwe27zw</MetaDataItem>
-    <MetaDataItem id="0002" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0002" name="Identifier" type="0002">rgbwe27zw.us</MetaDataItem>
+    <MetaDataItem id="0002" name="FrequencyName" type="0002">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem name="ResetDescription">A factory default reset is performed when the bulb is excluded
-from a Z-wave network.</MetaDataItem>
+from a Z-Wave network.
+
+Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
     <MetaDataItem name="Description">Zipato RGBW BULB has 5 color channels available for you to adjust:
 RED, GREEN, BLUE, WARM WHITE and COLD WHITE. Zipato RGBW
 BULB can be used to add color to your home or just to lighten it up in
@@ -21,10 +23,11 @@ any white color tone you desire.</MetaDataItem>
 Place the light bulb into exclusion mode by gently tapping the
 light bulb. The light bulb will shine green to indicate a successful
 activation of exclusion mode.</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1132/Zipato RGBW Bulb Manual (EN) (1) (1).pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2034/rgbwe27zw - Zipato RGBW Bulb User Manual v1.1.pdf</MetaDataItem>
     <MetaDataItem name="Name">Zipato RGBW light bulb</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1132/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2034/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->

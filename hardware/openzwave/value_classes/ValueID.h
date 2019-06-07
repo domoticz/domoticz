@@ -30,6 +30,8 @@
 
 #include <string>
 #include <assert.h>
+
+#include "ValueIDIndexes.h"
 #include "Defs.h"
 
 class TiXmlElement;

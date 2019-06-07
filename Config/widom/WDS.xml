@@ -1,4 +1,23 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0149:0504:1214</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/widom/WDS.png</MetaDataItem>
+    <MetaDataItem id="0504" name="ZWProductPage" type="1214">https://products.z-wavealliance.org/products/1569/</MetaDataItem>
+    <MetaDataItem id="0504" name="Identifier" type="1214">0504</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Only a controller can remove a device from the network. WiDom Universal Double Switch is compatible with all Z-Wave certified controllers. After the exclusion procedure has been activated by the controller, the device can be removed, putting it in Exclusion Mode by three consecutive clicks on the (B) button or on the external switch, when available.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">The device can be reset ot the factory reset by six consecutive clicks. This procedure shuld be used only if the primary controller is missing or inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">If the device is not included into a Z-Wave network, a single click on the (B) button or on one of the external switches will launch the process of traditional inclusion. If the device inclusion procedure does not start within 2 seconds, the Network Wide Inclusion network will be launched lasting a variable amount of time between 15-30 seconds.</MetaDataItem>
+    <MetaDataItem name="Description">Universal Double Switch is the ON/OFF smallest control device in the world designed to independently control two separate loads, suited for use as both a local and remote switch. Similarly to the other WiDom “in wall” devices, it can be fully integrated into pre-existing systems and configured to associate configurable behaviours to a specific number of clicks, in full integration with the Z-Wave home automation ecosystem.
+Each of its two channels features an integrated consumption measurement device. The Universal Double Switch also boasts the lowest energy consumption on the market.
+At the same time, it is completely configurable so that it can adapt to the most varied needs while also being ready to be used without needing additional configurations in order to operate.
+Thanks to the framework developed by WiDom, the various types of “events” on the “External Switch” can be recognised and associated to actions to be performed on the device, on any associated devices, on all devices on the network.</MetaDataItem>
+    <MetaDataItem id="0504" name="FrequencyName" type="1214">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1569/Widom Double Relay_EN.pdf</MetaDataItem>
+    <MetaDataItem name="Name">WDS</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1569/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">
     <Value genre="config" index="1" instance="1" label="Outputs status upon receipt of 1 click on its command" size="1" type="list" value="1">

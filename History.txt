@@ -5,11 +5,14 @@ Version 4.xxxxx (xxx 2019)
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
 - Fixed: GUI, device table initial order column
 - Fixed: GUI, Switch Log, date parsing in device log (#3206)
+- Fixed: GUI, Floorplan, contact type can no longer be switch
+- Fixed: GUI, Floorplan, fixed blind switching (#3267)
 - Fixed: GUI, Weight Log now displays correct Unit (#3211)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
+- Fixed: YouLess, possible buffer overflow (#3261)
 - Fixed: notification, Telegram error when odd number of underscores in text
 - Updated: OpenZWave version 1.6
-- Updated: dzVents (version 2.4.21, See dzVents/documentation/history.md)
+- Updated: dzVents (version 2.4.22, See dzVents/documentation/history.md)
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

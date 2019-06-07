@@ -1,18 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
 Flood Sensor HS1WL-Z
 http://products.z-wavealliance.org/products/2322
--->
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="5">
-            <Group index="1" max_associations="1" label="LifeLine"/>
-            <Group index="2" max_associations="5" label="Binary Sensor"/>
-            <Group index="3" max_associations="5" label="Binary Sensor tamper"/>
-            <Group index="4" max_associations="5" label="Notification"/>
-            <Group index="5" max_associations="5" label="Notification tamper"/>
-        </Associations>
-    </CommandClass>
+--><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0260:1000:8004</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/heiman/HS1WL-Z.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="8004">https://products.z-wavealliance.org/products/3027/</MetaDataItem>
+    <MetaDataItem name="Description">The Smart Water Leakage Sensor can protect your house from potential water damage.It can be placed near plumbing,sinks,aquariums,pumps,refrigerators,dishwashers,toilets,basements,washing machines,water heaters,and garages.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">-  Wake up Notification is transmitted every 24 hours by default.
+-  Wake up Notification is transmitted after Notification Report is Transmitted</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">- Click [Add] icon in Z-Wave Controller .
+- Press the Networking_Button 3 times within 1.5s, Green LED is Blinking 4 times within 1 second.
+-  If Inclusion Process is successful, Green led will turn off.
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3027/HS3WL-Z-S2documentation.pdf</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="8004">HS3WL-Z</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">-  Click [Remove] icon in Z-Wave Controller
+-  Press the Networking_Button 3 times within 1.5s 
+-  If Exclusion Process is successful, Green led is Blinking 6 times, then turn off.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">-Long press Networking_Button while installing batteries in the Device 
+-Device Reset Locally notification is Transmitted
+-Green LED Turns off after 2 seconds.
+Please use this procedure only when the network primary controller is missing or otherwise  inoperable.</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="8004">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Name">Smart Water Leakage Sensor</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2322/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2709/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3027/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" label="LifeLine" max_associations="1"/>
+      <Group index="2" label="Binary Sensor" max_associations="5"/>
+      <Group index="3" label="Binary Sensor tamper" max_associations="5"/>
+      <Group index="4" label="Notification" max_associations="5"/>
+      <Group index="5" label="Notification tamper" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>
-

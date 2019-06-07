@@ -1,4 +1,20 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0234:010A:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/logicsoft/ZHC5010.png</MetaDataItem>
+    <MetaDataItem id="010A" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/1779/</MetaDataItem>
+    <MetaDataItem name="Name">Wall Switch</MetaDataItem>
+    <MetaDataItem id="010A" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ResetDescription">ZHC5010 can be factory reset by pressing the small button in the middle of the module (normally covered by small plastic cover) for at least 10 seconds. Please use this procedure only when the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1779/ZHC5010-Manual-EN-Rev11.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Pushing the upper left button 3 times, (triple click) will activate Inclusion Mode on the device. It is also possible to activate Inclusion Mode by triple clicking the switch in the middle of the module (normally covered by the middle plastic cover, this can be removed by means of a little screwdriver).</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Pushing the upper left button 3 times, (triple click) will activate Exclusion Mode on the device. It is also possible to activate Exclusion Mode by triple clicking the switch in the middle of the module (normally covered by the middle plastic cover, this can be removed by means of a little screwdriver).</MetaDataItem>
+    <MetaDataItem id="010A" name="Identifier" type="0003">ZHC5010</MetaDataItem>
+    <MetaDataItem name="Description">ZHC5010 is a wall switch module with four buttons, four LEDs, a built-in relay switch and is designed to fit into standard Danish LK FUGA® wall boxes.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="6">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1779/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <CommandClass id="112">
     <Value genre="config" index="1" instance="1" label="Upper paddle buttons mode" max="1" min="0" size="1" type="list" value="0">
       <Help>Configuration of Pair Mode for the upper two buttons (button #1 and #2).</Help>

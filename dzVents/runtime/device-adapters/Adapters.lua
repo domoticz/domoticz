@@ -134,15 +134,6 @@ local function DeviceAdapters(dummyLogger)
 		end
 	end
 
-	function self.round(num, numDecimalPlaces)
-		if (num == nil) then
-			--print(debug.traceback())
-			num = 0
-		end
-		local mult = 10 ^ (numDecimalPlaces or 0)
-		return math.floor(num * mult + 0.5) / mult
-	end
-
 	self.states = {
 		on = { b = true, inv = 'Off' },
 		open = { b = true, inv = 'Off' },

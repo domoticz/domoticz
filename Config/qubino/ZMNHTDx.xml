@@ -1,4 +1,44 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0007</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHTDx.png</MetaDataItem>
+    <MetaDataItem id="0052" name="ZWProductPage" type="0007">https://products.z-wavealliance.org/products/3018/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">FACTORY RESET
+1. Connect the device to the power supply
+2. Press and hold the S service button between 6 seconds and 20 seconds
+3. Device will be removed from you network
+ⓘ By resetting the device, all custom parameters previously set on the device will return to their default values, and the owner ID will be deleted. Use this reset procedure only when the main gateway (hub) is missing or otherwise inoperable.
+</MetaDataItem>
+    <MetaDataItem name="Description">The Qubino Smart Meter can be used in residential, industrial and utility applications. It measures energy directly in 2-wire networks by means of fast sampling of voltage and current signals. It calculates energy, power and power factor from the measured signals. You can control the device through the Z-Wave network. 
+The Qubino Smart Meter can operate across a wide temperature range, from a chilly -15˚C to a scorching 55˚C (5˚F–131˚F). Every device also acts as a repeater in order to improve the range and stability of the Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="Name">Smart Meter</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3018/Qubino_Smart Meter PLUS extended manual_eng_2.3.pdf</MetaDataItem>
+    <MetaDataItem id="0052" name="Identifier" type="0007">ZMNHTD1</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">AUTOMATICALLY ADDING THE DEVICE TO A Z-WAVE NETWORK (AUTO INCLUSION)
+1. Enable add/remove mode on your Z-Wave gateway (hub)
+2. Automatic selection of secure/unsecure inclusion
+3. The device can be automatically added to a Z-Wave network during the first 2 minutes 
+4. Connect the device to the power supply  
+5. Auto-inclusion will be initiated within 5 seconds of connection to the power supply and the device will automatically enrol in your network
+ⓘ NOTE: For S2 inclusion please check chapter – »16. Z-Wave Security«.  
+MANUALLY ADDING THE DEVICE TO A Z-WAVE NETWORK (MANUAL INCLUSION)
+1. Connect the device to the power supply 
+2. Enable add/remove mode on your Z-Wave gateway (hub)
+2. Toggle the Service button S between 0.2 and 6 seconds 
+3. A new multi-channel device will appear on your dashboard
+</MetaDataItem>
+    <MetaDataItem id="0052" name="FrequencyName" type="0007">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">REMOVAL FROM A Z-WAVE NETWORK (Z-WAVE EXCLUSION)
+1. Connect the device to the power supply
+2. Make sure the device is within direct range of your Z-Wave gateway (hub) or use a hand-held Z-Wave remote to perform exclusion 
+3. Enable add/remove mode on your Z-Wave gateway (hub)
+4. Press and hold the S service button between 0.2 and 6 seconds 
+5. The device will be removed from your network but custom configuration parameters will not be erased
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3018/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- 
 Qubino:  ZMNHTDx Smart meter Z-Wave+
 SW version S4,S5 & S6

@@ -1,8 +1,8 @@
-<!-- Philio: PSR04 Smart Color Button --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Philio: PSR04 Smart Color Button --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/013C:0022:0009</MetaDataItem>
     <MetaDataItem name="ProductPic">images/philio/psr04.png</MetaDataItem>
-    <MetaDataItem id="0022" name="ZWProductPage" type="0009">https://products.z-wavealliance.org/products/1448/</MetaDataItem>
+    <MetaDataItem id="0022" name="ZWProductPage" type="0009">https://products.z-wavealliance.org/products/2573/</MetaDataItem>
     <MetaDataItem name="InclusionDescription">1. Have Z-Wave™ Controller entered inclusion mode.
 2. Rotate to area A and then press button three times within 1.5 seconds to enter the inclusion mode.
 3. After add successful, the device will wake to receive the setting command from Z-Wave™ Controller about 20 seconds.</MetaDataItem>
@@ -16,15 +16,16 @@ magnetic back let the switch can be fixed on the wall. This product
 can be included and operated in any Z-Wave™  network  with other Z-Wave™  certified devices from other manufacturers and/or other applications.</MetaDataItem>
     <MetaDataItem id="0022" name="Identifier" type="0009">PSR04</MetaDataItem>
     <MetaDataItem name="Name">Smart Color Button</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1448/PSR04_Manual-2015-08-11.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2573/PSR04_manual.pdf</MetaDataItem>
     <MetaDataItem name="ResetDescription">Notice: Use this procedure only in the event that the primary controller is lost or otherwise inoperable.
 1. Rotate to area A and then press button four times within 1.5 seconds and do not release the button in the 4 th  pressed, and the red LED will light ON.
 2. After the red LED goes out, release the button within 2 seconds.
 3. IDs are removed and all settings will reset to factory default.</MetaDataItem>
-    <MetaDataItem id="0022" name="FrequencyName" type="0009">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="0022" name="FrequencyName" type="0009">CEPT (Europe) / Brazil</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1300/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1448/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2573/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->

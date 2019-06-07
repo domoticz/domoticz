@@ -513,12 +513,12 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		local getParts = function(set)
-			local day, month = string.match(set, '([0-9]+)/([0-9]+)')
-			return tonumber(day), tonumber(month)
+			local day, month = string.match(set, '([0-9%*]+)/([0-9%*]+)')
+			return day and tonumber( day ), month and tonumber( month )
 		end
 
 		--now get the ranges
-		for fromSet, toSet in string.gmatch(dates, '([0-9%/]*)-([0-9%/]*)') do
+		for fromSet, toSet in string.gmatch(dates, '([0-9%/%*]*)-([0-9%/%*]*)') do
 			local fromDay, toDay, fromMonth, toMonth
 
 			if (isEmpty(fromSet) and not isEmpty(toSet)) then

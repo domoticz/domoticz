@@ -33,6 +33,8 @@
 #include "platform/Controller.h"
 
 
+#ifdef USE_HID
+
 struct hid_device_;
 
 typedef struct hid_device_ hid_device;
@@ -150,6 +152,8 @@ namespace OpenZWave
 	};
 
 } // namespace OpenZWave
+
+#endif
 
 #endif //_HidController_H
 

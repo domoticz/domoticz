@@ -1,40 +1,98 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
-    <!-- Configuration -->
-    <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="20" label="Switch type" size="1" value="2">
-            <Help>
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0303</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgr223.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0303">https://products.z-wavealliance.org/products/3278/</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Roller Shutter 3 is powered with mains voltage so it is always awake.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset procedure allows to restore the device back to its factory settings, which means all information about the Z-Wave controller and user configuration will be deleted.
+1.	Switch off the mains voltage (disable the fuse).
+2.	Remove the device from the wall switch box.
+3.	Switch on the mains voltage.
+4.	Press and hold the B-button to enter the menu.
+5.	Wait for the LED indicator to glow yellow.
+6.	Quickly release and click the B-button again.
+7.	After few seconds the device will be restarted, which is signalled with the red LED indicator colour.
+Please use this procedure only when the network primary controller is missing or otherwise inoperable."
+</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="0303">FGR-223</MetaDataItem>
+    <MetaDataItem name="Name">Roller Shutter 3</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network manually:
+1.	Power the device.
+2.	Identify the S1 switch.
+3.	Set the main controller in (Security/non-Security Mode) add mode (see the controller’s manual).
+4.	Quickly, triple click the S1 switch.
+5.	If you are adding in Security S2, scan the DSK QR code or input the underlined part of the DSK (label on the bottom of the box).
+6.	Wait for the adding process to end.
+7.	Successful adding will be confirmed by the Z-Wave controller’s message.
+
+To add the device to the Z-Wave network using Smart Start:
+1.	Set the main controller in Security S2 Authenticated add mode (see the controller’s manual) 
+2.	Scan the DSK QR code or input the underlined part of the DSK 
+3.	(label on the bottom of the box).
+4.	Power the device (turn on the mains voltage).
+5.	LED will start blinking yellow, wait for the adding process to end.
+6.	Successful adding will be confirmed by the Z-Wave controller’s message.
+
+</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3278/FGR-223-EN-T-v1.3.pdf</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="0303">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
+1.	Make sure the device is powered.
+2.	Identify the S1 switch.
+3.	Set the main controller in remove mode (see the controller’s manual).
+4.	Quickly, triple click the S1 switch.
+5.	Wait for the removing process to end.
+6.	Successful removing will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Roller Shutter 3 is a device designed to control roller blinds, awnings, venetian blinds, gates and other single phase, AC powered devices. 
+Roller Shutter 3 allows precise positioning of roller blinds or venetian blind lamellas. The device is equipped with power and energy monitoring. It allows to control connected devices either via the Z-Wave network or via a switch connected directly to it.
+Main features of FIBARO Roller Shutter 3:
+- Compatible with any Z-Wave or Z-Wave Plus Controller,
+- Supports Z-Wave network Security Modes: S0 with AES-128 encryption and S2 with PRNG-based encryption,
+- To be installed with roller blind motors with electronic or mechanical limit switches,
+- Advanced microprocessor control,
+- Active power and energy metering functionality,
+- Works with various types of switches – momentary, toggle and dedicated roller blind switches,
+- To be installed in wall switch boxes,
+- Works as a Z-Wave signal repeater. 
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3183/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3278/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="20" instance="1" label="Switch type" size="1" type="list" value="2">
+      <Help>
                 This parameter defines as what type the device should treat the switch connected to the S1 and S2 terminals.
                 This parameter is not relevant in gate operating modes (parameter 151 set to 3 or 4).
                 In this case switch always works as a momentary and has to be connected to S1 terminal.
             </Help>
-            <Item label="Momentary switches" value="0" />
-            <Item label="Toggle switches" value="1" />
-            <Item label="Single, momentary switch" value="2" />
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="24" label="Inputs orientation" size="1" value="0">
-            <Help>
+      <Item label="Momentary switches" value="0"/>
+      <Item label="Toggle switches" value="1"/>
+      <Item label="Single, momentary switch" value="2"/>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Inputs orientation" size="1" type="list" value="0">
+      <Help>
                 This parameter allows reversing the operation of switches connected to S1 and S2 without changing the wiring.
                 Default:  S1 -> 1st channel, S2 -> 2nd channel.
                 Reversed: S1 -> 2nd channel, S2 -> 1st channel.
             </Help>
-            <Item label="Default" value="0" />
-            <Item label="Reversed" value="1" />
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="25" label="Outputs orientation" size="1" value="0">
-            <Help>
+      <Item label="Default" value="0"/>
+      <Item label="Reversed" value="1"/>
+    </Value>
+    <Value genre="config" index="25" instance="1" label="Outputs orientation" size="1" type="list" value="0">
+      <Help>
                 This parameter allows reversing the operation of Q1 and Q2 without changing the wiring (in case of invalid motor connection) to ensure proper operation.
                 - Default:  Q1 -> 1st channel, Q2 -> 2nd channel.
                 - Reversed: Q1 -> 2nd channel, Q2 -> 1st channel.
             </Help>
-            <Item label="Default" value="0" />
-            <Item label="Reversed" value="1" />
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="30" label="Alarm configuration - 1st slot" size="4" value="0">
-            <Help>
+      <Item label="Default" value="0"/>
+      <Item label="Reversed" value="1"/>
+    </Value>
+    <Value genre="config" index="30" instance="1" label="Alarm configuration - 1st slot" size="4" type="int" value="0">
+      <Help>
                 This parameter determines to which alarm frames and how the device should react.
                 The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
                 1B [MSB] - notification Type.
@@ -46,10 +104,9 @@
                     2 - close blinds.
                 Default setting: [0x00, 0x00, 0x00, 0x00]
             </Help>
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="31" label="Alarm configuration - 2st slot (water)" size="4" value="1358888960">
-            <Help>
+    </Value>
+    <Value genre="config" index="31" instance="1" label="Alarm configuration - 2st slot (water)" size="4" type="int" value="1358888960">
+      <Help>
                 This parameter determines to which alarm frames and how the device should react.
                 The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
                 1B [MSB] - notification Type.
@@ -61,10 +118,9 @@
                     2 - close blinds.
                 Default setting: [0x05, 0xFF, 0x00, 0x00] (Water Alarm, any notification, no action)
             </Help>
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="32" label="Alarm configuration - 3st slot (smoke)" size="4" value="33488896">
-            <Help>
+    </Value>
+    <Value genre="config" index="32" instance="1" label="Alarm configuration - 3st slot (smoke)" size="4" type="int" value="33488896">
+      <Help>
                 This parameter determines to which alarm frames and how the device should react.
                 The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
                 1B [MSB] - notification Type.
@@ -76,10 +132,9 @@
                     2 - close blinds.
                 Default setting: [0x01, 0xFF, 0x00, 0x00] (Smoke Alarm, any notification, no action)
             </Help>
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="33" label="Alarm configuration - 4st slot (CO)" size="4" value="50266112">
-            <Help>
+    </Value>
+    <Value genre="config" index="33" instance="1" label="Alarm configuration - 4st slot (CO)" size="4" type="int" value="50266112">
+      <Help>
                 This parameter determines to which alarm frames and how the device should react.
                 The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
                 1B [MSB] - notification Type.
@@ -91,10 +146,9 @@
                     2 - close blinds.
                 Default setting: [0x02, 0xFF, 0x00, 0x00] (CO Alarm, any notification, no action)
             </Help>
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="34" label="Alarm configuration - 5st slot (heat)" size="4" value="83820544">
-            <Help>
+    </Value>
+    <Value genre="config" index="34" instance="1" label="Alarm configuration - 5st slot (heat)" size="4" type="int" value="83820544">
+      <Help>
                 This parameter determines to which alarm frames and how the device should react.
                 The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.
                 1B [MSB] - notification Type.
@@ -106,10 +160,9 @@
                     2 - close blinds.
                 Default setting: [0x04, 0xFF, 0x00, 0x00] (Heat Alarm, any notification, no action)
             </Help>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="40" label="S1 switch - scenes sent" size="1" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="40" instance="1" label="S1 switch - scenes sent" size="1" type="byte" value="0">
+      <Help>
                 This parameter determines which actions result in sending scene IDs assigned to them.
                 Sum of:
                 1 - Key pressed 1 time.
@@ -118,10 +171,9 @@
                 8 - Key hold down and key released.
                 Default setting: 0.
             </Help>
-        </Value>
-
-        <Value type="byte" genre="config" instance="1" index="41" label="S2 switch - scenes sent" size="1" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="41" instance="1" label="S2 switch - scenes sent" size="1" type="byte" value="0">
+      <Help>
                 This parameter determines which actions result in sending scene IDs assigned to them.
                 Sum of:
                 1 - Key pressed 1 time.
@@ -130,16 +182,14 @@
                 8 - Key hold down and key released.
                 Default setting: 0.
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="60" label="Measuring power consumed by the device itself" size="1" value="0">
-            <Help>This parameter determines whether the power metering should include the amount of active power consumed by the device itself.</Help>
-            <Item label="Disabled" value="0" />
-            <Item label="Enabled" value="1" />
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="61" label="Power reports - on change" size="2" min="0" max="500" units="%" value="15">
-            <Help>
+    </Value>
+    <Value genre="config" index="60" instance="1" label="Measuring power consumed by the device itself" size="1" type="list" value="0">
+      <Help>This parameter determines whether the power metering should include the amount of active power consumed by the device itself.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="61" instance="1" label="Power reports - on change" max="500" min="0" size="2" type="short" units="%" value="15">
+      <Help>
                 This parameter determines the minimum change in consumed power that will result in sending new power report to the main controller.
                 For loads under 50W, the parameter is not relevant and reports are sent every 5W change.
                 Power reports are sent no often than every 30 seconds.
@@ -147,125 +197,113 @@
                 1-500 (1-500%): change in power.
                 Default setting: 15.
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="62" label="Power reports - periodic" size="2" min="0" max="32400" units="second" value="3600">
-            <Help>
+    </Value>
+    <Value genre="config" index="62" instance="1" label="Power reports - periodic" max="32400" min="0" size="2" type="short" units="second" value="3600">
+      <Help>
                 This parameter determines in what time intervals the periodic power reports are sent to the main controller.
                 Periodic reports do not depend on power change (parameter 61).
                 0: periodic reports are disabled
                 30-32400 (30-32400s): report interval.
                 Default setting: 3600 (1h).
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="65" label="Energy reports - on change" size="2" min="0" max="500" units="0.01 kWh" value="10">
-            <Help>
+    </Value>
+    <Value genre="config" index="65" instance="1" label="Energy reports - on change" max="500" min="0" size="2" type="short" units="0.01 kWh" value="10">
+      <Help>
                 This parameter determines the minimum change in consumed energy that will result in sending new energy report to the main controller.
                 0: reports are disabled.
                 1-500 (0.01 - 5 kWh): change in energy.
                 Default setting: 10 (0.1 kWh).
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="66" label="Energy reports - periodic" size="2" min="0" max="32400" units="second" value="3600">
-            <Help>
+    </Value>
+    <Value genre="config" index="66" instance="1" label="Energy reports - periodic" max="32400" min="0" size="2" type="short" units="second" value="3600">
+      <Help>
                 This parameter determines in what time intervals the periodic energy reports are sent to the main controller.
                 Periodic reports do not depend on energy change (parameter 65).
                 0: periodic reports are disabled.
                 30-32400 (30-32400s): report interval.
                 Default setting: 3600 (1h)
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="150" label="Force calibration" size="1" value="0">
-            <Help>
+    </Value>
+    <Value genre="config" index="150" instance="1" label="Force calibration" size="1" type="list" value="0">
+      <Help>
                 By setting this parameter to 2 the device enters the calibration mode.
                 The parameter relevant only if the device is set to work in positioning mode (parameter 151 set to 1, 2 or 4).
             </Help>
-            <Item label="Device is not calibrated" value="0" />
-            <Item label="Device is calibrated" value="1" />
-            <Item label="Force device calibration" value="2" />
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="151" label="Operating mode" size="1" value="1">
-            <Help>This parameter allows adjusting operation according to the connected device.</Help>
-            <Item label="Roller blind" value="1" />
-            <Item label="Venetian blind" value="2" />
-            <Item label="gate without positioning" value="3" />
-            <Item label="gate with positioning" value="4" />
-            <Item label="roller blind with built-in driver" value="5" />
-            <Item label="roller blind with built-in driver (impulse)" value="6" />
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="152" label="Venetian blind - time of full turn of the slats" size="4" min="0" max="90000" units="0.1 second" value="150">
-            <Help>
+      <Item label="Device is not calibrated" value="0"/>
+      <Item label="Device is calibrated" value="1"/>
+      <Item label="Force device calibration" value="2"/>
+    </Value>
+    <Value genre="config" index="151" instance="1" label="Operating mode" size="1" type="list" value="1">
+      <Help>This parameter allows adjusting operation according to the connected device.</Help>
+      <Item label="Roller blind" value="1"/>
+      <Item label="Venetian blind" value="2"/>
+      <Item label="gate without positioning" value="3"/>
+      <Item label="gate with positioning" value="4"/>
+      <Item label="roller blind with built-in driver" value="5"/>
+      <Item label="roller blind with built-in driver (impulse)" value="6"/>
+    </Value>
+    <Value genre="config" index="152" instance="1" label="Venetian blind - time of full turn of the slats" max="90000" min="0" size="4" type="int" units="0.1 second" value="150">
+      <Help>
                 For Venetian blinds (parameter 151 set to 2) the parameter determines time of full turn cycle of the slats.
                 For gates (parameter 151 set to 3 or 4) the parameter determines time after which open gate will start closing automatically (if set to 0, gate will not close).
                 The parameter is irrelevant for other modes.
                 0-90000 (0 - 900s, every 0.01s) time of turn.
                 Default setting: 150 (1.5s).
             </Help>
-        </Value>
-
-        <Value type="list" genre="config" instance="1" index="153" label="Set slats back to previous position" size="1" value="1">
-            <Help>
+    </Value>
+    <Value genre="config" index="153" instance="1" label="Set slats back to previous position" size="1" type="list" value="1">
+      <Help>
                 For Venetian blinds (parameter 151 set to 2) the parameter determines slats positioning in various situations.
                 The parameter is irrelevant for other modes.
             </Help>
-            <Item label="Only in case of the main controller operation" value="0" />
-            <Item label="In case of the main controller operation, momentary switch operation, or when the limit switch is reached." value="1" />
-            <Item label="In case of the main controller operation, momentary switch operation, when the limit switch is reached or after receiving the Switch Multilevel Stop control frame" value="2" />
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="154" label="Delay motor stop after reaching end switch" size="2" min="0" max="600"  units="0.1 second" value="10">
-            <Help>
+      <Item label="Only in case of the main controller operation" value="0"/>
+      <Item label="In case of the main controller operation, momentary switch operation, or when the limit switch is reached." value="1"/>
+      <Item label="In case of the main controller operation, momentary switch operation, when the limit switch is reached or after receiving the Switch Multilevel Stop control frame" value="2"/>
+    </Value>
+    <Value genre="config" index="154" instance="1" label="Delay motor stop after reaching end switch" max="600" min="0" size="2" type="short" units="0.1 second" value="10">
+      <Help>
                 For blinds (parameter 151 set to 1, 2, 5 or 6) the parameter determines the time after which the motor will be stopped after end switch contacts are closed.
                 For gates (parameter 151 set to 3 or 4) the parameter determines the time after which the gate will start closing automatically if S2 contacts are opened (if set to 0, gate will not close).
                 0-600 (0 - 60s).
                 Default setting: 10 (1s).
             </Help>
-        </Value>
-
-        <Value type="short" genre="config" instance="1" index="155" label="Motor operation detection" size="2" min="0" max="255"  units="watt" value="10">
-            <Help>
+    </Value>
+    <Value genre="config" index="155" instance="1" label="Motor operation detection" max="255" min="0" size="2" type="short" units="watt" value="10">
+      <Help>
                 Power threshold to be interpreted as reaching a limit switch.
                 0: reaching a limit switch will not be detected
                 1-255 (1-255W): report interval.
                 Default setting: 10.
             </Help>
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="156" label="Time of up movement" size="4" min="0" max="90000" units="0.01 second" value="6000">
-            <Help>
+    </Value>
+    <Value genre="config" index="156" instance="1" label="Time of up movement" max="90000" min="0" size="4" type="int" units="0.01 second" value="6000">
+      <Help>
                 This parameter determines the time needed for roller blinds to reach the top.
                 For modes with positioning value is set automatically during calibration, otherwise, it must be set manually.
                 1-90000 (0.01 - 900.00s).
                 Default setting: 6000 (60s).
             </Help>
-        </Value>
-
-        <Value type="int" genre="config" instance="1" index="157" label="Time of down movement" size="4" min="0" max="90000" units="0.01 second" value="6000">
-            <Help>
+    </Value>
+    <Value genre="config" index="157" instance="1" label="Time of down movement" max="90000" min="0" size="4" type="int" units="0.01 second" value="6000">
+      <Help>
                 This parameter determines time needed for roller blinds to reach the bottom.
                 For modes with positioning value is set automatically during calibration, otherwise, it must be set manually.
                 1-90000 (0.01 - 900.00s).
                 Default setting: 6000 (60s).
             </Help>
-        </Value>
-
-    </CommandClass>
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="3">
-            <Group index="1" max_associations="1" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Roller Shutter"/>
-            <Group index="3" max_associations="5" label="Slats"  />
-        </Associations>
-    </CommandClass>
-    <!-- Manufacturer Proprietary, sent when configuring "Fibaro Command Class" -->
-    <CommandClass id="145">
-        <Value genre="user" type="byte" instance="1" index="0" label="Venetian Blind slat position" value="0" min="0" max="100" units="%" />
-        <Value genre="user" type="byte" instance="1" index="1" label="Venetian blind tilt position" value="0" min="0" max="100" units="%" />
-    </CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Roller Shutter" max_associations="5"/>
+      <Group index="3" label="Slats" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+  <!-- Manufacturer Proprietary, sent when configuring "Fibaro Command Class" -->
+  <CommandClass id="145">
+    <Value genre="user" index="0" instance="1" label="Venetian Blind slat position" max="100" min="0" type="byte" units="%" value="0"/>
+    <Value genre="user" index="1" instance="1" label="Venetian blind tilt position" max="100" min="0" type="byte" units="%" value="0"/>
+  </CommandClass>
 </Product>

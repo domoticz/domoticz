@@ -131,7 +131,7 @@ static time_t convert_from_http_date(const std::string &str)
 	return timegm(&time_data);
 }
 
-static std::string convert_to_http_date(time_t time)
+std::string convert_to_http_date(time_t time)
 {
 	struct tm *tm_result = gmtime(&time);
 
@@ -145,7 +145,7 @@ static std::string convert_to_http_date(time_t time)
 	return buffer;
 }
 
-static time_t last_write_time(const std::string &path)
+time_t last_write_time(const std::string &path)
 {
 	struct stat st;
 	if (stat(path.c_str(), &st) == 0) {
@@ -423,7 +423,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 #endif
 
   reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-  reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
+  reply::add_header_content_type(&rep, mime_types::extension_to_type(extension));
   reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
   //browser support to prevent XSS
   reply::add_header(&rep, "X-Content-Type-Options", "nosniff");

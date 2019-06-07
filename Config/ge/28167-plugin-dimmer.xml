@@ -1,22 +1,33 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3038:5044</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/28167-plugin-dimmer.png</MetaDataItem>
-    <MetaDataItem id="3038" name="ZWProductPage" type="5044">https://products.z-wavealliance.org/products/1433/</MetaDataItem>
+    <MetaDataItem id="3038" name="ZWProductPage" type="5044">https://products.z-wavealliance.org/products/2100/</MetaDataItem>
     <MetaDataItem id="3038" name="FrequencyName" type="5044">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="Name">Plug-in Smart Dimmer (Single Plug)</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-wave certified controller to include the device to the Z-wave network.
-2. Once the controller is ready to include your smart switch, single press and release the manual/program button on the smart dimmer to include it in the network.</MetaDataItem>
-    <MetaDataItem id="3038" name="Identifier" type="5044">28167 (ZW3104)</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1433/28167-1 EnFrSp QSG.pdf</MetaDataItem>
-    <MetaDataItem name="ResetDescription">1. If plugged in, unplug the Switch from the receptacle.
-2. Press and hold the top button for at least 3 seconds while you plug the switch into a receptacle.
-Note: This should only be used in the event your network’s primary controller is missing or otherwise inoperable.</MetaDataItem>
-    <MetaDataItem name="Description">Transform any home into a smart home with the GE Z-Wave Smart Lighting Control Plug-in Smart Dimmer. The lamp module enables wireless control of on/off and dim functions for standard incandescent table and floor lamps, as well as dimmable fluorescent, LED and CFL fixtures and more! Use the dimmer control to customize the lighting output and create the perfect ambiance for any room. The space-saving horizontal module plugs into a standard wall receptacle without blocking the second outlet or obstructing placement of furniture. The Dimmer provides one Z-Wave enabled outlet for the lamp you would like to control. Take control of your home lighting with GE Z-Wave Smart Lighting Controls!</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-wave certified controller to exclude a device from the Z-wave network.
-2. Once the controller is ready to Exclude your device, press and release the manual/program button on the smart switch to exclude it from the network.</MetaDataItem>
+    <MetaDataItem name="Name">Plug-in Smart Dimmer, Single Plug</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to add
+the smart dimmer to the Z-Wave network.
+2. Once the controller is ready to add your smart dimmer, single
+press and release the manual/program button on the smart
+dimmer to add it in the network.
+Please reference the controller/gateway’s manual for instructions.</MetaDataItem>
+    <MetaDataItem id="3038" name="Identifier" type="5044">28167/ZW3104</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2100/Binder1.pdf</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To return your dimmer to factory defaults:
+1. If plugged in, unplug the dimmer from the receptacle.
+2. Press and hold the top button for at least 3 seconds while you
+plug the dimmer into a receptacle.
+Note: This should only be used in the event your networks’ primary
+controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE Z-Wave Plug-In Smart Dimmer. The Smart Dimmer enables wireless control of on/off and dim functions for standard incandescent table and floor lamps, as well as dimmable fluorescent, LED and CFL fixtures and more! Use the dimmer control to customize the lighting output and create the perfect ambiance for any room. The space-saving horizontal module plugs into a standard wall receptacle without blocking the second outlet or obstructing placement of furniture. The Dimmer provides one Z-Wave enabled outlet for the lamp you would like to control. Take control of your home lighting with GE Z-Wave Smart Lighting Controls! </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to
+remove a device from the Z-Wave network.
+2. Once the controller is ready to remove your device, press and
+release the manual/program button on the smart dimmer to
+remove it from the network.</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1433/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2100/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!--

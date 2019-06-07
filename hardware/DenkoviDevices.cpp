@@ -142,6 +142,9 @@ bool CDenkoviDevices::StartHardware()
 	case DDEV_SmartDEN_Opener:
 		_log.Log(LOG_STATUS, "SmartDEN Opener: Started");
 		break;
+	case DDEV_SmartDEN_PLC:
+		_log.Log(LOG_STATUS, "SmartDEN PLC: Started");
+		break;
 	}
 	return (m_thread != NULL);
 }
@@ -210,6 +213,9 @@ void CDenkoviDevices::Do_Work()
 	case DDEV_SmartDEN_Opener:
 		_log.Log(LOG_STATUS, "SmartDEN Opener: Worker stopped...");
 		break;
+	case DDEV_SmartDEN_PLC:
+		_log.Log(LOG_STATUS, "SmartDEN PLC: Worker stopped...");
+		break;
 	}
 }
 
@@ -276,6 +282,9 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 			break;
 		case DDEV_SmartDEN_Opener:
 			_log.Log(LOG_ERROR, "SmartDEN Opener: Please enter a password.");
+			break;
+		case DDEV_SmartDEN_PLC:
+			_log.Log(LOG_ERROR, "SmartDEN PLC: Please enter a password.");
 			break;
 		}
 		return false;
@@ -511,6 +520,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char len
 		_log.Log(LOG_ERROR, "SmartDEN IP-32IN: This board does not have outputs! ");
 		return false;
 	}
+	case DDEV_SmartDEN_PLC:
 	case DDEV_SmartDEN_IP_Maxi: {
 		//int ioType = pSen1->LIGHTING2.unitcode;//pSen->id;
 		if ((ioType != DIOType_AO) && (ioType != DIOType_Relay))
@@ -845,6 +855,9 @@ void CDenkoviDevices::GetMeterDetails()
 		case DDEV_SmartDEN_Opener:
 			_log.Log(LOG_ERROR, "SmartDEN Opener: Please enter a password.");
 			break;
+		case DDEV_SmartDEN_PLC:
+			_log.Log(LOG_ERROR, "SmartDEN PLC: Please enter a password.");
+			break;
 		}
 		return;
 	}
@@ -910,6 +923,9 @@ void CDenkoviDevices::GetMeterDetails()
 		case DDEV_SmartDEN_Opener:
 			_log.Log(LOG_ERROR, "SmartDEN Opener: Error connecting to: %s", m_szIPAddress.c_str());
 			break;
+		case DDEV_SmartDEN_PLC:
+			_log.Log(LOG_ERROR, "SmartDEN PLC: Error connecting to: %s", m_szIPAddress.c_str());
+			break;
 		}
 		return;
 	}
@@ -945,6 +961,9 @@ void CDenkoviDevices::GetMeterDetails()
 			break;
 		case DDEV_SmartDEN_Opener:
 			_log.Log(LOG_ERROR, "SmartDEN Opener: Error connecting to: %s", m_szIPAddress.c_str());
+			break;
+		case DDEV_SmartDEN_PLC:
+			_log.Log(LOG_ERROR, "SmartDEN PLC: Error connecting to: %s", m_szIPAddress.c_str());
 			break;
 		}
 		return;
@@ -986,6 +1005,9 @@ void CDenkoviDevices::GetMeterDetails()
 			break;
 		case DDEV_SmartDEN_Opener:
 			_log.Log(LOG_ERROR, "SmartDEN Opener: Error getting status");
+			break;
+		case DDEV_SmartDEN_PLC:
+			_log.Log(LOG_ERROR, "SmartDEN PLC: Error getting status");
 			break;
 		}
 		return;
@@ -1458,6 +1480,7 @@ void CDenkoviDevices::GetMeterDetails()
 		}
 		break;
 	}
+	case DDEV_SmartDEN_PLC:
 	case DDEV_SmartDEN_IP_Maxi: {//has DI, AO, AI, Relays
 		bool bHaveDigitalInput = false; 
 		bool bHaveAnalogOutput = false;

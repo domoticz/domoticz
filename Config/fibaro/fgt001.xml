@@ -1,4 +1,58 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:1301</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgt001.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="1301">https://products.z-wavealliance.org/products/3194/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3194/FGT-001-EN-T-v1.0.pdf</MetaDataItem>
+    <MetaDataItem name="Name">The Heat Controller </MetaDataItem>
+    <MetaDataItem name="ResetDescription">Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+Reset procedure allows to restore the device back to its factory settings, which means all information about the network and user configuration will be deleted.
+To perform factory reset:
+1.	Use the included key to press and hold the button.
+2.	Release the button when you see yellow LED colour.
+3.	Click the button to confirm the selection.
+4.	After finishing resetting the device will be put in Standby Mode. Click the button to activate it again.
+</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Heat Controller is a remotely controlled thermostatic head to control temperature in the room. It measures the temperature and automatically adjust the heat level.  It can be mounted without tools on three types of thermostatic radiator valves. It is also possible to create schedules via app to easily manage temperature throughout the week.
+Main features:
+•	to be installed on three types of valves: M30 x 1.5, Danfoss RTD-N and Danfoss RA-N,
+•	compatible with any Z-Wave or Z-Wave Plus Controller,
+•	supports Z-Wave network Security Modes: S0 with AES-128 encryption and S2 with PRNG-based encryption,
+•	built-in battery recharged through standard micro-USB port,
+•	easy installation - no tools required,
+•	can use dedicated temperature sensor,
+•	supports heating schedules,
+•	automatic calibration,
+•	anti-freeze function,
+•	decalc function, 
+•	unconstrained rotation spherical knob to set desired temperature.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network:
+1.	Make sure the device is within the direct range of your Z-Wave controller.
+2.	Set the main controller in (security/non-security) add mode.
+3.	Use the included key to quickly triple click the button on the thermostatic head.
+4.	The LED ring will start blinking white.
+5.	If you are adding in S2 authenticated mode, type in the device pin code (underlined part of the public key on the label).
+6.	Wait for the adding process to end.
+7.	Successful adding will be confirmed by the Z-Wave controller.
+</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">FIBARO Heat Controller is a FLiRS device. The FLiRS device alternates between sleep mode and a partially awake mode in which it is listening beam signal. When device receives this beam, it immediately fully wakes up and then communicates with the controller or other Z-Wave device.</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="1301">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="1301">FGT-001</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
+1.	Make sure the device is within the direct range of your Z-Wave controller.
+2.	Set the main controller into remove mode.
+3.	Use the included key to quickly triple click the button on the thermostatic head.
+4.	The LED ring will start blinking white.
+5.	Wait for the removing process to end.
+6.	Successful removing will be confirmed by the Z-Wave controller.
+</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2586/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2971/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3194/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!--
     Fibaro FGT-001
     https://products.z-wavealliance.org/products/2586

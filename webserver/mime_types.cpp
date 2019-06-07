@@ -39,10 +39,24 @@ struct mapping
   { "php", "text/html" },
   { "wav", "audio/x-wav" },
   { "svg", "image/svg+xml" },
+  { "ico", "image/x-icon" },
   { "db", "application/octet-stream" },
   { "otf", "application/x-font-otf" },
   { "ttf", "application/x-font-ttf" },
   { "woff", "application/x-font-woff" },
+  { "flv", "video/x-flv" },
+  { "mp4", "video/mp4" },
+  { "m3u8", "application/x-mpegURL" },
+  { "ts", "video/MP2T" },
+  { "3gp", "video/3gpp" },
+  { "mov", "video/quicktime" },
+  { "avi", "video/x-msvideo" },
+  { "wmv", "video/x-ms-wmv" },
+  { "h264", "video/h264" },
+  { "mp4", "video/mp4" },
+  { "wmv", "video/x-ms-wmv" },
+  { "txt", "text/plain" },
+  { "pdf", "application/pdf" },
   { 0, 0 } // Marks end of list.
 };
 
@@ -56,7 +70,7 @@ std::string extension_to_type(const std::string& extension)
     }
   }
 
-  return "text/plain";
+  return "";// RFC-7231 states that unknown files types should have not send any Content-Type header;
 }
 
 } // namespace mime_types

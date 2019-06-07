@@ -1,46 +1,73 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- GE(Jasco) 26931 Z-Wave Plus Smart Motion Switch -->
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-	<!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2035 -->
-	<CommandClass id="112">
-		<Value type="list" index="1" genre="config" label="Timeout Duration" min="0" max="255" value="5" size="1">
-			<Help>Amount of time the light stays on after motion stops</Help>
-			<Item label="5 seconds" value="0" />
-			<Item label="1 minute" value="1" />
-			<Item label="5 minutes" value="5" />
-			<Item label="15 minutes" value="15" />
-			<Item label="30 minutes" value="30" />
-			<Item label="Disable timeout" value="255" />
-		</Value>
-		<Value type="byte" index="2" genre="config" label="Brightness" min="0" max="255" value="255">
-			<Help>Valid values are 0-99 or 255 for last dimming level</Help>
-		</Value>
-		<Value type="list" index="3" genre="config" label="Operation Mode" min="1" max="3" size="1" value="3">
-			<Help>Motion-sensing mode of operation.</Help>
-			<Item label="Manual" value="1" />
-			<Item label="Vacancy" value="2" />
-			<Item label="Occupancy" value="3" />
-		</Value>
-		<Value type="list" index="5" genre="config" label="Invert Switch" min="0" max="1" size="1" value="0">
-			<Help>In a three-way configuration, change the top of the add-on switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
-			<Item label="No" value="0" />
-			<Item label="Yes" value="1" />
-		</Value>
-		<Value type="list" index="6" genre="config" label="Motion Sensor" min="0" max="1" size="1" value="1">
-			<Item label="Disabled" value="0" />
-			<Item label="Enabled" value="1" />
-		</Value>
-		<Value type="list" index="13" genre="config" label="Motion sensing sensitivity" min="1" max="3" size="1" value="3">
-			<Item label="High" value="1" />
-			<Item label="Medium" value="2" />
-			<Item label="Low" value="3" />
-		</Value>
-		<Value type="list" index="14" genre="config" label="Light Sensing" min="0" max="1" size="1" value="1">
-			<Item label="Disabled" value="0" />
-			<Item label="Enabled" value="1" />
-		</Value>
-		<Value type="byte" index="15" genre="config" label="Reset cycle" units="" min="1" max="110" size="1" value="2">
-			<Help>0 = disable
+<!-- GE(Jasco) 26931 Z-Wave Plus Smart Motion Switch --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3032:494D</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/26931-motion-switch.png</MetaDataItem>
+    <MetaDataItem id="3032" name="ZWProductPage" type="494D">https://products.z-wavealliance.org/products/2035/</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Motion Switch </MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and release the top button ten times.
+Note: This should only be used in the event your
+network’s primary controller is missing or otherwise
+inoperable.</MetaDataItem>
+    <MetaDataItem id="3032" name="Identifier" type="494D">26931/ZW4006</MetaDataItem>
+    <MetaDataItem id="3032" name="FrequencyName" type="494D">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified
+controller to exclude a device from the Z-Wave
+network.
+2. Once the controller is ready to exclude your device,
+press and release the top or bottom button on the
+smart switch to exclude it from the network.</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE In-Wall Smart Motion Switch. This Z-Wave device replaces you current light switch using your existing wiring and provides Z-Wave wireless control of overhead lighting. The switch enables wireless control of On/OFF functions of incandescent, LED, xenon, halogen and fluorescent lighting. Not only does it act as a switch but the GE In-Wall Smart Motion Switch has a built in PIR sensor which can control the local and be set in occupancy or vacancy mode. </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified
+controller to include the smart switch to the
+Z-Wave network.
+2. Once the controller is ready to include your smart
+switch, press and release the top or bottom button
+on the smart switch to include it in the network.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2035/26931 EnFrSp QSG v1.3 and Parameters.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2035/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2035 -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Timeout Duration" max="255" min="0" size="1" type="list" value="5">
+      <Help>Amount of time the light stays on after motion stops</Help>
+      <Item label="5 seconds" value="0"/>
+      <Item label="1 minute" value="1"/>
+      <Item label="5 minutes" value="5"/>
+      <Item label="15 minutes" value="15"/>
+      <Item label="30 minutes" value="30"/>
+      <Item label="Disable timeout" value="255"/>
+    </Value>
+    <Value genre="config" index="2" label="Brightness" max="255" min="0" type="byte" value="255">
+      <Help>Valid values are 0-99 or 255 for last dimming level</Help>
+    </Value>
+    <Value genre="config" index="3" label="Operation Mode" max="3" min="1" size="1" type="list" value="3">
+      <Help>Motion-sensing mode of operation.</Help>
+      <Item label="Manual" value="1"/>
+      <Item label="Vacancy" value="2"/>
+      <Item label="Occupancy" value="3"/>
+    </Value>
+    <Value genre="config" index="5" label="Invert Switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>In a three-way configuration, change the top of the add-on switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <Value genre="config" index="6" label="Motion Sensor" max="1" min="0" size="1" type="list" value="1">
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="13" label="Motion sensing sensitivity" max="3" min="1" size="1" type="list" value="3">
+      <Item label="High" value="1"/>
+      <Item label="Medium" value="2"/>
+      <Item label="Low" value="3"/>
+    </Value>
+    <Value genre="config" index="14" label="Light Sensing" max="1" min="0" size="1" type="list" value="1">
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
+    </Value>
+    <Value genre="config" index="15" label="Reset cycle" max="110" min="1" size="1" type="byte" units="" value="2">
+      <Help>0 = disable
 				1 = 10 seconds
 				2 = 20 seconds
 				3 = 30 seconds
@@ -48,18 +75,18 @@
 				...
 				110 = 27 minutes 15 seconds
 		  	</Help>
-		</Value>
-		<Value type="list" index="19" genre="config" label="Exclusion Mode" min="0" max="1" size="1" value="0">
-			<Item label="Press any button" value="0" />
-			<Item label="Press X then press ON" value="1" />
-		</Value>
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="3">
-			<Group index="1" max_associations="5" label="Lifeline" />
-			<Group index="2" max_associations="5" label="Basic Set local load" />
-			<Group index="3" max_associations="5" label="Basic Set buttons" />
-		</Associations>
-	</CommandClass>
+    </Value>
+    <Value genre="config" index="19" label="Exclusion Mode" max="1" min="0" size="1" type="list" value="0">
+      <Item label="Press any button" value="0"/>
+      <Item label="Press X then press ON" value="1"/>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic Set local load" max_associations="5"/>
+      <Group index="3" label="Basic Set buttons" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

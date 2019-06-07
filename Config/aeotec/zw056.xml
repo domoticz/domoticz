@@ -1,7 +1,7 @@
 <!--
 Aeotec ZW056 Doorbell Gen5
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584693
---><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0038:0104</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw056.png</MetaDataItem>
@@ -18,10 +18,18 @@ By taking advantage of the Z-Wave mesh network, commands can be routed to their 
 Also a tool that can be programmed, scheduled, controlled and communicated with from anywhere in the world.</MetaDataItem>
     <MetaDataItem id="0038" name="Identifier" type="0104">ZW056-A</MetaDataItem>
     <MetaDataItem id="0038" name="FrequencyName" type="0104">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1307/Doorbell manual(20150604).pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1583/Aeon Labs Doorbell Gen5 manual.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1307/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1581/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1583/xml</Entry>
     </ChangeLog>
+    <MetaDataItem id="0038" name="ZWProductPage" type="0204">https://products.z-wavealliance.org/products/1581/</MetaDataItem>
+    <MetaDataItem id="0038" name="Identifier" type="0204">ZW056-B</MetaDataItem>
+    <MetaDataItem id="0038" name="FrequencyName" type="0204">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="0038" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/1583/</MetaDataItem>
+    <MetaDataItem id="0038" name="Identifier" type="0004">ZW056-C</MetaDataItem>
+    <MetaDataItem id="0038" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
   </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">

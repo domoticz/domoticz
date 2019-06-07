@@ -8113,6 +8113,7 @@ namespace http {
 							{
 								root["result"][ii]["Type"] = "Scene";
 								root["result"][ii]["TypeImg"] = "scene";
+								root["result"][ii]["Image"] = "Push";
 							}
 							else
 							{

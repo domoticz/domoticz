@@ -1,21 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- Fibaro: FGKF-601 Keyfob --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:1001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgkf601.png</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="1001">https://products.z-wavealliance.org/products/2064/</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1)	Place the KeyFob within the direct range of your Z-Wave controller.
+2)	Set the main Z-Wave controller in (security/non-security) add mode (see the controller’s manual).
+3)	Press any button three times.
+4)	Wait for the adding process to end.
+5)	Successful adding will be confirmed by the Z-Wave controller’s message and green LED colour.
+</MetaDataItem>
+    <MetaDataItem id="1000" name="FrequencyName" type="1001">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO KeyFob is a Z-Wave Plus compatible, battery-powered, compact remote control.
+Six buttons allow you to control other devices through the Z-Wave network and run various scenes defined in FIBARO System.
+Configure actions for one, two, three clicks and holding the button to suit all your needs.
+Built-in locking system will ensure that unauthorized person will not take control of your home.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset procedure allows to restore the device back to its factory settings, which means all information about the Z-Wave controller and user configuration will be deleted. There are two ways of resetting the device:
+•	Resetting using the menu
+1)	Press O and – simultaneously.
+2)	Press Δ or X until LED glows yellow.
+3)	Press + to confirm.
+•	Resetting on start-up
+1)	Remove the battery.
+2)	Hold O and + while inserting the battery.
+Successful resetting will be confirmed by smoothly brightening and dimming of the yellow LED colour.
 
-<!-- Fibaro: FGKF-601 Keyfob -->
-
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
-	<!-- Configuration -->
-	<CommandClass id="112">	
-		<Value type="short" genre="config" instance="1" index="1" label="Lock Mode - unlocking sequence" min="0" max="28086" value="0">
-			<Help>
+Please use this procedure only when the network primary controller is missing or otherwise inoperable</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The Keyfob needs to be woken up to receive information about the new configuration from the Z-Wave controller, like parameters and associations. To wake up the device press O and + simultaneously or use 1st menu position:
+1)	Press O and – simultaneously.
+2)	Press Δ or X until LED glows white.
+3)	Press + to confirm.
+</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1)	Place the KeyFob within the direct range of your Z-Wave controller.
+2)	Set the main Z-Wave controller in remove mode (see the controller’s manual).
+3)	Press O and – simultaneously.
+4)	Press Δ or X until LED glows green.
+5)	Press + to confirm.
+6)	Wait for the removing process to end.
+7)	Successful removing will be confirmed by the Z-Wave controller’s message.
+</MetaDataItem>
+    <MetaDataItem id="1000" name="Identifier" type="1001">FGKF-601</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO KeyFob</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2120/FGKF-601-EN-T-v1.0_30.11.2016.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2064/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2120/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="2000" name="ZWProductPage" type="1001">https://products.z-wavealliance.org/products/2120/</MetaDataItem>
+    <MetaDataItem id="2000" name="FrequencyName" type="1001">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="2000" name="Identifier" type="1001">FGKF-601</MetaDataItem>
+  </MetaData>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Lock Mode - unlocking sequence" max="28086" min="0" type="short" value="0">
+      <Help>
 			This parameter allows to activate Lock Mode and set up unlocking sequence. 
 			Device will lock after time set in parameter 2 or after pressing and holding selected button. 
 			0 - Lock Mode disabled.
 			9-28086 - unlocking sequence.
 			See "Lock Mode" on page 9 for more information.
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="2" label="Lock Mode - time to lock and locking button" min="0" max="1791" value="60">
-			<Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Lock Mode - time to lock and locking button" max="1791" min="0" type="short" value="60">
+      <Help>
 			This parameter allows to set time that must elapse from the last press of the button to lock the device and locking button.
 			Setting locking button will deactivate associations and scenes for pressing and holding the selected button.
 			This parameter is irrelevant if parameter 1 is set to 0 (Lock Mode disable).
@@ -23,141 +70,141 @@
 			5-1791- calculated value.
 			See "Lock Mode" on page 9 for more information
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="3" label="First scene sequence" min="0" max="28086" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="3" instance="1" label="First scene sequence" max="28086" min="0" type="short" value="0">
+      <Help>
 			This parameter allows to set up sequence that activates scene with ID 7.
 			0 - 1st sequence disabled.
 			9-28086 - value of sequence.
 			See "Sequences" on page 10 for more information.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="4" label="Second scene sequence" min="0" max="28086" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Second scene sequence" max="28086" min="0" type="short" value="0">
+      <Help>
 			This parameter allows to set up sequence that activates scene with ID 8.
 			0 - 1st sequence disabled.
 			9-28086 - value of sequence.
 			See "Sequences" on page 10 for more information.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="5" label="Third scene sequence" min="0" max="28086" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Third scene sequence" max="28086" min="0" type="short" value="0">
+      <Help>
 			This parameter allows to set up sequence that activates scene with ID 9.
 			0 - 1st sequence disabled.
 			9-28086 - value of sequence.
 			See "Sequences" on page 10 for more information.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="6" label="Fourth scene sequence" min="0" max="28086" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Fourth scene sequence" max="28086" min="0" type="short" value="0">
+      <Help>
 			This parameter allows to set up sequence that activates scene with ID 10.
 			0 - 1st sequence disabled.
 			9-28086 - value of sequence.
 			See "Sequences" on page 10 for more information.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="7" label="Fifth scene sequence" min="0" max="28086" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="Fifth scene sequence" max="28086" min="0" type="short" value="0">
+      <Help>
 			This parameter allows to set up sequence that activates scene with ID 11.
 			0 - 1st sequence disabled.
 			9-28086 - value of sequence.
 			See "Sequences" on page 10 for more information.			
 			</Help>
-		</Value>
-		<Value type="short" genre="config" instance="1" index="8" label="Sixth scene sequence" min="0" max="28086" value="0">
-			<Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Sixth scene sequence" max="28086" min="0" type="short" value="0">
+      <Help>
 			This parameter allows to set up sequence that activates scene with ID 12.
 			0 - 1st sequence disabled.
 			9-28086 - value of sequence.
 			See "Sequences" on page 10 for more information.			
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="9" label="Sequences - timeout" min="5" max="30" value="10">
-			<Help>
+    </Value>
+    <Value genre="config" index="9" instance="1" label="Sequences - timeout" max="30" min="5" type="byte" value="10">
+      <Help>
 			This parameter allows to set time that must elapse from the last press of the button to check if the sequence is valid.
 			Available settings: 5-30 (0.5-3s, 0.1s step) - time to lock
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="10" label="Single button associations - operating mode" value="0" size="1">
-			<Help>This parameter allows to choose operating mode for single button associations.</Help>
-			<Item label="Single press switches state to opposite" value="0" />
-			<Item label="Single press switches state to opposite, double press sets to maximum level" value="1" />
-			<Item label="Single press turns on, double press turns off" value="2" />
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="11" label="Value sent to Square association group" min="1" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="Single button associations - operating mode" size="1" type="list" value="0">
+      <Help>This parameter allows to choose operating mode for single button associations.</Help>
+      <Item label="Single press switches state to opposite" value="0"/>
+      <Item label="Single press switches state to opposite, double press sets to maximum level" value="1"/>
+      <Item label="Single press turns on, double press turns off" value="2"/>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Value sent to Square association group" max="255" min="1" type="byte" value="255">
+      <Help>
 			This parameter allows to set value sent to devices in association group. 
 			It will result in turning multilevel devices on with set or last level. 
 			Value is irrelevant for simple on/off devices.
 			Available settings: 1-99 or 255.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="12" label="Value sent to Circle association group" min="1" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="12" instance="1" label="Value sent to Circle association group" max="255" min="1" type="byte" value="255">
+      <Help>
 			This parameter allows to set value sent to devices in association group. 
 			It will result in turning multilevel devices on with set or last level. 
 			Value is irrelevant for simple on/off devices.
 			Available settings: 1-99 or 255.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="13" label="Value sent to Cross association group" min="1" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Value sent to Cross association group" max="255" min="1" type="byte" value="255">
+      <Help>
 			This parameter allows to set value sent to devices in association group. 
 			It will result in turning multilevel devices on with set or last level. 
 			Value is irrelevant for simple on/off devices.
 			Available settings: 1-99 or 255.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="14" label="Value sent to Triangle association group" min="1" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Value sent to Triangle association group" max="255" min="1" type="byte" value="255">
+      <Help>
 			This parameter allows to set value sent to devices in association group. 
 			It will result in turning multilevel devices on with set or last level. 
 			Value is irrelevant for simple on/off devices.
 			Available settings: 1-99 or 255.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="15" label="Value sent to Minus association group" min="1" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="15" instance="1" label="Value sent to Minus association group" max="255" min="1" type="byte" value="255">
+      <Help>
 			This parameter allows to set value sent to devices in association group. 
 			It will result in turning multilevel devices on with set or last level. 
 			Value is irrelevant for simple on/off devices.
 			Available settings: 1-99 or 255.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="16" label="Value sent to Plus association group" min="1" max="255" value="255">
-			<Help>
+    </Value>
+    <Value genre="config" index="16" instance="1" label="Value sent to Plus association group" max="255" min="1" type="byte" value="255">
+      <Help>
 			This parameter allows to set value sent to devices in association group. 
 			It will result in turning multilevel devices on with set or last level. 
 			Value is irrelevant for simple on/off devices.
 			Available settings: 1-99 or 255.
 			</Help>
-		</Value>
-		<Value type="list" genre="config" instance="1" index="17" label="Paired buttons association for Square and Circle" value="0" size="1">
-			<Help>
+    </Value>
+    <Value genre="config" index="17" instance="1" label="Paired buttons association for Square and Circle" size="1" type="list" value="0">
+      <Help>
 			This parameter allows to activate paired buttons association mode for Square and Circle buttons. 
 			Paired buttons are dependent and association are sent only to Square groups. Circle turns devices on and increases value, Square turns them off and decreases value.
 			</Help>
-			<Item label="Inactive" value="0" />
-			<Item label="Active" value="1" />
-		</Value>
-		<Value type="list" genre="config" instance="1" index="18" label="Paired buttons association for Cross and Triangle" value="0" size="1">
-			<Help>
+      <Item label="Inactive" value="0"/>
+      <Item label="Active" value="1"/>
+    </Value>
+    <Value genre="config" index="18" instance="1" label="Paired buttons association for Cross and Triangle" size="1" type="list" value="0">
+      <Help>
 			This parameter allows to activate paired buttons association mode for Cross and Triangle buttons. 
 			Paired buttons are dependent and association are sent only to Cross groups. Triangle turns devices on and increases value, Cross turns them off and decreases value.
 			</Help>
-			<Item label="Inactive" value="0" />
-			<Item label="Active" value="1" />
-		</Value>
-		<Value type="list" genre="config" instance="1" index="19" label="Paired buttons association for Minus and Plus" value="0" size="1">
-			<Help>
+      <Item label="Inactive" value="0"/>
+      <Item label="Active" value="1"/>
+    </Value>
+    <Value genre="config" index="19" instance="1" label="Paired buttons association for Minus and Plus" size="1" type="list" value="0">
+      <Help>
 			This parameter allows to activate paired buttons association mode for Minus and Plus buttons. 
 			Paired buttons are dependent and association are sent only to Minus groups. Plus turns devices on and increases value, Minus turns them off and decreases value.
 			</Help>
-			<Item label="Inactive" value="0" />
-			<Item label="Active" value="1" />
-		</Value>		
-		<Value type="byte" genre="config" instance="1" index="21" label="Scene activation for Square button" min="1" max="255" value="9">
-			<Help>
+      <Item label="Inactive" value="0"/>
+      <Item label="Active" value="1"/>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Scene activation for Square button" max="255" min="1" type="byte" value="9">
+      <Help>
 			This parameter determines which actions result in sending assigned scene IDs and attributes to the controller.
 			1 - Key Pressed 1 time.
 			2 - Key Pressed 2 times.
@@ -165,9 +212,9 @@
 			8 - Key Held Down and Released.
 			Default setting: 9, 1x and hold.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="22" label="Scene activation for Circle button" min="1" max="255" value="9">
-			<Help>
+    </Value>
+    <Value genre="config" index="22" instance="1" label="Scene activation for Circle button" max="255" min="1" type="byte" value="9">
+      <Help>
 			This parameter determines which actions result in sending assigned scene IDs and attributes to the controller.
 			1 - Key Pressed 1 time.
 			2 - Key Pressed 2 times.
@@ -175,9 +222,9 @@
 			8 - Key Held Down and Released.
 			Default setting: 9, 1x and hold.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="23" label="Scene activation for Cross button" min="1" max="255" value="9">
-			<Help>
+    </Value>
+    <Value genre="config" index="23" instance="1" label="Scene activation for Cross button" max="255" min="1" type="byte" value="9">
+      <Help>
 			This parameter determines which actions result in sending assigned scene IDs and attributes to the controller.
 			1 - Key Pressed 1 time.
 			2 - Key Pressed 2 times.
@@ -185,9 +232,9 @@
 			8 - Key Held Down and Released.
 			Default setting: 9, 1x and hold.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="24" label="Scene activation for Triangle button" min="1" max="255" value="9">
-			<Help>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Scene activation for Triangle button" max="255" min="1" type="byte" value="9">
+      <Help>
 			This parameter determines which actions result in sending assigned scene IDs and attributes to the controller.
 			1 - Key Pressed 1 time.
 			2 - Key Pressed 2 times.
@@ -195,9 +242,9 @@
 			8 - Key Held Down and Released.
 			Default setting: 9, 1x and hold.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="25" label="Scene activation for Minus button" min="1" max="255" value="9">
-			<Help>
+    </Value>
+    <Value genre="config" index="25" instance="1" label="Scene activation for Minus button" max="255" min="1" type="byte" value="9">
+      <Help>
 			This parameter determines which actions result in sending assigned scene IDs and attributes to the controller.
 			1 - Key Pressed 1 time.
 			2 - Key Pressed 2 times.
@@ -205,9 +252,9 @@
 			8 - Key Held Down and Released.
 			Default setting: 9, 1x and hold.
 			</Help>
-		</Value>
-		<Value type="byte" genre="config" instance="1" index="26" label="Scene activation for Plus button" min="1" max="255" value="9">
-			<Help>
+    </Value>
+    <Value genre="config" index="26" instance="1" label="Scene activation for Plus button" max="255" min="1" type="byte" value="9">
+      <Help>
 			This parameter determines which actions result in sending assigned scene IDs and attributes to the controller.
 			1 - Key Pressed 1 time.
 			2 - Key Pressed 2 times.
@@ -215,9 +262,9 @@
 			8 - Key Held Down and Released.
 			Default setting: 9, 1x and hold.
 			</Help>
-		</Value>	
-		<Value type="short" genre="config" instance="1" index="29" label="Associations in Z-Wave network Security Mode" min="0" max="4095" value="4095">
-			<Help>
+    </Value>
+    <Value genre="config" index="29" instance="1" label="Associations in Z-Wave network Security Mode" max="4095" min="0" type="short" value="4095">
+      <Help>
 			Parameter defines how commands are sent in specified association groups: using Security Mode or not.
 			Parameter is active only in Z-Wave network Security Mode. It does not apply to 1st Lifeline association group.
 			1    : 2nd group sent using Security Mode.
@@ -233,24 +280,24 @@
 			1024 : 12th group sent using Security Mode.
 			2048 : 13th group sent using Security Mode.
 			</Help>
-		</Value>		
-	</CommandClass>
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<Associations num_groups="13">
-			<Group index="1" max_associations="1" label="Lifeline"/>
-			<Group index="2" max_associations="5" label="Square - On/Of" />
-			<Group index="3" max_associations="5" label="Square - Multilevel" />
-			<Group index="4" max_associations="5" label="Circle - On/Of" />
-			<Group index="5" max_associations="5" label="Circle - Multilevel" />
-			<Group index="6" max_associations="5" label="Cross - On/Of" />
-			<Group index="7" max_associations="5" label="Cross - Multilevel" />
-			<Group index="8" max_associations="5" label="Triangle - On/Of" />
-			<Group index="9" max_associations="5" label="Triangle - Multilevel" />
-			<Group index="10" max_associations="5" label="Minus - On/Of" />
-			<Group index="11" max_associations="5" label="Minus - Multilevel" />
-			<Group index="12" max_associations="5" label="Plus - On/Of" />
-			<Group index="13" max_associations="5" label="Plus - Multilevel" />
-		</Associations>
-	</CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="13">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="Square - On/Of" max_associations="5"/>
+      <Group index="3" label="Square - Multilevel" max_associations="5"/>
+      <Group index="4" label="Circle - On/Of" max_associations="5"/>
+      <Group index="5" label="Circle - Multilevel" max_associations="5"/>
+      <Group index="6" label="Cross - On/Of" max_associations="5"/>
+      <Group index="7" label="Cross - Multilevel" max_associations="5"/>
+      <Group index="8" label="Triangle - On/Of" max_associations="5"/>
+      <Group index="9" label="Triangle - Multilevel" max_associations="5"/>
+      <Group index="10" label="Minus - On/Of" max_associations="5"/>
+      <Group index="11" label="Minus - Multilevel" max_associations="5"/>
+      <Group index="12" label="Plus - On/Of" max_associations="5"/>
+      <Group index="13" label="Plus - Multilevel" max_associations="5"/>
+    </Associations>
+  </CommandClass>
 </Product>

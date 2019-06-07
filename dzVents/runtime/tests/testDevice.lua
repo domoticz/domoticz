@@ -1106,7 +1106,7 @@ describe('device', function()
 				switch.open()
 				assert.is_same({ { ["s1"] = "On" } }, commandArray)
 			end)
-            
+
 			it('should open Blinds', function()
 				switch.switchType = "Blinds"
 				switch.open()
@@ -1134,9 +1134,44 @@ describe('device', function()
 				assert.is_same({ { ["s1"] = "Set Level 50" } }, commandArray)
 			end)
 
-			it('should switch a selector', function()
-				switch.switchSelector(15)
-				assert.is_same({ {["s1"]="Set Level 15"}}, commandArray)
+			it('should switch a selector with numeric level', function()
+				local switch = getDevice(domoticz, {
+					['type'] = 'Light/Switch',
+					['name'] = 's1',
+					['additionalRootData'] = { ['switchType'] = 'Selector'},
+					['additionalDataData'] = 
+					{ levelNames = "Off|bb|cc|dd|ee|ff|gg|hh|ii|jj|kk|ll|mm|nn|oo|pp|qq|rr|ss|tt" },
+				})
+
+				commandArray = {} ;switch.switchSelector(0)
+					assert.is_same({ {["s1"]="Set Level 0"}}, commandArray)
+				commandArray = {} ;switch.switchSelector(20)
+					assert.is_same({ {["s1"]="Set Level 20"}}, commandArray)
+				commandArray = {} ;switch.switchSelector(112)
+					assert.is_same({ {["s1"]="Set Level 110"}}, commandArray)
+				commandArray = {} ;switch.switchSelector(500)
+					assert.is_same({ {["s1"]="Set Level 190"}}, commandArray)
+				commandArray = {} ;switch.switchSelector(-10.5)
+					assert.is_same({ {["s1"]="Set Level 0"}}, commandArray)
+				
+			end)
+
+			it('should switch a selector with levelname', function()
+				local switch = getDevice(domoticz, {
+					['type'] = 'Light/Switch',
+					['name'] = 's1',
+					['additionalRootData'] = { ['switchType'] = 'Selector'},
+					['additionalDataData'] = 
+					{ levelNames = "Off|bb|cc|dd|ee|ff|gg|hh|ii|jj|kk|ll|mm|nn|oo|pp|qq|rr|ss|tt" },
+				})
+				commandArray = {} ;switch.switchSelector('bb')
+					assert.is_same({ {["s1"]="Set Level 10"}}, commandArray)
+				commandArray = {} ;switch.switchSelector('bb')
+					assert.is_same({ {["s1"]="Set Level 10"}}, commandArray)
+				commandArray = {} ;switch.switchSelector('Off')
+					assert.is_same({ {["s1"]="Set Level 0"}}, commandArray)
+				commandArray = {} ;switch.switchSelector('zzz')
+					assert.is_same( {}, commandArray)
 			end)
 
 			it('should detect a selector', function()
@@ -1277,24 +1312,17 @@ describe('device', function()
 		describe('Quiet device ( quietOn and quietOff', function()
 	
 			local commandArray = {}
-			local utils = require('Utils')
-			domoticz.utils  = utils
-
 			domoticz.openURL = function(url)
 				return table.insert(commandArray, url)
 			end
-				
-			domoticz.log	= function()
-				return
-			end
-
-				local device = getDevice(domoticz, {
-					['name'] = 'quietDevice',
-					['state'] = 'On',
-						  ['type'] = 'Light/Switch',
-					['subType'] = 'RGBWW',
-					['type'] = 'Color Switch'
-				})
+			
+			local device = getDevice(domoticz, {
+				['name'] = 'quietDevice',
+				['state'] = 'On',
+					  ['type'] = 'Light/Switch',
+				['subType'] = 'RGBWW',
+				['type'] = 'Color Switch'
+			})
 
 			it('should handle the quietOn method correctly )', function()
 				commandArray = {}
@@ -1312,7 +1340,7 @@ describe('device', function()
 		describe('RGBW device #RGB', function()
 
 			local commandArray = {}
-			local utils = require('Utils')
+			-- local utils = require('Utils')
 			domoticz.utils  = utils
 
 			domoticz.openURL = function(url)

@@ -1,0 +1,76 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name"><!-- Name of the Device --></MetaDataItem>
+    <MetaDataItem name="Description"><!-- Short Description of the Product --></MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/XXXX:XXXX:XXXX</MetaDataItem>
+    <MetaDataItem name="ProductPage"><!-- URL to the Product Page on the Vendors Website --></MetaDataItem>
+    <MetaDataItem name="ProductSupport"><!-- URL to the Product Support Page on the Vendors Website --></MetaDataItem>
+    <MetaDataItem name="ProductPic"><!-- path to images/vendor/product.png --></MetaDataItem>
+    <MetaDataItem name="ProductManual"><!-- URL to the product manual. - Prefer to use something hosted on the products.z-wavealliance.org pages --></MetaDataItem>
+    <MetaDataItem name="WakeupDescription"><!-- Short description on how to wake up the device if its battery powered --></MetaDataItem>
+    <MetaDataItem name="InclusionDescription"><!-- Short Description on how to include the device --> </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription"><!-- Short Description on how to exclude the device --></MetaDataItem>
+    <MetaDataItem name="ResetDescription"><!-- Short Description on how to Factory Reset the Device --></MetaDataItem>
+    <MetaDataItem id="XXXX" name="ZWProductPage" type="XXXX"><!-- url to https://products.z-wavealliance.org/products/XXXX/ page for this specific version of the device --></MetaDataItem>
+    <MetaDataItem id="YYYY" name="ZWProductPage" type="YYYY"><!-- url to https://products.z-wavealliance.org/products/YYYY/ page for this specific version of the device --></MetaDataItem>
+    <MetaDataItem id="ZZZZ" name="ZWProductPage" type="ZZZZ"><!-- url to https://products.z-wavealliance.org/products/YYYY/ page for this specific version of the device --></MetaDataItem>
+    <MetaDataItem id="XXXX" name="FrequencyName" type="XXXX"><!-- Region for this version of the device --></MetaDataItem>
+    <MetaDataItem id="YYYY" name="FrequencyName" type="YYYY"><!-- Region for this version of the device --></MetaDataItem>
+    <MetaDataItem id="ZZZZ" name="FrequencyName" type="ZZZZ"><!-- Region for this version of the device --></MetaDataItem>
+    <MetaDataItem id="XXXX" name="Identifier" type="XXXX"><!-- Manufacturers Product Code --></MetaDataItem>
+    <MetaDataItem id="YYYY" name="Identifier" type="YYYY"><!-- Manufacturers Product Code --></MetaDataItem>
+    <MetaDataItem id="ZZZZ" name="Identifier" type="ZZZZ"><!-- Manufacturers Product Code --> </MetaDataItem>
+    <ChangeLog>
+      <Entry author="XXXXX - joe@gmail.com" date="01 May 2019" revision="1"><!-- For Revision 1 - Short entry describing where you got the info --></Entry>
+      <Entry author="XXXXX - joe@gmail.com" date="08 May 2019" revision="2"><!-- Add a ChangeLog Entry describing any changes you made to this file --></Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+
+    <!-- Here is a Byte/Int/Short Value Sample -->
+    <Value genre="config" index="1" label="A Label" max="100" min="0" type="byte" units="%" value="50">
+      <Help>
+			Small Description of what this config param does. 
+			</Help>
+    </Value>
+    <!-- Here is a List Value Sample -->
+    <Value genre="config" index="64" label="A Label" max="2" min="1" size="1" type="list" value="1">
+      <Help>Short Help Description</Help>
+      <Item label="Option 1" value="1"/>
+      <Item label="Option 2" value="2"/>
+    </Value>
+
+    <!-- Here is a Button Sample -->
+    <Value genre="config" index="100" label="A Button Label" type="button" write_only="true">
+      <Help>Short Help Description</Help>
+    </Value>
+    
+    <!-- Here is a BitSet Sample -->
+    <Value genre="config" index="101" label="A Label" size="4" type="bitset" bitmask="241" value="241">
+      <Help>Help text that describes what this Param does over all</Help>
+      <!-- we go LSB to MSB (right to left) in the Bit Fields. We are also index 1 based. So first bit is equal to 1 -->
+      <BitSet id="1">
+        <Label>Bit 1 Label</Label>
+        <Help>What Bit 1 Does</Help>
+      </BitSet>
+      <BitSet id="5">
+        <Label>Bit 5 Label</Label>
+        <Help>What Bit 5 Does</Help>
+      </BitSet>
+    </Value>
+  </CommandClass>
+  <!-- A Example of Setting a Compatibility Flag on a CommandClass - In this case the Device Doesn't support Get for Alarm Class -->
+  <CommandClass id="113">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -1,31 +1,66 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- 
 ZWA001 LED Bulb 6 Multi-White
--->
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-	<!-- Configuration Parameters -->
-	<CommandClass id="112">
-		<Value type="list" index="80" genre="config" label="Notification" min="0" max="1" value="1" size="1">
-			<Help>Enable to send notifications to associated devices (Group 1) when the state of LED Bulb is changed.</Help>
-			<Item label="Nothing" value="0" />
-			<Item label="Basic CC report" value="1" />
-		</Value>
-		<Value type="short" index="81" genre="config" label="Warm White temperature" min="2700" max="4999" units="k" value="2700" size="2">
-			<Help>
+--><Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:0001:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zwa001.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2840/</MetaDataItem>
+    <MetaDataItem name="Name">LED Bulb 6: Multi-White</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset the device :
+a)	Please use this procedure only when the network primary controller is missing or otherwise inoperable. 
+b)	Led bulb re-power 6 times (between 0.5-2 seconds each time); If the 6th power on, the led bulb flashes twice, which means that the resetting is successful.
+
+</MetaDataItem>
+    <MetaDataItem name="Description">Standard form factor and appearance of the light bulb with 800 lm output
+Tunable white: dimmable from 5% to 100%, tunable from 2700K to 6500K.
+Possible to be included in groups, scenes, or schedules
+Suitable for indoor lighting: Corridors, Bedroom, Living Room, etc.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2843/LED Bulb Manul.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription"> </MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0003">ZWA001-C</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Remove for exclusion:
+a)	Set the Z-Wave network main controller into removing mode.
+b)	Led bulb re-power 3 times (between 0.5-2 seconds each time).
+c)	Wait a moment, the led bulb should be removed from the controller.Then the led bulb will flash once, dim to 5% first, and then increased to 100% after 5 seconds.
+</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Add for inclusion:
+a)	Set the Z-Wave network main controller into adding mode.
+b)	Power cycle once for led bulb(OFF->ON).The led bulb will flash twice and send node info frame.
+c)	Wait a moment, the led bulb should be added to the controller.Then the led bulb will flash once when it has been included into the network.
+
+</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2840/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2843/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0001" name="ZWProductPage" type="0103">https://products.z-wavealliance.org/products/2843/</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="0103">ZWA001-A</MetaDataItem>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" index="80" label="Notification" max="1" min="0" size="1" type="list" value="1">
+      <Help>Enable to send notifications to associated devices (Group 1) when the state of LED Bulb is changed.</Help>
+      <Item label="Nothing" value="0"/>
+      <Item label="Basic CC report" value="1"/>
+    </Value>
+    <Value genre="config" index="81" label="Warm White temperature" max="4999" min="2700" size="2" type="short" units="k" value="2700">
+      <Help>
 				Adjusting the color temperature in warm white color component.
 				available value: 2700k to 4999k</Help>
-		</Value>
-		<Value type="short" index="82" genre="config" label="cold white temperature" min="5000" max="6500" units="k" value="6500" size="2">
-			<Help>
+    </Value>
+    <Value genre="config" index="82" label="cold white temperature" max="6500" min="5000" size="2" type="short" units="k" value="6500">
+      <Help>
 				Adjusting the color temperature in cold white color component.
 				available value:5000k to 6500k
 			</Help>
-		</Value>
-    </CommandClass>    
-    <!-- Association Groups -->
-	<CommandClass id="133">
-	    <Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Lifeline" />
-	    </Associations>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
   </CommandClass>
 </Product>

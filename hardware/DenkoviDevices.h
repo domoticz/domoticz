@@ -15,7 +15,8 @@ enum _eDenkoviDevice
 	DDEV_DAEnet_IP3,								//7
 	DDEV_DAEnet_IP2,								//8
 	DDEV_DAEnet_IP2_8_RELAYS,						//9
-	DDEV_SmartDEN_Opener							//10
+	DDEV_SmartDEN_Opener,							//10
+	DDEV_SmartDEN_PLC								//11
 };
 
 class CDenkoviDevices : public CDomoticzHardwareBase

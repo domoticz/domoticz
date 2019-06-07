@@ -1,4 +1,29 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0054:0001</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/qubino/ZMNHWD1.png</MetaDataItem>
+    <MetaDataItem id="0054" name="ZWProductPage" type="0001">https://products.z-wavealliance.org/products/2552/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">FACTORY RESET
+1. Connect the module to the power supply
+2. Press and hold the S (Service) button for at least 10 seconds
+NOTE: By resetting the module, all custom parameters previously set on the module will return to their default values, and owner ID will be deleted. Use this reset procedure only when the main controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Connect the module to the power supply
+2. Make sure the module is within direct range of your Z-Wave controller or use a hand-held Z-Wave remote to perform exclusion
+3. Press and release the S (Service) button 3 times within 2 seconds
+NOTE: The module will be excluded from your network, but any custom configuration parameters will not be erased.</MetaDataItem>
+    <MetaDataItem name="Name">Flush RGBW Dimmer Switch Color R.G.B.W </MetaDataItem>
+    <MetaDataItem id="0054" name="Identifier" type="0001">Flush RGBW Dimmer / ZMNHWD3</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Connect the module to the power supply
+2. Enable inclusion mode on your Z-Wave controller
+3. Press and release the S (Service) button 3 times within 2 seconds</MetaDataItem>
+    <MetaDataItem name="Description">Qubino Flush RGBW module is used to control RGB/RGBW strips and LED strips or bulbs to create countless colour options and has 5 special scene effects. It can also control halogen lights and fans. Its extremely small size allows for easy installation behind wall sockets and switches. Controlled devices may be powered by 12 or 24 VDC. All IN and OUT terminals may be user configured for LED control or 100 kΩ signal readouts.</MetaDataItem>
+    <MetaDataItem id="0054" name="FrequencyName" type="0001">CEPT (Europe) / U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2552/Qubino_Flush RGBW Dimmer PLUS extended manual_eng_2.2.pdf</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2174/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2552/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Qubino: ZMNHWD1 Flush RGBW Dimmer Z-Wave Plus-->
 	<!-- Configuration -->
   <CommandClass id="112">

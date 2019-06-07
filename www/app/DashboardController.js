@@ -131,7 +131,7 @@ define(['app'], function (app) {
 								(item.Type.indexOf('Scene') == 0) ||
 								(item.Type.indexOf('Group') == 0)
 							) {
-								id = $element.find("#scene_" + item.idx);
+								id = "#scene_" + item.idx;
 								var obj = $(id);
 								if (typeof obj != 'undefined') {
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {

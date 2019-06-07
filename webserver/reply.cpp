@@ -346,8 +346,19 @@ void reply::add_header_attachment(reply *rep, const std::string & attachment) {
 	reply::add_header(rep, "Content-Disposition", "attachment; filename=" + attachment);
 }
 
+/*
+RFC-7231
+Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content
+3.1.1.5. Content-Type
+
+A sender that generates a message containing a payload body SHOULD
+generate a Content-Type header field in that message unless the
+intended media type of the enclosed representation is unknown to the
+sender.
+*/
 void reply::add_header_content_type(reply *rep, const std::string & content_type) {
-	reply::add_header(rep, "Content-Type", content_type);
+	if (!content_type.empty())
+		reply::add_header(rep, "Content-Type", content_type);
 }
 
 } // namespace server

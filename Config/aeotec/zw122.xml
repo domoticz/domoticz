@@ -1,8 +1,35 @@
 <!-- 
 Aeotec ZW122 Water Sensor 6
 http://products.z-wavealliance.org/products/2437
--->
-<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:007A:0102</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/aeotec/zw122.png</MetaDataItem>
+    <MetaDataItem id="007A" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2407/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the Action Button that you can find on the product for 20 seconds and then release. This procedure should only be used when the primary controller is inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Turn the primary controller of Z-Wave network into inclusion mode, short press the product’s Action Button that you can find on the product.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Turn the primary controller of Z-Wave network into exclusion mode, short press the product’s Action Button that you can find on the product.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Pressing the Action Button once will trigger sending the Wake up notification command. If press and hold the Z-Wave button for 3 seconds, the Water Sensor will wake up for 10 minutes.</MetaDataItem>
+    <MetaDataItem name="Name">Water Sensor 6</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2437/Aeon Labs Water Sensor 6 manual.pdf</MetaDataItem>
+    <MetaDataItem id="007A" name="Identifier" type="0102">ZW122-A</MetaDataItem>
+    <MetaDataItem name="Description">Aeotec by Aeon Labs Water Sensor 6 brings intelligence to a new level, one that is suited to both safety and convenience. It contains 4 sensing points, which would be more accurately to detect the presence and absence of water or detect whether there is water leak in some places of your home. The Water Sensor 6 has an inbuilt buzzer that can play alarm sounds to let you know when the water is detected.
+
+The Water Sensor 6 is also a security Z-Wave device that supports Over The Air (OTA) for firmware updates.
+</MetaDataItem>
+    <MetaDataItem id="007A" name="FrequencyName" type="0102">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2407/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2411/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2437/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="007A" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/2411/</MetaDataItem>
+    <MetaDataItem id="007A" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
+    <MetaDataItem id="007A" name="Identifier" type="0202">ZW122-B</MetaDataItem>
+    <MetaDataItem id="007A" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2437/</MetaDataItem>
+    <MetaDataItem id="007A" name="Identifier" type="0002">ZW122-C</MetaDataItem>
+    <MetaDataItem id="007A" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
+  </MetaData>
   <!-- Basic get not supported -->
   <CommandClass id="32">
     <Compatibility>

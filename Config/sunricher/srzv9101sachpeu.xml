@@ -1,14 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!--
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0330:D00C:0200</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sunricher/srzv9101sachpeu.png</MetaDataItem>
+    <MetaDataItem id="D00C" name="ZWProductPage" type="0200">https://products.z-wavealliance.org/products/3331/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down the action button for over 10 seconds, the dimmer will be reset to factory defaults.
+
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="Description">The micro smart dimmer is a Z-Wave device designed to work with various types of light sources. It may be
+connected to two-wire or three-wire configuration so it can operate with or without neutral lead. The
+dimmer can switch or dim connected light source either through Z-Wave devices or through the wall
+switch connected directly to it. The smart dimmer is equipped with an algorithm of smart light source
+detection which makes configuration easier and ensures high compatibility of the device. It may be used
+as a switch with non-dimmable light sources (in 3-wire connection).</MetaDataItem>
+    <MetaDataItem name="Name">Micro Smart Dimmer</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Set primary controller/gateway into inclusion mode (Please refer to your primary controller’s manual on how to turn your controller into inclusion).
+2. Power on the in-wall dimmer and set it into inclusion mode. There are two methods to set the in-wall dimmer into inclusion mode:
+1)Repower on the dimmer, it will be set into inclusion mode automatically, and waiting to be included.
+2)Triple press the action button on the dimmer, it will set the dimmer into inclusion mode.
+The connected light will stay solid on for 3 seconds to indicate successful inclusion.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+Method 1: Exclusion from the primary controller/gateway as follows:
+1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual on how to set your controller into exclusion).
+2. Triple press the action button, the dimmer will be set to exclusion mode, and waiting to be excluded, then the dimmer will be excluded from the network.
+Method 2: Factory reset the dimmer will force it to be excluded from a network. (please refer to the part “Factory Reset” of this manual)
+Note: Factory reset is not recommended for exclusion, please use this procedure only if the primary controller/gateway is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3331/SR-ZV9040A-A Micro Smart Dimmer.pdf</MetaDataItem>
+    <MetaDataItem id="D00C" name="Identifier" type="0200">SR-ZV9040A-A</MetaDataItem>
+    <MetaDataItem id="D00C" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3331/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
     In-wall Dimmer SR-ZV9101SAC-HP-EU
     Manual: http://www.sunricher.com/media/resources/manual/SR-ZV9101SAC-HP-EU%20Instruction%20V1.pdf
     -->
 
   <!-- Configuration -->
   <CommandClass id="112">
-    <Value type="list" genre="config" instance="1" index="2" label="Saving state before power failure" size="1" value="1">
-        <Help>
+    <Value genre="config" index="2" instance="1" label="Saving state before power failure" size="1" type="list" value="1">
+      <Help>
               Saving state before power failure.
             Default Not saved.
         </Help>
@@ -16,42 +47,42 @@
       <Item label="State NOT saved at power failure, all outputs are set to ON upon power restore" value="1"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="2"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="3" label="Send the basic report" size="1" value="1">
-        <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
+    <Value genre="config" index="3" instance="1" label="Send the basic report" size="1" type="list" value="1">
+      <Help>Enable/disable to send the basic report to the Lifeline when the load state changed.
               When value set as 1, re-power on the dimmer, it will send Basic report automatically. 
 		Default Enabled.
         </Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="4" label="Fade time" min="0" max="255" value="1">
-        <Help>Fade time (units between 1-127 represent 1-127 seconds.
+    <Value genre="config" index="4" instance="1" label="Fade time" max="255" min="0" type="byte" value="1">
+      <Help>Fade time (units between 1-127 represent 1-127 seconds.
 		Units Betwen 128-244 represent minutes, 128 = 1 minute, 129 = 2 minutes.
               This value has the same function as Duration of Multilevel). 
 		Default 1.
         </Help>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="5" label="Setting minimum brightness value" min="0" max="50" value="0">
-        <Help>Setting minimum brightness value.
+    <Value genre="config" index="5" instance="1" label="Setting minimum brightness value" max="50" min="0" type="byte" value="0">
+      <Help>Setting minimum brightness value.
               Valid value: 0 - 50, the bigger the value is, the higher the loads minimum brightness is.
               Note: when configure this value, the value of Multilevel will be configured as 1 automatically so that users can preview the corresponding effect of minimum brightness value
         </Help>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="6" label="Setting maximum brightness value" min="0" max="100" value="100">
-        <Help>Setting maximum brightness value.
+    <Value genre="config" index="6" instance="1" label="Setting maximum brightness value" max="100" min="0" type="byte" value="100">
+      <Help>Setting maximum brightness value.
               Valid value: 0 - 100, the bigger the value is, the higher the load maximum brightness is.
         </Help>
     </Value>
-    <Value type="list" genre="config" instance="1" index="7" label="Choose MOSFET driving type" size="1" value="1">
-        <Help>
+    <Value genre="config" index="7" instance="1" label="Choose MOSFET driving type" size="1" type="list" value="1">
+      <Help>
           Choose MOSFET driving type". 
 		Default trailing edge.
         </Help>
       <Item label="Trailing edge" value="0"/>
       <Item label="Leading edge" value="1"/>
-   </Value>
-   <Value type="list" genre="config" instance="1" index="8" label="External switch type" size="1" value="1">
-        <Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="External switch type" size="1" type="list" value="1">
+      <Help>
 	   Choose external switch type. 
 		Default normal on/off switch. 
         </Help>
@@ -59,32 +90,32 @@
       <Item label="normal on/off switch" value="1"/>
       <Item label="3-way switch" value="2"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="9" label="External switch to be added to and removed from a network" size="1" value="1">
-        <Help>Enable/disable external switch to be added to and removed from a network.
+    <Value genre="config" index="9" instance="1" label="External switch to be added to and removed from a network" size="1" type="list" value="1">
+      <Help>Enable/disable external switch to be added to and removed from a network.
               When enables this function, triple press the external switch within 1.5 seconds to be added to or removed from a net-work.
             Default Enabled.
         </Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="10" label="Detect load after re-power on" size="1" value="0">
-        <Help>
+    <Value genre="config" index="10" instance="1" label="Detect load after re-power on" size="1" type="list" value="0">
+      <Help>
            Enable/disable to detect load after re-power on (detect load type, minimum brightness, maximum brightness)
         </Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable to detect every time after re-power on" value="1"/>
       <Item label="Enable to detect only after first re-power on" value="2"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="11" label="Wiring type" size="1" read_only="true" value="0">
-        <Help>
+    <Value genre="config" index="11" instance="1" label="Wiring type" read_only="true" size="1" type="list" value="0">
+      <Help>
            Wiring type
         </Help>
       <Item label="Unknown" value="0"/>
       <Item label="2 Wire With No Neutral" value="1"/>
       <Item label="3 Wire With Neutral" value="2"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="12" label="Load type" size="1" read_only="true" value="0">
-        <Help>
+    <Value genre="config" index="12" instance="1" label="Load type" read_only="true" size="1" type="list" value="0">
+      <Help>
            Load type
         </Help>
       <Item label="Unknown" value="0"/>
@@ -92,45 +123,45 @@
       <Item label="Inductive" value="2"/>
       <Item label="Capacitive" value="3"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="13" label="Over current protection" size="1" value="1">
-        <Help>
+    <Value genre="config" index="13" instance="1" label="Over current protection" size="1" type="list" value="1">
+      <Help>
            Enable/disable over current protection (over 1.5A for 20 seconds continuously)
         </Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="short" genre="config" instance="1" index="14" label="Power automatic report absolute threshold" size="2" units="W" value="10">
-        <Help>
+    <Value genre="config" index="14" instance="1" label="Power automatic report absolute threshold" size="2" type="short" units="W" value="10">
+      <Help>
            Power automatic report absolute threshold, unit is W. 
 	   When power changes above the absolute threshold, immediately report current power value
         </Help>
     </Value>
-    <Value type="byte" genre="config" instance="1" index="15" label="Power automatic report percentage threshold" size="1" units="%"  value="20">
-        <Help>
+    <Value genre="config" index="15" instance="1" label="Power automatic report percentage threshold" size="1" type="byte" units="%" value="20">
+      <Help>
            Power automatic report percentage threshold, unit is %.
            When power changes above the percentage threshold, immediately report current power value
         </Help>
-   </Value>
-   <Value type="int" genre="config" instance="1" index="21" label="Power metering automatich report time cycle" size="4" units="second" value="600">
-        <Help>
+    </Value>
+    <Value genre="config" index="21" instance="1" label="Power metering automatich report time cycle" size="4" type="int" units="second" value="600">
+      <Help>
            Power metering automatic report time cycle, unit is second.
 	   Valid time cycle value: 5-2678400, when set as 0 report function is disabled
         </Help>
-   </Value>
-   <Value type="int" genre="config" instance="1" index="22" label="Energy metering automatich report time cycle" size="4" value="1800">
-        <Help>
+    </Value>
+    <Value genre="config" index="22" instance="1" label="Energy metering automatich report time cycle" size="4" type="int" value="1800">
+      <Help>
            Energy metering automatic report time cycle, unit is second.
            Valid time cycle value: 5-2678400, when set as 0 report function is disabled
         </Help>
-   </Value>
-   <Value type="int" genre="config" instance="1" index="23" label="Energy metering automatich report time cycle" size="4" value="0">
-        <Help>
+    </Value>
+    <Value genre="config" index="23" instance="1" label="Energy metering automatich report time cycle" size="4" type="int" value="0">
+      <Help>
            Voltage metering automatic report time cycle, unit is second.
            Valid time cycle value: 5-2678400, when set as 0 report function is disabled
         </Help>
-   </Value>
-   <Value type="int" genre="config" instance="1" index="24" label="Current metering automatich report time cycle" size="4" value="0">
-        <Help>
+    </Value>
+    <Value genre="config" index="24" instance="1" label="Current metering automatich report time cycle" size="4" type="int" value="0">
+      <Help>
            Current metering automatic report time cycle, unit is second.
            Valid time cycle value: 5-2678400, when set as 0 report function is disabled
         </Help>
@@ -139,9 +170,9 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="3">
-      <Group index="1" max_associations="1" label="Lifeline"/>
-      <Group index="2" max_associations="8" label="On/Off"/>
-      <Group index="3" max_associations="8" label="Dimmer"/>
+      <Group index="1" label="Lifeline" max_associations="1"/>
+      <Group index="2" label="On/Off" max_associations="8"/>
+      <Group index="3" label="Dimmer" max_associations="8"/>
     </Associations>
   </CommandClass>
 </Product>

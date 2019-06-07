@@ -1,12 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0312:241C:B211</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/inovelli/simple_module.png</MetaDataItem>
+    <MetaDataItem id="241C" name="ZWProductPage" type="B211">https://products.z-wavealliance.org/products/2461/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the top button for at least 3 seconds while you plug the smart switch into a receptacle.
+Use this procedure only in the event that the network primary controller is missing or otherwise inoperable. </MetaDataItem>
+    <MetaDataItem id="241C" name="Identifier" type="B211">ZW37</MetaDataItem>
+    <MetaDataItem name="Name">Smart Plug Switch (2 channel)</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2461/ZW37-Manual70615.pdf</MetaDataItem>
+    <MetaDataItem name="Description">The 2 ports smart plug provides one Z-Wave outlet for remote controlled by controller through Z-Wave gateway for internet of thing service and can be configured in Z-Wave sensor network,</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include
+    a device to the Z-Wave network.
+2. Once the controller is ready to include your device, press up and 
+     release the toggle to include it in the network. </MetaDataItem>
+    <MetaDataItem id="241C" name="FrequencyName" type="B211">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude 
+    a device from the Z-Wave network.
+2. Once the controller is ready to Exclude your device, press up and 
+     release the toggle to exclude it from the network. </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2352/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2357/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2358/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2379/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2385/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2461/xml</Entry>
+    </ChangeLog>
+    <MetaDataItem id="271C" name="ZWProductPage" type="B212">https://products.z-wavealliance.org/products/2379/</MetaDataItem>
+    <MetaDataItem id="271C" name="Identifier" type="B212">NZW39</MetaDataItem>
+    <MetaDataItem id="271C" name="FrequencyName" type="B212">U.S. / Canada / Mexico</MetaDataItem>
+  </MetaData>
   <!-- Configuration Parameters -->
-  <CommandClass id="112">
-  </CommandClass>
+  <CommandClass id="112"></CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="1">
-      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>

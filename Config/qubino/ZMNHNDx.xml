@@ -1,47 +1,46 @@
-<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0053:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/qubino/ZMNHNDx.png</MetaDataItem>
-    <MetaDataItem id="0053" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/1336/</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">Module Exclusion/Reset (Removing from Z-Wave network)
-•	Connect module to power supply 
+    <MetaDataItem id="0053" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2536/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">•	Connect module to power supply 
 •	bring module within maximum 1 meter (3 feet) of the main controller,
-•	enable add/remove mode on main controller
+•	enable add/remove mode on main controller,
 •	press service button S for more than 6 second or
 •	press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply.
+By this function all parameters of the module are set to default values and own ID is deleted.
+If service button S is pressed more than 2 and less than 6 seconds (or if push button I1 is pressed three times within 3s) module is excluded, but configuration parameters are not set to default values.
 
-By this function all parameters of the module are set to default values and own ID is deleted
-If service button S is pressed more than 2 and less than 6 second module is excluded, but configuration parameters are not set to default values. 
+NOTE: If the module is included with parameters 71 with value different to default and module reset is done, wait at least 30s before next inclusion.
+
+NOTE: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
 </MetaDataItem>
     <MetaDataItem id="0053" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
-    <MetaDataItem name="Description">Qubino Flush 1D relay with voltage free (dry contact) output contact.
-This Z-Wave module is used for switching on or off the electrical device (e.g. light, fan, etc ...). The module can be controlled either through Z-wave network or through the wall switch.
-The module is designed to be mounted inside a “flush mounting box”, hidden behind a traditional wall switch.
-Module supports connection of digital temperature sensor. It is designed to act as repeater in order to improve range and stability of Z-wave network.                  
-
-Output contact is voltage free (dry contact), so also loads with different power supply can be connected to the module.
-
-FEATURES:
-- The module has the option to connect a digital temperature sensor
-- small dimensions (WxHxD) 41,8x36,8x15,4mm
-- power supply is 110 - 230 VAC ±10% 50/60Hz, 24-30VDC
-- Electrical consumption 0,4W</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">Module Inclusion (Adding to Z-wave network)
-•	Connect module to power supply (with 
+    <MetaDataItem name="Description">The Qubino Flush Shutter DC is ideal for controlling the 12–24V DC motors of blinds, rollers, shades, venetian blinds and similar sunscreens. You can control it either remotely through the Z-Wave network or through wall switches. It also measures power consumption and supports the connection of a digital temperature sensor.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">•	Connect module to power supply (with 
 temperature sensor connected - if purchased),
 •	auto-inclusion (works for about 5 seconds after connected to power supply) or
 •	press service button S for more than 2 second or
 •	press push button I1 three times within 3s (3 times change switch state within 3 seconds).
-NOTE: When connecting temperature sensor to module that has already been included, you have to exclude module first. Connect the sensor and re-include the module.
-</MetaDataItem>
-    <MetaDataItem name="ResetDescription">Please use this procedure only in the event that your network primary controller is missing or otherwise inoperable.
 
-If the service button S is pressed for more than 6 seconds the module will be reset to the factory defoult state.</MetaDataItem>
-    <MetaDataItem name="Name">Qubino Flush 1D relay</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/1336/Qubino_Flush 1D Relay PLUS extended manual_eng_2.2.pdf</MetaDataItem>
-    <MetaDataItem id="0053" name="Identifier" type="0002">ZMNHN</MetaDataItem>
+NOTE1: For auto-inclusion procedure, first set main controller into inclusion mode and then connect module to power supply.
+
+NOTE2: When connecting temperature sensor to module that has already been included, you have to exclude module first. Switch off power supply, connect the sensor and re-include the module.
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">press service button S for more than 6 second or
+•	press push button I1 five times within 3s (5 times change switch state within 3 seconds) in the first 60 seconds after the module is connected to the power supply.
+By this function all parameters of the module are set to default values and own ID is deleted.
+If service button S is pressed more than 2 and less than 6 seconds (or if push button I1 is pressed three times within 3s) module is excluded, but configuration parameters are not set to default values.
+
+NOTE: Please use this procedure only when the network primary controller is missing or otherwise inoperable.
+
+</MetaDataItem>
+    <MetaDataItem name="Name">Flush Shutter DC</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2536/Qubino_Flush Shutter DC PLUS extended manual_eng_2.2.pdf</MetaDataItem>
+    <MetaDataItem id="0053" name="Identifier" type="0002">ZMNHOD1</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1336/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2536/xml</Entry>
     </ChangeLog>
   </MetaData>
   <!-- 

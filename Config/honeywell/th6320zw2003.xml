@@ -1,4 +1,43 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0039:0008:0011</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/honeywell/th6320zw2003.png</MetaDataItem>
+    <MetaDataItem id="0008" name="ZWProductPage" type="0011">https://products.z-wavealliance.org/products/2893/</MetaDataItem>
+    <MetaDataItem name="Name">T6 Pro Z-Wave Programmable Thermostat</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To include the thermostat in to Z-Wave network, go to thermostat MENU/ Z-Wave SETUP.
+• Touch Select. You will be asked to set your primary controller to INCLUDE MODE. Please refer to the user manual of your Z-Wave controller.
+• After inclusion procedure has been initiated on your Z-Wave controller, touch Select on the thermostat.
+• If the inclusion procedure is successful, "INCLUDED", the node ID, and the Z-Wave connected status icon appear on the screen.
+If the procedure fails, “FAILED TO INCLUDE” appears on the screen.
+• Your controller will indicate whether the thermostat was successfully added to its network. Please refer to the user manual of your Z-Wave controller.</MetaDataItem>
+    <MetaDataItem name="Description">The Honeywell T6 Pro Z-Wave Programmable Thermostat is a Z-Wave Plus certified, universal thermostat capable to control up to three heat and two cool stages of heat pump, (incl. dual fuel heat pump systems) and up to two heat and two cool stages of conventional system (3H/2C HP, 2H/2C Conv.)
+- 3 x AA battery or 24VAC powered
+- Easy wiring, easy configuration
+- Flexible local thermostat scheduling options
+- Attractive look, large Easy-To-Read touchscreen
+- Displays and reports ambient temperature and % Relative Indoor Humidity
+- Displays and reports HVAC system status, battery power status, Z-Wave signal status
+- Large amount of supported Z-Wave command classes
+- Remotely configurable via Z-Wave configuration command class
+- Advanced HVAC configuration parameters</MetaDataItem>
+    <MetaDataItem id="0008" name="FrequencyName" type="0011">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="0008" name="Identifier" type="0011">TH6320ZW2003</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2893/33-00414-01-min.pdf</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To exclude the thermostat from Z-Wave network, go to thermostat MENU/ Z-Wave SETUP.
+• Touch Select. You will be asked to set your primary
+controller to EXCLUDE MODE. Please refer to the user manual of your Z-Wave controller.
+• After exclusion procedure has been initiated on your Z-Wave controller, touch Select on the thermostat.
+• If the exclusion procedure is successful, "EXCLUDED", and the Z-Wave excluded status icon appear on the screen.
+If the procedure fails, “FAILED TO EXCLUDE” appears on the screen.
+• Your controller will indicate whether the thermostat was successfully excluded from its network. Please refer to the user manual of your Z-Wave controller.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">To reset the thermostat to factory default setting, go to Installer setup – advanced menu. To access the advanced menu, press and hold the thermostat Menu button for 5 seconds.
+Touch &lt; or > to go to RESET menu. Press Select. Touch &lt; or > to go to FACTORY. Press Select. Touch Yes to reset the thermostat to factory default settings.. 
+Please use the reset procedure only when the primary controller is missing or inoperable.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2583/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2893/xml</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
   <CommandClass id="67">
     <Compatibility>

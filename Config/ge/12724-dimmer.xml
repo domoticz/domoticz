@@ -1,11 +1,11 @@
-<!-- GE(Jasco) 12724 3-Way Dimmer Switch --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- GE(Jasco) 12724 3-Way Dimmer Switch --><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3031:4944</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/12724-dimmer.png</MetaDataItem>
     <MetaDataItem id="3031" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1197/</MetaDataItem>
-    <MetaDataItem name="Description">Z-Wave Fan Control</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the GE Z-Wave Smart Fan Control. The in-wall fan control easily replaces any standard in-wall switch remotely controls a ceiling fan in your home and features a three-speed control system. Your home will be equipped with ultimate flexibility with the GE Z-Wave Smart Fan Control, capable of being used by itself or with up to four GE add-on switches. Screw terminal installation provides improved space efficiency when replacing existing switches and the integrated LED indicator light allows you to easily locate the switch in a dark room. The GE Z-Wave Smart Fan Control is compatible with any Z-Wave certified gateway, providing access to many popular home automation systems. Take control of your home lighting with GE Z-Wave Smart Lighting Controls! </MetaDataItem>
     <MetaDataItem id="3031" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem name="Name">Jasco Fan Speed Control (45743)</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Fan Control </MetaDataItem>
     <MetaDataItem name="ProductPage">http://www.ezzwave.com</MetaDataItem>
     <MetaDataItem id="3031" name="Identifier" type="4944">12724 / ZW3005</MetaDataItem>
     <ChangeLog>
@@ -13,6 +13,8 @@
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1201/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1202/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1221/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2103/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2506/xml</Entry>
     </ChangeLog>
     <MetaDataItem id="3033" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1201/</MetaDataItem>
     <MetaDataItem id="3033" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
@@ -20,6 +22,17 @@
     <MetaDataItem id="3034" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1221/</MetaDataItem>
     <MetaDataItem id="3034" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="3034" name="Identifier" type="4944">45743</MetaDataItem>
+    <MetaDataItem id="3131" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/2506/</MetaDataItem>
+    <MetaDataItem id="3131" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2506/Binder2.pdf</MetaDataItem>
+    <MetaDataItem id="3131" name="Identifier" type="4944">14287/ZW4002</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include a device to the Z-Wave network.
+2. Once the controller is ready to include your device, press and release the top or bottom of the smart fan control switch (rocker) to include it in the network.
+3. Once your controller has confirmed the device has been included, refresh the Z-Wave network to optimize performance.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to exclude a device from the Z-Wave network. 
+2. Once the controller is ready to Exclude your device, press and release the top or bottom of the wireless smart switch (rocker) to exclude it from the network.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">1. Quickly press ON (Top) button three (3) times then immediately press the OFF (Bottom) button three (3) times. The LED will flash ON/OFF 5 times when completed successfully.
+Note: This should only be used in the event your network’s primary controller is missing or otherwise inoperable.</MetaDataItem>
   </MetaData>
   <!-- Configuration Parameters - per http://www.ezzwave.com/advanced-operation/ -->
   <CommandClass id="112">

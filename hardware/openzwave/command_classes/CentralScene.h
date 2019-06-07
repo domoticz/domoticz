@@ -51,17 +51,19 @@ namespace OpenZWave
 
 		// From CommandClass
 		/** \brief Get command class ID (1 byte) identifying this command class. (Inherited from CommandClass) */
-		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
+		virtual uint8 const GetCommandClassId() const override{ return StaticGetCommandClassId(); }
 		/** \brief Get a string containing the name of this command class. (Inherited from CommandClass) */
-		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
-		virtual uint8 GetMaxVersion(){ return 3; }
+		virtual string const GetCommandClassName() const override{ return StaticGetCommandClassName(); }
+		virtual uint8 GetMaxVersion() override { return 3; }
 		/** \brief Handle a response to a message associated with this command class. (Inherited from CommandClass) */
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
+		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		bool RequestValue( uint32 const _requestFlags, uint16 const _what, uint8 const _instance, Driver::MsgQueue const _queue ) override;
+		bool SetValue( Value const& _value) override;
+protected:
 		/** \brief Create Default Vars for this CC */
-		void CreateVars( uint8 const _instance );
-		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		bool RequestValue( uint32 const _requestFlags, uint16 const _what, uint8 const _instance, Driver::MsgQueue const _queue );
-		bool SetValue( Value const& _value);
+		void CreateVars( uint8 const _instance ) override;
+
 	private:
 		/**
 		 * Creates the ValueIDs for the keyAttributes

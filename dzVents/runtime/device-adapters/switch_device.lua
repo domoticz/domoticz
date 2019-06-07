@@ -112,7 +112,29 @@ return {
 		end
 
 		function device.switchSelector(level)
-			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(level), 'device')
+
+			local function guardLevel(val)
+				local maxLevel = #device.levelNames * 10 - 10
+				val = ( val % 10 ~= 0 ) and ( utils.round(val / 10) * 10 ) or val
+				return tostring(( math.min(math.max(val,0),maxLevel) ))
+			end
+
+			local sLevel
+			if type(level) == 'string' then
+				sLevel = level
+				local levels = {}
+				for i=1, #device.levelNames do
+					levels[device.levelNames[(i)]] = i * 10 - 10
+				end 
+				level = levels[level]
+			end
+
+			if not level and sLevel then
+				utils.log('levelname ' .. sLevel .. ' does not exist', domoticz.LOG_ERROR )
+			else
+				return TimedCommand(domoticz, device.name, 'Set Level ' .. guardLevel(level), 'device' )
+			end
+
 		end
 
 		if (device.switchType == 'Selector') then
@@ -122,5 +144,4 @@ return {
 		end
 
 	end
-
 }

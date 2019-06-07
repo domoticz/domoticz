@@ -172,9 +172,8 @@ namespace OpenZWave
 
 
 		void MultiEncap();						// Encapsulate the data inside a MultiInstance/Multicommand message
-OPENZWAVE_EXPORT_WARNINGS_OFF
+
 		string			m_logText;
-OPENZWAVE_EXPORT_WARNINGS_ON
 		bool			m_bFinal;
 		bool			m_bCallbackRequired;
 

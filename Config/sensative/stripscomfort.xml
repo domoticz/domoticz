@@ -1,83 +1,118 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-    <!--
+<Product Revision="14" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019A:000A:0003</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/sensative/stripscomfort.png</MetaDataItem>
+    <MetaDataItem id="000A" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3391/</MetaDataItem>
+    <MetaDataItem id="000A" name="FrequencyName" type="0003">CEPT (Europe) / U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / U.S. / Canada / Mexico / CEPT (Europe) / CEPT (Europe) / U.S. / Canada / Mexico / CEPT (Europe) / U.S. / Canada / Mexico / Australia / New Zealand / Japan / India</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Set your controller to add mode (see your controller’s manual). Follow the instruction for Wake up. A long LED blink indicates that the add/remove was successful.</MetaDataItem>
+    <MetaDataItem id="000A" name="Identifier" type="0003">11 02 015</MetaDataItem>
+    <MetaDataItem name="Name">Strips-Multi-sensor</MetaDataItem>
+    <MetaDataItem name="ResetDescription">You may need to reset Strips if your Z-Wave controller is missing or not responding.
+
+Follow the instructions for “Wake up”, but on the 3rd repetition, leave the magnet at the rounded edge for 10 seconds. A long LED signal indicates success.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Set your controller to remove mode (see your controller’s manual). Follow the instruction for Wake up. A long LED blink indicates that the add/remove was successful.</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Wake up Strips manually for Z-Wave communication. Place the magnet at the rounded edge. When the LED blinks, move the magnet away. Repeat twice within 10 seconds.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3391/Strips Multi-Sensors EU manuals.pdf</MetaDataItem>
+    <MetaDataItem name="Description">Strips, the ultra-thin multi sensor is now available in two new sensor models, Strips Drip and Strips Comfort. Drip and Comfort join Strips Guard, the thinnest magnet sensor in the world detecting if your windows are open and closed invisibly since 2015.
+
+Strip Drip sends an alarm signal if it detects a water leak. Its unique design allows it to be easily placed almost everywhere, including most places other sensors simply can’t fit.  With soaking pads integrated in the mounting plate even small amounts of water will be detected. The built-in temperature sensor gives the possibility to combine the leakage alarm with a freeze alarm. There is also a built-in ambient light sensor that may be useful in special applications.
+
+Strips Comfort is a very accurate temperature and ambient light sensor. The unique design and mounting plate makes it easy to place almost invisibly in your home to measure temperature or control heating, air conditioning and even windows blinds which are connected to your Z-Wave smart home system.
+
+All Strips products can be used both in-doors and out-doors and the integrated custom battery gives Strips an expected lifetime of up to 10 years. For you, this means no hassle needing to change or charge batteries in your Strips sensors for the lifetime of the products! </MetaDataItem>
+    <ChangeLog>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2415/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2443/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2737/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2755/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2941/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2942/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3250/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3259/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3346/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3347/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3370/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3390/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="14">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3391/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!--
     Sensative Strips Comfort
     https://products.z-wavealliance.org/products/2737
     -->
     <!-- Configuration Parameters -->
-    <CommandClass id="112">
-        <Value type="list" index="2" genre="config" label="Led alarm reporting" size="1" value="1">
-            <Help>Led alarm reporting</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="list" index="3" genre="config" label="Temperature and light reporting" size="1" value="1">
-            <Help>Temperature and light reporting</Help>
-            <Item label="Normal" value="1"/>
-            <Item label="Frequent" value="2"/>
-        </Value>
-        <Value type="list" index="4" genre="config" label="Temperature reporting" size="1" value="1">
-            <Help>Does not affect temperature alarms</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="list" index="5" genre="config" label="Temperature reporting unit" size="1" value="0">
-            <Help>Temperature reporting unit</Help>
-            <Item label="Celsius" value="0"/>
-            <Item label="Fahrenheit" value="1"/>
-        </Value>
-        <Value type="list" index="6" genre="config" label="Temperature alarms" size="1" value="0">
-            <Help>Temperature alarms</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="7" label="High temperature level" value="60" min="0" max="148">
-            <Help>
+  <CommandClass id="112">
+    <Value genre="config" index="2" label="Led alarm reporting" size="1" type="list" value="1">
+      <Help>Led alarm reporting</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="3" label="Temperature and light reporting" size="1" type="list" value="1">
+      <Help>Temperature and light reporting</Help>
+      <Item label="Normal" value="1"/>
+      <Item label="Frequent" value="2"/>
+    </Value>
+    <Value genre="config" index="4" label="Temperature reporting" size="1" type="list" value="1">
+      <Help>Does not affect temperature alarms</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="5" label="Temperature reporting unit" size="1" type="list" value="0">
+      <Help>Temperature reporting unit</Help>
+      <Item label="Celsius" value="0"/>
+      <Item label="Fahrenheit" value="1"/>
+    </Value>
+    <Value genre="config" index="6" label="Temperature alarms" size="1" type="list" value="0">
+      <Help>Temperature alarms</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="7" instance="1" label="High temperature level" max="148" min="0" type="byte" value="60">
+      <Help>
                 -20 to 60C
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="8" label="Low temperature level" value="147" min="0" max="147">
-            <Help>
+    </Value>
+    <Value genre="config" index="8" instance="1" label="Low temperature level" max="147" min="0" type="byte" value="147">
+      <Help>
                 -20 to 60C
             </Help>
-        </Value>
-        <Value type="list" index="9" genre="config" label="Ambient light reporting " size="1" value="1">
-            <Help>Ambient light reporting</Help>
-            <Item label="Off" value="0"/>
-            <Item label="On" value="1"/>
-            <Item label="Report only threshold" value="2"/>
-        </Value>
-        <Value type="int" genre="config" instance="1" index="10" label="High Ambient light report level" value="40000" units="lux" min="3" max="64000" >
-            <Help>
+    </Value>
+    <Value genre="config" index="9" label="Ambient light reporting " size="1" type="list" value="1">
+      <Help>Ambient light reporting</Help>
+      <Item label="Off" value="0"/>
+      <Item label="On" value="1"/>
+      <Item label="Report only threshold" value="2"/>
+    </Value>
+    <Value genre="config" index="10" instance="1" label="High Ambient light report level" max="64000" min="3" type="int" units="lux" value="40000">
+      <Help>
                 3 to 64000
             </Help>
-        </Value>
-        <Value type="int" genre="config" instance="1" index="11" label="Low ambient light report level " value="5000" units="lux" min="1" max="42000" >
-            <Help>
+    </Value>
+    <Value genre="config" index="11" instance="1" label="Low ambient light report level " max="42000" min="1" type="int" units="lux" value="5000">
+      <Help>
                 1 to 42000
             </Help>
-        </Value>
-        <Value type="list" index="12" genre="config" label="Leakage alarm" size="1" value="0">
-            <Help>Leakage alarm</Help>
-            <Item label="Disable" value="0"/>
-            <Item label="Enable" value="1"/>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="13" label="Leakage alarm level" value="10" min="1" max="100">
-            <Help>
+    </Value>
+    <Value genre="config" index="12" label="Leakage alarm" size="1" type="list" value="0">
+      <Help>Leakage alarm</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value genre="config" index="13" instance="1" label="Leakage alarm level" max="100" min="1" type="byte" value="10">
+      <Help>
                 1 to 100 (1 = almost dry, 100 = wet)
             </Help>
-        </Value>
-        <Value type="byte" genre="config" instance="1" index="14" label="Moisture reporting period" units="Hours" value="0" min="0" max="120">
-            <Help>
+    </Value>
+    <Value genre="config" index="14" instance="1" label="Moisture reporting period" max="120" min="0" type="byte" units="Hours" value="0">
+      <Help>
                 0-120 (Hours between reports)
             </Help>
-        </Value>
-    </CommandClass>
-
-    <!-- Association Groups -->
-    <CommandClass id="133">
-        <Associations num_groups="1">
-            <Group index="1" max_associations="1" label="Lifeline"/>
-        </Associations>
-    </CommandClass>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="1"/>
+    </Associations>
+  </CommandClass>
 </Product>

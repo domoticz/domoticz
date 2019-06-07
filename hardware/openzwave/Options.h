@@ -241,11 +241,11 @@ namespace OpenZWave
 
 OPENZWAVE_EXPORT_WARNINGS_OFF
 		map<string,Option*>	m_options;										// Map of option names to values.
+OPENZWAVE_EXPORT_WARNINGS_ON
 		string				m_xml;											// Path to XML options file.
 		string				m_commandLine;									// String containing command line options.
 		string				m_SystemPath;
 		string				m_LocalPath;
-OPENZWAVE_EXPORT_WARNINGS_ON
 		bool				m_locked;										// If true, the options are final and AddOption can no longer be called.
 		static Options*		s_instance;
 	};
