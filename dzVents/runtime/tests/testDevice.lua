@@ -549,6 +549,7 @@ describe('device', function()
 					"disarm",
 					"getColor",
 					'increaseBrightness',
+					'incrementCounter',
 					"kodiExecuteAddOn",
 					"kodiPause",
 					"kodiPlay",
@@ -572,6 +573,7 @@ describe('device', function()
 					"setHotWater",
 					"setHue",
 					"setKelvin",
+					"setMode",
 					'setNightMode',
 					'setRGB',
 					"setVolume",
@@ -653,13 +655,13 @@ describe('device', function()
 								[3] = "TemporaryOverride";
 								[4] = "2016-04-29T06:32:58Z" }
 								})
-			
+
 			local res;
 
 			domoticz.openURL = function(url)
 				res = url;
 			end
-			
+
 			assert.is_same('On', device.state)
 			assert.is_same('TemporaryOverride', device.mode)
 			assert.is_same('2016-04-29T06:32:58Z', device.untilDate)
@@ -667,6 +669,33 @@ describe('device', function()
 			device.setHotWater('Off', 'Permanent')
 
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&idx=1&setpoint=&state=Off&mode=Permanent&used=true', res)
+		end)
+
+		it('should detect an evohome Heating device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Heating',
+				['subType'] = 'Evohome',
+				['hardwareTypeValue'] = 39,
+				['rawData'] = { [2] = "On";
+								[3] = "TemporaryOverride";
+								[4] = "2016-04-29T06:32:58Z" }
+				})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			assert.is_same('On', device.state)
+			assert.is_same('TemporaryOverride', device.mode)
+			assert.is_same('2016-04-29T06:32:58Z', device.untilDate)
+
+			device.setMode('Busted')
+
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=switchmodal&idx=1&status=Busted&action=1&ooc=0', res)
 		end)
 
 		it('should detect an opentherm gateway device', function()
@@ -856,8 +885,16 @@ describe('device', function()
 			assert.is_same(123.44, device.counterToday)
 			assert.is_same(6.7894, device.counter)
 
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
 			device.updateCounter(555)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555", _trigger=true} } }, commandArray)
+		  
+			local domoticz = require('Domoticz')
+			device.incrementCounter(10)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&svalue=10', res)
 		end)
 
 		it('should detect a pressure device', function()

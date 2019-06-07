@@ -131,6 +131,8 @@ return {
 
 			if not level and sLevel then
 				utils.log('levelname ' .. sLevel .. ' does not exist', domoticz.LOG_ERROR )
+			elseif device.switchType ~= "Selector" then 
+				utils.log('method switchSelector not available for type ' .. device.switchType, domoticz.LOG_ERROR )
 			else
 				return TimedCommand(domoticz, device.name, 'Set Level ' .. guardLevel(level), 'device' )
 			end

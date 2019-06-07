@@ -1,3 +1,8 @@
+[2.4.23]
+- Add method setMode for evohome device
+- Add method incrementCounter for incremental counter
+- Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
+
 [2.4.22]
 - selector.switchSelector method accepts levelNames
 - increased selector.switchSelector resilience
