@@ -10832,7 +10832,7 @@ namespace http {
 						szAttachmentName = szVar + ".db";
 					}
 				}
-				reply::set_content_from_file(&rep, OutputFileName, szAttachmentName, true);
+				reply::set_download_file(&rep, OutputFileName, szAttachmentName);
 			}
 		}
 

@@ -131,7 +131,7 @@ static time_t convert_from_http_date(const std::string &str)
 	return timegm(&time_data);
 }
 
-static std::string convert_to_http_date(time_t time)
+std::string convert_to_http_date(time_t time)
 {
 	struct tm *tm_result = gmtime(&time);
 
@@ -145,7 +145,7 @@ static std::string convert_to_http_date(time_t time)
 	return buffer;
 }
 
-static time_t last_write_time(const std::string &path)
+time_t last_write_time(const std::string &path)
 {
 	struct stat st;
 	if (stat(path.c_str(), &st) == 0) {
