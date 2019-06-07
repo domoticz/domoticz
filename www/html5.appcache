@@ -606,7 +606,9 @@ js/data-tables/jquery.dataTables.min.js.gz
 
 js/highcharts/highcharts.js
 js/highcharts/highcharts-more.js
+js/highcharts/modules/dependency-wheel.js
 js/highcharts/modules/exporting.js
+js/highcharts/modules/sankey.js
 js/highcharts/modules/xrange.js
 js/highcharts/themes/dark-unica.js
 
