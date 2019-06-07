@@ -97,9 +97,9 @@ void connection::start()
 		return;
 	}
 	host_endpoint_address_ = endpoint.address().to_string();
-	std::stringstream sstr;
-	sstr << endpoint.port();
-	sstr >> host_endpoint_port_;
+	//std::stringstream sstr;
+	//sstr << endpoint.port();
+	//sstr >> host_endpoint_port_;
 
 	set_abandoned_timeout();
 
