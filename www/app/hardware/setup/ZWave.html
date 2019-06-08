@@ -1,201 +1,248 @@
+<style>
+.label {
+    margin-right: 2px;
+}
+</style>
 <div id="hardwarecontent" class="container"></div>
-
 <div class="modal hide fade" id="IncludeZWaveDialog" tabindex="-1" role="dialog" aria-labelledby="IncludeZWaveNodeDialog" aria-hidden="false">
-    <div class="modal-dialog" >
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="izwd_title">Including ZWave Node</h4>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <center>
-                        <font color="black">
-                            <div id="izwd_waiting" style="display:none;">
-                                <span>Press the include button on your device...</span><br>
-                                <br>
-                                <div class="sk-fading-circle" style="width: 48px; height: 48px;">
-                                    <div class="sk-circle1 sk-circle"></div>
-                                    <div class="sk-circle2 sk-circle"></div>
-                                    <div class="sk-circle3 sk-circle"></div>
-                                    <div class="sk-circle4 sk-circle"></div>
-                                    <div class="sk-circle5 sk-circle"></div>
-                                    <div class="sk-circle6 sk-circle"></div>
-                                    <div class="sk-circle7 sk-circle"></div>
-                                    <div class="sk-circle8 sk-circle"></div>
-                                    <div class="sk-circle9 sk-circle"></div>
-                                    <div class="sk-circle10 sk-circle"></div>
-                                    <div class="sk-circle11 sk-circle"></div>
-                                    <div class="sk-circle12 sk-circle"></div>
-                                </div>
-                                <br>
-                                <button type="button" onclick="OnZWaveAbortInclude()" id="izwd_abort" class="btn btn-info">Abort</button><br>
-                            </div>
-                            <div id="izwd_result" style="display:none2;">
-                                Included node: <b>{{ozw_node_id}}</b><br>
-                                <b>{{ozw_node_desc}}</b><br>
-                                <br>
-                                <button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal">Close</button>
-                            </div>
-                        </font>
-                    </center>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="izwd_title">Including ZWave Node</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					<center>
+						<font color="black">
+							<div id="izwd_waiting" style="display:none;">
+								<span>Press the include button on your device...</span><br>
+								<br>
+								<div class="sk-fading-circle" style="width: 48px; height: 48px;">
+									<div class="sk-circle1 sk-circle"></div>
+									<div class="sk-circle2 sk-circle"></div>
+									<div class="sk-circle3 sk-circle"></div>
+									<div class="sk-circle4 sk-circle"></div>
+									<div class="sk-circle5 sk-circle"></div>
+									<div class="sk-circle6 sk-circle"></div>
+									<div class="sk-circle7 sk-circle"></div>
+									<div class="sk-circle8 sk-circle"></div>
+									<div class="sk-circle9 sk-circle"></div>
+									<div class="sk-circle10 sk-circle"></div>
+									<div class="sk-circle11 sk-circle"></div>
+									<div class="sk-circle12 sk-circle"></div>
+								</div>
+								<br>
+								<button type="button" onclick="OnZWaveAbortInclude()" id="izwd_abort" class="btn btn-info">Abort</button><br>
+							</div>
+							<div id="izwd_result" style="display:none2;">
+								Included node: <b>{{ozw_node_id}}</b><br>
+								<b>{{ozw_node_desc}}</b><br>
+								<br>
+								<button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</font>
+					</center>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <div class="modal hide fade" id="ExcludeZWaveDialog" tabindex="-1" role="dialog" aria-labelledby="ExcludeZWaveNodeDialog" aria-hidden="false">
-    <div class="modal-dialog" >
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="ezwd_title">Excluding ZWave Node</h4>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <center>
-                        <font color="black">
-                            <div id="ezwd_waiting" style="display:none;">
-                                <span>Press the exclude button on your device...</span><br>
-                                <br>
-                                <div class="sk-fading-circle" style="width: 48px; height: 48px;">
-                                    <div class="sk-circle1 sk-circle"></div>
-                                    <div class="sk-circle2 sk-circle"></div>
-                                    <div class="sk-circle3 sk-circle"></div>
-                                    <div class="sk-circle4 sk-circle"></div>
-                                    <div class="sk-circle5 sk-circle"></div>
-                                    <div class="sk-circle6 sk-circle"></div>
-                                    <div class="sk-circle7 sk-circle"></div>
-                                    <div class="sk-circle8 sk-circle"></div>
-                                    <div class="sk-circle9 sk-circle"></div>
-                                    <div class="sk-circle10 sk-circle"></div>
-                                    <div class="sk-circle11 sk-circle"></div>
-                                    <div class="sk-circle12 sk-circle"></div>
-                                </div>
-                                <br>
-                                <button type="button" onclick="OnZWaveAbortExclude()" id="ezwd_abort" class="btn btn-info">Abort</button><br>
-                            </div>
-                            <div id="ezwd_result" style="display:none;">
-                                Excluded node: <b>{{ozw_node_id}}</b><br>
-                                <br>
-                                <button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal">Close</button>
-                            </div>
-                        </font>
-                    </center>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="ezwd_title">Excluding ZWave Node</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					<center>
+						<font color="black">
+							<div id="ezwd_waiting" style="display:none;">
+								<span>Press the exclude button on your device...</span><br>
+								<br>
+								<div class="sk-fading-circle" style="width: 48px; height: 48px;">
+									<div class="sk-circle1 sk-circle"></div>
+									<div class="sk-circle2 sk-circle"></div>
+									<div class="sk-circle3 sk-circle"></div>
+									<div class="sk-circle4 sk-circle"></div>
+									<div class="sk-circle5 sk-circle"></div>
+									<div class="sk-circle6 sk-circle"></div>
+									<div class="sk-circle7 sk-circle"></div>
+									<div class="sk-circle8 sk-circle"></div>
+									<div class="sk-circle9 sk-circle"></div>
+									<div class="sk-circle10 sk-circle"></div>
+									<div class="sk-circle11 sk-circle"></div>
+									<div class="sk-circle12 sk-circle"></div>
+								</div>
+								<br>
+								<button type="button" onclick="OnZWaveAbortExclude()" id="ezwd_abort" class="btn btn-info">Abort</button><br>
+							</div>
+							<div id="ezwd_result" style="display:none;">
+								Excluded node: <b>{{ozw_node_id}}</b><br>
+								<br>
+								<button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</font>
+					</center>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
-
 <div id="openzwave" style="display:none;">
-    <div id="zwavenodesqueried" class="alert alert-error" style="display:none;"><b><span data-i18n="Not all Nodes have been Queried yet, OpenZWave not fully initialized yet!"></span></b></div>
-    <div class="page-header-small">
-        <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-            <tr>
-                <td>
-                    <h1 data-i18n="Nodes">Nodes</h1>
-                </td>
-                <td align="right">
-                    <div class="dropdown">
-                        <button class="btn dropdown-toggle sr-only" type="button" id="dropdownMenu1" data-toggle="dropdown">
-                            <span data-i18n="Node management">Node management</span>
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
-                            <li ><a href="javascript:ZWaveIncludeNode(false);" ><button type="button" data-i18n="Include Node" class="btn btn-primary">Include Node</button></a></li>
-                            <li ><a href="javascript:ZWaveIncludeNode(true);" ><button type="button" data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</button></a></li>
-                            <li><a href="javascript:ZWaveExcludeNode();" ><button type="button" data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</button></a></li>
-                            <li><a href="javascript:ZWaveHealNetwork();" ><button type="button" data-i18n="Heal network" class="btn btn-warning">Heal network</button></a></li>
-                            <li role="presentation" class="divider"></li>
-                            <li><a href="javascript:ZWaveTopology();" ><button type="button" data-i18n="Groups & Network" class="btn btn-success">Groups & Network</button></a></li>
-                            <li role="presentation" class="divider"></li>
-                            <li><a href="javascript:ZWaveSoftResetNode();" ><button type="button" data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</button></a></li>
-                            <li><a href="javascript:ZWaveHardResetNode();" ><button type="button" data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</button></a></li>
-                            <li><a href="javascript:ZWaveReceiveConfiguration();" ><button type="button" data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</button></a></li>
-                            <li><a href="javascript:ZWaveSendConfiguration();" ><button type="button" data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</button></a></li>
-                            <li><a href="javascript:ZWaveTransferPrimaryRole();" ><button type="button" data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</button></a></li>
-                            <li id="usercodegrp" role="presentation" class="divider"></li>
-                            <li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><button type="button" data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</button></a></li>
-                            <li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><button type="button" data-i18n="User Code Management" class="btn btn-primary">User Code Management</button></a></li>
-                            <li role="presentation" class="divider"></li>
-                            <li><a id="zwave_configdownload" href="#" ><button type="button" data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</button></a></li>
-                            <li><a id="zwave_controlpabel" href="./ozwcp/cp.html" ><button type="button" data-i18n="Control Panel" class="btn btn-primary">Control Panel</button></a></li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-    <table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-        <tr>
-            <th width="80" align="center" data-i18n="NodeID">NodeID</th>
-            <th width="150" align="left" data-i18n="Name">Name</th>
-            <th align="left" data-i18n="Description">Description</th>
-            <th width="120" align="center" data-i18n="Manufacturer">Manufacturer</th>
-            <th width="70" align="center" data-i18n="ID">ID</th>
-            <th width="70" align="center" data-i18n="Type">Type</th>
-            <th width="150" align="left" data-i18n="Last Seen">Last Seen</th>
-            <th width="50" align="left" data-i18n="EnablePolling">Enable Polling</th>
-            <th width="50" align="left" data-i18n="Status">Status</th>
-        </tr>
-        </thead>
-    </table>
-    <input type="hidden" id="idx" name="idx" value="-1">
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td>
-                <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
-            </td>
-            <td>
-                <a class="btnstyle3-dis" id="noderefresh" data-i18n="Refresh Node Info">Refresh Node Info</a>
-            </td>
-            <td align="right">
-                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveNodeTable();">Refresh</a>
-            </td>
-        </tr>
-    </table>
-    <br>
-    <input type="hidden" id="ownNodeId" name="ownNodeId" value="-1">
-    <table class="display" id="nodeparamstable" border="0" cellpadding="0" cellspacing="20">
-        <tr>
-            <td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
-            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        </tr>
-        <tr id="trEnablePolling">
-            <td align="right" style="width:80px"><span data-i18n="EnablePolling"></span>:</td>
-            <td><input type="checkbox" id="EnablePolling"><label for="EnablePolling"/></td>
-        </tr>
-    </table>
-    <br>
-    <h2 data-i18n="Configuration">Configuration</h2>
-    <br>
-    <div id="configuration"></div>
+	<div id="zwavenodesqueried" class="alert alert-error" style="display:none;"><b><span data-i18n="Not all Nodes have been Queried yet, OpenZWave not fully initialized yet!"></span></b></div>
+	<div id="zwavesettingscontent">
+		<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
+			<li class="active"><a data-target="#tabnodes" data-toggle="tab" data-i18n="Nodes"></a></li>
+			<li><a data-target="#tabgroups" data-toggle="tab" data-i18n="Groups">Groups</a></li>
+			<li><a data-target="#tabneighbours" data-toggle="tab" data-i18n="Neighbours">Neighbours</a></li>
+			<li class="pull-right">
+				<div class="dropdown">
+					<button class="btn sr-only" type="button" id="dropdownMenu1" data-toggle="dropdown">
+						<span data-i18n="Node management">Node management</span>
+						<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu pull-right text-right" role="menu" aria-labelledby="dropdownMenu1">
+						<li><a href="javascript:ZWaveIncludeNode(false);"><button type="button" data-i18n="Include Node" class="btn btn-primary">Include Node</button></a></li>
+						<li><a href="javascript:ZWaveIncludeNode(true);"><button type="button" data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</button></a></li>
+						<li><a href="javascript:ZWaveExcludeNode();"><button type="button" data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</button></a></li>
+						<li><a href="javascript:ZWaveHealNetwork();"><button type="button" data-i18n="Heal network" class="btn btn-warning">Heal network</button></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a href="javascript:ZWaveSoftResetNode();"><button type="button" data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</button></a></li>
+						<li><a href="javascript:ZWaveHardResetNode();"><button type="button" data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</button></a></li>
+						<li><a href="javascript:ZWaveReceiveConfiguration();"><button type="button" data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</button></a></li>
+						<li><a href="javascript:ZWaveSendConfiguration();"><button type="button" data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</button></a></li>
+						<li><a href="javascript:ZWaveTransferPrimaryRole();"><button type="button" data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</button></a></li>
+						<li id="usercodegrp" role="presentation" class="divider"></li>
+						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();"><button type="button" data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</button></a></li>
+						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();"><button type="button" data-i18n="User Code Management" class="btn btn-primary">User Code Management</button></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a id="zwave_configdownload" href="#"><button type="button" data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</button></a></li>
+						<li><a id="zwave_controlpabel" href="./ozwcp/cp.html"><button type="button" data-i18n="Control Panel" class="btn btn-primary">Control Panel</button></a></li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+		<div id="my-tab-content" class="tab-content">
+			<div class="tab-pane active" id="tabnodes">
+				<!-- ============= Nodes ============= -->
+				<section id="system">
+					<div class="page-header-small">
+						<h1 data-i18n="Nodes">Nodes</h1>
+					</div>
+					<div class="row-fluid">
+						<div class="span12">
+							<table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+								<thead>
+									<tr style="height: 35px;">
+										<th width="80" align="center" data-i18n="NodeID">NodeID</th>
+										<th width="150" align="left" data-i18n="Name">Name</th>
+										<th align="left" data-i18n="Description">Description</th>
+										<th width="120" align="center" data-i18n="Manufacturer">Manufacturer</th>
+										<th width="70" align="center" data-i18n="ID">ID</th>
+										<th width="70" align="center" data-i18n="Type">Type</th>
+										<th width="150" align="left" data-i18n="Last Seen">Last Seen</th>
+										<th width="50" align="left" data-i18n="EnablePolling">Enable Polling</th>
+										<th width="50" align="left" data-i18n="Status">Status</th>
+									</tr>
+								</thead>
+							</table>
+							<input type="hidden" id="idx" name="idx" value="-1">
+							<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+										<a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+									</td>
+									<td>
+										<a class="btnstyle3-dis" id="noderefresh" data-i18n="Refresh Node Info">Refresh Node Info</a>
+									</td>
+									<td align="right">
+										<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveNodeTable();">Refresh</a>
+									</td>
+								</tr>
+							</table>
+							<br>
+							<input type="hidden" id="ownNodeId" name="ownNodeId" value="-1">
+							<table class="display" id="nodeparamstable" border="0" cellpadding="0" cellspacing="20">
+								<tr>
+									<td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
+									<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+								</tr>
+								<tr id="trEnablePolling">
+									<td align="right" style="width:80px"><span data-i18n="EnablePolling"></span>:</td>
+									<td><input type="checkbox" id="EnablePolling"><label for="EnablePolling" /></td>
+								</tr>
+							</table>
+							<br>
+							<h2 data-i18n="Configuration">Configuration</h2>
+							<br>
+							<div id="configuration"></div>
+						</div>
+					</div>
+				</section>
+			</div>
+			<div class="tab-pane" id="tabgroups">
+				<!-- ============= Groups ============= -->
+				<section id="system">
+					<div class="page-header-small">
+						<h1 data-i18n="Groups">Groups</h1>
+					</div>
+					<div class="row-fluid">
+						<div class="span12">
+							<table class="display" id="grouptable" />
+							<table id="updelclrgroup" border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td align="right">
+										<a class="btnstyle3" id="grouprefresh" data-i18n="Refresh" onclick="RefreshGroupTable();">Refresh</a>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</section>
+			</div>
+			<div class="tab-pane" id="tabneighbours">
+				<!-- ============= Neighbours ============= -->
+				<section id="system">
+					<div class="page-header-small">
+						<h1 data-i18n="Neighbours">Neighbours</h1>
+					</div>
+					<div class="row-fluid">
+						<div class="span12">
+							<div align="center" id="networkchart"></div>
+						</div>
+					</div>
+				</section>
+			</div>
+		</div>
+
+	</div>
 </div>
 <div id="openzwaveusercodes" style="display:none;">
-    <div class="page-header-small">
-        <h1 data-i18n="User Codes">User Codes</h1>
-    </div>
-    <table class="display" id="codestable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-        <tr>
-            <th width="70" align="center" data-i18n="Code">Code</th>
-            <th align="left" data-i18n="Value">Value</th>
-            <th width="70" align="left" data-i18n="Action">Action</th>
-        </tr>
-        </thead>
-    </table>
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td align="right">
-                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveUserCodesTable();">Refresh</a>
-            </td>
-        </tr>
-    </table>
-    <br />
-    Please note, removing a code can take a while on battery operated devices.<br />
-    To quickly force the hardware to remove the code (after pressing the remove button)<br />
-    use the tamper switch on the back to wake up the device.
-    <input type="hidden" id="idx" name="nodeidx" value="-1">
+	<div class="page-header-small">
+		<h1 data-i18n="User Codes">User Codes</h1>
+	</div>
+	<table class="display" id="codestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr>
+				<th width="70" align="center" data-i18n="Code">Code</th>
+				<th align="left" data-i18n="Value">Value</th>
+				<th width="70" align="left" data-i18n="Action">Action</th>
+			</tr>
+		</thead>
+	</table>
+	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveUserCodesTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<br />
+	Please note, removing a code can take a while on battery operated devices.<br />
+	To quickly force the hardware to remove the code (after pressing the remove button)<br />
+	use the tamper switch on the back to wake up the device.
+	<input type="hidden" id="idx" name="nodeidx" value="-1">
 </div>

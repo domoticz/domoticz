@@ -504,6 +504,12 @@
     <Filter Include="EventSystem\Python">
       <UniqueIdentifier>{5963621f-6d1b-49cd-9e55-f76a0f0d287d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="www\app\hardware">
+      <UniqueIdentifier>{35489dbf-0ffd-4619-95f6-31966e23f1d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\app\hardware\setup">
+      <UniqueIdentifier>{a48a127e-d23d-445b-a0d7-8105024adac4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1351,6 +1357,60 @@
     </None>
     <None Include="..\webserver\proxydef.def">
       <Filter>Webserver</Filter>
+    </None>
+    <None Include="..\www\app\hardware\Hardware.html">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\Hardware.js">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\HardwareSetup.html">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\HardwareSetup.js">
+      <Filter>www\app\hardware</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\BleBox.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\BleBox.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Kodi.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Kodi.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\MySensors.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\MySensors.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\PanasonicTV.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\PanasonicTV.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Pinger.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\Pinger.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\WakeOnLan.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\WakeOnLan.js">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\ZWave.html">
+      <Filter>www\app\hardware\setup</Filter>
+    </None>
+    <None Include="..\www\app\hardware\setup\ZWave.js">
+      <Filter>www\app\hardware\setup</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

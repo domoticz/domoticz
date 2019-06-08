@@ -632,7 +632,6 @@ js/babel-polyfill-6.26.0.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
-js/d3.min.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
@@ -708,7 +707,6 @@ views/users.html
 views/utility.html
 views/weather.html
 views/weather_widget.html
-zwavetopology.html
 secpanel/index.html
 views/login.html
 

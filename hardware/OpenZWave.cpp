@@ -3791,35 +3791,34 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > >& 
 	for (itt = result.begin(); itt != result.end(); ++itt)
 	{
 		std::vector<std::string> sd = *itt;
-		int nodeID = atoi(sd[1].c_str());
-		unsigned int homeID = static_cast<unsigned int>(std::stoul(sd[0]));
-		NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
-		if (pNode == NULL)
-			continue;
-
-		std::vector<int> row;
-		NodeArray.push_back(row);
-		NodeArray[rowCnt].push_back(nodeID);
-		uint8* arr;
-
-		try
+		unsigned int _homeID = static_cast<unsigned int>(std::stoul(sd[0]));
+		int _nodeID = atoi(sd[1].c_str());
+		if (COpenZWave::NodeInfo * nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			int retval = m_pManager->GetNodeNeighbors(homeID, nodeID, &arr);
-			if (retval > 0) {
+			std::vector<int> row;
+			NodeArray.push_back(row);
+			NodeArray[rowCnt].push_back(_nodeID);
+			uint8* arr;
 
-				for (int i = 0; i < retval; i++) {
-					NodeArray[rowCnt].push_back(arr[i]);
+			try
+			{
+				int retval = m_pManager->GetNodeNeighbors(_homeID, _nodeID, &arr);
+				if (retval > 0) {
+
+					for (int i = 0; i < retval; i++) {
+						NodeArray[rowCnt].push_back(arr[i]);
+					}
+
+					delete[] arr;
 				}
-
-				delete[] arr;
 			}
+			catch (OpenZWave::OZWException& ex)
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
+				return false;
+			}
+			rowCnt++;
 		}
-		catch (OpenZWave::OZWException& ex)
-		{
-			_log.Log(LOG_ERROR, "OpenZWave: Exception. Type: %d, Msg: %s, File: %s (Line %d)", ex.GetType(), ex.GetMsg().c_str(), ex.GetFile().c_str(), ex.GetLine());
-			return false;
-		}
-		rowCnt++;
 	}
 	return true;
 }
@@ -5645,7 +5644,6 @@ namespace http {
 						int colCount = 0;
 						int nodeID = -1;
 						std::vector<int> rest;
-						std::stringstream list;
 
 						for (col_iterator = (*row_iterator).begin(); col_iterator != (*row_iterator).end(); ++col_iterator) {
 							if (colCount == 0) {
@@ -5659,15 +5657,18 @@ namespace http {
 
 						if (nodeID != -1)
 						{
-							std::copy(rest.begin(), rest.end(), std::ostream_iterator<int>(list, ","));
 							root["result"]["mesh"][rowCount]["nodeID"] = nodeID;
-							allnodes.push_back(nodeID);
+
+							std::stringstream list;
+							for (auto ittRest : rest)
+							{
+								if (!list.str().empty()) list << ",";
+								list << std::to_string(ittRest);
+							}
 							root["result"]["mesh"][rowCount]["seesNodes"] = list.str();
 							rowCount++;
 						}
 					}
-					std::copy(allnodes.begin(), allnodes.end(), std::ostream_iterator<int>(allnodeslist, ","));
-					root["result"]["nodes"] = allnodeslist.str();
 					root["status"] = "OK";
 				}
 
@@ -5770,7 +5771,7 @@ namespace http {
 						std::string nodeName = sd[3].c_str();
 						int numGroups = pOZWHardware->ListGroupsForNode(nodeID);
 						root["result"]["nodes"][ii]["nodeID"] = nodeID;
-						root["result"]["nodes"][ii]["nodeName"] = nodeName;
+						root["result"]["nodes"][ii]["nodeName"] = (nodeName!="Unknown") ? nodeName : (pNode->Manufacturer_name + std::string(" ") + pNode->Product_name);
 						root["result"]["nodes"][ii]["groupCount"] = numGroups;
 						if (numGroups > 0) {
 							if (numGroups > MaxNoOfGroups)
