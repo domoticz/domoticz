@@ -115,7 +115,7 @@ local testCounterIncremental = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["counter"] = 1.234;
+		["counter"] = 1.244;
 		["counterToday"] = 0;
 	})
 	handleResult('Test counter incremental device', res)
@@ -698,9 +698,17 @@ end
 
 local testVarCancelled = function(name)
 	local res = true
-	local var = dz.variables('varCancelled')
+	local var = dz.variables(name)
 	res = res and expectEql(0, var.value)
-	handleResult('Test cancelled variable', res)
+	handleResult('Test ' .. name .. ' variable', res)
+	return res
+end
+
+local testVarDocumentation = function(name)
+	local res = true
+	local var = dz.variables(name)
+	res = res and expectEql(0, var.value)
+	handleResult('Test ' .. name .. ' variable', res)
 	return res
 end
 
@@ -891,6 +899,7 @@ return {
 		res = res and testLastUpdates(stage2Trigger)
 		res = res and testRepeatSwitch('vdRepeatSwitch')
 		res = res and testVarCancelled('varCancelled')
+		res = res and testVarDocumentation('varUpdateDocument')
 		res = res and testCancelledScene('scCancelledScene')
 		res = res and testHTTPSwitch('vdHTTPSwitch');
 		res = res and testDescription('vdDescriptionSwitch', descriptionString, "device")

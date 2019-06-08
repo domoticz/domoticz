@@ -12,7 +12,7 @@ Version 4.xxxxx (xxx 2019)
 - Fixed: YouLess, possible buffer overflow (#3261)
 - Fixed: notification, Telegram error when odd number of underscores in text
 - Updated: OpenZWave version 1.6
-- Updated: dzVents (version 2.4.22, See dzVents/documentation/history.md)
+- Updated: dzVents (version 2.4.23, See dzVents/documentation/history.md)
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)

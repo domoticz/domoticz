@@ -124,11 +124,18 @@ local function Domoticz(settings)
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
 		['EVOHOME_MODE_FOLLOW_SCHEDULE'] = 'FollowSchedule',
+		['EVOHOME_MODE_AUTOWITHRESET'] = 'AutoWithReset',
+		['EVOHOME_MODE_AUTOWITHECO'] = 'AutoWithEco',
+		['EVOHOME_MODE_AWAY'] = 'Away',
+		['EVOHOME_MODE_DAYOFF'] = 'DayOff',
+		['EVOHOME_MODE_CUSTOM'] = 'Custom',
+		['EVOHOME_MODE_HEATINGOFF'] = 'HeatingOff',
 		['INTEGER'] = 'integer',
 		['FLOAT'] = 'float',
 		['STRING'] = 'string',
 		['DATE'] = 'date',
 		['TIME'] = 'time',
+		['NSS_FIREBASE'] = 'gcm',  -- For the moment the change to fcm is only done in the url 
 		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
 		['NSS_HTTP'] = 'http',
 		['NSS_KODI'] = 'kodi',
@@ -236,6 +243,13 @@ local function Domoticz(settings)
 				_subSystem = ''
 			end
 		end
+
+		--[[
+        if _subSystem:find('gcm') then
+			utils.log('Notification subsystem Google Cloud Messaging (gcm) has been deprecated by Google. Please consider switching to Firebase', utils.LOG_ERROR)
+		end
+        ]] --
+        
 		local data = subject
 				.. '#' .. message
 				.. '#' .. tostring(priority)

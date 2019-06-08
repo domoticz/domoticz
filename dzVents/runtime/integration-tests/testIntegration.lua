@@ -75,6 +75,7 @@ local VIRTUAL_DEVICES = {
 	TEMPERATURE = {80, 'vdTemperature'},
 	TEXT = {5, 'vdText'},
 	THERMOSTAT_SETPOINT = {8, 'vdThermostatSetpoint'},
+    UPDATEDOCUMENT_SWITCH = { 6, 'vdDocumentationSwitch' },
 	USAGE_ELECTRIC = {248, 'vdUsageElectric'},
 	UV = {87, 'vdUV'},
 	VISIBILITY = {12, 'vdVisibility'},
@@ -85,8 +86,8 @@ local VIRTUAL_DEVICES = {
 	-- increment SECPANEL_INDEX_CHECK when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX_CHECK = 59
-local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 10 -- 10 is number of groups / scenes + managed counter + dimmer switch+ ?
+local SECPANEL_INDEX_CHECK = 60
+local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 10 -- 10 is number of groups / scenes + managed counter + dimmer switch + ?
 
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
@@ -95,7 +96,8 @@ local VAR_TYPES = {
 	DATE = {3, 'varDate', '31/12/2017'},
 	TIME = {4, 'varTime', '23:59'},
 	SILENT = { 0, 'varSilent', 1 },
-	CANCELLED = { 0, 'varCancelled', 0}
+	CANCELLED = { 0, 'varCancelled', 0},
+	UPDATEDOCUMENT = { 0, 'varUpdateDocument', 88},
 }
 
 local getResultsFromfile = function(file)
@@ -135,6 +137,7 @@ describe('Integration test',
 		TestTools.removeFSScript('vdCancelledRepeatSwitch.lua')
 		TestTools.removeFSScript('vdRepeatSwitch.lua')
 		TestTools.removeFSScript('vdSwitchDimmer.lua')
+		TestTools.removeFSScript('scriptTestUpdatedDocumentation.lua')
 		TestTools.removeGUIScript('stage1.lua')
 	end)
 
@@ -420,6 +423,11 @@ describe('Integration test',
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.HTTP_SWITCH[2], VIRTUAL_DEVICES.HTTP_SWITCH[1])
 			assert.is_true(ok)
 		end)
+        
+        it('should create an Update Documentationswitch to trigger test UpdatedDocumentation script', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.UPDATEDOCUMENT_SWITCH[2], VIRTUAL_DEVICES.UPDATEDOCUMENT_SWITCH[1])
+			assert.is_true(ok)
+		end)
 
 		it('should create a DESCRIPTION switch to trigger description script', function()
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.DESCRIPTION_SWITCH[2], VIRTUAL_DEVICES.DESCRIPTION_SWITCH[1])
@@ -600,6 +608,11 @@ describe('Integration test',
 			local ok, idx = TestTools.createVariable(VAR_TYPES.CANCELLED[2], VAR_TYPES.CANCELLED[1], VAR_TYPES.CANCELLED[3])
 			assert.is_true(ok)
 		end)
+        
+        it('should create an integer variable to hold status of updateDocumentation check', function()
+			local ok, idx = TestTools.createVariable(VAR_TYPES.UPDATEDOCUMENT[2], VAR_TYPES.UPDATEDOCUMENT[1], VAR_TYPES.UPDATEDOCUMENT[3])
+			assert.is_true(ok)
+		end)
 	end)
 
 	describe('Preparing security panel', function ()
@@ -682,6 +695,10 @@ describe('Integration test',
 
 		it('Should move a httpResponse event script in place', function()
 			TestTools.createFSScript('httpResponseScript.lua')
+		end)
+        
+        it('Should move a updateDocumentation event script in place', function()
+			TestTools.createFSScript('scriptTestUpdatedDocumentation.lua')
 		end)
 
 		it('Should create the stage1 trigger switch', function()

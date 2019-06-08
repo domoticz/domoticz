@@ -277,7 +277,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 				return res
 			else
-				utils.log('An error occured when calling event handler ' .. eventHandler.name, utils.LOG_ERROR)
+				utils.log('An error occurred when calling event handler ' .. eventHandler.name, utils.LOG_ERROR)
 				utils.log(res, utils.LOG_ERROR) -- error info
 			end
 		else
