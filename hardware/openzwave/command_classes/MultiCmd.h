@@ -32,32 +32,58 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_MULTI_CMD (0x8f), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class MultiCmd: public CommandClass
+	namespace Internal
 	{
-	public:
-		enum MultiCmdCmd
+		namespace CC
 		{
-			MultiCmdCmd_Encap = 0x01
-		};
 
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new MultiCmd( _homeId, _nodeId ); }
-		virtual ~MultiCmd(){}
+			/** \brief Implements COMMAND_CLASS_MULTI_CMD (0x8f), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class MultiCmd: public CommandClass
+			{
+				public:
+					enum MultiCmdCmd
+					{
+						MultiCmdCmd_Encap = 0x01
+					};
 
-		static uint8 const StaticGetCommandClassId(){ return 0x8f; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_MULTI_CMD"; }
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new MultiCmd(_homeId, _nodeId);
+					}
+					virtual ~MultiCmd()
+					{
+					}
 
-		// From CommandClass
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x8f;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_MULTI_CMD";
+					}
 
-	private:
-		MultiCmd( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-	};
+					// From CommandClass
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 
+				private:
+					MultiCmd(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

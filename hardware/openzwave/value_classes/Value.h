@@ -40,91 +40,144 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Node;
-
-	/** \brief Base class for values associated with a node.
-	 * \ingroup ValueID
-	 */
-	class Value: public Ref
+	class Driver;
+	namespace Internal
 	{
-		friend class Driver;
-		friend class ValueStore;
+		namespace VC
+		{
 
-	public:
-		Value( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, ValueID::ValueType const _type, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, bool const _isset, uint8 const _pollIntensity );
-		Value();
+			/** \brief Base class for values associated with a node.
+			 * \ingroup ValueID
+			 */
+			class Value: public Internal::Platform::Ref
+			{
+					friend class OpenZWave::Driver;
+					friend class ValueStore;
 
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
+				public:
+					Value(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, ValueID::ValueType const _type, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, bool const _isset, uint8 const _pollIntensity);
+					Value();
 
-		ValueID const& GetID()const{ return m_id; }
-		bool IsReadOnly()const{ return m_readOnly; }
-		bool IsWriteOnly()const{ return m_writeOnly; }
-		bool IsSet()const{ return m_isSet; }
-		bool IsPolled()const{ return m_pollIntensity != 0; }
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
 
-		string const GetLabel()const;
-		void SetLabel( string const& _label, string const lang="");
+					ValueID const& GetID() const
+					{
+						return m_id;
+					}
+					bool IsReadOnly() const
+					{
+						return m_readOnly;
+					}
+					bool IsWriteOnly() const
+					{
+						return m_writeOnly;
+					}
+					bool IsSet() const
+					{
+						return m_isSet;
+					}
+					bool IsPolled() const
+					{
+						return m_pollIntensity != 0;
+					}
 
-		string const& GetUnits()const{ return m_units; }
-		void SetUnits( string const& _units ){ m_units = _units; }
+					string const GetLabel() const;
+					void SetLabel(string const& _label, string const lang = "");
 
-		string const GetHelp()const;
-		void SetHelp( string const& _help, string const lang="");
+					string const& GetUnits() const
+					{
+						return m_units;
+					}
+					void SetUnits(string const& _units)
+					{
+						m_units = _units;
+					}
 
-		uint8 const& GetPollIntensity()const{ return m_pollIntensity; }
-		void SetPollIntensity( uint8 const& _intensity ){ m_pollIntensity = _intensity; }
+					string const GetHelp() const;
+					void SetHelp(string const& _help, string const lang = "");
 
-		int32 GetMin()const{ return m_min; }
-		int32 GetMax()const{ return m_max; }
+					uint8 const& GetPollIntensity() const
+					{
+						return m_pollIntensity;
+					}
+					void SetPollIntensity(uint8 const& _intensity)
+					{
+						m_pollIntensity = _intensity;
+					}
 
-		void SetChangeVerified( bool _verify ){ m_verifyChanges = _verify; }
-		bool GetChangeVerified() { return m_verifyChanges; }
+					int32 GetMin() const
+					{
+						return m_min;
+					}
+					int32 GetMax() const
+					{
+						return m_max;
+					}
 
-		virtual string const GetAsString() const { return ""; }
-		virtual bool SetFromString( string const& ) { return false; }
+					void SetChangeVerified(bool _verify)
+					{
+						m_verifyChanges = _verify;
+					}
+					bool GetChangeVerified()
+					{
+						return m_verifyChanges;
+					}
 
-		bool Set();							// For the user to change a value in a device
+					virtual string const GetAsString() const
+					{
+						return "";
+					}
+					virtual bool SetFromString(string const&)
+					{
+						return false;
+					}
 
-		// Helpers
-		static ValueID::ValueGenre GetGenreEnumFromName( char const* _name );
-		static char const* GetGenreNameFromEnum( ValueID::ValueGenre _genre );
-		static ValueID::ValueType GetTypeEnumFromName( char const* _name );
-		static char const* GetTypeNameFromEnum( ValueID::ValueType _type );
+					bool Set();							// For the user to change a value in a device
 
-	protected:
-		virtual ~Value();
+					// Helpers
+					static OpenZWave::ValueID::ValueGenre GetGenreEnumFromName(char const* _name);
+					static char const* GetGenreNameFromEnum(ValueID::ValueGenre _genre);
+					static OpenZWave::ValueID::ValueType GetTypeEnumFromName(char const* _name);
+					static char const* GetTypeNameFromEnum(ValueID::ValueType _type);
+
+				protected:
+					virtual ~Value();
 
 //		void SetIsSet() { m_isSet = true; }	// TODO: consider removing this...it's never called since m_isSet is set in ValueChanged and ValueRefreshed
-		bool IsCheckingChange()const{ return m_checkChange; }
-		void SetCheckingChange( bool _check ) { m_checkChange = _check; }
-		void OnValueRefreshed();			// A value in a device has been refreshed
-		void OnValueChanged();				// The refreshed value actually changed
-		int VerifyRefreshedValue( void* _originalValue, void* _checkValue, void* _newValue, ValueID::ValueType _type, int _originalValueLength = 0, int _checkValueLength = 0, int _newValueLength = 0 );
+					bool IsCheckingChange() const
+					{
+						return m_checkChange;
+					}
+					void SetCheckingChange(bool _check)
+					{
+						m_checkChange = _check;
+					}
+					void OnValueRefreshed();			// A value in a device has been refreshed
+					void OnValueChanged();				// The refreshed value actually changed
+					int VerifyRefreshedValue(void* _originalValue, void* _checkValue, void* _newValue, ValueID::ValueType _type, int _originalValueLength = 0, int _checkValueLength = 0, int _newValueLength = 0);
 
-		int32		m_min;
-		int32		m_max;
+					int32 m_min;
+					int32 m_max;
 
-		time_t		m_refreshTime;			// time_t identifying when this value was last refreshed
-		bool		m_verifyChanges;		// if true, apparent changes are verified; otherwise, they're not
-		ValueID		m_id;
+					time_t m_refreshTime;			// time_t identifying when this value was last refreshed
+					bool m_verifyChanges;		// if true, apparent changes are verified; otherwise, they're not
+					ValueID m_id;
 
-
-	private:
-		string		m_units;
-		bool		m_readOnly;
-		bool		m_writeOnly;
-		bool		m_isSet;
-		uint8		m_affectsLength;
-		uint8*		m_affects;
-		bool		m_affectsAll;
-		bool		m_checkChange;
-		uint8		m_pollIntensity;
-	};
-
+				private:
+					string m_units;
+					bool m_readOnly;
+					bool m_writeOnly;
+					bool m_isSet;
+					uint8 m_affectsLength;
+					uint8* m_affects;
+					bool m_affectsAll;
+					bool m_checkChange;
+					uint8 m_pollIntensity;
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
 

@@ -32,42 +32,66 @@
 
 namespace OpenZWave
 {
-	class ValueByte;
-
-	/** \brief Implements COMMAND_CLASS_BASIC (0x20), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class Basic: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Basic( _homeId, _nodeId ); }
-		virtual ~Basic(){}
+		namespace CC
+		{
+			/** \brief Implements COMMAND_CLASS_BASIC (0x20), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class Basic: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Basic(_homeId, _nodeId);
+					}
+					virtual ~Basic()
+					{
+					}
 
-		static uint8 const StaticGetCommandClassId(){ return 0x20; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_BASIC"; }
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x20;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_BASIC";
+					}
 
-		bool SetMapping( uint8 const _commandClassId, bool const _doLog = true );	// Map COMMAND_CLASS_BASIC messages to another command class
-		uint8_t GetMapping() { return m_com.GetFlagByte(COMPAT_FLAG_BASIC_MAPPING); };
-		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement ) override;
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
+					bool SetMapping(uint8 const _commandClassId, bool const _doLog = true);	// Map COMMAND_CLASS_BASIC messages to another command class
+					uint8_t GetMapping()
+					{
+						return m_com.GetFlagByte(COMPAT_FLAG_BASIC_MAPPING);
+					}
+					;
+					// From CommandClass
+					virtual void ReadXML(TiXmlElement const* _ccElement) override;
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
-		void Set( uint8 const _level );
+					void Set(uint8 const _level);
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-	private:
-		Basic( uint32 const _homeId, uint8 const _nodeId );
+				private:
+					Basic(uint32 const _homeId, uint8 const _nodeId);
 
-		std::vector<int>			m_instances;
-	};
-
+					std::vector<int> m_instances;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

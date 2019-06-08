@@ -37,65 +37,70 @@
 
 namespace OpenZWave
 {
+	namespace Internal
+	{
 
-class NotificationCCTypes
-{
-public:
-	enum NotificationEventParamTypes {
-		NEPT_Location = 0x01,
-		NEPT_List,
-		NEPT_UserCodeReport,
-		NEPT_Byte,
-		NEPT_String,
-		NEPT_Time
-	};
+		class NotificationCCTypes
+		{
+			public:
+				enum NotificationEventParamTypes
+				{
+					NEPT_Location = 0x01,
+					NEPT_List,
+					NEPT_UserCodeReport,
+					NEPT_Byte,
+					NEPT_String,
+					NEPT_Time
+				};
 
-	class NotificationEventParams {
-	public:
-		uint32 id;
-		string name;
-		NotificationEventParamTypes type;
-		std::map<uint32, string> ListItems;
-	};
-	class NotificationEvents {
-	public:
-		uint32 id;
-		string name;
-		std::map<uint32, NotificationCCTypes::NotificationEventParams* > EventParams;
-	};
-	class NotificationTypes {
-	public:
-		uint32 id;
-		string name;
-		std::map<uint32, NotificationCCTypes::NotificationEvents *> Events;
-	};
+				class NotificationEventParams
+				{
+					public:
+						uint32 id;
+						string name;
+						NotificationEventParamTypes type;
+						std::map<uint32, string> ListItems;
+				};
+				class NotificationEvents
+				{
+					public:
+						uint32 id;
+						string name;
+						std::map<uint32, NotificationCCTypes::NotificationEventParams*> EventParams;
+				};
+				class NotificationTypes
+				{
+					public:
+						uint32 id;
+						string name;
+						std::map<uint32, NotificationCCTypes::NotificationEvents *> Events;
+				};
 
+				//-----------------------------------------------------------------------------
+				// Construction
+				//-----------------------------------------------------------------------------
+			private:
+				NotificationCCTypes();
+				~NotificationCCTypes();
+				static void ReadXML();
+			public:
+				static NotificationCCTypes* Get();
+				static bool Create();
+				static string GetEventParamNames(NotificationEventParamTypes);
+				string GetAlarmType(uint32);
+				string GetEventForAlarmType(uint32, uint32);
+				const NotificationTypes *GetAlarmNotificationTypes(uint32);
+				const NotificationEvents *GetAlarmNotificationEvents(uint32, uint32);
+				const std::map<uint32, NotificationCCTypes::NotificationEventParams*> GetAlarmNotificationEventParams(uint32, uint32);
 
-	//-----------------------------------------------------------------------------
-    // Construction
-    //-----------------------------------------------------------------------------
-private:
-    NotificationCCTypes();
-    ~NotificationCCTypes();
-    static void ReadXML();
-public:
-    static NotificationCCTypes* Get();
-    static bool Create();
-    static string GetEventParamNames(NotificationEventParamTypes);
-    string GetAlarmType(uint32);
-    string GetEventForAlarmType(uint32, uint32);
-    const NotificationTypes *GetAlarmNotificationTypes(uint32);
-    const NotificationEvents *GetAlarmNotificationEvents(uint32, uint32);
-    const std::map<uint32, NotificationCCTypes::NotificationEventParams* > GetAlarmNotificationEventParams(uint32, uint32);
-
-    //-----------------------------------------------------------------------------
-    // Instance Functions
-    //-----------------------------------------------------------------------------
-private:
-    static NotificationCCTypes* m_instance;
-    static std::map<uint32, NotificationCCTypes::NotificationTypes *> Notifications;
-    static uint32 m_revision;
-};
-
-};
-#endif // VALUEHELP_H
+				//-----------------------------------------------------------------------------
+				// Instance Functions
+				//-----------------------------------------------------------------------------
+			private:
+				static NotificationCCTypes* m_instance;
+				static std::map<uint32, NotificationCCTypes::NotificationTypes *> Notifications;
+				static uint32 m_revision;
+		};
+	} // namespace Internal
+} // namespace OpenZWave
+#endif // NOTIFICATIONCCTYPES_H

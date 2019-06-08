@@ -33,54 +33,55 @@
 
 namespace OpenZWave
 {
-class OPENZWAVE_EXPORT Bitfield
-{
-	friend class Iterator;
-
-public:
-	Bitfield();
-	Bitfield(uint32 value);
-	~Bitfield();
-	bool Set( uint8 _idx );
-	bool Clear( uint8 _idx );
-	bool IsSet( uint8 _idx ) const;
-	uint32 GetNumSetBits() const;
-	uint32 GetValue() const;
-	bool SetValue(uint32 val);
-	uint32 GetSize() const;
-	class Iterator
+	namespace Internal
 	{
-		friend class Bitfield;
 
-	public:
-		uint32 operator *() const;
-		Iterator& operator++();
-		Iterator operator++(int);
+		class OPENZWAVE_EXPORT Bitfield
+		{
+				friend class Iterator;
 
-		bool operator ==(const Iterator &rhs);
-		bool operator !=(const Iterator &rhs);
-	private:
-		Iterator( Bitfield const* _bitfield, uint32 _idx );
+			public:
+				Bitfield();
+				Bitfield(uint32 value);
+				~Bitfield();
+				bool Set(uint8 _idx);
+				bool Clear(uint8 _idx);
+				bool IsSet(uint8 _idx) const;
+				uint32 GetNumSetBits() const;
+				uint32 GetValue() const;
+				bool SetValue(uint32 val);
+				uint32 GetSize() const;
+				class Iterator
+				{
+						friend class Bitfield;
 
-		void NextSetBit();
+					public:
+						uint32 operator *() const;
+						Iterator& operator++();
+						Iterator operator++(int);
 
-		uint32				m_idx;
-		Bitfield const*		m_bitfield;
-	};
+						bool operator ==(const Iterator &rhs);
+						bool operator !=(const Iterator &rhs);
+					private:
+						Iterator(Bitfield const* _bitfield, uint32 _idx);
 
-	Iterator Begin() const;
-	Iterator End() const;
+						void NextSetBit();
 
-private:
-	OPENZWAVE_EXPORT_WARNINGS_OFF
-	vector<uint32>	m_bits;
-	OPENZWAVE_EXPORT_WARNINGS_ON
-	uint32			m_numSetBits;
-	uint32			m_value;
-};
+						uint32 m_idx;
+						Bitfield const* m_bitfield;
+				};
+
+				Iterator Begin() const;
+				Iterator End() const;
+
+			private:
+				OPENZWAVE_EXPORT_WARNINGS_OFF
+				vector<uint32> m_bits;OPENZWAVE_EXPORT_WARNINGS_ON
+				uint32 m_numSetBits;
+				uint32 m_value;
+		};
+	} // namespace OpenZWave
 } // namespace OpenZWave
 
 #endif
-
-
 

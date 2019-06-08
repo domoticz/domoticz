@@ -32,43 +32,65 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_CONTROLLER_REPLICATION (0x21), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class ControllerReplication: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new ControllerReplication( _homeId, _nodeId ); }
-		virtual ~ControllerReplication(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x21; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_CONTROLLER_REPLICATION"; }
+			/** \brief Implements COMMAND_CLASS_CONTROLLER_REPLICATION (0x21), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class ControllerReplication: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new ControllerReplication(_homeId, _nodeId);
+					}
+					virtual ~ControllerReplication()
+					{
+					}
 
-		// From CommandClass
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x21;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_CONTROLLER_REPLICATION";
+					}
 
-		void SendNextData();
+					// From CommandClass
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					void SendNextData();
 
-	private:
-		ControllerReplication( uint32 const _homeId, uint8 const _nodeId );
-		bool StartReplication( uint8 const _instance );
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
+				private:
+					ControllerReplication(uint32 const _homeId, uint8 const _nodeId);
+					bool StartReplication(uint8 const _instance);
 
-		bool	m_busy;
-		uint8	m_targetNodeId;
-		uint8	m_funcId;
-		int	m_nodeId;
-		int	m_groupCount;
-		int	m_groupIdx;
-		string	m_groupName;
-	};
-
+					bool m_busy;
+					uint8 m_targetNodeId;
+					uint8 m_funcId;
+					int m_nodeId;
+					int m_groupCount;
+					int m_groupIdx;
+					string m_groupName;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

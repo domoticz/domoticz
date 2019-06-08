@@ -33,43 +33,65 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_ASSOCIATION (0x85), a Z-Wave device command class.
-	 *\ingroup CommandClass
-	 */
-	class Association: public CommandClass
+	namespace Internal
 	{
-		friend class Group;
+		namespace CC
+		{
+			/** \brief Implements COMMAND_CLASS_ASSOCIATION (0x85), a Z-Wave device command class.
+			 *\ingroup CommandClass
+			 */
+			class Association: public CommandClass
+			{
+					friend class OpenZWave::Group;
 
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Association( _homeId, _nodeId ); }
-		virtual ~Association(){}
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Association(_homeId, _nodeId);
+					}
+					virtual ~Association()
+					{
+					}
 
-		static uint8 const StaticGetCommandClassId(){ return 0x85; }		
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_ASSOCIATION"; }
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x85;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_ASSOCIATION";
+					}
 
-		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement ) override;
-		virtual void WriteXML( TiXmlElement* _ccElement ) override;
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 )  override;
+					// From CommandClass
+					virtual void ReadXML(TiXmlElement const* _ccElement) override;
+					virtual void WriteXML(TiXmlElement* _ccElement) override;
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 
-		void RequestAllGroups( uint32 const _requestFlags );
-		void Set( uint8 const _group, uint8 const _nodeId );
-		void Remove( uint8 const _group, uint8 const _nodeId );
+					void RequestAllGroups(uint32 const _requestFlags);
+					void Set(uint8 const _group, uint8 const _nodeId);
+					void Remove(uint8 const _group, uint8 const _nodeId);
 
-	private:
-		Association( uint32 const _homeId, uint8 const _nodeId );
-		void QueryGroup( uint8 _groupIdx, uint32 const _requestFlags );
-		void AutoAssociate();
+				private:
+					Association(uint32 const _homeId, uint8 const _nodeId);
+					void QueryGroup(uint8 _groupIdx, uint32 const _requestFlags);
+					void AutoAssociate();
 
-		bool			m_queryAll;			// When true, once a group has been queried, we request the next one.
-		uint8			m_numGroups;		// Number of groups supported by the device.  255 is reported by certain manufacturers and requires special handling.
-		vector<uint8>	m_pendingMembers;	// Used to build a list of group members from multiple reports
-	};
-
+					bool m_queryAll;			// When true, once a group has been queried, we request the next one.
+					uint8 m_numGroups;		// Number of groups supported by the device.  255 is reported by certain manufacturers and requires special handling.
+					vector<uint8> m_pendingMembers;	// Used to build a list of group members from multiple reports
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

@@ -34,67 +34,81 @@
 
 namespace OpenZWave
 {
-
-
-	enum SecurityCmd
+	namespace Internal
 	{
-		SecurityCmd_SupportedGet			= 0x02,
-		SecurityCmd_SupportedReport			= 0x03,
-		SecurityCmd_SchemeGet				= 0x04,
-		SecurityCmd_SchemeReport			= 0x05,
-		SecurityCmd_NetworkKeySet			= 0x06,
-		SecurityCmd_NetworkKeyVerify		= 0x07,
-		SecurityCmd_SchemeInherit			= 0x08,
-		SecurityCmd_NonceGet				= 0x40,
-		SecurityCmd_NonceReport				= 0x80,
-		SecurityCmd_MessageEncap			= 0x81,
-		SecurityCmd_MessageEncapNonceGet	= 0xc1
-	};
+		namespace CC
+		{
 
-	enum SecurityScheme
-	{
-		SecurityScheme_Zero					= 0x00,
-	};
+			enum SecurityCmd
+			{
+				SecurityCmd_SupportedGet = 0x02,
+				SecurityCmd_SupportedReport = 0x03,
+				SecurityCmd_SchemeGet = 0x04,
+				SecurityCmd_SchemeReport = 0x05,
+				SecurityCmd_NetworkKeySet = 0x06,
+				SecurityCmd_NetworkKeyVerify = 0x07,
+				SecurityCmd_SchemeInherit = 0x08,
+				SecurityCmd_NonceGet = 0x40,
+				SecurityCmd_NonceReport = 0x80,
+				SecurityCmd_MessageEncap = 0x81,
+				SecurityCmd_MessageEncapNonceGet = 0xc1
+			};
 
+			enum SecurityScheme
+			{
+				SecurityScheme_Zero = 0x00,
+			};
 
-	/** \brief Implements COMMAND_CLASS_SECURITY (0x98), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
+			/** \brief Implements COMMAND_CLASS_SECURITY (0x98), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
 
-	class Security: public CommandClass
-	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Security( _homeId, _nodeId ); }
-		virtual ~Security();
+			class Security: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Security(_homeId, _nodeId);
+					}
+					virtual ~Security();
 
-		static uint8 const StaticGetCommandClassId(){ return 0x98; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SECURITY"; }
-		bool Init(uint32 const _instance = 1);
-		bool ExchangeNetworkKeys();
-		// From CommandClass
-		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
-		bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
-		virtual uint8 const GetCommandClassId() const override{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		void SendMsg( Msg* _msg );
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x98;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SECURITY";
+					}
+					bool Init(uint32 const _instance = 1);
+					bool ExchangeNetworkKeys();
+					// From CommandClass
+					bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					void SendMsg(Msg* _msg);
 
-	protected:
-		void CreateVars( uint8 const _instance ) override;
+				protected:
+					void CreateVars(uint8 const _instance) override;
 
-	private:
-		Security( uint32 const _homeId, uint8 const _nodeId );
-		bool HandleSupportedReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
+				private:
+					Security(uint32 const _homeId, uint8 const _nodeId);
+					bool HandleSupportedReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
 
-		bool m_schemeagreed;
-		bool m_secured;
+					bool m_schemeagreed;
+					bool m_secured;
 
-
-
-
-
-	};
-
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

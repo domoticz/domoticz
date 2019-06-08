@@ -32,60 +32,65 @@
 
 namespace OpenZWave
 {
-	class TimeStampImpl;
-
-	/** \brief Implements a platform-independent TimeStamp.
-	 * \ingroup Platform
-	 */
-	class OPENZWAVE_EXPORT TimeStamp
+	namespace Internal
 	{
-	public:
-		/**
-		 * Constructor.
-		 * Creates a TimeStamp object.
-		 */
-		TimeStamp();
+		namespace Platform
+		{
+			class TimeStampImpl;
 
-		/**
-		 * Destructor.
-		 * Destroys the TimeStamp object.
-		 */
-		~TimeStamp();
+			/** \brief Implements a platform-independent TimeStamp.
+			 * \ingroup Platform
+			 */
+			class OPENZWAVE_EXPORT TimeStamp
+			{
+				public:
+					/**
+					 * Constructor.
+					 * Creates a TimeStamp object.
+					 */
+					TimeStamp();
 
-		/**
-		 * SetTime.  Sets the timestamp to now, plus the offset in milliseconds.
-		 * \param _milliseconds optional positive or negative offset from 
-		 * now in milliseconds.  Defaults to zero.
-		 */
-		void SetTime( int32 _milliseconds = 0 );
+					/**
+					 * Destructor.
+					 * Destroys the TimeStamp object.
+					 */
+					~TimeStamp();
 
-		/**
-		 * TimeRemaining.  Gets the difference between now and the timestamp
-		 * time in milliseconds.
-		 * \return milliseconds remaining until we reach the timestamp.  The 
-		 * return value is negative if the timestamp is in the past.
-		 */
-		int32 TimeRemaining();
+					/**
+					 * SetTime.  Sets the timestamp to now, plus the offset in milliseconds.
+					 * \param _milliseconds optional positive or negative offset from 
+					 * now in milliseconds.  Defaults to zero.
+					 */
+					void SetTime(int32 _milliseconds = 0);
 
-		/**
-		 * Return as a string for output.
-		 * \return string
-		 */
-		string GetAsString();
+					/**
+					 * TimeRemaining.  Gets the difference between now and the timestamp
+					 * time in milliseconds.
+					 * \return milliseconds remaining until we reach the timestamp.  The 
+					 * return value is negative if the timestamp is in the past.
+					 */
+					int32 TimeRemaining();
 
-		/**
-		 * Overload the subtract operator to get the difference between
-		 * two timestamps in milliseconds.
-		 */
-		int32 operator- ( TimeStamp const& _other );
+					/**
+					 * Return as a string for output.
+					 * \return string
+					 */
+					string GetAsString();
 
-	private:
-		TimeStamp( TimeStamp const& );				// prevent copy
-		TimeStamp& operator = ( TimeStamp const& );	// prevent assignment
+					/**
+					 * Overload the subtract operator to get the difference between
+					 * two timestamps in milliseconds.
+					 */
+					int32 operator-(TimeStamp const& _other);
 
-		TimeStampImpl*	m_pImpl;					// Pointer to an object that encapsulates the platform-specific implementation of the TimeStamp.
-	};
+				private:
+					TimeStamp(TimeStamp const&);				// prevent copy
+					TimeStamp& operator =(TimeStamp const&);	// prevent assignment
 
+					TimeStampImpl* m_pImpl;					// Pointer to an object that encapsulates the platform-specific implementation of the TimeStamp.
+			};
+		} // namespace Platform
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif //_TimeStamp_H

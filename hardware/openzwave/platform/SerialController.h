@@ -34,107 +34,113 @@
 
 namespace OpenZWave
 {
-	class Driver;
-	class Msg;
-	class SerialControllerImpl;
-
-	/** \brief Interface for controllers that implement a Serial Interface (USB Serial Port Emulation)
-	 * \ingroup Platform
-	 */
-	class SerialController: public Controller
+	namespace Internal
 	{
-		friend class SerialControllerImpl;
-
-	public:
-		enum Parity
+		namespace Platform
 		{
-			Parity_None = 0,
-			Parity_Odd,
-			Parity_Even,
-			Parity_Mark,
-			Parity_Space
-		};
 
-		enum StopBits
-		{
-			StopBits_One = 0,
-			StopBits_OneAndAHalf = 1,
-			StopBits_Two = 2
-		};
+//	class Driver;
+//	class Msg;
+			class SerialControllerImpl;
 
-		/**
-		 * Constructor.
-		 * Creates an object that represents a serial port.
-		 */
-		SerialController();
+			/** \brief Interface for controllers that implement a Serial Interface (USB Serial Port Emulation)
+			 * \ingroup Platform
+			 */
+			class SerialController: public Controller
+			{
+					friend class SerialControllerImpl;
 
-		/**
-		 * Destructor.
-		 * Destroys the serial port object.
-		 */
-		virtual ~SerialController();
+				public:
+					enum Parity
+					{
+						Parity_None = 0,
+						Parity_Odd,
+						Parity_Even,
+						Parity_Mark,
+						Parity_Space
+					};
 
-		/**
-		 * Set the serial port baud rate.  The serial port must be closed for the setting to be accepted.
-		 * @param _baud Integer containing the expected baud-rate of the serial connection.  Most Z-Wave interfaces run at 115200 baud.
-		 * @return True if the baud value was accepted.
-		 * @see Open, Close
-		 */
-		bool SetBaud( uint32 const _baud );
+					enum StopBits
+					{
+						StopBits_One = 0,
+						StopBits_OneAndAHalf = 1,
+						StopBits_Two = 2
+					};
 
-		/**
-		 * Set the serial port parity.  The serial port must be closed for the setting to be accepted.
-		 * @param _parity Parity enum value indicating the serial data's expected type of parity bits, if any.
-		 * @return True if the parity value was accepted.
-		 * @see Open, Close
-		 */
-		bool SetParity( Parity const _parity );
+					/**
+					 * Constructor.
+					 * Creates an object that represents a serial port.
+					 */
+					SerialController();
 
-		/**
-		 * Set the serial port stop bits.  The serial port must be closed for the setting to be accepted.
- 		 * @param _stopBits StopBits enum value indicating the serial data's expected number of stop-bits.
-		 * @return True if the stop bits value was accepted.
-		 * @see Open, Close
-		 */
-		bool SetStopBits( StopBits const _stopBits );
+					/**
+					 * Destructor.
+					 * Destroys the serial port object.
+					 */
+					virtual ~SerialController();
 
-		/**
-		 * Open a serial port.
-		 * Attempts to open a serial port and initialize it with the specified parameters.
-		 * @param _SerialControllerName The name of the port to open.  For example, ttyS1 on Linux, or \\.\COM2 in Windows.
-		 * @return True if the port was opened and configured successfully.
-		 * @see Close, Read, Write
-		 */
-		bool Open( string const& _SerialControllerName );
+					/**
+					 * Set the serial port baud rate.  The serial port must be closed for the setting to be accepted.
+					 * @param _baud Integer containing the expected baud-rate of the serial connection.  Most Z-Wave interfaces run at 115200 baud.
+					 * @return True if the baud value was accepted.
+					 * @see Open, Close
+					 */
+					bool SetBaud(uint32 const _baud);
 
-		/**
-		 * Close a serial port.
-		 * Closes the serial port.
-		 * @return True if the port was closed successfully, or false if the port was already closed, or an error occurred.
-		 * @see Open
-		 */
-		bool Close();
+					/**
+					 * Set the serial port parity.  The serial port must be closed for the setting to be accepted.
+					 * @param _parity Parity enum value indicating the serial data's expected type of parity bits, if any.
+					 * @return True if the parity value was accepted.
+					 * @see Open, Close
+					 */
+					bool SetParity(Parity const _parity);
 
-		/**
-		 * Write to a serial port.
-		 * Attempts to write data to an open serial port.
-		 * @param _buffer Pointer to a block of memory containing the data to be written.
-		 * @param _length Length in bytes of the data.
-		 * @return The number of bytes written.
-		 * @see Read, Open, Close
-		 */
-		uint32 Write( uint8* _buffer, uint32 _length );
+					/**
+					 * Set the serial port stop bits.  The serial port must be closed for the setting to be accepted.
+					 * @param _stopBits StopBits enum value indicating the serial data's expected number of stop-bits.
+					 * @return True if the stop bits value was accepted.
+					 * @see Open, Close
+					 */
+					bool SetStopBits(StopBits const _stopBits);
 
-   	private:
-        uint32                      m_baud;
-        SerialController::Parity    m_parity;
-        SerialController::StopBits  m_stopBits;
-		string						m_serialControllerName;
+					/**
+					 * Open a serial port.
+					 * Attempts to open a serial port and initialize it with the specified parameters.
+					 * @param _SerialControllerName The name of the port to open.  For example, ttyS1 on Linux, or \\.\COM2 in Windows.
+					 * @return True if the port was opened and configured successfully.
+					 * @see Close, Read, Write
+					 */
+					bool Open(string const& _SerialControllerName);
 
-		SerialControllerImpl*	    m_pImpl;	// Pointer to an object that encapsulates the platform-specific implementation of the serial port.
-		bool			            m_bOpen;
-	};
+					/**
+					 * Close a serial port.
+					 * Closes the serial port.
+					 * @return True if the port was closed successfully, or false if the port was already closed, or an error occurred.
+					 * @see Open
+					 */
+					bool Close();
 
+					/**
+					 * Write to a serial port.
+					 * Attempts to write data to an open serial port.
+					 * @param _buffer Pointer to a block of memory containing the data to be written.
+					 * @param _length Length in bytes of the data.
+					 * @return The number of bytes written.
+					 * @see Read, Open, Close
+					 */
+					uint32 Write(uint8* _buffer, uint32 _length);
+
+				private:
+					uint32 m_baud;
+					SerialController::Parity m_parity;
+					SerialController::StopBits m_stopBits;
+					string m_serialControllerName;
+
+					OpenZWave::Internal::Platform::SerialControllerImpl* m_pImpl;	// Pointer to an object that encapsulates the platform-specific implementation of the serial port.
+					bool m_bOpen;
+			};
+		} // namespace Platform
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif //_SerialController_H

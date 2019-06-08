@@ -38,60 +38,64 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Msg;
-	class Node;
-	class CommandClass;
-
-	/** \brief BitSet value sent to/received from a node.
-	 * \ingroup ValueID
-	 */
-	class ValueBitSet: public Value
+	namespace Internal
 	{
-	public:
-		ValueBitSet( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint32 const _value, uint8 const _pollIntensity );
-		ValueBitSet(){}
-		virtual ~ValueBitSet(){}
+		namespace VC
+		{
 
-		bool Set( uint32 const _value );
-		uint32 GetValue() const;
+			/** \brief BitSet value sent to/received from a node.
+			 * \ingroup ValueID
+			 */
+			class ValueBitSet: public Value
+			{
+				public:
+					ValueBitSet(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint32 const _value, uint8 const _pollIntensity);
+					ValueBitSet()
+					{
+					}
+					virtual ~ValueBitSet()
+					{
+					}
 
-		bool SetBit( uint8 const _idx);
-		bool ClearBit(uint8 const _idx);
-		bool GetBit(uint8 _idx) const;
+					bool Set(uint32 const _value);
+					uint32 GetValue() const;
 
-		bool SetBitMask(uint32 _bitMask);
-		uint32 GetBitMask() const;
+					bool SetBit(uint8 const _idx);
+					bool ClearBit(uint8 const _idx);
+					bool GetBit(uint8 _idx) const;
 
-		void OnValueRefreshed( uint32 const _value );
+					bool SetBitMask(uint32 _bitMask);
+					uint32 GetBitMask() const;
 
-		// From Value
-		virtual string const GetAsString() const;
-		virtual string const GetAsBinaryString() const;
-		virtual bool SetFromString( string const& _value );
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
+					void OnValueRefreshed(uint32 const _value);
 
-		string GetBitHelp(uint8 _idx);
-		bool SetBitHelp(uint8 _idx, string help);
-		string GetBitLabel(uint8 _idx);
-		bool SetBitLabel(uint8 _idx, string label);
+					// From Value
+					virtual string const GetAsString() const;
+					virtual string const GetAsBinaryString() const;
+					virtual bool SetFromString(string const& _value);
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
 
-		uint8 GetSize() const;
-		void SetSize(uint8 size);
+					string GetBitHelp(uint8 _idx);
+					bool SetBitHelp(uint8 _idx, string help);
+					string GetBitLabel(uint8 _idx);
+					bool SetBitLabel(uint8 _idx, string label);
 
-	private:
-		bool isValidBit(uint8 _idx) const;
-		Bitfield		m_value;				// the current index in the m_items vector
-		Bitfield		m_valueCheck;			// the previous value (used for double-checking spurious value reads)
-		Bitfield		m_newValue;				// a new value to be set on the appropriate device
-		uint32			m_BitMask;				// Valid Bits
-		uint8 			m_size;					// Number of bytes in size
-		vector<int32>   m_bits;
-	};
+					uint8 GetSize() const;
+					void SetSize(uint8 size);
 
+				private:
+					bool isValidBit(uint8 _idx) const;
+					Bitfield m_value;				// the current index in the m_items vector
+					Bitfield m_valueCheck;			// the previous value (used for double-checking spurious value reads)
+					Bitfield m_newValue;				// a new value to be set on the appropriate device
+					uint32 m_BitMask;				// Valid Bits
+					uint8 m_size;					// Number of bytes in size
+					vector<int32> m_bits;
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
 

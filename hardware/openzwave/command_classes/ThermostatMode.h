@@ -35,44 +35,69 @@
 
 namespace OpenZWave
 {
-	class ValueList;
-
-	/** \brief Implements COMMAND_CLASS_THERMOSTAT_MODE (0x40), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class ThermostatMode: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new ThermostatMode( _homeId, _nodeId ); }
-		virtual ~ThermostatMode(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x40; }		
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_THERMOSTAT_MODE"; }
+			/** \brief Implements COMMAND_CLASS_THERMOSTAT_MODE (0x40), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class ThermostatMode: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new ThermostatMode(_homeId, _nodeId);
+					}
+					virtual ~ThermostatMode()
+					{
+					}
 
-		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement ) override;
-		virtual void WriteXML( TiXmlElement* _ccElement ) override;
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _getTypeEnum, uint8 const _dummy, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
-		virtual uint8 GetMaxVersion() override { return 3; }
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x40;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_THERMOSTAT_MODE";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					// From CommandClass
+					virtual void ReadXML(TiXmlElement const* _ccElement) override;
+					virtual void WriteXML(TiXmlElement* _ccElement) override;
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _getTypeEnum, uint8 const _dummy, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
+					virtual uint8 GetMaxVersion() override
+					{
+						return 3;
+					}
 
-	private:
-		ThermostatMode( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){ SetStaticRequest( StaticRequest_Values ); }
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-		vector<ValueList::Item>		m_supportedModes;
-	};
+				private:
+					ThermostatMode(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+						SetStaticRequest(StaticRequest_Values);
+					}
 
+					vector<Internal::VC::ValueList::Item> m_supportedModes;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
-
 

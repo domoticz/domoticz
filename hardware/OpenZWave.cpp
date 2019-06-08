@@ -24,6 +24,7 @@
 #include "openzwave/Options.h"
 #include "openzwave/Manager.h"
 #include "openzwave/platform/Log.h"
+#include "openzwave/ValueIDIndexesDefines.h"
 
 #include "ZWaveCommands.h"
 

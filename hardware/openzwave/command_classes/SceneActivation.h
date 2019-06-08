@@ -33,40 +33,61 @@
 
 namespace OpenZWave
 {
-	class ValueByte;
-
-	/** \brief Implements COMMAND_CLASS_SCENEACTIVATION (0x2B), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class SceneActivation: public CommandClass, private Timer
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new SceneActivation( _homeId, _nodeId ); }
-		virtual ~SceneActivation(){}
+		namespace CC
+		{
 
-		/** \brief Get command class ID (1 byte) identifying this command class. */
-		static uint8 const StaticGetCommandClassId(){ return 0x2B; }		
-		/** \brief Get a string containing the name of this command class. */
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SCENE_ACTIVATION"; }
+			/** \brief Implements COMMAND_CLASS_SCENEACTIVATION (0x2B), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class SceneActivation: public CommandClass, private Timer
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new SceneActivation(_homeId, _nodeId);
+					}
+					virtual ~SceneActivation()
+					{
+					}
 
-		// From CommandClass
-		/** \brief Get command class ID (1 byte) identifying this command class. (Inherited from CommandClass) */
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		/** \brief Get a string containing the name of this command class. (Inherited from CommandClass) */
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		/** \brief Handle a response to a message associated with this command class. (Inherited from CommandClass) */
-		virtual bool HandleIncomingMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+					/** \brief Get command class ID (1 byte) identifying this command class. */
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x2B;
+					}
+					/** \brief Get a string containing the name of this command class. */
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SCENE_ACTIVATION";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					// From CommandClass
+					/** \brief Get command class ID (1 byte) identifying this command class. (Inherited from CommandClass) */
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					/** \brief Get a string containing the name of this command class. (Inherited from CommandClass) */
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					/** \brief Handle a response to a message associated with this command class. (Inherited from CommandClass) */
+					virtual bool HandleIncomingMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 
-	private:
-		void ClearScene(uint32 id);
-		SceneActivation( uint32 const _homeId, uint8 const _nodeId );
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-	};
+				private:
+					void ClearScene(uint32 id);
+					SceneActivation(uint32 const _homeId, uint8 const _nodeId);
 
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

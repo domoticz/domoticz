@@ -37,58 +37,70 @@ class TiXmlElement;
 
 namespace OpenZWave
 {
-	class Msg;
-	class Node;
-
-	/** \brief List of values sent to/received from a node.
-	 * \ingroup ValueID
-	 */
-	class ValueList: public Value
+	namespace Internal
 	{
-	public:
-		/** \brief An item (element) in the list of values.
-		*/
-		struct Item
+		namespace VC
 		{
-			string	m_label;
-			int32	m_value;
-		};
 
-		ValueList( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, vector<Item> const& _items, int32 const _valueIdx, uint8 const _pollIntensity, uint8 const _size = 4 );
-		ValueList();
-		virtual ~ValueList(){}
+			/** \brief List of values sent to/received from a node.
+			 * \ingroup ValueID
+			 */
+			class ValueList: public Value
+			{
+				public:
+					/** \brief An item (element) in the list of values.
+					 */
+					struct Item
+					{
+							string m_label;
+							int32 m_value;
+					};
 
-		bool SetByLabel( string const& _label );
-		bool SetByValue( int32 const _value );
+					ValueList(uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, vector<Item> const& _items, int32 const _valueIdx, uint8 const _pollIntensity, uint8 const _size = 4);
+					ValueList();
+					virtual ~ValueList()
+					{
+					}
 
-		void OnValueRefreshed( int32 const _valueIdx );
+					bool SetByLabel(string const& _label);
+					bool SetByValue(int32 const _value);
 
-		// From Value
-		virtual string const GetAsString() const { return GetItem()->m_label; }
-		virtual bool SetFromString( string const& _value ) { return SetByLabel( _value ); }
-		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
-		virtual void WriteXML( TiXmlElement* _valueElement );
+					void OnValueRefreshed(int32 const _valueIdx);
 
-		Item const* GetItem() const;
+					// From Value
+					virtual string const GetAsString() const
+					{
+						return GetItem()->m_label;
+					}
+					virtual bool SetFromString(string const& _value)
+					{
+						return SetByLabel(_value);
+					}
+					virtual void ReadXML(uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement);
+					virtual void WriteXML(TiXmlElement* _valueElement);
 
-		int32 GetItemIdxByLabel( string const& _label ) const;
-		int32 GetItemIdxByValue( int32 const _value ) const;
+					Item const* GetItem() const;
 
-		bool GetItemLabels( vector<string>* o_items );
-		bool GetItemValues( vector<int32>* o_values );
+					int32 GetItemIdxByLabel(string const& _label) const;
+					int32 GetItemIdxByValue(int32 const _value) const;
 
-		uint8 GetSize()const{ return m_size; }
+					bool GetItemLabels(vector<string>* o_items);
+					bool GetItemValues(vector<int32>* o_values);
 
-	private:
-		vector<Item>	m_items;
-		int32			m_valueIdx;					// the current index in the m_items vector
-		int32			m_valueIdxCheck;			// the previous index in the m_items vector (used for double-checking spurious value reads)
-		uint8			m_size;
-	};
+					uint8 GetSize() const
+					{
+						return m_size;
+					}
 
+				private:
+					vector<Item> m_items;
+					int32 m_valueIdx;					// the current index in the m_items vector
+					int32 m_valueIdxCheck;			// the previous index in the m_items vector (used for double-checking spurious value reads)
+					uint8 m_size;
+			};
+		} // namespace VC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
 

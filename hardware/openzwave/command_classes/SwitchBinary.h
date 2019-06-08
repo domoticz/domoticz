@@ -32,39 +32,66 @@
 
 namespace OpenZWave
 {
-	class ValueBool;
-
-	/** \brief Implements COMMAND_CLASS_SWITCH_BINARY (0x25), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class SwitchBinary: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new SwitchBinary( _homeId, _nodeId ); }
-		virtual ~SwitchBinary(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x25; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SWITCH_BINARY"; }
+			/** \brief Implements COMMAND_CLASS_SWITCH_BINARY (0x25), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class SwitchBinary: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new SwitchBinary(_homeId, _nodeId);
+					}
+					virtual ~SwitchBinary()
+					{
+					}
 
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
-		virtual void SetValueBasic( uint8 const _instance, uint8 const _value ) override;
-		bool SetState( uint8 const _instance, bool const _state );
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x25;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SWITCH_BINARY";
+					}
 
-		virtual uint8 GetMaxVersion() override { return 2; }
-		
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
+					virtual void SetValueBasic(uint8 const _instance, uint8 const _value) override;
+					bool SetState(uint8 const _instance, bool const _state);
 
-	private:
-		SwitchBinary( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-	};
+					virtual uint8 GetMaxVersion() override
+					{
+						return 2;
+					}
 
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
+
+				private:
+					SwitchBinary(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

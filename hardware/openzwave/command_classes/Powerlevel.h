@@ -32,60 +32,84 @@
 
 namespace OpenZWave
 {
-	class ValueList;
-
-	/** \brief Implements COMMAND_CLASS_POWERLEVEL (0x73), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class Powerlevel: public CommandClass
+	namespace Internal
 	{
-	public:
-		enum PowerLevelEnum
+		namespace CC
 		{
-			PowerLevel_Normal = 0,
-			PowerLevel_Minus1dB,
-			PowerLevel_Minus2dB,
-			PowerLevel_Minus3dB,
-			PowerLevel_Minus4dB,
-			PowerLevel_Minus5dB,
-			PowerLevel_Minus6dB,
-			PowerLevel_Minus7dB,
-			PowerLevel_Minus8dB,
-			PowerLevel_Minus9dB
-		};
 
-		enum PowerLevelStatusEnum
-		{
-			PowerLevelStatus_Failed = 0,
-			PowerLevelStatus_Success,
-			PowerLevelStatus_InProgress
-		};
+			/** \brief Implements COMMAND_CLASS_POWERLEVEL (0x73), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class Powerlevel: public CommandClass
+			{
+				public:
+					enum PowerLevelEnum
+					{
+						PowerLevel_Normal = 0,
+						PowerLevel_Minus1dB,
+						PowerLevel_Minus2dB,
+						PowerLevel_Minus3dB,
+						PowerLevel_Minus4dB,
+						PowerLevel_Minus5dB,
+						PowerLevel_Minus6dB,
+						PowerLevel_Minus7dB,
+						PowerLevel_Minus8dB,
+						PowerLevel_Minus9dB
+					};
 
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Powerlevel( _homeId, _nodeId ); }
-		virtual ~Powerlevel(){}
+					enum PowerLevelStatusEnum
+					{
+						PowerLevelStatus_Failed = 0,
+						PowerLevelStatus_Success,
+						PowerLevelStatus_InProgress
+					};
 
-		static uint8 const StaticGetCommandClassId(){ return 0x73; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_POWERLEVEL"; }
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Powerlevel(_homeId, _nodeId);
+					}
+					virtual ~Powerlevel()
+					{
+					}
 
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x73;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_POWERLEVEL";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
-	private:	
-		Powerlevel( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-		bool Set( uint8 const _instance );
-		bool Test( uint8 const _instance );
-		bool Report( uint8 const _instance );
-	};
+				private:
+					Powerlevel(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
 
+					bool Set(uint8 const _instance);
+					bool Test(uint8 const _instance);
+					bool Report(uint8 const _instance);
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

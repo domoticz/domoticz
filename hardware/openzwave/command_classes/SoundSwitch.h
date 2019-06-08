@@ -32,44 +32,65 @@
 
 namespace OpenZWave
 {
-	class ValueByte;
-	class ValueList;
-
-	/** \brief Implements COMMAND_CLASS_SOUND_SWITCH (0x79), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class SoundSwitch: public CommandClass
+	namespace Internal
 	{
-	private:
-		struct SoundSwitchToneInfo {
-			uint16 duration;
-			string name;
-		};
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new SoundSwitch( _homeId, _nodeId ); }
-		virtual ~SoundSwitch(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x79; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SOUND_SWITCH"; }
+			/** \brief Implements COMMAND_CLASS_SOUND_SWITCH (0x79), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class SoundSwitch: public CommandClass
+			{
+				private:
+					struct SoundSwitchToneInfo
+					{
+							uint16 duration;
+							string name;
+					};
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new SoundSwitch(_homeId, _nodeId);
+					}
+					virtual ~SoundSwitch()
+					{
+					}
 
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x79;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SOUND_SWITCH";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
-	private:
-		SoundSwitch( uint32 const _homeId, uint8 const _nodeId );
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-		uint8 m_toneCount;
-		std::map<uint8, SoundSwitchToneInfo> m_toneInfo;
-	};
+				private:
+					SoundSwitch(uint32 const _homeId, uint8 const _nodeId);
 
+					uint8 m_toneCount;
+					std::map<uint8, SoundSwitchToneInfo> m_toneInfo;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

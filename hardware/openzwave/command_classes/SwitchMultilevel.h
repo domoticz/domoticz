@@ -32,54 +32,79 @@
 
 namespace OpenZWave
 {
-	class ValueBool;
-	class ValueButton;
-	class ValueByte;
-
-	/** \brief Implements COMMAND_CLASS_SWITCH_MULTILEVEL (0x26), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class SwitchMultilevel: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new SwitchMultilevel( _homeId, _nodeId ); }
-		virtual ~SwitchMultilevel(){}
-
-		static uint8 const StaticGetCommandClassId(){ return 0x26; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SWITCH_MULTILEVEL"; }
-
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool HandleIncomingMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
-		virtual void SetValueBasic( uint8 const _instance, uint8 const _value ) override;
-		virtual void SetVersion( uint8 const _version ) override;
-
-		virtual uint8 GetMaxVersion() override { return 4; }
-
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
-
-	private:
-		enum SwitchMultilevelDirection
+		namespace CC
 		{
-			SwitchMultilevelDirection_Up = 0,
-			SwitchMultilevelDirection_Down,
-			SwitchMultilevelDirection_Inc,
-			SwitchMultilevelDirection_Dec
-		};
 
-		SwitchMultilevel( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
+			/** \brief Implements COMMAND_CLASS_SWITCH_MULTILEVEL (0x26), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class SwitchMultilevel: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new SwitchMultilevel(_homeId, _nodeId);
+					}
+					virtual ~SwitchMultilevel()
+					{
+					}
 
-		bool SetLevel( uint8 const _instance, uint8 const _level );
-		bool StartLevelChange( uint8 const _instance, SwitchMultilevelDirection const _direction );
-		bool StopLevelChange( uint8 const _instance );
-	};
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x26;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SWITCH_MULTILEVEL";
+					}
 
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool HandleIncomingMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
+					virtual void SetValueBasic(uint8 const _instance, uint8 const _value) override;
+					virtual void SetVersion(uint8 const _version) override;
+
+					virtual uint8 GetMaxVersion() override
+					{
+						return 4;
+					}
+
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
+
+				private:
+					enum SwitchMultilevelDirection
+					{
+						SwitchMultilevelDirection_Up = 0,
+						SwitchMultilevelDirection_Down,
+						SwitchMultilevelDirection_Inc,
+						SwitchMultilevelDirection_Dec
+					};
+
+					SwitchMultilevel(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+
+					bool SetLevel(uint8 const _instance, uint8 const _level);
+					bool StartLevelChange(uint8 const _instance, SwitchMultilevelDirection const _direction);
+					bool StopLevelChange(uint8 const _instance);
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

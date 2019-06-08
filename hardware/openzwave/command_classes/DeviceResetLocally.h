@@ -32,28 +32,59 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_DEVICE_RESET_LOCALLY (0x5a), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class DeviceResetLocally: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new DeviceResetLocally( _homeId, _nodeId ); }
-		virtual ~DeviceResetLocally(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x5a; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_DEVICE_RESET_LOCALLY"; }
+			/** \brief Implements COMMAND_CLASS_DEVICE_RESET_LOCALLY (0x5a), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class DeviceResetLocally: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new DeviceResetLocally(_homeId, _nodeId);
+					}
+					virtual ~DeviceResetLocally()
+					{
+					}
 
-		// From CommandClass
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool IsDeviceReset() { return m_deviceReset; };
-	private:
-		DeviceResetLocally( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ), m_deviceReset(false) {};
-		bool m_deviceReset;
-	};
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x5a;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_DEVICE_RESET_LOCALLY";
+					}
 
+					// From CommandClass
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool IsDeviceReset()
+					{
+						return m_deviceReset;
+					}
+					;
+				private:
+					DeviceResetLocally(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId), m_deviceReset(false)
+					{
+					}
+					;
+					bool m_deviceReset;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

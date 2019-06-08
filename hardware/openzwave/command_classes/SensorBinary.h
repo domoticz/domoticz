@@ -32,38 +32,62 @@
 
 namespace OpenZWave
 {
-	class ValueBool;
-
-	/** \brief Implements COMMAND_CLASS_SENSOR_BINARY (0x30), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class SensorBinary: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new SensorBinary( _homeId, _nodeId ); }
-		virtual ~SensorBinary(){}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x30; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SENSOR_BINARY"; }
+			/** \brief Implements COMMAND_CLASS_SENSOR_BINARY (0x30), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class SensorBinary: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new SensorBinary(_homeId, _nodeId);
+					}
+					virtual ~SensorBinary()
+					{
+					}
 
-		// From CommandClass
-		virtual void ReadXML( TiXmlElement const* _ccElement ) override;
-		virtual void WriteXML( TiXmlElement* _ccElement ) override;
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual void SetValueBasic( uint8 const _instance, uint8 const _value ) override;
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x30;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SENSOR_BINARY";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					// From CommandClass
+					virtual void ReadXML(TiXmlElement const* _ccElement) override;
+					virtual void WriteXML(TiXmlElement* _ccElement) override;
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual void SetValueBasic(uint8 const _instance, uint8 const _value) override;
 
-	private:
-		SensorBinary( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-		map<uint8,uint8> m_sensorsMap;
-	};
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
+				private:
+					SensorBinary(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+					map<uint8, uint8> m_sensorsMap;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

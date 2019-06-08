@@ -35,60 +35,90 @@
 
 namespace OpenZWave
 {
-	class Msg;
-	class ValueInt;
-	class Mutex;
 
-	/** \brief Implements COMMAND_CLASS_WAKE_UP (0x84), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class WakeUp: public CommandClass, private Timer
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new WakeUp( _homeId, _nodeId ); }
-		virtual ~WakeUp();
+		namespace Platform
+		{
+			class Mutex;
+		}
+		namespace CC
+		{
 
-		static uint8 const StaticGetCommandClassId(){ return 0x84; }		
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_WAKE_UP"; }
+			/** \brief Implements COMMAND_CLASS_WAKE_UP (0x84), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class WakeUp: public CommandClass, private Timer
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new WakeUp(_homeId, _nodeId);
+					}
+					virtual ~WakeUp();
 
-		void Init();	// Starts the process of requesting node state from a sleeping device.
-		void QueueMsg( Driver::MsgQueueItem const& _item );
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x84;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_WAKE_UP";
+					}
 
-		/** \brief Send all pending messages followed by a no more information message. */
-		void SendPending();
+					void Init();	// Starts the process of requesting node state from a sleeping device.
+					void QueueMsg(Driver::MsgQueueItem const& _item);
 
-		/** \brief Send a no more information message. */
-		void SendNoMoreInfo(uint32 id);
+					/** \brief Send all pending messages followed by a no more information message. */
+					void SendPending();
 
-		bool IsAwake()const{ return m_awake; }
-		void SetAwake( bool _state );
-		void SetPollRequired(){ m_pollRequired = true; }
+					/** \brief Send a no more information message. */
+					void SendNoMoreInfo(uint32 id);
 
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
-		virtual void SetVersion( uint8 const _version ) override;
+					bool IsAwake() const
+					{
+						return m_awake;
+					}
+					void SetAwake(bool _state);
+					void SetPollRequired()
+					{
+						m_pollRequired = true;
+					}
 
-		virtual uint8 GetMaxVersion() override { return 2; }
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
+					virtual void SetVersion(uint8 const _version) override;
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					virtual uint8 GetMaxVersion() override
+					{
+						return 2;
+					}
 
-	private:
-		WakeUp( uint32 const _homeId, uint8 const _nodeId );
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-		Mutex*						m_mutex;			// Serialize access to the pending queue
-		list<Driver::MsgQueueItem>	m_pendingQueue;		// Messages waiting to be sent when the device wakes up
-		bool						m_awake;
-		bool						m_pollRequired;
-	};
+				private:
+					WakeUp(uint32 const _homeId, uint8 const _nodeId);
 
+					Internal::Platform::Mutex* m_mutex;			// Serialize access to the pending queue
+					list<Driver::MsgQueueItem> m_pendingQueue;		// Messages waiting to be sent when the device wakes up
+					bool m_awake;
+					bool m_pollRequired;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
 

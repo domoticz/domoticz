@@ -32,33 +32,59 @@
 
 namespace OpenZWave
 {
-	class ValueButton;
-
-	/** \brief Implements COMMAND_CLASS_BASIC_WINDOW_COVERING (0x50), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class BasicWindowCovering: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new BasicWindowCovering( _homeId, _nodeId ); }
-		virtual ~BasicWindowCovering(){}
+		namespace CC
+		{
+			/** \brief Implements COMMAND_CLASS_BASIC_WINDOW_COVERING (0x50), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class BasicWindowCovering: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new BasicWindowCovering(_homeId, _nodeId);
+					}
+					virtual ~BasicWindowCovering()
+					{
+					}
 
-		static uint8 const StaticGetCommandClassId(){ return 0x50; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_BASIC_WINDOW_COVERING"; }
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x50;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_BASIC_WINDOW_COVERING";
+					}
 
-		// From CommandClass
-		virtual uint8 const GetCommandClassId() const override{ return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override{ return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override { return false; }
-		virtual bool SetValue( Value const& _value ) override;
+					// From CommandClass
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override
+					{
+						return false;
+					}
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
-	private:
-		BasicWindowCovering( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-	};
-
+				private:
+					BasicWindowCovering(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

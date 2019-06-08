@@ -34,80 +34,88 @@
 
 namespace OpenZWave
 {
-	class WaitImpl;
-
-	/** \brief Platform-independent definition of Wait objects.
-	 * \ingroup Platform
-	 */
-	class Wait: public Ref
+	namespace Internal
 	{
-		friend class WaitImpl;
-		friend class ThreadImpl;
-
-	public:
-		enum
+		namespace Platform
 		{
-			Timeout_Immediate = 0,
-			Timeout_Infinite = -1
-		};
+			class WaitImpl;
 
-		typedef void (*pfnWaitNotification_t)( void* _context );
+			/** \brief Platform-independent definition of Wait objects.
+			 * \ingroup Platform
+			 */
+			class Wait: public Ref
+			{
+					friend class WaitImpl;
+					friend class ThreadImpl;
 
-		/**
-		 * Add a watcher to our object.  The watcher will be triggered
-		 * by the derived class, when it enters a certain state.
-		 * \param _callback pointer to the function that will be called when the wait is over.
-		 * \param _context pointer to custom data that will be sent with the callback.
-		 */
-		void AddWatcher( pfnWaitNotification_t _callback, void* _context );
+				public:
+					enum
+					{
+						Timeout_Immediate = 0,
+						Timeout_Infinite = -1
+					};
 
-		/**
-		 * Remove a watcher from our object.  Both the _callback and _context pointers 
-		 * must match those used in a previous call to AddWatcher.
-		 * \param _callback pointer to the function that will be called when the wait is over.
-		 * \param _context pointer to custom data that will be sent with the callback.
-		 */
-		void RemoveWatcher( pfnWaitNotification_t _callback, void* _context );
+					typedef void (*pfnWaitNotification_t)(void* _context);
 
-		/**
-		 * Wait for a single object to become signalled.
-		 * \param _object pointer to the object to wait on.
-		 * \param _timeout optional maximum time to wait.  Defaults to -1, which means wait forever.
-		 * \return zero if the object was signalled, -1 if the wait timed out.
-		 */												 
-		static int32 Single( Wait* _object, int32 _timeout = -1 ){ return Multiple( &_object, 1, _timeout ); }
+					/**
+					 * Add a watcher to our object.  The watcher will be triggered
+					 * by the derived class, when it enters a certain state.
+					 * \param _callback pointer to the function that will be called when the wait is over.
+					 * \param _context pointer to custom data that will be sent with the callback.
+					 */
+					void AddWatcher(pfnWaitNotification_t _callback, void* _context);
 
-		/**
-		 * Wait for one of multiple objects to become signalled.  If more than one object is in
-		 * a signalled state, the lowest array index will be returned.
-		 * \param _objects array of pointers to objects to wait on.
-		 * \param _numObjects number of objects in the array.
-		 * \param _timeout optional maximum time to wait.  Defaults to -1, which means wait forever.
-		 * \return index into the array of the object that was signalled, -1 if the wait timed out.
-		 */												 
-		static int32 Multiple( Wait** _objects, uint32 _numObjects, int32 _timeout = -1 );
+					/**
+					 * Remove a watcher from our object.  Both the _callback and _context pointers 
+					 * must match those used in a previous call to AddWatcher.
+					 * \param _callback pointer to the function that will be called when the wait is over.
+					 * \param _context pointer to custom data that will be sent with the callback.
+					 */
+					void RemoveWatcher(pfnWaitNotification_t _callback, void* _context);
 
-	protected:
-		Wait();
-		virtual ~Wait();
+					/**
+					 * Wait for a single object to become signalled.
+					 * \param _object pointer to the object to wait on.
+					 * \param _timeout optional maximum time to wait.  Defaults to -1, which means wait forever.
+					 * \return zero if the object was signalled, -1 if the wait timed out.
+					 */
+					static int32 Single(Wait* _object, int32 _timeout = -1)
+					{
+						return Multiple(&_object, 1, _timeout);
+					}
 
-		/**
-		 * Notify the watchers that the object is signalled.
-		 */
-		void Notify();
+					/**
+					 * Wait for one of multiple objects to become signalled.  If more than one object is in
+					 * a signalled state, the lowest array index will be returned.
+					 * \param _objects array of pointers to objects to wait on.
+					 * \param _numObjects number of objects in the array.
+					 * \param _timeout optional maximum time to wait.  Defaults to -1, which means wait forever.
+					 * \return index into the array of the object that was signalled, -1 if the wait timed out.
+					 */
+					static int32 Multiple(Wait** _objects, uint32 _numObjects, int32 _timeout = -1);
 
-		/**
-		 * Test whether an object is signalled.
-		 */
-		virtual bool IsSignalled() = 0;
+				protected:
+					Wait();
+					virtual ~Wait();
 
-	private:
-		Wait( Wait const&	);					// prevent copy
-		Wait& operator = ( Wait const& );		// prevent assignment
-	
-		WaitImpl*	m_pImpl;					// Pointer to an object that encapsulates the platform-specific implementation of a Wait object.
-	};
+					/**
+					 * Notify the watchers that the object is signalled.
+					 */
+					void Notify();
 
+					/**
+					 * Test whether an object is signalled.
+					 */
+					virtual bool IsSignalled() = 0;
+
+				private:
+					Wait(Wait const&);					// prevent copy
+					Wait& operator =(Wait const&);		// prevent assignment
+
+					WaitImpl* m_pImpl;					// Pointer to an object that encapsulates the platform-specific implementation of a Wait object.
+			};
+		} // namespace Platform
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif //_Wait_H

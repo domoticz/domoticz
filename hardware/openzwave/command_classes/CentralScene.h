@@ -33,53 +33,77 @@
 
 namespace OpenZWave
 {
-	class ValueByte;
-
-	/** \brief Implements COMMAND_CLASS_CENTRAL_SCENE (0x5B), a Z-Wave device command class.
-	 *  \ingroup CommandClass
-	 */
-	class CentralScene: public CommandClass, private Timer
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new CentralScene( _homeId, _nodeId ); }
-		virtual ~CentralScene(){}
+		namespace CC
+		{
 
-		/** \brief Get command class ID (1 byte) identifying this command class. */
-		static uint8 const StaticGetCommandClassId(){ return 0x5B; }
-		/** \brief Get a string containing the name of this command class. */
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_CENTRAL_SCENE"; }
+			/** \brief Implements COMMAND_CLASS_CENTRAL_SCENE (0x5B), a Z-Wave device command class.
+			 *  \ingroup CommandClass
+			 */
+			class CentralScene: public CommandClass, private Timer
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new CentralScene(_homeId, _nodeId);
+					}
+					virtual ~CentralScene()
+					{
+					}
 
-		// From CommandClass
-		/** \brief Get command class ID (1 byte) identifying this command class. (Inherited from CommandClass) */
-		virtual uint8 const GetCommandClassId() const override{ return StaticGetCommandClassId(); }
-		/** \brief Get a string containing the name of this command class. (Inherited from CommandClass) */
-		virtual string const GetCommandClassName() const override{ return StaticGetCommandClassName(); }
-		virtual uint8 GetMaxVersion() override { return 3; }
-		/** \brief Handle a response to a message associated with this command class. (Inherited from CommandClass) */
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		bool RequestValue( uint32 const _requestFlags, uint16 const _what, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		bool SetValue( Value const& _value) override;
-protected:
-		/** \brief Create Default Vars for this CC */
-		void CreateVars( uint8 const _instance ) override;
+					/** \brief Get command class ID (1 byte) identifying this command class. */
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x5B;
+					}
+					/** \brief Get a string containing the name of this command class. */
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_CENTRAL_SCENE";
+					}
 
-	private:
-		/**
-		 * Creates the ValueIDs for the keyAttributes
-		 * @param identical
-		 * @param keyAttributes
-		 * @param sceneNumber
-		 * @return
-		 */
-		void createSupportedKeyAttributesValues(uint8 keyAttributes, uint8 sceneNumber, uint8 instance);
-		void ClearScene(uint32 sceneID);
-		CentralScene( uint32 const _homeId, uint8 const _nodeId );
-		bool m_slowrefresh;
-		uint8 m_sequence;
-		std::map<uint32, uint32> m_TimersSet;
-	};
+					// From CommandClass
+					/** \brief Get command class ID (1 byte) identifying this command class. (Inherited from CommandClass) */
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					/** \brief Get a string containing the name of this command class. (Inherited from CommandClass) */
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual uint8 GetMaxVersion() override
+					{
+						return 3;
+					}
+					/** \brief Handle a response to a message associated with this command class. (Inherited from CommandClass) */
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					bool RequestValue(uint32 const _requestFlags, uint16 const _what, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					bool SetValue(Internal::VC::Value const& _value) override;
+				protected:
+					/** \brief Create Default Vars for this CC */
+					void CreateVars(uint8 const _instance) override;
 
+				private:
+					/**
+					 * Creates the ValueIDs for the keyAttributes
+					 * @param identical
+					 * @param keyAttributes
+					 * @param sceneNumber
+					 * @return
+					 */
+					void createSupportedKeyAttributesValues(uint8 keyAttributes, uint8 sceneNumber, uint8 instance);
+					void ClearScene(uint32 sceneID);
+					CentralScene(uint32 const _homeId, uint8 const _nodeId);
+					bool m_slowrefresh;
+					uint8 m_sequence;
+					std::map<uint32, uint32> m_TimersSet;
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

@@ -33,35 +33,59 @@
 
 namespace OpenZWave
 {
-	class Value;
-
-	/** \brief Implements COMMAND_CLASS_CONFIGURATION (0x70), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class Configuration: public CommandClass
+	namespace Internal
 	{
-		friend class Node;
+		namespace CC
+		{
 
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Configuration( _homeId, _nodeId ); }
-		virtual ~Configuration(){}
+			/** \brief Implements COMMAND_CLASS_CONFIGURATION (0x70), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class Configuration: public CommandClass
+			{
+					friend class Node;
 
-		static uint8 const StaticGetCommandClassId(){ return 0x70; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_CONFIGURATION"; }
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Configuration(_homeId, _nodeId);
+					}
+					virtual ~Configuration()
+					{
+					}
 
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _parameter, uint8 const _index, Driver::MsgQueue const _queue ) override;
-		void Set( uint16 const _parameter, int32 const _value, uint8 const _size );
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x70;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_CONFIGURATION";
+					}
 
-		// From CommandClass
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _parameter, uint8 const _index, Driver::MsgQueue const _queue) override;
+					void Set(uint16 const _parameter, int32 const _value, uint8 const _size);
 
-	private:
-		Configuration( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-	};
+					// From CommandClass
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
+				private:
+					Configuration(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

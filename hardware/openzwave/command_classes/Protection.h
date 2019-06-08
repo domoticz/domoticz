@@ -32,42 +32,66 @@
 
 namespace OpenZWave
 {
-	class ValueList;
-
-	/** \brief Implements COMMAND_CLASS_PROTECTION (0x75), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class Protection: public CommandClass
+	namespace Internal
 	{
-	public:
-		enum ProtectionEnum
+		namespace CC
 		{
-			Protection_Unprotected = 0,
-			Protection_Sequence,
-			Protection_NOP
-		};
 
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Protection( _homeId, _nodeId ); }
-		virtual ~Protection(){}
+			/** \brief Implements COMMAND_CLASS_PROTECTION (0x75), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class Protection: public CommandClass
+			{
+				public:
+					enum ProtectionEnum
+					{
+						Protection_Unprotected = 0,
+						Protection_Sequence,
+						Protection_NOP
+					};
 
-		static uint8 const StaticGetCommandClassId(){ return 0x75; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_PROTECTION"; }
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new Protection(_homeId, _nodeId);
+					}
+					virtual ~Protection()
+					{
+					}
 
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-		virtual bool SetValue( Value const& _value ) override;
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x75;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_PROTECTION";
+					}
 
-	protected:
-		virtual void CreateVars( uint8 const _instance ) override;
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+					virtual bool SetValue(Internal::VC::Value const& _value) override;
 
-	private:
-		Protection( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-	};
+				protected:
+					virtual void CreateVars(uint8 const _instance) override;
 
+				private:
+					Protection(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

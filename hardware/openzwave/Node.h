@@ -44,21 +44,36 @@ class TiXmlNode;
 
 namespace OpenZWave
 {
-	class CommandClass;
+	namespace Internal
+	{
+		namespace CC
+		{
+			class CommandClass;
+			class Association;
+			class AssociationCommandConfiguration;
+			class ControllerReplication;
+			class Hail;
+			class ManufacturerSpecific;
+			class MultiChannelAssociation;
+			class MultiInstance;
+			class NodeNaming;
+			class Version;
+			class ZWavePlusInfo;
+		}
+		namespace VC
+		{
+			class Value;
+			class ValueStore;
+		}
+		namespace Platform
+		{
+			class Mutex;
+		}
+		class ProductDescriptor;
+		class ManufacturerSpecificDB;
+	}
 	class Driver;
 	class Group;
-	class ValueStore;
-	class Value;
-	class ValueBool;
-	class ValueButton;
-	class ValueByte;
-	class ValueDecimal;
-	class ValueInt;
-	class ValueSchedule;
-	class ValueShort;
-	class ValueString;
-	class Mutex;
-	class ProductDescriptor;
 
 	/** \brief The Node class describes a Z-Wave node object...typically a device on the
 	 *  Z-Wave network.
@@ -68,47 +83,20 @@ namespace OpenZWave
 			friend class Manager;
 			friend class Driver;
 			friend class Group;
-			friend class Value;
+			friend class Internal::VC::Value;
 			friend class ValueButton;
-			friend class Alarm;
-			friend class Association;
-			friend class AssociationCommandConfiguration;
-			friend class Basic;
-			friend class Battery;
-			friend class ClimateControlSchedule;
-			friend class Clock;
-			friend class CommandClass;
-			friend class ControllerReplication;
-			friend class EnergyProduction;
-			friend class Hail;
-			friend class Indicator;
-			friend class Language;
-			friend class Lock;
-			friend class ManufacturerSpecific;
-			friend class ManufacturerSpecificDB;
-			friend class Meter;
-			friend class MeterPulse;
-			friend class MultiInstance;
-			friend class MultiChannelAssociation;
-			friend class NodeNaming;
-			friend class Protection;
-			friend class Security;
-			friend class SensorAlarm;
-			friend class SensorBinary;
-			friend class SensorMultilevel;
-			friend class SwitchAll;
-			friend class SwitchBinary;
-			friend class SwitchMultilevel;
-			friend class SwitchToggleBinary;
-			friend class SwitchToggleMultilevel;
-			friend class ThermostatFanMode;
-			friend class ThermostatFanState;
-			friend class ThermostatMode;
-			friend class ThermostatOperatingState;
-			friend class ThermostatSetpoint;
-			friend class Version;
-			friend class WakeUp;
-			friend class ZWavePlusInfo;
+			friend class Internal::CC::Association;
+			friend class Internal::CC::AssociationCommandConfiguration;
+			friend class Internal::CC::CommandClass;
+			friend class Internal::CC::ControllerReplication;
+			friend class Internal::CC::Hail;
+			friend class Internal::CC::ManufacturerSpecific;
+			friend class Internal::CC::MultiInstance;
+			friend class Internal::CC::MultiChannelAssociation;
+			friend class Internal::CC::NodeNaming;
+			friend class Internal::CC::Version;
+			friend class Internal::CC::ZWavePlusInfo;
+			friend class Internal::ManufacturerSpecificDB;
 
 			//-----------------------------------------------------------------------------
 			// Construction
@@ -119,7 +107,7 @@ namespace OpenZWave
 			 *  \param _homeId The homeId of the network to which this node is connected.
 			 *  \param _nodeId The nodeId of this node.
 			 */
-			Node( uint32 const _homeId, uint8 const _nodeId );
+			Node(uint32 const _homeId, uint8 const _nodeId);
 			/** Destructor cleans up memory allocated to node and its child objects.
 			 */
 			virtual ~Node();
@@ -128,7 +116,7 @@ namespace OpenZWave
 			/** Returns a pointer to the driver (interface with a Z-Wave controller)
 			 *  associated with this node.
 			 */
-			Driver* GetDriver()const;
+			Driver* GetDriver() const;
 
 			//-----------------------------------------------------------------------------
 			// Initialization
@@ -136,28 +124,27 @@ namespace OpenZWave
 		public:
 			enum QueryStage
 			{
-				QueryStage_None,							/**< Query process hasn't started for this node */
-				QueryStage_ProtocolInfo,					/**< Retrieve protocol information */
-				QueryStage_Probe,							/**< Ping device to see if alive */
-				QueryStage_WakeUp,							/**< Start wake up process if a sleeping node */
-				QueryStage_ManufacturerSpecific1,			/**< Retrieve manufacturer name and product ids if ProtocolInfo lets us */
-				QueryStage_NodeInfo,						/**< Retrieve info about supported, controlled command classes */
-				QueryStage_NodePlusInfo,					/**< Retrieve ZWave+ info and update device classes */
-				QueryStage_SecurityReport,					/**< Retrieve a list of Command Classes that require Security */
-				QueryStage_ManufacturerSpecific2,			/**< Retrieve manufacturer name and product ids */
-				QueryStage_Versions,						/**< Retrieve version information */
-				QueryStage_Instances,						/**< Retrieve information about multiple command class instances */
-				QueryStage_Static,							/**< Retrieve static information (doesn't change) */
-				QueryStage_CacheLoad,						/**< Ping a device upon restarting with cached config for the device */
-				QueryStage_Probe1 = QueryStage_CacheLoad,	/** < Depreciated name. /todo Remove in 2.0 timeframe */
-				QueryStage_Associations,					/**< Retrieve information about associations */
-				QueryStage_Neighbors,						/**< Retrieve node neighbor list */
-				QueryStage_Session,							/**< Retrieve session information (changes infrequently) */
-				QueryStage_Dynamic,							/**< Retrieve dynamic information (changes frequently) */
-				QueryStage_Configuration,					/**< Retrieve configurable parameter information (only done on request) */
-				QueryStage_Complete							/**< Query process is completed for this node */
+				QueryStage_None, /**< Query process hasn't started for this node */
+				QueryStage_ProtocolInfo, /**< Retrieve protocol information */
+				QueryStage_Probe, /**< Ping device to see if alive */
+				QueryStage_WakeUp, /**< Start wake up process if a sleeping node */
+				QueryStage_ManufacturerSpecific1, /**< Retrieve manufacturer name and product ids if ProtocolInfo lets us */
+				QueryStage_NodeInfo, /**< Retrieve info about supported, controlled command classes */
+				QueryStage_NodePlusInfo, /**< Retrieve ZWave+ info and update device classes */
+				QueryStage_SecurityReport, /**< Retrieve a list of Command Classes that require Security */
+				QueryStage_ManufacturerSpecific2, /**< Retrieve manufacturer name and product ids */
+				QueryStage_Versions, /**< Retrieve version information */
+				QueryStage_Instances, /**< Retrieve information about multiple command class instances */
+				QueryStage_Static, /**< Retrieve static information (doesn't change) */
+				QueryStage_CacheLoad, /**< Ping a device upon restarting with cached config for the device */
+				QueryStage_Probe1 = QueryStage_CacheLoad, /** < Depreciated name. /todo Remove in 2.0 timeframe */
+				QueryStage_Associations, /**< Retrieve information about associations */
+				QueryStage_Neighbors, /**< Retrieve node neighbor list */
+				QueryStage_Session, /**< Retrieve session information (changes infrequently) */
+				QueryStage_Dynamic, /**< Retrieve dynamic information (changes frequently) */
+				QueryStage_Configuration, /**< Retrieve configurable parameter information (only done on request) */
+				QueryStage_Complete /**< Query process is completed for this node */
 			};
-
 
 			/**
 			 * This function advances the query process (see Remarks below for more detail on the
@@ -183,7 +170,7 @@ namespace OpenZWave
 			 *  Otherwise, the function returns with no action.
 			 *  \param _stage The current stage of the query process.
 			 */
-			void QueryStageComplete( QueryStage const _stage );
+			void QueryStageComplete(QueryStage const _stage);
 
 			/**
 			 *  Retry the specified query stage (up to _maxAttempts retries).  This will
@@ -192,7 +179,7 @@ namespace OpenZWave
 			 *  \param _stage The query stage to retry.
 			 *  \param _maxAttempts
 			 */
-			void QueryStageRetry( QueryStage const _stage, uint8 const _maxAttempts = 0 );	    // maxAttempts of zero means no limit
+			void QueryStageRetry(QueryStage const _stage, uint8 const _maxAttempts = 0);	    // maxAttempts of zero means no limit
 
 			/**
 			 * This function sets the query stage for the node (but only to an earlier stage).
@@ -200,14 +187,17 @@ namespace OpenZWave
 			 * \param _stage The desired query stage.
 			 * \see m_queryStage, m_queryPending
 			 */
-			void SetQueryStage( QueryStage const _stage, bool const _advance = true );
+			void SetQueryStage(QueryStage const _stage, bool const _advance = true);
 
 			/**
 			 * Returns the current query stage enum.
 			 * \return Enum value with the current query stage.
 			 * \see m_queryStage
 			 */
-			Node::QueryStage GetCurrentQueryStage() { return m_queryStage; }
+			Node::QueryStage GetCurrentQueryStage()
+			{
+				return m_queryStage;
+			}
 
 			/**
 			 * Returns the specified query stage string.
@@ -215,13 +205,16 @@ namespace OpenZWave
 			 * \return Specified query stage string.
 			 * \see m_queryStage, m_queryPending
 			 */
-			string GetQueryStageName( QueryStage const _stage );
+			string GetQueryStageName(QueryStage const _stage);
 
 			/**
 			 * Returns whether the library thinks a node is functioning properly
 			 * \return boolean status of node.
 			 */
-			bool IsNodeAlive()const{ return m_nodeAlive; }
+			bool IsNodeAlive() const
+			{
+				return m_nodeAlive;
+			}
 
 			/**
 			 *  This function handles a response to the FUNC_ID_ZW_GET_NODE_PROTOCOL_INFO
@@ -236,7 +229,7 @@ namespace OpenZWave
 			 *  - m_frequentListening (device can be woken up with a beam)
 			 *  - m_beaming (device is beam capable)
 			 */
-			void UpdateProtocolInfo( uint8 const* _data );
+			void UpdateProtocolInfo(uint8 const* _data);
 			/**
 			 * this function is called when the Node is added via a AddNode request. the ProtocolInfo field contains the
 			 * devices classes and the CommandClasses that the node supports, so we can build a pretty good Node out of that
@@ -245,38 +238,53 @@ namespace OpenZWave
 			 * @param _length length of the _protocolInfo field.
 			 */
 			void SetProtocolInfo(uint8 const* _protocolInfo, uint8 const _length);
-			void UpdateNodeInfo( uint8 const* _data, uint8 const _length );
+			void UpdateNodeInfo(uint8 const* _data, uint8 const _length);
 
-			bool ProtocolInfoReceived()const{ return m_protocolInfoReceived; }
-			bool NodeInfoReceived()const{ return m_nodeInfoReceived; }
-			bool IsNodeZWavePlus()const{ return m_nodePlusInfoReceived; }
+			bool ProtocolInfoReceived() const
+			{
+				return m_protocolInfoReceived;
+			}
+			bool NodeInfoReceived() const
+			{
+				return m_nodeInfoReceived;
+			}
+			bool IsNodeZWavePlus() const
+			{
+				return m_nodePlusInfoReceived;
+			}
 
-			bool AllQueriesCompleted()const{ return( QueryStage_Complete == m_queryStage ); }
+			bool AllQueriesCompleted() const
+			{
+				return (QueryStage_Complete == m_queryStage);
+			}
 
-			void SetNodePlusInfoReceived(const bool _received){ m_nodePlusInfoReceived = _received; }
+			void SetNodePlusInfoReceived(const bool _received)
+			{
+				m_nodePlusInfoReceived = _received;
+			}
 
 			/**
 			 * Handle dead node detection tracking.
 			 * Use this routine to set state of nodes.
 			 * Tracks state as well as send notifications.
 			 */
-			void SetNodeAlive( bool const _isAlive );
+			void SetNodeAlive(bool const _isAlive);
 
 		private:
 			void SetStaticRequests();
 
-			QueryStage	m_queryStage;
-			bool		m_queryPending;
-			bool		m_queryConfiguration;
-			uint8		m_queryRetries;
-			bool		m_protocolInfoReceived;
-			bool		m_basicprotocolInfoReceived;
-			bool		m_nodeInfoReceived;
-			bool		m_nodePlusInfoReceived;
-			bool		m_manufacturerSpecificClassReceived;
-			bool		m_nodeInfoSupported;
-			bool		m_refreshonNodeInfoFrame;
-			bool		m_nodeAlive;
+			QueryStage m_queryStage;
+			bool m_queryPending;
+			bool m_queryConfiguration;
+			uint8 m_queryRetries;
+			bool m_protocolInfoReceived;
+			bool m_basicprotocolInfoReceived;
+			bool m_nodeInfoReceived;
+			bool m_nodePlusInfoReceived;
+			bool m_manufacturerSpecificClassReceived;
+			bool m_nodeInfoSupported;
+			bool m_refreshonNodeInfoFrame;
+			bool m_nodeAlive;
 
 			//-----------------------------------------------------------------------------
 			// Capabilities
@@ -285,14 +293,14 @@ namespace OpenZWave
 			// Security flags
 			enum
 			{
-				SecurityFlag_Security				= 0x01,
-				SecurityFlag_Controller				= 0x02,
-				SecurityFlag_SpecificDevice			= 0x04,
-				SecurityFlag_RoutingSlave			= 0x08,
-				SecurityFlag_BeamCapability			= 0x10,
-				SecurityFlag_Sensor250ms			= 0x20,
-				SecurityFlag_Sensor1000ms			= 0x40,
-				SecurityFlag_OptionalFunctionality	= 0x80
+				SecurityFlag_Security = 0x01,
+				SecurityFlag_Controller = 0x02,
+				SecurityFlag_SpecificDevice = 0x04,
+				SecurityFlag_RoutingSlave = 0x08,
+				SecurityFlag_BeamCapability = 0x10,
+				SecurityFlag_Sensor250ms = 0x20,
+				SecurityFlag_Sensor1000ms = 0x40,
+				SecurityFlag_OptionalFunctionality = 0x80
 			};
 
 			// Node Ids
@@ -301,46 +309,97 @@ namespace OpenZWave
 				NodeBroadcast = 0xff
 			};
 
-			bool IsListeningDevice()const{ return m_listening; }
-			bool IsFrequentListeningDevice()const{ return m_frequentListening; }
-			bool IsBeamingDevice()const{ return m_beaming; }
-			bool IsRoutingDevice()const{ return m_routing; }
-			bool IsSecurityDevice()const{ return m_security; }
-			uint32 GetMaxBaudRate()const{ return m_maxBaudRate; }
-			uint8 GetVersion()const{ return m_version; }
-			uint8 GetSecurity()const{ return m_security; }
+			bool IsListeningDevice() const
+			{
+				return m_listening;
+			}
+			bool IsFrequentListeningDevice() const
+			{
+				return m_frequentListening;
+			}
+			bool IsBeamingDevice() const
+			{
+				return m_beaming;
+			}
+			bool IsRoutingDevice() const
+			{
+				return m_routing;
+			}
+			bool IsSecurityDevice() const
+			{
+				return m_security;
+			}
+			uint32 GetMaxBaudRate() const
+			{
+				return m_maxBaudRate;
+			}
+			uint8 GetVersion() const
+			{
+				return m_version;
+			}
+			uint8 GetSecurity() const
+			{
+				return m_security;
+			}
 
-			uint8 GetNodeId()const{ return m_nodeId; }
+			uint8 GetNodeId() const
+			{
+				return m_nodeId;
+			}
 
-			uint8 GetBasic()const{ return m_basic; }
-			uint8 GetGeneric()const{ return m_generic; }
-			uint8 GetSpecific()const{ return m_specific; }
-			string const& GetType()const{ return m_type; }
-			uint32 GetNeighbors( uint8** o_associations );
-			bool IsController()const{ return ( m_basic == 0x01 || m_basic == 0x02 ) && ( m_generic == 0x01 || m_generic == 0x02 ); }
-			bool IsAddingNode() const { return m_addingNode; }	/* These three *AddingNode functions are used to tell if we this node is just being discovered. Currently used by the Security CC to initiate the Network Key Exchange */
-			void SetAddingNode() { m_addingNode = true; }
-			void ClearAddingNode() { m_addingNode = false; }
+			uint8 GetBasic() const
+			{
+				return m_basic;
+			}
+			uint8 GetGeneric() const
+			{
+				return m_generic;
+			}
+			uint8 GetSpecific() const
+			{
+				return m_specific;
+			}
+			string const& GetType() const
+			{
+				return m_type;
+			}
+			uint32 GetNeighbors(uint8** o_associations);
+			bool IsController() const
+			{
+				return (m_basic == 0x01 || m_basic == 0x02) && (m_generic == 0x01 || m_generic == 0x02);
+			}
+			bool IsAddingNode() const
+			{
+				return m_addingNode;
+			} /* These three *AddingNode functions are used to tell if we this node is just being discovered. Currently used by the Security CC to initiate the Network Key Exchange */
+			void SetAddingNode()
+			{
+				m_addingNode = true;
+			}
+			void ClearAddingNode()
+			{
+				m_addingNode = false;
+			}
 			bool IsNodeReset();
 		private:
-			bool		m_listening;
-			bool		m_frequentListening;
-			bool		m_beaming;
-			bool		m_routing;
-			uint32		m_maxBaudRate;
-			uint8		m_version;
-			bool		m_security;
-			uint32		m_homeId;
-			uint8		m_nodeId;
-			uint8		m_basic;				//*< Basic device class (0x01-Controller, 0x02-Static Controller, 0x03-Slave, 0x04-Routing Slave
-			uint8		m_generic;
-			uint8		m_specific;
-			string		m_type;					// Label representing the specific/generic/basic value
-			uint8		m_neighbors[29];		// Bitmask containing the neighboring nodes
-			uint8		m_numRouteNodes;		// number of node routes
-			uint8		m_routeNodes[5];		// nodes to route to
-			map<uint8,uint8>	m_buttonMap;	// Map button IDs into virtual node numbers
-			bool		m_addingNode;
+			bool m_listening;
+			bool m_frequentListening;
+			bool m_beaming;
+			bool m_routing;
+			uint32 m_maxBaudRate;
+			uint8 m_version;
+			bool m_security;
+			uint32 m_homeId;
+			uint8 m_nodeId;
+			uint8 m_basic;				//*< Basic device class (0x01-Controller, 0x02-Static Controller, 0x03-Slave, 0x04-Routing Slave
+			uint8 m_generic;
+			uint8 m_specific;
+			string m_type;					// Label representing the specific/generic/basic value
+			uint8 m_neighbors[29];		// Bitmask containing the neighboring nodes
+			uint8 m_numRouteNodes;		// number of node routes
+			uint8 m_routeNodes[5];		// nodes to route to
+			map<uint8, uint8> m_buttonMap;	// Map button IDs into virtual node numbers
+			bool m_addingNode;
 
 			//-----------------------------------------------------------------------------
 			// Device Naming
@@ -348,42 +407,87 @@ namespace OpenZWave
 		private:
 			// Manufacturer, Product and Name are stored here so they can be set by the
 			// user even if the device does not support the relevant command classes.
-			string GetManufacturerName()const{ return m_manufacturerName; }
-			string GetProductName()const{ return m_productName; }
-			string GetNodeName()const{ return m_nodeName; }
-			string GetLocation()const{ return m_location; }
+			string GetManufacturerName() const
+			{
+				return m_manufacturerName;
+			}
+			string GetProductName() const
+			{
+				return m_productName;
+			}
+			string GetNodeName() const
+			{
+				return m_nodeName;
+			}
+			string GetLocation() const
+			{
+				return m_location;
+			}
 
 //			string GetManufacturerId()const{ return std::to_string(m_manufacturerId); }
-			uint16 GetManufacturerId()const{ return m_manufacturerId; }
+			uint16 GetManufacturerId() const
+			{
+				return m_manufacturerId;
+			}
 //			string GetProductType()const{ return string(m_productType); }
-			uint16 GetProductType()const{ return m_productType; }
+			uint16 GetProductType() const
+			{
+				return m_productType;
+			}
 //			string GetProductId()const{ return string(m_productId); }
-			uint16 GetProductId()const{ return m_productId; }
+			uint16 GetProductId() const
+			{
+				return m_productId;
+			}
 
-			void SetManufacturerName( string const& _manufacturerName ){ m_manufacturerName = _manufacturerName; }
-			void SetProductName( string const& _productName ){ m_productName = _productName; }
-			void SetNodeName( string const& _nodeName );
-			void SetLocation( string const& _location );
+			void SetManufacturerName(string const& _manufacturerName)
+			{
+				m_manufacturerName = _manufacturerName;
+			}
+			void SetProductName(string const& _productName)
+			{
+				m_productName = _productName;
+			}
+			void SetNodeName(string const& _nodeName);
+			void SetLocation(string const& _location);
 
-			void SetManufacturerId( uint16 const& _manufacturerId ){ m_manufacturerId = _manufacturerId; }
-			void SetProductType( uint16 const& _productType ){ m_productType = _productType; }
-			void SetProductId( uint16 const& _productId ){ m_productId = _productId; }
+			void SetManufacturerId(uint16 const& _manufacturerId)
+			{
+				m_manufacturerId = _manufacturerId;
+			}
+			void SetProductType(uint16 const& _productType)
+			{
+				m_productType = _productType;
+			}
+			void SetProductId(uint16 const& _productId)
+			{
+				m_productId = _productId;
+			}
 
-			string		m_manufacturerName;
-			string		m_productName;
-			string		m_nodeName;
-			string		m_location;
+			string m_manufacturerName;
+			string m_productName;
+			string m_nodeName;
+			string m_location;
 
-			uint16		m_manufacturerId;
-			uint16		m_productType;
-			uint16		m_productId;
+			uint16 m_manufacturerId;
+			uint16 m_productType;
+			uint16 m_productId;
 
 			// zwave+ info
-			uint16 GetDeviceType() const { return m_deviceType; }
+			uint16 GetDeviceType() const
+			{
+				return m_deviceType;
+			}
 			string GetDeviceTypeString();
-			uint8 GetRoleType() const { return m_role; }
+			uint8 GetRoleType() const
+			{
+				return m_role;
+			}
 			string GetRoleTypeString();
-			uint8 GetNodeType() const { return m_nodeType; }
+			uint8 GetNodeType() const
+			{
+				return m_nodeType;
+			}
 			string GetNodeTypeString();
 
 			uint16 m_deviceType;
@@ -400,8 +504,8 @@ namespace OpenZWave
 			 * \return Pointer to the requested CommandClass object if supported, otherwise NULL.
 			 * \see CommandClass, m_commandClassMap
 			 */
-			CommandClass* GetCommandClass( uint8 const _commandClassId)const;
-			void ApplicationCommandHandler( uint8 const* _data, bool encrypted );
+			Internal::CC::CommandClass* GetCommandClass(uint8 const _commandClassId) const;
+			void ApplicationCommandHandler(uint8 const* _data, bool encrypted);
 
 			/**
 			 * This function sets up Secured Command Classes. It iterates over the existing command classes marking them
@@ -410,7 +514,7 @@ namespace OpenZWave
 			 * @param _length the length of the _data string
 			 * @param _instance the instance of the Class thats Secured.
 			 */
-			void SetSecuredClasses( uint8 const* _data, uint8 const _length, uint32 const _instance = 1);
+			void SetSecuredClasses(uint8 const* _data, uint8 const _length, uint32 const _instance = 1);
 			void SetSecured(bool secure);
 			bool IsSecured();
 			/**
@@ -437,29 +541,29 @@ namespace OpenZWave
 			 * was already there or if the CommandClass object creation failed).
 			 * \see CommandClass, CommandClasses::CreateCommandClass, m_commandClassMap
 			 */
-			CommandClass* AddCommandClass( uint8 const _commandClassId);
+			Internal::CC::CommandClass* AddCommandClass(uint8 const _commandClassId);
 			/**
 			 * Removes a command class object from the node (via the m_commandClassMap).  Before removing the
 			 * object, this function also removes any values stored in the object's ValueStore.
 			 * \param _commandClassId Class ID (a single byte value) identifying the command class to be removed.
 			 * \see m_commandClassMap, ValueStore, GetValueStore, ValueStore::RemoveCommandClassValues
 			 */
-			void RemoveCommandClass( uint8 const _commandClassId );
-			void ReadXML( TiXmlElement const* _nodeElement );
-			void ReadDeviceProtocolXML( TiXmlElement const* _ccsElement );
-			void ReadCommandClassesXML( TiXmlElement const* _ccsElement );
-			void WriteXML( TiXmlElement* _nodeElement );
+			void RemoveCommandClass(uint8 const _commandClassId);
+			void ReadXML(TiXmlElement const* _nodeElement);
+			void ReadDeviceProtocolXML(TiXmlElement const* _ccsElement);
+			void ReadCommandClassesXML(TiXmlElement const* _ccsElement);
+			void WriteXML(TiXmlElement* _nodeElement);
 
-			map<uint8,CommandClass*>		m_commandClassMap;	/**< Map of command class ids and pointers to associated command class objects */
-			bool							m_secured; /**< Is this Node added Securely */
-			map<uint8, string>				m_globalInstanceLabel; /** < The Global Labels for Instances for CC that dont define their own labels */
+			map<uint8, Internal::CC::CommandClass*> m_commandClassMap; /**< Map of command class ids and pointers to associated command class objects */
+			bool m_secured; /**< Is this Node added Securely */
+			map<uint8, string> m_globalInstanceLabel; /** < The Global Labels for Instances for CC that dont define their own labels */
 
 			TiXmlNode *m_nodeCache;
 			//-----------------------------------------------------------------------------
 			// Configuration Revision Related Classes
 			//-----------------------------------------------------------------------------
 		public:
-			void SetProductDetails(ProductDescriptor *product);
+			void SetProductDetails(Internal::ProductDescriptor *product);
 			/** Get a path to the config file for this device
 			 *
 			 * @return a path relative to the config directory for the config file. returns a empty string if a config file is not present.
@@ -469,17 +573,29 @@ namespace OpenZWave
 			 *
 			 * @return a revision number
 			 */
-			uint32 getFileConfigRevision() { return m_fileConfigRevision; };
+			uint32 getFileConfigRevision()
+			{
+				return m_fileConfigRevision;
+			}
+			;
 			/** Get the Revision number of the config that is laoded for this Node
 			 *
 			 * @return the revision number currently loaded.
 			 */
-			uint32 getLoadedConfigRevision() { return m_loadedConfigRevision; };
+			uint32 getLoadedConfigRevision()
+			{
+				return m_loadedConfigRevision;
+			}
+			;
 			/** Get the Latest Config File revision available at openzwave.com
 			 *
 			 * @return The latest revision number available
 			 */
-			uint32 getLatestConfigRevision() { return m_latestConfigRevision; };
+			uint32 getLatestConfigRevision()
+			{
+				return m_latestConfigRevision;
+			}
+			;
 			/** Set the revision number of the Config File for this device
 			 *
 			 * @param rev the revision number
@@ -498,13 +614,11 @@ namespace OpenZWave
 			/** Check the latest available revision number for this device.
 			 *
 			 */
-			void checkLatestConfigRevision( );
+			void checkLatestConfigRevision();
 
 		private:
 
-
-			ProductDescriptor *m_Product;
-
+			Internal::ProductDescriptor *m_Product;
 
 			uint32 m_fileConfigRevision;
 			uint32 m_loadedConfigRevision;
@@ -513,7 +627,7 @@ namespace OpenZWave
 			// Basic commands (helpers that go through the basic command class)
 			//-----------------------------------------------------------------------------
 		public:
-			void SetLevel( uint8 const _level );
+			void SetLevel(uint8 const _level);
 
 			//-----------------------------------------------------------------------------
 			// On/Off commands (helpers that go through the basic or switchall command class)
@@ -526,43 +640,46 @@ namespace OpenZWave
 			// Values (handled by the command classes)
 			//-----------------------------------------------------------------------------
 		public:
-			ValueID CreateValueID( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, ValueID::ValueType const _type );
+			ValueID CreateValueID(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, ValueID::ValueType const _type);
 
-			Value* GetValue( ValueID const& _id );
-			Value* GetValue( uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex );
-			bool RemoveValue( uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex );
+			Internal::VC::Value* GetValue(ValueID const& _id);
+			Internal::VC::Value* GetValue(uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex);
+			bool RemoveValue(uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex);
 
 			// Helpers for creating values
-			bool CreateValueBitSet( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int32 const _default, uint8 const _pollIntensity );
-			bool CreateValueBool( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, bool const _default, uint8 const _pollIntensity );
-			bool CreateValueButton( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, uint8 const _pollIntensity );
-			bool CreateValueByte( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _default, uint8 const _pollIntensity );
-			bool CreateValueDecimal( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _default, uint8 const _pollIntensity );
-			bool CreateValueInt( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int32 const _default, uint8 const _pollIntensity );
-			bool CreateValueList( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _size, vector<ValueList::Item> const& _items, int32 const _default, uint8 const _pollIntensity );
-			bool CreateValueRaw( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const* _default, uint8 const _length, uint8 const _pollIntensity );
-			bool CreateValueSchedule( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _pollIntensity );
-			bool CreateValueShort( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int16 const _default, uint8 const _pollIntensity );
-			bool CreateValueString( ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _default, uint8 const _pollIntensity );
+			bool CreateValueBitSet(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int32 const _default, uint8 const _pollIntensity);
+			bool CreateValueBool(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, bool const _default, uint8 const _pollIntensity);
+			bool CreateValueButton(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, uint8 const _pollIntensity);
+			bool CreateValueByte(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _default, uint8 const _pollIntensity);
+			bool CreateValueDecimal(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _default, uint8 const _pollIntensity);
+			bool CreateValueInt(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int32 const _default, uint8 const _pollIntensity);
+			bool CreateValueList(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _size, vector<Internal::VC::ValueList::Item> const& _items, int32 const _default, uint8 const _pollIntensity);
+			bool CreateValueRaw(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const* _default, uint8 const _length, uint8 const _pollIntensity);
+			bool CreateValueSchedule(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _pollIntensity);
+			bool CreateValueShort(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, int16 const _default, uint8 const _pollIntensity);
+			bool CreateValueString(ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _valueIndex, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _default, uint8 const _pollIntensity);
 
 			// helpers for removing values
-			void RemoveValueList( ValueList* _value );
+			void RemoveValueList(Internal::VC::ValueList* _value);
 
-			void ReadValueFromXML( uint8 const _commandClassId, TiXmlElement const* _valueElement );
-			bool CreateValueFromXML( uint8 const _commandClassId, TiXmlElement const* _valueElement );
+			void ReadValueFromXML(uint8 const _commandClassId, TiXmlElement const* _valueElement);
+			bool CreateValueFromXML(uint8 const _commandClassId, TiXmlElement const* _valueElement);
 
 		private:
-			ValueStore* GetValueStore()const{ return m_values; }
+			Internal::VC::ValueStore* GetValueStore() const
+			{
+				return m_values;
+			}
 
-			ValueStore*	m_values;			// Values reported via command classes
+			Internal::VC::ValueStore* m_values;			// Values reported via command classes
 
 			//-----------------------------------------------------------------------------
 			// Configuration Parameters (handled by the Configuration command class)
 			//-----------------------------------------------------------------------------
 		private:
-			bool SetConfigParam( uint8 const _param, int32 _value, uint8 const _size );
-			void RequestConfigParam( uint8 const _param );
-			bool RequestAllConfigParams( uint32 const _requestFlags );
+			bool SetConfigParam(uint8 const _param, int32 _value, uint8 const _size);
+			void RequestConfigParam(uint8 const _param);
+			bool RequestAllConfigParams(uint32 const _requestFlags);
 
 			//-----------------------------------------------------------------------------
 			// Dynamic Values (used by query and other command classes for updating)
@@ -580,21 +697,21 @@ namespace OpenZWave
 		private:
 			// The public interface is provided via the wrappers in the Manager class
 			uint8 GetNumGroups();
-			uint32 GetAssociations( uint8 const _groupIdx, uint8** o_associations );
-			uint32 GetAssociations( uint8 const _groupIdx, InstanceAssociation** o_associations );
-			uint8 GetMaxAssociations( uint8 const _groupIdx );
-			bool IsMultiInstance( uint8 const _groupIdx );
-			string GetGroupLabel( uint8 const _groupIdx );
-			void AddAssociation( uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00 );
-			void RemoveAssociation( uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00 );
+			uint32 GetAssociations(uint8 const _groupIdx, uint8** o_associations);
+			uint32 GetAssociations(uint8 const _groupIdx, InstanceAssociation** o_associations);
+			uint8 GetMaxAssociations(uint8 const _groupIdx);
+			bool IsMultiInstance(uint8 const _groupIdx);
+			string GetGroupLabel(uint8 const _groupIdx);
+			void AddAssociation(uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00);
+			void RemoveAssociation(uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00);
 			void AutoAssociate();
 
 			// The following methods are not exposed
-			Group* GetGroup( uint8 const _groupIdx );							// Get a pointer to a Group object.  This must only be called while holding the node Lock.
-			void AddGroup( Group* _group );										// The groups are fixed properties of a device, so there is no need for a matching RemoveGroup.
-			void WriteGroups( TiXmlElement* _associationsElement );				// Write the group data out to XNL
+			Group* GetGroup(uint8 const _groupIdx);							// Get a pointer to a Group object.  This must only be called while holding the node Lock.
+			void AddGroup(Group* _group);										// The groups are fixed properties of a device, so there is no need for a matching RemoveGroup.
+			void WriteGroups(TiXmlElement* _associationsElement);				// Write the group data out to XNL
 
-			map<uint8,Group*> m_groups;											// Maps group indices to Group objects.
+			map<uint8, Group*> m_groups;											// Maps group indices to Group objects.
 
 			//-----------------------------------------------------------------------------
 			// Device Classes (static data read from the device_classes.xml file)
@@ -604,56 +721,66 @@ namespace OpenZWave
 			class DeviceClass
 			{
 				public:
-				DeviceClass( TiXmlElement const* _el );
-				~DeviceClass(){ delete [] m_mandatoryCommandClasses; }
+					DeviceClass(TiXmlElement const* _el);
+					~DeviceClass()
+					{
+						delete[] m_mandatoryCommandClasses;
+					}
 
-				uint8 const*	GetMandatoryCommandClasses(){ return m_mandatoryCommandClasses; }
-				uint8			GetBasicMapping(){ return m_basicMapping; }
-				string const&	GetLabel(){ return m_label; }
+					uint8 const* GetMandatoryCommandClasses()
+					{
+						return m_mandatoryCommandClasses;
+					}
+					uint8 GetBasicMapping()
+					{
+						return m_basicMapping;
+					}
+					string const& GetLabel()
+					{
+						return m_label;
+					}
 
 				private:
-				uint8*			m_mandatoryCommandClasses;						// Zero terminated array of mandatory command classes for this device type.
-				uint8			m_basicMapping;									// Command class that COMMAND_CLASS_BASIC maps on to, or zero if there is no mapping.
-				string			m_label;										// Descriptive label for the device.
+					uint8* m_mandatoryCommandClasses;						// Zero terminated array of mandatory command classes for this device type.
+					uint8 m_basicMapping;									// Command class that COMMAND_CLASS_BASIC maps on to, or zero if there is no mapping.
+					string m_label;										// Descriptive label for the device.
 			};
 
 			// Container for generic device class info
-			class GenericDeviceClass : public DeviceClass
+			class GenericDeviceClass: public DeviceClass
 			{
 				public:
-					GenericDeviceClass( TiXmlElement const* _el );
+					GenericDeviceClass(TiXmlElement const* _el);
 					~GenericDeviceClass();
 
-					DeviceClass* GetSpecificDeviceClass( uint8 const& _specific );
+					DeviceClass* GetSpecificDeviceClass(uint8 const& _specific);
 
 				private:
-					map<uint8,DeviceClass*>	m_specificDeviceClasses;
+					map<uint8, DeviceClass*> m_specificDeviceClasses;
 			};
 
-
-			bool SetDeviceClasses( uint8 const _basic, uint8 const _generic, uint8 const _specific );	// Set the device class data for the node
-			bool SetPlusDeviceClasses( uint8 const _role, uint8 const _nodeType, uint16 const _deviceType );	// Set the device class data for the node based on the Zwave+ info report
-			bool AddMandatoryCommandClasses( uint8 const* _commandClasses );							// Add mandatory command classes as specified in the device_classes.xml to the node.
+			bool SetDeviceClasses(uint8 const _basic, uint8 const _generic, uint8 const _specific);	// Set the device class data for the node
+			bool SetPlusDeviceClasses(uint8 const _role, uint8 const _nodeType, uint16 const _deviceType);	// Set the device class data for the node based on the Zwave+ info report
+			bool AddMandatoryCommandClasses(uint8 const* _commandClasses);							// Add mandatory command classes as specified in the device_classes.xml to the node.
 			void ReadDeviceClasses();																	// Read the static device class data from the device_classes.xml file
-			string GetEndPointDeviceClassLabel( uint8 const _generic, uint8 const _specific );
+			string GetEndPointDeviceClassLabel(uint8 const _generic, uint8 const _specific);
 
-			static bool								s_deviceClassesLoaded;		// True if the xml file has already been loaded
-			static map<uint8,string>				s_basicDeviceClasses;		// Map of basic device classes.
-			static map<uint8,GenericDeviceClass*>	s_genericDeviceClasses;		// Map of generic device classes.
-			static map<uint8,DeviceClass*> 			s_roleDeviceClasses;		// Map of Zwave+ role device classes.
-			static map<uint16,DeviceClass*> 		s_deviceTypeClasses;		// Map of Zwave+ device type device classes.
-			static map<uint8, DeviceClass*>			s_nodeTypes;				// Map of ZWave+ Node Types
-
+			static bool s_deviceClassesLoaded;		// True if the xml file has already been loaded
+			static map<uint8, string> s_basicDeviceClasses;		// Map of basic device classes.
+			static map<uint8, GenericDeviceClass*> s_genericDeviceClasses;		// Map of generic device classes.
+			static map<uint8, DeviceClass*> s_roleDeviceClasses;		// Map of Zwave+ role device classes.
+			static map<uint16, DeviceClass*> s_deviceTypeClasses;		// Map of Zwave+ device type device classes.
+			static map<uint8, DeviceClass*> s_nodeTypes;				// Map of ZWave+ Node Types
 
 			//-----------------------------------------------------------------------------
 			//	Statistics
 			//-----------------------------------------------------------------------------
-			public:
+		public:
 			struct CommandClassData
 			{
-				uint8 m_commandClassId;
-				uint32 m_sentCnt;
-				uint32 m_receivedCnt;
+					uint8 m_commandClassId;
+					uint32 m_sentCnt;
+					uint32 m_receivedCnt;
 			};
 
 			struct NodeData
@@ -691,8 +818,8 @@ namespace OpenZWave
 					uint8 m_lastFailedLinkTo;
 			};
 
-			private:
-			void GetNodeStatistics( NodeData* _data );
+		private:
+			void GetNodeStatistics(NodeData* _data);
 
 			uint32 m_sentCnt;					// Number of messages sent from this node.
 			uint32 m_sentFailed;				// Number of sent messages failed
@@ -702,8 +829,8 @@ namespace OpenZWave
 			uint32 m_receivedUnsolicited;		// Number of messages received unsolicited
 			uint32 m_lastRequestRTT;			// Last message request RTT
 			uint32 m_lastResponseRTT;			// Last message response RTT
-			TimeStamp m_sentTS;					// Last message sent time
-			TimeStamp m_receivedTS;				// Last message received time
+			Internal::Platform::TimeStamp m_sentTS;					// Last message sent time
+			Internal::Platform::TimeStamp m_receivedTS;				// Last message received time
 			uint32 m_averageRequestRTT;			// Average Request round trip time.
 			uint32 m_averageResponseRTT;		// Average Response round trip time.
 			uint8 m_quality;					// Node quality measure
@@ -726,16 +853,15 @@ namespace OpenZWave
 			uint8 m_lastFailedLinkFrom;			// The last failed link from
 			uint8 m_lastFailedLinkTo;			// The last failed link to
 
-
 			//-----------------------------------------------------------------------------
 			//	Encryption Related
 			//-----------------------------------------------------------------------------
-			public:
+		public:
 
 			uint8 *GenerateNonceKey();
 			uint8 *GetNonceKey(uint32 nonceid);
 
-			private:
+		private:
 			uint8 m_lastnonce;
 			uint8 m_nonces[8][8];
 
@@ -743,7 +869,7 @@ namespace OpenZWave
 			//	MetaData Related
 			//-----------------------------------------------------------------------------
 
-			public:
+		public:
 			/**
 			 * MetaData Fields.
 			 * Available Fields that contain metadata about a device.
@@ -769,25 +895,24 @@ namespace OpenZWave
 				MetaData_Invalid = 255
 			};
 
-			struct ChangeLogEntry {
-				string author;
-				string date;
-				int revision;
-				string description;
+			struct ChangeLogEntry
+			{
+					string author;
+					string date;
+					int revision;
+					string description;
 			};
 			string const GetMetaData(MetaDataFields);
-			MetaDataFields const GetMetaDataId(string);
+			MetaDataFields GetMetaDataId(string);
 			string const GetMetaDataString(MetaDataFields);
 			ChangeLogEntry const GetChangeLog(uint32_t);
 
-
-			private:
+		private:
 			void ReadMetaDataFromXML(TiXmlElement const* _valueElement);
 			void WriteMetaDataXML(TiXmlElement*);
 			map<MetaDataFields, string> m_metadata;
 			map<uint32_t, ChangeLogEntry> m_changeLog;
 	};
-
 
 } //namespace OpenZWave
 

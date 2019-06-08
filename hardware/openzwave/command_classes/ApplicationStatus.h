@@ -32,27 +32,52 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_APPLICATION_STATUS (0x22), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class ApplicationStatus: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new ApplicationStatus( _homeId, _nodeId ); }
-		virtual ~ApplicationStatus(){}
+		namespace CC
+		{
+			/** \brief Implements COMMAND_CLASS_APPLICATION_STATUS (0x22), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class ApplicationStatus: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new ApplicationStatus(_homeId, _nodeId);
+					}
+					virtual ~ApplicationStatus()
+					{
+					}
 
-		static uint8 const StaticGetCommandClassId(){ return 0x22; }		
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_APPLICATION_STATUS"; }
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x22;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_APPLICATION_STATUS";
+					}
 
-		// From CommandClass
-		virtual uint8 const GetCommandClassId()const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName()const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
+					// From CommandClass
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
 
-	private:
-		ApplicationStatus( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-	};
-
+				private:
+					ApplicationStatus(uint32 const _homeId, uint8 const _nodeId) :
+							CommandClass(_homeId, _nodeId)
+					{
+					}
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif

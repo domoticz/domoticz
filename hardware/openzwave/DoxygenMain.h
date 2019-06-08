@@ -1,4 +1,3 @@
-
 /**
  * \mainpage OpenZWave
  * \section Introduction Introduction to OpenZWave

@@ -34,45 +34,64 @@
 
 namespace OpenZWave
 {
-	class ValueByte;
-
-	/** \brief Implements COMMAND_CLASS_SENSOR_ALARM (0x9c), a Z-Wave device command class.
-	 * \ingroup CommandClass
-	 */
-	class SensorAlarm: public CommandClass
+	namespace Internal
 	{
-	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new SensorAlarm( _homeId, _nodeId ); }
-		virtual ~SensorAlarm(){} 
-
-		static uint8 const StaticGetCommandClassId(){ return 0x9c; }		
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SENSOR_ALARM"; }
-
-		// From CommandClass
-		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ) override;
-		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _alarmType, uint8 const _dummy, Driver::MsgQueue const _queue ) override;
-		virtual uint8 const GetCommandClassId() const override { return StaticGetCommandClassId(); }
-		virtual string const GetCommandClassName() const override { return StaticGetCommandClassName(); }
-		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 ) override;
-
-	private:
-		SensorAlarm( uint32 const _homeId, uint8 const _nodeId );
-
-		enum
+		namespace CC
 		{
-			SensorAlarm_General = 0,
-			SensorAlarm_Smoke,
-			SensorAlarm_CarbonMonoxide,
-			SensorAlarm_CarbonDioxide,
-			SensorAlarm_Heat,
-			SensorAlarm_Flood,
-			SensorAlarm_Count
-		};
-	};
 
+			/** \brief Implements COMMAND_CLASS_SENSOR_ALARM (0x9c), a Z-Wave device command class.
+			 * \ingroup CommandClass
+			 */
+			class SensorAlarm: public CommandClass
+			{
+				public:
+					static CommandClass* Create(uint32 const _homeId, uint8 const _nodeId)
+					{
+						return new SensorAlarm(_homeId, _nodeId);
+					}
+					virtual ~SensorAlarm()
+					{
+					}
+
+					static uint8 const StaticGetCommandClassId()
+					{
+						return 0x9c;
+					}
+					static string const StaticGetCommandClassName()
+					{
+						return "COMMAND_CLASS_SENSOR_ALARM";
+					}
+
+					// From CommandClass
+					virtual bool RequestState(uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue) override;
+					virtual bool RequestValue(uint32 const _requestFlags, uint16 const _alarmType, uint8 const _dummy, Driver::MsgQueue const _queue) override;
+					virtual uint8 const GetCommandClassId() const override
+					{
+						return StaticGetCommandClassId();
+					}
+					virtual string const GetCommandClassName() const override
+					{
+						return StaticGetCommandClassName();
+					}
+					virtual bool HandleMsg(uint8 const* _data, uint32 const _length, uint32 const _instance = 1) override;
+
+				private:
+					SensorAlarm(uint32 const _homeId, uint8 const _nodeId);
+
+					enum
+					{
+						SensorAlarm_General = 0,
+						SensorAlarm_Smoke,
+						SensorAlarm_CarbonMonoxide,
+						SensorAlarm_CarbonDioxide,
+						SensorAlarm_Heat,
+						SensorAlarm_Flood,
+						SensorAlarm_Count
+					};
+			};
+		} // namespace CC
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
-
-
 

@@ -34,68 +34,73 @@
 
 namespace OpenZWave
 {
-	class ThreadImpl;
-	class Event;
-
-	/** \brief Implements a platform-independent thread management class.
-	 * \ingroup Platform
-	 */
-	class Thread: public Wait
+	namespace Internal
 	{
-	public:
-		typedef void (*pfnThreadProc_t)( Event* _exitEvent, void* _context );
+		namespace Platform
+		{
+			class ThreadImpl;
+			class Event;
 
-		/**
-		 * Constructor.
-		 * Creates a thread object that can be used to serialize access to a shared resource.
-		 */
-		Thread( string const& _name );
+			/** \brief Implements a platform-independent thread management class.
+			 * \ingroup Platform
+			 */
+			class Thread: public Wait
+			{
+				public:
+					typedef void (*pfnThreadProc_t)(Event* _exitEvent, void* _context);
 
-		/**
-		 * Start running a function on this thread.  
-		 * Attempts to start a function running on this thread.  The call will fail if another 
-		 * function is already running.
-		 * \param _pThreadProc pointer to the function to be run.  The function must take a 
-		 * single void pointer as its only argument, and return void.  On entry, the pointer 
-		 * will be set to the context provided to this Start method. 
-		 * \param _context pointer allowing any relevant data to be passed to the thread function.
-		 * \return True if the function was successfully started.
-		 * \see Stop, IsRunning
-		 */
-		bool Start( pfnThreadProc_t _pfnThreadProc, void* _context );
+					/**
+					 * Constructor.
+					 * Creates a thread object that can be used to serialize access to a shared resource.
+					 */
+					Thread(string const& _name);
 
-		/**
-		 * Stop a function running on this thread.  
-		 * Attempts to stop a function running on this thread.  The call will fail if no 
-		 * function is running.
-		 * \return True if the function was successfully stopped.
-		 * \see Start, IsRunning
-		 */
-		bool Stop();
+					/**
+					 * Start running a function on this thread.  
+					 * Attempts to start a function running on this thread.  The call will fail if another 
+					 * function is already running.
+					 * \param _pThreadProc pointer to the function to be run.  The function must take a 
+					 * single void pointer as its only argument, and return void.  On entry, the pointer 
+					 * will be set to the context provided to this Start method. 
+					 * \param _context pointer allowing any relevant data to be passed to the thread function.
+					 * \return True if the function was successfully started.
+					 * \see Stop, IsRunning
+					 */
+					bool Start(pfnThreadProc_t _pfnThreadProc, void* _context);
 
-		/**
-		 * Causes the thread to sleep for the specified number of milliseconds.
-		 * \param _millisecs Number of milliseconds to sleep.
-		 */
-		void Sleep( uint32 _millisecs );
+					/**
+					 * Stop a function running on this thread.  
+					 * Attempts to stop a function running on this thread.  The call will fail if no 
+					 * function is running.
+					 * \return True if the function was successfully stopped.
+					 * \see Start, IsRunning
+					 */
+					bool Stop();
 
-	protected:
-		/**
-		 * Used by the Wait class to test whether the thread has been completed.
-		 */
-		virtual bool IsSignalled();
+					/**
+					 * Causes the thread to sleep for the specified number of milliseconds.
+					 * \param _millisecs Number of milliseconds to sleep.
+					 */
+					void Sleep(uint32 _millisecs);
 
-		/**
-		 * Destructor.
-		 * Destroys the Thread object.
-		 */
-		virtual ~Thread();
+				protected:
+					/**
+					 * Used by the Wait class to test whether the thread has been completed.
+					 */
+					virtual bool IsSignalled();
 
-	private:
-		ThreadImpl*	m_pImpl;	// Pointer to an object that encapsulates the platform-specific implementation of a thread.
-		Event*		m_exitEvent;
-	};
+					/**
+					 * Destructor.
+					 * Destroys the Thread object.
+					 */
+					virtual ~Thread();
 
+				private:
+					ThreadImpl* m_pImpl;	// Pointer to an object that encapsulates the platform-specific implementation of a thread.
+					Event* m_exitEvent;
+			};
+		} // namespace Platform
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif //_Thread_H

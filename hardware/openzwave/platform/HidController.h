@@ -32,7 +32,6 @@
 #include "Defs.h"
 #include "platform/Controller.h"
 
-
 #ifdef USE_HID
 
 struct hid_device_;
@@ -41,116 +40,121 @@ typedef struct hid_device_ hid_device;
 
 namespace OpenZWave
 {
-	class Driver;
-	class Msg;
-	class Thread;
-	class Event;
-
-
-	/** \brief Interface for controllers that implement a HID emulation
-	 * \ingroup Platform
-	 */
-	class HidController: public Controller
+	namespace Internal
 	{
-	public:
-		/**
-		 * Constructor.
-		 * Creates an object that represents a HID port.
-		 */
-		HidController();
+		namespace Platform
+		{
 
-		/**
-		 * Destructor.
-		 * Destroys the HID port object.
-		 */
-		virtual ~HidController();
+			class Driver;
+			class Msg;
+			class Thread;
+			class Event;
 
-		/**
-		 * Set the USB vendor ID search value.  The HID port must be closed for the setting to be accepted.
-		 * @param _baud Vendor ID value to match when enumerating USB HID devices.
-		 * @return True if the vendor ID value was accepted.
-		 * @see Open, Close
-		 */
-		bool SetVendorId( uint32 const _vendorId );
+			/** \brief Interface for controllers that implement a HID emulation
+			 * \ingroup Platform
+			 */
+			class HidController: public Controller
+			{
+				public:
+				/**
+				 * Constructor.
+				 * Creates an object that represents a HID port.
+				 */
+				HidController();
 
-		/**
-		 * Set the USB product ID search value.  The HID port must be closed for the setting to be accepted.
-		 * @param _parity Product ID value to match when enumerating USB HID devices.
-		 * @return True if the product ID value was accepted.
-		 * @see Open, Close
-		 */
-		bool SetProductId( uint32 const _productId );
+				/**
+				 * Destructor.
+				 * Destroys the HID port object.
+				 */
+				virtual ~HidController();
 
-		/**
-		 * Set the USB serial number search value.  The HID port must be closed for the setting to be accepted.
- 		 * @param _parity Serial number string to match when enumerating USB HID devices. If empty, any serial number will be accepted.
-		 * @return True if the serial number value was accepted.
-		 * @see Open, Close
-		 */
-		bool SetSerialNumber( string const& _serialNumber );
+				/**
+				 * Set the USB vendor ID search value.  The HID port must be closed for the setting to be accepted.
+				 * @param _baud Vendor ID value to match when enumerating USB HID devices.
+				 * @return True if the vendor ID value was accepted.
+				 * @see Open, Close
+				 */
+				bool SetVendorId( uint32 const _vendorId );
 
-		/**
-		 * Open a HID port.
-		 * Attempts to open a HID port and initialize it with the specified parameters.
-		 * @param _HidControllerName The name of the port to open.  For example, ttyS1 on Linux, or \\.\COM2 in Windows.
-		 * @return True if the port was opened and configured successfully.
-		 * @see Close, Read, Write
-		 */
-		bool Open( string const& _hidControllerName );
+				/**
+				 * Set the USB product ID search value.  The HID port must be closed for the setting to be accepted.
+				 * @param _parity Product ID value to match when enumerating USB HID devices.
+				 * @return True if the product ID value was accepted.
+				 * @see Open, Close
+				 */
+				bool SetProductId( uint32 const _productId );
 
-		/**
-		 * Close a HID port.
-		 * Closes the HID port.
-		 * @return True if the port was closed successfully, or false if the port was already closed, or an error occurred.
-		 * @see Open
-		 */
-		bool Close();
+				/**
+				 * Set the USB serial number search value.  The HID port must be closed for the setting to be accepted.
+				 * @param _parity Serial number string to match when enumerating USB HID devices. If empty, any serial number will be accepted.
+				 * @return True if the serial number value was accepted.
+				 * @see Open, Close
+				 */
+				bool SetSerialNumber( string const& _serialNumber );
 
-		/**
-		 * Write to a HID port.
-		 * Attempts to write data to an open HID port.
-		 * @param _buffer Pointer to a block of memory containing the data to be written.
-		 * @param _length Length in bytes of the data.
-		 * @return The number of bytes written.
-		 * @see Read, Open, Close
-		 */
-		uint32 Write( uint8* _buffer, uint32 _length );
+				/**
+				 * Open a HID port.
+				 * Attempts to open a HID port and initialize it with the specified parameters.
+				 * @param _HidControllerName The name of the port to open.  For example, ttyS1 on Linux, or \\.\COM2 in Windows.
+				 * @return True if the port was opened and configured successfully.
+				 * @see Close, Read, Write
+				 */
+				bool Open( string const& _hidControllerName );
 
-	private:
-		bool Init( uint32 const _attempts );
-		void Read();
+				/**
+				 * Close a HID port.
+				 * Closes the HID port.
+				 * @return True if the port was closed successfully, or false if the port was already closed, or an error occurred.
+				 * @see Open
+				 */
+				bool Close();
 
-        // helpers for internal use only
+				/**
+				 * Write to a HID port.
+				 * Attempts to write data to an open HID port.
+				 * @param _buffer Pointer to a block of memory containing the data to be written.
+				 * @param _length Length in bytes of the data.
+				 * @return The number of bytes written.
+				 * @see Read, Open, Close
+				 */
+				uint32 Write( uint8* _buffer, uint32 _length );
 
-        /**
-		* Read bytes from the specified HID feature report
-        * @param _buffer Buffer array for receiving the feature report bytes.
-        * @param _length Length of the buffer array.
-        * @param _reportId ID of the report to read.
-		* @return Actual number of bytes retrieved, or -1 on error.
-		*/
-        int GetFeatureReport( uint32 _length, uint8 _reportId, uint8* _buffer );
+				private:
+				bool Init( uint32 const _attempts );
+				void Read();
 
-        /**
-		* Write bytes to the specified HID feature report
-		* @param _data Bytes to be written to the feature report.
-		* @param _length Length of bytes to be written.
-		* @return Actal number of bytes written, or -1 on error.
-		*/
-        int SendFeatureReport( uint32 _length, const uint8* _data );
+				// helpers for internal use only
 
-		static void ThreadEntryPoint( Event* _exitEvent, void* _context );
-		void ThreadProc( Event* _exitEvent );
+				/**
+				 * Read bytes from the specified HID feature report
+				 * @param _buffer Buffer array for receiving the feature report bytes.
+				 * @param _length Length of the buffer array.
+				 * @param _reportId ID of the report to read.
+				 * @return Actual number of bytes retrieved, or -1 on error.
+				 */
+				int GetFeatureReport( uint32 _length, uint8 _reportId, uint8* _buffer );
 
-		hid_device*		m_hHidController;
-		Thread*			m_thread;
-        uint32          	m_vendorId;
-        uint32          	m_productId;
-        string          	m_serialNumber;
-		string			m_hidControllerName;
-		bool			m_bOpen;
-	};
+				/**
+				 * Write bytes to the specified HID feature report
+				 * @param _data Bytes to be written to the feature report.
+				 * @param _length Length of bytes to be written.
+				 * @return Actal number of bytes written, or -1 on error.
+				 */
+				int SendFeatureReport( uint32 _length, const uint8* _data );
 
+				static void ThreadEntryPoint( Event* _exitEvent, void* _context );
+				void ThreadProc( Event* _exitEvent );
+
+				hid_device* m_hHidController;
+				Thread* m_thread;
+				uint32 m_vendorId;
+				uint32 m_productId;
+				string m_serialNumber;
+				string m_hidControllerName;
+				bool m_bOpen;
+			};
+		} // namespace Platform
+	} // namespace Internal
 } // namespace OpenZWave
 
 #endif
