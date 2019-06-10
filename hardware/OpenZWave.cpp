@@ -4055,7 +4055,7 @@ void COpenZWave::GetConfigFile(std::string& filePath, std::string& fileContent)
 	std::lock_guard<std::mutex> l(m_NotificationMutex);
 
 	char szFileName[255];
-	sprintf(szFileName, "%sConfig/zwcfg_0x%08x.xml", szUserDataFolder.c_str(), m_controllerID);
+	sprintf(szFileName, "%sConfig/ozwcache_0x%08x.xml", szUserDataFolder.c_str(), m_controllerID);
 	filePath = szFileName;
 
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
