@@ -2031,7 +2031,7 @@ namespace http {
 					{
 						std::string theme_images_path = myWebem->m_actTheme + uri;
 						if (file_exist((doc_root_ + theme_images_path).c_str()))
-							requestCopy.uri = myWebem->GetWebRoot().c_str() + theme_images_path;
+							requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
 					}
 
 					request_handler::handle_request(requestCopy, rep, mInfo);
