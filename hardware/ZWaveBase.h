@@ -49,13 +49,12 @@ class ZWaveBase : public CDomoticzHardwareBase
 	struct _tZWaveDevice
 	{
 		int nodeID;
-		int commandClassID;
 		int instanceID;
 		int indexID;
 		int orgInstanceID;
 		int orgIndexID;
+		int commandClassID;
 		_eZWaveDeviceType devType;
-		int scaleID;
 		int scaleMultiply;
 		int basicType;
 		int genericType;
@@ -96,7 +95,6 @@ class ZWaveBase : public CDomoticzHardwareBase
 		{
 			sequence_number=1;
 			nodeID=-1;
-			scaleID=1;
 			scaleMultiply=1;
 			isListening=false;
 			sensor250=false;
