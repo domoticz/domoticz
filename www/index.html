@@ -83,6 +83,8 @@
 		<link type="text/css" rel="stylesheet" href="css/jquery-ui-timepicker-addon.css" />
 		<link type="text/css" rel="stylesheet" href="css/remote.css" />
 		<link type="text/css" rel="stylesheet" href="css/wheelcolorpicker.css" />
+		<link type="text/css" rel="stylesheet" href="js/noty/noty.css" />
+		<link type="text/css" rel="stylesheet" href="js/noty/relax.css" />
 		<link type="text/css" rel="stylesheet" href="app/events/Events.css" />
 		<link type="text/css" rel="stylesheet" href="app/devices/Devices.css" />
 		<link type="text/css" rel="stylesheet" href="acttheme/custom.css" />
@@ -98,11 +100,7 @@
 		<script src="js/jquery.ddslick.min.js"></script>
 		<script src="js/colpick.js"></script>
 		<script src="js/jquery.wheelcolorpicker.js"></script>
-		<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
-		<script type="text/javascript" src="js/noty/layouts/top.js"></script>
-		<script type="text/javascript" src="js/noty/layouts/topLeft.js"></script>
-		<script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
-		<script type="text/javascript" src="js/noty/themes/default.js"></script>
+		<script type="text/javascript" src="js/noty/noty.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/data-tables/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/data-tables/dataTables.tableTools.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/data-tables/dataTables.select.min.js"></script>
@@ -362,20 +360,7 @@ $(document).ready(function() {
 				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
 				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
 				ClearNotifyCacheRefresh();
-				if (typeof e.message != 'undefined') {
-					if (e.message.indexOf("html5.appcache2") >= 0)
-					{
-						$.cachenoty=generate_noty_tl('error', errText, false);
-					}
-					else
-					{
-						$.cachenoty=generate_noty('error', errText, false);
-					}
-				}
-				else {
-						$.cachenoty=generate_noty('error', errText, false);
-				}
-				setTimeout(function(){	ClearNotifyCacheRefresh(); }, 2000);
+				$.cachenoty=generate_noty('error', errText, 2000);
 			}, false);
 
 			window.applicationCache.addEventListener('progress', function(e)

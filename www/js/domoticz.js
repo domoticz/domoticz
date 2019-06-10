@@ -976,25 +976,14 @@ function GetTemp48Item(temp) {
 }
 
 function generate_noty(ntype, ntext, ntimeout) {
-	return noty({
-		text: ntext,
+	return new Noty({
 		type: ntype,
-		dismissQueue: true,
-		timeout: ntimeout,
 		layout: 'topRight',
-		theme: 'defaultTheme'
-	});
-}
-
-function generate_noty_tl(ntype, ntext, ntimeout) {
-	return noty({
 		text: ntext,
-		type: ntype,
 		dismissQueue: true,
 		timeout: ntimeout,
-		layout: 'topLeft',
-		theme: 'defaultTheme'
-	});
+		theme: 'relax'
+	}).show();
 }
 
 function rgb2hex(rgb) {
