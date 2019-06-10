@@ -1630,9 +1630,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	_tZWaveDevice _device;
 	_device.nodeID = NodeID;
 	_device.commandClassID = commandclass;
-	_device.scaleID = -1;
 	_device.instanceID = instance;
-	_device.indexID = 0;
 	_device.hasWakeup = m_pManager->IsNodeAwake(HomeID, NodeID);
 	_device.isListening = m_pManager->IsNodeListeningDevice(HomeID, NodeID);
 
