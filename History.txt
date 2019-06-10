@@ -2,6 +2,7 @@ Version 4.xxxxx (xxx 2019)
 - Implemented: DarkSky CloudCover sensor
 - Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
 - Implemented: GUI, OpenZWave added Refresh Node Information button, styling
+- Fixed: Gui, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
 - Fixed: GUI, device table initial order column
 - Fixed: GUI, Switch Log, date parsing in device log (#3206)

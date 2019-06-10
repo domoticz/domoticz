@@ -2582,6 +2582,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		_device.intvalue = intValue;
 		InsertDevice(_device);
 	}
+	else if (commandclass == COMMAND_CLASS_INDICATOR)
+	{
+		//Ignored
+		if (vType == OpenZWave::ValueID::ValueType_Byte)
+		{
+			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+				return;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+			return;
+		}
+	}
 	else
 	{
 		//Unhandled
@@ -2994,9 +3008,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	if (pDevice == NULL)
 	{
 		//ignore the following command classes as they are not used in Domoticz at the moment
-		if (
-			(commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
-			)
+		if (commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
+		{
+			return;
+		}
+		else if ((commandclass == COMMAND_CLASS_CENTRAL_SCENE) && (vLabel == "Scene Count"))
 		{
 			return;
 		}
