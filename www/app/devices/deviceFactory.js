@@ -5,7 +5,7 @@ define(function () {
 
         function DeviceIcon(device) {
             this.isConfigurable = function() {
-                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Color Switch'].includes(device.Type) &&
+                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Color Switch'].includes(device.Type) &&
                     [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(device.SwitchTypeVal);
             };
 
