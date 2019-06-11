@@ -36,7 +36,6 @@ namespace OpenZWave
 	{
 		namespace CC
 		{
-
 			/** \brief Implements COMMAND_CLASS_METER (0x32), a Z-Wave device command class.
 			 * \ingroup CommandClass
 			 */
@@ -75,18 +74,14 @@ namespace OpenZWave
 					virtual bool SetValue(Internal::VC::Value const& _value) override;
 					virtual uint8 GetMaxVersion() override
 					{
-						return 3;
+						return 5;
 					}
-
-				protected:
-					virtual void CreateVars(uint8 const _instance) override;
 
 				private:
 					Meter(uint32 const _homeId, uint8 const _nodeId);
-
+					int32_t GetScale(uint8_t const *_data, uint32_t const_length);
 					bool HandleSupportedReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
 					bool HandleReport(uint8 const* _data, uint32 const _length, uint32 const _instance = 1);
-
 			};
 		} // namespace CC
 	} // namespace Internal

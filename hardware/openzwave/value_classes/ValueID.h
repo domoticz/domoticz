@@ -149,6 +149,14 @@ namespace OpenZWave
 			}
 
 			/** 
+			 * Get the genre of the value as a String.  The genre classifies a value to enable
+			 * low-level system or configuration parameters to be filtered out by the application
+			 * \return the value's genre.
+			 * \see ValueGenre, ValueID::GetGenre
+			 */
+			string GetGenreAsString() const;
+
+			/**
 			 * Get the Z-Wave command class that created and manages this value.  Knowledge of 
 			 * command classes is not required to use OpenZWave, but this information is
 			 * exposed in case it is of interest.
@@ -196,6 +204,15 @@ namespace OpenZWave
 			{
 				return ((ValueType) (m_id & 0x0000000f));
 			}
+
+			/**
+			 * Get the type of the value as a String.  The type describes the data held by the value
+			 * and enables the user to select the correct value accessor method in the
+			 * Manager class.
+			 * \return the value's type.
+			 * \see ValueType, Manager::GetValueAsBool, Manager::GetValueAsByte, Manager::GetValueAsFloat, Manager::GetValueAsInt, Manager::GetValueAsShort, Manager::GetValueAsString, Manager::GetValueListSelection, ValueID::GetType
+			 */
+			string GetTypeAsString() const;
 
 			/**
 			 * Get a 64Bit Integer that represents this ValueID. This Integer is not guaranteed to be the same

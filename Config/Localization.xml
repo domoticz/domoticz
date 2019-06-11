@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="6">
+<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="7">
 	<CommandClass id="113">
 		<!-- Please keep Localization.xml in sync with NotificationCCTypes.xml -->
     	<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
@@ -680,7 +680,78 @@
 	</CommandClass>
 	<CommandClass id="50">
 		<Label>COMMAND_CLASS_METER</Label>
-		<!-- This has some complex ValueID creation rules. Come back to it later -->
+		<Value index="0">
+			<Help>Electric Kilowatt Hour Reading</Help>
+			<Label>Electric - kWh</Label>
+		</Value>
+		<Value index="1">
+			<Help>Electric Kilo Volt Amperes Hours Reading</Help>
+			<Label>Electric - kVah</Label>
+		</Value>
+		<Value index="2">
+			<Help>Electric Watts Reading</Help>
+			<Label>Electric - W</Label>
+		</Value>
+		<Value index="3">
+			<Help>Electric Pulses Reading</Help>
+			<Label>Electric - Pulses</Label>
+		</Value>
+		<Value index="4">
+			<Help>Electric Volts Reading</Help>
+			<Label>Electric - V</Label>
+		</Value>
+		<Value index="5">
+			<Help>Electric Amps Reading</Help>
+			<Label>Electric - A</Label>
+		</Value>
+		<Value index="6">
+			<Help>Electric Power Factor Reading</Help>
+			<Label>Electric - PF</Label>
+		</Value>
+		<Value index="8">
+			<Help>Electric Kilovolt-amperes Reactive Reading</Help>
+			<Label>Electric - kVar</Label>
+		</Value>
+		<Value index="9">
+			<Help>Electric Kilo Volt Amps Reactive Hours Reading</Help>
+			<Label>Electric - kVarh</Label>
+		</Value>
+		<Value index="16">
+			<Help>Gas Cubic Meters Reading</Help>
+			<Label>Gas - m3</Label>
+		</Value>
+		<Value index="17">
+			<Help>Gas Cubic Feet Reading</Help>
+			<Label>Gas - ft3</Label>
+		</Value>
+		<Value index="19">
+			<Help>Gas Pulses Reading</Help>
+			<Label>Gas - Pulses</Label>
+		</Value>
+		<Value index="32">
+			<Help>Water Cubic Meters Reading</Help>
+			<Label>Water - m3</Label>
+		</Value>
+		<Value index="33">
+			<Help>Water Cubic Feet Reading</Help>
+			<Label>Water - ft3</Label>
+		</Value>
+		<Value index="34">
+			<Help>Water US Gallons Reading</Help>
+			<Label>Water - gal</Label>
+		</Value>
+		<Value index="35">
+			<Help>Water Pulses Reading</Help>
+			<Label>Water - Pulses</Label>
+		</Value>
+		<Value index="48">
+			<Help>Heating kWh Reading</Help>
+			<Label>Heating - kWh</Label>
+		</Value>
+		<Value index="64">
+			<Help>Cooling kWh Reading</Help>
+			<Label>Cooling - kWh</Label>
+		</Value>
 	</CommandClass>
 	<CommandClass id="53">
 		<Label>COMMAND_CLASS_METER_PULSE</Label>

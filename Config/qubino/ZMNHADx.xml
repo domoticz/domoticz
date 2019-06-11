@@ -1,4 +1,4 @@
-<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/qubino/ZMNHADx.png</MetaDataItem>
@@ -50,6 +50,7 @@ If the device is powered by 24 V SELV supply, press and hold the S (Service) but
 The connection of a digital temperature sensor means you can create complex scenes and control any device relative to a set temperature range. The Qubino Flush 1 Relay also acts as a Z-Wave repeater to improve the range and stability of the Z-Wave network.</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2795/xml</Entry>
+      <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="10 Jun 2019" revision="7">Fix for 'module does not work on 1.6' - https://github.com/OpenZWave/open-zwave/issues/1820</Entry>
     </ChangeLog>
   </MetaData>
   <!--
@@ -166,22 +167,6 @@ The connection of a digital temperature sensor means you can create complex scen
   <CommandClass action="add" id="113">
     <Compatibility>
       <GetSupported>false</GetSupported>
-    </Compatibility>
-  </CommandClass>
-  <CommandClass id="48">
-    <Instance index="2"/>
-    <Value genre="user" index="0" instance="1" label="Int2" read_only="true" type="bool" value="false" write_only="false"/>
-    <Value genre="user" index="0" instance="2" label="Int3" read_only="true" type="bool" value="false" write_only="false"/>
-    <SensorMap index="0" type="8"/>
-    <Compatibility>
-      <CreateVars>false</CreateVars>
-    </Compatibility>
-  </CommandClass>
-  <CommandClass id="37">
-    <Instance index="1"/>
-    <Value genre="user" index="0" instance="1" label="Switch" read_only="false" type="bool"/>
-    <Compatibility>
-      <CreateVars>false</CreateVars>
     </Compatibility>
   </CommandClass>
 </Product>

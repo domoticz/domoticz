@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="27" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="29" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -839,6 +839,8 @@
   </Manufacturer>
   <Manufacturer id="0344" name="HELTUN">
     <Product config="heltun/he-zw-therm-fl2.xml" id="0001" name="HE-ZW-THERM-FL2 Heating Thermostat" type="0003"/>
+    <Product config="heltun/he-zw-sw-5a-1.xml" id="0003" name="HE-ZW-SW-5A-1 Touch Panel Switch" type="0003"/>
+    <Product config="heltun/he-zw-therm-fc1.xml" id="0002" name="HE-ZW-THERM-FC1 Fan Coil Thermostat" type="0003"/>
   </Manufacturer>
   <Manufacturer id="020F" name="Herald Datanetics Limited"></Manufacturer>
   <Manufacturer id="0017" name="HiTech Automation"></Manufacturer>
@@ -1828,6 +1830,7 @@
     <Product config="zooz/zen21.xml" id="1e1c" name="ZEN21 Switch V2.0" type="b111"/>
   </Manufacturer>
   <Manufacturer id="0315" name="zwaveproducts.com">
+    <Product type="4447" id="3031" name="PA-100" config="zwp/PA-100.xml"/>
     <Product config="zwp/WD-100.xml" id="3034" name="WD-100" type="4447"/>
   </Manufacturer>
   <Manufacturer id="0021" name="Zykronix"></Manufacturer>

@@ -38,6 +38,10 @@
 namespace OpenZWave
 {
 
+#ifdef _MSC_VER
+#define strncpy(x, y, z) strncpy_s(x, sizeof(x), y, sizeof(x)-1)
+#endif
+
 #include "ValueIDIndexesDefines.h"
 
 }
