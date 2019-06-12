@@ -305,6 +305,12 @@ namespace Plugins {
 		}
 	}
 
+	void BoostWorkers()
+	{
+		
+		ios.run();
+	}
+
 	void CPluginSystem::Do_Work()
 	{
 		while (!m_bAllPluginsStarted)
@@ -315,11 +321,15 @@ namespace Plugins {
 		_log.Log(LOG_STATUS, "PluginSystem: Entering work loop.");
 
 		// Create initial IO Service thread
-		ios.reset();
+		ios.restart();
 		// Create some work to keep IO Service alive
 		auto work = boost::asio::io_service::work(ios);
-		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-		SetThreadName(bt.native_handle(), "PluginMgr_IO");
+		boost::thread_group BoostThreads;
+		for (int i = 0; i < 1; i++)
+		{
+			boost::thread*	bt = BoostThreads.create_thread(BoostWorkers);
+			SetThreadName(bt->native_handle(), "Plugin_ASIO");
+		}
 
 		while (!IsStopRequested(50))
 		{
@@ -376,6 +386,10 @@ namespace Plugins {
 				}
 			}
 		}
+
+		// Shutdown IO workers
+		ios.stop();
+		BoostThreads.join_all();
 
 		_log.Log(LOG_STATUS, "PluginSystem: Exiting work loop.");
 	}

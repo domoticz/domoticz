@@ -256,7 +256,7 @@ namespace Plugins {
 			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
 					((e == boost::asio::error::operation_aborted) ||	// Client side connections (from connecting)
 					 (e == boost::asio::error::eof)))					// Server side connections (from listening)
-				_log.Log(LOG_NORM, "(%s) Queued asyncronous read aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+				_log.Log(LOG_NORM, "(%s) Queued asyncronous read aborted (%s:%s), [%d] %s.", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
 			else
 			{
 				if ((e != boost::asio::error::eof) &&
@@ -265,7 +265,7 @@ namespace Plugins {
 					(e != boost::asio::error::address_in_use) &&
 					(e != boost::asio::error::operation_aborted) &&
 					(e.value() != 1236))	// local disconnect cause by hardware reload
-					_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
+					_log.Log(LOG_ERROR, "(%s): Async Read Exception (%s:%s): %d, %s", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
@@ -279,11 +279,17 @@ namespace Plugins {
 		{
 			try
 			{
-				m_Socket->write_some(boost::asio::buffer(pMessage, pMessage.size()));
+				int		iSentBytes = boost::asio::write(*m_Socket, boost::asio::buffer(pMessage, pMessage.size()));
+				m_iTotalBytes += iSentBytes;
+				if (iSentBytes != pMessage.size())
+				{
+					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+					_log.Log(LOG_ERROR, "(%s) Not all data written to socket (%s:%s). %d expected,  %d written", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), pMessage.size(), iSentBytes);
+				}
 			}
-			catch (...)
+			catch (std::exception & e)
 			{
-				_log.Log(LOG_ERROR, "%s: Socket error during 'write_some' operation: %d bytes", __func__, (int)pMessage.size());
+				_log.Log(LOG_ERROR, "%s: Exception thrown: '%s'", __func__, std::string(e.what()).c_str());
 			}
 		}
 		else
@@ -460,25 +466,6 @@ namespace Plugins {
 		}
 	}
 
-	void CPluginTransportTCPSecure::handleWrite(const std::vector<byte>& pMessage)
-	{
-		if (m_TLSSock && m_Socket)
-		{
-			try
-			{
-				m_TLSSock->write_some(boost::asio::buffer(pMessage, pMessage.size()));
-			}
-			catch (...)
-			{
-				_log.Log(LOG_ERROR, "%s: Socket error during 'write_some' operation: %d bytes", __func__, (int)pMessage.size());
-			}
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
-		}
-	}
-
 	CPluginTransportTCPSecure::~CPluginTransportTCPSecure()
 	{
 		if (m_TLSSock)
@@ -611,7 +598,6 @@ namespace Plugins {
 				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
 			}
 
-
 			// Different handling for multi casting
 			if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
 			{
@@ -689,7 +675,8 @@ namespace Plugins {
 
 			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
 			std::string body("ping");
-			handleWrite(std::vector<byte>(&body[0], &body[body.length()]));
+			std::vector<byte>	vBody(&body[0], &body[body.length()]);
+			handleWrite(vBody);
 
 			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint,
 				boost::bind(&CPluginTransportICMP::handleRead, this,
