@@ -16,18 +16,11 @@ local function getTimezone()
 	return diff
 end
 
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields + 1] = c end)
-	return fields
-end
-
 local LOOKUP = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
 
 local function getSMs(s)
 	local ms = 0
-	local parts = string.split(s, '.') -- do string splittin instead of math stuff.. can't seem to get the floating points right
+	local parts = utils.stringSplit(s, '.') -- do string splittin instead of math stuff.. can't seem to get the floating points right
 	s = tonumber(parts[1])
 	if (parts[2] ~= nil) then
 		-- should always be three digits!!

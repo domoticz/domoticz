@@ -140,7 +140,7 @@ return {
 		end
 
 		if (device.switchType == 'Selector') then
-			device.levelNames = device.levelNames and string.split(device.levelNames, '|') or {}
+			device.levelNames = device.levelNames and utils.stringSplit(device.levelNames, '|') or {}
 			device.level = tonumber(device.rawData[1])
 			device.levelName = device.state
 		end

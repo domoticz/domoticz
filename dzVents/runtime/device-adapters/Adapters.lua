@@ -1,4 +1,5 @@
 local genericAdapter = require('generic_device')
+local utils = require('Utils')
 
 local deviceAdapters = {
 	'airquality_device',
@@ -50,15 +51,6 @@ local deviceAdapters = {
 	'kodi_device'
 }
 
-local utils = require('Utils')
-
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields + 1] = c end)
-	return fields
-end
-
 local function DeviceAdapters(dummyLogger)
 
 	local self = {}
@@ -92,7 +84,7 @@ local function DeviceAdapters(dummyLogger)
 
 	function self.parseFormatted (sValue, radixSeparator)
 
-		local splitted = string.split(sValue, ' ')
+		local splitted = utils.stringSplit(sValue, ' ')
 
 		local sV = splitted[1]
 		local unit = splitted[2]
