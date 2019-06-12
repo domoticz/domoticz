@@ -2489,6 +2489,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Index)
 		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Channels_Capabilities)
 		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Duration)
+		|| (commandclass == COMMAND_CLASS_INDICATOR)
 		)
 	{
 		return;
