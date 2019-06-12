@@ -34,7 +34,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 134
+#define DB_VERSION 135
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2604,6 +2604,20 @@ bool CSQLHelper::OpenDatabase()
 			query(sqlCreateHardware);
 			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
 			query("DROP TABLE tmp_Hardware;");
+		}
+		if (dbversion < 135)
+		{
+			//OpenZWave COMMAND_CLASS_METER new index, need to delete the cache!
+			std::vector<std::string> root_files_;
+			DirectoryListing(root_files_, szUserDataFolder + "Config", false, true);
+			for (auto itt : root_files_)
+			{
+				if (itt.find("ozwcache_0x") != std::string::npos)
+				{
+					std::string dfile = szUserDataFolder + "Config/" + itt;
+					std::remove(dfile.c_str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

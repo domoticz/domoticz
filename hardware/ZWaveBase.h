@@ -55,7 +55,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		int orgIndexID;
 		int commandClassID;
 		_eZWaveDeviceType devType;
-		int scaleMultiply;
+		float scaleMultiply;
 		int basicType;
 		int genericType;
 		int specificType;
@@ -95,7 +95,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		{
 			sequence_number=1;
 			nodeID=-1;
-			scaleMultiply=1;
+			scaleMultiply=1.0f;
 			isListening=false;
 			sensor250=false;
 			sensor1000=false;

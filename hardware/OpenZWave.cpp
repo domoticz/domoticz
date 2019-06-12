@@ -1797,144 +1797,90 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	else if (commandclass == COMMAND_CLASS_METER)
 	{
 		if (
-			(vLabel.find("Exporting") != std::string::npos) ||
-			(vLabel.find("Interval") != std::string::npos) ||
-			(vLabel.find("Previous Reading") != std::string::npos)
+			(vOrgIndex == ValueID_Index_Meter::Exporting)
+			|| (vLabel.find("Exporting") != std::string::npos)
+			|| (vLabel.find("Interval") != std::string::npos)
+			|| (vLabel.find("Previous Reading") != std::string::npos)
 			)
 			return; //Not interested
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+			return;
+		}
+		if (m_pManager->GetValueAsFloat(vID, &fValue) == false)
+		{
+			return;
+		}
 
 		//Meter device
 		if (
-			(vLabel.find("Energy") != std::string::npos) ||
-			(vLabel.find("Power") != std::string::npos)
+			(vOrgIndex == ValueID_Index_Meter::Electric_kWh)
+			|| (vOrgIndex == ValueID_Index_Meter::Electric_kVah)
+			|| (vOrgIndex == ValueID_Index_Meter::Heating_kWh)
+			|| (vOrgIndex == ValueID_Index_Meter::Cooling_kWh)
 			)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.scaleMultiply = 1;
-					if ((vUnits == "kWh") || (vUnits == "kVAh"))
-					{
-						_device.scaleMultiply = 1000;
-						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
-					}
-					else
-					{
-						_device.devType = ZDTYPE_SENSOR_POWER;
-					}
-					_device.floatValue = fValue * _device.scaleMultiply;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
+			_device.scaleMultiply = 1000.0f;
 		}
-		else if (vLabel.find("Voltage") != std::string::npos)
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_W)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_POWER;
 		}
-		else if (vLabel.find("Current") != std::string::npos)
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_V)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_AMPERE;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_VOLTAGE;
 		}
-		else if (vLabel.find("Power Factor") != std::string::npos)
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_A)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_AMPERE;
 		}
-		else if (vLabel.find("Gas") != std::string::npos)
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_PowerFactor)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_GAS;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 		}
-		else if (vLabel.find("Water") != std::string::npos)
+		else if (vOrgIndex == ValueID_Index_Meter::Gas_Cubic_Meters)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_WATER;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_GAS;
 		}
-		else if (vLabel.find("Unknown") != std::string::npos)
+		else if (vOrgIndex == ValueID_Index_Meter::Gas_Cubic_Feet)
 		{
-			//It's unknown, so don't handle it
+			_device.devType = ZDTYPE_SENSOR_GAS;
+			_device.scaleMultiply = 0.0283168f; //(divide the volume value by 35,315)
+		}
+		else if (vOrgIndex == ValueID_Index_Meter::Water_Cubic_Meters)
+		{
+			_device.devType = ZDTYPE_SENSOR_WATER;
+		}
+		else if (vOrgIndex == ValueID_Index_Meter::Water_Cubic_Feet)
+		{
+			_device.devType = ZDTYPE_SENSOR_WATER;
+			_device.scaleMultiply = 0.0283168f; //(divide the volume value by 35,315)
+		}
+		else if (vOrgIndex == ValueID_Index_Meter::Water_Cubic_US_Gallons)
+		{
+			_device.devType = ZDTYPE_SENSOR_WATER;
+			_device.scaleMultiply = 0.00378541f; //(divide the volume value by 264, 172)
 		}
 		else
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled Meter type: %s, class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", vLabel.c_str(), commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 			return;
 		}
+		_device.floatValue = fValue * _device.scaleMultiply;
+		InsertDevice(_device);
 	}
 	else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+			return;
+		}
+		if (m_pManager->GetValueAsFloat(vID, &fValue) == false)
+			return;
+
 		if (
 			(vOrgIndex == ValueID_Index_SensorMultiLevel::Temperature)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::WaterTemperature)
@@ -1944,342 +1890,109 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::DHWTemperature)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::OutsideTemperature)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::ExhaustTemperature)
-			) {
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			) 
+		{
+			if (vUnits == "F")
 			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					if (vUnits == "F")
-					{
-						//Convert to celcius
-						fValue = float((fValue - 32) * (5.0 / 9.0));
-					}
-					_device.floatValue = fValue;
-					_device.commandClassID = 49;
-					_device.devType = ZDTYPE_SENSOR_TEMPERATURE;
-					InsertDevice(_device);
-				}
+				//Convert to celcius
+				fValue = float((fValue - 32) * (5.0 / 9.0));
 			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_TEMPERATURE;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Luminance)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			if (vUnits != "lux")
 			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					if (vUnits != "lux")
-					{
-						//convert from % to Lux (where max is 1000 Lux)
-						fValue = (1000.0f / 100.0f) * fValue;
-						if (fValue > 1000.0f)
-							fValue = 1000.0f;
-					}
-
-					_device.floatValue = fValue;
-					_device.commandClassID = 49;
-					_device.devType = ZDTYPE_SENSOR_LIGHT;
-					InsertDevice(_device);
-				}
+				//convert from % to Lux (where max is 1000 Lux)
+				fValue = (1000.0f / 100.0f) * fValue;
+				if (fValue > 1000.0f)
+					fValue = 1000.0f;
 			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_LIGHT;
 		}
 		else if (
 			(vOrgIndex == ValueID_Index_SensorMultiLevel::RelativeHumidity)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::SoilHumidity)
-			) {
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.intvalue = round(fValue);
-					_device.commandClassID = 49;
-					_device.devType = ZDTYPE_SENSOR_HUMIDITY;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			)
+		{
+			_device.intvalue = round(fValue);
+			_device.devType = ZDTYPE_SENSOR_HUMIDITY;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Ultraviolet)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.commandClassID = 49;
-					_device.devType = ZDTYPE_SENSOR_UV;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_UV;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Velocity)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.commandClassID = 49;
-					_device.devType = ZDTYPE_SENSOR_VELOCITY;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_VELOCITY;
 		}
 		else if (
 			(vOrgIndex == ValueID_Index_SensorMultiLevel::BarometricPressure)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::AtmosphericPressure)
 			)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue * 10.0f;
-					_device.commandClassID = 49;
-					_device.devType = ZDTYPE_SENSOR_BAROMETER;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.scaleMultiply = 10.0f;
+			_device.devType = ZDTYPE_SENSOR_BAROMETER;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::DewPoint)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.commandClassID = 49;
-					_device.devType = ZDTYPE_SENSOR_DEWPOINT;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_DEWPOINT;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Power)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			if ((vUnits == "kWh") || (vUnits == "kVAh"))
 			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.scaleMultiply = 1;
-					if ((vUnits == "kWh") || (vUnits == "kVAh"))
-					{
-						_device.scaleMultiply = 1000;
-						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
-					}
-					else
-					{
-						_device.devType = ZDTYPE_SENSOR_POWER;
-					}
-					_device.floatValue = fValue * _device.scaleMultiply;
-					InsertDevice(_device);
-				}
+				_device.scaleMultiply = 1000;
+				_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
+				_device.devType = ZDTYPE_SENSOR_POWER;
 			}
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Voltage)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_VOLTAGE;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Current)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_AMPERE;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_AMPERE;
 		}
 		else if (vLabel.find("Water") != std::string::npos) //water flow ?
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_WATER;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_WATER;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::CO2)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_CO2;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_CO2;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Moisture)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_MOISTURE;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_MOISTURE;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::TankCapacity)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_TANK_CAPACITY;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_TANK_CAPACITY;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::General)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SWITCH_NORMAL;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SWITCH_NORMAL;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::RainRate)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_CUSTOM;
-					_device.custom_label = "mm/h";
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.custom_label = "mm/h";
+			_device.devType = ZDTYPE_SENSOR_CUSTOM;
 		}
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::SeismicIntensity)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
-				{
-					_device.floatValue = fValue;
-					_device.scaleMultiply = 1;
-					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
-					InsertDevice(_device);
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
+			_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 		}
 		else
 		{
 			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s, Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vLabel.c_str(), vUnits.c_str(), static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vOrgInstance, vOrgIndex);
 		}
+		_device.floatValue = fValue * _device.scaleMultiply;
+		InsertDevice(_device);
 	}
 	else if (commandclass == COMMAND_CLASS_BATTERY)
 	{
@@ -2303,7 +2016,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 					fValue = float((fValue - 32) * (5.0 / 9.0));
 				}
 				_device.floatValue = fValue;
-				_device.commandClassID = COMMAND_CLASS_THERMOSTAT_SETPOINT;
 				_device.devType = ZDTYPE_SENSOR_SETPOINT;
 				InsertDevice(_device);
 				SendDevice2Domoticz(&_device);
@@ -2338,7 +2050,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 							{
 								pNode->tMode = vMode;
 								_device.intvalue = vMode;
-								_device.commandClassID = COMMAND_CLASS_THERMOSTAT_MODE;
 								_device.devType = ZDTYPE_SENSOR_THERMOSTAT_MODE;
 								InsertDevice(_device);
 								SendDevice2Domoticz(&_device);
@@ -2376,7 +2087,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 							{
 								pNode->tFanMode = vMode;
 								_device.intvalue = vMode;
-								_device.commandClassID = COMMAND_CLASS_THERMOSTAT_FAN_MODE;
 								_device.devType = ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE;
 								InsertDevice(_device);
 								SendDevice2Domoticz(&_device);
@@ -2437,7 +2147,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 				{
 					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d (0x%02x), Thermostat Clock: %s %02d:%02d", NodeID, NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
 					_device.intvalue = (pNode->tClockDay * (24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
-					_device.commandClassID = COMMAND_CLASS_CLOCK;
 					_device.devType = ZDTYPE_SENSOR_THERMOSTAT_CLOCK;
 					InsertDevice(_device);
 					SendDevice2Domoticz(&_device);
@@ -2452,6 +2161,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
 	{
+		//Ignore this class, we can make our own schedule with timers
+		//_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 		if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
@@ -2466,8 +2177,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 			return;
 		}
-		//Ignore this class, we can make our own schedule with timers
-		//_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
 	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
 	{
@@ -2777,6 +2486,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		(commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
 		|| (commandclass == COMMAND_CLASS_CENTRAL_SCENE && vOrgIndex == ValueID_Index_CentralScene::SceneCount)
 		|| (commandclass == COMMAND_CLASS_SCENE_ACTIVATION && vOrgIndex == ValueID_Index_SceneActivation::Duration)
+		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Index)
+		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Channels_Capabilities)
+		|| (commandclass == COMMAND_CLASS_COLOR_CONTROL && vOrgIndex == ValueID_Index_Color::Duration)
 		)
 	{
 		return;
@@ -3090,35 +2802,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, typeIndex, intListValue, szTmp);
 				}
 
-				if (
-					(vLabel.find("Smoke") != std::string::npos) ||
-					(vLabel.find("Carbon Monoxide") != std::string::npos) ||
-					(vLabel.find("Carbon Dioxide") != std::string::npos) ||
-					(vLabel.find("Heat") != std::string::npos) ||
-					(vLabel.find("Flood") != std::string::npos) ||
-					(vLabel.find("Water") != std::string::npos) ||
-					(vLabel.find("Burglar") != std::string::npos) ||
-					(vLabel.find("Home Security") != std::string::npos) ||
-					(vLabel.find("Emergency") != std::string::npos) ||
-					(vLabel.find("Appliance") != std::string::npos) ||
-					(vLabel.find("HomeHealth") != std::string::npos) ||
-					(vLabel.find("Home Health") != std::string::npos) ||
-					(vLabel.find("Siren") != std::string::npos) ||
-					(vLabel.find("Weather") != std::string::npos) ||
-					(vLabel.find("Gas") != std::string::npos)
-					)
-				{
-					switch (intValue) {
-					case 0x00: 	// Previous Events cleared
-					case 0xfe:	// Unkown event; returned when retrieving the current state.
-						intValue = 0;
-						break;
-					default:	// all others, interpret as alarm
-						intValue = 255;
-						break;
-					}
-				}
-				else if (vLabel.find("Access Control") != std::string::npos)
+				if (vOrgIndex == ValueID_Index_Alarm::Type_Access_Control)
 				{
 					switch (intValue) {
 						//ignore
@@ -3166,7 +2850,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if (vLabel.find("Power Management") != std::string::npos)
+				else if (vOrgIndex == ValueID_Index_Alarm::Type_Power_Management)
 				{
 					switch (intValue) {
 					case 0x00: 	// Previous Events cleared
@@ -3187,7 +2871,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if (vLabel.find("System") != std::string::npos)
+				else if (vOrgIndex == ValueID_Index_Alarm::Type_System)
 				{
 					switch (intValue) {
 						//ignore
@@ -3203,7 +2887,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if (vLabel.find("Clock") != std::string::npos)
+				else if (vOrgIndex == ValueID_Index_Alarm::Type_Clock)
 				{
 					switch (intValue) {
 						//ignore
@@ -3219,18 +2903,17 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
-				else if (
-					(vLabel.find("Alarm Type") == std::string::npos) &&
-					(vLabel.find("Alarm Level") == std::string::npos)
-					)
+				else
 				{
-					if (intValue != 0)
+					switch (intValue)
 					{
-						//Until we figured out what types/levels we have, we create a switch for each of them
-						char szDeviceName[100];
-						sprintf(szDeviceName, "Alarm Type: 0x%02X (%s)", intValue, vLabel.c_str());
-						std::string tmpstr = szDeviceName;
-						SendSwitch(NodeID, intValue, pDevice->batValue, true, 0, tmpstr);
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
 					}
 				}
 			}
@@ -3266,6 +2949,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				if (commandclass == COMMAND_CLASS_COLOR_CONTROL)
 				{
 					//New color value received, not handled yet
+					return;
 				}
 
 			}
@@ -3274,6 +2958,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				if (commandclass == COMMAND_CLASS_COLOR_CONTROL)
 				{
 					//Color Index changed, not used
+					return;
 				}
 			}
 			else
@@ -3303,11 +2988,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		pDevice->intvalue = byteValue;
 		break;
 	case ZDTYPE_SENSOR_POWER:
-		if (
-			(vLabel.find("Energy") == std::string::npos) &&
-			(vLabel.find("Power") == std::string::npos)
-			)
-			return;
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		pDevice->floatValue = fValue * pDevice->scaleMultiply;
@@ -3315,17 +2995,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_POWERENERGYMETER:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (
-			(vLabel.find("Energy") == std::string::npos) &&
-			(vLabel.find("Power") == std::string::npos)
-			)
-			return;
 		pDevice->floatValue = fValue * pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_TEMPERATURE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
-			return;
-		if (vLabel.find("Temperature") == std::string::npos)
 			return;
 		if (vUnits == "F")
 		{
@@ -3340,48 +3013,30 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_HUMIDITY:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Relative Humidity") == std::string::npos)
-			return;
 		pDevice->intvalue = round(fValue);
 		break;
 	case ZDTYPE_SENSOR_UV:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
-			return;
-		if (vLabel.find("Ultraviolet") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_VELOCITY:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Velocity") == std::string::npos)
-			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_BAROMETER:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (
-			(vLabel.find("Barometric Pressure") != std::string::npos) ||
-			(vLabel.find("Atmospheric Pressure") != std::string::npos)
-			)
-		{
-			pDevice->floatValue = fValue * 10.0f;
-		}
-		else
-			return;
+		pDevice->floatValue = fValue * pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_DEWPOINT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
-			return;
-		if (vLabel.find("Dew Point") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_LIGHT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
-			return;
-		if (vLabel.find("Luminance") == std::string::npos)
 			return;
 		if (vUnits != "lux")
 		{
@@ -3393,14 +3048,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_VOLTAGE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Voltage") == std::string::npos)
-			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_AMPERE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
-			return;
-		if (vLabel.find("Current") == std::string::npos)
 			return;
 		pDevice->floatValue = fValue;
 		break;
@@ -3418,47 +3069,36 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_PERCENTAGE:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Power Factor") == std::string::npos)
-			return;
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_GAS:
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Gas") == std::string::npos)
-			return;
 		float oldvalue = pDevice->floatValue;
-		pDevice->floatValue = fValue; //always set the value
 		if ((fValue - oldvalue > 10.0f) || (fValue < oldvalue))
 			return;//sanity check, don't report it
+		pDevice->floatValue = fValue;
 	}
 	break;
 	case ZDTYPE_SENSOR_CO2:
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("CO2 Level") == std::string::npos)
-			return;
-		float oldvalue = pDevice->floatValue;
-		pDevice->floatValue = fValue; //always set the value
+		pDevice->floatValue = fValue;
 	}
 	break;
 	case ZDTYPE_SENSOR_WATER:
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Water") == std::string::npos)
-			return;
-		float oldvalue = pDevice->floatValue;
-		pDevice->floatValue = fValue; //always set the value
+		pDevice->floatValue = fValue;
 	}
 	break;
 	case ZDTYPE_SENSOR_CUSTOM:
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue;
 	}
 	break;
@@ -3466,20 +3106,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Moisture") == std::string::npos)
-			return;
-		float oldvalue = pDevice->floatValue;
-		pDevice->floatValue = fValue; //always set the value
+		pDevice->floatValue = fValue;
 	}
 	break;
 	case ZDTYPE_SENSOR_TANK_CAPACITY:
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel.find("Tank Capacity") == std::string::npos)
-			return;
-		float oldvalue = pDevice->floatValue;
-		pDevice->floatValue = fValue; //always set the value
+		pDevice->floatValue = fValue;
 	}
 	break;
 	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
