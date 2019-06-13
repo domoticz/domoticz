@@ -1932,10 +1932,16 @@ namespace http {
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
-
+			
+			std::istringstream stream(variabletype); // prevent entering a text as variabletype as it will be considered as 0
+			int icheck;                              // but will not trigger an event because not equal to result[0][1]
+			if (!(stream >> icheck ) )               // and bTypeNameChanged will therefore change to true 
+				icheck = -1;
+			
 			if (
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
+				(icheck < 0 || icheck > 4 ) || 
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
 				return;
