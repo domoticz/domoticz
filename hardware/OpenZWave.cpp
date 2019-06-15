@@ -2676,9 +2676,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 
 			if (vOrgIndex == ValueID_Index_Alarm::Type_v1)
 			{
-				if (intValue != 0)
+				if (intListValue != 0)
 				{
-					m_LastAlarmTypeReceived = intValue;
+					m_LastAlarmTypeReceived = intListValue;
 				}
 				else
 					m_LastAlarmTypeReceived = -1;
@@ -2706,7 +2706,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 
 				if (vOrgIndex == ValueID_Index_Alarm::Type_Access_Control)
 				{
-					switch (intValue) {
+					switch (intListValue) {
 						//ignore
 					case 12:	// All User Codes Deleted
 					case 13:	// Single User Code Deleted
@@ -2754,7 +2754,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 				else if (vOrgIndex == ValueID_Index_Alarm::Type_Power_Management)
 				{
-					switch (intValue) {
+					switch (intListValue) {
 					case 0x00: 	// Previous Events cleared
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
 						intValue = 0;
@@ -2775,7 +2775,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 				else if (vOrgIndex == ValueID_Index_Alarm::Type_System)
 				{
-					switch (intValue) {
+					switch (intListValue) {
 						//ignore
 					case 0x05:	// Heartbeat
 						pDevice->lastreceived = atime;
@@ -2791,7 +2791,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 				else if (vOrgIndex == ValueID_Index_Alarm::Type_Clock)
 				{
-					switch (intValue) {
+					switch (intListValue) {
 						//ignore
 					case 0x03:	// Time Remaining
 						pDevice->lastreceived = atime;
@@ -2807,7 +2807,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 				else
 				{
-					switch (intValue)
+					switch (intListValue)
 					{
 					case 0x00: 	// Previous Events cleared
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
