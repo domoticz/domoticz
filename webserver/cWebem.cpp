@@ -996,6 +996,11 @@ namespace http {
 			return m_settings.listening_port;
 		}
 
+		const std::string cWebem::GetWebRoot()
+		{
+			return m_webRoot;
+		}
+
 		WebEmSession * cWebem::GetSession(const std::string & ssid)
 		{
 			std::unique_lock<std::mutex> lock(m_sessionsMutex);
@@ -2024,11 +2029,12 @@ namespace http {
 				// do normal handling
 				try
 				{
-					if (requestCopy.uri.find("/images/") == 0)
+					std::string uri = myWebem->ExtractRequestPath(requestCopy.uri);
+					if (uri.find("/images/") == 0)
 					{
-						std::string theme_images_path = myWebem->m_actTheme + requestCopy.uri;
+						std::string theme_images_path = myWebem->m_actTheme + uri;
 						if (file_exist((doc_root_ + theme_images_path).c_str()))
-							requestCopy.uri = theme_images_path;
+							requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
 					}
 
 					request_handler::handle_request(requestCopy, rep, mInfo);

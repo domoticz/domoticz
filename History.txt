@@ -12,6 +12,7 @@ Version 4.xxxxx (xxx 2019)
 - Fixed: GUI, OpenZWave Abort Include/Exclude button
 - Fixed: YouLess, possible buffer overflow (#3261)
 - Fixed: notification, Telegram error when odd number of underscores in text
+- Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
 - Updated: OpenZWave version 1.6
 - Updated: dzVents (version 2.4.23, See dzVents/documentation/history.md)
 

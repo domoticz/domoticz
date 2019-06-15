@@ -1879,27 +1879,54 @@ namespace http {
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
+				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
 				return; //Only admin user allowed
 			}
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
+			
+			root["title"] = "AddUserVariable";
+			root["status"] = "ERR";
+			
+			if (!std::isdigit(variabletype[0])) 
+			{
+				stdlower(variabletype);
+				if (variabletype == "integer")
+					variabletype = "0";
+				else if (variabletype == "float")
+					variabletype = "1";
+				else if (variabletype == "string")
+					variabletype = "2";
+				else if (variabletype == "date")
+					variabletype = "3";
+				else if (variabletype == "time")
+					variabletype = "4";
+				else
+				{
+					root["message"] = "Invalid variabletype " + variabletype;
+					return;
+				}
+			}
+			
 			if (
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
+				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) || 
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
+			{
+				root["message"] = "Invalid variabletype " + variabletype;
 				return;
-
-			root["title"] = "AddUserVariable";
+			}
 
 			std::string errorMessage;
 			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
 			{
-				root["status"] = "ERR";
 				root["message"] = errorMessage;
 			}
-			else {
+			else 
+			{
 				root["status"] = "OK";
 			}
 		}
@@ -1908,6 +1935,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
+				_log.Log(LOG_ERROR, "User: %s tried to delete a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
@@ -1924,34 +1952,68 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
+				_log.Log(LOG_ERROR, "User: %s tried to update a uservariable!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
-
+			
 			std::string idx = request::findValue(&req, "idx");
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
-
+			
+			root["title"] = "UpdateUserVariable";
+			root["status"] = "ERR";
+			
+			if (!std::isdigit(variabletype[0])) 
+			{
+				stdlower(variabletype);
+				if (variabletype == "integer")
+					variabletype = "0";
+				else if (variabletype == "float")
+					variabletype = "1";
+				else if (variabletype == "string")
+					variabletype = "2";
+				else if (variabletype == "date")
+					variabletype = "3";
+				else if (variabletype == "time")
+					variabletype = "4";
+				else
+				{
+					root["message"] = "Invalid variabletype " + variabletype;
+					return;
+				}
+			}
+			
 			if (
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
+				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) || 
 				((variablevalue.empty()) && (variabletype != "2"))
 				)
+			{
+				root["message"] = "Invalid variabletype " + variabletype;
 				return;
+			}
 
 			std::vector<std::vector<std::string> > result;
 			if (idx.empty())
 			{
 				result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", variablename.c_str());
 				if (result.empty())
+				{
+					root["message"] = "Uservariable " + variablename + " does not exist";
 					return;
+				}
 				idx = result[0][0];
 			}
 
 			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE ID='%q'", idx.c_str());
 			if (result.empty())
+			{
+				root["message"] = "Uservariable " + variablename + " does not exist";
 				return;
+			}
 
 			bool bTypeNameChanged = false;
 			if (variablename != result[0][0])
@@ -1959,12 +2021,9 @@ namespace http {
 			else if (variabletype != result[0][1])
 				bTypeNameChanged = true; //new type
 
-			root["title"] = "UpdateUserVariable";
-
 			std::string errorMessage;
 			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
-				root["status"] = "ERR";
 				root["message"] = errorMessage;
 			}
 			else {
