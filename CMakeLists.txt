@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14.0)
 project(domoticz)
 
 ## required min. libBoost version
-SET(DOMO_MIN_LIBBOOST_VERSION 1.60.0)
+SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 ##
 
 MACRO(History_GET_REVISION variable)
