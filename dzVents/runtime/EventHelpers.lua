@@ -770,13 +770,12 @@ local function EventHelpers(domoticz, mainMethod)
 		-- id is done later
 
 		for scriptTrigger, scripts in pairs(allEventScripts) do
-			if (string.find(scriptTrigger, '*')) then -- a wild-card was use
-				-- turn it into a valid regexp
-				scriptTrigger = '^' .. string.gsub(scriptTrigger, "*", ".*") .. '$'
+
+			if (string.find(scriptTrigger, '*')) then -- a wild-card was used
+				-- substitute 'magical chars' with a dot (a dot matches every char) and then turn it into a valid regexp and 
+				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$'):gsub('[^%w%s~{\\}:&(/)<>,?@#|_^*$]','.')
 
 				if (string.match(target, scriptTrigger)) then
-					-- there is trigger for this target
-
 					if modules == nil then modules = {} end
 
 					for i, mod in pairs(scripts) do

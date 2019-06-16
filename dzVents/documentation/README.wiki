@@ -2120,6 +2120,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Add method setMode for evohome device
 * Add method incrementCounter for incremental counter
 * Prepared for Firebase notifications. Firebase (fcm) is the replacement for Google Cloud Messaging gcm)
+* fix wildcard device
 
 == [2.4.22] ==
 
