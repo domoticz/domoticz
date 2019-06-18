@@ -612,11 +612,9 @@ js/highcharts/modules/sankey.js
 js/highcharts/modules/xrange.js
 js/highcharts/themes/dark-unica.js
 
-js/noty/jquery.noty.js
-js/noty/layouts/top.js
-js/noty/layouts/topLeft.js
-js/noty/layouts/topRight.js
-js/noty/themes/default.js
+js/noty/noty.min.js
+js/noty/noty.css
+js/noty/relax.css
 
 js/angular-animate.min.js
 js/angular-md5-min.js
