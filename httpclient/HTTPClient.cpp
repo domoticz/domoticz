@@ -19,6 +19,7 @@ bool		HTTPClient::m_bVerifyPeer = false;
 long		HTTPClient::m_iConnectionTimeout = 10;
 long		HTTPClient::m_iTimeout = 90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
+std::string	HTTPClient::m_sProxy = "";
 
 
 /************************************************************************
@@ -111,6 +112,10 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	std::string domocookie = szUserDataFolder + "domocookie.txt";
 	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, domocookie.c_str());
 	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, domocookie.c_str());
+
+	if (m_sProxy.length() > 0 ) {
+		curl_easy_setopt(curl, CURLOPT_PROXY, m_sProxy.c_str());
+	}
 }
 
 void HTTPClient::LogError(const long response_code)
@@ -169,6 +174,9 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
 	m_sUserAgent = useragent;
 }
 
+void HTTPClient::SetProxy(const std::string &proxy) {
+    m_sProxy = proxy;
+}
 
 /************************************************************************
  *									*

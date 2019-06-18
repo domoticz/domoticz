@@ -35,6 +35,7 @@ public:
 	static void SetTimeout(const long timeout);
 	static void SetUserAgent(const std::string &useragent);
 	static void SetSecurityOptions(const bool verifypeer, const bool verifyhost);
+    static void SetProxy(const std::string &proxy);
 
 
 	/************************************************************************
@@ -119,5 +120,6 @@ private:
 	static long m_iConnectionTimeout;
 	static long m_iTimeout;
 	static std::string m_sUserAgent;
+	static std::string m_sProxy;
 };
 
