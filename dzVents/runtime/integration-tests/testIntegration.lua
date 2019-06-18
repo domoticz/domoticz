@@ -29,7 +29,7 @@ local SWITCH_TYPES = {
 	SMOKE_DETECTOR= 5,
 	VENETIAN_BLINDS_EU= 15,
 	VENETIAN_BLINDS_US= 14,
-	X10_SIREN= 4
+	X10_SIREN= 4,
 }
 
 local VIRTUAL_DEVICES = {
@@ -75,18 +75,19 @@ local VIRTUAL_DEVICES = {
 	TEMPERATURE = {80, 'vdTemperature'},
 	TEXT = {5, 'vdText'},
 	THERMOSTAT_SETPOINT = {8, 'vdThermostatSetpoint'},
-    UPDATEDOCUMENT_SWITCH = { 6, 'vdDocumentationSwitch' },
+	UPDATEDOCUMENT_SWITCH = { 6, 'vdDocumentationSwitch' },
 	USAGE_ELECTRIC = {248, 'vdUsageElectric'},
 	UV = {87, 'vdUV'},
 	VISIBILITY = {12, 'vdVisibility'},
 	VOLTAGE = {4, 'vdVoltage'},
 	WATERFLOW = {1000, 'vdWaterflow'},
-	WIND = {86, 'vdWind'},
+	WILDCARD = {6, 'vdWildcardsSwitch'},
+	WIND = {86, 'vdWind'}, 
 	WIND_TEMP_CHILL = {1001, 'vdWindTempChill'},
 	-- increment SECPANEL_INDEX_CHECK when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX_CHECK = 60
+local SECPANEL_INDEX_CHECK = 61
 local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 10 -- 10 is number of groups / scenes + managed counter + dimmer switch + ?
 
 local VAR_TYPES = {
@@ -137,6 +138,7 @@ describe('Integration test',
 		TestTools.removeFSScript('vdCancelledRepeatSwitch.lua')
 		TestTools.removeFSScript('vdRepeatSwitch.lua')
 		TestTools.removeFSScript('vdSwitchDimmer.lua')
+		TestTools.removeFSScript('scriptTestWildcards.lua')
 		TestTools.removeFSScript('scriptTestUpdatedDocumentation.lua')
 		TestTools.removeGUIScript('stage1.lua')
 	end)
@@ -155,6 +157,7 @@ describe('Integration test',
 	local scSceneResultsIdx
 	local switchSilentResultsIdx
 	local switchQuietResultsIdx
+	local switchWildCardsResultsIdx
 
 	-- it('a', function() end)
 	describe('Settings', function()
@@ -164,7 +167,7 @@ describe('Integration test',
 			assert.is_true(ok)
 		end)
 	end)
-	
+
 	describe('Hardware', function()
 		it('should create dummy hardware', function()
 			local ok
@@ -375,6 +378,15 @@ describe('Integration test',
 			assert.is_true(ok)
 		end)
 
+		it('should create a WILDCARD device', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.WILDCARD[2], VIRTUAL_DEVICES.WILDCARD[1])
+			assert.is_true(ok)
+			ok = TestTools.updateSwitch(idx, 'vdWildcardsSwitch', 'desc%20vdWildcardsSwitch', SWITCH_TYPES.DIMMER)
+			assert.is_true(ok)
+			ok = TestTools.dimTo(idx, 'Set%20Level', 34) -- will end up like 33% for some weird reason
+			assert.is_true(ok)
+		end)
+
 		it('should create a WIND device', function()
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.WIND[2], VIRTUAL_DEVICES.WIND[1])
 			assert.is_true(ok)
@@ -423,8 +435,8 @@ describe('Integration test',
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.HTTP_SWITCH[2], VIRTUAL_DEVICES.HTTP_SWITCH[1])
 			assert.is_true(ok)
 		end)
-        
-        it('should create an Update Documentationswitch to trigger test UpdatedDocumentation script', function()
+
+		it('should create an Update Documentationswitch to trigger test UpdatedDocumentation script', function()
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.UPDATEDOCUMENT_SWITCH[2], VIRTUAL_DEVICES.UPDATEDOCUMENT_SWITCH[1])
 			assert.is_true(ok)
 		end)
@@ -608,8 +620,8 @@ describe('Integration test',
 			local ok, idx = TestTools.createVariable(VAR_TYPES.CANCELLED[2], VAR_TYPES.CANCELLED[1], VAR_TYPES.CANCELLED[3])
 			assert.is_true(ok)
 		end)
-        
-        it('should create an integer variable to hold status of updateDocumentation check', function()
+
+		it('should create an integer variable to hold status of updateDocumentation check', function()
 			local ok, idx = TestTools.createVariable(VAR_TYPES.UPDATEDOCUMENT[2], VAR_TYPES.UPDATEDOCUMENT[1], VAR_TYPES.UPDATEDOCUMENT[3])
 			assert.is_true(ok)
 		end)
@@ -680,7 +692,7 @@ describe('Integration test',
 		it('Should move quiet script in place', function()
 			TestTools.createFSScript('quiet.lua')
 		end)
-		  
+
 		it('Should move description script in place', function()
 			TestTools.createFSScript('descriptionScript.lua')
 		end)
@@ -696,9 +708,13 @@ describe('Integration test',
 		it('Should move a httpResponse event script in place', function()
 			TestTools.createFSScript('httpResponseScript.lua')
 		end)
-        
-        it('Should move a updateDocumentation event script in place', function()
+
+		it('Should move a updateDocumentation event script in place', function()
 			TestTools.createFSScript('scriptTestUpdatedDocumentation.lua')
+		end)
+
+		it('Should move a Wildcard event script in place', function()
+			TestTools.createFSScript('scriptTestWildcards.lua')
 		end)
 
 		it('Should create the stage1 trigger switch', function()
@@ -736,11 +752,17 @@ describe('Integration test',
 			ok, switchSilentResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchSilentResults', VIRTUAL_DEVICES.SWITCH[1])
 			assert.is_true(ok)
 		end)
-		  
-		  it('Should create results for quiet script', function()
+
+		it('Should create results for quiet script', function()
 			ok, switchQuietResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchQuietResults', VIRTUAL_DEVICES.SWITCH[1])
 			assert.is_true(ok)
 		end)
+
+		it('Should create results for wildcard script', function()
+			ok, switchWildCardsResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchWildCardsResults', VIRTUAL_DEVICES.TEXT[1])
+			assert.is_true(ok)
+		end)
+
 
 		it('Should create the final results text device', function()
 			local ok
@@ -792,8 +814,10 @@ describe('Integration test',
 			local scSceneResultsDevice
 			local switchSilentResultsDevice
 			local switchQuietResultsDevice
-			local ok = false
+			local switchWildCardsResultsDevice
 			local endResultsDevice
+
+			local ok = false
 
 			ok, endResultsDevice = TestTools.getDevice(endResultsIdx)
 			assert.is_true(ok)
@@ -812,17 +836,23 @@ describe('Integration test',
 			ok = false
 			ok, switchSilentResultsDevice = TestTools.getDevice(switchSilentResultsIdx)
 			assert.is_true(ok)
-				ok = false
+			ok = false
 			ok, switchQuietResultsDevice = TestTools.getDevice(switchQuietResultsIdx)
 			assert.is_true(ok)
+			ok = false
+			ok, switchWildCardsResultsDevice = TestTools.getDevice(switchWildCardsResultsIdx)
+			assert.is_true(ok)
 
-			assert.is_same('ENDRESULT SUCCEEDED', endResultsDevice['Data'])
+			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
+			assert.is_same('WILDCARD SUCCEEDED', switchWildCardsResultsDevice['Data'])
 			assert.is_same('DIMMER SUCCEEDED', switchDimmerResultsDevice['Data'])
 			assert.is_same('STRING VARIABLE SUCCEEDED', varStringResultsDevice['Data'])
 			assert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])
-			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
+
 			assert.is_same('Off', switchSilentResultsDevice['Status'])
 			assert.is_same('On', switchQuietResultsDevice['Status'])
+
+			assert.is_same('ENDRESULT SUCCEEDED', endResultsDevice['Data'])
 
 		end)
 

@@ -1590,9 +1590,9 @@ describe('Time', function()
 						local t = Time()
 						if t.dDate > Time(t.year .. '-' .. fromMonth ..'-01 00:00:01').dDate and
 						   t.dDate < Time(t.year .. '-' .. toMonth ..'-30 23:59:59').dDate then
-							assert.is_true(t.matchesRule('at 00:30-23:30 on 01/' .. fromMonth .. '-30/' .. toMonth)) 
+							assert.is_true(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-30/' .. toMonth)) 
 						else
-							assert.is_false(t.matchesRule('at 00:30-23:30 on 01/' .. fromMonth .. '-30/' .. toMonth)) 
+							assert.is_false(t.matchesRule('at 00:30-23:55 on 01/' .. fromMonth .. '-30/' .. toMonth)) 
 						end						
 					end)
 				end
@@ -1604,9 +1604,9 @@ describe('Time', function()
 						local t = Time()
 						if  t.dDate > Time(t.year .. '-' .. fromMonth ..'-01 00:00:01').dDate and
 							t.dDate < Time(t.year .. '-' .. toMonth ..'-30 23:59:59').dDate then
-							assert.is_true(t.matchesRule('at 00:30-23:30 on */' .. fromMonth .. '-*/' .. toMonth)) 
+							assert.is_true(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth)) 
 						else
-							assert.is_false(t.matchesRule('at 00:30-23:30 on */' .. fromMonth .. '-*/' .. toMonth)) 
+							assert.is_false(t.matchesRule('at 00:30-23:55 on */' .. fromMonth .. '-*/' .. toMonth)) 
 						end						
 					end)
 				end

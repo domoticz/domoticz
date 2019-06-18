@@ -68,7 +68,7 @@ local testDimmer = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 40,
+		["id"] = 41,
 		["state"] = "On",
 		["lastLevel"] = 75, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["level"] = 75;
@@ -675,12 +675,13 @@ local testLastUpdates = function(stage2Trigger)
 			if (device.name ~= 'endResult' and
 				device.name ~= 'stage1Trigger' and
 				device.name ~= 'vdRepeatSwitch' and
-				device.anme ~= 'vdText' and
+				device.name ~= 'vdText' and
+				device.name ~= 'vdWildcardsSwitch' and
 				device.name ~= 'stage2Trigger') then
 				local delta = stage1SecsAgo - device.lastUpdate.secondsAgo
 
 				-- test if lastUpdate for the device is close to stage1Time
-				local ok = (delta <= 10)
+				local ok = (delta <= 20)
 				acc = acc and ok -- should be significantly less that the time between stage1 and stage2
 				if (not expectEql(true, ok, device.name .. ' lastUpdate is not in the past')) then
 					print('stage1Time:' .. stage1Time.secondsSinceMidnight .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)

@@ -416,7 +416,7 @@ local function DomoticzTestTools(port, debug, webroot)
 		return ok, result, respcode, respheaders, respstatus
 
 	end
-	
+
 	function self.reset()
 		local ok = true
 		ok = ok and self.deleteAllDevices()

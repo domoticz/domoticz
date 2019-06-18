@@ -102,6 +102,30 @@ local testQuietOnSwitch = function(name)
 	return res
 end
 
+local testWildcardsSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+	res = res and checkAttributes(dev, {
+		["name"] = name,
+		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
+		["state"] = "On",
+		["deviceSubType"] = "Switch";
+		["switchType"] = "Dimmer",
+		["switchTypeValue"] = 7,
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareName"] = "dummy";
+		["hardwareTypeValue"] = 15;
+		["hardwareId"] = 2;
+		["batteryLevel"] = nil; -- 255 == nil
+		["changed"] = false;
+		["timedOut"] = false;
+		["deviceType"] = "Light/Switch";
+	})
+	dev. dimTo(1).afterSec(4)
+	tstMsg('Test Wildcard switch device', res)
+	return res
+end
 local testQuietOffSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -132,7 +156,7 @@ local testDimmer = function(name)
 
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 40,
+		["id"] = 41,
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -853,7 +877,7 @@ local testTempBaro = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 41,
+		["id"] = 42,
 		["name"] = name,
 		["temperature"] = 0,
 		["baseType"] = dz.BASETYPE_DEVICE,
@@ -1449,7 +1473,7 @@ return {
 		res = res and testPercentage('vdPercentage')
 		res = res and testPressureBar('vdPressureBar')
 		res = res and testQuietOnSwitch('vdQuietOnSwitch')
-		res = res and testQuietOffSwitch('vdQuietOffSwitch')
+		res = res and testWildcardsSwitch('vdWildcardsSwitch')
 		res = res and testRain('vdRain')
 		res = res and testRGB('vdRGBSwitch')
 		res = res and testRGBW('vdRGBWSwitch')
@@ -1471,8 +1495,8 @@ return {
 		res = res and testVisibility("vdVisibility")
 		res = res and testVoltage("vdVoltage")
 		res = res and testWaterflow("vdWaterflow")
-		res = res and testWind('vdWind', 38, "WTGR800")
-		res = res and testWind('vdWindTempChill', 39, "TFA")
+		res = res and testWind('vdWind', 39, "WTGR800")
+		res = res and testWind('vdWindTempChill', 40, "TFA")
 		res = res and testScene('scScene')
 		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
@@ -1500,7 +1524,7 @@ return {
 		res = res and testDescriptionSwitchGroup('gpDescriptionGroup');
 		res = res and testSnapshot();
 		res = res and testManagedCounter('vdManagedCounter');
-		
+
 		storeLastUpdates()
 
 		log('Finishing stage 1')
