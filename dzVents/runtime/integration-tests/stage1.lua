@@ -1473,6 +1473,7 @@ return {
 		res = res and testPercentage('vdPercentage')
 		res = res and testPressureBar('vdPressureBar')
 		res = res and testQuietOnSwitch('vdQuietOnSwitch')
+		res = res and testQuietOffSwitch('vdQuietOffSwitch')
 		res = res and testWildcardsSwitch('vdWildcardsSwitch')
 		res = res and testRain('vdRain')
 		res = res and testRGB('vdRGBSwitch')
