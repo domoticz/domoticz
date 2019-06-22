@@ -88,6 +88,7 @@ namespace Plugins {
 		CPluginTransportTCPSecure(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportTCP(HwdID, pConnection, Address, Port), m_Context(NULL), m_TLSSock(NULL) { };
 		virtual	void		handleAsyncConnect(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
+		void handleWrite(const std::vector<byte>& pMessage);
 		~CPluginTransportTCPSecure();
 
 	protected:

@@ -338,6 +338,31 @@ namespace Plugins {
 		return true;
 	}
 
+	void CPluginTransportTCPSecure::handleWrite(const std::vector<byte>& pMessage)
+	{
+		if (m_TLSSock && m_Socket)
+		{
+			try
+			{
+				int		iSentBytes = boost::asio::write(*m_TLSSock, boost::asio::buffer(pMessage, pMessage.size()));
+				m_iTotalBytes += iSentBytes;
+				if (iSentBytes != pMessage.size())
+				{
+					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+					_log.Log(LOG_ERROR, "(%s) Not all data written to secure socket (%s:%s). %d expected,  %d written", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), pMessage.size(), iSentBytes);
+				}
+			}
+			catch (std::exception & e)
+			{
+				_log.Log(LOG_ERROR, "%s: Exception thrown: '%s'", __func__, std::string(e.what()).c_str());
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
+		}
+	}
+
 	CPluginTransportTCP::~CPluginTransportTCP()
 	{
 		if (m_Acceptor)
