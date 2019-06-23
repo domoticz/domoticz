@@ -17,10 +17,9 @@ return {
 		device.counterDeliveredTotal = tonumber(device.rawData[1])
 		device.powerYield = tonumber(device.rawData[2])
 		device.counterDeliveredToday = (string.match(device.counterToday, "%d+.%d*") or 0) * 1000
-        	
+
 		function device.updateYouless(total, actual)
-			local value = tostring(total) .. ';' ..
-					tostring(actual)
+			local value = tostring(total) .. ';' .. tostring(actual)
 			return device.update(0, value)
 		end
 	end

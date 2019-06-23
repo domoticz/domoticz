@@ -119,7 +119,7 @@ function fillTimes
 		ContactDoorLockInvertedSwitch_ExpectedSeconds=30
 		DelayedVariableScene_ExpectedSeconds=80
 		EventState_ExpectedSeconds=180
-		Integration_ExpectedSeconds=300
+		Integration_ExpectedSeconds=320
 		SelectorSwitch_ExpectedSeconds=100
 	}
 
@@ -202,12 +202,12 @@ if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
-		errorCount=$(grep "Error" domoticz.log$$ | wc -l)
+		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | wc -l)
 		if [[ $errorCount -eq $expectedErrorCount ]];then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error domoticz.log$$
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken
 			stopBackgroundProcesses 1
 		fi		
 	else
