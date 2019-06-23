@@ -69,6 +69,7 @@ local VIRTUAL_DEVICES = {
 	SWITCH = {6, 'vdSwitch'},
 	QUIET_ON_SWITCH = {6, 'vdQuietOnSwitch'},
 	QUIET_OFF_SWITCH = {6, 'vdQuietOffSwitch'},
+	RENAME = {6, 'vdRenameSwitch'},
 	TEMP_BARO = { 247, 'vdTempBaro' },
 	TEMP_HUM = {82, 'vdTempHum'},
 	TEMP_HUM_BARO = {84, 'vdTempHumBaro'},
@@ -87,8 +88,8 @@ local VIRTUAL_DEVICES = {
 	-- increment SECPANEL_INDEX_CHECK when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX_CHECK = 61
-local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 10 -- 10 is number of groups / scenes + managed counter + dimmer switch + ?
+local SECPANEL_INDEX_CHECK = 64
+local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 12 -- 10 is number of groups / scenes + managed counter + dimmer switch + ?
 
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
@@ -99,6 +100,7 @@ local VAR_TYPES = {
 	SILENT = { 0, 'varSilent', 1 },
 	CANCELLED = { 0, 'varCancelled', 0},
 	UPDATEDOCUMENT = { 0, 'varUpdateDocument', 88},
+	RENAME = { 0, 'varRename', 0},
 }
 
 local getResultsFromfile = function(file)
@@ -139,6 +141,7 @@ describe('Integration test',
 		TestTools.removeFSScript('vdRepeatSwitch.lua')
 		TestTools.removeFSScript('vdSwitchDimmer.lua')
 		TestTools.removeFSScript('scriptTestWildcards.lua')
+		TestTools.removeFSScript('scriptTestRename.lua')
 		TestTools.removeFSScript('scriptTestUpdatedDocumentation.lua')
 		TestTools.removeGUIScript('stage1.lua')
 	end)
@@ -158,6 +161,7 @@ describe('Integration test',
 	local switchSilentResultsIdx
 	local switchQuietResultsIdx
 	local switchWildCardsResultsIdx
+	local switchRenameResultsIdx
 
 	-- it('a', function() end)
 	describe('Settings', function()
@@ -285,6 +289,11 @@ describe('Integration test',
 
 		it('should create a RAIN device', function()
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.RAIN[2], VIRTUAL_DEVICES.RAIN[1])
+			assert.is_true(ok)
+		end)
+
+		it('should create a RENAME device', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.RENAME[2], VIRTUAL_DEVICES.RENAME[1])
 			assert.is_true(ok)
 		end)
 
@@ -579,6 +588,36 @@ describe('Integration test',
 			ok = TestTools.addSceneDevice(groupIdx, switchIdx)
 			assert.is_true(ok)
 		end)
+
+		it('should create a scene which will be renamed', function()
+			local ok
+			local switchIdx
+			local sceneIdx = 8
+			ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneRenameSwitch1', 6)
+			assert.is_true(ok)
+
+			ok = TestTools.createScene('scRenameScene')
+			assert.is_true(ok)
+
+			ok = TestTools.addSceneDevice(sceneIdx, switchIdx)
+			assert.is_true(ok)
+		end)
+
+		it('should create a group which will be renamed', function()
+			local ok
+			local switchIdx
+			local groupIdx = 9
+
+			ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'groupRenameSwitch1', 6)
+			assert.is_true(ok)
+
+			ok = TestTools.createGroup('gpRenameGroup')
+			assert.is_true(ok)
+
+			ok = TestTools.addSceneDevice(groupIdx, switchIdx)
+			assert.is_true(ok)
+		end)
+
 		-- increment SECPANEL_INDEX when adding a new group or scene !!!!!!!!!!
 	end)
 
@@ -623,6 +662,11 @@ describe('Integration test',
 
 		it('should create an integer variable to hold status of updateDocumentation check', function()
 			local ok, idx = TestTools.createVariable(VAR_TYPES.UPDATEDOCUMENT[2], VAR_TYPES.UPDATEDOCUMENT[1], VAR_TYPES.UPDATEDOCUMENT[3])
+			assert.is_true(ok)
+		end)
+
+		it('should create a variable that will be renamed', function()
+			local ok, idx = TestTools.createVariable(VAR_TYPES.RENAME[2], VAR_TYPES.RENAME[1], VAR_TYPES.RENAME[3])
 			assert.is_true(ok)
 		end)
 	end)
@@ -717,6 +761,10 @@ describe('Integration test',
 			TestTools.createFSScript('scriptTestWildcards.lua')
 		end)
 
+ 		it('Should move a Renema event script in place', function()
+			TestTools.createFSScript('scriptTestRename.lua')
+		end)
+
 		it('Should create the stage1 trigger switch', function()
 			local ok
 			ok, stage1TriggerIdx = TestTools.createVirtualDevice(dummyIdx, 'stage1Trigger', VIRTUAL_DEVICES.SWITCH[1])
@@ -748,6 +796,11 @@ describe('Integration test',
 			assert.is_true(ok)
 		end)
 
+		it('Should create results for Rename script', function()
+			ok, switchRenameResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchRenameResults', VIRTUAL_DEVICES.TEXT[1])
+			assert.is_true(ok)
+		end)
+
 		it('Should create results for silent script', function()
 			ok, switchSilentResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchSilentResults', VIRTUAL_DEVICES.SWITCH[1])
 			assert.is_true(ok)
@@ -774,7 +827,7 @@ describe('Integration test',
 
 	describe('Start the tests', function()
 		it('Should all just work fine', function()
-			socket.sleep(1)
+			socket.sleep(2)
 			local ok = TestTools.switch(stage1TriggerIdx, 'On')
 			assert.is_true(ok)
 		end)
@@ -814,6 +867,7 @@ describe('Integration test',
 			local scSceneResultsDevice
 			local switchSilentResultsDevice
 			local switchQuietResultsDevice
+			local switchRenameResultsDevice
 			local switchWildCardsResultsDevice
 			local endResultsDevice
 
@@ -842,9 +896,13 @@ describe('Integration test',
 			ok = false
 			ok, switchWildCardsResultsDevice = TestTools.getDevice(switchWildCardsResultsIdx)
 			assert.is_true(ok)
+			ok = false
+			ok, switchRenameResultsDevice = TestTools.getDevice(switchRenameResultsIdx)
+			assert.is_true(ok)
 
 			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
 			assert.is_same('WILDCARD SUCCEEDED', switchWildCardsResultsDevice['Data'])
+			assert.is_same('RENAME SUCCEEDED', switchRenameResultsDevice['Data'])
 			assert.is_same('DIMMER SUCCEEDED', switchDimmerResultsDevice['Data'])
 			assert.is_same('STRING VARIABLE SUCCEEDED', varStringResultsDevice['Data'])
 			assert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])
