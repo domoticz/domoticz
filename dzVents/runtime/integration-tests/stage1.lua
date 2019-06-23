@@ -1340,7 +1340,7 @@ local testLastUpdates = function()
 			local devTime = device.lastUpdate.secondsSinceMidnight
 
 			local delta = now - device.lastUpdate.secondsSinceMidnight
-			print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
+			-- print('now:' .. now .. ' device: ' .. device.lastUpdate.secondsSinceMidnight .. ' delta: ' .. delta)
 			-- test if lastUpdate for the device is close to domoticz time
 			local ok = (devTime <= now and delta < 15)
 			acc = acc and ok
