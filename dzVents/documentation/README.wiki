@@ -66,14 +66,16 @@ Just to give you an idea! Everything in your Domoticz system is now logically av
 
 = Using dzVents with Domoticz =
 
-In Domoticz go to '''Setup &gt; Settings &gt; Other''' and in the section EventSystem make sure the checkbox 'dzVents disabled' is not checked. Also make sure that in the Security section in the settings '''(Setup &gt; Settings &gt; System &gt; Local Networks (no username/password)''' you allow 127.0.0.1 to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in '''Setup &gt; Settings &gt; System &gt; Location''', otherwise there is no way to determine nighttime/daytime state.
+In Domoticz go to '''Setup &gt; Settings &gt; Other''' and in the section EventSystem make sure the check-box 'dzVents disabled' is not checked. Also make sure that in the Security section in the settings '''(Setup &gt; Settings &gt; System &gt; Local Networks (no username/password)''' you allow 127.0.0.1 to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in '''Setup &gt; Settings &gt; System &gt; Location''', otherwise there is no way to determine nighttime/daytime state.
 
 There are two ways of creating dzVents event scripts in Domoticz:
 
-# By creating lua scripts in your domoticz instance on your domoticz server: <code>/path/to/domoticz/scripts/dzVents/scripts</code>. Make sure that each script has the extension <code>.lua</code> and follows the guidelines as described below.
-# By creating lua scripts inside Domoticz using the internal Domoticz event editor: Go to '''Setup &gt; More Options &gt; Events''' and set the event type to Lua (dzVents).
+# By creating scripts in your domoticz instance on your domoticz server: <code>/path/to/domoticz/scripts/dzVents/scripts</code>. Make sure that each script has the extension <code>.lua</code> and follows the guidelines as described below.
+# By creating scripts inside Domoticz using the internal Domoticz event editor: Go to '''Setup &gt; More Options &gt; Events'''. Press the + button and choose dzVents. You must then choose a template. They are there just for convenience during writing the script; the actual trigger for the script is determined by what you entered in the on = section. The internal event editor have a help button <sup>2.4.23</sup> when writing dzVents scripts, next to Save and Delete. This button opens this wiki in a separate browser tab when clicked. Name your script to your liking but leave out the extension .lua
 
-'''Note: scripts that you write on the filesystem and inside Domoticz using the internal web-editor all share the same namespace. That means that if you have two scripts with the same name, only the one of the filesystem will be used. The log will tell you when this happens.'''
+'''Note: scripts that you write on the file-system and inside Domoticz using the internal web-editor all share the same name-space. That means that if you have two scripts with the same name, only the one of the file-system will be used. The log will tell you when this happens.'''
+
+'''Note: Scripts created in the internal editor are stored in the domoticz database and are all written to <code>/path/to/domoticz/scripts/dzVents/generated_scripts</code> on every domoticz restart and every &quot;EventSystem: reset all events...&quot;. Scripts in <code>/path/to/domoticz/scripts/dzVents/scripts</code> are not stored in the database and should be backed-up separately.'''
 
 == Quickstart ==
 
@@ -81,7 +83,7 @@ If you made sure that dzVents system is active, we can do a quick test if everyt
 
 <ul>
 <li>Pick a switch in your Domoticz system. Write down the exact name of the switch. If you don't have a switch then you can create a Dummy switch and use that one.</li>
-<li>Create a new file in the <code>/path/to/domoticz/scripts/dzVents/scripts/</code> folder (or using the web-editor in Domoticz, swtich to dzVents mode first.). Call the file <code>test.lua</code>. ''Note: when you create a script in the web-editor you do '''not''' add the .lua extension!'' Also, valid script names follow the same rules as [https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words filesystem names].</li>
+<li>Create a new file in the <code>/path/to/domoticz/scripts/dzVents/scripts/</code> folder (or using the web-editor in Domoticz, switch to dzVents mode first.). Call the file <code>test.lua</code>. ''Note: when you create a script in the web-editor you do '''not''' add the .lua extension!'' Also, valid script names follow the same rules as [https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words filesystem names].</li>
 <li><p>Open <code>test.lua</code> in an editor and fill it with this code and change <code>&lt;exact name of the switch&gt;</code> with the .. you guessed it... exact name of the switch device:</p>
 <pre> return {
    on = {
@@ -162,7 +164,7 @@ The <code>on</code> section tells dzVents ''when'' the execute function has to b
 A list of device-names or indexes. If a device in your system was changed (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. Each device can be:
 
 * The name of your device between string quotes. '''You can use the asterisk (*) wild-card here e.g. <code>PIR_*</code> or <code>*_PIR</code>'''. E.g.: <code>devices = { 'myDevice', 'anotherDevice', 123, 'pir*' }</code>
-* The index (idx) of your device (as the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz). Note that idx is a number;
+* The index (idx) of your device (as the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz). '''Note that idx is a number;'''
 * The name or idx of your device followed by a time constraint, such as: <code>['myDevice']  = { 'at 15:*', 'at 22:* on sat, sun' }</code> The script will be executed if <code>myDevice</code> was changed, '''and''' it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [[#timer_trigger_rules|time trigger rules]].
 
 ==== scenes = { ... } ====
