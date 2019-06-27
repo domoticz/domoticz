@@ -1819,7 +1819,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Luminance)
 		{
 			// TODO decide what to do with sensors that report %.
-			// - Do we now what 100% means? Is it always 1000 Lux?
+			// - Do we know what 100% means? Is it always 1000 Lux?
 			// - This comparison is pretty stable, but is it stable enough? (vUnits == "%")
 			if (vUnits == "%")
 			{
