@@ -9167,7 +9167,7 @@ namespace http {
 						if (
 							(dSubType == sTypeKD101)
 							|| (dSubType == sTypeSA30)
-							|| (dubType == sTypeRM174RF)
+							|| (dSubType == sTypeRM174RF)
 							|| (switchtype == STYPE_SMOKEDETECTOR)
 							)
 						{
