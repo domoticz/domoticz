@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <string>
 #include <stdint.h>
+#include <memory>
 
 // Compilation export flags
 #if (defined _WINDOWS || defined WIN32 || defined _MSC_VER) && (!defined MINGW && !defined __MINGW32__ && !defined __MINGW64__)

@@ -1,10 +1,10 @@
 //-----------------------------------------------------------------------------
 //
-//	NotificationCCTypes.h
+//	SensorMultiLevelCCTypes.h
 //
-//	NotificationCCTypes for Notification Command Class
+//	SensorMultiLevelCCTypes for SensorMultiLevel Command Class
 //
-//	Copyright (c) 2018 Justin Hammond <justin@dynam.ac>
+//	Copyright (c) 2019 Justin Hammond <justin@dynam.ac>
 //
 //	SOFTWARE NOTICE AND LICENSE
 //
@@ -25,8 +25,8 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef NOTIFICATIONCCTYPES_H
-#define NOTIFICATIONCCTYPES_H
+#ifndef SENSORMULTILEVELCCTYPES_H
+#define SENSORMULTILEVELCCTYPES_H
 
 #include <cstdio>
 #include <string>
@@ -40,67 +40,48 @@ namespace OpenZWave
 	namespace Internal
 	{
 
-		class NotificationCCTypes
+		class SensorMultiLevelCCTypes
 		{
 			public:
-				enum NotificationEventParamTypes
+				class SensorMultiLevelScales
 				{
-					NEPT_Location = 0x01,
-					NEPT_List,
-					NEPT_UserCodeReport,
-					NEPT_Byte,
-					NEPT_String,
-					NEPT_Time
+					public:
+						uint8 id;
+						string name;
+						string unit;
 				};
-
-				class NotificationEventParams
+				typedef std::map<uint8, std::shared_ptr<SensorMultiLevelCCTypes::SensorMultiLevelScales> > SensorScales;
+				class SensorMultiLevelTypes
 				{
 					public:
 						uint32 id;
 						string name;
-						NotificationEventParamTypes type;
-						std::map<uint32, string> ListItems;
-				};
-				class NotificationEvents
-				{
-					public:
-						uint32 id;
-						string name;
-						std::map<uint32, std::shared_ptr<NotificationCCTypes::NotificationEventParams> > EventParams;
-				};
-				class NotificationTypes
-				{
-					public:
-						uint32 id;
-						string name;
-						std::map<uint32, std::shared_ptr<NotificationCCTypes::NotificationEvents> > Events;
+						SensorScales allSensorScales;
 				};
 
 				//-----------------------------------------------------------------------------
 				// Construction
 				//-----------------------------------------------------------------------------
 			private:
-				NotificationCCTypes();
-				~NotificationCCTypes();
+				SensorMultiLevelCCTypes();
+				~SensorMultiLevelCCTypes();
 				static void ReadXML();
 			public:
-				static NotificationCCTypes* Get();
+				static SensorMultiLevelCCTypes* Get();
 				static bool Create();
-				static string GetEventParamNames(NotificationEventParamTypes);
-				string GetAlarmType(uint32);
-				string GetEventForAlarmType(uint32, uint32);
-				const std::shared_ptr<NotificationCCTypes::NotificationTypes> GetAlarmNotificationTypes(uint32);
-				const std::shared_ptr<NotificationEvents> GetAlarmNotificationEvents(uint32, uint32);
-				const std::map<uint32, std::shared_ptr<NotificationCCTypes::NotificationEventParams>> GetAlarmNotificationEventParams(uint32, uint32);
+				string GetSensorName(uint32);
+				string GetSensorUnit(uint32, uint8);
+				string GetSensorUnitName(uint32, uint8);
+				const SensorScales GetSensorScales(uint32);
 
 				//-----------------------------------------------------------------------------
 				// Instance Functions
 				//-----------------------------------------------------------------------------
 			private:
-				static NotificationCCTypes* m_instance;
-				static std::map<uint32,std::shared_ptr<NotificationCCTypes::NotificationTypes> > Notifications;
+				static SensorMultiLevelCCTypes* m_instance;
+				static std::map<uint32, std::shared_ptr<SensorMultiLevelCCTypes::SensorMultiLevelTypes> > SensorTypes;
 				static uint32 m_revision;
 		};
 	} // namespace Internal
 } // namespace OpenZWave
-#endif // NOTIFICATIONCCTYPES_H
+#endif // SENSORMULTILEVELCCTYPES_H

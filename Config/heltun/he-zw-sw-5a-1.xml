@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<Product xmlns="http://code.google.com/p/open-zwave/">-->
+<Product Revision="3" xmlns='https://github.com/OpenZWave/open-zwave'>
+<!-- Configuration Parameters -->
+   <CommandClass id="112">
+	<!-- Backlights parameter 1-5-->
+	<Value genre="config" index="1" label="Backlight 1 control source" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Backlight 1 control source
+		</Help>
+		<Item label="Backlight is disabled" value="0"/>
+		<Item label="Controlled by touch button" value="1"/>
+		<Item label="Controlled by gateway or associated device" value="2"/>
+	</Value>
+	<Value genre="config" index="2" label="Backlight 2 control source" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Backlight 2 control source
+		</Help>
+		<Item label="Backlight is disabled" value="0"/>
+		<Item label="Controlled by touch button" value="1"/>
+		<Item label="Controlled by gateway or associated device" value="2"/>
+	</Value>
+	<Value genre="config" index="3" label="Backlight 3 control source" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Backlight 3 control source
+		</Help>
+		<Item label="Backlight is disabled" value="0"/>
+		<Item label="Controlled by touch button" value="1"/>
+		<Item label="Controlled by gateway or associated device" value="2"/>
+	</Value>
+	<Value genre="config" index="4" label="Backlight 4 control source" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Backlight 4 control source
+		</Help>
+		<Item label="Backlight is disabled" value="0"/>
+		<Item label="Controlled by touch button" value="1"/>
+		<Item label="Controlled by gateway or associated device" value="2"/>
+	</Value>
+	<Value genre="config" index="5" label="Backlight 5 control source" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Backlight 5 control source
+		</Help>
+		<Item label="Backlight is disabled" value="0"/>
+		<Item label="Controlled by touch button" value="1"/>
+		<Item label="Controlled by gateway or associated device" value="2"/>
+	</Value>
+	<!-- Relays parameter 6-10-->
+	<Value genre="config" index="6" label="Relay 1 control source" max="5" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Relay 1 control source
+		</Help>
+		<Item label="Controlled by gateway or associated device" value="0"/>
+		<Item label="Controlled by touch button N1 (Top Left)" value="1"/>
+		<Item label="Controlled by touch button N2 (Top Right)" value="2"/>
+		<Item label="Controlled by touch button N3 (Bottom Left)" value="3"/>
+		<Item label="Controlled by touch button N4 (Bottom Right)" value="4"/>
+		<Item label="Controlled by touch button N5 (Center)" value="5"/>
+	</Value>
+	<Value genre="config" index="7" label="Relay 2 control source" max="5" min="0" size="1" type="list" units="" value="2">
+		<Help>
+			Relay 2 control source
+		</Help>
+		<Item label="Controlled by gateway or associated device" value="0"/>
+		<Item label="Controlled by touch button N1 (Top Left)" value="1"/>
+		<Item label="Controlled by touch button N2 (Top Right)" value="2"/>
+		<Item label="Controlled by touch button N3 (Bottom Left)" value="3"/>
+		<Item label="Controlled by touch button N4 (Bottom Right)" value="4"/>
+		<Item label="Controlled by touch button N5 (Center)" value="5"/>
+	</Value>
+	<Value genre="config" index="8" label="Relay 3 control source" max="5" min="0" size="1" type="list" units="" value="3">
+		<Help>
+			Relay 3 control source
+		</Help>
+		<Item label="Controlled by gateway or associated device" value="0"/>
+		<Item label="Controlled by touch button N1 (Top Left)" value="1"/>
+		<Item label="Controlled by touch button N2 (Top Right)" value="2"/>
+		<Item label="Controlled by touch button N3 (Bottom Left)" value="3"/>
+		<Item label="Controlled by touch button N4 (Bottom Right)" value="4"/>
+		<Item label="Controlled by touch button N5 (Center)" value="5"/>
+	</Value>
+	<Value genre="config" index="9" label="Relay 4 control source" max="5" min="0" size="1" type="list" units="" value="4">
+		<Help>
+			Relay 4 control source
+		</Help>
+		<Item label="Controlled by gateway or associated device" value="0"/>
+		<Item label="Controlled by touch button N1 (Top Left)" value="1"/>
+		<Item label="Controlled by touch button N2 (Top Right)" value="2"/>
+		<Item label="Controlled by touch button N3 (Bottom Left)" value="3"/>
+		<Item label="Controlled by touch button N4 (Bottom Right)" value="4"/>
+		<Item label="Controlled by touch button N5 (Center)" value="5"/>
+	</Value>
+	<Value genre="config" index="10" label="Relay 5 control source" max="5" min="0" size="1" type="list" units="" value="5">
+		<Help>
+			Relay 5 control source
+		</Help>
+		<Item label="Controlled by gateway or associated device" value="0"/>
+		<Item label="Controlled by touch button N1 (Top Left)" value="1"/>
+		<Item label="Controlled by touch button N2 (Top Right)" value="2"/>
+		<Item label="Controlled by touch button N3 (Bottom Left)" value="3"/>
+		<Item label="Controlled by touch button N4 (Bottom Right)" value="4"/>
+		<Item label="Controlled by touch button N5 (Center)" value="5"/>
+	</Value>
+        <!-- Click control mode for touch button. The time parameter specifed in parameters 21-25 parameter 11-15 -->
+	<Value genre="config" index="11" label="Click control mode for touch button 1" max="6" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Click control mode for touch button 1
+		</Help>
+		<Item label="Click function is disabled" value="0"/>
+		<Item label="Inverts relay state regarding touch button state" value="1"/>
+		<Item label="Inverts relay state regarding button backlight state" value="2"/>
+		<Item label="press the button and the relay goes to ON state only" value="3"/>
+		<Item label="press the button and the relay goes to OFF state only" value="4"/>
+		<Item label="Timer mode ON-OFF" value="5"/>
+		<Item label="Timer mode OFF-ON" value="6"/>
+	</Value>
+	<Value genre="config" index="12" label="Click control mode for touch button 2" max="6" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Click control mode for touch button 2
+		</Help>
+		<Item label="Click function is disabled" value="0"/>
+		<Item label="Inverts relay state regarding touch button state" value="1"/>
+		<Item label="Inverts relay state regarding button backlight state" value="2"/>
+		<Item label="press the button and the relay goes to ON state only" value="3"/>
+		<Item label="press the button and the relay goes to OFF state only" value="4"/>
+		<Item label="Timer mode ON-OFF" value="5"/>
+		<Item label="Timer mode OFF-ON" value="6"/>
+	</Value>
+	<Value genre="config" index="13" label="Click control mode for touch button 3" max="6" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Click control mode for touch button 3
+		</Help>
+		<Item label="Click function is disabled" value="0"/>
+		<Item label="Inverts relay state regarding touch button state" value="1"/>
+		<Item label="Inverts relay state regarding button backlight state" value="2"/>
+		<Item label="press the button and the relay goes to ON state only" value="3"/>
+		<Item label="press the button and the relay goes to OFF state only" value="4"/>
+		<Item label="Timer mode ON-OFF" value="5"/>
+		<Item label="Timer mode OFF-ON" value="6"/>
+	</Value>
+	<Value genre="config" index="14" label="Click control mode for touch button 4" max="6" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Click control mode for touch button 4
+		</Help>
+		<Item label="Click function is disabled" value="0"/>
+		<Item label="Inverts relay state regarding touch button state" value="1"/>
+		<Item label="Inverts relay state regarding button backlight state" value="2"/>
+		<Item label="press the button and the relay goes to ON state only" value="3"/>
+		<Item label="press the button and the relay goes to OFF state only" value="4"/>
+		<Item label="Timer mode ON-OFF" value="5"/>
+		<Item label="Timer mode OFF-ON" value="6"/>
+	</Value>
+	<Value genre="config" index="15" label="Click control mode for touch button 5" max="6" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Click control mode for touch button 5
+		</Help>
+		<Item label="Click function is disabled" value="0"/>
+		<Item label="Inverts relay state regarding touch button state" value="1"/>
+		<Item label="Inverts relay state regarding button backlight state" value="2"/>
+		<Item label="press the button and the relay goes to ON state only" value="3"/>
+		<Item label="press the button and the relay goes to OFF state only" value="4"/>
+		<Item label="Timer mode ON-OFF" value="5"/>
+		<Item label="Timer mode OFF-ON" value="6"/>
+	</Value>
+	<!--  Hold control mode for touch button  parameter 16-20-->
+	<Value genre="config" index="16" label="Hold control mode for touch button 1" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Hold control mode for touch button 1
+		</Help>
+		<Item label="Hold function is disabled" value="0"/>
+		<Item label="Operate like click" value="1"/>
+		<Item label="Switched from ON state to OFF" value="2"/>
+		<Item label="Switched from OFF state to ON" value="3"/>
+	</Value>
+	<Value genre="config" index="17" label="Hold control mode for touch button 2" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Hold control mode for touch button 2
+		</Help>
+		<Item label="Hold function is disabled" value="0"/>
+		<Item label="Operate like click" value="1"/>
+		<Item label="Switched from ON state to OFF" value="2"/>
+		<Item label="Switched from OFF state to ON" value="3"/>
+	</Value>
+	<Value genre="config" index="18" label="Hold control mode for touch button 3" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Hold control mode for touch button 3
+		</Help>
+		<Item label="Hold function is disabled" value="0"/>
+		<Item label="Operate like click" value="1"/>
+		<Item label="Switched from ON state to OFF" value="2"/>
+		<Item label="Switched from OFF state to ON" value="3"/>
+	</Value>
+	<Value genre="config" index="19" label="Hold control mode for touch button 4" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Hold control mode for touch button 4
+		</Help>
+		<Item label="Hold function is disabled" value="0"/>
+		<Item label="Operate like click" value="1"/>
+		<Item label="Switched from ON state to OFF" value="2"/>
+		<Item label="Switched from OFF state to ON" value="3"/>
+	</Value>
+	<Value genre="config" index="20" label="Hold control mode for touch button 5" max="2" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Hold control mode for touch button 5
+		</Help>
+		<Item label="Hold function is disabled" value="0"/>
+		<Item label="Operate like click" value="1"/>
+		<Item label="Switched from ON state to OFF" value="2"/>
+		<Item label="Switched from OFF state to ON" value="3"/>
+	</Value>
+	<!--  Timer mode duration for button parameter number 21-25 -->
+	<Value genre="config" index="21" label="Timer mode duration for button 1" max="255" min="1" size="1" type="byte" units="sec" value="1">
+		<Help>
+			Timer mode duration for button 1
+		</Help>
+	</Value>
+	<Value genre="config" index="22" label="Timer mode duration for button 2" max="255" min="1" size="1" type="byte" units="sec" value="1">
+		<Help>
+			Timer mode duration for button 2
+		</Help>
+	</Value>
+	<Value genre="config" index="23" label="Timer mode duration for button 3" max="255" min="1" size="1" type="byte" units="sec" value="1">
+		<Help>
+			Timer mode duration for button 3
+		</Help>
+	</Value>
+	<Value genre="config" index="24" label="Timer mode duration for button 4" max="255" min="1" size="1" type="byte" units="sec" value="1">
+		<Help>
+			Timer mode duration for button 4
+		</Help>
+	</Value>
+	<Value genre="config" index="25" label="Timer mode duration for button 5" max="255" min="1" size="1" type="byte" units="sec" value="1">
+		<Help>
+			Timer mode duration for button 5
+		</Help>
+	</Value>
+	   <!-- Power of the relay load in W parameter number 25-30 size 2 -->
+	<Value genre="config" index="26" label="Power of the Relay 1 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 1 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="27" label="Power of the Relay 2 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 2 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="28" label="Power of the Relay 3 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 3 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="29" label="Power of the Relay 4 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 4 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="30" label="Power of the Relay 5 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 5 load in W
+		</Help>
+	</Value>
+	   <!--  Red colour backlight brightness parameter 31 -->
+ 	<Value genre="config" index="31" label="Red colour backlight brightness" max="3" min="0" size="1" type="list" units="" value="0">
+		<Help>
+			Red colour backlight brightness
+		</Help>
+		<Item label="Auto" value="0"/>
+		<Item label="Level 1 (Min)" value="1"/>
+		<Item label="Level 2" value="2"/>
+		<Item label="Level 3 (Max)" value="3"/>
+	</Value>
+	<!--  Blue colour backlight brightness parameter 32 -->
+	<Value genre="config" index="32" label="Blue colour backlight brightness" max="3" min="0" size="1" type="list" units="" value="0">
+		<Help>
+			Blue colour backlight brightness
+		</Help>
+		<Item label="Auto" value="0"/>
+		<Item label="Level 1 (Min)" value="1"/>
+		<Item label="Level 2" value="2"/>
+		<Item label="Level 3 (Max)" value="3"/>
+	</Value>
+	<!--  Red colour auto brightness level 1 max lumens parameter 33-->
+	<Value genre="config" index="33" label="Red color level 1" max="5000" min="0" size="2" type="short" units="lumens" value="30">
+		<Help>
+			Red colour auto brightness level 1 max lumens
+		</Help>
+	</Value>
+	<!--  Red colour auto brightness level 2 max lumens parameter 34-->
+	<Value genre="config" index="34" label="Red color level 2" max="5000" min="0" size="2" type="short" units="lumens" value="200">
+		<Help>
+			Red colour auto brightness level 2 max lumens
+		</Help>
+	</Value>
+	<!--  Blue colour auto brightness level 1 max lumens parameter 35-->
+	<Value genre="config" index="35" label="Blue color level 1" max="5000" min="0" size="2" type="short" units="lumens" value="30">
+		<Help>
+			Blue colour auto brightness level 1 max lumens
+		</Help>
+	</Value>
+	<!--  Blue colour auto brightness level 2 max lumens parameter 36-->
+	<Value genre="config" index="36" label="Blue color level 2" max="5000" min="0" size="2" type="short" units="lumens" value="200">
+		<Help>
+			Blue colour auto brightness level 2 max lumens
+		</Help>
+	</Value>
+	<!--  Active state backlight colour parameter 37 -->
+	<Value genre="config" index="37" label="Active state backlight colour" max="1" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Active state backlight colour
+		</Help>
+		<Item label="Active Red" value="0"/>
+		<Item label="Active Blue" value="1"/>
+	</Value>
+	<!--   Temperature sensor calibration parameter 38-->
+	<Value genre="config" index="38" label="Temperature sensor calibration" max="95" min="-95" size="2" type="short" units="degree" value="0">
+		<Help>
+			Temperature sensor calibration
+		</Help>
+	</Value>
+	<!--    Temperature difference to send to controller, value X 10 parameter 39-->
+	<Value genre="config" index="39" label="Temperature difference to send to controller, value X 10" max="10" min="1" size="1" type="byte" units="degree" value="2">
+		<Help>
+			Temperature difference to send to controller, value X 10
+		</Help>
+	</Value>
+	<!--    Touch buttons sensitivity. 10=Supper sensitive. 60=lowest sensitivity.parameter 40-->
+	<Value genre="config" index="40" label="Touch buttons sensitivity" max="60" min="10" size="1" type="byte" units="" value="20">
+		<Help>
+			Touch buttons sensitivity. 10=Supper sensitive. 60=lowest sensitivity.
+		</Help>
+	</Value>
+	<!--  Gateway parameter 41-->
+	<Value genre="config" index="41" label="Gateway" max="1" min="0" size="1" type="list" units="" value="0">
+		<Help>
+			If Fibaro Home Center Lite or Fibaro Home Center 2 is used as a gateway for correct
+			communication of the devices set this parameter 1. For other gateways choose 0.
+			Factory default value: 0.
+		</Help>
+		<Item label="Default" value="0"/>
+		<Item label="Fibaro Home Center2" value="1"/>
+	</Value>
+</CommandClass>
+  <CommandClass id="133">
+	   <Associations num_groups="21">
+		   <Group index="1" label="Lifeline" max_associations="1"/>
+		   <Group index="2" label="Touch button 1 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="3" label="Touch button 1 Multilevel Set" max_associations="3" auto="true"/>
+		   <Group index="4" label="Touch button 2 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="5" label="Touch button 2 Multilevel Set" max_associations="3" auto="true"/>
+		   <Group index="6" label="Touch button 3 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="7" label="Touch button 3 Multilevel Set" max_associations="3" auto="true"/>
+		   <Group index="8" label="Touch button 4 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="9" label="Touch button 4 Multilevel Set" max_associations="3" auto="true"/>
+		   <Group index="10" label="Touch button 5 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="11" label="Touch button 5 Multilevel Set" max_associations="3" auto="true"/>
+		   <Group index="12" label="Backlight 1 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="13" label="Backlight 2 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="14" label="Backlight 3 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="15" label="Backlight 4 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="16" label="Backlight 5 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="17" label="Realy 1 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="18" label="Realy 2 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="19" label="Realy 3 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="20" label="Realy 4 Basic Set (On/Off)" max_associations="3" auto="true"/>
+		   <Group index="21" label="Realy 5 Basic Set (On/Off)" max_associations="3" auto="true"/>
+	   </Associations>
+   </CommandClass>
+</Product>

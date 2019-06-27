@@ -156,11 +156,11 @@ namespace OpenZWave
 
 				static ManufacturerSpecificDB *s_instance;
 			public:
-				ProductDescriptor *getProduct(uint16 _manufacturerId, uint16 _productType, uint16 _productId);
+				std::shared_ptr<ProductDescriptor> getProduct(uint16 _manufacturerId, uint16 _productType, uint16 _productId);
 
 			private:
 				static map<uint16, string> s_manufacturerMap;
-				static map<int64, ProductDescriptor*> s_productMap;
+				static map<int64, std::shared_ptr<ProductDescriptor> > s_productMap;
 				static bool s_bXmlLoaded;
 
 				list<string> m_downloading;

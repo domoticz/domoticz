@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SensorTypes xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
+	<SensorType id="1" name="Air Temperature">
+		<SensorScale id="0" name="Celsius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="2" name="General Purpose">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+		<SensorScale id="1" name="Dimensionless"></SensorScale>
+	</SensorType>
+	<!-- DKD13867 Z-Wave Specification release 2019B registry says Illuminance and Lux-->
+	<SensorType id="3" name="Illuminance">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+		<SensorScale id="1" name="Lux">Lux</SensorScale>
+	</SensorType>
+	<SensorType id="4" name="Power">
+		<SensorScale id="0" name="Watt">Watt</SensorScale>
+		<SensorScale id="1" name="Btu/h">Btu/h</SensorScale>
+	</SensorType>
+	<SensorType id="5" name="Humidity">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+		<SensorScale id="1" name="Absolute Humidity">g/m3</SensorScale>
+	</SensorType>
+	<SensorType id="6" name="Velocity">
+		<SensorScale id="0" name="Meter Per Second">m/s</SensorScale>
+		<SensorScale id="1" name="Miles Per Hour">Mph</SensorScale>
+	</SensorType>
+	<SensorType id="7" name="Direction">
+		<SensorScale id="0" name="degrees">°</SensorScale>
+	</SensorType>
+	<SensorType id="8" name="Atmospheric Pressure">
+		<SensorScale id="0" name="kilopascal">kPa</SensorScale>
+		<SensorScale id="1" name="Inches of Mercury">inHg</SensorScale>
+	</SensorType>
+	<SensorType id="9" name="Barometic Pressure">
+		<SensorScale id="0" name="kilopascal">kPa</SensorScale>
+		<SensorScale id="1" name="Inches of Mercury">inHg</SensorScale>
+	</SensorType>
+	<SensorType id="10" name="Solar Radiation">
+		<SensorScale id="0" name="Watt Per Square Meter">W/m2</SensorScale>
+	</SensorType>
+	<SensorType id="11" name="Dew Point">
+		<SensorScale id="0" name="Celsius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="12" name="Rain Rate">
+		<SensorScale id="0" name="Millimeter Per Hour">mm/h</SensorScale>
+		<SensorScale id="1" name="Inches Per Hour">in/h</SensorScale>
+	</SensorType>
+	<SensorType id="13" name="Tide Level">
+		<SensorScale id="0" name="Meter">m</SensorScale>
+		<SensorScale id="1" name="Feet">ft</SensorScale>
+	</SensorType>
+	<SensorType id="14" name="Weight">
+		<SensorScale id="0" name="Kilograms">Kg</SensorScale>
+		<SensorScale id="1" name="Pounds">lb</SensorScale>
+	</SensorType>
+	<SensorType id="15" name="Voltage">
+		<SensorScale id="0" name="Volts">V</SensorScale>
+		<SensorScale id="1" name="MilliVolts">mV</SensorScale>
+	</SensorType>
+	<SensorType id="16" name="Current">
+		<SensorScale id="0" name="Amps">A</SensorScale>
+		<SensorScale id="1" name="MilliAmps">mA</SensorScale>
+	</SensorType>
+	<SensorType id="17" name="Carbon Dioxide">
+		<SensorScale id="0" name="Parts Per Million">Ppm</SensorScale>
+	</SensorType>
+	<SensorType id="18" name="Air Flow">
+		<SensorScale id="0" name="Cubic Meter Per Hour">M3/h</SensorScale>
+		<SensorScale id="1" name="Cubic Feed Per Minute">cfm</SensorScale>
+	</SensorType>
+	<SensorType id="19" name="Tank Capacity">
+		<SensorScale id="0" name="Liter">l</SensorScale>
+		<SensorScale id="1" name="Cubic Meter">M3</SensorScale>
+		<SensorScale id="2" name="Gallons">gal</SensorScale>
+	</SensorType>
+	<SensorType id="20" name="Distance">
+		<SensorScale id="0" name="Meter">m</SensorScale>
+		<SensorScale id="1" name="CentiMeter">cm</SensorScale>
+		<SensorScale id="2" name="Feet">ft</SensorScale>
+	</SensorType>
+	<SensorType id="21" name="Angle Position">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+		<SensorScale id="1" name="Degress Relative to North Poll"></SensorScale>
+		<SensorScale id="2" name="Degress Relative to South Poll"></SensorScale>
+	</SensorType>
+	<SensorType id="22" name="Rotation">
+		<SensorScale id="0" name="Revolutions Per Minute">rpm</SensorScale>
+		<SensorScale id="1" name="Hertz">Hz</SensorScale>
+	</SensorType>
+	<SensorType id="23" name="Water Temperature">
+		<SensorScale id="0" name="Celsius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="24" name="Soil Temperature">
+		<SensorScale id="0" name="Celsius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="25" name="Seismic Intensity">
+		<SensorScale id="0" name="Mercalli">MM</SensorScale>
+		<SensorScale id="1" name="European Macroseismic">EMS</SensorScale>
+		<SensorScale id="2" name="Liedu">Liedu</SensorScale>
+		<SensorScale id="3" name="Shindo">Shindo</SensorScale>
+	</SensorType>
+	<SensorType id="26" name="Seismic Magnitude">
+		<SensorScale id="0" name="Local">Ml</SensorScale>
+		<SensorScale id="1" name="Moment">Mw</SensorScale>
+		<SensorScale id="2" name="Surface Wave">Ms</SensorScale>
+		<SensorScale id="3" name="Body Wave">Mb</SensorScale>
+	</SensorType>
+	<SensorType id="27" name="Ultraviolet">
+		<SensorScale id="0" name="UV Index">UV</SensorScale>
+	</SensorType>
+	<SensorType id="28" name="Electrical Resistivity">
+		<SensorScale id="0" name="Ohm Meter">Ωm</SensorScale>
+	</SensorType>
+	<SensorType id="29" name="Electrical Conductivity">
+		<SensorScale id="0" name="Siemens Per Meter">S⋅m-1</SensorScale>
+	</SensorType>
+	<SensorType id="30" name="Loudness">
+		<SensorScale id="0" name="Absolute Loudness">dB</SensorScale>
+		<SensorScale id="1" name="A-Weighted Decibels">dBA</SensorScale>
+	</SensorType>
+	<SensorType id="31" name="Moisture">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+		<SensorScale id="1" name="Volume Water Content">M3/m3</SensorScale>
+		<SensorScale id="2" name="Impedance">kΩ</SensorScale>
+		<SensorScale id="3" name="Water Activity">aw</SensorScale>
+	</SensorType>
+	<SensorType id="32" name="Frequency">
+		<SensorScale id="0" name="Hertz">Hz</SensorScale>
+		<SensorScale id="1" name="KiloHertz">kHz</SensorScale>
+	</SensorType>
+	<SensorType id="33" name="Time">
+		<SensorScale id="0" name="Seconds">s</SensorScale>
+	</SensorType>
+	<SensorType id="34" name="Target Temperature">
+		<SensorScale id="0" name="Celsius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="35" name="Particulate Mater 2.5">
+		<SensorScale id="0" name="Mole Per Cubic Meter">mol/m3</SensorScale>
+		<SensorScale id="1" name="Microgram Per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+	<SensorType id="36" name="Formaldehyde CH20 Level">
+		<SensorScale id="0" name="Mole Per Cubic Meter">mol/m3</SensorScale>
+	</SensorType>
+	<SensorType id="37" name="Radon Concentration">
+		<SensorScale id="0" name="Becquerel per Cubic Meter">bq/m3</SensorScale>
+		<SensorScale id="1" name="Picocuries per Liter">pCi/L</SensorScale>
+	</SensorType>
+	<SensorType id="38" name="Methane Density">
+		<SensorScale id="0" name="Mole per Cubic Meter">mol/m3</SensorScale>
+	</SensorType>
+	<SensorType id="39" name="Volatile Organic Compound">
+		<SensorScale id="0" name="Mole per Cubic Meter">mol/m3</SensorScale>
+		<SensorScale id="1" name="Parts per Million">Ppm</SensorScale>
+	</SensorType>
+	<SensorType id="40" name="Carbon Monoxide">
+		<SensorScale id="0" name="Mole per Cubic Meter">mol/m3</SensorScale>
+		<SensorScale id="1" name="Pars per Million">Ppm</SensorScale>
+	</SensorType>
+	<SensorType id="41" name="Soil Humidity">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+	</SensorType>
+	<SensorType id="42" name="Soil Reactivity">
+		<SensorScale id="0" name="Acidity">pH</SensorScale>
+	</SensorType>
+	<SensorType id="43" name="Soil Salinity">
+		<SensorScale id="0" name="Mole per Cubic Meter">mol/m3</SensorScale>
+	</SensorType>
+	<SensorType id="44" name="Heart Rate">
+		<SensorScale id="0" name="Beats per Minute">Bpm</SensorScale>
+	</SensorType>
+	<SensorType id="45" name="Blood Pressure">
+		<SensorScale id="0" name="Systolic mmHg">mmHg</SensorScale>
+		<SensorScale id="1" name="Diastolic mmHg">mmHg</SensorScale>
+	</SensorType>
+	<SensorType id="46" name="Muscle Mass">
+		<SensorScale id="0" name="Kilogram">Kg</SensorScale>
+	</SensorType>
+	<SensorType id="47" name="Fat Mass">
+		<SensorScale id="0" name="Kilogram">Kg</SensorScale>
+	</SensorType>
+	<SensorType id="48" name="Bone Mass">
+		<SensorScale id="0" name="Kilogram">Kg</SensorScale>
+	</SensorType>
+	<SensorType id="49" name="Total Body Water">
+		<SensorScale id="0" name="Kilogram">Kg</SensorScale>
+	</SensorType>
+	<SensorType id="50" name="Basic Metabolic Rate">
+		<SensorScale id="0" name="Joule">J</SensorScale>
+	</SensorType>
+	<SensorType id="51" name="Body Mass Index">
+		<SensorScale id="0" name="BMI">BMI</SensorScale>
+	</SensorType>
+	<SensorType id="52" name="X-Axis Acceleration">
+		<SensorScale id="0" name="Meter per Second Squared">m/s2</SensorScale>
+	</SensorType>
+	<SensorType id="53" name="Y-Axis Acceleration">
+		<SensorScale id="0" name="Meter per Second Squared">m/s2</SensorScale>
+	</SensorType>
+	<SensorType id="54" name="Z-Axis Acceleration">
+		<SensorScale id="0" name="Meter per Second Squared">m/s2</SensorScale>
+	</SensorType>
+	<SensorType id="55" name="Smoke Density">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+	</SensorType>
+	<SensorType id="56" name="Water Flow">
+		<SensorScale id="0" name="Liter per Hour">l/h</SensorScale>
+	</SensorType>
+	<SensorType id="57" name="Water Pressure">
+		<SensorScale id="0" name="Kilopascal">kPa</SensorScale>
+	</SensorType>
+	<SensorType id="58" name="RF Signal Strength">
+		<SensorScale id="0" name="RSSI">RSSI</SensorScale>
+		<SensorScale id="1" name="dBm">dBm</SensorScale>
+	</SensorType>
+	<SensorType id="59" name="Particulate Matter">
+		<SensorScale id="0" name="Mole per Cubic Meter">mol/m3</SensorScale>
+		<SensorScale id="1" name="Microgram per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+	<SensorType id="60" name="Respiratory Rate">
+		<SensorScale id="0" name="Breaths per Minute">Bpm</SensorScale>
+	</SensorType>
+	<SensorType id="61" name="Relative Modulation">
+		<SensorScale id="0" name="Percent">%</SensorScale>
+	</SensorType>
+	<SensorType id="62" name="Boiler Water Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="63" name="Domestic Hot Water Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="64" name="Outside Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="65" name="Exhaust Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="66" name="Water Chlorine">
+		<SensorScale id="0" name="Milligram per Liter">mg/l</SensorScale>
+	</SensorType>
+	<SensorType id="67" name="Water Acidity">
+		<SensorScale id="0" name="Acidity">pH</SensorScale>
+	</SensorType>
+	<SensorType id="68" name="Water Oxidation Reduction Potential">
+		<SensorScale id="0" name="MilliVolt">mV</SensorScale>
+	</SensorType>
+	<SensorType id="69" name="Heart Rate LF/HF Ratio">
+		<SensorScale id="0" name="Unitless"></SensorScale>
+	</SensorType>
+	<SensorType id="70" name="Motion Direction">
+		<SensorScale id="0" name="Direction">degrees</SensorScale>
+	</SensorType>
+	<SensorType id="71" name="Applied Force">
+		<SensorScale id="0" name="Newton">N</SensorScale>
+	</SensorType>
+	<SensorType id="72" name="Return Air Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="73" name="Supply Air Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="74" name="Condenser Coil Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="75" name="Evaporator Coil Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="76" name="Liquid Line Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="77" name="Discharge Line Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="78" name="Suction">
+		<SensorScale id="0" name="kilopascal">kPa</SensorScale>
+		<SensorScale id="1" name="Pound per square inch">psi</SensorScale>
+	</SensorType>
+	<SensorType id="79" name="Discharge">
+		<SensorScale id="0" name="kilopascal">kPa</SensorScale>
+		<SensorScale id="1" name="Pound per square inch">psi</SensorScale>
+	</SensorType>
+	<SensorType id="80" name="Defrost Temperature">
+		<SensorScale id="0" name="Celcius">C</SensorScale>
+		<SensorScale id="1" name="Fahrenheit">F</SensorScale>
+	</SensorType>
+	<SensorType id="81" name="Ozone">
+		<SensorScale id="0" name="Microgram per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+	<SensorType id="82" name="Sulfur Dioxide">
+		<SensorScale id="0" name="Microgram per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+	<SensorType id="83" name="Nitrogen Dioxide">
+		<SensorScale id="0" name="Microgram per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+	<SensorType id="84" name="Ammonia">
+		<SensorScale id="0" name="Microgram per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+	<SensorType id="85" name="Lead">
+		<SensorScale id="0" name="Microgram per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+	<SensorType id="86" name="Particulate Matter">
+		<SensorScale id="0" name="Microgram per Cubic Meter">μg/m3</SensorScale>
+	</SensorType>
+</SensorTypes>

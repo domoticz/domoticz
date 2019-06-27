@@ -136,9 +136,9 @@ namespace OpenZWave
 				//-----------------------------------------------------------------------------
 			private:
 				static Localization* m_instance;
-				static map<uint64, ValueLocalizationEntry*> m_valueLocalizationMap;
-				static map<uint8, LabelLocalizationEntry*> m_commandClassLocalizationMap;
-				static map<string, LabelLocalizationEntry*> m_globalLabelLocalizationMap;
+				static map<uint64, std::shared_ptr<ValueLocalizationEntry> > m_valueLocalizationMap;
+				static map<uint8, std::shared_ptr<LabelLocalizationEntry> > m_commandClassLocalizationMap;
+				static map<string, std::shared_ptr<LabelLocalizationEntry> > m_globalLabelLocalizationMap;
 				static string m_selectedLang;
 				static uint32 m_revision;
 

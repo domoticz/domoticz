@@ -563,7 +563,7 @@ namespace OpenZWave
 			// Configuration Revision Related Classes
 			//-----------------------------------------------------------------------------
 		public:
-			void SetProductDetails(Internal::ProductDescriptor *product);
+			void SetProductDetails(std::shared_ptr<Internal::ProductDescriptor> product);
 			/** Get a path to the config file for this device
 			 *
 			 * @return a path relative to the config directory for the config file. returns a empty string if a config file is not present.
@@ -618,7 +618,7 @@ namespace OpenZWave
 
 		private:
 
-			Internal::ProductDescriptor *m_Product;
+			std::shared_ptr<Internal::ProductDescriptor> m_Product;
 
 			uint32 m_fileConfigRevision;
 			uint32 m_loadedConfigRevision;

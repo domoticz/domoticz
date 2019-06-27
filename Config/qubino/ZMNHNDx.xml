@@ -1,4 +1,4 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0053:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/qubino/ZMNHNDx.png</MetaDataItem>
@@ -41,6 +41,7 @@ NOTE: Please use this procedure only when the network primary controller is miss
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1336/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2536/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="26 Jun 2019" revision="6">Enable MapRootToEndPoint in MultiChannel Class</Entry>
     </ChangeLog>
   </MetaData>
   <!-- 
@@ -141,4 +142,9 @@ NOTE: Please use this procedure only when the network primary controller is miss
   </CommandClass>
   <!-- Remove COMMAND_CLASS_BASIC -->
   <CommandClass action="remove" id="32"/>
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
 </Product>

@@ -1795,14 +1795,21 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			return;
 
 		if (
-			(vOrgIndex == ValueID_Index_SensorMultiLevel::Temperature)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::WaterTemperature)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::SoilTemperature)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::TargetTemperature)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::BoilerWaterTemperature)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::DHWTemperature)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::OutsideTemperature)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::ExhaustTemperature)
+			(vOrgIndex == ValueID_Index_SensorMultiLevel::Air_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Water_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Soil_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Target_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Boiler_Water_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Domestic_Hot_Water_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Outside_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Exhaust_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Return_Air_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Supply_Air_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Condenser_Coil_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Evaporator_Coil_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Liquid_Line_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Discharge_Line_Temperature)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Defrost_Temperature)
 			) 
 		{
 			if (vUnits == "F")
@@ -1824,8 +1831,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			_device.devType = ZDTYPE_SENSOR_LIGHT;
 		}
 		else if (
-			(vOrgIndex == ValueID_Index_SensorMultiLevel::RelativeHumidity)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::SoilHumidity)
+			(vOrgIndex == ValueID_Index_SensorMultiLevel::Humidity)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Soil_Humidity)
 			)
 		{
 			_device.intvalue = round(fValue);
@@ -1840,14 +1847,14 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			_device.devType = ZDTYPE_SENSOR_VELOCITY;
 		}
 		else if (
-			(vOrgIndex == ValueID_Index_SensorMultiLevel::BarometricPressure)
-			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::AtmosphericPressure)
+			(vOrgIndex == ValueID_Index_SensorMultiLevel::Barometric_Pressure)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Atmospheric_Pressure)
 			)
 		{
 			_device.scaleMultiply = 10.0f;
 			_device.devType = ZDTYPE_SENSOR_BAROMETER;
 		}
-		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::DewPoint)
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Dew_Point)
 		{
 			_device.devType = ZDTYPE_SENSOR_DEWPOINT;
 		}
@@ -1875,7 +1882,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		{
 			_device.devType = ZDTYPE_SENSOR_WATER;
 		}
-		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::CO2)
+		else if (
+			(vOrgIndex == ValueID_Index_SensorMultiLevel::Carbon_Dioxide)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Carbon_Monoxide)
+			)
 		{
 			_device.devType = ZDTYPE_SENSOR_CO2;
 		}
@@ -1883,20 +1893,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		{
 			_device.devType = ZDTYPE_SENSOR_MOISTURE;
 		}
-		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::TankCapacity)
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Tank_Capacity)
 		{
 			_device.devType = ZDTYPE_SENSOR_TANK_CAPACITY;
 		}
-		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::General)
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::General_Purpose)
 		{
 			_device.devType = ZDTYPE_SWITCH_NORMAL;
 		}
-		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::RainRate)
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Rain_Rate)
 		{
 			_device.custom_label = "mm/h";
 			_device.devType = ZDTYPE_SENSOR_CUSTOM;
 		}
-		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::SeismicIntensity)
+		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Seismic_Intensity)
 		{
 			_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 		}
@@ -4315,17 +4325,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 						std::string i_units = m_pManager->GetValueUnits(ittValue);
 						std::string i_help = m_pManager->GetValueHelp(ittValue);
 
-						struct tm timeinfo;
-						localtime_r(&ittCmds.second.m_LastSeen, &timeinfo);
-
-						char szDate[30];
-						strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
-
 						root["result"][index]["config"][ivalue]["index"] = i_index;
 						root["result"][index]["config"][ivalue]["label"] = i_label;
 						root["result"][index]["config"][ivalue]["units"] = i_units;
 						root["result"][index]["config"][ivalue]["help"] = i_help;
-						root["result"][index]["config"][ivalue]["LastUpdate"] = szDate;
+						root["result"][index]["config"][ivalue]["LastUpdate"] = TimeToString(&ittCmds.second.m_LastSeen, TF_DateTime);
 						ivalue++;
 					}
 					else if (commandclass == COMMAND_CLASS_WAKE_UP)
@@ -4346,16 +4350,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 								std::string i_units = m_pManager->GetValueUnits(ittValue);
 								std::string i_help = m_pManager->GetValueHelp(ittValue);
 
-								struct tm timeinfo;
-								localtime_r(&ittCmds.second.m_LastSeen, &timeinfo);
-
-								char szDate[30];
-								strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
 								root["result"][index]["config"][ivalue]["index"] = i_index;
 								root["result"][index]["config"][ivalue]["label"] = i_label;
 								root["result"][index]["config"][ivalue]["units"] = i_units;
 								root["result"][index]["config"][ivalue]["help"] = i_help;
-								root["result"][index]["config"][ivalue]["LastUpdate"] = szDate;
+								root["result"][index]["config"][ivalue]["LastUpdate"] = TimeToString(&ittCmds.second.m_LastSeen, TF_DateTime);
 								ivalue++;
 							}
 						}
@@ -4803,12 +4802,7 @@ namespace http {
 						root["result"][ii]["IsPlus"] = pNode->IsPlus;
 						root["result"][ii]["Generic_type"] = pOZWHardware->GetNodeGenericType(pNode->IsPlus, homeID, nodeID);
 
-						char szDate[80];
-						struct tm loctime;
-						localtime_r(&pNode->LastSeen, &loctime);
-						strftime(szDate, 80, "%Y-%m-%d %X", &loctime);
-
-						root["result"][ii]["LastUpdate"] = szDate;
+						root["result"][ii]["LastUpdate"] = TimeToString(&pNode->LastSeen, TF_DateTime);
 
 						//Add configuration parameters here
 						pOZWHardware->GetNodeValuesJson(homeID, nodeID, root, ii);

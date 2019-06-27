@@ -35,6 +35,8 @@
 #include "Defs.h"
 #include "platform/Ref.h"
 #include "value_classes/ValueID.h"
+#include "platform/Log.h"
+#include "Utils.h"
 
 class TiXmlElement;
 
@@ -140,11 +142,21 @@ namespace OpenZWave
 					static char const* GetGenreNameFromEnum(ValueID::ValueGenre _genre);
 					static OpenZWave::ValueID::ValueType GetTypeEnumFromName(char const* _name);
 					static char const* GetTypeNameFromEnum(ValueID::ValueType _type);
-
+#if 0
+					inline void AddRef() {
+						Ref::AddRef();
+						Log::Write(LogLevel_Warning, "Add Ref %d - %d %s", m_refs, m_id.GetId(), __func__);
+						Internal::StackTraceGenerator::GetTrace();
+					}
+					inline int32 Release() {
+						Log::Write(LogLevel_Warning, "Del Ref %d - %d %s", m_refs -1, m_id.GetId(), __func__);
+						Internal::StackTraceGenerator::GetTrace();
+						return Ref::Release();
+					}
+#endif
 				protected:
 					virtual ~Value();
 
-//		void SetIsSet() { m_isSet = true; }	// TODO: consider removing this...it's never called since m_isSet is set in ValueChanged and ValueRefreshed
 					bool IsCheckingChange() const
 					{
 						return m_checkChange;

@@ -1,4 +1,5 @@
-<Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="10" 
+  xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1001:0801</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgmszw5.png</MetaDataItem>
@@ -9,8 +10,7 @@
 3.	Set the main controller in remove mode (see the controller’s manual).
 4.	Quickly, three times press the B-button.
 5.	Wait for the removing process to end.
-6.	Successful removing will be confirmed by the Z-Wave controller’s message.
-</MetaDataItem>
+6.	Successful removing will be confirmed by the Z-Wave controller’s message.</MetaDataItem>
     <MetaDataItem name="Name">FIBARO Motion Sensor</MetaDataItem>
     <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/3379/FGMS-001-EN-T-v2.1.pdf</MetaDataItem>
     <MetaDataItem name="Description">FIBARO Motion Sensor is a universal, Z-Wave Plus compatible multi-sensor. This device has a built-in motion sensor, temperature sensor and light sensor. Additionally, through vibrations detection, it may detect tampering attempt or an earthquake. FIBARO Motion Sensor is battery powered, completely wireless, and its casing allows for quick and non-invasive installation on any surface. The eye of the sensor visually indicates motion, temperature level, operating mode or may inform about Z-Wave network range. The device can be used for lighting scenes and presence monitoring systems.</MetaDataItem>
@@ -19,16 +19,14 @@
 3.	Set the main controller in (security/non-security) add mode (see the controller’s manual).
 4.	Quickly, three times press the B-button.
 5.	Wait for the adding process to end.
-6.	Successful adding will be confirmed by the Z-Wave controller’s message.
-</MetaDataItem>
+6.	Successful adding will be confirmed by the Z-Wave controller’s message.</MetaDataItem>
     <MetaDataItem name="ResetDescription">1.	Open the cover by turning it counter-clockwise. 
 2.	Press and hold the B-button.
 3.	Wait for visual indicator to glow yellow (2nd menu position).
 4.	Release the B-button.
 5.	Click the B-button to confirm selection.
 6.	After few seconds the device will be reset, which is signalled with the red, fading visual indicator colour.
-Use reset procedure only if the primary controller is missing or inoperable.
-</MetaDataItem>
+Use reset procedure only if the primary controller is missing or inoperable.</MetaDataItem>
     <MetaDataItem id="1001" name="FrequencyName" type="0801">CEPT (Europe)</MetaDataItem>
     <MetaDataItem name="WakeupDescription">The Motion Sensor will wake up at a defined time interval and will always try to communicate with the main controller. There is a possibility to wake up the device manually by clicking the B-button.</MetaDataItem>
     <ChangeLog>
@@ -38,6 +36,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2763/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3336/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3379/xml</Entry>
+      <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="11 Jun 2019" revision="10">Force Association Single Channel on Lifeline - https://github.com/OpenZWave/open-zwave/issues/1830</Entry>
     </ChangeLog>
     <MetaDataItem id="2001" name="ZWProductPage" type="0801">https://products.z-wavealliance.org/products/2763/</MetaDataItem>
     <MetaDataItem id="2001" name="FrequencyName" type="0801">U.S. / Canada / Mexico</MetaDataItem>
@@ -53,14 +52,14 @@ Use reset procedure only if the primary controller is missing or inoperable.
 	Fibaro Motion Sensor FGMS-001-ZW5
 	http://manuals.fibaro.com/content/manuals/en/FGMS-001/FGMS-001-EN-T-v2.0.pdf
 	-->
-	<!-- Configuration -->
+  <!-- Configuration -->
   <CommandClass id="112">
     <Value genre="config" index="1" instance="1" label="Motion detection - sensitivity" max="255" min="0" type="byte" value="15">
       <Help>
 				The lower the value, the more sensitive the PIR sensor is.
 				Available settings: 8 - 255
 				Default setting: 15
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="2" instance="1" label="Motion detection - blind time" max="15" min="0" type="byte" value="3">
       <Help>
@@ -69,14 +68,14 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Available settings: 0 - 15 (0.5-8 seconds).
 				Formula to calculate the time: time [s] = 0.5 x (value+1))
 				Default setting: 3
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="3" instance="1" label="Motion detection - pulse counter" max="3" min="0" size="1" type="list" value="1">
       <Help>
 				This parameter determines the number of moves required for the PIR sensor to report motion. The higher the value, the less sensitive the PIR sensor is.
 				It is not recommended to modify this parameter settings!
 				Default setting: 1 (2 pulses)
-			</Help>
+      </Help>
       <Item label="1 pulse" value="0"/>
       <Item label="2 pulses" value="1"/>
       <Item label="3 pulses" value="2"/>
@@ -88,7 +87,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				The higher the value, the more sensitive the PIR sensor is.
 				It is not recommended to modify this parameter setting!
 				Default setting: 2 (12 seconds)
-			</Help>
+      </Help>
       <Item label="4 seconds" value="0"/>
       <Item label="8 seconds" value="1"/>
       <Item label="12 seconds" value="2"/>
@@ -100,7 +99,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Any motion detected during this period resets the timer.
 				Available settings: 1 - 65535
 				Default setting: 30 (30 seconds)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="8" instance="1" label="Motion detection - operating mode" max="2" min="0" size="1" type="list" value="0">
       <Help>
@@ -108,7 +107,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				This parameter influences only the motion reports and associations.
 				Tamper, light intensity and temperature measurements will be still active, regardless of this parameter settings.
 				Default setting: 0 (always active)
-			</Help>
+      </Help>
       <Item label="PIR sensor always active" value="0"/>
       <Item label="PIR sensor active during the day only" value="1"/>
       <Item label="PIR sensor active during the night only" value="2"/>
@@ -118,13 +117,13 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				This parameter defines the difference between night and day in terms of light intensity, used in parameter 8.
 				Available settings: 1 - 65535
 				Default setting: 200 (200 lux)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="12" instance="1" label="BASIC command class configuration" max="2" min="0" size="1" type="list" value="0">
       <Help>
 				This parameter determines the command frames sent to 2nd association group (assigned to PIR sensor).
 				Default setting: 0 (ON and OFF)
-			</Help>
+      </Help>
       <Item label="BASIC On and OFF" value="0"/>
       <Item label="Only the BASIC On" value="1"/>
       <Item label="Only the BASIC OFF" value="2"/>
@@ -135,14 +134,14 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Further motion detections, during the cancellation time, will not result in sending the association.
 				Available settings: 0 - 255
 				Default setting: 255
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="16" instance="1" label="BASIC OFF command frame value" max="255" min="0" size="2" type="short" value="0">
       <Help>
 				The command frame sent at the moment of motion alarm cancellation, after cancellation delay time specified in parameter 6.
 				Available settings: 0 - 255
 				Default setting: 0
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="18" instance="1" label="Associations in Z-Wave network security mode" max="15" min="0" size="1" type="byte" value="15">
       <Help>
@@ -153,14 +152,14 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				2 - 3rd group sent as secure.
 				4 - 4th group sent as secure.
 				8 - 5th group sent as secure.
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="20" instance="1" label="Tamper - sensitivity" max="121" min="0" type="byte" value="20">
       <Help>
 				This parameter determines the change in force acting on the device, that will result in reporting tamper alarm - g-force acceleration.
 				Available settings: 0 - 121 (0.08 - 2g; multiply by 0.016g; 0 = tamper inactive)
 				Default setting: 20 (0.4g)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="22" instance="1" label="Tamper - alarm cancellation delay" max="32767" min="1" type="short" units="seconds" value="30">
       <Help>
@@ -168,14 +167,14 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Any tampering detected during this period will not extend the delay.
 				Available settings: 1 - 65535
 				Default setting: 30 (seconds)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="24" instance="1" label="Tamper - operating modes" max="2" min="0" size="1" type="list" value="0">
       <Help>
 				This parameter determines function of the tamper and sent reports.
 				It is an advanced feature serving much more functions than just detection of tampering.
 				Default setting: 0 (Tamper)
-			</Help>
+      </Help>
       <Item label="Tamper only" value="0"/>
       <Item label="Tamper and earthquake detector" value="1"/>
       <Item label="Tamper and orientation in space" value="2"/>
@@ -184,7 +183,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
       <Help>
 				This parameter allows to disable cancellation of the tamper alarm.
 				Default setting: 0 (Tamper).
-			</Help>
+      </Help>
       <Item label="Do not send tamper cancellation report" value="0"/>
       <Item label="Send tamper cancellation report" value="1"/>
     </Value>
@@ -193,7 +192,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				The parameter determines whether the tamper alarm frame will or will not be sent in broadcast mode.
 				Alarm frames sent in broadcast mode can be received by all of the devices within range (if they accept such frames), but not repeated by them.
 				Default setting: 0
-			</Help>
+      </Help>
       <Item label="Tamper alarm sent to 3rd association group" value="0"/>
       <Item label="Tamper alarm sent in broadcast mode" value="1"/>
     </Value>
@@ -203,7 +202,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Alarm frames sent in broadcast mode can be received by all of the devices within range (if they accept such frames), but not repeated by them.
 				This parameter provides backward compatibility with controllers not supporting Z-Wave+.
 				Default setting: 0
-			</Help>
+      </Help>
       <Item label="Backward compatible tamper alarm sent to 5th association group" value="0"/>
       <Item label="Backward compatible tamper alarm sent in broadcast mode" value="1"/>
     </Value>
@@ -214,7 +213,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				0 - reports are not sent.
 				1-32767 (luminance in lux).
 				Default setting: 200 (200 lux).
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="42" instance="1" label="Luminance reports - interval" max="32767" min="0" type="short" units="seconds" value="0">
       <Help>
@@ -223,14 +222,14 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Available settings: 0 - 32767.
 				0 - periodical reports are not sent.
 				1-32767 (in seconds).
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="60" instance="1" label="Temperature report - threshold" max="255" min="0" type="short" value="10">
       <Help>
 				This parameter determines the change in measured temperature that will result in new temperature report being sent to the main controller.
 				Available settings: 0 - 255 (0.1 - 25.5C; 0 = reports are not sent)
 				Default setting: 10 (1C)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="62" instance="1" label="Temperature measuring - interval" max="32767" min="0" type="short" units="seconds" value="900">
       <Help>
@@ -238,27 +237,27 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				The shorter the time, the more frequently the temperature will be measured, but the battery life will shorten.
 				Available settings: 0 - 32767 (1 - 32767 seconds; 0 = temperature is not measured)
 				Default setting: 900 (900 seconds).
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="64" instance="1" label="Temperature report - interval" max="32767" min="0" type="short" units="seconds" value="0">
       <Help>
 				Time interval between consecutive temperature reports. The reports are sent even if there is no change in the temperature.
 				Available settings: 0 - 32767 (1 - 32767 seconds; 0 = periodical reports are not sent)
 				Default setting: 0
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="66" instance="1" label="Temperature offset" max="65535" min="0" type="short" value="0">
       <Help>
 				The value to be added to the actual temperature, measured by the sensor (temperature compensation).
 				Available settings: 0 - 100 (0 to 100C) or 64536 - 65535 (-100 to -0.10C)
 				Default setting: 0
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="80" instance="1" label="Visual LED indicator - signalling mode" max="26" min="0" size="1" type="list" value="10">
       <Help>
 				This parameter determines the way in which visual indicator behaves after motion has been detected.
 				Default setting: 10 (Flashlight mode)
-			</Help>
+      </Help>
       <Item label="LED inactive." value="0"/>
       <Item label="1 long blink, LED colour depends on the temperature. Set by parameters 86 and 87." value="1"/>
       <Item label="Flashlight mode - LED glows in white for 10 seconds." value="2"/>
@@ -293,14 +292,14 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Available settings: 0 - brightness determined by the luminance (parameters 82 and 83).
 				1-100 (1-100%)
 				Default setting: 50 (50 %)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="82" instance="1" label="Visual LED indicator - luminance for low indicator brightness" max="32767" min="0" type="short" units="lux" value="100">
       <Help>
 				Light intensity level below which brightness of visual indicator is set to 1%.
 				Available settings: 0 to value of parameter 83 (in lux).
 				Default setting: 100.
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="83" instance="1" label="Visual LED indicator - luminance for high indicator brightness" max="32767" min="0" type="short" units="lux" value="1000">
       <Help>
@@ -309,7 +308,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Default setting: 1000 (1000 lux)
 				NOTE
 				The value of the parameter 83 must be higher than the value of the parameter 82.
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="86" instance="1" label="Visual LED indicator - temperature for blue colour" max="255" min="0" type="byte" units="Celsius" value="18">
       <Help>
@@ -317,7 +316,7 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Relevant only when parameter 80 has been properly configured.
 				Available settings: 0 to value of parameter 87 (in Celsius degree)
 				Default setting: 18 (18C)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="87" instance="1" label="Visual LED indicator - temperature for red colour" max="255" min="0" type="byte" units="Celsius" value="28">
       <Help>
@@ -325,13 +324,13 @@ Use reset procedure only if the primary controller is missing or inoperable.
 				Relevant only when parameter 80 has been properly configured.
 				Available settings: value of parameter 86 to 255 (in Celsius degree)
 				Default setting: 28 (28C)
-			</Help>
+      </Help>
     </Value>
     <Value genre="config" index="89" instance="1" label="Visual LED indicator - tamper alarm" max="1" min="0" size="1" type="list" value="1">
       <Help>
 				Indicating mode resembles a police car (white, red and blue).
 				Default setting: 1 (on)
-			</Help>
+      </Help>
       <Item label="Tamper alarm is not indicated" value="0"/>
       <Item label="Tamper alarm is indicated" value="1"/>
     </Value>
@@ -342,14 +341,17 @@ Use reset procedure only if the primary controller is missing or inoperable.
       <SetAsReport>true</SetAsReport>
     </Compatibility>
   </CommandClass>
-  <!-- Association Groups -->
-  <CommandClass id="133">
+  <!-- Multi Channel Association Groups -->
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>false</ForceInstances>
+    </Compatibility>
     <Associations num_groups="5">
       <Group index="1" label="Lifeline" max_associations="1"/>
       <Group index="2" label="Motion" max_associations="5"/>
       <Group index="3" label="Tamper" max_associations="5"/>
-      <Group auto="true" index="4" label="Motion BC" max_associations="5"/>
-      <Group auto="true" index="5" label="Tamper BC" max_associations="5"/>
+      <Group index="4" label="Motion BC" max_associations="5"/>
+      <Group index="5" label="Tamper BC" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>

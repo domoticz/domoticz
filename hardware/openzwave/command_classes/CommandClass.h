@@ -59,7 +59,7 @@ namespace OpenZWave
 			 */
 			class OPENZWAVE_EXPORT CommandClass
 			{
-
+					friend Internal::VC::ValueStore;
 				public:
 					enum
 					{
