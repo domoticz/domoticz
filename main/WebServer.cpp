@@ -10392,12 +10392,12 @@ namespace http {
 							float vis = static_cast<float>(atof(sValue.c_str()));
 							if (metertype == 0)
 							{
-								//km
+								//Metric
 								sprintf(szTmp, "%.1f cm", vis);
 							}
 							else
 							{
-								//miles
+								//Imperial
 								sprintf(szTmp, "%.1f in", vis*0.6214f);
 							}
 							root["result"][ii]["Data"] = szTmp;
