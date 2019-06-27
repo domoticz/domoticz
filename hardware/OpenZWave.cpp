@@ -1684,28 +1684,36 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	}
 	else if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
 	{
-		if (vType != OpenZWave::ValueID::ValueType_List)
+		if (
+			(vType != OpenZWave::ValueID::ValueType_List) &&
+			(vType != OpenZWave::ValueID::ValueType_Byte)
+			)
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 			return;
 		}
+		int32 alarm_value = 0;
+		if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			int32 listValue = 0;
+			if (m_pManager->GetValueListSelection(vID, &listValue) == false)
+				return;
+			alarm_value = listValue;
+		}
+		else if (vType == OpenZWave::ValueID::ValueType_Byte)
+		{
+			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+				return;
+			alarm_value = 0; //we assume a previous event cleared message was received
+		}
+
 		int newInstance = GetIndexFromAlarm(vLabel);
 		if (newInstance == 0)
 			newInstance = vOrgIndex;
 		_device.instanceID = newInstance;
-		//std::vector<std::string> tModes;
-		//m_pManager->GetValueListItems(vID, &tModes);
-
-		int32 listValue = 0;
-		if (m_pManager->GetValueListSelection(vID, &listValue))
-		{
-			_device.devType = ZDTYPE_SWITCH_NORMAL;
-			if (listValue == 0) //clear
-				_device.intvalue = 0;
-			else
-				_device.intvalue = 255;
-			InsertDevice(_device);
-		}
+		_device.devType = ZDTYPE_SWITCH_NORMAL;
+		_device.intvalue = (alarm_value == 0) ? 0 : 255;
+		InsertDevice(_device);
 	}
 	else if (commandclass == COMMAND_CLASS_METER)
 	{
