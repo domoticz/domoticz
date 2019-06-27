@@ -684,6 +684,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	{ pTypeSecurity1, sTypePowercodeAux, "Visonic sensor - auxiliary contact" },
 	{ pTypeSecurity1, sTypeMeiantech, "Meiantech/Atlantic/Aidebao" },
 	{ pTypeSecurity1, sTypeSA30, "Alecto SA30 smoke detector" },
+	{ pTypeSecurity1, sTypeRM174RF, "Smartwares RM174RF smoke detector" },
 	{ pTypeSecurity1, sTypeDomoticzSecurity, "Security Panel" },
 
 	{ pTypeSecurity2, sTypeSec2Classic, "KeeLoq" },
@@ -2975,7 +2976,8 @@ bool GetLightCommand(
 	case pTypeSecurity1:
 		if (
 			(dSubType == sTypeKD101) ||
-			(dSubType == sTypeSA30)
+			(dSubType == sTypeSA30) ||
+			(dSubType == sTypeRM174RF)
 			)
 		{
 			if ((switchcmd == "On") || (switchcmd == "All On"))

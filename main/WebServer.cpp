@@ -9164,7 +9164,12 @@ namespace http {
 						root["result"][ii]["StrParam2"] = strParam2;
 						root["result"][ii]["Protected"] = (iProtected != 0);
 
-						if ((dSubType == sTypeKD101) || (dSubType == sTypeSA30) || (switchtype == STYPE_SMOKEDETECTOR))
+						if (
+							(dSubType == sTypeKD101)
+							|| (dSubType == sTypeSA30)
+							|| (dubType == sTypeRM174RF)
+							|| (switchtype == STYPE_SMOKEDETECTOR)
+							)
 						{
 							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
 							root["result"][ii]["TypeImg"] = "smoke";

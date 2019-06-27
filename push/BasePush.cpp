@@ -164,6 +164,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeSecurity1, sTypePowercodeAux, "Status" },
 		{ pTypeSecurity1, sTypeMeiantech, "Status" },
 		{ pTypeSecurity1, sTypeSA30, "Status" },
+		{ pTypeSecurity1, sTypeRM174RF, "Status" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Status" },
 
 		{ pTypeSecurity2, sTypeSec2Classic, "Status" },
