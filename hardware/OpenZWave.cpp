@@ -1510,7 +1510,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	std::string vLabel = m_pManager->GetValueLabel(vID);
 	std::string vUnits = m_pManager->GetValueUnits(vID);
 
-	if (vLabel.compare("Unknown") == 0){
+	if (vLabel == "Unknown"){
 		_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Warning: OpenZWave returned ValueLabel \"Unknown\" on Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vOrgInstance, vOrgIndex);
 	}
 
