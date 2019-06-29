@@ -86,6 +86,7 @@ namespace OpenZWave
 							CommandClass(_homeId, _nodeId)
 					{
 					}
+					std::map<uint32_t, uint8> SensorScaleMap;
 			};
 		} // namespace CC
 	} // namespace Internal

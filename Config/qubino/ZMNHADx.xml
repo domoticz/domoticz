@@ -1,4 +1,4 @@
-<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0159:0052:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/qubino/ZMNHADx.png</MetaDataItem>
@@ -51,6 +51,7 @@ The connection of a digital temperature sensor means you can create complex scen
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2795/xml</Entry>
       <Entry author="Peter Gebruers - peter.gebruers@gmail.com" date="10 Jun 2019" revision="7">Fix for 'module does not work on 1.6' - https://github.com/OpenZWave/open-zwave/issues/1820</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="26 Jun 2019" revision="8">Add Instance Labels for i2, i3 and Temp Sensor Channels</Entry>
     </ChangeLog>
   </MetaData>
   <!--
@@ -162,6 +163,10 @@ The connection of a digital temperature sensor means you can create complex scen
     <Compatibility>
       <MapRootToEndpoint>true</MapRootToEndpoint>
     </Compatibility>
+    <Instance index="1" label="Load" />
+    <Instance index="2" label="i2" />
+    <Instance index="3" label="i3" />
+    <Instance index="4" label="Temp Sensor" />
   </CommandClass>
   <!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the ZMNHADx -->
   <CommandClass action="add" id="113">

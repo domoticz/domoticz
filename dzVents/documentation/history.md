@@ -1,3 +1,6 @@
+[2.4.24]
+- Add method rename for devices, user-variables , scenes and groups
+
 [2.4.23]
 - Add method setMode for evohome device
 - Add method incrementCounter for incremental counter

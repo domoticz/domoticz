@@ -885,17 +885,13 @@
 	</CommandClass>
 	<CommandClass id="49">
 		<Label>COMMAND_CLASS_SENSOR_MULTILEVEL</Label>
-		<Value index="0">
-			<Help>Undefined Sensor State</Help>
-			<Label>Undefined</Label>
-		</Value>
 		<Value index="1">
-			<Help>Temperature Sensor Value</Help>
-			<Label>Temperature</Label>
+			<Help>Air Temperature Sensor Value</Help>
+			<Label>Air Temperature</Label>
 		</Value>
 		<Value index="2">
-			<Help>General Sensor Value</Help>
-			<Label>General</Label>
+			<Help>General Purpose Sensor Value</Help>
+			<Label>General Purpose</Label>
 		</Value>
 		<Value index="3">
 			<Help>Luminance Sensor Value</Help>
@@ -906,8 +902,8 @@
 			<Label>Power</Label>
 		</Value>
 		<Value index="5">
-			<Help>Relative Humidity Sensor Value</Help>
-			<Label>Relative Humidity</Label>
+			<Help>Humidity Sensor Value</Help>
+			<Label>Humidity</Label>
 		</Value>
 		<Value index="6">
 			<Help>Velocity Sensor Value</Help>
@@ -954,8 +950,8 @@
 			<Label>Current</Label>
 		</Value>
 		<Value index="17">
-			<Help>CO2 Level Sensor Value</Help>
-			<Label>CO2 Level</Label>
+			<Help>Carbon Dioxide Sensor Value</Help>
+			<Label>Carbon Dioxide</Label>
 		</Value>
 		<Value index="18">
 			<Help>Air Flow Sensor Value</Help>
@@ -986,39 +982,599 @@
 			<Label>Soil Temperature</Label>
 		</Value>
 		<Value index="25">
-			<Help>Binary Sensor Value</Help>
-			<Label>Sensor</Label>
-		</Value>
-		<Value index="26">
 			<Help>Seismic Intensity Sensor Value</Help>
 			<Label>Seismic Intensity</Label>
 		</Value>
-		<Value index="27">
+		<Value index="26">
 			<Help>Seismic Magnitude Sensor Value</Help>
-			<Label>Sensor</Label>
+			<Label>Seismic Magnitude</Label>
 		</Value>
-		<Value index="28">
+		<Value index="27">
 			<Help>Ultraviolet Sensor Value</Help>
 			<Label>Ultraviolet</Label>
 		</Value>
-		<Value index="29">
+		<Value index="28">
 			<Help>Electrical Resistivity Sensor Value</Help>
 			<Label>Electrical Resistivity</Label>
 		</Value>
-		<Value index="30">
+		<Value index="29">
 			<Help>Electrical Conductivity Sensor Value</Help>
 			<Label>Electrical Conductivity</Label>
 		</Value>
-		<Value index="31">
+		<Value index="30">
 			<Help>Loudness Sensor Value</Help>
 			<Label>Loudness</Label>
 		</Value>
-		<Value index="32">
+		<Value index="31">
 			<Help>Moisture Sensor Value</Help>
 			<Label>Moisture</Label>
 		</Value>
+		<Value index="32">
+			<Help>Frequency Sensor Value</Help>
+			<Label>Frequency</Label>
+		</Value>
+		<Value index="33">
+			<Help>Time Sensor Value</Help>
+			<Label>Time</Label>
+		</Value>
+		<Value index="34">
+			<Help>Target Temperature Sensor Value</Help>
+			<Label>Target Temperature</Label>
+		</Value>
+		<Value index="35">
+			<Help>Particulate Mater 2.5 Sensor Value</Help>
+			<Label>Particulate Mater 2.5</Label>
+		</Value>
+		<Value index="36">
+			<Help>Formaldehyde CH20 Level Sensor Value</Help>
+			<Label>Formaldehyde CH20 Level</Label>
+		</Value>
+		<Value index="37">
+			<Help>Radon Concentration Sensor Value</Help>
+			<Label>Radon Concentration</Label>
+		</Value>
+		<Value index="38">
+			<Help>Methane Density Sensor Value</Help>
+			<Label>Methane Density</Label>
+		</Value>
+		<Value index="39">
+			<Help>Volatile Organic Compound Sensor Value</Help>
+			<Label>Volatile Organic Compound</Label>
+		</Value>
+		<Value index="40">
+			<Help>Carbon Monoxide Sensor Value</Help>
+			<Label>Carbon Monoxide</Label>
+		</Value>
+		<Value index="41">
+			<Help>Soil Humidity Sensor Value</Help>
+			<Label>Soil Humidity</Label>
+		</Value>
+		<Value index="42">
+			<Help>Soil Reactivity Sensor Value</Help>
+			<Label>Soil Reactivity</Label>
+		</Value>
+		<Value index="43">
+			<Help>Soil Salinity Sensor Value</Help>
+			<Label>Soil Salinity</Label>
+		</Value>
+		<Value index="44">
+			<Help>Heart Rate Sensor Value</Help>
+			<Label>Heart Rate</Label>
+		</Value>
+		<Value index="45">
+			<Help>Blood Pressure Sensor Value</Help>
+			<Label>Blood Pressure</Label>
+		</Value>
+		<Value index="46">
+			<Help>Muscle Mass Sensor Value</Help>
+			<Label>Muscle Mass</Label>
+		</Value>
+		<Value index="47">
+			<Help>Fat Mass Sensor Value</Help>
+			<Label>Fat Mass</Label>
+		</Value>
+		<Value index="48">
+			<Help>Bone Mass Sensor Value</Help>
+			<Label>Bone Mass</Label>
+		</Value>
+		<Value index="49">
+			<Help>Total Body Water Sensor Value</Help>
+			<Label>Total Body Water</Label>
+		</Value>
+		<Value index="50">
+			<Help>Basic Metabolic Rate Sensor Value</Help>
+			<Label>Basic Metabolic Rate</Label>
+		</Value>
+		<Value index="51">
+			<Help>Body Mass Index Sensor Value</Help>
+			<Label>Body Mass Index</Label>
+		</Value>
+		<Value index="52">
+			<Help>X-Axis Acceleration Sensor Value</Help>
+			<Label>X-Axis Acceleration</Label>
+		</Value>
+		<Value index="53">
+			<Help>Y-Axis Acceleration Sensor Value</Help>
+			<Label>Y-Axis Acceleration</Label>
+		</Value>
+		<Value index="54">
+			<Help>Z-Axis Acceleration Sensor Value</Help>
+			<Label>Z-Axis Acceleration</Label>
+		</Value>
+		<Value index="55">
+			<Help>Smoke Density Sensor Value</Help>
+			<Label>Smoke Density</Label>
+		</Value>
+		<Value index="56">
+			<Help>Water Flow Sensor Value</Help>
+			<Label>Water Flow</Label>
+		</Value>
+		<Value index="57">
+			<Help>Water Pressure Sensor Value</Help>
+			<Label>Water Pressure</Label>
+		</Value>
+		<Value index="58">
+			<Help>RF Signal Strength Sensor Value</Help>
+			<Label>RF Signal Strength</Label>
+		</Value>
+		<Value index="59">
+			<Help>Particulate Matter Sensor Value</Help>
+			<Label>Particulate Matter</Label>
+		</Value>
+		<Value index="60">
+			<Help>Respiratory Rate Sensor Value</Help>
+			<Label>Respiratory Rate</Label>
+		</Value>
+		<Value index="61">
+			<Help>Relative Modulation Sensor Value</Help>
+			<Label>Relative Modulation</Label>
+		</Value>
+		<Value index="62">
+			<Help>Boiler Water Temperature Sensor Value</Help>
+			<Label>Boiler Water Temperature</Label>
+		</Value>
+		<Value index="63">
+			<Help>Domestic Hot Water Temperature Sensor Value</Help>
+			<Label>Domestic Hot Water Temperature</Label>
+		</Value>
+		<Value index="64">
+			<Help>Outside Temperature Sensor Value</Help>
+			<Label>Outside Temperature</Label>
+		</Value>
+		<Value index="65">
+			<Help>Exhaust Temperature Sensor Value</Help>
+			<Label>Exhaust Temperature</Label>
+		</Value>
+		<Value index="66">
+			<Help>Water Chlorine Sensor Value</Help>
+			<Label>Water Chlorine</Label>
+		</Value>
+		<Value index="67">
+			<Help>Water Acidity Sensor Value</Help>
+			<Label>Water Acidity</Label>
+		</Value>
+		<Value index="68">
+			<Help>Water Oxidation Reduction Potential Sensor Value</Help>
+			<Label>Water Oxidation Reduction Potential</Label>
+		</Value>
+		<Value index="69">
+			<Help>Heart Rate LF/HF Ratio Sensor Value</Help>
+			<Label>Heart Rate LF/HF Ratio</Label>
+		</Value>
+		<Value index="70">
+			<Help>Motion Direction Sensor Value</Help>
+			<Label>Motion Direction</Label>
+		</Value>
+		<Value index="71">
+			<Help>Applied Force Sensor Value</Help>
+			<Label>Applied Force</Label>
+		</Value>
+		<Value index="72">
+			<Help>Return Air Temperature Sensor Value</Help>
+			<Label>Return Air Temperature</Label>
+		</Value>
+		<Value index="73">
+			<Help>Supply Air Temperature Sensor Value</Help>
+			<Label>Supply Air Temperature</Label>
+		</Value>
+		<Value index="74">
+			<Help>Condenser Coil Temperature Sensor Value</Help>
+			<Label>Condenser Coil Temperature</Label>
+		</Value>
+		<Value index="75">
+			<Help>Evaporator Coil Temperature Sensor Value</Help>
+			<Label>Evaporator Coil Temperature</Label>
+		</Value>
+		<Value index="76">
+			<Help>Liquid Line Temperature Sensor Value</Help>
+			<Label>Liquid Line Temperature</Label>
+		</Value>
+		<Value index="77">
+			<Help>Discharge Line Temperature Sensor Value</Help>
+			<Label>Discharge Line Temperature</Label>
+		</Value>
+		<Value index="78">
+			<Help>Suction Sensor Value</Help>
+			<Label>Suction</Label>
+		</Value>
+		<Value index="79">
+			<Help>Discharge Sensor Value</Help>
+			<Label>Discharge</Label>
+		</Value>
+		<Value index="80">
+			<Help>Defrost Temperature Sensor Value</Help>
+			<Label>Defrost Temperature</Label>
+		</Value>
+		<Value index="81">
+			<Help>Ozone Sensor Value</Help>
+			<Label>Ozone</Label>
+		</Value>
+		<Value index="82">
+			<Help>Sulfur Dioxide Sensor Value</Help>
+			<Label>Sulfur Dioxide</Label>
+		</Value>
+		<Value index="83">
+			<Help>Nitrogen Dioxide Sensor Value</Help>
+			<Label>Nitrogen Dioxide</Label>
+		</Value>
+		<Value index="84">
+			<Help>Ammonia Sensor Value</Help>
+			<Label>Ammonia</Label>
+		</Value>
+		<Value index="85">
+			<Help>Lead Sensor Value</Help>
+			<Label>Lead</Label>
+		</Value>
+		<Value index="86">
+			<Help>Particulate Matter Sensor Value</Help>
+			<Label>Particulate Matter</Label>
+		</Value>
+		<Value index="256">
+			<Help>Air Temperature Sensor Available Units</Help>
+			<Label>Air Temperature Units</Label>
+		</Value>
+		<Value index="257">
+			<Help>General Purpose Sensor Available Units</Help>
+			<Label>General Purpose Units</Label>
+		</Value>
+		<Value index="258">
+			<Help>Luminance Sensor Available Units</Help>
+			<Label>Luminance Units</Label>
+		</Value>
+		<Value index="259">
+			<Help>Power Sensor Available Units</Help>
+			<Label>Power Units</Label>
+		</Value>
+		<Value index="260">
+			<Help>Humidity Sensor Available Units</Help>
+			<Label>Humidity Units</Label>
+		</Value>
+		<Value index="261">
+			<Help>Velocity Sensor Available Units</Help>
+			<Label>Velocity Units</Label>
+		</Value>
+		<Value index="262">
+			<Help>Direction Sensor Available Units</Help>
+			<Label>Direction Units</Label>
+		</Value>
+		<Value index="263">
+			<Help>Atmospheric Pressure Sensor Available Units</Help>
+			<Label>Atmospheric Pressure Units</Label>
+		</Value>
+		<Value index="264">
+			<Help>Barometric Pressure Sensor Available Units</Help>
+			<Label>Barometric Pressure Units</Label>
+		</Value>
+		<Value index="265">
+			<Help>Solar Radiation Sensor Available Units</Help>
+			<Label>Solar Radiation Units</Label>
+		</Value>
+		<Value index="266">
+			<Help>Dew Point Sensor Available Units</Help>
+			<Label>Dew Point Units</Label>
+		</Value>
+		<Value index="267">
+			<Help>Rain Rate Sensor Available Units</Help>
+			<Label>Rain Rate Units</Label>
+		</Value>
+		<Value index="268">
+			<Help>Tide Level Sensor Available Units</Help>
+			<Label>Tide Level Units</Label>
+		</Value>
+		<Value index="269">
+			<Help>Weight Sensor Available Units</Help>
+			<Label>Weight Units</Label>
+		</Value>
+		<Value index="270">
+			<Help>Voltage Sensor Available Units</Help>
+			<Label>Voltage Units</Label>
+		</Value>
+		<Value index="271">
+			<Help>Current Sensor Available Units</Help>
+			<Label>Current Units</Label>
+		</Value>
+		<Value index="272">
+			<Help>Carbon Dioxide Sensor Available Units</Help>
+			<Label>Carbon Dioxide Units</Label>
+		</Value>
+		<Value index="273">
+			<Help>Air Flow Sensor Available Units</Help>
+			<Label>Air Flow Units</Label>
+		</Value>
+		<Value index="274">
+			<Help>Tank Capacity Sensor Available Units</Help>
+			<Label>Tank Capacity Units</Label>
+		</Value>
+		<Value index="275">
+			<Help>Distance Sensor Available Units</Help>
+			<Label>Distance Units</Label>
+		</Value>
+		<Value index="276">
+			<Help>Angle Position Sensor Available Units</Help>
+			<Label>Angle Position Units</Label>
+		</Value>
+		<Value index="277">
+			<Help>Rotation Sensor Available Units</Help>
+			<Label>Rotation Units</Label>
+		</Value>
+		<Value index="278">
+			<Help>Water Temperature Sensor Available Units</Help>
+			<Label>Water Temperature Units</Label>
+		</Value>
+		<Value index="279">
+			<Help>Soil Temperature Sensor Available Units</Help>
+			<Label>Soil Temperature Units</Label>
+		</Value>
+		<Value index="280">
+			<Help>Seismic Intensity Sensor Available Units</Help>
+			<Label>Seismic Intensity Units</Label>
+		</Value>
+		<Value index="281">
+			<Help>Seismic Magnitude Sensor Available Units</Help>
+			<Label>Seismic Magnitude Units</Label>
+		</Value>
+		<Value index="282">
+			<Help>Ultraviolet Sensor Available Units</Help>
+			<Label>Ultraviolet Units</Label>
+		</Value>
+		<Value index="283">
+			<Help>Electrical Resistivity Sensor Available Units</Help>
+			<Label>Electrical Resistivity Units</Label>
+		</Value>
+		<Value index="284">
+			<Help>Electrical Conductivity Sensor Available Units</Help>
+			<Label>Electrical Conductivity Units</Label>
+		</Value>
+		<Value index="285">
+			<Help>Loudness Sensor Available Units</Help>
+			<Label>Loudness Units</Label>
+		</Value>
+		<Value index="286">
+			<Help>Moisture Sensor Available Units</Help>
+			<Label>Moisture Units</Label>
+		</Value>
+		<Value index="287">
+			<Help>Frequency Sensor Available Units</Help>
+			<Label>Frequency Units</Label>
+		</Value>
+		<Value index="288">
+			<Help>Time Sensor Available Units</Help>
+			<Label>Time Units</Label>
+		</Value>
+		<Value index="289">
+			<Help>Target Temperature Sensor Available Units</Help>
+			<Label>Target Temperature Units</Label>
+		</Value>
+		<Value index="290">
+			<Help>Particulate Mater 2.5 Sensor Available Units</Help>
+			<Label>Particulate Mater 2.5 Units</Label>
+		</Value>
+		<Value index="291">
+			<Help>Formaldehyde CH20 Level Sensor Available Units</Help>
+			<Label>Formaldehyde CH20 Level Units</Label>
+		</Value>
+		<Value index="292">
+			<Help>Radon Concentration Sensor Available Units</Help>
+			<Label>Radon Concentration Units</Label>
+		</Value>
+		<Value index="293">
+			<Help>Methane Density Sensor Available Units</Help>
+			<Label>Methane Density Units</Label>
+		</Value>
+		<Value index="294">
+			<Help>Volatile Organic Compound Sensor Available Units</Help>
+			<Label>Volatile Organic Compound Units</Label>
+		</Value>
+		<Value index="295">
+			<Help>Carbon Monoxide Sensor Available Units</Help>
+			<Label>Carbon Monoxide Units</Label>
+		</Value>
+		<Value index="296">
+			<Help>Soil Humidity Sensor Available Units</Help>
+			<Label>Soil Humidity Units</Label>
+		</Value>
+		<Value index="297">
+			<Help>Soil Reactivity Sensor Available Units</Help>
+			<Label>Soil Reactivity Units</Label>
+		</Value>
+		<Value index="298">
+			<Help>Soil Salinity Sensor Available Units</Help>
+			<Label>Soil Salinity Units</Label>
+		</Value>
+		<Value index="299">
+			<Help>Heart Rate Sensor Available Units</Help>
+			<Label>Heart Rate Units</Label>
+		</Value>
+		<Value index="300">
+			<Help>Blood Pressure Sensor Available Units</Help>
+			<Label>Blood Pressure Units</Label>
+		</Value>
+		<Value index="301">
+			<Help>Muscle Mass Sensor Available Units</Help>
+			<Label>Muscle Mass Units</Label>
+		</Value>
+		<Value index="302">
+			<Help>Fat Mass Sensor Available Units</Help>
+			<Label>Fat Mass Units</Label>
+		</Value>
+		<Value index="303">
+			<Help>Bone Mass Sensor Available Units</Help>
+			<Label>Bone Mass Units</Label>
+		</Value>
+		<Value index="304">
+			<Help>Total Body Water Sensor Available Units</Help>
+			<Label>Total Body Water Units</Label>
+		</Value>
+		<Value index="305">
+			<Help>Basic Metabolic Rate Sensor Available Units</Help>
+			<Label>Basic Metabolic Rate Units</Label>
+		</Value>
+		<Value index="306">
+			<Help>Body Mass Index Sensor Available Units</Help>
+			<Label>Body Mass Index Units</Label>
+		</Value>
+		<Value index="307">
+			<Help>X-Axis Acceleration Sensor Available Units</Help>
+			<Label>X-Axis Acceleration Units</Label>
+		</Value>
+		<Value index="308">
+			<Help>Y-Axis Acceleration Sensor Available Units</Help>
+			<Label>Y-Axis Acceleration Units</Label>
+		</Value>
+		<Value index="309">
+			<Help>Z-Axis Acceleration Sensor Available Units</Help>
+			<Label>Z-Axis Acceleration Units</Label>
+		</Value>
+		<Value index="310">
+			<Help>Smoke Density Sensor Available Units</Help>
+			<Label>Smoke Density Units</Label>
+		</Value>
+		<Value index="311">
+			<Help>Water Flow Sensor Available Units</Help>
+			<Label>Water Flow Units</Label>
+		</Value>
+		<Value index="312">
+			<Help>Water Pressure Sensor Available Units</Help>
+			<Label>Water Pressure Units</Label>
+		</Value>
+		<Value index="313">
+			<Help>RF Signal Strength Sensor Available Units</Help>
+			<Label>RF Signal Strength Units</Label>
+		</Value>
+		<Value index="314">
+			<Help>Particulate Matter Sensor Available Units</Help>
+			<Label>Particulate Matter Units</Label>
+		</Value>
+		<Value index="315">
+			<Help>Respiratory Rate Sensor Available Units</Help>
+			<Label>Respiratory Rate Units</Label>
+		</Value>
+		<Value index="316">
+			<Help>Relative Modulation Sensor Available Units</Help>
+			<Label>Relative Modulation Units</Label>
+		</Value>
+		<Value index="317">
+			<Help>Boiler Water Temperature Sensor Available Units</Help>
+			<Label>Boiler Water Temperature Units</Label>
+		</Value>
+		<Value index="318">
+			<Help>Domestic Hot Water Temperature Sensor Available Units</Help>
+			<Label>Domestic Hot Water Temperature Units</Label>
+		</Value>
+		<Value index="319">
+			<Help>Outside Temperature Sensor Available Units</Help>
+			<Label>Outside Temperature Units</Label>
+		</Value>
+		<Value index="320">
+			<Help>Exhaust Temperature Sensor Available Units</Help>
+			<Label>Exhaust Temperature Units</Label>
+		</Value>
+		<Value index="321">
+			<Help>Water Chlorine Sensor Available Units</Help>
+			<Label>Water Chlorine Units</Label>
+		</Value>
+		<Value index="322">
+			<Help>Water Acidity Sensor Available Units</Help>
+			<Label>Water Acidity Units</Label>
+		</Value>
+		<Value index="323">
+			<Help>Water Oxidation Reduction Potential Sensor Available Units</Help>
+			<Label>Water Oxidation Reduction Potential Units</Label>
+		</Value>
+		<Value index="324">
+			<Help>Heart Rate LF/HF Ratio Sensor Available Units</Help>
+			<Label>Heart Rate LF/HF Ratio Units</Label>
+		</Value>
+		<Value index="325">
+			<Help>Motion Direction Sensor Available Units</Help>
+			<Label>Motion Direction Units</Label>
+		</Value>
+		<Value index="326">
+			<Help>Applied Force Sensor Available Units</Help>
+			<Label>Applied Force Units</Label>
+		</Value>
+		<Value index="327">
+			<Help>Return Air Temperature Sensor Available Units</Help>
+			<Label>Return Air Temperature Units</Label>
+		</Value>
+		<Value index="328">
+			<Help>Supply Air Temperature Sensor Available Units</Help>
+			<Label>Supply Air Temperature Units</Label>
+		</Value>
+		<Value index="329">
+			<Help>Condenser Coil Temperature Sensor Available Units</Help>
+			<Label>Condenser Coil Temperature Units</Label>
+		</Value>
+		<Value index="330">
+			<Help>Evaporator Coil Temperature Sensor Available Units</Help>
+			<Label>Evaporator Coil Temperature Units</Label>
+		</Value>
+		<Value index="331">
+			<Help>Liquid Line Temperature Sensor Available Units</Help>
+			<Label>Liquid Line Temperature Units</Label>
+		</Value>
+		<Value index="332">
+			<Help>Discharge Line Temperature Sensor Available Units</Help>
+			<Label>Discharge Line Temperature Units</Label>
+		</Value>
+		<Value index="333">
+			<Help>Suction Sensor Available Units</Help>
+			<Label>Suction Units</Label>
+		</Value>
+		<Value index="334">
+			<Help>Discharge Sensor Available Units</Help>
+			<Label>Discharge Units</Label>
+		</Value>
+		<Value index="335">
+			<Help>Defrost Temperature Sensor Available Units</Help>
+			<Label>Defrost Temperature Units</Label>
+		</Value>
+		<Value index="336">
+			<Help>Ozone Sensor Available Units</Help>
+			<Label>Ozone Units</Label>
+		</Value>
+		<Value index="337">
+			<Help>Sulfur Dioxide Sensor Available Units</Help>
+			<Label>Sulfur Dioxide Units</Label>
+		</Value>
+		<Value index="338">
+			<Help>Nitrogen Dioxide Sensor Available Units</Help>
+			<Label>Nitrogen Dioxide Units</Label>
+		</Value>
+		<Value index="339">
+			<Help>Ammonia Sensor Available Units</Help>
+			<Label>Ammonia Units</Label>
+		</Value>
+		<Value index="340">
+			<Help>Lead Sensor Available Units</Help>
+			<Label>Lead Units</Label>
+		</Value>
+		<Value index="341">
+			<Help>Particulate Matter Sensor Available Units</Help>
+			<Label>Particulate Matter Units</Label>
+		</Value>
 	</CommandClass>
-		<CommandClass id="121">
+	<CommandClass id="121">
 		<Label>COMMAND_CLASS_SOUND_SWITCH</Label>
 		<Value index="0">
 			<Help>The Number of Available Tones on the Node</Help>

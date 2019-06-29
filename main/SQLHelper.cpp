@@ -4589,7 +4589,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					/* Smoke detectors are manually reset!
 									else if (
 										(devType==pTypeSecurity1)&&
-										((subType==sTypeKD101)||(subType==sTypeSA30))
+										((subType==sTypeKD101)||(subType==sTypeSA30)||(subType==sTypeRM174RF))
 										)
 									{
 										cmd=sStatusPanicOff;

@@ -6921,6 +6921,7 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 	if (
 		(pResponse->SECURITY1.subtype == sTypeKD101) ||
 		(pResponse->SECURITY1.subtype == sTypeSA30) ||
+		(pResponse->SECURITY1.subtype == sTypeRM174RF) ||
 		(pResponse->SECURITY1.subtype == sTypeDomoticzSecurity)
 		)
 	{

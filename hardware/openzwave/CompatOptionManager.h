@@ -64,6 +64,8 @@ namespace OpenZWave
 			COMPAT_FLAG_UC_EXPOSERAWVALUE,
 			COMPAT_FLAG_VERSION_GETCLASSVERSION,
 			COMPAT_FLAG_WAKEUP_DELAYNMI,
+			COMPAT_FLAG_MI_REMOVECC,
+			COMPAT_FLAG_VERIFYCHANGED,
 			STATE_FLAG_CCVERSION,
 			STATE_FLAG_STATIC_REQUESTS,
 			STATE_FLAG_AFTERMARK,
@@ -87,7 +89,11 @@ namespace OpenZWave
 			COMPAT_FLAG_TYPE_BOOL,
 			COMPAT_FLAG_TYPE_BYTE,
 			COMPAT_FLAG_TYPE_SHORT,
-			COMPAT_FLAG_TYPE_INT
+			COMPAT_FLAG_TYPE_INT,
+			COMPAT_FLAG_TYPE_BOOL_ARRAY,
+			COMPAT_FLAG_TYPE_BYTE_ARRAY,
+			COMPAT_FLAG_TYPE_SHORT_ARRAY,
+			COMPAT_FLAG_TYPE_INT_ARRAY
 		};
 
 		enum CompatOptionType
@@ -101,6 +107,9 @@ namespace OpenZWave
 				CompatOptionFlags flag;
 				CompatOptionFlagType type;
 				bool changed;
+				/* when a single Value (not a FLAG_TYPE_*_ARRAY) this union holds the actual value
+				 * but when its a FLAG_*_ARRAY, this union holds the default value
+				 */
 				union
 				{
 						bool valBool;
@@ -108,6 +117,15 @@ namespace OpenZWave
 						uint16_t valShort;
 						uint32_t valInt;
 				};
+				/* Only when FLAG_TYPE_*_ARRAY is this union used, and holds
+				 * individual values for each key. Default Value is taken from
+				 * the above Union
+				 */
+				/* oh - And we can't use a Union here with a non-POD type */
+				std::map<uint32_t, bool> valBoolArray;
+				std::map<uint32_t, uint8_t> valByteArray;
+				std::map<uint32_t, uint16_t> valShortArray;
+				std::map<uint32_t, uint32_t> valIntArray;
 		};
 
 		struct CompatOptionFlagDefintions
@@ -128,14 +146,14 @@ namespace OpenZWave
 
 				void ReadXML(TiXmlElement const* _ccElement);
 				void WriteXML(TiXmlElement* _ccElement);
-				bool GetFlagBool(CompatOptionFlags flag) const;
-				uint8_t GetFlagByte(CompatOptionFlags flag) const;
-				uint16_t GetFlagShort(CompatOptionFlags flag) const;
-				uint32_t GetFlagInt(CompatOptionFlags flag) const;
-				bool SetFlagBool(CompatOptionFlags flag, bool value);
-				bool SetFlagByte(CompatOptionFlags flag, uint8_t value);
-				bool SetFlagShort(CompatOptionFlags flag, uint16_t value);
-				bool SetFlagInt(CompatOptionFlags flag, uint32_t value);
+				bool GetFlagBool(CompatOptionFlags flag, uint32_t index = -1) const;
+				uint8_t GetFlagByte(CompatOptionFlags flag, uint32_t index = -1) const;
+				uint16_t GetFlagShort(CompatOptionFlags flag, uint32_t index = -1) const;
+				uint32_t GetFlagInt(CompatOptionFlags flag, uint32_t index = -1) const;
+				bool SetFlagBool(CompatOptionFlags flag, bool value, uint32_t index = -1);
+				bool SetFlagByte(CompatOptionFlags flag, uint8_t value, uint32_t index = -1);
+				bool SetFlagShort(CompatOptionFlags flag, uint16_t value, uint32_t index = -1);
+				bool SetFlagInt(CompatOptionFlags flag, uint32_t value, uint32_t index = -1);
 			private:
 				string GetFlagName(CompatOptionFlags flag) const;
 				string GetXMLTagName();

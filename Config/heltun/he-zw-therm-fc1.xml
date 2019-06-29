@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<Product xmlns="http://code.google.com/p/open-zwave/">-->
+<Product Revision="3" xmlns='https://github.com/OpenZWave/open-zwave'>
+<!-- Configuration Parameters -->
+  <CommandClass id="67">
+    <Instance index="1"/>
+    <Value genre="user" index="1" instance="1" label="Heating" max="0" min="0" read_only="false" type="decimal" units="C" value="20" write_only="false"/>
+    <Compatibility>
+      <Base>0</Base>
+      <CreateVars>true</CreateVars>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="64">
+    <Instance index="1"/>
+    <Value genre="user" index="0" instance="1" label="Mode" max="0" min="0" read_only="false" size="1" type="list" units="" write_only="false">
+      <Item label="Auto" value="10"/>
+      <Item label="Heat Econ" value="11"/>
+      <Item label="Comfort" value="15"/>
+    </Value>
+    <SupportedModes>
+      <Mode index="10" label="Auto"/>
+      <Mode index="11" label="Heat Econ"/>
+      <Mode index="15" label="Comfort"/>
+    </SupportedModes>
+    <Compatibility/>
+  </CommandClass>
+   <CommandClass id="112">
+	<!-- Configuration Parameter 1 -->
+	<Value genre="config" index="1" label="Degree mode" max="1" min="0" size="1" type="list" units="" value="0">
+	      <Help>
+		Degree Mode 0=C, 1=F
+	      </Help>
+	      <Item label="Celsius" value="0"/>
+	      <Item label="Farenheit" value="1"/>
+	</Value>
+	<!-- Configuration Parameter 2 -->
+	<Value genre="config" index="2" label="Air temp calibration" max="95" min="-95" size="1" type="byte" units="degree" value="0">
+		<Help>
+			Air Temperature Calibration in degree x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 3 -->
+	<Value genre="config" index="3" label="Temp hysteresis" max="95" min="1" size="1" type="byte" units="degree" value="5">
+		<Help>
+			Temperature Hysteresis in degree, x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 4 -->
+	<Value genre="config" index="4" label="Temp diff to send values" max="10" min="1" size="1" type="byte" units="" value="2">
+		<Help>
+			Temperature difference to send to controller, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 5 -->
+	<Value genre="config" index="5" label="Time by controller" max="1" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Time correction by controller
+		</Help>
+		<Item label="Manual" value="0"/>
+		<Item label="Auto(via gateway)" value="1"/>
+	</Value>
+	<!-- Configuration Parameter 6 -->
+	<Value genre="config" index="6" label="Time format" max="1" min="0" size="1" type="list" units="" value="0">
+		<Help>
+			Time format 0=24hour, 1=12hour (AM/PM)
+		</Help>
+		<Item label="24 hour" value="0"/>
+		<Item label="12 hour" value="1"/>
+	</Value>
+	<!-- Configuration Parameter 7 -->
+	<Value genre="config" index="7" label="Week day" max="7" min="1" size="1" type="list" units="" value="1">
+		<Help>
+			Manually set week day
+		</Help>
+		<Item label="MON" value="1"/>
+		<Item label="TUE" value="2"/>
+		<Item label="WED" value="3"/>
+		<Item label="THU" value="4"/>
+		<Item label="FRI" value="5"/>
+		<Item label="SAT" value="6"/>
+		<Item label="SUN" value="7"/>
+	</Value>
+	<!-- Configuration Parameter 8 -->
+	<Value genre="config" index="8" label="Time Hour" max="23" min="0" size="1" type="byte" units="hours" value="0">
+		<Help>
+			Manually set time hour
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 9 -->
+	<Value genre="config" index="9" label="Time Minute" max="59" min="0" size="1" type="byte" units="mins" value="0">
+		<Help>
+			Maually set time minute
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 10 -->
+	<Value genre="config" index="10" label="Active display brightnes" max="4" min="1" size="1" type="byte" units="" value="4">
+		<Help>
+			The brightness level can be selected in the active state from values 1 (lowest brightness) to 4
+			(highest brightness) but the level cannot be lower than the level of brightness for the inactive
+			state (param 11).			
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 11 -->
+	<Value genre="config" index="11" label="Inactive display brightness" max="4" min="1" size="1" type="byte" units="" value="3">
+		<Help>
+			This parameter defines the brightness level of the display in the inactive state. The level can
+			be selected from values 1 to 4 but the level cannot be higher than the level of brightness for
+			the active state (param 10).
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 12 -->
+	<Value genre="config" index="12" label="Auto LCD brightness" max="1" min="0" size="1" type="list" units="" value="1">
+		<Help>
+			Auto LCD brightness control
+		</Help>
+		<Item label="Inactive the function" value="0"/>
+		<Item label="Active the function" value="1"/>
+	</Value>
+	<!-- Configuration Parameter 13 -->
+	<Value genre="config" index="13" label="Auto bright level 1" max="5000" min="0" size="2" type="short" units="lumens" value="30">
+		<Help>
+			Auto brightness level 1 max lumens
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 14 -->
+	<Value genre="config" index="14" label="Auto bright level 2" max="5000" min="0" size="2" type="short" units="lumens" value="200">
+		<Help>
+			Auto brightness level 2 max lumens
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 15 -->
+	<Value genre="config" index="15" label="Auto bright level 3" max="5000" min="0" size="2" type="short" units="lumens" value="3000">
+		<Help>
+			Auto brightness level 3 max lumens
+		</Help>
+	</Value>
+	<!--  Gateway parameter 16-->
+	<Value genre="config" index="16" label="Gateway" max="1" min="0" size="1" type="list" units="" value="0">
+		<Help>
+			If Fibaro Home Center Lite or Fibaro Home Center 2 is used as a gateway for correct
+			communication of the devices set this parameter 1. For other gateways choose 0.
+			Factory default value: 0.
+		</Help>
+		<Item label="Default" value="0"/>
+		<Item label="Fibaro Home Center2" value="1"/>
+	</Value>
+	<!--  Configuration  Parameter 51 (17-50 Reserved by manufacturer) -->
+	<Value genre="config" index="51" label="Touch sensitivity" max="70" min="20" size="1" type="byte" units="" value="50">
+		<Help>
+			Touch buttons sensitivity. 20=Super sensitive. 70=lowest sensitivity.
+		</Help>
+	</Value>
+	   <!-- Power of the relay load in W parameter number 52-56 size 2 -->
+	<Value genre="config" index="52" label="Power of the Relay 1 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 1 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="53" label="Power of the Relay 2 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 2 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="54" label="Power of the Relay 3 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 3 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="55" label="Power of the Relay 4 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 4 load in W
+		</Help>
+	</Value>
+	<Value genre="config" index="56" label="Power of the Relay 5 load in W" max="5000" min="0" size="2" type="short" units="W" value="0">
+		<Help>
+			Power of the Relay 5 load in W
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 57 -->
+	<Value genre="config" index="57" label="Morning start time" max="2359" min="0000" size="2" type="short" units="HHMM" value="0600">
+		<Help>
+			Morning start time. Format: HHMM. e.g.08:00 should be sent as 0800
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 58 -->
+	<Value genre="config" index="58" label="Day start time" max="2359" min="0000" size="2" type="short" units="HHMM" value="0900">
+		<Help>
+			Day start time. Format: HHMM.
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 59 -->
+	<Value genre="config" index="59" label="Evening start time" max="2359" min="0000" size="2" type="short" units="HHMM" value="1800">
+		<Help>
+			Evening start time. Format: HHMM.
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 60 -->
+	<Value genre="config" index="60" label="Night Start time" max="2359" min="0000" size="2" type="short" units="HHMM" value="2300">
+		<Help>
+			Night start time. Format: HHMM.
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 61 -->
+	<Value genre="config" index="61" label="Monday morning temp" max="370" min="40" size="2" type="short" units="degree" value="240">
+		<Help>
+			Monday morning temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 62 -->
+	<Value genre="config" index="62" label="Monday day temp" max="370" min="40" size="2" type="short" units="degree" value="200">
+		<Help>
+			Monday day temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 63 -->
+	<Value genre="config" index="63" label="Monday evening temp" max="370" min="40" size="2" type="short" units="degree" value="230">
+		<Help>
+			Monday evening temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 64 -->
+	<Value genre="config" index="64" label="Monday night temp" max="370" min="40" size="2" type="short" units="degree" value="180">
+		<Help>
+			Monday night temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 65 -->
+	<Value genre="config" index="65" label="Tuesday morning temp" max="370" min="40" size="2" type="short" units="degree" value="240">
+		<Help>
+			Tuesday morning temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 66 -->
+	<Value genre="config" index="66" label="Tuesday day temp" max="370" min="40" size="2" type="short" units="degree" value="200">
+		<Help>
+			Tuesday day temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 67 -->
+	<Value genre="config" index="67" label="Tuesday evening temp" max="370" min="40" size="2" type="short" units="degree" value="230">
+		<Help>
+			Tuesday evening temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 68 -->
+	<Value genre="config" index="68" label="Tuesday night temp" max="370" min="40" size="2" type="short" units="degree" value="180">
+		<Help>
+			Tuesday night temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 69 -->
+	<Value genre="config" index="69" label="Wednesday morning temp" max="370" min="40" size="2" type="short" units="degree" value="240">
+		<Help>
+			Wednesday morning temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 70 -->
+	<Value genre="config" index="70" label="Wednesday day temp" max="370" min="40" size="2" type="short" units="degree" value="200">
+		<Help>
+			Wednesday day temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 71 -->
+	<Value genre="config" index="71" label="Wednesday evening temp" max="370" min="40" size="2" type="short" units="degree" value="230">
+		<Help>
+			Wednesday evening temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 72 -->
+	<Value genre="config" index="72" label="Wednesday night temp" max="370" min="40" size="2" type="short" units="degree" value="180">
+		<Help>
+			Wednesday night temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 73 -->
+	<Value genre="config" index="73" label="Thursday morning temp" max="370" min="40" size="2" type="short" units="degree" value="240">
+		<Help>
+			Thursday morning temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 74 -->
+	<Value genre="config" index="74" label="Thursday day temp" max="370" min="40" size="2" type="short" units="degree" value="200">
+		<Help>
+			Thursday day temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 75 -->
+	<Value genre="config" index="75" label="Thursday evening temp" max="370" min="40" size="2" type="short" units="degree" value="230">
+		<Help>
+			Thursday evening temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 76 -->
+	<Value genre="config" index="76" label="Thursday night temp" max="370" min="40" size="2" type="short" units="degree" value="180">
+		<Help>
+			Thursday night temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 77 -->
+	<Value genre="config" index="77" label="Friday morning temp" max="370" min="40" size="2" type="short" units="degree" value="240">
+		<Help>
+			Friday morning temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 78 -->
+	<Value genre="config" index="78" label="Friday day temp" max="370" min="40" size="2" type="short" units="degree" value="200">
+		<Help>
+			Friday day temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 79 -->
+	<Value genre="config" index="79" label="Friday evening temp" max="370" min="40" size="2" type="short" units="degree" value="230">
+		<Help>
+			Friday evening temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 80 -->
+	<Value genre="config" index="80" label="Friday night temp" max="370" min="40" size="2" type="short" units="degree" value="180">
+		<Help>
+			Friday night temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 81 -->
+	<Value genre="config" index="81" label="Saturday morning temp" max="370" min="40" size="2" type="short" units="degree" value="240">
+		<Help>
+			Saturday morning temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 82 -->
+	<Value genre="config" index="82" label="Saturday day temp" max="370" min="40" size="2" type="short" units="degree" value="200">
+		<Help>
+			Saturday day temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 83 -->
+	<Value genre="config" index="83" label="Saturday evening temp" max="370" min="40" size="2" type="short" units="degree" value="230">
+		<Help>
+			Saturday evening temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 84 -->
+	<Value genre="config" index="84" label="Saturday night temp" max="370" min="40" size="2" type="short" units="degree" value="180">
+		<Help>
+			Saturday night temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 85 -->
+	<Value genre="config" index="85" label="Sunday morning temp" max="370" min="40" size="2" type="short" units="degree" value="240">
+		<Help>
+			Sunday morning temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 86 -->
+	<Value genre="config" index="86" label="Sunday day temp" max="370" min="40" size="2" type="short" units="degree" value="200">
+		<Help>
+			Sunday day temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 87 -->
+	<Value genre="config" index="87" label="Sunday evening temp" max="370" min="40" size="2" type="short" units="degree" value="230">
+		<Help>
+			Sunday evening temperature, value x10
+		</Help>
+	</Value>
+	<!-- Configuration Parameter 88 -->
+	<Value genre="config" index="88" label="Sunday night temp" max="370" min="40" size="2" type="short" units="degree" value="180">
+		<Help>
+			Sunday night temperature, value x10
+		</Help>
+	</Value>
+</CommandClass>
+  <CommandClass id="133">
+	   <Associations num_groups="6">
+	      <Group index="1" label="Lifeline" max_associations="1"/>
+	      <Group auto="true" index="2" label="Realy 1 Basic Set (On/Off)" max_associations="10"/>
+	      <Group auto="true" index="3" label="Realy 2 Basic Set (On/Off)" max_associations="10"/>
+	      <Group auto="true" index="4" label="Realy 3 Basic Set (On/Off)" max_associations="10"/>
+	      <Group auto="true" index="5" label="Realy 4 Basic Set (On/Off)" max_associations="10"/>
+	      <Group auto="true" index="6" label="Realy 5 Basic Set (On/Off)" max_associations="10"/>
+	   </Associations>
+   </CommandClass>
+</Product>

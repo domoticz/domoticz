@@ -1,6 +1,7 @@
 <!--
 Aeotec ZW129 WallMote Duo, base on Engineering Spec 9/27/2016
---><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+-->
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0081:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw129.png</MetaDataItem>
@@ -20,6 +21,7 @@ The WallMote Quad is also a security Z-Wave device and supports Over The Air (OT
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2232/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2233/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2234/xml</Entry>
+      <Entry author="Justin Hammond - Justin@dynam.ac" date="25 Jun 2019" revision="6">Remove CentralScene from Endpoints - RemoveCC</Entry>
     </ChangeLog>
     <MetaDataItem id="0081" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/2233/</MetaDataItem>
     <MetaDataItem id="0081" name="FrequencyName" type="0202">Australia / New Zealand</MetaDataItem>
@@ -109,7 +111,11 @@ The WallMote Quad is also a security Z-Wave device and supports Over The Air (OT
       <Group index="5" label="Dimmer control via Button 2" max_associations="5"/>
     </Associations>
   </CommandClass>
-
+  <CommandClass id="96">
+    	<Compatibility>
+  		<RemoveCC index="91">true</RemoveCC>
+  	</Compatibility>
+  </CommandClass>
 
 
 

@@ -864,7 +864,8 @@ namespace OpenZWave
 			void NotifyWatchers();												// Passes the notifications to all the registered watcher callbacks in turn.
 
 			OPENZWAVE_EXPORT_WARNINGS_OFF
-			list<Notification*> m_notifications;OPENZWAVE_EXPORT_WARNINGS_ON
+			list<Notification*> m_notifications;
+			OPENZWAVE_EXPORT_WARNINGS_ON
 			Internal::Platform::Event* m_notificationsEvent;
 
 			//-----------------------------------------------------------------------------

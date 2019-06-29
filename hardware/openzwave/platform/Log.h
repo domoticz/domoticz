@@ -30,6 +30,7 @@
 
 #include <stdarg.h>
 #include <string>
+#include <vector>
 #include "Defs.h"
 
 namespace OpenZWave
@@ -127,9 +128,11 @@ namespace OpenZWave
 			 * \brief Set the Logging Implementation Class to replace the standard File/Console logging
 			 *
 			 * \param LogClass A Logging Class that inherits the i_LogImpl Class used to Log to
+			 * \param Append if this new Logging Class should be appended to the list of Logging Implementations,
+			 * or replace the existing Logging Class
 			 * \return Bool Value indicating success or failure
 			 */
-			static bool SetLoggingClass(i_LogImpl *LogClass);
+			static bool SetLoggingClass(i_LogImpl *LogClass, bool Append = false);
 
 			/** \brief Enable or disable library logging (retained for backward compatibility)
 			 *
@@ -204,9 +207,8 @@ namespace OpenZWave
 			Log(string const& _filename, bool const _bAppend, bool const _bConsoleOutput, LogLevel _saveLevel, LogLevel _queueLevel, LogLevel _dumpTrigger);
 			~Log();
 
-			static i_LogImpl* m_pImpl; /**< Pointer to an object that encapsulates the platform-specific logging implementation. */
+			static std::vector<i_LogImpl*> m_pImpls; /**< Pointer to an object that encapsulates the platform-specific logging implementation. */
 			static Log* s_instance;
-			static bool s_customLogger;
 			Internal::Platform::Mutex* m_logMutex;
 	};
 } // namespace OpenZWave
