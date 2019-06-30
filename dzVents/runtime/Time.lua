@@ -1029,7 +1029,6 @@ local function Time(sDate, isUTC, _testMS)
 
 			res = self.ruleIsBeforeSunset(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes before sunset and now is not at that time
 				return false
 			end
 			updateTotal(res)
@@ -1037,49 +1036,42 @@ local function Time(sDate, isUTC, _testMS)
 
 			res = self.ruleIsAfterSunset(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes after sunset and now is not at that time
 				return false
 			end
 			updateTotal(res)
 
 			res = self.ruleIsBeforeCivilTwilightStart(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes before civil twilight start and now is not at that time
 				return false
 			end
 			updateTotal(res)
 
 			res = self.ruleIsAfterCivilTwilightStart(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes after civil twilight start and now is not at that time
 				return false
 			end
 			updateTotal(res)
 
 			res = self.ruleIsBeforeCivilTwilightEnd(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes before civil twilight end now is not at that time
 				return false
 			end
 			updateTotal(res)
 
 			res = self.ruleIsAfterCivilTwilightEnd(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes after civil twilight end now is not at that time
 				return false
 			end
 			updateTotal(res)
 
 			res = self.ruleIsBeforeSunrise(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes before sunrise and now is not at that time
 				return false
 			end
 			updateTotal(res)
 
 			res = self.ruleIsAfterSunrise(rule) -- moment
 			if (res == false) then
-				-- rule has xx minutes after sunrise and now is not at that time
 				return false
 			end
 			updateTotal(res)
@@ -1087,63 +1079,54 @@ local function Time(sDate, isUTC, _testMS)
 
 		res = self.ruleIsAtCivilTwilightStart(rule) -- moment
 		if (res == false) then
-			-- rule has at civil twilight start and now is not at that time
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtCivilTwilightEnd(rule) -- moment
 		if (res == false) then
-			-- rule has at civil twilight end and now is not at that time
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtSunset(rule) -- moment
 		if (res == false) then
-			-- rule has at sunset and now is not at that time
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtSunrise(rule) -- moment
 		if (res == false) then
-			-- rule has at sunrise and now is not at that time
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtNight(rule) -- range
 		if (res == false) then
-			-- rule has at nighttime but it is not night time now
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtDayTime(rule) -- range
 		if (res == false) then
-			-- rule has at daytime but it is at night now
 			return false
 		end
 		updateTotal(res)
 		
 		res = self.ruleIsAtCivilNightTime(rule) -- range
 		if (res == false) then
-			-- rule has at civilnighttime but it is not night time now
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtCivilDayTime(rule) -- range
 		if (res == false) then
-			-- rule has at civildaytime but it is not night time now
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtDayTime(rule) -- range
 		if (res == false) then
-			-- rule has at daytime but it is at night now
 			return false
 		end
 		updateTotal(res)
