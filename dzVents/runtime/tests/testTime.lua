@@ -604,25 +604,25 @@ describe('Time', function()
 				it('should return true if it is civil day time', function()
 					_G.timeofday = { ['Civilnighttime'] = true }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_true(t.ruleIsAtCivilNight('at civilnighttime'))
+					assert.is_true(t.ruleIsAtCivilNightTime('at civilnighttime'))
 				end)
 
 				it('should return false if it is not civil day time', function()
 					_G.timeofday = { ['Civilnighttime'] = false }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_false(t.ruleIsAtCivilNight('at civilnighttime'))
+					assert.is_false(t.ruleIsAtCivilNightTime('at civilnighttime'))
 				end)
 
 				it('should return nil if the rule is not present', function()
 					_G.timeofday = { ['Civilnighttime'] = true }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_nil(t.ruleIsAtCivilNight('at blabalbba'))
+					assert.is_nil(t.ruleIsAtCivilNightTime('at blabalbba'))
 				end)
 
 				it('should detect the rule within a random string', function()
 					_G.timeofday = { ['Civilnighttime'] = true }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_true(t.ruleIsAtCivilNight('some random at civilnighttime text'))
+					assert.is_true(t.ruleIsAtCivilNightTime('some random at civilnighttime text'))
 				end)
 			end)
 
@@ -840,6 +840,28 @@ describe('Time', function()
 
 			end)
 
+			describe('at civildaytime', function()
+
+				it('should return true if it is civilday time', function()
+					_G.timeofday = { ['Civildaytime'] = true }
+					local t = Time('2017-01-01 00:00:00')
+					assert.is_true(t.ruleIsAtCivilDayTime('at civildaytime'))
+				end)
+
+				it('should return false if it is not day time', function()
+					_G.timeofday = { ['Civildaytime'] = false }
+					local t = Time('2017-01-01 00:00:00')
+					assert.is_false(t.ruleIsAtCivilDayTime('at civildaytime'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['Civildaytime'] = true }
+					local t = Time('2017-01-01 00:00:00')
+					assert.is_nil(t.ruleIsAtDayTime('at blabalbba'))
+				end)
+
+			end)
+
 			describe('at nighttime', function()
 
 				it('should return true if it is day time', function()
@@ -860,11 +882,28 @@ describe('Time', function()
 					assert.is_nil(t.ruleIsAtNight('at blabalbba'))
 				end)
 
-				it('should detect the rule within a random string', function()
-					_G.timeofday = { ['Nighttime'] = true }
+			end)
+
+			describe('at civilnighttime', function()
+
+				it('should return true if it is civilnight time', function()
+					_G.timeofday = { ['Civilnighttime'] = true }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_true(t.ruleIsAtNight('some random at nighttime text'))
+					assert.is_true(t.ruleIsAtCivilNightTime('at civilnighttime'))
 				end)
+
+				it('should return false if it is not night time', function()
+					_G.timeofday = { ['Civilnighttime'] = false }
+					local t = Time('2017-01-01 00:00:00')
+					assert.is_false(t.ruleIsAtCivilNightTime('at civilnighttime'))
+				end)
+
+				it('should return nil if the rule is not present', function()
+					_G.timeofday = { ['Civilnighttime'] = true }
+					local t = Time('2017-01-01 00:00:00')
+					assert.is_nil(t.ruleIsAtNight('at blabalbba'))
+				end)
+
 			end)
 
 			describe('at sunset', function()
