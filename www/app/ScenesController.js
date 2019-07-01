@@ -663,8 +663,8 @@ define(['app'], function (app) {
 				"sPaginationType": "full_numbers",
 				language: $.DataTableLanguage
 			});
-			$("#scenecontent #devicename").val(unescape(name));
-			$("#scenecontent #devicedescription").val(unescape(description));
+			$("#scenecontent #devicename").val(decodeURI(name));
+			$("#scenecontent #devicedescription").val(decodeURI(description));
 
 			$("#scenecontent #combodevice").html("");
 
@@ -796,7 +796,7 @@ define(['app'], function (app) {
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + encodeURI(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 								bigtext += "&nbsp;" + streamurl;
 							}
 
@@ -932,12 +932,12 @@ define(['app'], function (app) {
 							}
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
+								'\t      <td id="name" class="name"><span>' + encodeURI(item.Name) + '</span></td>\n' +
 								'\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + encodeURI(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 								bigtext += "&nbsp;" + streamurl;
 							}
 							xhtm += bigtext + '</span></td>\n';
@@ -977,7 +977,7 @@ define(['app'], function (app) {
 							xhtm += '<a class="btnsmall" href="#/Scenes/' + item.idx + '/Log" data-i18n="Log">Log</a> ';
 
 							if (permissions.hasPermission("Admin")) {
-								xhtm += '<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
+								xhtm += '<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + encodeURI(item.Name) + '\',\'' + encodeURI(item.Description) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
 								if (bAddTimer == true) {
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="#/Scenes/' + item.idx + '/Timers" data-i18n="Timers">Timers</a> ';
