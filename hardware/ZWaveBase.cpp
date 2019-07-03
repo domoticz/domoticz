@@ -695,7 +695,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lmeter.dunit=255;
 		lmeter.fLux=pDevice->floatValue;
 		lmeter.battery_level= BatLevel;
-		sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&lmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_GAS)
 	{
@@ -704,7 +704,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_p1gas.subtype = sTypeP1Gas;
 		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
 		m_p1gas.ID = lID;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, (!pDevice->label.empty()) ? pDevice->label.c_str() : NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
