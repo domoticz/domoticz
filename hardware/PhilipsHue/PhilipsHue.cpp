@@ -812,7 +812,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 		Json::Value light = *iLight;
 		if (light.isObject())
 		{
-			int lID = iLight.key().asInt();
+			int lID = atoi(iLight.key().asString().c_str());
 
 			_tHueLightState tlight;
 			_eHueLightType LType;
@@ -849,7 +849,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		Json::Value group = *iGroup;
 		if (group.isObject())
 		{
-			int gID = iGroup.key().asInt();
+			int gID = atoi(iGroup.key().asString().c_str());
 
 			_tHueLightState tstate;
 			_eHueLightType LType;
@@ -1037,7 +1037,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 		if (sensor.isObject())
 		{
 			bool bNewSensor = false;
-			int sID = iSensor.key().asInt();
+			int sID = atoi(iSensor.key().asString().c_str());
 
 			CPHSensor current_sensor(sensor);
 			CPHSensor previous_sensor;
