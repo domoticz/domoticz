@@ -14,30 +14,30 @@
 
 struct smtp_upload_status {
 	size_t bytes_read;
-	char *pDataBytes;
+	char* pDataBytes;
 	size_t sDataLength;
 };
 
-static size_t smtp_payload_reader(void *ptr, size_t size, size_t nmemb, void *userp)
+static size_t smtp_payload_reader(void* ptr, size_t size, size_t nmemb, void* userp)
 {
-	struct smtp_upload_status *upload_ctx = (struct smtp_upload_status *)userp;
+	struct smtp_upload_status* upload_ctx = (struct smtp_upload_status*)userp;
 
-	if ((size == 0) || (nmemb == 0) || ((size*nmemb) < 1)) {
+	if ((size == 0) || (nmemb == 0) || ((size * nmemb) < 1)) {
 		return 0;
 	}
 	size_t realsize = size * nmemb;
-	if (realsize+upload_ctx->bytes_read>upload_ctx->sDataLength)
-		realsize=upload_ctx->sDataLength-upload_ctx->bytes_read;
-	if (realsize==0)
+	if (realsize + upload_ctx->bytes_read > upload_ctx->sDataLength)
+		realsize = upload_ctx->sDataLength - upload_ctx->bytes_read;
+	if (realsize == 0)
 		return 0;
-	memcpy(ptr,upload_ctx->pDataBytes+upload_ctx->bytes_read,realsize);
-	upload_ctx->bytes_read+=realsize;
+	memcpy(ptr, upload_ctx->pDataBytes + upload_ctx->bytes_read, realsize);
+	upload_ctx->bytes_read += realsize;
 	return realsize;
 }
 
 SMTPClient::SMTPClient()
 {
-	m_Port=25;
+	m_Port = 25;
 }
 
 SMTPClient::~SMTPClient()
@@ -45,42 +45,42 @@ SMTPClient::~SMTPClient()
 
 }
 
-void SMTPClient::SetFrom(const std::string &From)
+void SMTPClient::SetFrom(const std::string& From)
 {
-	m_From="<"+From+">";
+	m_From = "<" + From + ">";
 }
 
-void SMTPClient::SetTo(const std::string &To)
+void SMTPClient::SetTo(const std::string& To)
 {
 	std::vector<std::string> results;
-	StringSplit(To,";",results);
+	StringSplit(To, ";", results);
 
 	std::vector<std::string>::const_iterator itt;
-	for (itt=results.begin(); itt!=results.end(); ++itt)
+	for (itt = results.begin(); itt != results.end(); ++itt)
 	{
-		std::string sTo="<"+(*itt)+">";
-		m_Recipients.push_back(sTo);
+		std::string sTo = *itt;
+		m_Recipients.push_back("<" + stdstring_trim(sTo) + ">");
 	}
 }
 
-void SMTPClient::SetSubject(const std::string &Subject)
+void SMTPClient::SetSubject(const std::string& Subject)
 {
-	m_Subject=Subject;
+	m_Subject = Subject;
 }
 
-void SMTPClient::SetServer(const std::string &Server, const int Port)
+void SMTPClient::SetServer(const std::string& Server, const int Port)
 {
-	m_Server=Server;
-	m_Port=Port;
+	m_Server = Server;
+	m_Port = Port;
 }
 
-void SMTPClient::SetCredentials(const std::string &Username, const std::string &Password)
+void SMTPClient::SetCredentials(const std::string& Username, const std::string& Password)
 {
-	m_Username=Username;
-	m_Password=Password;
+	m_Username = Username;
+	m_Password = Password;
 }
 
-void SMTPClient::AddAttachment(const std::string &adata, const std::string &atype)
+void SMTPClient::AddAttachment(const std::string& adata, const std::string& atype)
 {
 	std::pair<std::string, std::string> tattachment;
 	tattachment.first = adata;
@@ -88,40 +88,40 @@ void SMTPClient::AddAttachment(const std::string &adata, const std::string &atyp
 	m_Attachments.push_back(tattachment);
 }
 
-void SMTPClient::SetPlainBody(const std::string &body)
+void SMTPClient::SetPlainBody(const std::string& body)
 {
-	m_PlainBody=body;
-	m_HTMLBody="";
+	m_PlainBody = body;
+	m_HTMLBody = "";
 }
 
-void SMTPClient::SetHTMLBody(const std::string &body)
+void SMTPClient::SetHTMLBody(const std::string& body)
 {
-	m_HTMLBody=body;
-	m_PlainBody="";
+	m_HTMLBody = body;
+	m_PlainBody = "";
 }
 
 bool SMTPClient::SendEmail()
 {
-	if (m_From.size()==0)
+	if (m_From.size() == 0)
 		return false;
 	if (m_Recipients.empty())
 		return false;
-	if (m_Server.size()==0)
+	if (m_Server.size() == 0)
 		return false;
 
-	const std::string rmessage=MakeMessage();
+	const std::string rmessage = MakeMessage();
 
 	CURLcode ret;
-	struct curl_slist *slist1;
+	struct curl_slist* slist1;
 
 	smtp_upload_status smtp_ctx;
-	smtp_ctx.bytes_read=0;
+	smtp_ctx.bytes_read = 0;
 
 	slist1 = NULL;
 
 
 	std::vector<std::string>::const_iterator itt;
-	for (itt=m_Recipients.begin(); itt!=m_Recipients.end(); ++itt)
+	for (itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
 	{
 		slist1 = curl_slist_append(slist1, (*itt).c_str());
 	}
@@ -132,11 +132,11 @@ bool SMTPClient::SendEmail()
 	else
 		sstr << "smtps://"; //SSL connection
 	sstr << m_Server << ":" << m_Port;
-	std::string szURL=sstr.str();//"smtp://"+MailServer;
+	std::string szURL = sstr.str();//"smtp://"+MailServer;
 
 	try
 	{
-		CURL *curl;
+		CURL* curl;
 		curl = curl_easy_init();
 
 		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
@@ -144,7 +144,7 @@ bool SMTPClient::SendEmail()
 		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
 		curl_easy_setopt(curl, CURLOPT_URL, szURL.c_str());
 		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-		if (m_Username!="")
+		if (m_Username != "")
 		{
 			//std::string szUserPassword=MailUsername+":"+MailPassword;
 			//curl_easy_setopt(curl, CURLOPT_USERPWD, szUserPassword.c_str());
@@ -164,17 +164,17 @@ bool SMTPClient::SendEmail()
 		curl_easy_setopt(curl, CURLOPT_MAIL_FROM, m_From.c_str());
 		curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, slist1);
 
-		smtp_ctx.pDataBytes=new char[rmessage.size()];
-		if (smtp_ctx.pDataBytes==NULL)
+		smtp_ctx.pDataBytes = new char[rmessage.size()];
+		if (smtp_ctx.pDataBytes == NULL)
 		{
-			_log.Log(LOG_ERROR,"SMTP Mailer: Out of Memory!");
+			_log.Log(LOG_ERROR, "SMTP Mailer: Out of Memory!");
 
 			curl_easy_cleanup(curl);
 			curl_slist_free_all(slist1);
 			return false;
 		}
-		smtp_ctx.sDataLength=rmessage.size();
-		memcpy(smtp_ctx.pDataBytes,rmessage.c_str(),smtp_ctx.sDataLength);
+		smtp_ctx.sDataLength = rmessage.size();
+		memcpy(smtp_ctx.pDataBytes, rmessage.c_str(), smtp_ctx.sDataLength);
 
 		curl_easy_setopt(curl, CURLOPT_READFUNCTION, smtp_payload_reader);
 		curl_easy_setopt(curl, CURLOPT_READDATA, &smtp_ctx);
@@ -183,28 +183,28 @@ bool SMTPClient::SendEmail()
 
 		curl_easy_cleanup(curl);
 		curl_slist_free_all(slist1);
-		delete [] smtp_ctx.pDataBytes;
+		delete[] smtp_ctx.pDataBytes;
 
-		if (ret!=CURLE_OK)
+		if (ret != CURLE_OK)
 		{
-			_log.Log(LOG_ERROR,"SMTP Mailer: Error sending Email to: %s !",m_Recipients[0].c_str());
+			_log.Log(LOG_ERROR, "SMTP Mailer: Error sending Email to: %s !", m_Recipients[0].c_str());
 			return false;
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR,"SMTP Mailer: Error sending Email to: %s !",m_Recipients[0].c_str());
+		_log.Log(LOG_ERROR, "SMTP Mailer: Error sending Email to: %s !", m_Recipients[0].c_str());
 		return false;
 	}
 	return true;
 }
 
-void MakeBoundry(char *pszBoundry)
+void MakeBoundry(char* pszBoundry)
 {
 	char* p = pszBoundry;
 	while (*p) {
 		if (*p == '0')
-			*p = '0' + rand() % 10;
+			* p = '0' + rand() % 10;
 		p++;
 	}
 }
@@ -370,7 +370,7 @@ const std::string SMTPClient::MakeMessage()
 
 	// We do not have to end the message with "<CRLF>.<CRLF>" as libcurl does this for us, but ensure the last line is terminated
 	// ret += "\r\n.\r\n";
-	
+
 	ret += "\r\n";
 
 	return ret;
