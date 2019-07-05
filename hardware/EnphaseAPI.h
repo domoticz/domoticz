@@ -17,10 +17,18 @@ private:
 	void getProduction();
 	void getProductionDetail();
 
+	void getConsumption();
+	void getConsumptionDetail();
+
+	void getNetConsumption();
+	void getNetConsumptionDetail();
+
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 private:
 	std::string m_szIPAddress;
 	P1Power m_p1power;
+	P1Power m_c1power;
+	P1Power m_c2power;
 	std::shared_ptr<std::thread> m_thread;
 };
 
