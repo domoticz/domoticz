@@ -3630,7 +3630,7 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 		{
 			std::string ProductDescription = result[0][0];
 			bSingleIndexPoll = (
-				(ProductDescription.find("GreenWave PowerNode 6 port") != std::string::npos)
+				(ProductDescription.find("GreenWave Reality Inc PowerNode 6 port") != std::string::npos)
 				);
 		}
 
