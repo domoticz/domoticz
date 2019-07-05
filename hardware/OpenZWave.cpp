@@ -3685,18 +3685,11 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					else if (commandclass == COMMAND_CLASS_METER)
 					{
 						//Meter device
-						if (
-							(vLabel.find("Energy") != std::string::npos) ||
-							(vLabel.find("Power") != std::string::npos) ||
-							(vLabel.find("Gas") != std::string::npos) ||
-							(vLabel.find("Water") != std::string::npos)
-							)
-						{
-							if (bSingleIndexPoll && (ittValue->GetIndex() != 0))
-								continue;
-							if (!m_pManager->isPolled(*ittValue))
-								m_pManager->EnablePoll(*ittValue, 1);
-						}
+						if (bSingleIndexPoll && (ittValue->GetIndex() != 0))
+							continue;
+
+						if (!m_pManager->isPolled(*ittValue))
+							m_pManager->EnablePoll(*ittValue, 1);
 					}
 					else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 					{
