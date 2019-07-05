@@ -3623,15 +3623,14 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 
 		bool bSingleIndexPoll = false;
 
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
-			m_HwdID, homeID, nodeID);
-		if (!result.empty())
+		if (
+			(pNode->Manufacturer_id == 0x0099)
+			&& (pNode->Product_id == 0x0004)
+			&& (pNode->Product_type == 0x0003)
+			)
 		{
-			std::string ProductDescription = result[0][0];
-			bSingleIndexPoll = (
-				(ProductDescription.find("GreenWave Reality Inc PowerNode 6 port") != std::string::npos)
-				);
+			//GreenWave Reality Inc PowerNode 6
+			bSingleIndexPoll = true;
 		}
 
 		for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance = pNode->Instances.begin(); ittInstance != pNode->Instances.end(); ++ittInstance)
