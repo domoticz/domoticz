@@ -1,4 +1,4 @@
-<Product Revision="13" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="14" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgd212.png</MetaDataItem>
@@ -63,6 +63,7 @@ https://www.youtube.com/watch?v=K35uFXoa5c0
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="11">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1729/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="12">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1736/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="13">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2836/xml</Entry>
+      <Entry author="Peter Gebruers for NoukNouk - peter.gebruers@gmail.com" date="28 Jun 2019" revision="14">Fix duplicate label https://github.com/OpenZWave/open-zwave/issues/1854</Entry>
     </ChangeLog>
     <MetaDataItem id="2000" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/2836/</MetaDataItem>
     <MetaDataItem id="2000" name="FrequencyName" type="0102">U.S. / Canada / Mexico / CEPT (Europe)</MetaDataItem>
@@ -206,13 +207,13 @@ Default setting: 15</Help>
       <Item label="forced trailing edge control" value="1"/>
       <Item label="control mode selected automatically (based on auto-calibration)" value="2"/>
     </Value>
-    <Value genre="config" index="31" instance="1" label="Load control mode" read_only="true" size="1" type="list" value="0">
+    <Value genre="config" index="31" instance="1" label="Load control mode recognized during auto-calibration" read_only="true" size="1" type="list" value="0">
       <Help>Load control mode recognized during auto-calibration.</Help>
       <Item label="leading edge" value="0"/>
       <Item label="trailing edge" value="1"/>
     </Value>
     <Value genre="config" index="32" instance="1" label="On/Off mode" size="1" type="list" value="2">
-      <Help>Load control mode recognized during auto-calibration.</Help>
+      <Help>This mode is necessary while connecting non-dimmable light sources. Setting this parameter to 1 automatically ignores brightening/dimming time settings. Forced auto-calibration will set this parameter’s value to 2</Help>
       <Item label="on/off mode disabled (dimming is possible)" value="0"/>
       <Item label="on/off mode enabled (dimming is not possible)" value="1"/>
       <Item label="mode selected automatically" value="2"/>

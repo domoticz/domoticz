@@ -1,0 +1,182 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+        <MetaDataItem name="Name">ZW175 Smart Switch 7</MetaDataItem>
+        <MetaDataItem name="Description">
+            Elegant appearance, small size, easy to use, friendly operation.
+            Support power metering function, with high measurement accuracy, and more accurate knowledge of the power consumption of the load.
+            Support over-current, over-load and over-heat protection, which is more secure and reliable.
+            Support scene personalization and is more intelligent.
+            Support Night Light Mode to reduce light pollution.
+            Support S2 Security, which is safer and more reliable.
+            Support SmartStart, making inclusion more convenient.
+        </MetaDataItem>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:00af:0003</MetaDataItem>
+        <MetaDataItem name="ProductPage">https://products.z-wavealliance.org/products/3437</MetaDataItem>
+        <MetaDataItem name="ProductSupport">https://products.z-wavealliance.org/products/3437</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/aeotec/zw195.png</MetaDataItem>
+        <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/products/3437</MetaDataItem>
+        <MetaDataItem name="WakeupDescription">N/A</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">
+            1. Set your Z-Wave Controller into its 'Add Device' mode in order to add the product into your Z-Wave system. Refer to the Controller's manual if you are unsure of how to perform this step.
+            2. Make sure the product is powered. If not, plug it into a wall socket and power on; its LED will be breathing blue light all the time.
+            3. Click Action Button once, it will quickly flash blue light for 30 seconds until it is added into the network. It will become constantly bright yellow light after being assigned a NodeID.
+            4. If your Z-Wave Controller supports S2 encryption, enter the first 5 digits of DSK into your Controller's interface if /when requested. The DSK is printed on its housing.
+            5. If Adding fails, it will bright red light for 2s and then become breathing blue light; repeat steps 1 to 4. Contact us for further support if needed.
+            6. If Adding succeeds, it will bright blue light for 2s and then turn to Load Indicator Mode. Now, this product is a part of your Z-Wave home control system. You can configure it and its automations via your Z-Wave system; please refer to your software's user guide for precise instructions.</MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">
+            1. Set your Z-Wave Controller into its 'Remove Device' mode in order to remove the product from your Z-Wave system. Refer to the Controller's manual if you are unsure of how to perform this step.
+            2. Make sure the product is powered. If not, plug it into a wall socket and power on. 3. Click Action Button 2 times quickly; it will bright violet light, up to 2s.
+            4. If Removing fails, it will bright red light for 2s and then turn back to Load Indicator Mode; repeat steps 1 to 3. Contact us for further support if needed.
+            5. If Removing succeeds, it will become breathing blue light. Now, it is removed from Z-Wave network successfully.
+        </MetaDataItem>
+        <MetaDataItem name="ResetDescription">Make sure the product is powered. If not, plug it into a wall socket and power on. To complete the reset process manually, press and hold the Action Button for at least 15s and then release. The LED indicator will become breathing blue light, which indicates the reset operation is successful. Otherwise, please try again.</MetaDataItem>
+        <MetaDataItem id="00af" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/3437</MetaDataItem>
+        <MetaDataItem id="00af" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+        <MetaDataItem id="00af" name="Identifier" type="0003">ZW175-C16</MetaDataItem>
+        <ChangeLog>
+            <Entry author="Jean-Francois Auger - nechry@gmail.com" date="01 July 2019" revision="1">Add ZW175 Smart Switch 7</Entry>
+            <Entry author="Jean-Francois Auger - nechry@gmail.com" date="03 July 2019" revision="2">Change refresh on node info frame</Entry>
+        </ChangeLog>
+    </MetaData>
+    <!-- ZW175 Smart Switch 7 -->
+    <Protocol refreshonnodeinfoframe="true"/>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value genre="config" index="4" label="Over-load protection" max="2415" min="0" size="2" type="short" units="" value="2415">
+            <Help>
+                Define a threshold power and automatically turn off switch when the load connected bypasses the maximum allowed power regardless of always on setting.
+                Note:
+                Over-load protection will be active if the load power exceeds the setting and lasts for more than 30s.
+                If be active, Indicator Light will become red light blinking and the product will send out Notification Report (Over-load detected), and disable the function that manually or RF control the switch state until users set Protection State to be unprotected through the Gateway or Controller.
+                Even power off will still keep Protection State.
+            </Help>
+        </Value>
+        <Value genre="config" index="8" label="Alarm Response" max="3" min="0" size="1" type="list" units="" value="0">
+            <Help>
+                Enabled by (Alarm Settings), and determines what the switch does in the case an alarm is triggered.
+                Note:
+                When receives any alarm enabled by Alarm Settings, Indicator Light will keep blinking based on Parameter 18.
+                It will prohibit user from manually or RF control the switch state until the alarm is disable.
+            </Help>
+            <Item label="Disable, no reaction to alarm settings" value="0"/>
+            <Item label="Switch is ON" value="1"/>
+            <Item label="Switch is OFF" value="2"/>
+            <Item label="Switch will turn ON in 5 seconds, and then turn OFF in 5 seconds in a cycle until user disables the alarm manually" value="3"/>
+        </Value>
+        <Value genre="config" index="9" label="Alarm Settings" max="32513" min="0" size="2" type="short" units="" value="0">
+            <Help>
+                Determine if alarms are enabled in Switch, and what Switch will react to which alarm.
+                The format of the parameter is Bit field (Checkboxes).
+                The parameter MUST be treated as a bit field where each individual bit can be set or reset.
+                A graphical configuration tool SHOULD present this parameter as a series of checkboxes.
+            </Help>
+        </Value>
+        <Value genre="config" index="10" label="Setting to disable alarm" max="255" min="0" size="2" type="short" units="" value="0">
+            <Help>
+                Determines the method of disabling the alarm of the device.
+                Note: Power off will also disable the alarm response without any limitation.
+
+                0=> Can be disabled by 3x tapping Action Button within 1 second.
+                1=> Can be disabled when receives a State Idle corresponding to the alarm.
+                Note: If Access Control is enable, it also can be disabled when receives the reversal state of window/door.
+                10..255=> Sets the duration of the alarm in seconds(i.e. Customer sets this setting to 50, the alarm state of the Switch will disable after 50 seconds)
+            </Help>
+        </Value>
+        <Value genre="config" index="18" label="LED blinking frequency" max="9" min="1" size="1" type="byte" units="" value="2">
+            <Help>
+                Set amount of blinks per seconds.
+                Note: When receiving the enable Alarm, it will flash according to the blink frequency configured by this parameter until the Alarm is disable.
+                Brightness level and color is based on current indicator.
+                If the value of brightness level and color is 0, it will flash based on last visible color.
+            </Help>
+        </Value>
+        <Value genre="config" index="19" label="Start or stop LED blinking" max="255" min="0" size="2" type="short" units="" value="0" write_only="true">
+            <Help>
+                Note: The parameter can be used to test the effect of LED blinking.
+                0=> Stop blinking.
+                1..255=> Set the duration and start the blinking process.
+                * This sets the timeframe of blinking in seconds.
+                * Once the duration ends, the blinking will stop.
+            </Help>
+        </Value>
+        <Value genre="config" index="20" label="Action in case of power out" max="2" min="0" size="1" type="list" units="" value="0">
+            <Help>Configure the output load status after re-power on.</Help>
+            <Item label="Last status" value="0"/>
+            <Item label="Switch is on" value="1"/>
+            <Item label="Switch is off" value="2"/>
+        </Value>
+        <Value genre="config" index="80" label="Lifeline Notification report" max="2" min="0" size="1" type="list" units="" value="2">
+            <Help>Defines the automated status notification of an associated device when status changes</Help>
+            <Item label="None" value="0"/>
+            <Item label="Basic Report" value="1"/>
+            <Item label="Binary Switch Report" value="2"/>
+        </Value>
+        <Value genre="config" index="81" label="Load Indicator Mode setting" max="1" min="0" size="1" type="list" units="" value="2">
+            <Help>Configuring brightness and color of Indicator Light in different time/status of different modes will be saved in the current setting mode.</Help>
+            <Item label="Disable Mode" value="0"/>
+            <Item label="Night Light Mode" value="1"/>
+            <Item label="ON/OFF Mode" value="2"/>
+        </Value>
+        <Value genre="config" index="82" label="Configure the enable and disable time of Night Light Mode" max="1" min="0" size="4" type="int" units="" value="301991936">
+            <Help>
+                Value1: Enable Hour. Valid value are 0-23 and 127. Value 127 means use last valid setting.
+                Value2: Enable Minute. Valid value are 0-59 and 255. Value 255 means use last valid setting.
+                Value3: Disable Hour. Valid value are 0-23 and 255. Value 255 means use last valid setting.
+                Value4: Disable Minute. Valid value are 0-59 and 255. Value 255 means use last valid setting.
+            </Help>
+        </Value>
+        <Value genre="config" index="91" label="Threshold Power for inducing automatic report" max="2300" min="0" size="2" type="short" units="watts" value="0">
+            <Help>
+                0 => Disable.
+                1-2300 => 1-2300W.
+            </Help>
+        </Value>
+        <Value genre="config" index="92" label="Threshold Power Consumption for inducing automatic report" max="10000" min="0" size="2" type="short" units="kWh" value="0">
+            <Help>
+                0 => Disable.
+                1-10000 => 1-10000kWh.
+            </Help>
+        </Value>
+        <Value genre="config" index="93" label="Threshold Current for inducing automatic report" max="100" min="0" size="1" type="byte" units="0.1A" value="0">
+            <Help>
+                0 => Disable.
+                1-100 => 0.1-10A.
+            </Help>
+        </Value>
+        <Value genre="config" index="101" label="Configure which meter reading will be periodically report via Lifeline" type="int" units="" value="15">
+            <Help>
+                Defines the type of report sent for reporting group 1.
+                1 is meter report for voltage.
+                2 is meter report for current.
+                4 is meter report for watts.
+                8 is meter report for kilowatts.
+                Value 1 (msb) Reserved
+                Value 2 Reserved
+                Value 3 Reserved
+                Value 4 (lsb) bits 7-4 reserved
+                bit 3 Current
+                bit 2 Voltage
+                bit 1 Power
+                bit 0 Power Consumption
+            </Help>
+        </Value>
+        <Value genre="config" index="111" label="Configure the sending frequency of Meter Report" max="2592000" min="0" type="int" units="seconds" value="600">
+            <Help>
+                0 => Disable.
+                600..2592000 => 600-2592000s. (10minute-30day)
+            </Help>
+        </Value>
+        <Value genre="config" index="255" label="Reset To Factory Defaults" size="4" type="list" value="1" write_only="true">
+            <Help>Reset to factory defaults</Help>
+            <Item label="Initialization" value="1"/>
+            <Item label="Factory Reset" value="1431655765"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" label="LifeLine" max_associations="5"/>
+            <Group index="2" label="Retransmit Switch CC" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+</Product>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="29" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="34" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -214,6 +214,7 @@
     <Product config="aeotec/zwa008.xml" id="0007" name="ZWA008 Door Window Sensor 7" type="0002"/>
     <Product config="aeotec/zwa008.xml" id="0007" name="ZWA008 Door Window Sensor 7" type="0102"/>
     <Product config="aeotec/zwa008.xml" id="0007" name="ZWA008 Door Window Sensor 7" type="0202"/>
+    <Product config="aeotec/zw175.xml" id="00af" name="ZW175 Smart Switch 7" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0088" name="Airvent SAM S.p.A."></Manufacturer>
   <Manufacturer id="0094" name="Alarm.com"></Manufacturer>
@@ -984,7 +985,6 @@
     <Product config="iwatsu/ne-4ct-2p.xml" id="0102" name="NE-4CT-2P Electric Power Measuring Equipment" type="0102"/>
     <Product config="iwatsu/ne-4ct.xml" id="0103" name="NE-4CT Electric Power Measuring Equipment" type="0103"/>
   </Manufacturer>
-  <Manufacturer id="0063" name="Jasco Products"></Manufacturer>
   <Manufacturer id="015A" name="Jin Tao Bao"></Manufacturer>
   <Manufacturer id="039F" name="JLabs Corporation"></Manufacturer>
   <Manufacturer id="0164" name="JSW Pacific Corporation"></Manufacturer>
@@ -1124,6 +1124,8 @@
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0732"/>
     <!--US-->
     <Product config="mcohome/mhs513.xml" id="0103" name="Touch Panel Switch MH-S513" type="5102"/>
+    <!--AU-->
+    <Product config="mcohome/mhp511.xml" id="1453" name="Dimmer Touch Panel Switch MH-P511" type="511a"/>
   </Manufacturer>
   <Manufacturer id="0222" name="MCT CO. LTD"></Manufacturer>
   <Manufacturer id="0027" name="Meedio LLC"></Manufacturer>
@@ -1303,6 +1305,7 @@
     <Product config="qubino/ZMNHSDx.xml" id="0052" name="ZMNHSDx Din Dimmer" type="0001"/>
     <Product config="qubino/ZMNHVDx.xml" id="0053" name="ZMNHVDx Flush Dimmer 0-10V" type="0001"/>
     <Product config="qubino/ZMNHWD1.xml" id="0054" name="ZMNHWD1 Flush RGBW Dimmer" type="0001"/>
+    <Product config="qubino/ZMNHHDx.xml" id="0055" name="ZMNHHDx Mini Dimmer" type="0001"/>
     <Product config="qubino/ZMNHBA2.xml" id="0001" name="ZMNHBA2 Flush 2 Relays" type="0002"/>
     <Product config="qubino/ZMNHBDx.xml" id="0051" name="ZMNHBDx Flush 2 Relays" type="0002"/>
     <Product config="qubino/ZMNHAA2.xml" id="0002" name="ZMNHAA2 Flush 1 Relay" type="0002"/>
@@ -1604,6 +1607,7 @@
   </Manufacturer>
   <Manufacturer id="0330" name="Tronika">
     <Product config="sunricher/srzv9001t4dimeu.xml" id="a10d" name="Touch Panel Wall Controller - ZSC-01D" type="0003"/>
+    <Product config="sunricher/srzv9001t4dimeu.xml" id="a305" name="Wall Controller - SR-ZV9001" type="0300"/>
     <Product config="sunricher/zv9101.xml" id="d005" name="Dimmer ZV-9101" type="0200"/>
     <Product config="sunricher/srzv9101sachpeu.xml" id="d00c" name="Dimmer ZV9040" type="0200"/>
   </Manufacturer>

@@ -1,0 +1,154 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+    <!--
+  Qubino: ZMNHHDx Mini Dimmer Z-Wave+
+  https://products.z-wavealliance.org/products/3381
+  -->
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value genre="config" index="1" instance="1" label="In-wall Switch Type for Load to control I1" max="1" min="0" size="1" type="list" value="0">
+            <Help>With this parameter, you can select between push-button (momentary) and on/off toggle switch types.</Help>
+            <Item label="Push button" value="0"/>
+            <Item label="Toggle switch" value="1"/>
+        </Value>
+        <Value genre="config" index="5" instance="1" label="Working mode" max="1" min="0" size="1" type="list" value="0">
+            <Help>With this parameter, you can change the device presentation on the user interface.</Help>
+            <Item label="Dimmer mode" value="0"/>
+            <Item label="Switch mode" value="1"/>
+        </Value>
+        <Value genre="config" index="11" instance="1" label="Turn Load 1 Off Automatically with Timer" units="second" max="32536" min="0" size="2" type="short" value="0">
+            <Help>
+                0 - Auto OFF Disabled.
+                1 - 32536 = 1 - 32536 seconds - Auto OFF timer enabled for a given amount of seconds.
+                Default value 0.
+            </Help>
+        </Value>
+        <Value genre="config" index="12" instance="1" label="Turn Load 1 On Automatically with Timer" max="32535" min="0" size="2" type="short" value="0">
+            <Help>
+                0 - Auto ON Disabled.
+                1 - 32536 = 1 - 32536 seconds - Auto ON timer enabled for a given amount of seconds.
+                Default value 0.
+            </Help>
+        </Value>
+        <Value genre="config" index="21" instance="1" label="Double click function" max="1" min="0" size="1" type="list" value="0">
+            <Help>
+                If the Double click function is enabled, a fast double click on the push-button will set the dimming level to the maximum dimming value.
+            </Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value genre="config" index="30" instance="1" label="Restore on/off status for load after power failure" max="1" min="0" size="1" type="list" value="0">
+            <Help>Default value 0.</Help>
+            <Item label="Device saves last on/off status and restores it after a power failure" value="0"/>
+            <Item label="Device does not save on/off status" value="1"/>
+        </Value>
+        <Value genre="config" index="40" instance="1" label="Watt Power Consumption Reporting Threshold for Load" units="%" max="100" min="0" size="1" type="byte" value="5">
+            <Help>Set value from 0 - 100 (0% - 100%).
+                0 - Reporting Disabled.
+                1 - 100 = 1% - 100% Reporting enabled.
+                Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%.
+                Default value 5.</Help>
+        </Value>
+        <Value genre="config" index="42" instance="1" label="Watt Power Consumption Reporting Time Threshold for Load" units="second" max="32767" min="0" type="short" value="300">
+            <Help>Set value means time interval (0 - 32767) in seconds, when power report is send.
+                0 - Reporting Disabled.
+                1 second to 32767 seconds reporting enabled.
+                Power report is send with time interval set by entered value.
+                Default value 300 (power report in Watts is send each 300s).</Help>
+        </Value>
+        <Value genre="config" index="60" instance="1" label="Minimum dimming value" max="98" min="1" type="byte" value="1">
+            <Help>1 - 98 = 1% - 98%, step is 1%. Minimum dimming values is set by entered value.
+                Default value 1 (Minimum dimming value is 1%).</Help>
+        </Value>
+        <Value genre="config" index="61" instance="1" label="Maximum dimming value" max="99" min="2" type="byte" value="99">
+            <Help>2 - 99 = 2% - 99%, step is 1%. Maximum dimming values is set by entered value.
+                Default value 99 (Maximum dimming value is 99%).</Help>
+        </Value>
+        <Value genre="config" index="65" instance="1" label="Dimming time (soft on/off)" max="255" min="1" type="short" value="100">
+            <Help>Set value means time of moving the Dimmer between min. and max. dimming values by short press of push button I1 or controlled through.
+                1- 255 = 10mseconds - 2550mseconds (2,55s), step is 10mseconds.
+                Default value 100 (Dimming time between min. and max. dimming values is 1s).</Help>
+        </Value>
+        <Value genre="config" index="66" instance="1" label="Dimming time when key hold" max="255" min="1" type="short" value="3">
+            <Help>
+                Choose the time during which the Dimmer will move between the min. and max. dimming values during a continuous press of the push-button I1, by an associated device or through the UI controls (BasicSet, SwitchMultilevelSet)
+                default value 3 = 3s.
+                1-127 = 1 second – 127 seconds.
+                128 – 253 = 1 minute – 126 minutes.
+            </Help>
+        </Value>
+        <Value genre="config" index="67" instance="1" label="Ignore start level" max="1" min="0" size="1" type="list" value="0">
+            <Help>
+                Choose whether the device should use (or disregard) the start dimming level value.
+                If the device is configured to use the start level, it should start the dimming process from the currently set dimming level.
+                This parameter is used with association group 3
+            </Help>
+            <Item label="Use the start level value" value="0"/>
+            <Item label="Ignore start level" value="1"/>
+        </Value>
+        <Value genre="config" index="68" instance="1" label="Dimming duration" max="127" min="0" size="1" type="byte" value="0">
+            <Help>
+                Choose the time during which the device will transition from the current value to the new target value.
+                This parameter applies to the association group 3.
+                default value 0 (dimming duration according to parameter 66).
+                1 - 127 (from 1 to 127 seconds).
+            </Help>
+        </Value>
+
+        <Value genre="config" index="70" instance="1" label="Overload safety switch" units="watt" max="255" min="1" type="short" value="200">
+            <Help>
+                The function allows for turning off the controlled device in case of exceeding the defined power for more than 5s.
+                Controlled device can be turned back on by input I1 or sending a control frame.
+                0 = function not active
+                1–200=1W–200W
+            </Help>
+        </Value>
+        <Value genre="config" index="71" instance="1" label="Calibration trigger" max="2" min="0" size="1" type="list" value="0">
+            <Help>
+                Choose when will be the calibration procedure triggered.
+            </Help>
+            <Item label="Calibration done after power cycle if module is excluded" value="0"/>
+            <Item label="Calibration done after power cycle regardless of inclusion status" value="1"/>
+            <Item label="Force calibration" value="2"/>
+        </Value>
+        <Value genre="config" index="72" instance="1" label="Calibration trigger" max="2" min="1" size="1" type="list" value="2" read_only="true">
+            <Help>
+                Whit this parameter you can check the calibration status.
+            </Help>
+            <Item label="Calibration was successful" value="1"/>
+            <Item label="Calibration failed" value="2"/>
+        </Value>
+        <Value genre="config" index="73" instance="1" label="Alarm/Notification events" max="3" min="1" size="1" type="list" value="0">
+            <Help>
+                This parameter defines the module behaviour in case it receives any Alarm/Notification events.
+            </Help>
+            <Item label="Function not active" value="0"/>
+            <Item label="Turn OFF" value="1"/>
+            <Item label="Turn ON" value="2"/>
+            <Item label="Start blinking" value="3"/>
+        </Value>
+        <Value genre="config" index="74" instance="1" label="Alarm/Notification time interval" units="minute" max="125" min="1" size="1" type="byte" value="0">
+            <Help>
+                This parameter defines the time interval of the blinking state, once the module receives an alarm/notification event.
+                Minimum step increase is 1 minute.
+                1 - 127 (from 1 to 125 minutes).
+            </Help>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="4">
+            <Group index="1" label="Lifeline" max_associations="1"/>
+            <Group index="2" label="Basic OnOff" max_associations="16"/>
+            <Group index="3" label="StartStop level change" max_associations="16"/>
+            <Group index="4" label="Multilevel set" max_associations="16"/>
+        </Associations>
+    </CommandClass>
+    <!-- Remove COMMAND_CLASS_BASIC -->
+    <CommandClass action="remove" id="32"/>
+    <!-- Map endpoints to instances -->
+    <CommandClass id="96">
+        <Compatibility>
+            <MapRootToEndpoint>true</MapRootToEndpoint>
+        </Compatibility>
+    </CommandClass>
+</Product>
