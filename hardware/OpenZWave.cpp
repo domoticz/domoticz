@@ -2145,8 +2145,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
 	{
 		if (
-			(vLabel.find("Locked") != std::string::npos) ||
-			(vLabel.find("Unlocked") != std::string::npos)
+			(vOrgIndex == ValueID_Index_DoorLock::Lock)
+			|| (vOrgIndex == ValueID_Index_DoorLock::Lock_Mode)
 			)
 		{
 			_device.devType = ZDTYPE_SWITCH_NORMAL;
@@ -2160,6 +2160,26 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 						_device.intvalue = 0;
 					InsertDevice(_device);
 				}
+			}
+			else if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				int32 lValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+					return;
+				if (
+					(lValue == 0)
+					|| (lValue == 1)
+					)
+				{
+					//Locked/Locked Advanced
+					_device.intvalue = 255;
+				}
+				else
+				{
+					//Unlock values?
+					_device.intvalue = 0;
+				}
+				InsertDevice(_device);
 			}
 			else
 			{
@@ -2853,7 +2873,50 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			}
 			pDevice->intvalue = intValue;
 		}
-		else if (vLabel.find("Open") != std::string::npos)
+	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
+	{
+		if (
+			(vOrgIndex == ValueID_Index_DoorLock::Lock)
+			|| (vOrgIndex == ValueID_Index_DoorLock::Lock_Mode)
+			)
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Bool)
+			{
+				if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+				{
+					if (bValue == true)
+						pDevice->intvalue = 255;
+					else
+						pDevice->intvalue = 0;
+				}
+			}
+			else if (vType == OpenZWave::ValueID::ValueType_List)
+			{
+				int32 lValue = 0;
+				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+					return;
+				if (
+					(lValue == 0)
+					|| (lValue == 1)
+					)
+				{
+					//Locked/Locked Advanced
+					pDevice->intvalue = 255;
+				}
+				else
+				{
+					//Unlock values?
+					pDevice->intvalue = 0;
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+				return;
+			}
+		}
+	}
+	else if (vLabel.find("Open") != std::string::npos)
 		{
 			pDevice->intvalue = 255;
 		}
