@@ -2972,7 +2972,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	case ZDTYPE_SENSOR_LIGHT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vUnits != "lux")
+		if (vUnits == "%")
 		{
 			//convert from % to Lux (where max is 1000 Lux)
 			fValue = (1000.0f / 100.0f) * fValue;
