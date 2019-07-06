@@ -1,5 +1,5 @@
 [2.4.25]
-- Add dzFormat / domoticzFormattedTimeString
+- Add rawDateTime
 - fix for combined device / civil[day|night]time trigger rule 
 - fix for checkFirst on stopped status
 
