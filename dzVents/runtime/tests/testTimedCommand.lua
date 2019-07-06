@@ -134,8 +134,28 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterHour)
 		end)
 
-		it('should return checkFirst if a currentState is set', function()
+		it('should return checkFirst if currentState is On', function()
 			local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'device', 'On')
+			assert.is_function(cmd.checkFirst)
+		end)
+
+		it('should return checkFirst if a currentState is Off', function()
+			local cmd = TimedCommand(domoticz, 'mySwitch', 'Off', 'device', 'Off')
+			assert.is_function(cmd.checkFirst)
+		end)
+
+		it('should return checkFirst if a currentState is Open', function()
+			local cmd = TimedCommand(domoticz, 'mySwitch', 'Open', 'device', 'Open')
+			assert.is_function(cmd.checkFirst)
+		end)
+
+		it('should return checkFirst if a currentState is Close', function()
+			local cmd = TimedCommand(domoticz, 'mySwitch', 'Close', 'device', 'Close')
+			assert.is_function(cmd.checkFirst)
+		end)
+
+		it('should return checkFirst if a currentState is Stopped', function()
+			local cmd = TimedCommand(domoticz, 'mySwitch', 'Stopped', 'device', 'Stop')
 			assert.is_function(cmd.checkFirst)
 		end)
 
@@ -587,6 +607,27 @@ describe('timed commands', function()
 				}, commandArray)
 			end)
 
+			it('should not issue a command if the current state is like the target state', function()
+				commandArray = {}
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'Stop', 'device', 'Stopped')
+
+				cmd.afterMin(2).checkFirst()
+
+				assert.is_same({
+					{ ['mySwitch'] = nil }
+				}, commandArray)
+			end)
+
+			it('should issue a command if the current state is not like the target state', function()
+				commandArray = {}
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'device', 'Stopped')
+
+				cmd.afterMin(2).checkFirst()
+
+				assert.is_same({
+					{ ['mySwitch'] = 'On AFTER 120 SECONDS' }
+				}, commandArray)
+			end)
 
 		end)
 

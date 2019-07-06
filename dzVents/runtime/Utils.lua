@@ -7,7 +7,7 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.24',
+	DZVERSION = '2.4.25',
 }
 
 function self.fileExists(name)
