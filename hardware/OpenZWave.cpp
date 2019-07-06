@@ -1731,6 +1731,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			(vOrgIndex == ValueID_Index_Meter::Electric_kWh)
 			|| (vOrgIndex == ValueID_Index_Meter::Electric_kVah)
 			|| (vOrgIndex == ValueID_Index_Meter::Electric_kVar)
+			|| (vOrgIndex == ValueID_Index_Meter::Electric_kVarh)
 			|| (vOrgIndex == ValueID_Index_Meter::Heating_kWh)
 			|| (vOrgIndex == ValueID_Index_Meter::Cooling_kWh)
 			)
