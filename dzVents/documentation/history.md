@@ -1,3 +1,8 @@
+[2.4.25]
+- Add rawDateTime
+- fix for combined device / civil[day|night]time trigger rule 
+- fix for checkFirst on stopped status
+
 [2.4.24]
 - Add method rename for devices, user-variables , scenes and groups
 
