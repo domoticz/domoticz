@@ -479,7 +479,7 @@ int32 MyNode::getValueCount()
 /*
  * Returns an n'th value
  */
-MyValue* MyNode::getValue(uint8 n)
+MyValue* MyNode::getValue(size_t n)
 {
 	if (n < values.size())
 		return values[n];
@@ -531,7 +531,10 @@ void COpenZWaveControlPanel::OnCPNotification(OpenZWave::Notification const* _no
 	try
 	{
 		OpenZWave::ValueID id = _notification->GetValueID();
+
 		int nodeID = _notification->GetNodeId();
+
+		OpenZWave::ValueID::ValueGenre vGenre = id.GetGenre();
 
 		switch (_notification->GetType()) {
 		case OpenZWave::Notification::Type_ValueAdded:
@@ -995,8 +998,11 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement* ep)
 		for (int j = 0; j < idcnt; j++) {
 			TiXmlElement* valueElement = new TiXmlElement("value");
 			MyValue* vals = nodes[i]->getValue(j);
+			if (!vals)
+				continue;
 			OpenZWave::ValueID id = vals->getId();
-			valueElement->SetAttribute("genre", valueGenreStr(id.GetGenre()));
+			OpenZWave::ValueID::ValueGenre vGenre = id.GetGenre();
+			valueElement->SetAttribute("genre", valueGenreStr(vGenre));
 			valueElement->SetAttribute("type", valueTypeStr(id.GetType()));
 			valueElement->SetAttribute("class", cclassStr(id.GetCommandClassId()));
 			valueElement->SetAttribute("instance", id.GetInstance());
