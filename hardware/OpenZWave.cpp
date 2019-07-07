@@ -578,11 +578,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_SceneEvent:
 		//Deprecated
-		{
-			//uint8_t SceneID = _notification->GetSceneId();
-			//_log.Log(LOG_NORM, "OpenZWave: Type_SceneEvent, SceneID: %d, HomeID: %u, NodeID: %d (0x%02x)", SceneID, _homeID, _nodeID, _nodeID);
-		}
-		break;
+	{
+		//uint8_t SceneID = _notification->GetSceneId();
+		//_log.Log(LOG_NORM, "OpenZWave: Type_SceneEvent, SceneID: %d, HomeID: %u, NodeID: %d (0x%02x)", SceneID, _homeID, _nodeID, _nodeID);
+	}
+	break;
 	case OpenZWave::Notification::Type_ValueRemoved:
 		if ((_nodeID == 0) || (_nodeID == 255))
 			return;
@@ -1510,7 +1510,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	std::string vLabel = m_pManager->GetValueLabel(vID);
 	std::string vUnits = m_pManager->GetValueUnits(vID);
 
-	if (vLabel == "Unknown"){
+	if (vLabel == "Unknown") {
 		_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Warning: OpenZWave returned ValueLabel \"Unknown\" on Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vOrgInstance, vOrgIndex);
 	}
 
@@ -1812,7 +1812,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Liquid_Line_Temperature)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Discharge_Line_Temperature)
 			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Defrost_Temperature)
-			) 
+			)
 		{
 			if (vUnits == "F")
 			{
@@ -1914,6 +1914,16 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		else if (vOrgIndex == ValueID_Index_SensorMultiLevel::Seismic_Intensity)
 		{
 			_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
+		}
+		else if (
+			(vOrgIndex == ValueID_Index_SensorMultiLevel::X_Axis_Acceleration)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Y_Axis_Acceleration)
+			|| (vOrgIndex == ValueID_Index_SensorMultiLevel::Z_Axis_Acceleration)
+			)
+		{
+			_device.instanceID = vOrgIndex;
+			_device.custom_label = "m/s2";
+			_device.devType = ZDTYPE_SENSOR_CUSTOM;
 		}
 		else
 		{
@@ -2873,50 +2883,50 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			}
 			pDevice->intvalue = intValue;
 		}
-	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
-	{
-		if (
-			(vOrgIndex == ValueID_Index_DoorLock::Lock)
-			|| (vOrgIndex == ValueID_Index_DoorLock::Lock_Mode)
-			)
+		else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Bool)
+			if (
+				(vOrgIndex == ValueID_Index_DoorLock::Lock)
+				|| (vOrgIndex == ValueID_Index_DoorLock::Lock_Mode)
+				)
 			{
-				if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+				if (vType == OpenZWave::ValueID::ValueType_Bool)
 				{
-					if (bValue == true)
-						pDevice->intvalue = 255;
-					else
-						pDevice->intvalue = 0;
+					if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+					{
+						if (bValue == true)
+							pDevice->intvalue = 255;
+						else
+							pDevice->intvalue = 0;
+					}
 				}
-			}
-			else if (vType == OpenZWave::ValueID::ValueType_List)
-			{
-				int32 lValue = 0;
-				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
-					return;
-				if (
-					(lValue == 0)
-					|| (lValue == 1)
-					)
+				else if (vType == OpenZWave::ValueID::ValueType_List)
 				{
-					//Locked/Locked Advanced
-					pDevice->intvalue = 255;
+					int32 lValue = 0;
+					if (m_pManager->GetValueListSelection(vID, &lValue) == false)
+						return;
+					if (
+						(lValue == 0)
+						|| (lValue == 1)
+						)
+					{
+						//Locked/Locked Advanced
+						pDevice->intvalue = 255;
+					}
+					else
+					{
+						//Unlock values?
+						pDevice->intvalue = 0;
+					}
 				}
 				else
 				{
-					//Unlock values?
-					pDevice->intvalue = 0;
+					_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+					return;
 				}
 			}
-			else
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-				return;
-			}
 		}
-	}
-	else if (vLabel.find("Open") != std::string::npos)
+		else if (vLabel.find("Open") != std::string::npos)
 		{
 			pDevice->intvalue = 255;
 		}
@@ -2948,7 +2958,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 					//New color value received, not handled yet
 					return;
 				}
-
 			}
 			else if (vType == OpenZWave::ValueID::ValueType_List)
 			{
@@ -3832,7 +3841,7 @@ void COpenZWave::DisableNodePoll(const unsigned int homeID, const int nodeID)
 
 void COpenZWave::DeleteNode(const unsigned int homeID, const int nodeID)
 {
-	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",	m_HwdID, homeID, nodeID);
+	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)", m_HwdID, homeID, nodeID);
 }
 
 void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const NodeInfo* pNode)
@@ -4765,7 +4774,7 @@ bool COpenZWave::RemoveUserCode(const unsigned int homeID, const int nodeID, con
 				try
 				{
 					std::string sValue;
-					sValue.assign(4,0);
+					sValue.assign(4, 0);
 					m_pManager->SetValue(vNodeValue, sValue);
 					break;
 				}
@@ -5289,7 +5298,7 @@ namespace http {
 						std::string nodeName = sd[3].c_str();
 						int numGroups = pOZWHardware->ListGroupsForNode(nodeID);
 						root["result"]["nodes"][ii]["nodeID"] = nodeID;
-						root["result"]["nodes"][ii]["nodeName"] = (nodeName!="Unknown") ? nodeName : (pNode->Manufacturer_name + std::string(" ") + pNode->Product_name);
+						root["result"]["nodes"][ii]["nodeName"] = (nodeName != "Unknown") ? nodeName : (pNode->Manufacturer_name + std::string(" ") + pNode->Product_name);
 						root["result"]["nodes"][ii]["groupCount"] = numGroups;
 						if (numGroups > 0) {
 							if (numGroups > MaxNoOfGroups)
