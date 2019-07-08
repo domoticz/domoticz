@@ -99,6 +99,7 @@ local function getDevice_(
 	return Device(domoticz, data, dummyLogger)
 end
 
+
 local function getDevice(domoticz, options)
 
 	return getDevice_(domoticz,
@@ -372,7 +373,7 @@ describe('device', function()
 			device.updateVisibility(22)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="22", _trigger=true} } }, commandArray)
 		end)
-
+	   
 		it('should detect a p1 smart meter device', function()
 
 			local device = getDevice(domoticz, {
@@ -541,6 +542,7 @@ describe('device', function()
 				local adapterManager = device.getAdapterManager()
 
 				assert.is_same({
+					"activate",
 					"armAway",
 					"armHome",
 					"close",
@@ -565,6 +567,7 @@ describe('device', function()
 					"playFavorites",
 					"quietOff",
 					"quietOn",
+					"reset",
 					"setColor",
 					"setColorBrightness",
 					-- "setDescription",
@@ -642,7 +645,7 @@ describe('device', function()
 
 			assert.is_same({ { ['SetSetPoint:1'] = '14#Permanent#2016-04-29T06:32:58Z'} }, commandArray)
 		end)
-		
+
 		it('should detect an evohome hotWater device', function()
 
 			local device = getDevice(domoticz, {
@@ -1171,6 +1174,36 @@ describe('device', function()
 				assert.is_same({ { ["s1"] = "Set Level 50" } }, commandArray)
 			end)
 
+			it('should switch a smoke_detector', function()
+				local device = getDevice(domoticz, {
+					['type'] = 'Light/Switch',
+					['state'] = 'Off',
+					['name'] = 'mySmokeDetector',
+					['additionalRootData'] = { ['switchType'] = 'Smoke Detector'},
+				})
+				assert.is_false(device.active)
+				device.activate()
+				assert.is_same({ {["mySmokeDetector"] = "On"}}, commandArray)
+
+				local device = getDevice(domoticz, {
+					['type'] = 'Light/Switch',
+					['state'] = 'On',
+					['name'] = 'mySmokeDetector',
+					['additionalRootData'] = { ['switchType'] = 'Smoke Detector'},
+				})
+
+				assert.is_true(device.active)
+				local commandArray = {}
+
+				domoticz.openURL = function(url)
+					return table.insert(commandArray, url)
+				end
+
+				device.reset()
+				assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=resetsecuritystatus&idx=1&switchcmd=Normal' }, commandArray)
+			end)
+
+
 			it('should switch a selector with numeric level', function()
 				local switch = getDevice(domoticz, {
 					['type'] = 'Light/Switch',
@@ -1190,7 +1223,7 @@ describe('device', function()
 					assert.is_same({ {["s1"]="Set Level 190"}}, commandArray)
 				commandArray = {} ;switch.switchSelector(-10.5)
 					assert.is_same({ {["s1"]="Set Level 0"}}, commandArray)
-				
+
 			end)
 
 			it('should switch a selector with levelname', function()
@@ -1347,12 +1380,12 @@ describe('device', function()
 		end)
 
 		describe('Quiet device ( quietOn and quietOff', function()
-	
+
 			local commandArray = {}
 			domoticz.openURL = function(url)
 				return table.insert(commandArray, url)
 			end
-			
+
 			local device = getDevice(domoticz, {
 				['name'] = 'quietDevice',
 				['state'] = 'On',
@@ -1377,7 +1410,6 @@ describe('device', function()
 		describe('RGBW device #RGB', function()
 
 			local commandArray = {}
-			-- local utils = require('Utils')
 			domoticz.utils  = utils
 
 			domoticz.openURL = function(url)

@@ -2,8 +2,6 @@ Version 4.xxxxx (xxx 2019)
 - Implemented: DarkSky CloudCover sensor
 - Implemented: EventSystem, option in Settings to enable/disable URL call logging containing full URL path
 - Implemented: GUI, OpenZWave added Refresh Node Information button, styling
-- Implemented: RTL433, added Power (Watt) type
-- Implemented: RTL433, added rainfall_mm type
 - Fixed: Gui, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
 - Fixed: GUI, device table initial order column
@@ -16,7 +14,7 @@ Version 4.xxxxx (xxx 2019)
 - Fixed: notification, Telegram error when odd number of underscores in text
 - Fixed: API, allow variabletype to be entered as text or integer in adduservariable and updateuservariable (#3320)
 - Updated: OpenZWave version 1.6
-- Updated: dzVents (version 2.4.25, See dzVents/documentation/history.md)
+- Updated: dzVents (version 2.4.26, See dzVents/documentation/history.md)
 
 Version 4.10717 (May 9th 2019)
 - Fixed: dzVents, Allowing no error message for HTTP calls (#3191)
