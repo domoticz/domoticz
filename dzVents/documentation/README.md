@@ -873,6 +873,10 @@ Methods/attributes:
  - **disarm()**: Disarms a security device. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **state**: *String*: Same values as domoticz.security value.
 
+#### Smoke detection <sup>2.4.26</sup>.
+ - **activate()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **reset()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+
 #### Solar radiation
  - **radiation**. *Number*. In Watt/m<sup>2</sup>.
  - **updateRadiation(radiation)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -2005,6 +2009,10 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy.
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
+# History
+
+##[2.4.26]
+- Add Smoke Detector device (activate and reset functions )
 
 ##[2.4.25]
 - Add rawDateTime
