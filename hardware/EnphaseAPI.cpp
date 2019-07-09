@@ -236,7 +236,11 @@ void EnphaseAPI::getConsumptionDetail()
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
 		return;
 	}
-	if ((root["consumption"].empty() == true) || (root["consumption"][0].empty() == true))
+	if (root["consumption"].empty() == true)
+	{
+		return;
+	}
+	if (root["consumption"][0].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
@@ -290,7 +294,11 @@ void EnphaseAPI::getNetConsumptionDetail()
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
 		return;
 	}
-	if ((root["consumption"].empty() == true) || (root["consumption"][0].empty() == true))
+	if (root["consumption"].empty() == true)
+	{
+		return;
+	}
+	if (root["consumption"][0].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
