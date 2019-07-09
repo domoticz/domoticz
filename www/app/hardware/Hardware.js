@@ -582,9 +582,38 @@ define(['app'], function (app) {
 				var password = $("#hardwarecontent #divlogin #password").val();
 				var extra = "";
 				var Mode1 = "";
-				if ((text.indexOf("MySensors Gateway with MQTT") >= 0)) {
+				if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 					extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
+					if ($("#hardwarecontent #divmysensorsmqtt #filename").val().indexOf("#") >= 0) {
+						ShowNotify($.t('CA Filename cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val().indexOf("#") >= 0) {
+						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val().indexOf("#") >= 0) {
+						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ((Mode1 == 2) && (($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val() == "") || ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val() == ""))) {
+						ShowNotify($.t('Please enter Topic Prefixes!'), 2500, true);
+						return;
+					}
+					if (Mode1 == 2) {
+						if (($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val() == "") ||
+						    ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val() == "")
+						) {
+							ShowNotify($.t('Please enter Topic Prefixes!'), 2500, true);
+							return;
+						}
+						extra += "#";
+					        extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val();
+						extra += "#";
+						extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val();
+					}
+					extra = encodeURIComponent(extra);
 				}
 				else if ((text.indexOf("MQTT") >= 0)) {
 					extra = $("#hardwarecontent #divmqtt #filename").val();
@@ -1744,8 +1773,37 @@ define(['app'], function (app) {
 				var extra = "";
 				var mode1 = "";
 				if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
-					extra = encodeURIComponent($("#hardwarecontent #divmysensorsmqtt #filename").val());
+					extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
 					mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
+					if ($("#hardwarecontent #divmysensorsmqtt #filename").val().indexOf("#") >= 0) {
+						ShowNotify($.t('CA Filename cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val().indexOf("#") >= 0) {
+						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val().indexOf("#") >= 0) {
+						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
+					}
+					if ((mode1 == 2) && (($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val() == "") || ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val() == ""))) {
+						ShowNotify($.t('Please enter Topic Prefixes!'), 2500, true);
+						return;
+					}
+					if (mode1 == 2) {
+						if (($("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val() == "") ||
+						    ($("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val() == "")
+						) {
+							ShowNotify($.t('Please enter Topic Prefixes!'), 2500, true);
+							return;
+						}
+						extra += "#";
+						extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicin").val();
+						extra += "#";
+						extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val();
+					}
+					extra = encodeURIComponent(extra);
 				}
 				else if (text.indexOf("MQTT") >= 0) {
 					extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
@@ -3520,7 +3578,33 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
 						}
 						if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
-							$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
+
+							// Break out any possible topic prefix pieces.
+							var CAfilenameParts = data["Extra"].split("#");
+
+							// There should be 1 piece or 3 pieces.
+							switch (CAfilenameParts.length) {
+								case 2:
+									console.log("MySensorsMQTT: Truncating CAfilename; Stray topic was present.");
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(CAfilenameParts[0]);
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val("");
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val("");
+									break;
+								case 1:
+								case 0:
+									console.log("MySensorsMQTT: Only a CAfilename present.");
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val("");
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val("");
+									break;
+								default:
+									console.log("MySensorsMQTT: Stacked data in CAfilename present. Separating out topic prefixes.");
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(CAfilenameParts[0]);
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicin").val(CAfilenameParts[1]);
+									$("#hardwarecontent #hardwareparamsmysensorsmqtt #mqtttopicout").val(CAfilenameParts[2]);
+									break;
+							}
+
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
 						}
 						else if (data["Type"].indexOf("Rtl433") >= 0) {
