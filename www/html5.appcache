@@ -616,8 +616,6 @@ js/noty/noty.min.js
 js/noty/noty.css
 js/noty/relax.css
 
-js/purify.min.js
-
 js/angular-animate.min.js
 js/angular-md5-min.js
 js/angular-round-progress-directive.js

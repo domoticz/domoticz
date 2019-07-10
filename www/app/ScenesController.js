@@ -99,11 +99,8 @@ define(['app'], function (app) {
 		}
 
 		SaveScene = function () {
-			var Name = DOMPurify.sanitize($("#scenecontent #devicename").val());
-			var bValid = checkLengthText(Name, 2, 100);
-			if (!bValid) {
-				return;
-			}
+			var bValid = true;
+			bValid = bValid && checkLength($("#scenecontent #devicename"), 2, 100);
 
 			var onaction = $("#scenecontent #onaction").val();
 			var offaction = $("#scenecontent #offaction").val();
@@ -149,7 +146,7 @@ define(['app'], function (app) {
 				$.ajax({
 					url: "json.htm?type=updatescene&idx=" + SceneIdx +
 					"&scenetype=" + SceneType +
-					"&name=" + encodeURIComponent(Name) +
+					"&name=" + encodeURIComponent($("#scenecontent #devicename").val()) +
 					"&description=" + encodeURIComponent($("#scenecontent #devicedescription").val()) +
 					'&onaction=' + btoa(onaction) +
 					'&offaction=' + btoa(offaction) +
@@ -789,6 +786,7 @@ define(['app'], function (app) {
 							$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
 							$(id).addClass(backgroundClass);
 
+
 							if ($(id + " #name > span").html() != item.Name) {
 								$(id + " #name > span").html(item.Name);
 							}
@@ -1064,30 +1062,30 @@ define(['app'], function (app) {
 				buttons: [{
 					text: $.t("Add Scene"),
 					click: function () {
-						var Name = DOMPurify.sanitize($("#dialog-addscene #scenename").val());
-						var bValid = checkLengthText(Name, 2, 100);
-						if (!bValid) {
-							return;
-						}
-						$.pDialog = $(this);
-						var SceneName = encodeURIComponent(Name);
-						var SceneType = $("#dialog-addscene #combotype").val();
-						$.ajax({
-							url: "json.htm?type=addscene&name=" + SceneName + "&scenetype=" + SceneType,
-							async: false,
-							dataType: 'json',
-							success: function (data) {
-								if (typeof data.status != 'undefined') {
-									if (data.status == 'OK') {
-										$.pDialog.dialog("close");
-										ShowScenes();
-									}
-									else {
-										ShowNotify(data.message, 3000, true);
+						var bValid = true;
+						bValid = bValid && checkLength($("#dialog-addscene #scenename"), 2, 100);
+						if (bValid) {
+							$.pDialog = $(this);
+							var SceneName = encodeURIComponent($("#dialog-addscene #scenename").val());
+							var SceneType = $("#dialog-addscene #combotype").val();
+							$.ajax({
+								url: "json.htm?type=addscene&name=" + SceneName + "&scenetype=" + SceneType,
+								async: false,
+								dataType: 'json',
+								success: function (data) {
+									if (typeof data.status != 'undefined') {
+										if (data.status == 'OK') {
+											$.pDialog.dialog("close");
+											ShowScenes();
+										}
+										else {
+											ShowNotify(data.message, 3000, true);
+										}
 									}
 								}
-							}
-						});
+							});
+
+						}
 					}
 				}, {
 					text: $.t("Cancel"),
