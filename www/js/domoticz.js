@@ -856,6 +856,13 @@ function checkLength(o, min, max) {
 		return true;
 	}
 }
+function checkLengthText(text, min, max) {
+	if (text.length > max || text.length < min) {
+		return false;
+	} else {
+		return true;
+	}
+}
 
 function SetDimValue(idx, value) {
 	clearInterval($.setDimValue);
