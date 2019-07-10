@@ -8,6 +8,7 @@
 #include "Helper.h"
 #include "localtime_r.h"
 #include "EventSystem.h"
+#include "HTMLSanitizer.h"
 #include "dzVents.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
@@ -10927,6 +10928,7 @@ namespace http {
 			}
 
 			std::string name = request::findValue(&req, "name");
+			name = HTMLSanitizer::Sanitize(name);
 			if (name.empty())
 			{
 				root["status"] = "ERR";
@@ -10991,6 +10993,10 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			std::string name = request::findValue(&req, "name");
 			std::string description = request::findValue(&req, "description");
+
+			name = HTMLSanitizer::Sanitize(name);
+			description = HTMLSanitizer::Sanitize(description);
+
 			if ((idx.empty()) || (name.empty()))
 				return;
 			std::string stype = request::findValue(&req, "scenetype");

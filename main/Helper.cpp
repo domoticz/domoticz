@@ -98,6 +98,17 @@ void stdlower(std::string &inoutstring)
 	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::tolower);
 }
 
+void stdupper(std::wstring& inoutstring)
+{
+	for (size_t i = 0; i < inoutstring.size(); ++i)
+		inoutstring[i] = towupper(inoutstring[i]);
+}
+
+void stdlower(std::wstring& inoutstring)
+{
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::towlower);
+}
+
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
 	bUseDirectPath=false;

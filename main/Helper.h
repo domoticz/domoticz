@@ -14,8 +14,10 @@ void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
-void stdupper(std::string &inoutstring);
-void stdlower(std::string &inoutstring);
+void stdupper(std::string& inoutstring);
+void stdlower(std::string& inoutstring);
+void stdupper(std::wstring& inoutstring);
+void stdlower(std::wstring& inoutstring);
 
 template< typename T > inline
 std::string int_to_hex(T i)

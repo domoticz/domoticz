@@ -592,6 +592,7 @@
     <ClInclude Include="..\main\EventsPythonModule.h" />
     <ClInclude Include="..\main\EventSystem.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
+    <ClInclude Include="..\main\HTMLSanitizer.h" />
     <ClInclude Include="..\main\IFTTT.h" />
     <ClInclude Include="..\main\localtime_r.h" />
     <ClInclude Include="..\hardware\P1MeterBase.h" />
@@ -883,6 +884,7 @@
     <ClCompile Include="..\main\EventsPythonDevice.cpp" />
     <ClCompile Include="..\main\EventsPythonModule.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
+    <ClCompile Include="..\main\HTMLSanitizer.cpp" />
     <ClCompile Include="..\main\IFTTT.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />

@@ -2221,6 +2221,9 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>EventSystem\Python</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\HTMLSanitizer.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2999,6 +3002,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
       <Filter>EventSystem\Python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\HTMLSanitizer.cpp">
+      <Filter>Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
