@@ -315,6 +315,7 @@ main/EventSystem.cpp
 main/EventsPythonModule.cpp
 main/EventsPythonDevice.cpp
 main/Helper.cpp
+main/HTMLSanitizer.cpp
 main/IFTTT.cpp
 main/localtime_r.cpp
 main/Logger.cpp
