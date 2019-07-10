@@ -1,3 +1,6 @@
+[2.4.26]
+- Add Smoke detector
+
 [2.4.25]
 - Add rawDateTime
 - fix for combined device / civil[day|night]time trigger rule 

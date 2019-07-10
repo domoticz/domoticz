@@ -1142,20 +1142,36 @@
 			<br>
 			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
 				<tr valign="top">
-					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix">Topic Prefix</span>:</label></td>
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix Mode"></span>:</label></td>
 					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
 						<option value="0">MyMQTT (default)</option>
 						<option value="1">Gateway Node Name</option>
+						<option value="2">Custom Topics</option>
 						</select>
-					<br />
-					<span>Select the Topic(s) where Domoticz publish/receive messages.<br />
-						<b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT <br />
-						<b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field (above))<br />
-						<br />
+						<span>Select the Topic mode that Domoticz uses to send and receive messages.<br /><br />
+						<ul>
+							<li><b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT.</li>
+							<li><b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field above).</li>
+							<li><b>Custom Topics</b> - Enter custom topic prefixes below.</li>
+						</ul>
 					</td>
 				</tr>
 				<tr>
-					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+					<td align="right" style="width:110px"><label id="lbmqtttopicin" for="name"><span data-i18n="Topic In Prefix"></span>:</label></td>
+					<td>
+						<input type="text" id="mqtttopicin" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						&#8592;&nbsp;<span data-i18n="Enter the MY_MQTT_PUBLISH_TOPIC_PREFIX value from the gateway sketch here."></span>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbmqtttopicout" for="name"><span data-i18n="Topic Out Prefix"></span>:</label></td>
+					<td>
+						<input type="text" id="mqtttopicout" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						&#8592;&nbsp;<span data-i18n="Enter the MY_MQTT_SUBSCRIBE_TOPIC_PREFIX value from the gateway sketch here."></span>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename"></span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>

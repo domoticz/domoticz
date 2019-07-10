@@ -16,7 +16,53 @@ MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::s
 	MyTopicIn(TOPIC_IN),
 	MyTopicOut(TOPIC_OUT)
 {
+
+	/**
+	 *
+	 * There's no way to know the state of the CAfilename storage, so always try to separate
+	 * out the topic in/out prefixes.
+	 *
+	 **/
+
+	size_t nextPiece = std::string::npos;
+	std::string CustomTopicIn = "";
+	std::string CustomTopicOut = "";
+
+	do {
+		// Locate the last delimiter in the CAfilename string.
+		nextPiece = m_CAFilename.rfind('#');
+		if (std::string::npos == nextPiece)
+		{
+			// No delimiter; It's just a CA filename.
+			break;
+		}
+
+		// First delimiter present; Store the MyTopicOut prefix.
+		CustomTopicOut = m_CAFilename.substr(nextPiece + 1, m_CAFilename.length());
+		// And remove it from the CAfilename string.
+		m_CAFilename.erase(nextPiece, m_CAFilename.length());
+
+		// Locate the second to last delimiter in the CAfilename string.
+		nextPiece = m_CAFilename.rfind('#');
+		if (std::string::npos == nextPiece)
+		{
+			// No second to last delimiter? Shouldn't happen.
+			_log.Log(LOG_ERROR, "MySensorsMQTT: Truncating CAfilename; Stray topic was present.");
+			break;
+		}
+
+		// Second to last delimiter present; Store the MyTopicIn prefix.
+		CustomTopicIn = m_CAFilename.substr(nextPiece + 1, m_CAFilename.length());
+		// And remove it from the CAfilename string.
+		m_CAFilename.erase(nextPiece, m_CAFilename.length());
+
+	} while (0);
+
 	switch (Topics) {
+		case 2:
+			MyTopicIn = CustomTopicIn;
+			MyTopicOut = CustomTopicOut;
+			break;
 		case 1:
 			MyTopicIn += Name;
 			MyTopicOut += Name;
