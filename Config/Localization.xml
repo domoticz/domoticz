@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="7">
+<Localization xmlns="https://github.com/OpenZWave/open-zwave" Revision="8">
 	<CommandClass id="113">
 		<!-- Please keep Localization.xml in sync with NotificationCCTypes.xml -->
-    	<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
-		<!-- Bump Revision number, run "xmllint format" and "make xmltest" before submitting -->
+		<!-- If you are adding new Types or Params, Please also consider updating ValueIDIndexesDefines.def -->
+		<!-- Bump Revision number, run "xmllint format with tabs" and "make xmltest" before submitting -->
 		<Label>COMMAND_CLASS_NOTIFICATION</Label>
 		<Value index="1">
 			<Help>A Smoke Alarm Alert</Help>
@@ -307,7 +307,6 @@
 			<Help>User Code that was used</Help>
 			<Label>User Code</Label>
 		</Value>
-
 		<Value index="262">
 			<Help>Progress of Operation</Help>
 			<Label>Progress</Label>
@@ -360,7 +359,6 @@
 			<Help>The ID of the Valve Table that triggered this alert</Help>
 			<Label>Valve Table ID</Label>
 		</Value>
-
 		<Value index="512">
 			<Help>Alarm Type Received</Help>
 			<Help lang="fr">Type d'alarme reçu</Help>
@@ -586,7 +584,7 @@
 			<Label>Outside Handle Control</Label>
 		</Value>
 		<Value index="6">
-			<Help>State of the Exterior Handle Control</Help>
+			<Help>State of the Interior Handle Control</Help>
 			<Label>Inside Handle Control</Label>
 		</Value>
 	</CommandClass>
@@ -1592,7 +1590,6 @@
 			<Help>The default tone to play when none is specified in a Play Command</Help>
 			<Label>Default Tones</Label>
 		</Value>
-		
 	</CommandClass>
 	<CommandClass id="39">
 		<Label>COMMAND_CLASS_SWITCH_ALL</Label>

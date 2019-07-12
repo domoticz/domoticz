@@ -130,16 +130,16 @@ namespace OpenZWave
 				QueryStage_WakeUp, /**< Start wake up process if a sleeping node */
 				QueryStage_ManufacturerSpecific1, /**< Retrieve manufacturer name and product ids if ProtocolInfo lets us */
 				QueryStage_NodeInfo, /**< Retrieve info about supported, controlled command classes */
+				QueryStage_Versions, /**< Retrieve version information */
 				QueryStage_NodePlusInfo, /**< Retrieve ZWave+ info and update device classes */
 				QueryStage_SecurityReport, /**< Retrieve a list of Command Classes that require Security */
 				QueryStage_ManufacturerSpecific2, /**< Retrieve manufacturer name and product ids */
-				QueryStage_Versions, /**< Retrieve version information */
 				QueryStage_Instances, /**< Retrieve information about multiple command class instances */
 				QueryStage_Static, /**< Retrieve static information (doesn't change) */
-				QueryStage_CacheLoad, /**< Ping a device upon restarting with cached config for the device */
-				QueryStage_Probe1 = QueryStage_CacheLoad, /** < Depreciated name. /todo Remove in 2.0 timeframe */
 				QueryStage_Associations, /**< Retrieve information about associations */
 				QueryStage_Neighbors, /**< Retrieve node neighbor list */
+				QueryStage_CacheLoad, /**< Ping a device upon restarting with cached config for the device */
+				QueryStage_Probe1 = QueryStage_CacheLoad, /** < Depreciated name. /todo Remove in 2.0 timeframe */
 				QueryStage_Session, /**< Retrieve session information (changes infrequently) */
 				QueryStage_Dynamic, /**< Retrieve dynamic information (changes frequently) */
 				QueryStage_Configuration, /**< Retrieve configurable parameter information (only done on request) */
@@ -541,7 +541,7 @@ namespace OpenZWave
 			 * was already there or if the CommandClass object creation failed).
 			 * \see CommandClass, CommandClasses::CreateCommandClass, m_commandClassMap
 			 */
-			Internal::CC::CommandClass* AddCommandClass(uint8 const _commandClassId);
+			Internal::CC::CommandClass* AddCommandClass(uint8 const _commandClassId, uint8 _instance);
 			/**
 			 * Removes a command class object from the node (via the m_commandClassMap).  Before removing the
 			 * object, this function also removes any values stored in the object's ValueStore.

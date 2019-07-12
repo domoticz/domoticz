@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="34" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="38" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -694,6 +694,7 @@
     <Product config="fibaro/fgt001.xml" id="1000" name="FGT001 Heat Controller" type="1301"/>
     <Product config="fibaro/fgwpg111.xml" id="2000" name="FGWPG111 US Wall Plug" type="1701"/>
     <Product config="fibaro/fgwpg111.xml" id="1000" name="FGWPG111 UK Wall Plug" type="1801"/>
+    <Product config="fibaro/fgwds221.xml" id="1000" name="FGWDS221 Walli Double Switch" type="1B01"/>
   </Manufacturer>
   <Manufacturer id="0295" name="fifthplay nv"></Manufacturer>
   <Manufacturer id="0138" name="First Alert (BRK Brands Inc)">
@@ -1104,6 +1105,7 @@
     <Product id="0001" name="Mini Energy Switch" type="0002"/>
     <!--EU-->
     <Product config="mcohome/mhp210.xml" id="1302" name="MH-P210 Mini Energy Dimmer" type="210a"/>
+    <Product config="mcohome/mhp220.xml" id="5101" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhs311.xml" id="0201" name="MH-S311 One-load" type="3102"/>
     <Product config="mcohome/mhs312.xml" id="0202" name="MH-S312 Two-load" type="3102"/>
     <Product config="mcohome/mhs314.xml" id="0204" name="MH-S314 Four-load" type="3102"/>
@@ -1605,11 +1607,12 @@
   <Manufacturer id="0111" name="Tronico Technology Co. Ltd.">
     <Product config="airlinemechanical/zds-ud10.xml" id="0200" name="ZDS-100" type="8200"/>
   </Manufacturer>
-  <Manufacturer id="0330" name="Tronika">
+  <Manufacturer id="0330" name="Sunricher">
     <Product config="sunricher/srzv9001t4dimeu.xml" id="a10d" name="Touch Panel Wall Controller - ZSC-01D" type="0003"/>
-    <Product config="sunricher/srzv9001t4dimeu.xml" id="a305" name="Wall Controller - SR-ZV9001" type="0300"/>
+    <Product config="sunricher/srzv9001k8.xml" id="a305" name="Wall Controller - SR-ZV9001" type="0300"/>
     <Product config="sunricher/zv9101.xml" id="d005" name="Dimmer ZV-9101" type="0200"/>
     <Product config="sunricher/srzv9101sachpeu.xml" id="d00c" name="Dimmer ZV9040" type="0200"/>
+    <Product config="sunricher/srzv9003t4rgbweu.xml" id="a107" name="Z-Wave Wall Controller - SR-ZV9003T4-RGBW-EU" type="0300"/>
   </Manufacturer>
   <Manufacturer id="0049" name="Twisthink"></Manufacturer>
   <Manufacturer id="0270" name="Ubitech"></Manufacturer>
@@ -1823,6 +1826,7 @@
     <Product config="zooz/zse19.xml" id="0003" name="ZSE19 S2 Multisiren" type="000c"/>
     <Product config="zooz/zen20v2.xml" id="a004" name="ZEN20 V2.0 Power Strip" type="a000"/>
     <Product config="zooz/zse29.xml" id="0005" name="ZSE29 Outdoor Motion Sensor" type="0001"/>
+    <Product config="zooz/zen25.xml" id="a003" name="ZEN25 S2 Double Plug with USB Port" type="a000"/>
   </Manufacturer>
   <Manufacturer id="015d" name="Zooz (Willis Electric)">
     <Product config="zooz/zen20.xml" id="f51c" name="ZEN20 Power Strip" type="0651"/>
