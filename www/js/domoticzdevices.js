@@ -846,7 +846,6 @@ Device.create = function (item) {
     if (typeof item === 'string') {
         item = JSON.parse(item);
     }
-
     // Anomalies in device pattern (Scenes & Dusk sensors say they are  lights(???)
     if (item.Type === 'Scene') {
         type = 'scene';
@@ -854,6 +853,8 @@ Device.create = function (item) {
         type = 'group';
     } else if ((item.Type === 'General') && (item.SubType === 'Barometer')) {
         type = 'baro';
+    } else if ((item.Type === 'General') && (item.SubType === 'Custom Sensor')) {
+        type = 'custom';
     } else if (
         (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
@@ -1402,12 +1403,16 @@ function Current(item) {
 Current.inheritsFrom(UtilitySensor);
 
 function Custom(item) {
-        if (arguments.length != 0) {
-        this.parent.constructor(item);
-                this.image = "images/Custom.png";
-                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-                this.data = '';
-        }
+	if (arguments.length != 0) {
+		this.parent.constructor(item);
+		if (item.CustomImage != 0) {
+			this.image = "images/" + item.Image + "48_On.png";
+		} else {
+			this.image = "images/Custom.png";
+		}
+		this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+		this.data = '';
+	}
 }
 Custom.inheritsFrom(UtilitySensor);
 

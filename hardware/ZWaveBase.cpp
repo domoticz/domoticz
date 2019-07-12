@@ -119,7 +119,7 @@ void ZWaveBase::Do_Work()
 std::string ZWaveBase::GenerateDeviceStringID(const _tZWaveDevice *pDevice)
 {
 	std::stringstream sstr;
-	sstr << pDevice->nodeID << ".instance." << pDevice->instanceID << ".index." << pDevice->indexID << ".commandClasses." << pDevice->commandClassID;
+	sstr << pDevice->nodeID << ".instance." << pDevice->orgInstanceID << ".index." << pDevice->orgIndexID << ".commandClasses." << pDevice->commandClassID;
 	return sstr.str();
 }
 
