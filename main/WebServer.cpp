@@ -12053,7 +12053,7 @@ namespace http {
 			std::string ssenderid = HTMLSanitizer::Sanitize(request::findValue(&req, "senderid"));
 			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string sdevtype = HTMLSanitizer::Sanitize(request::findValue(&req, "devicetype"));
-			std::string sactive = HTMLSanitizer::Sanitize(request::findValue(&req, "active"));
+			std::string sactive = request::findValue(&req, "active");
 			if (
 				(suuid.empty()) ||
 				(ssenderid.empty())
