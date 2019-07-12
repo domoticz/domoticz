@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/RFXtrx.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -4907,7 +4908,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senablepolling = request::findValue(&req, "EnablePolling");
 			if (
 				(name == "") ||

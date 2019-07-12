@@ -1045,13 +1045,13 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
-			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
+			std::string password = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "password")));
 			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 			if (
@@ -1461,14 +1461,14 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
 			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
-			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
+			std::string extra = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "extra")));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 
 			if (
@@ -1883,7 +1883,7 @@ namespace http {
 				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
 				return; //Only admin user allowed
 			}
-			std::string variablename = request::findValue(&req, "vname");
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 			
@@ -1959,7 +1959,7 @@ namespace http {
 			}
 			
 			std::string idx = request::findValue(&req, "idx");
-			std::string variablename = request::findValue(&req, "vname");
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 			
@@ -2178,7 +2178,12 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
+			}
+
 			root["status"] = "OK";
 			root["title"] = "AddPlan";
 			m_sql.safe_query(
@@ -2207,11 +2212,12 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
-			if (
-				(name.empty())
-				)
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			if (name.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "UpdatePlan";
@@ -3003,7 +3009,7 @@ namespace http {
 		{
 			std::string sstate = request::findValue(&req, "state");
 			std::string idx = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 
 			if (
 				(idx.empty()) ||
@@ -4749,7 +4755,7 @@ namespace http {
 				}
 
 				std::string hwdid = request::findValue(&req, "hwdid");
-				std::string name = request::findValue(&req, "name");
+				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 				std::string sswitchtype = request::findValue(&req, "switchtype");
 				std::string slighttype = request::findValue(&req, "lighttype");
 				std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
@@ -7187,7 +7193,7 @@ namespace http {
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return;
-				std::string name = request::findValue(&req, "name");
+				std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
 					(name.empty())
@@ -10927,7 +10933,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			name = HTMLSanitizer::Sanitize(name);
 			if (name.empty())
 			{
@@ -10991,8 +10997,8 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
-			std::string description = request::findValue(&req, "description");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
 
 			name = HTMLSanitizer::Sanitize(name);
 			description = HTMLSanitizer::Sanitize(description);
@@ -11906,8 +11912,8 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
-			std::string sdescription = request::findValue(&req, "description");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string sdescription = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty()) ||
@@ -11932,7 +11938,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -11961,7 +11967,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -12043,11 +12049,11 @@ namespace http {
 
 		void CWebServer::Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string suuid = request::findValue(&req, "uuid");
-			std::string ssenderid = request::findValue(&req, "senderid");
-			std::string sname = request::findValue(&req, "name");
-			std::string sdevtype = request::findValue(&req, "devicetype");
-			std::string sactive = request::findValue(&req, "active");
+			std::string suuid = HTMLSanitizer::Sanitize(request::findValue(&req, "uuid"));
+			std::string ssenderid = HTMLSanitizer::Sanitize(request::findValue(&req, "senderid"));
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string sdevtype = HTMLSanitizer::Sanitize(request::findValue(&req, "devicetype"));
+			std::string sactive = HTMLSanitizer::Sanitize(request::findValue(&req, "active"));
 			if (
 				(suuid.empty()) ||
 				(ssenderid.empty())
@@ -12106,7 +12112,7 @@ namespace http {
 			}
 			std::string sidx = request::findValue(&req, "idx");
 			std::string enabled = request::findValue(&req, "enabled");
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 
 			if (
 				(sidx.empty()) ||
@@ -12343,8 +12349,8 @@ namespace http {
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
-			std::string name = request::findValue(&req, "name");
-			std::string description = request::findValue(&req, "description");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description"));
 			std::string sused = request::findValue(&req, "used");
 			std::string sswitchtype = request::findValue(&req, "switchtype");
 			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
@@ -12362,14 +12368,14 @@ namespace http {
 			std::string sCustomImage = request::findValue(&req, "customimage");
 
 			std::string strunit = request::findValue(&req, "unit");
-			std::string strParam1 = base64_decode(request::findValue(&req, "strparam1"));
-			std::string strParam2 = base64_decode(request::findValue(&req, "strparam2"));
+			std::string strParam1 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam1")));
+			std::string strParam2 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam2")));
 			std::string tmpstr = request::findValue(&req, "protected");
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = base64_decode(request::findValue(&req, "options"));
-			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
+			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
+			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
 
 			char szTmp[200];

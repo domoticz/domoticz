@@ -4,6 +4,7 @@
 #include "EventSystem.h"
 #include "dzVents.h"
 #include "Helper.h"
+#include "HTMLSanitizer.h"
 #include "SQLHelper.h"
 #include "Logger.h"
 #include "../hardware/hardwaretypes.h"
@@ -4413,7 +4414,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string eventname = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string eventname = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			if (eventname == "")
 				return;
 
@@ -4668,7 +4669,7 @@ namespace http {
 
 				root["title"] = "AddEvent";
 
-				std::string eventname = request::findValue(&req, "name");
+				std::string eventname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 				if (eventname == "")
 					return;
 

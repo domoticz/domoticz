@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <iostream>
 #include "Camera.h"
+#include "HTMLSanitizer.h"
 #include "localtime_r.h"
 #include "Logger.h"
 #include "Helper.h"
@@ -468,13 +469,13 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = request::findValue(&req, "username");
+			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
 			std::string password = request::findValue(&req, "password");
-			std::string timageurl = request::findValue(&req, "imageurl");
+			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
 			if (
 				(name == "") ||
@@ -517,13 +518,13 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = request::findValue(&req, "name");
+			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
-			std::string address = request::findValue(&req, "address");
+			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = request::findValue(&req, "username");
+			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
 			std::string password = request::findValue(&req, "password");
-			std::string timageurl = request::findValue(&req, "imageurl");
+			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
 			if (
 				(name == "") ||

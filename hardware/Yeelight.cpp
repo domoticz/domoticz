@@ -2,6 +2,7 @@
 #include "Yeelight.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 #include "../hardware/hardwaretypes.h"
@@ -601,8 +602,8 @@ namespace http {
 			root["title"] = "AddYeeLight";
 
 			std::string idx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
-			std::string sipaddress = request::findValue(&req, "ipaddress");
+			std::string sname = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string sipaddress = HTMLSanitizer::Sanitize(request::findValue(&req, "ipaddress"));
 			std::string stype = request::findValue(&req, "stype");
 			if (
 				(idx.empty()) ||
