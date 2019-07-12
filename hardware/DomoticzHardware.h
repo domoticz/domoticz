@@ -118,7 +118,7 @@ protected:
 	std::string GetTextSensorText(const int NodeID, const int ChildID, bool &bExists);
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 	void SendCustomSensor(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const float CustomValue, const std::string &defaultname, const std::string &defaultLabel);
-	void SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string &defaultname);
+	void SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string& alarmLabel, const std::string &defaultname);
 	void SendFanSensor(const int Idx, const int BatteryLevel, const int FanSpeed, const std::string &defaultname);
 
 	int m_iHBCounter = { 0 };

@@ -10184,7 +10184,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	{
 		Unit = pMeter->id;
 		cmnd = pMeter->intval2;
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, procResult.DeviceName);
+		strcpy(szTmp, pMeter->text);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
 	}
@@ -10306,7 +10307,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeZWaveAlarm:
 			WriteMessage("subtype       = Alarm");
-			sprintf(szTmp, "Level = %d (0x%02X)", pMeter->intval2, pMeter->intval2);
+			sprintf(szTmp, "Level = %d (0x%02X) %s", pMeter->intval2, pMeter->intval2, pMeter->text);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTextStatus:

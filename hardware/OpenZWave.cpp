@@ -1563,6 +1563,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	_device.nodeID = NodeID;
 	_device.instanceID = instance;
 	_device.indexID = vIndex;
+	_device.orgInstanceID = vOrgInstance;
+	_device.orgIndexID = vOrgIndex;
 	_device.commandClassID = commandclass;
 
 	_device.label = vLabel;
@@ -1660,6 +1662,14 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	{
 		if ((vOrgIndex < ValueID_Index_UserCode::Code_1) || (vOrgIndex > ValueID_Index_UserCode::Code_253))
 			return;
+		if (vType == OpenZWave::ValueID::ValueType_String)
+		{
+			std::string strValue;
+			if (m_pManager->GetValueAsString(vID, &strValue) == true)
+			{
+			}
+		}
+		return;
 	}
 	else if (commandclass == COMMAND_CLASS_BASIC_WINDOW_COVERING)
 	{
@@ -2442,8 +2452,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	}
 
 	std::stringstream sstr;
-	sstr << int(NodeID) << ".instance." << int(instance) << ".index." << int(index) << ".commandClasses." << int(commandclass);
+	sstr << int(NodeID) << ".instance." << int(vOrgInstance) << ".index." << int(vOrgIndex) << ".commandClasses." << int(commandclass);
 	std::string path = sstr.str();
+	std::string path_plus = path + ".";
 
 #ifdef DEBUG_ZWAVE_INT
 	_log.Log(LOG_NORM, "OpenZWave: Value_Changed: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
@@ -2547,6 +2558,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 			else
 			{
 				//Normal Code Code_1/Code_253
+				if (vType == OpenZWave::ValueID::ValueType_String)
+				{
+					std::string strValue;
+					if (m_pManager->GetValueAsString(vID, &strValue) == true)
+					{
+					}
+				}
+				return;
 			}
 		}
 	}
@@ -2618,7 +2637,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 
 	_tZWaveDevice* pDevice = NULL;
 	std::map<std::string, _tZWaveDevice>::iterator itt;
-	std::string path_plus = path + ".";
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
 		std::string dstring = itt->second.string_id;
@@ -2670,8 +2688,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 	}
 
 	pDevice->bValidValue = true;
-	pDevice->orgInstanceID = vOrgInstance;
-	pDevice->orgIndexID = vOrgIndex;
 
 	if (
 		(pDevice->Manufacturer_id == 0) &&
@@ -2724,7 +2740,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 		{
 			// default
 			int32 intListValue = 0;
-			std::string szListValue;
+			std::string szListValue("??");
 			if (vType == OpenZWave::ValueID::ValueType_List)
 			{
 				if (m_pManager->GetValueListSelection(vID, &intListValue))
@@ -2755,7 +2771,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				else
 					m_LastAlarmTypeReceived = -1;
 			}
-			if (vOrgIndex == ValueID_Index_Alarm::Level_v1)
+			else if (vOrgIndex == ValueID_Index_Alarm::Level_v1)
 			{
 				if (m_LastAlarmTypeReceived != -1)
 				{
@@ -2773,7 +2789,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				{
 					char szTmp[100];
 					sprintf(szTmp, "Alarm Type: %s %d (0x%02X)", vLabel.c_str(), vOrgIndex, vOrgIndex);
-					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, (uint8_t)vOrgIndex, intListValue, szTmp);
+					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, (uint8_t)vOrgIndex, intListValue, szListValue, szTmp);
 				}
 
 				if (vOrgIndex == ValueID_Index_Alarm::Type_Access_Control)

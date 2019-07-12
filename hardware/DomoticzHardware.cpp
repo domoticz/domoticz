@@ -951,7 +951,7 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string &defaultname)
+void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t InstanceID, const int BatteryLevel, const uint8_t aType, const int aValue, const std::string& alarmLabel, const std::string &defaultname)
 {
 	uint8_t ID1 = 0;
 	uint8_t ID2 = (unsigned char)((NodeID & 0xFF00) >> 8);
@@ -965,6 +965,11 @@ void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const uint8_t
 	gDevice.id = aType;
 	gDevice.intval1 = (int)(lID);
 	gDevice.intval2 = aValue;
+
+	int maxChars = (alarmLabel.size() < sizeof(_tGeneralDevice::text) - 1) ? alarmLabel.size() : sizeof(_tGeneralDevice::text) - 1;
+	strncpy(gDevice.text, alarmLabel.c_str(), maxChars);
+	gDevice.text[maxChars] = 0;
+
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
