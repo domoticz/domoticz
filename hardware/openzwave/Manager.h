@@ -592,8 +592,22 @@ namespace OpenZWave
 			 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 			 * \param _nodeId The ID of the node to query.
 			 * \param _nodeNeighbors An array of 29 uint8s to hold the neighbor bitmap
+			 * \sa SyncronizeNodeNeighbors
 			 */
 			uint32 GetNodeNeighbors(uint32 const _homeId, uint8 const _nodeId, uint8** _nodeNeighbors);
+
+			/**
+			 * \brief Update the List of Neighbors on a particular node
+			 *
+			 * This retrieves the latest copy of the Neighbor lists for a particular node and should be called
+			 * before calling GetNodeNeighbors to ensure OZW returns the most recent list of Neighbors
+			 *
+			 * \param _homeId The HomeID of the Z-Wave controller than manages the node.
+			 * \param _nodeId The ID of the node to get a updated list of Neighbors from
+			 * \sa GetNodeNeighbors
+			 */
+
+			void SyncronizeNodeNeighbors(uint32 const _homeId, uint8 const _nodeId);
 
 			/**
 			 * \brief Get the manufacturer name of a device
