@@ -1461,7 +1461,12 @@ namespace http {
 			const char *h;
 			// client MUST include Connection: Upgrade header
 			h = request::get_req_header(&req, "Connection");
-			if (!(h && boost::iequals(h, "Upgrade")))
+			if (!h)
+			{
+				return false;
+			}
+			std::string connection_header = h;
+			if (connection_header.find("Upgrade") == std::string::npos)
 			{
 				return false;
 			};
@@ -1509,8 +1514,12 @@ namespace http {
 			}
 			h = request::get_req_header(&req, "Sec-Websocket-Protocol");
 			// check if a protocol is given, and it includes "domoticz".
+			if (!h)
+			{
+				return false;
+			}
 			std::string protocol_header = h;
-			if (!h || protocol_header.find("domoticz") == std::string::npos)
+			if (protocol_header.find("domoticz") == std::string::npos)
 			{
 				rep = reply::stock_reply(reply::internal_server_error);
 				return true;
