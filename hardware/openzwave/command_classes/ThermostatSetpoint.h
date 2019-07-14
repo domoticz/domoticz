@@ -80,8 +80,10 @@ namespace OpenZWave
 						return 3;
 					}
 
+				protected:
+					virtual void CreateVars(uint8 const _instance, uint8 const _index) override;
+
 				private:
-					void CreateSetPoint(uint8 const _instance, uint8 const _index);
 					ThermostatSetpoint(uint32 const _homeId, uint8 const _nodeId);
 			};
 		} // namespace CC

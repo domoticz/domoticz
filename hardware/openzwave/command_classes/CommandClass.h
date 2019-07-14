@@ -223,12 +223,15 @@ namespace OpenZWave
 					} RefreshValue;
 
 				protected:
+					virtual void CreateVars(uint8 const _instance)
+					{
+					}
 					void ReadValueRefreshXML(TiXmlElement const* _ccElement);
 					CompatOptionManager m_com;
 					CompatOptionManager m_dom;
 
 				public:
-					virtual void CreateVars(uint8 const _instance)
+					virtual void CreateVars(uint8 const _instance, uint8 const _index)
 					{
 					}
 
