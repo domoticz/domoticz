@@ -10948,8 +10948,8 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 
 		//Wind
 		int intDirection = (pResponse->WEATHER.directionhigh * 256) + pResponse->WEATHER.directionlow;
-		int intSpeed = (pResponse->WEATHER.av_speedhigh * 256) + pResponse->WEATHER.av_speedlow;
-		int intGust = (pResponse->WEATHER.gusthigh * 256) + pResponse->WEATHER.gustlow;
+		float intSpeed = float((pResponse->WEATHER.av_speedhigh * 256) + pResponse->WEATHER.av_speedlow)/10.0f;
+		float intGust = float((pResponse->WEATHER.gusthigh * 256) + pResponse->WEATHER.gustlow)/10.0f;
 
 		float temp = 0, chill = 0;
 		if (!pResponse->WEATHER.temperaturesign)
@@ -10979,7 +10979,7 @@ void MainWorker::decode_Weather(const int HwdID, const _eHardwareTypes HwdType, 
 			}
 			bHaveChill = true;
 		}
-		pRFXDevice->SendWind(windID, BatteryLevel, intDirection, (float)intSpeed, (float)intGust, temp, chill, true, bHaveChill, procResult.DeviceName, SignalLevel);
+		pRFXDevice->SendWind(windID, BatteryLevel, intDirection, intSpeed, intGust, temp, chill, true, bHaveChill, procResult.DeviceName, SignalLevel);
 
 		if (subType == sTypeWEATHER2)
 		{
