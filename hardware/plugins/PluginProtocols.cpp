@@ -1834,11 +1834,12 @@ namespace Plugins {
 				iOffset += 4;
 			}
 
+			if (vMessage.size() < (iOffset + lPayloadLength))
+				return false;
+
 			// Append the payload to the existing (maybe) payload
-			if (lPayloadLength)
-			{
-				if (vMessage.size() < (iOffset + lPayloadLength))
-					return false;
+                        if (lPayloadLength)
+                        {
 				vPayload.reserve(vPayload.size() + lPayloadLength);
 				for (int i = iOffset; i < iOffset + lPayloadLength; i++)
 				{
@@ -1945,32 +1946,23 @@ namespace Plugins {
 		//
 		//	If the message does not look like WebSocket traffic, send it to the HTTP parent
 		//
-		if ((m_sRetainedData.size()	&& (m_sRetainedData[0] & 0x7F) > 32) ||		// If there is already a partial message check that one
-			(Message->m_Buffer.size() && (Message->m_Buffer[0] & 0x7F) > 32))	// otherwise check the incoming message
+		//	Although messages can be fragmented, control messages can be inserted in between fragments
+		//	so try to process just the message first, then retained data and the message
+		std::vector<byte>	Buffer = Message->m_Buffer;
+		if (ProcessWholeMessage(Buffer, Message))
 		{
-			// Handle response to request websockets protocol
-			CPluginProtocolHTTP::ProcessInbound(Message);
+			return;		// Message processed
 		}
-		else
+
+		// Add new message to retained data, process all messages if this one is the finish of a message
+		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+
+		// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
+		if (ProcessWholeMessage(m_sRetainedData, Message))
 		{
-			//	Although messages can be fragmented, control messages can be inserted in between fragments
-			//	so try to process just the message first, then retained data and the message
-			std::vector<byte>	Buffer = Message->m_Buffer;
-			if (ProcessWholeMessage(Buffer, Message))
-			{
-				return;		// Message processed
-			}
-
-			// Add new message to retained data, process all messages if this one is the finish of a message
-			m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
-
-			// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
-			if (ProcessWholeMessage(m_sRetainedData, Message))
-			{
-				return;		// Message processed
-			}
-
+			return;		// Message processed
 		}
+
 	}
 
 	std::vector<byte> CPluginProtocolWS::ProcessOutbound(const WriteDirective * WriteMessage)
