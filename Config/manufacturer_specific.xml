@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="39" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="41" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -695,6 +695,7 @@
     <Product config="fibaro/fgwpg111.xml" id="2000" name="FGWPG111 US Wall Plug" type="1701"/>
     <Product config="fibaro/fgwpg111.xml" id="1000" name="FGWPG111 UK Wall Plug" type="1801"/>
     <Product config="fibaro/fgwds221.xml" id="1000" name="FGWDS221 Walli Double Switch" type="1B01"/>
+    <Product config="fibaro/fgwd111.xml" id="1000" name="FGWD111 Walli Dimmer" type="1C01"/>
     <Product config="fibaro/fgwr111.xml" id="1000" name="FGWR111 Walli Roller Shutter" type="1d01"/>
   </Manufacturer>
   <Manufacturer id="0295" name="fifthplay nv"></Manufacturer>
@@ -1106,7 +1107,9 @@
     <Product id="0001" name="Mini Energy Switch" type="0002"/>
     <!--EU-->
     <Product config="mcohome/mhp210.xml" id="1302" name="MH-P210 Mini Energy Dimmer" type="210a"/>
+    <Product config="mcohome/mhp220.xml" id="1352" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhp220.xml" id="5101" name="MH-P220 Micro Dimmer" type="220a"/>
+    <Product config="mcohome/mhp220.xml" id="5102" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhs311.xml" id="0201" name="MH-S311 One-load" type="3102"/>
     <Product config="mcohome/mhs312.xml" id="0202" name="MH-S312 Two-load" type="3102"/>
     <Product config="mcohome/mhs314.xml" id="0204" name="MH-S314 Four-load" type="3102"/>
