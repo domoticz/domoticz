@@ -1838,8 +1838,8 @@ namespace Plugins {
 				return false;
 
 			// Append the payload to the existing (maybe) payload
-                        if (lPayloadLength)
-                        {
+			if (lPayloadLength)
+			{
 				vPayload.reserve(vPayload.size() + lPayloadLength);
 				for (int i = iOffset; i < iOffset + lPayloadLength; i++)
 				{
@@ -1943,9 +1943,6 @@ namespace Plugins {
 
 	void CPluginProtocolWS::ProcessInbound(const ReadEvent * Message)
 	{
-		//
-		//	If the message does not look like WebSocket traffic, send it to the HTTP parent
-		//
 		//	Although messages can be fragmented, control messages can be inserted in between fragments
 		//	so try to process just the message first, then retained data and the message
 		std::vector<byte>	Buffer = Message->m_Buffer;
