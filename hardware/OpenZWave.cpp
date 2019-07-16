@@ -2880,6 +2880,18 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 						break;
 					}
 				}
+				else if (vOrgIndex == ValueID_Index_Alarm::Type_Home_Security)
+				{
+					switch (intListValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
 				else
 				{
 					switch (intListValue)
