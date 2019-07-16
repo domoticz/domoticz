@@ -2271,7 +2271,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 		std::string vLabel = "";
 		if (commandclass != 0)
 		{
-			m_pManager->GetValueLabel(vID);
+			vLabel = m_pManager->GetValueLabel(vID);
 		}
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
