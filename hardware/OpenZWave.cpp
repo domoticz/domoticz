@@ -2121,21 +2121,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 	else if (commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
 	{
 		//Ignore this class, we can make our own schedule with timers
-		//_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
-		if (vType == OpenZWave::ValueID::ValueType_Byte)
-		{
-			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
-				return;
-		}
-		if (vType == OpenZWave::ValueID::ValueType_Schedule)
-		{
-			//we make our own schedule
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
-			return;
-		}
+		return;
 	}
 	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
 	{
