@@ -2207,6 +2207,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 			}
 			else if (vType == OpenZWave::ValueID::ValueType_List)
 			{
+				return; //Not in use at the moment
 				int32 lValue = 0;
 				if (m_pManager->GetValueListSelection(vID, &lValue) == false)
 					return;
@@ -2981,6 +2982,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID& vID)
 				}
 				else if (vType == OpenZWave::ValueID::ValueType_List)
 				{
+					return; //Not in use at the moment
 					int32 lValue = 0;
 					if (m_pManager->GetValueListSelection(vID, &lValue) == false)
 						return;
