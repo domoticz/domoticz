@@ -39,6 +39,5 @@ If you like the product or encourage the development, please use thelink:
 Status | Operating system
 ------------ | -------------
 [![Status Linux](https://travis-ci.org/domoticz/domoticz.svg?branch=master)](https://travis-ci.org/domoticz/domoticz) | Linux x86_64
-<!---
 [![Status Windows](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows
--->
+
