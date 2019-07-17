@@ -1261,10 +1261,10 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		else
 		{
 			//dimmable light  device
+			if ((svalue > 99) && (svalue != 255))
+				svalue = 99;
 			if (GetValueByCommandClassIndex(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, ValueID_Index_SwitchMultiLevel::Level, vID) == true)
 			{
-				if ((svalue > 99) && (svalue != 255))
-					svalue = 99;
 				pDevice->intvalue = svalue;
 				_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command!, Level: %d, NodeID: %d (0x%02x)", svalue, nodeID, nodeID);
 
@@ -1297,6 +1297,33 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 					}
 				}
 
+			}
+			else if (GetValueByCommandClassIndex(nodeID, instanceID, COMMAND_CLASS_PROPRIETARY, ValueID_Index_SwitchMultiLevel::Level, vID) == true)
+			{
+				if (
+					(pNode->Manufacturer_id == 0x010F)
+					&& (pNode->Product_id == 0x1000)
+					&& (pNode->Product_type == 0x0302)
+					)
+				{
+					//Fibaro FGRM222 Roller Shutter Controller 2
+					//Slat/Tilt position
+					pDevice->intvalue = svalue;
+					_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Slat/Tilt command!, Level: %d, NodeID: %d (0x%02x)", svalue, nodeID, nodeID);
+
+					if (vID.GetType() == OpenZWave::ValueID::ValueType_Byte)
+					{
+						if (!m_pManager->SetValue(vID, svalue))
+						{
+							_log.Log(LOG_ERROR, "OpenZWave: Error setting Slat/Tilt Value! NodeID: %d (0x%02x)", nodeID, nodeID);
+						}
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "OpenZWave: SwitchLight, Unhandled value type: %d, %s:%d", vID.GetType(), std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+						return false;
+					}
+				}
 			}
 			else
 			{
@@ -2230,6 +2257,33 @@ void COpenZWave::AddValue(const OpenZWave::ValueID& vID, const NodeInfo* pNodeIn
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
 			return;
+		}
+	}
+	else if (commandclass == COMMAND_CLASS_MANUFACTURER_PROPRIETARY)
+	{
+		//Could be anything
+		if (
+			(pNodeInfo->Manufacturer_id == 0x010F)
+			&& (pNodeInfo->Product_id == 0x1000)
+			&& (pNodeInfo->Product_type == 0x0302)
+			)
+		{
+			//Fibaro FGRM222 Roller Shutter Controller 2
+			//Slat/Tilt position
+			if (vType == OpenZWave::ValueID::ValueType_Byte)
+			{
+				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+				{
+					_device.devType = ZDTYPE_SWITCH_DIMMER;
+					_device.intvalue = byteValue;
+					InsertDevice(_device);
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: Unhandled value type: %d, %s:%d", vType, std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__);
+				return;
+			}
 		}
 	}
 	else
