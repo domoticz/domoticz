@@ -1,5 +1,8 @@
 define(['app'], function (app) {
-	app.controller('FloorplanEditController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
+	app.controller('FloorplanEditController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$compile', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $compile, permissions) {
+
+		$scope.MouseX = 0;
+		$scope.MouseY = 0;
 
 		ImageLoaded = function () {
 			if ((typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')) {
@@ -7,31 +10,19 @@ define(['app'], function (app) {
 				$("#svgcontainer")[0].setAttribute("viewBox", "0 0 " + $("#floorplanimagesize")[0].naturalWidth + " " + $("#floorplanimagesize")[0].naturalHeight);
 				Device.xImageSize = $("#floorplanimagesize")[0].naturalWidth;
 				Device.yImageSize = $("#floorplanimagesize")[0].naturalHeight;
-				$("#svgcontainer")[0].setAttribute("style", "display:inline");
+				$("#svgcontainer").show();
 				$scope.SVGContainerResize();
 			}
 		}
 
-		$scope.SVGContainerResize = function () {
-			if ((typeof $("#floorplaneditor") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')) {
-				$("#floorplaneditor")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
-				$("#floorplaneditor")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
-				$("#floorplaneditor")[0].setAttribute('svgwidth', $("#svgcontainer").width());
-				var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
-				$("#floorplaneditor")[0].setAttribute('ratio', ratio);
-				var svgHeight = $("#floorplaneditor").width() / ratio;
-				$("#floorplaneditor").height(svgHeight);
-			}
-		}
-
-		PolyClick = function (click) {
+		$scope.PolyClick = function (event) {
 			if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
 				$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
 				$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
 				$("#floorplangroup")[0].setAttribute("zoomed", "false");
 			}
 			else {
-				var borderRect = click.target.getBBox(); // polygon bounding box
+				var borderRect = event.target.getBBox(); // polygon bounding box
 				var margin = 0.1;  // 10% margin around polygon
 				var marginX = borderRect.width * margin;
 				var marginY = borderRect.height * margin;
@@ -49,15 +40,15 @@ define(['app'], function (app) {
 			RefreshDevices(); // force redraw to change 'moveability' of icons
 		}
 
-		FloorplanClick = function (click) {
+		$scope.FloorplanClick = function (event) {
 			// make sure we aren't zoomed in.
 			if ($("#floorplangroup")[0].getAttribute("zoomed") != "true") {
 				if ($("#roompolyarea").attr("title") != "") {
 					var Scale = Device.xImageSize / $("#floorplaneditor").width();
 					var offset = $("#floorplanimage").offset();
 					var points = $("#roompolyarea").attr("points");
-					var xPoint = Math.round((click.pageX - offset.left) * Scale);
-					var yPoint = Math.round((click.pageY - offset.top) * Scale);
+					var xPoint = Math.round((event.pageX - offset.left) * Scale);
+					var yPoint = Math.round((event.pageY - offset.top) * Scale);
 					if (points != "") {
 						points = points + ",";
 					} else {
@@ -76,7 +67,7 @@ define(['app'], function (app) {
 				else ShowNotify('Select a Floorplan and Room first.', 2500, true);
 			}
 			else {
-				PolyClick(click);
+				PolyClick(event);
 			}
 		}
 
@@ -460,7 +451,7 @@ define(['app'], function (app) {
 
 			var htmlcontent = "";
 			htmlcontent += $('#floorplaneditmain').html();
-			$('#floorplaneditcontent').html(htmlcontent);
+			$('#floorplaneditcontent').html($compile(htmlcontent)($scope));
 			$('#floorplaneditcontent').i18n();
 
 			oTable = $('#floorplantable').dataTable({
@@ -817,17 +808,55 @@ define(['app'], function (app) {
 			}
 		}
 
+		$scope.SVGContainerMouseLeave = function() {
+			$("#guidelines").empty();
+		}
+		
+		$scope.SVGContainerMouseMove = function(event) {
+			var Scale = Device.xImageSize / $("#floorplaneditor").width();
+			var offset = $("#floorplanimage").offset();
+			var xoffset = Math.round((event.pageX - offset.left) * Scale);
+			var yoffset = Math.round((event.pageY - offset.top) * Scale);
+
+			if (xoffset < 0) return;
+			if (yoffset < 0) return;
+			
+			$scope.MouseX = xoffset;
+			$scope.MouseY = yoffset;
+			if ($("#floorplangroup").attr("zoomed") == "false") {
+				if ($("#guidelines").children().length == 0) {
+					$("#guidelines").append(makeSVGnode('line', { id:"vertLine", x1:xoffset, y1:"0", x2:xoffset, y2:5000, style:"cursor:crosshair; stroke:rgb(255,0,0);stroke-width:2" }, '', ''));
+					$("#guidelines").append(makeSVGnode('line', { id:"horiLine", x1:"0", y1:yoffset, x2:5000, y2:yoffset, style:"cursor:crosshair; stroke:rgb(255,0,0);stroke-width:2" }, '', ''));
+				} else {
+					$('#vertLine').attr("x1", xoffset);
+					$('#vertLine').attr("x2", xoffset);
+					$('#horiLine').attr("y1", yoffset);
+					$('#horiLine').attr("y2", yoffset);
+				}
+			}  else {
+				$("#guidelines").empty();
+			}
+		}
+		
+		$scope.SVGContainerResize = function () {
+			if ((typeof $("#floorplaneditor") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')) {
+				$("#floorplaneditor")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
+				$("#floorplaneditor")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
+				$("#floorplaneditor")[0].setAttribute('svgwidth', $("#svgcontainer").width());
+				var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
+				$("#floorplaneditor")[0].setAttribute('ratio', ratio);
+				var svgHeight = $("#floorplaneditor").width() / ratio;
+				$("#floorplaneditor").height(svgHeight);
+			}
+		}
+		
+		
 		init();
 
 		function init() {
 			Device.initialise();
 			$scope.MakeGlobalConfig();
 			ShowFloorplans();
-			$("#floorplanimage").on("click", function (event) { FloorplanClick(event); });
-			$("#guidelines").on("click", function (event) { FloorplanClick(event); });
-			$("#roompolyarea").on("click", function (event) { PolyClick(event); });
-			$("#svgcontainer").on("mouseleave", function (event) { MouseOut(event); });
-			$("#svgcontainer").on("mousemove", function (event) { MouseXY(event); });
 			$("#svgcontainer").resize(function () { $scope.SVGContainerResize(); });
 		};
 		$scope.$on('$destroy', function () {
