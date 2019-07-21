@@ -145,19 +145,6 @@ void ZWaveBase::InsertDevice(_tZWaveDevice device)
 	SendSwitchIfNotExists(&device);
 }
 
-void ZWaveBase::UpdateDeviceBatteryStatus(const int nodeID, const int value)
-{
-	std::map<std::string,_tZWaveDevice>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
-	{
-		if (itt->second.nodeID==nodeID)
-		{
-			itt->second.batValue=value;
-			itt->second.hasBattery=true;//we got an update, so it should have a battery then...
-		}
-	}
-}
-
 bool ZWaveBase::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 {
 	std::vector<std::vector<std::string> > result;

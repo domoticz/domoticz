@@ -4,6 +4,7 @@ Version 4.xxxxx (xxx 2019)
 - Implemented: GUI, OpenZWave added Refresh Node Information button, styling
 - Implemented: RTL433, added Power (Watt) type
 - Implemented: RTL433, added rainfall_mm type
+- Implemented: OZW, JSON call to retrieve current battery levels for all nodes
 - Fixed: Gui, Choosing Icon for ARC type switches
 - Fixed: GUI, Dashboard icon incremental counter (energy generated) not correct (#3231)
 - Fixed: GUI, device table initial order column

@@ -152,7 +152,6 @@ private:
 
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);
-	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
 	virtual bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr) = 0;

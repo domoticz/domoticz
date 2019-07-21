@@ -53,6 +53,8 @@ public:
 		std::string						Product_name;
 		int								Application_version;
 
+		int								batValue = 255;
+
 		std::map<int, std::map<int, NodeCommandClass> >	Instances;
 
 		eNodeState						eState;
@@ -93,6 +95,8 @@ public:
 	bool SetUserCodeEnrollmentMode();
 	bool GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root);
 	bool RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex);
+
+	bool GetBatteryLevels(Json::Value& root);
 
 	std::vector<std::string> GetSupportedThermostatModes(const unsigned long ID);
 	std::string GetSupportedThermostatFanModes(const unsigned long ID);
@@ -147,6 +151,7 @@ private:
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
+	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 
 	uint8_t GetInstanceFromValueID(const OpenZWave::ValueID &vID);
 

@@ -4877,6 +4877,39 @@ bool COpenZWave::RemoveUserCode(const unsigned int homeID, const int nodeID, con
 	return true;
 }
 
+void COpenZWave::UpdateDeviceBatteryStatus(const int nodeID, const int value)
+{
+	COpenZWave::NodeInfo* pNode = GetNodeInfo(m_controllerID, nodeID);
+	if (pNode)
+	{
+		pNode->batValue = value;
+	}
+
+	std::map<std::string, _tZWaveDevice>::iterator itt;
+	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+	{
+		if (itt->second.nodeID == nodeID)
+		{
+			itt->second.batValue = value;
+			itt->second.hasBattery = true;//we got an update, so it should have a battery then...
+		}
+	}
+}
+
+
+bool COpenZWave::GetBatteryLevels(Json::Value& root)
+{
+	int ii = 0;
+	for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
+	{
+		root["result"][ii]["nodeID"] = it->nodeId;
+		root["result"][ii]["battery"] = it->batValue;
+		ii++;
+	}
+	return true;
+}
+
+
 unsigned int COpenZWave::GetControllerID()
 {
 	return m_controllerID;
@@ -5989,6 +6022,24 @@ namespace http {
 				}
 			}
 		}
+
+		void CWebServer::Cmd_ZWaveGetBatteryLevels(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave* pOZWHardware = (COpenZWave*)pHardware;
+				if (!pOZWHardware->GetBatteryLevels(root))
+					return;
+				root["status"] = "OK";
+				root["title"] = "GetBatteryLevels";
+			}
+		}
+
 	}
 }
 
