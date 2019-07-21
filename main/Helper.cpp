@@ -74,6 +74,24 @@ uint64_t hexstrtoui64(const std::string &str)
 	return ul;
 }
 
+std::string ToHexString(const uint8_t* pSource, const size_t length)
+{
+	if (pSource == nullptr)
+		return "";
+	std::string ret;
+	char szTmp[10];
+	size_t index = 0;
+	while (index < length)
+	{
+		sprintf(szTmp, "0x%02X", pSource[index]);
+		if (index)
+			ret += " ";
+		ret += szTmp;
+		index++;
+	}
+	return ret;
+}
+
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,

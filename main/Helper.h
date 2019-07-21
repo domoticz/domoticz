@@ -10,6 +10,7 @@ enum _eTimeFormat
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
 uint64_t hexstrtoui64(const std::string &str);
+std::string ToHexString(const uint8_t* pSource, const size_t length);
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
