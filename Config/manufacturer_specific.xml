@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="41" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="42" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -876,6 +876,7 @@
     <Product config="homeseer/hs-wd100plus.xml" id="3034" name="HS-WD100+ Wall Dimmer" type="4447"/>
     <Product config="homeseer/hs-ws200plus.xml" id="3035" name="HS-WS200+ Wall Switch" type="4447"/>
     <Product config="homeseer/hs-wd200plus.xml" id="3036" name="HS-WD200+ Wall Dimmer" type="4447"/>
+    <Product type="201" id="8" name="HS-DS100+ Door/Window Sensor" config="homeseer/hs-ds100plus.xml"/>
     <Product config="homeseer/hs-ms100plus.xml" id="9" name="HS-MS100+ Motion Sensor" type="201"/>
     <Product config="homeseer/hs-ls100plus.xml" id="a" name="HS-LS100+ Leak Sensor" type="201"/>
     <Product config="homeseer/hs-fls100plus.xml" id="000b" name="HS-FLS100+ Floodlight Sensor" type="0201"/>
