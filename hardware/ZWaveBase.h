@@ -101,7 +101,6 @@ class ZWaveBase : public CDomoticzHardwareBase
 			sensor1000=false;
 			isFLiRS=false;
 			hasWakeup=false;
-			hasBattery=false;
 			batValue = 255;
 			floatValue=0;
 			intvalue=0;

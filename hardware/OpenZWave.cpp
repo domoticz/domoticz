@@ -4891,9 +4891,49 @@ void COpenZWave::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 		if (itt->second.nodeID == nodeID)
 		{
 			itt->second.batValue = value;
-			itt->second.hasBattery = true;//we got an update, so it should have a battery then...
 		}
 	}
+/*
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+*/
+	//Update all devices in the database
+	std::vector<std::vector<std::string> > results;
+	results = m_sql.safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
+	for (auto itt : results)
+	{
+		std::string DeviceID = itt[1];
+		std::string rdID;
+
+		if (DeviceID.size() != 8)
+			rdID = DeviceID.substr(DeviceID.size() - 4, 2);
+		else
+		{
+			rdID = DeviceID.substr(2, 2);
+			if (rdID == "00")
+				rdID = DeviceID.substr(4, 2);
+		}
+
+		int dev_nodeID;
+		std::stringstream ss;
+		ss << std::hex << rdID;
+		ss >> dev_nodeID;
+
+		if (dev_nodeID == nodeID)
+		{
+/*
+			m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID==%s)", 
+				value, 
+				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				itt[0].c_str());
+*/
+			m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%s)",
+				value,
+				itt[0].c_str());
+		}
+	}
+
 }
 
 
