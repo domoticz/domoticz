@@ -1513,11 +1513,11 @@ void COpenZWave::DebugValue(const OpenZWave::ValueID& vID)
 
 	uint8_t vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
 	uint16_t vIndex = vID.GetIndex();
-	std::string vLabel = m_pManager->GetValueLabel(vID);
+	//std::string vLabel = m_pManager->GetValueLabel(vID);
 	std::string vUnits = m_pManager->GetValueUnits(vID);
 	uint8_t commandclass = vID.GetCommandClassId();
 
-	_log.Log(LOG_STATUS, "OpenZWave: Debug Value: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
+	_log.Log(LOG_STATUS, "OpenZWave: Debug Value: Node: %d (0x%02x), CommandClass: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vInstance, vIndex, vID.GetId());
 }
 
 
@@ -2613,13 +2613,16 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			else
 			{
 				//Normal Code Code_1/Code_253
-				pNode->HaveUserCodes = true;
-
-				if (vType == OpenZWave::ValueID::ValueType_String)
+				if ((vOrgIndex >= ValueID_Index_UserCode::Code_1) && (vOrgIndex <= ValueID_Index_UserCode::Code_253))
 				{
-					std::string strValue;
-					if (m_pManager->GetValueAsString(vID, &strValue) == true)
+					pNode->HaveUserCodes = true;
+
+					if (vType == OpenZWave::ValueID::ValueType_String)
 					{
+						std::string strValue;
+						if (m_pManager->GetValueAsString(vID, &strValue) == true)
+						{
+						}
 					}
 				}
 				return;
