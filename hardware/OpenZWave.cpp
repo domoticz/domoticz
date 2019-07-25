@@ -812,6 +812,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_ManufacturerSpecificDBReady:
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 		break;
+	case OpenZWave::Notification::Type_UserAlerts:
+		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 	default:
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID, _nodeID);
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
