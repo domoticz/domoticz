@@ -1506,6 +1506,21 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	}
 }
 
+void COpenZWave::DebugValue(const OpenZWave::ValueID& vID)
+{
+	unsigned int HomeID = vID.GetHomeId();
+	uint8_t NodeID = vID.GetNodeId();
+
+	uint8_t vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+	uint16_t vIndex = vID.GetIndex();
+	std::string vLabel = m_pManager->GetValueLabel(vID);
+	std::string vUnits = m_pManager->GetValueUnits(vID);
+	uint8_t commandclass = vID.GetCommandClassId();
+
+	_log.Log(LOG_STATUS, "OpenZWave: Debug Value: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
+}
+
+
 void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 {
 	if (m_pManager == NULL)
@@ -1533,7 +1548,12 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
+
+	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+	DebugValue(vID);
 	std::string vLabel = m_pManager->GetValueLabel(vID);
+	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+
 	std::string vUnits = m_pManager->GetValueUnits(vID);
 
 	if (vLabel == "Unknown") {
@@ -2326,7 +2346,10 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 		std::string vLabel = "";
 		if (commandclass != 0)
 		{
+			_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+			DebugValue(vID);
 			vLabel = m_pManager->GetValueLabel(vID);
+			_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 		}
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
@@ -2398,7 +2421,10 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
+	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+	DebugValue(vID);
 	std::string vLabel = m_pManager->GetValueLabel(vID);
+	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 	std::string vUnits = m_pManager->GetValueUnits(vID);
 
 	float fValue = 0;
@@ -3817,7 +3843,10 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 						continue;
 
+					_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+					DebugValue(*ittValue);
 					std::string vLabel = m_pManager->GetValueLabel(*ittValue);
+					_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 
 					if (
 						(vLabel.find("Exporting") != std::string::npos) ||
@@ -4490,7 +4519,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 							i_index = 3000 + ittValue.GetInstance();
 						}
 
+						_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+						DebugValue(ittValue);
 						std::string i_label = m_pManager->GetValueLabel(ittValue);
+						_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+
 						std::string i_units = m_pManager->GetValueUnits(ittValue);
 						std::string i_help = m_pManager->GetValueHelp(ittValue);
 
@@ -4506,6 +4539,9 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 						//Only add the Wake_Up_Interval value here
 						if ((ittValue.GetGenre() == OpenZWave::ValueID::ValueGenre_System) && (ittValue.GetInstance() == 1))
 						{
+							_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+							DebugValue(ittValue);
+
 							if ((m_pManager->GetValueLabel(ittValue) == "Wake-up Interval") && (ittValue.GetType() == OpenZWave::ValueID::ValueType_Int))
 							{
 								if (m_pManager->GetValueAsString(ittValue, &szValue) == false)
@@ -4526,6 +4562,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 								root["result"][index]["config"][ivalue]["LastUpdate"] = TimeToString(&ittCmds.second.m_LastSeen, TF_DateTime);
 								ivalue++;
 							}
+							_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 						}
 					}
 				}
@@ -4758,7 +4795,11 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 						}
 						if (!bRet)
 						{
+							_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+							DebugValue(vID);
 							std::string cvLabel = m_pManager->GetValueLabel(vID);
+							_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
+
 							_log.Log(LOG_ERROR, "OpenZWave: Error setting value: %s (%s), NodeID: %d (0x%02x)", cvLabel.c_str(), ValueVal.c_str(), nodeID, nodeID);
 							return false;
 						}
