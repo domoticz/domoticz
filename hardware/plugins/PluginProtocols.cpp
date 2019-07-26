@@ -480,14 +480,28 @@ namespace Plugins {
 		}
 	}
 
+	void CPluginProtocolHTTP::Flush(CPlugin* pPlugin, PyObject* pConnection)
+	{
+		if (m_sRetainedData.size())
+		{
+			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
+			ProcessInbound(new ReadEvent(pPlugin, pConnection, 0, NULL));
+			m_sRetainedData.clear();
+		}
+	}
+
 	void CPluginProtocolHTTP::ProcessInbound(const ReadEvent* Message)
 	{
-		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+		// There won't be a buffer if the connection closed
+		if (Message->m_Buffer.size())
+		{
+			m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+		}
 
 		// HTML is non binary so use strings
 		std::string		sData(m_sRetainedData.begin(), m_sRetainedData.end());
 
-		m_ContentLength = 0;
+		m_ContentLength = -1;
 		m_Chunked = false;
 		m_RemainingChunk = 0;
 
@@ -540,7 +554,7 @@ namespace Plugins {
 				if (!m_Chunked)
 				{
 					// If full message then return it
-					if (m_ContentLength == sData.length())
+					if ((m_ContentLength == sData.length()) || (!Message->m_Buffer.size()))
 					{
 						PyObject*	pDataDict = PyDict_New();
 						PyObject*	pObj = Py_BuildValue("s", m_Status.c_str());
@@ -642,7 +656,8 @@ namespace Plugins {
 			if (sData.substr(0,2) == "\r\n")
 			{
 				std::string		sPayload = sData.substr(2);
-				if (!m_ContentLength || (m_ContentLength == sPayload.length()))
+				// No payload || we have the payload || the connection has closed
+				if (!m_ContentLength || (m_ContentLength == sPayload.length()) || !Message->m_Buffer.size())
 				{
 					PyObject* DataDict = PyDict_New();
 					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));

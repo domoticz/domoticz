@@ -101,7 +101,7 @@ namespace Plugins {
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 
 			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				_log.Log(LOG_NORM, "(%s) Asyncronous resolve aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+				_log.Log(LOG_NORM, "(%s) asynchronous resolve aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
 		}
 	}
 
@@ -123,7 +123,7 @@ namespace Plugins {
 		{
 			m_bConnected = false;
 			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				_log.Log(LOG_NORM, "(%s) Asyncronous connect aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+				_log.Log(LOG_NORM, "(%s) asynchronous connect aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 		}
 
@@ -256,7 +256,7 @@ namespace Plugins {
 			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
 					((e == boost::asio::error::operation_aborted) ||	// Client side connections (from connecting)
 					 (e == boost::asio::error::eof)))					// Server side connections (from listening)
-				_log.Log(LOG_NORM, "(%s) Queued asyncronous read aborted (%s:%s), [%d] %s.", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
+				_log.Log(LOG_NORM, "(%s) Queued asynchronous read aborted (%s:%s), [%d] %s.", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
 			else
 			{
 				if ((e != boost::asio::error::eof) &&
@@ -417,7 +417,7 @@ namespace Plugins {
 		{
 			m_bConnected = false;
 			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				_log.Log(LOG_NORM, "(%s) Asyncronous secure connect aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+				_log.Log(LOG_NORM, "(%s) asynchronous secure connect aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
 			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 		}
@@ -473,7 +473,7 @@ namespace Plugins {
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((e == boost::asio::error::operation_aborted) || (e == boost::asio::error::eof)))
 			{
-				_log.Log(LOG_NORM, "(%s) Queued asyncronous secure read aborted.", pPlugin->m_Name.c_str());
+				_log.Log(LOG_NORM, "(%s) Queued asynchronous secure read aborted.", pPlugin->m_Name.c_str());
 			}
 			else
 			{
@@ -595,7 +595,7 @@ namespace Plugins {
 		else
 		{
 			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
-				_log.Log(LOG_NORM, "(%s) Queued asyncronous UDP read aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+				_log.Log(LOG_NORM, "(%s) Queued asynchronous UDP read aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
 			else
 			{
 				if ((ec.value() != boost::asio::error::eof) &&
@@ -829,7 +829,7 @@ namespace Plugins {
 		{
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((ec == boost::asio::error::operation_aborted) || (ec == boost::asio::error::eof)))
-				_log.Log(LOG_NORM, "(%s) Queued asyncronous ICMP read aborted (%s).", pPlugin->m_Name.c_str(), m_IP.c_str());
+				_log.Log(LOG_NORM, "(%s) Queued asynchronous ICMP read aborted (%s).", pPlugin->m_Name.c_str(), m_IP.c_str());
 			else
 			{
 				if ((ec.value() != boost::asio::error::eof) &&
