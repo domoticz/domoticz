@@ -14,13 +14,19 @@
 #include "../../main/mainworker.h"
 
 #ifdef _DEBUG
-#ifdef WIN32
-#define Wire1_Base_Dir "E:\\w1\\devices"
-#else // WIN32
-#define Wire1_Base_Dir "/sys/bus/w1/devices"
-#endif // WIN32
+   #ifdef WIN32
+		#define Wire1_Base_Dir "E:\\w1\\devices"
+//needed to find extra 1 wire busses
+		#include "../../main/dirent_windows.h"
+   #else // WIN32
+		#define Wire1_Base_Dir "/sys/bus/w1/devices"
+//needed to find extra 1 wire busses
+		#include <dirent.h>
+   #endif // WIN32
 #else // _DEBUG
-#define Wire1_Base_Dir "/sys/bus/w1/devices"
+	#define Wire1_Base_Dir "/sys/bus/w1/devices"
+//needed to find extra 1 wire busses
+	#include <dirent.h>
 #endif //_DEBUG
 
 
