@@ -1506,7 +1506,7 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	}
 }
 
-void COpenZWave::DebugValue(const OpenZWave::ValueID& vID)
+void COpenZWave::DebugValue(const OpenZWave::ValueID& vID, const int Line)
 {
 	unsigned int HomeID = vID.GetHomeId();
 	uint8_t NodeID = vID.GetNodeId();
@@ -1514,10 +1514,9 @@ void COpenZWave::DebugValue(const OpenZWave::ValueID& vID)
 	uint8_t vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
 	uint16_t vIndex = vID.GetIndex();
 	//std::string vLabel = m_pManager->GetValueLabel(vID);
-	std::string vUnits = m_pManager->GetValueUnits(vID);
 	uint8_t commandclass = vID.GetCommandClassId();
 
-	_log.Log(LOG_STATUS, "OpenZWave: Debug Value: Node: %d (0x%02x), CommandClass: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vInstance, vIndex, vID.GetId());
+	_log.Log(LOG_STATUS, "OpenZWave: Debug Value: Node: %d (0x%02x), CommandClass: %s, Instance: %d, Index: %d, Id: 0x%llX, Line: %d", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vInstance, vIndex, vID.GetId(), Line);
 }
 
 
@@ -1550,7 +1549,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
 
 	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
-	DebugValue(vID);
+	DebugValue(vID, __LINE__);
 	std::string vLabel = m_pManager->GetValueLabel(vID);
 	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 
@@ -2347,7 +2346,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 		if (commandclass != 0)
 		{
 			_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
-			DebugValue(vID);
+			DebugValue(vID, __LINE__);
 			vLabel = m_pManager->GetValueLabel(vID);
 			_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 		}
@@ -2422,7 +2421,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
 	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
-	DebugValue(vID);
+	DebugValue(vID, __LINE__);
 	std::string vLabel = m_pManager->GetValueLabel(vID);
 	_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 	std::string vUnits = m_pManager->GetValueUnits(vID);
@@ -3847,7 +3846,7 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 						continue;
 
 					_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
-					DebugValue(*ittValue);
+					DebugValue(*ittValue, __LINE__);
 					std::string vLabel = m_pManager->GetValueLabel(*ittValue);
 					_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 
@@ -4523,7 +4522,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 						}
 
 						_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
-						DebugValue(ittValue);
+						DebugValue(ittValue, __LINE__);
 						std::string i_label = m_pManager->GetValueLabel(ittValue);
 						_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 
@@ -4543,7 +4542,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 						if ((ittValue.GetGenre() == OpenZWave::ValueID::ValueGenre_System) && (ittValue.GetInstance() == 1))
 						{
 							_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
-							DebugValue(ittValue);
+							DebugValue(ittValue, __LINE__);
 
 							if ((m_pManager->GetValueLabel(ittValue) == "Wake-up Interval") && (ittValue.GetType() == OpenZWave::ValueID::ValueType_Int))
 							{
@@ -4799,7 +4798,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 						if (!bRet)
 						{
 							_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
-							DebugValue(vID);
+							DebugValue(vID, __LINE__);
 							std::string cvLabel = m_pManager->GetValueLabel(vID);
 							_log.Log(LOG_STATUS, "OpenZWave: ------------------------------------------------");
 
