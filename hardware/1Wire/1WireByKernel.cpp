@@ -23,7 +23,11 @@
 	#endif // WIN32
 #else // _DEBUG
 	#define Wire1_Base_Dir "/sys/bus/w1/devices"
-	#include <dirent.h>
+	#ifdef WIN32
+		#include "../../main/dirent_windows.h"
+	#else
+		#include <dirent.h>
+	#endif
 #endif //_DEBUG
 
 
