@@ -30,8 +30,6 @@ public:
 
 protected:
    void GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const;
-   static bool IsValidDir(const struct dirent*const de);
-
    bool sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const;
    void ReadStates();
 
