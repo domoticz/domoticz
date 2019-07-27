@@ -13,23 +13,21 @@
 #include "../../main/Helper.h"
 #include "../../main/mainworker.h"
 
+#ifdef WIN32
+	#include "../../main/dirent_windows.h"
+#else
+	#include <dirent.h>
+#endif
+
 #ifdef _DEBUG
 	#ifdef WIN32
 		#define Wire1_Base_Dir "E:\\w1\\devices"
-		#include "../../main/dirent_windows.h"
 	#else // WIN32
 		#define Wire1_Base_Dir "/sys/bus/w1/devices"
-		#include <dirent.h>
 	#endif // WIN32
 #else // _DEBUG
 	#define Wire1_Base_Dir "/sys/bus/w1/devices"
-	#ifdef WIN32
-		#include "../../main/dirent_windows.h"
-	#else
-		#include <dirent.h>
-	#endif
 #endif //_DEBUG
-
 
 C1WireByKernel::C1WireByKernel()
 {
