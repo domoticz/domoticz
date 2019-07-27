@@ -2340,6 +2340,9 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID& vID, int EventID)
 
 	uint8_t commandclass = vID.GetCommandClassId();
 
+	if (commandclass == COMMAND_CLASS_NO_OPERATION)
+		return;
+
 	if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
 	{
 		std::string vLabel = "";
@@ -4952,7 +4955,16 @@ void COpenZWave::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 		std::string rdID;
 
 		if (DeviceID.size() != 8)
-			rdID = DeviceID.substr(DeviceID.size() - 4, 2);
+		{
+			if (DeviceID.size() > 4)
+				rdID = DeviceID.substr(DeviceID.size() - 4, 2);
+			else
+			{
+				std::stringstream stream;
+				stream << std::setfill('0') << std::setw(4) << std::hex << atoi(DeviceID.c_str());
+				rdID = stream.str().substr(0, 2);
+			}
+		}
 		else
 		{
 			rdID = DeviceID.substr(2, 2);
@@ -4978,7 +4990,6 @@ void COpenZWave::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 				itt[0].c_str());
 		}
 	}
-
 }
 
 
