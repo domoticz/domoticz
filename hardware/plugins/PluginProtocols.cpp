@@ -657,7 +657,7 @@ namespace Plugins {
 			{
 				std::string		sPayload = sData.substr(2);
 				// No payload || we have the payload || the connection has closed
-				if (!m_ContentLength || (m_ContentLength == sPayload.length()) || !Message->m_Buffer.size())
+				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || !Message->m_Buffer.size())
 				{
 					PyObject* DataDict = PyDict_New();
 					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
