@@ -29,6 +29,7 @@ public:
    static bool IsAvailable();
 
 protected:
+
    void GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const;
    bool sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const;
    void ReadStates();
