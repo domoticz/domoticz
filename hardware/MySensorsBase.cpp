@@ -990,10 +990,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			{
 				if (pChild->GetValue(V_FORECAST, stringValue))
 				{
-					std::stringstream sstr;
-					sstr << pChild->nodeID;
 					std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Forecast";
-					m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
+					SendTextSensor(pSensorBaro->nodeID, pSensorBaro->childID, pChild->batValue, stringValue, devname);
 				}
 			}
 		}
