@@ -161,9 +161,6 @@ Notice: Use this procedure only in the event that the primary controller is lost
     <SensorMap index="0" type="12"/>
     <SensorMap index="1" type="10"/>
     <SensorMap index="2" type="8"/>
-    <Compatibility>
-      <CreateVars>false</CreateVars>
-    </Compatibility>
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">
