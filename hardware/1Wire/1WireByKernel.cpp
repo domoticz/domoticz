@@ -13,16 +13,21 @@
 #include "../../main/Helper.h"
 #include "../../main/mainworker.h"
 
-#ifdef _DEBUG
 #ifdef WIN32
-#define Wire1_Base_Dir "E:\\w1\\devices"
-#else // WIN32
-#define Wire1_Base_Dir "/sys/bus/w1/devices"
-#endif // WIN32
-#else // _DEBUG
-#define Wire1_Base_Dir "/sys/bus/w1/devices"
-#endif //_DEBUG
+	#include "../../main/dirent_windows.h"
+#else
+	#include <dirent.h>
+#endif
 
+#ifdef _DEBUG
+	#ifdef WIN32
+		#define Wire1_Base_Dir "E:\\w1\\devices"
+	#else // WIN32
+		#define Wire1_Base_Dir "/sys/bus/w1/devices"
+	#endif // WIN32
+#else // _DEBUG
+	#define Wire1_Base_Dir "/sys/bus/w1/devices"
+#endif //_DEBUG
 
 C1WireByKernel::C1WireByKernel()
 {
@@ -191,45 +196,57 @@ void C1WireByKernel::ThreadProcessPendingChanges()
 
 void C1WireByKernel::ThreadBuildDevicesList()
 {
-	std::string catfile = Wire1_Base_Dir;
-	catfile += "/w1_bus_master1/w1_master_slaves";
-	std::ifstream infile;
-	std::string sLine;
-
-	for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
-	m_Devices.clear();
-
-	infile.open(catfile.c_str());
-	if (!infile.is_open())
-		return;
-
-	Locker l(m_Mutex);
-	while (!infile.eof())
-	{
-		getline(infile, sLine);
-		if (sLine.size() != 0)
-		{
-			// Get the device from it's name
-			_t1WireDevice device;
-			GetDevice(sLine, device);
-
-			switch (device.family)
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir (Wire1_Base_Dir)) != NULL) {
+		for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
+		m_Devices.clear();
+		while ((ent = readdir (dir)) != NULL) {
+			std::string directoryName=ent->d_name;
+			if(directoryName.find("w1_bus_master")==0)
 			{
-			case high_precision_digital_thermometer:
-			case dual_channel_addressable_switch:
-			case _8_channel_addressable_switch:
-			case programmable_resolution_digital_thermometer:
-				m_Devices[device.devid] = new DeviceState(device);
-				_log.Log(LOG_STATUS, "1Wire: Added Device: %s", sLine.c_str());
-				break;
-			default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
-				_log.Log(LOG_ERROR, "1Wire: Device not yet supported in Kernel mode (Please report!) ID:%s, family: %02X", sLine.c_str(), device.family);
-				break;
+
+				std::string catfile=Wire1_Base_Dir;
+				std::ifstream infile;
+				std::string sLine;
+
+				catfile+="/"+directoryName+"/w1_master_slaves";
+				
+				infile.open(catfile.c_str());
+				if (!infile.is_open())
+					return;
+
+				Locker l(m_Mutex);
+				while (!infile.eof())
+				{
+					getline(infile, sLine);
+					if (sLine.size() != 0)
+					{
+						// Get the device from it's name
+						_t1WireDevice device;
+						GetDevice(sLine, device);
+			
+						switch (device.family)
+						{
+						case high_precision_digital_thermometer:
+						case dual_channel_addressable_switch:
+						case _8_channel_addressable_switch:
+						case programmable_resolution_digital_thermometer:
+							m_Devices[device.devid] = new DeviceState(device);
+							_log.Log(LOG_STATUS, "1Wire: Added Device: %s", sLine.c_str());
+							break;
+						default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
+							_log.Log(LOG_ERROR, "1Wire: Device not yet supported in Kernel mode (Please report!) ID:%s, family: %02X", sLine.c_str(), device.family);
+							break;
+						}
+					}
+				}
+			
+				infile.close();
 			}
 		}
-	}
-
-	infile.close();
+		closedir (dir);
+	}	
 }
 
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
