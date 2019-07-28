@@ -13343,6 +13343,8 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	s_strid << std::hex << DeviceID;
 	s_strid >> ID;
 
+	float temp = 12345.0f;
+
 	if (pHardware)
 	{
 		if (devType == pTypeLighting2)
@@ -13392,7 +13394,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 
 			if (devType == pTypeTEMP)
 			{
-				float temp = static_cast<float>(atof(sValue.c_str()));
+				temp = static_cast<float>(atof(sValue.c_str()));
 				temp += AddjValue;
 				sprintf(szTmp, "%.2f", temp);
 				sValue = szTmp;
@@ -13402,7 +13404,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size() == 3)
 				{
-					float temp = static_cast<float>(atof(strarray[0].c_str()));
+					temp = static_cast<float>(atof(strarray[0].c_str()));
 					temp += AddjValue;
 					sprintf(szTmp, "%.2f;%s;%s", temp, strarray[1].c_str(), strarray[2].c_str());
 					sValue = szTmp;
@@ -13413,7 +13415,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size() == 5)
 				{
-					float temp = static_cast<float>(atof(strarray[0].c_str()));
+					temp = static_cast<float>(atof(strarray[0].c_str()));
 					float fbarometer = static_cast<float>(atof(strarray[3].c_str()));
 					temp += AddjValue;
 
@@ -13472,6 +13474,15 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
 		}
 	}
+
+	//Calculate temperature trend
+	if (temp != 12345.0f)
+	{
+		uint64_t tID = ((uint64_t)(HardwareID & 0x7FFFFFFF) << 32) | (devidx & 0x7FFFFFFF);
+		m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
+	}
+
+
 
 #ifdef ENABLE_PYTHON
 	// notify plugin
