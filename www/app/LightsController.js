@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('LightsController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('LightsController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, permissions, livesocket) {
 		var $element = $('#main-view #lightcontent').last();
 
 		$scope.HasInitializedAddManualDialog = false;

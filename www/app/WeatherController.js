@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('WeatherController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('WeatherController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
 
 		var ctrl = this;
 

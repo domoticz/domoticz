@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions) {
+define(['app', 'livesocket'], function (app) {
+	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, permissions, livesocket) {
 		var $element = $('#main-view #tempcontent').last();
 
 		var ctrl = this;
