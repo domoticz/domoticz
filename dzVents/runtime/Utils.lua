@@ -7,8 +7,34 @@ local self = {
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '2.4.26',
+	DZVERSION = '2.4.27',
 }
+
+function self.rPad(str, len, char)
+	if char == nil then char = ' ' end
+	return str .. string.rep(char, len - #str)
+end
+
+function self.lPad(str, len, char)
+	if char == nil then char = ' ' end
+	return string.rep(char, len - #str) .. str
+end
+
+function self.mPad(str, len, char )
+	if char == nil then char = ' ' end
+	return string.rep(char, ( len - #str) / 2 ) .. str .. string.rep(char, ( len - #str) /2)
+end
+
+function self.zPad(num, len )
+	return self.lPad(tostring(num),len,'0')
+end
+
+function self.numDecimals(num, int, dec)
+	if int == nil then int = 99 end  
+	if dec == nil then dec = 0 end
+	local fmt = '%' .. int .. '.' .. dec .. 'f' 
+	return string.format(fmt,num)
+end
 
 function self.fileExists(name)
 	local f = io.open(name, "r")
@@ -151,7 +177,6 @@ function self.log(msg, level)
 
 	local lLevel = _G.logLevel == nil and 1 or _G.logLevel
 	local marker = ''
-
 
 	if (level == self.LOG_ERROR) then
 		marker = marker .. 'Error: (' .. self.DZVERSION .. ') '

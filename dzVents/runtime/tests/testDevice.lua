@@ -65,6 +65,7 @@ local function getDevice_(
 		["name"] = name,
 		["description"] = "Description 1",
 		["batteryLevel"] = batteryLevel and batteryLevel or 50,
+		["protected"] = true,
 		["signalLevel"] = signalLevel and signalLevel or 55,
 		["deviceType"] = type and type or "someSubType",
 		["deviceID"] = "123abc",
@@ -79,6 +80,7 @@ local function getDevice_(
 		["hardwareType"] = hardwareType,
 		["hardwareTypeValue"] = hardwaryTypeValue,
 		["hardwareID"] = 1,
+		['protected'] = true,
 		['_nValue'] = 123,
 		['unit'] = 1
 		},
@@ -210,6 +212,7 @@ describe('device', function()
 			assert.is_same('Contact', device.switchType)
 			assert.is_same(2, device.switchTypeValue)
 			assert.is_same(true, device.timedOut)
+			assert.is_same(true, device.protected)
 			assert.is_same(50, device.batteryLevel)
 			assert.is_same(55, device.signalLevel)
 			assert.is_same('sub', device.deviceSubType)
@@ -245,7 +248,7 @@ describe('device', function()
 			device.cancelQueuedCommands()
 			assert.is_same({
 				{ ['Cancel'] = { idx = 1, type = 'device' } },
-			 }, commandArray)
+			}, commandArray)
 		end)
 
 		it('should deal with percentages', function()
@@ -373,7 +376,7 @@ describe('device', function()
 			device.updateVisibility(22)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="22", _trigger=true} } }, commandArray)
 		end)
-	   
+
 		it('should detect a p1 smart meter device', function()
 
 			local device = getDevice(domoticz, {
@@ -570,7 +573,6 @@ describe('device', function()
 					"reset",
 					"setColor",
 					"setColorBrightness",
-					-- "setDescription",
 					"setDiscoMode",
 					"setHex",
 					"setHotWater",
@@ -623,6 +625,123 @@ describe('device', function()
 					"volumeUp",
 				}, values(dummies))
 			end)
+		end)
+
+		it('should have generic methods', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Any',
+			})
+
+			assert.is_function(device.protectOff)
+			assert.is_function(device.protectOn)
+			assert.is_function(device.setDescription) 
+			assert.is_function(device.setIcon)
+			assert.is_function(device.setValues)
+			assert.is_function(device.rename)
+
+		end)
+
+		it('should handle generic method protectOff ', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Any',
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			device.protectOff()
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&used=true&protected=false&idx=1', res)
+		end)
+
+		it('should handle generic method protectOn ', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Any',
+			})
+
+			local res;
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			device.protectOff()
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&used=true&protected=false&idx=1', res)
+		end)
+
+		it('should handle generic method setDescription ', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Any',
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			device.setDescription('This is a wonderful description of the subject. Thanks !')
+			assert.is_same('http://127.0.0.1:8080/json.htm?description=This+is+a+wonderful+description+of+the+subject.+Thanks+%21&idx=1&name=myDevice&type=setused&used=true', res)
+		end)
+
+		it('should handle generic method setIcon', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Any',
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			device.setIcon(24)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&used=true&name=myDevice&description=Description+1&idx=1&switchtype=2&customimage=24', res)
+		end)
+
+		it('should handle generic method rename ', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Any',
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			device.rename('who am I')
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=renamedevice&idx=1&name=who+am+I', res)
+		end)
+
+		it('should handle generic method setValues', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Any',
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+			local test = 'sValue'
+			device.setValues(12,test,13,14,test)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=12&svalue=sValue;13;14;sValue', res)
 		end)
 
 		it('should detect an evohome device', function()
@@ -894,7 +1013,7 @@ describe('device', function()
 
 			device.updateCounter(555)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555", _trigger=true} } }, commandArray)
-		  
+
 			local domoticz = require('Domoticz')
 			device.incrementCounter(10)
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&svalue=10', res)
@@ -1297,6 +1416,47 @@ describe('device', function()
 				assert.is_false(scene.isSecurity)
 			end)
 
+			it('should have generic functions for scenes', function()
+				local scene = getDevice(domoticz, {
+					['baseType'] = 'scene',
+					['name'] = 'myScene',
+				})
+                    assert.is_function(scene.protectOff)
+                    assert.is_function(scene.protectOn)
+                    assert.is_function(scene.setDescription) 
+                    assert.is_function(scene.setIcon)
+                    assert.is_function(scene.setValues)
+                    assert.is_function(scene.rename)
+			end)
+
+           	it('should handle generic methods for scenes', function()
+				local scene = getDevice(domoticz, {
+					['baseType'] = 'scene',
+					['name'] = 'myScene',
+                    ['state'] = 'On',
+                    ['id'] = 1,
+				})
+                local res;
+
+                domoticz.openURL = function(url)
+                    res = url;
+                end
+
+                scene.protectOff()
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=0&protected=false&idx=1&name=myScene&description=Description+1', res)
+                
+                scene.protectOn()
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=0&protected=true&idx=1&name=myScene&description=Description+1', res)
+                
+                scene.rename('a')
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=0&idx=1&name=a&description=Description+1', res)
+                
+                scene.setDescription('groupie')
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=0&idx=1&name=myScene&description=groupie', res)
+            end)
+
+
+
 			-- subdevices are tested in testDomoticz
 
 			it('should detect a group', function()
@@ -1308,7 +1468,7 @@ describe('device', function()
 
 				assert.is_false(group.isHTTPResponse)
 				assert.is_false(group.isVariable)
-				assert.is_false(group.isTimer)
+				assert.is_false(group.isTimer) 
 				assert.is_false(group.isScene)
 				assert.is_false(group.isDevice)
 				assert.is_true(group.isGroup)
@@ -1329,8 +1489,47 @@ describe('device', function()
 				assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
 
 			end)
+            
+             it('should have generic functions for groups', function()
+				local group = getDevice(domoticz, {
+					['baseType'] = 'group',
+					['name'] = 'myGroup',
+                    ['state'] = 'On'
+				})
+                    assert.is_function(group.protectOff)
+                    assert.is_function(group.protectOn)
+                    assert.is_function(group.setDescription) 
+                    assert.is_function(group.rename)
+			end)
+
+           	it('should handle generic methods for group', function()
+				local group = getDevice(domoticz, {
+					['baseType'] = 'group',
+ 					['name'] = 'myGroup',
+                    ['state'] = 'On',
+                    ['id'] = 1,
+				})
+                local res;
+
+                domoticz.openURL = function(url)
+                    res = url;
+                end
+
+                group.protectOff()
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=1&protected=false&idx=1&name=myGroup&description=Description+1', res)
+                
+                group.protectOn()
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=1&protected=true&idx=1&name=myGroup&description=Description+1', res)
+                
+                group.rename('a')
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=1&idx=1&name=a&description=Description+1', res)
+                
+                group.setDescription('groupie')
+                assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=1&idx=1&name=myGroup&description=groupie', res)
+            end)
 		end)
 
+          
 		it('should detect a huelight', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myHue',
@@ -1389,7 +1588,7 @@ describe('device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'quietDevice',
 				['state'] = 'On',
-					  ['type'] = 'Light/Switch',
+					['type'] = 'Light/Switch',
 				['subType'] = 'RGBWW',
 				['type'] = 'Color Switch'
 			})
