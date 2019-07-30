@@ -425,7 +425,9 @@ define(['app', 'livesocket'], function (app) {
 			}
 	};
 
-
+		/*
+			We only call RefreshUtilities once now, instead of periodically. The widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
+		*/
 		RefreshUtilities = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -443,6 +445,9 @@ define(['app', 'livesocket'], function (app) {
 						$.LastUpdateTime = parseInt(data.ActTime);
 					}
 
+					/*
+						Render all the widgets at once.
+					*/
 					$.each(data.result, function (i, item) {
 						RefreshItem(item);
 					});
@@ -450,6 +455,16 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			$scope.$on('jsonupdate', function (event, data) {
+				/*
+					When this event is caught, a widget status update is received.
+					We call RefreshItem to update the widget.
+				*/
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+				if (typeof data.ActTime != 'undefined') {
+					$.LastUpdateTime = parseInt(data.ActTime);
+				}
 				RefreshItem(data.item);
 			});
 		};

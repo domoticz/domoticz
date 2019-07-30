@@ -114,6 +114,12 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domotic
         }
     });
 
+	/*
+		The notifyBrowser service sets and gets the browser notifications coming on from the domoticz websocket.
+		In livesocket.js the notifications are pushed to the message queue by using the notify() method.
+		Each notification times out in 2 seconds.
+		The alertarea directive reads the messagequeue using the messages() method.
+	*/
 	app.service('notifyBrowser', [ '$timeout', function ($timeout) {
 		var messagequeue = [];
 		return {
@@ -151,6 +157,12 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.permissions', 'domotic
 		};
 	}]);
 	
+	/*
+		The alertarea is on every page. It displays the browser notifications.
+		It uses the notifyBrowser service to collect the pending notifications.
+		Todo: Display them below each other instead of left to each other.
+		Todo: Make a "dropdown" css effect
+	*/
 	app.directive('alertarea', function () {
 		return {
 			template: '<div class="alerts" style="position: absolute; right: 10px;" ng-shw="messages.length>0"><div class="alert alert-{{(m.type)||\'info\'}} alert-dismissable fade in pull-right" ng-repeat="m in messages"><button type="button" class="close" data-dismiss="alert">×</button><label>{{m.title}}</label><div>{{m.body}}</div></div></div>',

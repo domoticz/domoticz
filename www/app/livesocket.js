@@ -1,11 +1,27 @@
 define(['app', 'angular-websocket'], function (app) {
 
+	/*
+		The livesocket service connects a websocket to domoticz in the Init() method.
+		This socket connection stays live through all the interface page life.
+		Via the websocket, notifications are pushed by Domoticz sending a msg.event == 'notification' object.
+		Furthermore, get requests can be issued by the getJson(url, callback_fn) method. The url will be the same as if
+		passed through an ajax call. The callback function can also be the same, ergo this function is designed to replace the usual ajax requests.
+		An added feature is that devices that are retrieved via the json call, also from then on get real time status updates via a broadcast message.
+		These status updates can be updated in a live manner. Example (taken from UtilityController.js):
+			$scope.$on('jsonupdate', function (event, data) {
+				RefreshItem(data.item);
+			});
+		With this, periodic ajax requests are not neccesary anymore. As the moment there is a device update, the new information gets broadcasted
+		immediately.		
+	*/
 	app.service('livesocket', ['$websocket', '$http', '$rootScope', 'notifyBrowser', function ($websocket, $http, $rootScope, notifyBrowser) {
 		var socketservice = {};
 		socketservice = {
+			/* private member variables */
 			initialised: false,
 			callbackqueue: [],
 			websocket: {},
+			/* public: getJson method: See description above */
 			getJson: function (url, callback_fn) {
 				if (!callback_fn) {
 					callback_fn = function (data) {
@@ -39,6 +55,7 @@ define(['app', 'angular-websocket'], function (app) {
 					return socketservice.SendAsync(settings);
 				}
 			},
+			/* private method: Initializes the websocket connection if not already done */
 			Init: function () {
 				if (socketservice.initialised) {
 					return;
@@ -109,6 +126,7 @@ define(['app', 'angular-websocket'], function (app) {
 				});
 				socketservice.initialised = true;
 			},
+			/* public: Closes the websocket connection */
 			Close: function () {
 				if (!socketservice.initialised) {
 					return;
@@ -116,15 +134,17 @@ define(['app', 'angular-websocket'], function (app) {
 				socketservice.websocket.$close();
 				socketservice.initialised = false;
 			},
+			/* public: Sends data through the websocket connection */
 			Send: function (data) {
 				socketservice.Init();
 				socketservice.websocket.$$send(data);
 				//socketservice.websocket.$emit('message', data);
 			},
+			/* This function is not used yet. Todo: check session security in the Domoticz backend. */
 			SendLoginInfo: function (sessionid) {
 				socketservice.Send(new Blob["2", sessionid]);
 			},
-			/* mimic ajax call */
+			/* mimic ajax call with a deferred object */
 			SendAsync: function (settings) {
 				socketservice.Init();
 				var defer_object = new $.Deferred();
@@ -138,16 +158,12 @@ define(['app', 'angular-websocket'], function (app) {
 				return defer_object.promise();
 			}
 		}
+		/* make sure that the websocket gets connection immediately upon connecting to the livesocket angular service */
 		socketservice.Init();
 		return socketservice;
 	}]);
 
-	/* this doesnt run, for some reason */
-	app.run(['livesocket', function (livesocket) {
-		console.log(livesocket);
-		alert('run');
-		livesocket.Init();
-	}]);
+	/* The stub below can be used to override all ajax calls to websocket requests at the same time without changing the other code */
 	/*
 	var oAjax = $.ajax;
 	$.ajax = function (settings) {
