@@ -544,7 +544,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
  - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
-       Note that these functions must be preceded by domoticz.utils. If you use more then a few declare sometjng like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example: 
+       Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example: 
        _u = domoticz.utils
        print(_u.rPad(test,10) .. '|||') =>  test      |||
 
@@ -683,7 +683,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **name**: *String*. Name of the device.
  - **nValue**: *Number*. Numerical representation of the state.
  - **protected**: *Boolean*. <sup>2.4.27</sup> True when device / scene / group is protected. False otherwise.
- - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options] 
+ - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options] 
  - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
  - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current devicename to new devicename Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -769,7 +769,7 @@ Note that if you do not find your specific device type here you can always inspe
 
 #### Group
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
- - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+ - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
  - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current group-name to new group-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -871,7 +871,7 @@ See switch below.
 
 #### Scene
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
- - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+ - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
  - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current scene-name to new scene-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
