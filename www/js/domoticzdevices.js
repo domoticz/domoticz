@@ -372,22 +372,8 @@ function Device(item) {
         this.level = (typeof item.LevelInt != 'undefined') ? parseInt(item.LevelInt) : 0;
         this.levelMax = (typeof item.MaxDimLevel != 'undefined') ? parseInt(item.MaxDimLevel) : 0;
         if (this.level > this.levelMax) this.levelMax = this.level;
-
-        if (this.subtype == "Alert" || this.subtype == "Text") {
-            this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-
-            if (this.data.indexOf("<br />") != -1) {
-                this.hasNewLine = true;
-                console.log("YES!");
-            }
-            else {
-                this.hasNewLine = false;
-            }
-        }
-        else {
-            this.data = (typeof item.Data != 'undefined') ? item.Data : '';
-            this.hasNewLine = false;
-        }
+        this.data = (typeof item.Data != 'undefined') ? item.Data : '';
+        this.hasNewLine = false;
 
         this.smallStatus = this.data;
         if (typeof item.Usage != 'undefined') {
@@ -473,9 +459,6 @@ function Device(item) {
                         Device.elementPadding * 2.5 + 1
                     );
                 }
-
-
-
 
                 var maxSpan = getMaxSpanWidth(oText);
                 el = makeSVGnode('g', { id: this.uniquename + "_Tile", 'class': 'DeviceTile', style: (maxSpan == 0) ? 'display:none' : 'display:inline' }, '');
@@ -1234,19 +1217,10 @@ function Switch(item) {
         }
         this.data = '';
         this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        if (
-			(item.SwitchType !== "Contact")&&
-			(item.SwitchType !== "Door Contact")
-			) {
-			this.showStatus = (Device.showSwitchValues == true);
-			this.imagetext = "Activate switch";
-			this.controlable = true;
-			this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
-        } else {
-			//Read-Only type, should not be able to switch
-			this.onClick = this.LogLink;
-			this.showStatus = false;
-        }
+		this.showStatus = (Device.showSwitchValues == true);
+		this.imagetext = "Activate switch";
+		this.controlable = true;
+		this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + Device.switchFunction + "," + this.protected + ");";
     }
 }
 Switch.inheritsFrom(Sensor);
@@ -1264,7 +1238,11 @@ function Alert(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.NotifyLink = "";
+        this.NotifyLink = "";	
+		this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+		if (this.data.indexOf("<br />") != -1) {
+			this.hasNewLine = true;
+		}		
         this.status = this.data;
         this.data = "";
         if (typeof item.Level != 'undefined') {
@@ -1416,7 +1394,6 @@ function Custom(item) {
 }
 Custom.inheritsFrom(UtilitySensor);
 
-
 function Dimmer(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
@@ -1458,7 +1435,7 @@ function DoorContact(item) {
         this.data = '';
     }
 }
-DoorContact.inheritsFrom(BinarySwitch);
+DoorContact.inheritsFrom(BinarySensor);
 
 function Doorbell(item) {
     if (arguments.length != 0) {
@@ -1679,6 +1656,10 @@ function Text(item) {
         this.parent.constructor(item);
         this.imagetext = "";
         this.NotifyLink = this.LogLink = this.onClick = "";
+		this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+		if (this.data.indexOf("<br />") != -1) {
+			this.hasNewLine = true;
+		}		
         this.status = this.data;
         this.data = "";
     }
