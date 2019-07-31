@@ -19,9 +19,9 @@ return {
 		
 		if item.active and resultTextSwitch.text ~= OK  then 
 			resultTextSwitch.updateText(OK)
-			item.protectOn()
+			item.protectionOn()
 			switch(On, item.idx, 3)	-- Should not be allowed
-			item.protectOff().afterSec(5)
+			item.protectionOff().afterSec(5)
 			switch(Off, item.idx, 7)	-- Should be allowed
 		elseif item.active then
 			resultTextSwitch.updateText(NOK)

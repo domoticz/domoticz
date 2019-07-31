@@ -9,8 +9,8 @@ return {
 	matches = function(device, adapterManager)
 		local res = (device.baseType == 'scene')
 		if (not res) then
-			adapterManager.addDummyMethod(device, 'protectOn')
-			adapterManager.addDummyMethod(device, 'protectOff')
+			adapterManager.addDummyMethod(device, 'protectionOn')
+			adapterManager.addDummyMethod(device, 'protectionOff')
 			adapterManager.addDummyMethod(device, 'rename')
 			adapterManager.addDummyMethod(device, 'setDescription')
 			adapterManager.addDummyMethod(device, 'switchOff')
@@ -63,7 +63,7 @@ return {
 			return domoticz.openURL(url)
 		end
 
-		function scene.protectOn()
+		function scene.protectionOn()
 			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0&protected=true' ..
 						'&idx=' .. scene.id ..
 						'&name='.. utils.urlEncode(scene.name) ..
@@ -71,7 +71,7 @@ return {
 			return domoticz.openURL(url)
 		end
 
-		function scene.protectOff()
+		function scene.protectionOff()
 			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0&protected=false' ..
 						'&idx=' .. scene.id ..
 						'&name='.. utils.urlEncode(scene.name) ..

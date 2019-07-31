@@ -670,8 +670,8 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''name''': ''String''. Name of the device.
 * '''nValue''': ''Number''. Numerical representation of the state.
 * '''protected''': ''Boolean''. <sup>2.4.27</sup> True when device / scene / group is protected. False otherwise.
-* '''protectOff()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
-* '''protectOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
+* '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+* '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
 * '''rawData''': ''Table'': All values are ''String'' types and hold the raw data received from Domoticz.
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current devicename to new devicename Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setDescription(description)''': ''Function''. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -771,8 +771,8 @@ Note that if you do not find your specific device type here you can always inspe
 ==== Group ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn't allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
-* '''protectOff()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
-* '''protectOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+* '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+* '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current group-name to new group-name Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -889,8 +889,8 @@ See switch below.
 ==== Scene ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn't allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
-* '''protectOff()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
-* '''protectOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+* '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+* '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current scene-name to new scene-name Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -2141,8 +2141,8 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 == [2.4.27] ==
 
-* Add protect attribute for devices / scenes and groups
-* Add methods protectOn and protectOff for devices / scenes and groups
+* Add attribute protected for devices / scenes and groups
+* Add methods protectionOn and protectionOff for devices / scenes and groups
 * Add functions rpad, lpad, mpad, zpad, numDecimals in utils
 
 == [2.4.26] ==

@@ -1,6 +1,6 @@
 [2.4.27]
-- Add protect attribute for devices / scenes and groups
-- Add methods protectOn and protectOff for devices / scenes and groups
+- Add attribute protected for devices / scenes and groups
+- Add methods protectionOn and protectionOff for devices / scenes and groups
 - Add functions rpad, lpad, mpad, zpad, numDecimals in utils
 
 [2.4.26]

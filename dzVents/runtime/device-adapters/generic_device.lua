@@ -47,8 +47,8 @@ return {
 	end,
 
 	matches = function (device, adapterManager)
-		adapterManager.addDummyMethod(device, 'protectOn')
-		adapterManager.addDummyMethod(device, 'protectOff')
+		adapterManager.addDummyMethod(device, 'protectionOn')
+		adapterManager.addDummyMethod(device, 'protectionOff')
 		adapterManager.addDummyMethod(device, 'setDescription')
 		adapterManager.addDummyMethod(device, 'setIcon')
 		adapterManager.addDummyMethod(device, 'setValues')
@@ -163,14 +163,14 @@ return {
 			return domoticz.openURL(url)
 		end
 
-		function device.protectOn()
+		function device.protectionOn()
 			local url = domoticz.settings['Domoticz url'] ..  
 						"/json.htm?type=setused&used=true&protected=true" ..
 						"&idx=" .. device.idx
 			return domoticz.openURL(url)
 		end
 
-		function device.protectOff()
+		function device.protectionOff()
 			local url = domoticz.settings['Domoticz url'] ..  
 						"/json.htm?type=setused&used=true&protected=false" ..
 						"&idx=" .. device.idx

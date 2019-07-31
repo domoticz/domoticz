@@ -683,8 +683,8 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **name**: *String*. Name of the device.
  - **nValue**: *Number*. Numerical representation of the state.
  - **protected**: *Boolean*. <sup>2.4.27</sup> True when device / scene / group is protected. False otherwise.
- - **protectOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options] 
- - **protectOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
+ - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options] 
+ - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
  - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current devicename to new devicename Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setDescription(description)**: *Function*. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -769,8 +769,8 @@ Note that if you do not find your specific device type here you can always inspe
 
 #### Group
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
- - **protectOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
- - **protectOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+ - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+ - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current group-name to new group-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -871,8 +871,8 @@ See switch below.
 
 #### Scene
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.
- - **protectOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
- - **protectOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+ - **protectionOff()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
+ - **protectionOn()**: *Function*. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
  - **rename(newName)**: *Function*. <sup>2.4.24</sup> Change current scene-name to new scene-name Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOn()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -2029,9 +2029,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # History
+
 ##[2.4.27]
-- Add protect attribute for devices / scenes and groups
-- Add methods protectOn and protectOff for devices / scenes and groups
+- Add attribute protected for devices / scenes and groups
+- Add methods protectionOn and protectionOff for devices / scenes and groups
 - Add functions rpad, lpad, mpad, zpad, numDecimals in utils
 
 ##[2.4.26]

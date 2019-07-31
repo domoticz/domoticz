@@ -634,8 +634,8 @@ describe('device', function()
 				['type'] = 'Any',
 			})
 
-			assert.is_function(device.protectOff)
-			assert.is_function(device.protectOn)
+			assert.is_function(device.protectionOff)
+			assert.is_function(device.protectionOn)
 			assert.is_function(device.setDescription) 
 			assert.is_function(device.setIcon)
 			assert.is_function(device.setValues)
@@ -643,7 +643,7 @@ describe('device', function()
 
 		end)
 
-		it('should handle generic method protectOff ', function()
+		it('should handle generic method protectionOff ', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
@@ -656,11 +656,11 @@ describe('device', function()
 				res = url;
 			end
 
-			device.protectOff()
+			device.protectionOff()
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&used=true&protected=false&idx=1', res)
 		end)
 
-		it('should handle generic method protectOn ', function()
+		it('should handle generic method protectionOn ', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
@@ -672,7 +672,7 @@ describe('device', function()
 				res = url;
 			end
 
-			device.protectOff()
+			device.protectionOff()
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&used=true&protected=false&idx=1', res)
 		end)
 
@@ -1421,8 +1421,8 @@ describe('device', function()
 					['baseType'] = 'scene',
 					['name'] = 'myScene',
 				})
-                    assert.is_function(scene.protectOff)
-                    assert.is_function(scene.protectOn)
+                    assert.is_function(scene.protectionOff)
+                    assert.is_function(scene.protectionOn)
                     assert.is_function(scene.setDescription) 
                     assert.is_function(scene.setIcon)
                     assert.is_function(scene.setValues)
@@ -1442,10 +1442,10 @@ describe('device', function()
                     res = url;
                 end
 
-                scene.protectOff()
+                scene.protectionOff()
                 assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=0&protected=false&idx=1&name=myScene&description=Description+1', res)
                 
-                scene.protectOn()
+                scene.protectionOn()
                 assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=0&protected=true&idx=1&name=myScene&description=Description+1', res)
                 
                 scene.rename('a')
@@ -1496,8 +1496,8 @@ describe('device', function()
 					['name'] = 'myGroup',
                     ['state'] = 'On'
 				})
-                    assert.is_function(group.protectOff)
-                    assert.is_function(group.protectOn)
+                    assert.is_function(group.protectionOff)
+                    assert.is_function(group.protectionOn)
                     assert.is_function(group.setDescription) 
                     assert.is_function(group.rename)
 			end)
@@ -1515,10 +1515,10 @@ describe('device', function()
                     res = url;
                 end
 
-                group.protectOff()
+                group.protectionOff()
                 assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=1&protected=false&idx=1&name=myGroup&description=Description+1', res)
                 
-                group.protectOn()
+                group.protectionOn()
                 assert.is_same('http://127.0.0.1:8080/json.htm?type=updatescene&scenetype=1&protected=true&idx=1&name=myGroup&description=Description+1', res)
                 
                 group.rename('a')
