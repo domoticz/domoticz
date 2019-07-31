@@ -9,10 +9,12 @@ return {
 	matches = function(device, adapterManager)
 		local res = (device.baseType == 'scene')
 		if (not res) then
-			adapterManager.addDummyMethod(device, 'switchOn')
-			adapterManager.addDummyMethod(device, 'switchOff')
-			adapterManager.addDummyMethod(device, 'setDescription')
+			adapterManager.addDummyMethod(device, 'protectionOn')
+			adapterManager.addDummyMethod(device, 'protectionOff')
 			adapterManager.addDummyMethod(device, 'rename')
+			adapterManager.addDummyMethod(device, 'setDescription')
+			adapterManager.addDummyMethod(device, 'switchOff')
+			adapterManager.addDummyMethod(device, 'switchOn')
 		end
 		return res
 	end,
@@ -57,6 +59,22 @@ return {
 			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0' ..
 						'&idx=' .. scene.id ..
 						'&name='.. utils.urlEncode(newName) ..
+						'&description=' .. utils.urlEncode(scene.description) 
+			return domoticz.openURL(url)
+		end
+
+		function scene.protectionOn()
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0&protected=true' ..
+						'&idx=' .. scene.id ..
+						'&name='.. utils.urlEncode(scene.name) ..
+						'&description=' .. utils.urlEncode(scene.description) 
+			return domoticz.openURL(url)
+		end
+
+		function scene.protectionOff()
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=updatescene&scenetype=0&protected=false' ..
+						'&idx=' .. scene.id ..
+						'&name='.. utils.urlEncode(scene.name) ..
 						'&description=' .. utils.urlEncode(scene.description) 
 			return domoticz.openURL(url)
 		end

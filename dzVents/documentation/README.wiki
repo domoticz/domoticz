@@ -541,8 +541,13 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ** '''civTwilightStartInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will start.
 ** '''civTwilightEndInMinutes''': ''Number''. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
 * '''triggerIFTTT(makerName [,sValue1, sValue2, sValue3])''': ''Function''. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
-* '''utils''': <sup>2.4.0</sup>. A subset of handy utilities:
+* '''utils''': <sup>2.4.0</sup>. A subset of handy utilities: Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example: _u = domoticz.utils print(_u.rPad(test,10) .. '|||') =&gt; test |||
 ** _: Lodash. This is an entire collection with very handy Lua functions. Read more about [[#Lodash_for_Lua|Lodash]]. E.g.: <code>domoticz.utils._.size({'abc', 'def'}))</code> Returns 2.
+** '''rPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length.
+** '''lPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
+** '''mPad(string, length [, character])''': ''Function'': <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
+** '''zPad(number, length)''': ''Function'': <sup>2.4.27</sup> Precede number with given zeros to given length. '''numDecimals(number [, integer [, decimals ]])''': ''Function'': <sup>2.4.27</sup> Format number to float representation Examples: domoticz.utils.numDecimals(12.23, 4, 4) =&gt; 12.2300, domoticz.utils.numDecimals (12.23,1,1) =&gt; 12.2, domoticz.utils.zPpad(domoticz.utils.numDecimals (12.23,4,4),9) =&gt; 0012.2300<br />
+
 ** '''dumpTable(table,[levelIndicator])''': ''Function'': <sup>2.4.19</sup> print table structure and contents to log
 ** '''fileExists(path)''': ''Function'': <sup>2.4.0</sup> Returns <code>true</code> if the file (with full path) exists.
 ** '''fromJSON(json, fallback <sup>2.4.16</sup>)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
@@ -664,6 +669,9 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''lastUpdate''': ''[[#Time_object|Time Object]]'': Time when the device was updated.
 * '''name''': ''String''. Name of the device.
 * '''nValue''': ''Number''. Numerical representation of the state.
+* '''protected''': ''Boolean''. <sup>2.4.27</sup> True when device / scene / group is protected. False otherwise.
+* '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
+* '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options] !! **Note: domoticz protects against GUI and API access only. switchOn / switchOff type Blockly / Lua / dzVents commands are not influenced (because they are executed as admin user)
 * '''rawData''': ''Table'': All values are ''String'' types and hold the raw data received from Domoticz.
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current devicename to new devicename Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setDescription(description)''': ''Function''. <sup>2.4.16</sup> Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -763,6 +771,8 @@ Note that if you do not find your specific device type here you can always inspe
 ==== Group ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn't allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
+* '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
+* '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current group-name to new group-name Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -879,6 +889,8 @@ See switch below.
 ==== Scene ====
 
 * '''devices()''': ''Function''. Returns the collection of associated devices. Supports the same iterators as for <code>domoticz.devices()</code>: <code>forEach()</code>, <code>filter()</code>, <code>find()</code>, <code>reduce()</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that the function doesn't allow you to get a device by its name or id. Use <code>domoticz.devices()</code> for that.
+* '''protectionOff()''': ''Function''. <sup>2.4.27</sup> switch protection to off. Supports some [command options]
+* '''protectionOn()''': ''Function''. <sup>2.4.27</sup> switch protection to on. Supports some [command options]
 * '''rename(newName)''': ''Function''. <sup>2.4.24</sup> Change current scene-name to new scene-name Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -1714,18 +1726,18 @@ Usually a range of 1 or 2 is sufficient when providing a smoothing range to stat
 For every script file that defines persisted variables (using the <code>data={ … }</code> section), dzVents will create storage file with the name <code>__data_scriptname.lua</code> in a subfolder called <code>data</code>. You can always delete these data files or the entire storage folder if there is a problem with it:
 
 <pre>domoticz/
-   scripts/
-     dzVents/
+scripts/
+    dzVents/
         data/
-           __data_yourscript1.lua
-           __data_yourscript2.lua
-           __data_global_data.lua
+        __data_yourscript1.lua
+        __data_yourscript2.lua
+        __data_global_data.lua
         examples/
         generated_scripts/
         scripts/
-           yourscript1.lua
-           yourscript2.lua
-           global_data.lua</pre>
+        yourscript1.lua
+        yourscript2.lua
+        global_data.lua</pre>
 If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files. '''Again, make sure you don't put too much stuff in your persisted data as it may slow things down too much.'''
 
 = Asynchronous HTTP requests =
@@ -1742,52 +1754,52 @@ The second way is different. Instead of passing a url you pass in a table with a
 <pre>return {
    on = { ... }, -- some trigger
    execute = function(domoticz)
-      domoticz.openURL({
-         url = 'http://domain/path/to/something',
-         method = 'POST',
-         callback = 'mycallbackstring',
-         postData = {
+    domoticz.openURL({
+        url = 'http://domain/path/to/something',
+        method = 'POST',
+        callback = 'mycallbackstring',
+        postData = {
             paramA = 'something',
             paramB = 'something else'
-         }
-      })
+        }
+    })
    end
 }</pre>
 In this case, Domoticz will make the request (a POST in this case), and when done it will trigger an event. dzVents will capture that event and will execute all scripts listening for this callback trigger (''mycallbackstring''):
 
 <pre>return {
    on = {
-      httpResponses = { 'mycallbackstring' }
+    httpResponses = { 'mycallbackstring' }
    },
    execute = function(domoticz, response)
-      if (response.ok) then -- success
-         if (response.isJSON) then
+    if (response.ok) then -- success
+        if (response.isJSON) then
             domoticz.log(response.json.some.value)
-         end
-      else
-         domoticz.log('There was an error', domoticz.LOG_ERROR)
-      end
+        end
+    else
+        domoticz.log('There was an error', domoticz.LOG_ERROR)
+    end
    end
 }</pre>
 Of course you can combine the script that issues the request and handles the response in one script:
 
 <pre>return {
    on = {
-      timer = {'every 5 seconds'},
-      httpResponses = { 'trigger' }
+    timer = {'every 5 seconds'},
+    httpResponses = { 'trigger' }
    },
    execute = function(domoticz, item)
-      if (item.isTimer) then
-         domoticz.openURL({
+    if (item.isTimer) then
+        domoticz.openURL({
             url = '...',
             callback = 'trigger'
-         })
-      end
-      if (item.isHTTPResponse) then
-         if (item.ok) then
+        })
+    end
+    if (item.isHTTPResponse) then
+        if (item.ok) then
             ...
-         end
-      end
+        end
+    end
    end
 }</pre>
 == API ==
@@ -2126,6 +2138,12 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you're good to go.
 
 = History =
+
+== [2.4.27] ==
+
+* Add attribute protected for devices / scenes and groups
+* Add methods protectionOn and protectionOff for devices / scenes and groups
+* Add functions rpad, lpad, mpad, zpad, numDecimals in utils
 
 == [2.4.26] ==
 

@@ -201,6 +201,26 @@ local function Domoticz(settings)
 			inTable = function(t, searchItem)
 				return utils.inTable(t, searchItem)
 			end,
+            
+            rightPad = function(text, length, char)
+				return utils.rpad(text, length, char)
+			end,
+            
+            leftPad = function(text, length, char)
+				return utils.lpad(text, length, char)
+			end,
+            
+            centerText = function(text, length, char)
+				return utils.mpad(text, length, char)
+			end,
+            
+            leadingZeros = function(num, length)
+				return utils.zpad(num, length)
+			end,            
+            
+            numDecimals = function(num, int, dec)
+                return utils.numDecimals(num, int, dec)
+            end,
 		}
 	}
 

@@ -47,6 +47,8 @@ return {
 	end,
 
 	matches = function (device, adapterManager)
+		adapterManager.addDummyMethod(device, 'protectionOn')
+		adapterManager.addDummyMethod(device, 'protectionOff')
 		adapterManager.addDummyMethod(device, 'setDescription')
 		adapterManager.addDummyMethod(device, 'setIcon')
 		adapterManager.addDummyMethod(device, 'setValues')
@@ -118,6 +120,7 @@ return {
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
 			device['description'] = data.description
+			device['protected'] = data.protected 
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = { [1] = data.data._state }
 			device['changed'] = data.changed
@@ -157,6 +160,20 @@ return {
 						"/json.htm?type=command&param=renamedevice" ..
 						"&idx=" .. device.idx ..
 						"&name=" .. utils.urlEncode(newName)
+			return domoticz.openURL(url)
+		end
+
+		function device.protectionOn()
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=setused&used=true&protected=true" ..
+						"&idx=" .. device.idx
+			return domoticz.openURL(url)
+		end
+
+		function device.protectionOff()
+			local url = domoticz.settings['Domoticz url'] ..  
+						"/json.htm?type=setused&used=true&protected=false" ..
+						"&idx=" .. device.idx
 			return domoticz.openURL(url)
 		end
 

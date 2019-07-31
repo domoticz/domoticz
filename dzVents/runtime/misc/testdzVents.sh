@@ -32,7 +32,6 @@ if [ ! -f "$basedir/dzVents/runtime/integration-tests/testIntegration.lua" ]; th
 	exit 1
 fi
 
-
 NewVersion=$($basedir/domoticz --help | grep Giz | awk '{print $5}') 2>&1 >/dev/null
 export NewVersion
 if [[ $? -ne 0 ]];then
@@ -165,6 +164,7 @@ suffix=".lua"
 factor=10               # performance factor (about 10 on Raspberry)
 
 cd $basedir/dzVents/runtime/integration-tests
+export NODE_NO_WARNINGS=1
 npm --silent start 2>&1 >/dev/null &
 checkStarted "server" 10
 
@@ -193,7 +193,6 @@ testDir
 
 echo
 echo
-
 
 cd $basedir
 expectedErrorCount=5

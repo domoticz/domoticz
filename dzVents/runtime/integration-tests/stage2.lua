@@ -68,7 +68,7 @@ local testDimmer = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["id"] = 42,
+		["id"] = 43,
 		["state"] = "On",
 		["lastLevel"] = 75, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["level"] = 75;
@@ -200,7 +200,6 @@ local testLux = function(name)
 	return res
 end
 
-
 local testManagedCounter = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -211,7 +210,6 @@ local testManagedCounter = function(name)
 	handleResult('Test managed counter', res)
 	return res
 end
-
 
 local testP1SmartMeter = function(name)
 	local dev = dz.devices(name)
@@ -356,7 +354,6 @@ local testAPITemperature = function(name)
 	handleResult('Test API temperature device', res)
 	return res
 end
-
 
 local testTempHum = function(name)
 	local dev = dz.devices(name)
@@ -812,7 +809,6 @@ local testQuietOff = function(name)
 	handleResult('Test QuietOff switch device', res)
 	return res
 end
-
 
 local testVersion = function(name)
 	local res = true
