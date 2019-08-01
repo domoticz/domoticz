@@ -544,19 +544,23 @@ The domoticz object holds all information about your Domoticz system. It has glo
     - **civTwilightEndInMinutes**: *Number*. <sup>2.4.7</sup> Number of minutes since midnight when the civil twilight will end.
  - **triggerIFTTT(makerName [,sValue1, sValue2, sValue3])**: *Function*. <sup>2.4.18</sup> Have Domoticz 'call' an IFTTT maker event. makerName is required, 0-3 sValue's are optional. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
-       Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder. Example: 
-       _u = domoticz.utils
-       print(_u.rPad(test,10) .. '|||') =>  test      |||
-
+       Note that these functions must be preceded by domoticz.utils. If you use more then a few declare something like local _u = domoticz.utils at the beginning of your script and use _u.functionName in the remainder.  
+Example:  
+	_u = domoticz.utils  
+	print(_u.rPad('test',8) .. '|') =>  test||||
+  
     - _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
     - **rPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Succeed string with given character(s) (default = space) to given length. 
     - **lPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Precede string with given character(s) (default = space) to given length.
     - **mPad(string, length [, character])**: *Function*: <sup>2.4.27</sup> Center string by preceding and succeeding with given character(s) (default = space) to given length.
     - **zPad(number, length)**: *Function*: <sup>2.4.27</sup> Precede number with given zeros to given length. 
-      **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation 
-        Examples: domoticz.utils.numDecimals(12.23, 4, 4) => 12.2300, 
-                  domoticz.utils.numDecimals (12.23,1,1) => 12.2, 
-                  domoticz.utils.zPpad(domoticz.utils.numDecimals (12.23,4,4),9) => 0012.2300   
+    - **numDecimals(number [, integer [, decimals ]])**: *Function*: <sup>2.4.27</sup> Format number to float representation  
+        Examples:  
+```Lua
+			domoticz.utils.numDecimals(12.23, 4, 4) -- => 12.2300,  
+			domoticz.utils.numDecimals (12.23,1,1) -- => 12.2,  
+			domoticz.utils.zPpad(domoticz.utils.numDecimals (12.23,4,4),9) -- => 0012.2300   
+```
     - **dumpTable(table,[levelIndicator])**: *Function*: <sup>2.4.19</sup> print table structure and contents to log
     - **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
     - **fromJSON(json, fallback <sup>2.4.16</sup>)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.
@@ -2033,7 +2037,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 ##[2.4.27]
 - Add attribute protected for devices / scenes and groups
 - Add methods protectionOn and protectionOff for devices / scenes and groups
-- Add functions rpad, lpad, mpad, zpad, numDecimals in utils
+- Add functions rPad, lPad, mPad, zPad, numDecimals in utils.
 
 ##[2.4.26]
 - Add Smoke Detector device (activate and reset functions )
