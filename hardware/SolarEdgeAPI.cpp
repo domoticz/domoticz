@@ -390,7 +390,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 		{
 			float acFrequency = reading["L1Data"]["acFrequency"].asFloat();
 			sprintf(szTmp, "Hz %s", pInverterSettings->name.c_str());
-			SendPercentageSensor(1 + iInverterNumber, SE_FREQ, 255, acFrequency, szTmp);
+			SendCustomSensor(1 + iInverterNumber, SE_FREQ, 255, acFrequency, szTmp, "Hz");
 		}
 	}
 }
