@@ -529,13 +529,6 @@ local function Time(sDate, isUTC, _testMS)
 
 				toDay, toMonth = getParts(toSet)
 				fromDay, fromMonth = getParts(fromSet)
-				--local _ = require('lodash');
-				--_.print('sm', self.month, 'sd', self.day, 'fm', fromMonth, 'tm', toMonth, 'fd', fromDay, 'td', toDay)
-				--_.print('( self.month > fromMonth and self.month < toMonth )', (self.month > fromMonth and self.month < toMonth))
-				--_.print('( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or', (fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay))
-				--_.print('( self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay ) or', (self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay) )
-				--_.print('( self.month == toMonth and toMonth < fromMonth and  self.day <= toDay )', (self.month == toMonth and toMonth < fromMonth and self.day <= toDay))
-				--_.print('( self.month == toMonth and toMonth > fromMonth and self.day <= toDay )', (self.month == toMonth and toMonth > fromMonth and self.day <= toDay))
 				if (
 					( self.month > fromMonth and self.month < toMonth ) or
 					( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or

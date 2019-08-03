@@ -69,6 +69,7 @@ local VIRTUAL_DEVICES = {
 	SWITCH = {6, 'vdSwitch'},
 	QUIET_ON_SWITCH = {6, 'vdQuietOnSwitch'},
 	QUIET_OFF_SWITCH = {6, 'vdQuietOffSwitch'},
+	PROTECT = {6, 'vdProtectSwitch'},
 	RENAME = {6, 'vdRenameSwitch'},
 	TEMP_BARO = { 247, 'vdTempBaro' },
 	TEMP_HUM = {82, 'vdTempHum'},
@@ -88,7 +89,7 @@ local VIRTUAL_DEVICES = {
 	-- increment SECPANEL_INDEX_CHECK when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX_CHECK = 64
+local SECPANEL_INDEX_CHECK = 65
 local SECPANEL_INDEX = TestTools.tableEntries(VIRTUAL_DEVICES) + 12 -- 10 is number of groups / scenes + managed counter + dimmer switch + ?
 
 local VAR_TYPES = {
@@ -110,7 +111,6 @@ local getResultsFromfile = function(file)
 	results:close()
 	return resTable
 end
-
 
 describe('Integration test', 
 	function ()
@@ -141,6 +141,7 @@ describe('Integration test',
 		TestTools.removeFSScript('vdRepeatSwitch.lua')
 		TestTools.removeFSScript('vdSwitchDimmer.lua')
 		TestTools.removeFSScript('scriptTestWildcards.lua')
+		TestTools.removeFSScript('scriptTestProtect.lua')
 		TestTools.removeFSScript('scriptTestRename.lua')
 		TestTools.removeFSScript('scriptTestUpdatedDocumentation.lua')
 		TestTools.removeGUIScript('stage1.lua')
@@ -162,6 +163,7 @@ describe('Integration test',
 	local switchQuietResultsIdx
 	local switchWildCardsResultsIdx
 	local switchRenameResultsIdx
+	local switchProtectResultsIdx
 
 	-- it('a', function() end)
 	describe('Settings', function()
@@ -284,6 +286,11 @@ describe('Integration test',
 
 		it('should create a PRESSURE_BAR device', function()
 			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.PRESSURE_BAR[2], VIRTUAL_DEVICES.PRESSURE_BAR[1])
+			assert.is_true(ok)
+		end)
+
+		it('should create a PROTECT device', function()
+			local ok, idx = TestTools.createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.PROTECT[2], VIRTUAL_DEVICES.PROTECT[1])
 			assert.is_true(ok)
 		end)
 
@@ -761,8 +768,12 @@ describe('Integration test',
 			TestTools.createFSScript('scriptTestWildcards.lua')
 		end)
 
- 		it('Should move a Renema event script in place', function()
+ 		it('Should move a Rename event script in place', function()
 			TestTools.createFSScript('scriptTestRename.lua')
+		end)
+
+ 		it('Should move a Protect event script in place', function()
+			TestTools.createFSScript('scriptTestProtect.lua')
 		end)
 
 		it('Should create the stage1 trigger switch', function()
@@ -796,6 +807,11 @@ describe('Integration test',
 			assert.is_true(ok)
 		end)
 
+		it('Should create results for Protect script', function()
+			ok, switchProtectResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchProtectResults', VIRTUAL_DEVICES.TEXT[1])
+			assert.is_true(ok)
+		end)
+
 		it('Should create results for Rename script', function()
 			ok, switchRenameResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchRenameResults', VIRTUAL_DEVICES.TEXT[1])
 			assert.is_true(ok)
@@ -815,7 +831,6 @@ describe('Integration test',
 			ok, switchWildCardsResultsIdx = TestTools.createVirtualDevice(dummyIdx, 'switchWildCardsResults', VIRTUAL_DEVICES.TEXT[1])
 			assert.is_true(ok)
 		end)
-
 
 		it('Should create the final results text device', function()
 			local ok
@@ -867,6 +882,7 @@ describe('Integration test',
 			local scSceneResultsDevice
 			local switchSilentResultsDevice
 			local switchQuietResultsDevice
+			local switchProtectResultsDevice
 			local switchRenameResultsDevice
 			local switchWildCardsResultsDevice
 			local endResultsDevice
@@ -899,10 +915,14 @@ describe('Integration test',
 			ok = false
 			ok, switchRenameResultsDevice = TestTools.getDevice(switchRenameResultsIdx)
 			assert.is_true(ok)
+			ok = false
+			ok, switchProtectResultsDevice = TestTools.getDevice(switchProtectResultsIdx)
+			assert.is_true(ok)
 
 			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
 			assert.is_same('WILDCARD SUCCEEDED', switchWildCardsResultsDevice['Data'])
 			assert.is_same('RENAME SUCCEEDED', switchRenameResultsDevice['Data'])
+			assert.is_same('PROTECTION SUCCEEDED', switchProtectResultsDevice['Data'])
 			assert.is_same('DIMMER SUCCEEDED', switchDimmerResultsDevice['Data'])
 			assert.is_same('STRING VARIABLE SUCCEEDED', varStringResultsDevice['Data'])
 			assert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])

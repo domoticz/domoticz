@@ -16,7 +16,7 @@ extern http::server::CWebServerHelper m_webservers;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void) :
-	m_version("2.4.26")
+	m_version("2.4.27")
 {
 	m_bdzVentsExist = false;
 }
@@ -688,10 +688,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, 11);
+		lua_createtable(lua_state, 1, 12);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "protected");
+		lua_pushboolean(lua_state, ((lua_Number)sitem.protection) == 1 );
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "id");
 		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
@@ -879,7 +882,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, 6);
+		lua_createtable(lua_state, 1, 7);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
@@ -892,6 +895,9 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, (sgitem.scenesgroupType == 0) ? "scene" : "group");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "protected");
+		lua_pushboolean(lua_state, (lua_Number)sgitem.protection == 1);
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "lastUpdate");
